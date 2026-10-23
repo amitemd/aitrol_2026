@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
+use Symfony\Component\Process\Process;
 use Throwable;
 
 class DeployApplication extends Command
@@ -141,8 +142,39 @@ class DeployApplication extends Command
         $this->newLine();
         $this->components->info('Ejecutando: php artisan '.$command);
 
-        if ($this->call($command, $arguments) !== self::SUCCESS) {
+        $process = new Process([
+            PHP_BINARY,
+            base_path('artisan'),
+            $command,
+            ...$this->formatArguments($arguments),
+        ], base_path());
+        $process->setTimeout(null);
+
+        $exitCode = $process->run(
+            fn (string $type, string $output) => $this->output->write($output),
+        );
+
+        if ($exitCode !== self::SUCCESS) {
             throw new RuntimeException("Falló el comando php artisan {$command}.");
         }
+    }
+
+    /**
+     * @param  array<string, bool|int>  $arguments
+     * @return list<string>
+     */
+    private function formatArguments(array $arguments): array
+    {
+        $formatted = [];
+
+        foreach ($arguments as $name => $value) {
+            if ($value === false) {
+                continue;
+            }
+
+            $formatted[] = $value === true ? $name : "{$name}={$value}";
+        }
+
+        return $formatted;
     }
 }
