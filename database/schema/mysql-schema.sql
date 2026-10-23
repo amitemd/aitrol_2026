@@ -14857,11 +14857,10 @@ ADD CONSTRAINT FK_ct_porcentaje_retenciones_c FOREIGN KEY (cuenta_deudora)
 REFERENCES plan_cuentas (id) ON UPDATE CASCADE;
 
 --
--- Create foreign key
+-- Create index `IDX_ct_porcentaje_retenciones_cuenta_clientes` on table `ct_porcentaje_retenciones`
 --
 ALTER TABLE ct_porcentaje_retenciones
-ADD CONSTRAINT FK_ct_porcentaje_retenciones_cuenta_clientes FOREIGN KEY (cuenta_clientes)
-REFERENCES plan_cuentas_empresa (id_plan) ON UPDATE CASCADE;
+ADD INDEX IDX_ct_porcentaje_retenciones_cuenta_clientes (cuenta_clientes);
 
 --
 -- Create foreign key
@@ -21543,11 +21542,10 @@ COLLATE utf8mb3_general_ci,
 ROW_FORMAT = DYNAMIC;
 
 --
--- Create foreign key
+-- Create index `IDX_ct_comision_detalle_codigo_producto` on table `ct_comision_detalle`
 --
 ALTER TABLE ct_comision_detalle
-ADD CONSTRAINT FK_ct_comision_detalle_codigo_producto FOREIGN KEY (codigo_producto)
-REFERENCES ct_productos (codigo) ON UPDATE CASCADE;
+ADD INDEX IDX_ct_comision_detalle_codigo_producto (codigo_producto);
 
 --
 -- Create foreign key
