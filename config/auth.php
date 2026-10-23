@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use Sis_medico\User;
 
 return [
 
@@ -41,6 +41,11 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+        'api' => [
+            'driver' => 'token',
+            'provider' => 'users',
+            'hash' => false,
         ],
     ],
 

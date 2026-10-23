@@ -12,7 +12,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->appendToGroup('web', \Sis_medico\Http\Middleware\SetLang::class);
+
+        $middleware->validateCsrfTokens(except: [
+            'maquina/hemograma/prueba',
+            'app/interconexion/sistemas/consultas',
+        ]);
+
+        $middleware->alias([
+            'cors' => \Sis_medico\Http\Middleware\Cors::class,
+            'general' => \Sis_medico\Http\Middleware\v3\General::class,
+            'operacion.v3' => \Sis_medico\Http\Middleware\v3\OperacionMonitoreo::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

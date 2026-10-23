@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'America/Guayaquil'),
 
     /*
     |--------------------------------------------------------------------------
@@ -78,11 +78,27 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'es'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'es'),
 
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    'faker_locale' => env('APP_FAKER_LOCALE', 'es_ES'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Integraciones heredadas
+    |--------------------------------------------------------------------------
+    |
+    | Se mantienen las claves consumidas por el sistema original, pero sus
+    | valores sensibles viven exclusivamente en el archivo de entorno.
+    |
+    */
+
+    'url_variable' => env('LEGACY_URL_VARIABLE'),
+    'url_api' => env('LEGACY_API_URL'),
+    'token_api' => env('LEGACY_API_TOKEN'),
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+    'force_https' => (bool) env('FORCE_HTTPS', false),
 
     /*
     |--------------------------------------------------------------------------

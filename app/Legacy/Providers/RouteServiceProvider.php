@@ -21,10 +21,8 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        //
-
         parent::boot();
     }
 
@@ -166,232 +164,232 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/web.php'));
+            ->group(base_path('routes/legacy/web.php'));
     }
 
     protected function mapWebRoutes_rol()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/rol.php'));
+            ->group(base_path('routes/legacy/rol.php'));
     }
 
     protected function mapWebRoutes_web_facturacion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_facturacion.php'));
+            ->group(base_path('routes/legacy/contable/web_facturacion.php'));
     }
 
     protected function mapWebRoutes_pentax()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/pentax/web_pentax.php'));
+            ->group(base_path('routes/legacy/pentax/web_pentax.php'));
     }
     protected function mapWebRoutes_insumos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/insumos/web_insumos.php'));
+            ->group(base_path('routes/legacy/insumos/web_insumos.php'));
     }
     protected function mapWebRoutes_consultaM()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/consultam/web_consultam.php'));
+            ->group(base_path('routes/legacy/consultam/web_consultam.php'));
     }
     protected function mapWebRoutes_hc_admision()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_hc_admision.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_hc_admision.php'));
     }
     protected function mapWebRoutes_evolucion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_evolucion.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_evolucion.php'));
     }
     protected function mapWebRoutes_preparacion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_preparacion.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_preparacion.php'));
     }
     protected function mapWebRoutes_epicrisis()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_epicrisis.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_epicrisis.php'));
     }
     protected function mapWebRoutes_empleados()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/rrhh/web_empleados.php'));
+            ->group(base_path('routes/legacy/rrhh/web_empleados.php'));
     }
     protected function mapWebRoutes_hospital_iess()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hospital_iess/web_hospital_iess.php'));
+            ->group(base_path('routes/legacy/hospital_iess/web_hospital_iess.php'));
     }
     protected function mapWebRoutes_laboratorio()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/laboratorio/web_laboratorio.php'));
+            ->group(base_path('routes/legacy/laboratorio/web_laboratorio.php'));
     }
 
     protected function mapWebRoutes_tecnicas()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/tecnicas_quirurgicas/tecnicas.php'));
+            ->group(base_path('routes/legacy/tecnicas_quirurgicas/tecnicas.php'));
     }
 
     protected function mapWebRoutes_web_aud_hc_admision()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_aud_hc_admision.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_aud_hc_admision.php'));
     }
 
     protected function mapWebRoutes_encuestas()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/rrhh/encuestas.php'));
+            ->group(base_path('routes/legacy/rrhh/encuestas.php'));
     }
 
     protected function mapWebRoutes_protocolo()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_protocolo.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_protocolo.php'));
     }
 
     protected function mapWebRoutes_procedimientos_historia()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/procedimientos_historia.php'));
+            ->group(base_path('routes/legacy/hc_admision/procedimientos_historia.php'));
     }
 
     protected function mapWebRoutes_cie_10()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/cie_10/web_cie_10.php'));
+            ->group(base_path('routes/legacy/cie_10/web_cie_10.php'));
     }
 
     protected function mapWebRoutes_hc_cardiologia()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_cardiologia.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_cardiologia.php'));
     }
     protected function mapWebRoutes_hc_video()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_video.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_video.php'));
     }
 
     protected function mapWebRoutes_web_turnero()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/turnero/web_turnero.php'));
+            ->group(base_path('routes/legacy/turnero/web_turnero.php'));
     }
 
     protected function mapWebRoutes_hc_consulta()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_hc_consulta.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_hc_consulta.php'));
     }
     protected function mapWebRoutes_hc_receta()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_receta.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_receta.php'));
     }
 
     protected function mapWebRoutes_hc_visitas()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/visitas.php'));
+            ->group(base_path('routes/legacy/hc_admision/visitas.php'));
     }
 
     protected function mapWebRoutes_web_orden()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_orden.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_orden.php'));
     }
     protected function mapWebRoutes_web_full_control()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc_admision/web_full_control.php'));
+            ->group(base_path('routes/legacy/hc_admision/web_full_control.php'));
     }
 
     protected function mapWebRoutes_sin_restriccion()
     {
         Route::namespace($this->namespace)
-            ->group(base_path('routes/sin_restriccion.php'));
+            ->group(base_path('routes/legacy/sin_restriccion.php'));
     }
 
     protected function mapWebRoutes_web_bo()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/bo/web_bo.php'));
+            ->group(base_path('routes/legacy/bo/web_bo.php'));
     }
 
     protected function mapWebRoutes_web_hc4()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc4/web_hc4.php'));
+            ->group(base_path('routes/legacy/hc4/web_hc4.php'));
     }
 
     protected function mapWebRoutes_web_enfermeria()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/enfermeria/web_enfermeria.php'));
+            ->group(base_path('routes/legacy/enfermeria/web_enfermeria.php'));
     }
 
     protected function mapWebRoutes_web_hc4_ordenes()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hc4/web_ordenes.php'));
+            ->group(base_path('routes/legacy/hc4/web_ordenes.php'));
     }
 
     protected function mapWebRoutes_web_disponibilidad()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/disponibilidad/web_disponibilidad.php'));
+            ->group(base_path('routes/legacy/disponibilidad/web_disponibilidad.php'));
     }
 
     protected function mapWebRoutes_web_as400()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/web_as400.php'));
+            ->group(base_path('routes/legacy/web_as400.php'));
     }
 
     protected function mapWebRoutes_web_archivo_plano()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/archivo_plano/web_archivo_plano.php'));
+            ->group(base_path('routes/legacy/archivo_plano/web_archivo_plano.php'));
     }
 
     /**
@@ -401,196 +399,196 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_plan_cuentas.php'));
+            ->group(base_path('routes/legacy/contable/web_plan_cuentas.php'));
     }
 
     protected function mapWebRoutes_web_compra()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_compra.php'));
+            ->group(base_path('routes/legacy/contable/web_compra.php'));
     }
 
     protected function mapWebRoutes_web_diario()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_diario.php'));
+            ->group(base_path('routes/legacy/contable/web_diario.php'));
     }
 
     protected function mapWebRoutes_nota_debito()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_nota_debito.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_nota_debito.php'));
     }
 
     protected function mapWebRoutes_nota_credito()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_nota_credito.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_nota_credito.php'));
     }
 
     protected function mapWebRoutes_transferencia_bancaria()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_deposito_bancario.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_deposito_bancario.php'));
     }
 
     protected function mapWebRoutes_deposito_bancario()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_transferencia_bancaria.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_transferencia_bancaria.php'));
     }
 
     protected function mapWebRoutes_conciliacion_bancaria()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_conciliacion_bancaria.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_conciliacion_bancaria.php'));
     }
 
     protected function mapWebRoutes_estadocuentabancos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_estadocuentabancos.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_estadocuentabancos.php'));
     }
 
     protected function mapWebRoutes_nomina()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_nomina.php'));
+            ->group(base_path('routes/legacy/contable/web_nomina.php'));
     }
 
     protected function mapWebRoutes_web_ventas()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_ventas.php'));
+            ->group(base_path('routes/legacy/contable/web_ventas.php'));
     }
 
     protected function mapWebRoutes_web_entregas_mercaderia()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_entregas_mercaderia.php'));
+            ->group(base_path('routes/legacy/contable/web_entregas_mercaderia.php'));
     }
 
     protected function mapWebRoutes_web_clientes()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_clientes.php'));
+            ->group(base_path('routes/legacy/contable/web_clientes.php'));
     }
 
     protected function mapWebRoutes_web_financiero()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/financiero/web_financiero.php'));
+            ->group(base_path('routes/legacy/financiero/web_financiero.php'));
     }
 
     protected function mapWebRoutes_web_amortizacion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/amortizacion/web_amortizacion.php'));
+            ->group(base_path('routes/legacy/amortizacion/web_amortizacion.php'));
     }
 
     protected function mapWebRoutes_web_balance_comprobacion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/balance_comprobacion/web_balance_comprobacion.php'));
+            ->group(base_path('routes/legacy/contable/balance_comprobacion/web_balance_comprobacion.php'));
     }
 
     protected function mapWebRoutes_web_debito_bancario()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/banco/web_debito_bancario.php'));
+            ->group(base_path('routes/legacy/contable/banco/web_debito_bancario.php'));
     }
 
     protected function mapWebRoutes_web_estado_resultados()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/estado_resultado/web_estado_resultados.php'));
+            ->group(base_path('routes/legacy/contable/estado_resultado/web_estado_resultados.php'));
     }
 
     protected function mapWebRoutes_web_balance_general()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/balance_general/web_balance_general.php'));
+            ->group(base_path('routes/legacy/contable/balance_general/web_balance_general.php'));
     }
 
     protected function mapWebRoutes_web_flujo_efectivo()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/flujo_efectivo/web_flujo_efectivo.php'));
+            ->group(base_path('routes/legacy/contable/flujo_efectivo/web_flujo_efectivo.php'));
     }
 
     protected function mapWebRoutes_web_ats()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_ats.php'));
+            ->group(base_path('routes/legacy/contable/web_ats.php'));
     }
 
     protected function mapWebRoutes_web_af_mantenimientos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/activosfijos/web_af_mantenimientos.php'));
+            ->group(base_path('routes/legacy/activosfijos/web_af_mantenimientos.php'));
     }
 
     protected function mapWebRoutes_web_af_documentos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/activosfijos/web_af_documentos.php'));
+            ->group(base_path('routes/legacy/activosfijos/web_af_documentos.php'));
     }
 
     protected function mapWebRoutes_web_af_depreciaciones()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/activosfijos/web_af_depreciaciones.php'));
+            ->group(base_path('routes/legacy/activosfijos/web_af_depreciaciones.php'));
     }
 
     protected function mapWebRoutes_web_af_informes()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/activosfijos/web_af_informes.php'));
+            ->group(base_path('routes/legacy/activosfijos/web_af_informes.php'));
     }
 
     protected function mapWebRoutes_web_clientes_retenciones()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/clientes/web_retenciones.php'));
+            ->group(base_path('routes/legacy/contable/clientes/web_retenciones.php'));
     }
 
     protected function mapWebRoutes_web_productos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_productos.php'));
+            ->group(base_path('routes/legacy/contable/web_productos.php'));
     }
 
     protected function mapWebRoutes_web_kardex()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_kardex.php'));
+            ->group(base_path('routes/legacy/contable/web_kardex.php'));
     }
 
     /**
@@ -605,59 +603,59 @@ class RouteServiceProvider extends ServiceProvider
         Route::prefix('api')
             ->middleware('api')
             ->namespace($this->namespace)
-            ->group(base_path('routes/api.php'));
+            ->group(base_path('routes/legacy/api.php'));
     }
 
     protected function mapWebRoutes_api_facturacion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/api_facturacion.php'));
+            ->group(base_path('routes/legacy/api_facturacion.php'));
     }
     protected function mapWebRoutes_web_servicios()
     {
         Route::namespace($this->namespace)
-            ->group(base_path('routes/web_servicios.php'));
+            ->group(base_path('routes/legacy/web_servicios.php'));
     }
     protected function mapWebRoutes_web_encuestaslabs()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/laboratorio/encuestas_labs.php'));
+            ->group(base_path('routes/legacy/laboratorio/encuestas_labs.php'));
     }
 
     protected function mapWebRoutes_web_ServiciosGenerales()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/servicios_generales/servicios_generales.php'));
+            ->group(base_path('routes/legacy/servicios_generales/servicios_generales.php'));
     }
 
     protected function mapWebRoutes_web_ticketpermisos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/permisos_ticket/web_permisos.php'));
+            ->group(base_path('routes/legacy/permisos_ticket/web_permisos.php'));
     }
 
     protected function mapWebRoutes_web_importaciones()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/contable/web_importaciones.php'));
+            ->group(base_path('routes/legacy/contable/web_importaciones.php'));
     }
     protected function mapWebRoutes_web_mantenimiento_nomina()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/mantenimiento_nomina/web_mantenimiento_nomina.php'));
+            ->group(base_path('routes/legacy/mantenimiento_nomina/web_mantenimiento_nomina.php'));
     }
 
     protected function mapWebRoutes_web_guia_remision()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/guia/web_guia_remision.php'));
+            ->group(base_path('routes/legacy/guia/web_guia_remision.php'));
     }
 
 
@@ -667,61 +665,61 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/sri_electronico/web_sri_electronico.php'));
+            ->group(base_path('routes/legacy/sri_electronico/web_sri_electronico.php'));
     }
 
     protected function mapWebRoutes_web_hospital()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hospital/web_hospital.php'));
+            ->group(base_path('routes/legacy/hospital/web_hospital.php'));
     }
 
     protected function mapWebRoutes_web_Emergencia()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hospital/emergencia/web_emergencia.php'));
+            ->group(base_path('routes/legacy/hospital/emergencia/web_emergencia.php'));
     }
 
     protected function mapWebRoutes_web_hospital_laboratorio()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hospital/laboratorio/web_laboratorio.php'));
+            ->group(base_path('routes/legacy/hospital/laboratorio/web_laboratorio.php'));
     }
 
     protected function mapWebRoutes_web_hospital_admin()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/hospital_admin/web_hospital_admin.php'));
+            ->group(base_path('routes/legacy/hospital_admin/web_hospital_admin.php'));
     }
 
     protected function mapWebRoutes_web_control_temperatura()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/control_temperatura/web_control_temperatura.php'));
+            ->group(base_path('routes/legacy/control_temperatura/web_control_temperatura.php'));
     }
     protected function mapWebRoutes_web_preanestesico()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/preanestesico/preanestesico.php'));
+            ->group(base_path('routes/legacy/preanestesico/preanestesico.php'));
     }
     protected function mapWebRoutes_webv3()
     {
 
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/v3/contable/web.php'));
+            ->group(base_path('routes/legacy/v3/contable/web.php'));
     }
 
     protected function mapWebRoutes_web_configuracion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
-            ->group(base_path('routes/v3/configuracion_sistema/web_configuracion.php'));
+            ->group(base_path('routes/legacy/v3/configuracion_sistema/web_configuracion.php'));
     }
 }
