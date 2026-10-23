@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CustomCommand;
+use App\Console\Commands\DeployApplication;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         CustomCommand::class,
+        DeployApplication::class,
         VerificarApiTributariaV3::class,
         VerificarDespliegueV3::class,
         VerificarSaludV3::class,

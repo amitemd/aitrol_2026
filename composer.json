@@ -33,35 +33,35 @@
         "psr-4": {
             "App\\": "app/",
             "Maatwebsite\\Excel\\Facades\\": "app/Compatibility/Maatwebsite/Excel/Facades/",
-            "Sis_medico\\": "app/Legacy/",
+            "Sis_medico\\": "app/SisMedico/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         },
         "classmap": [
-            "app/Legacy/"
+            "app/SisMedico/"
         ],
         "exclude-from-classmap": [
-            "app/Legacy/Ct_Balances copy.php",
-            "app/Legacy/EstadoResultado200123.php",
-            "app/Legacy/Http/Controllers/archivo_plano/ApPlantillaControllerItem.php",
-            "app/Legacy/Http/Controllers/CierreCajaController.php",
-            "app/Legacy/Http/Controllers/contable/ListaCiudadesController.php",
-            "app/Legacy/Http/Controllers/EgresoAcreedorController.php",
-            "app/Legacy/Http/Controllers/excelCreate_.php",
-            "app/Legacy/Http/Controllers/guia/original/",
-            "app/Legacy/Http/Controllers/auditoria_hc_admision/ConsultaController.php",
-            "app/Legacy/Http/Controllers/contable/ProductoController.php",
-            "app/Legacy/Http/Controllers/hospital/ProveedorController.php",
-            "app/Legacy/Http/Controllers/plantilla_labs/KardexController_.php",
-            "app/Legacy/Http/Controllers/plantilla_labs/PlantillaControlLabsController copy.php",
-            "app/Legacy/Http/Controllers/PrecioProductoController.php",
-            "app/Legacy/Http/Controllers/servicios/ServiciosKController.php",
-            "app/Legacy/Http/Controllers/Insumos/InvCabTomaFisica.php",
-            "app/Legacy/Http/Controllers/Insumos/InvContableCab.php",
-            "app/Legacy/Http/Controllers/Insumos/InvDetTomaFisica.php",
-            "app/Legacy/Http/Controllers/Insumos/InvDetTomaFisicaLog.php",
-            "app/Legacy/Http/Controllers/servicios/Log_Apps.php",
-            "app/Legacy/v3/contable/NotaCreditom.php"
+            "app/SisMedico/Ct_Balances copy.php",
+            "app/SisMedico/EstadoResultado200123.php",
+            "app/SisMedico/Http/Controllers/archivo_plano/ApPlantillaControllerItem.php",
+            "app/SisMedico/Http/Controllers/CierreCajaController.php",
+            "app/SisMedico/Http/Controllers/contable/ListaCiudadesController.php",
+            "app/SisMedico/Http/Controllers/EgresoAcreedorController.php",
+            "app/SisMedico/Http/Controllers/excelCreate_.php",
+            "app/SisMedico/Http/Controllers/guia/original/",
+            "app/SisMedico/Http/Controllers/auditoria_hc_admision/ConsultaController.php",
+            "app/SisMedico/Http/Controllers/contable/ProductoController.php",
+            "app/SisMedico/Http/Controllers/hospital/ProveedorController.php",
+            "app/SisMedico/Http/Controllers/plantilla_labs/KardexController_.php",
+            "app/SisMedico/Http/Controllers/plantilla_labs/PlantillaControlLabsController copy.php",
+            "app/SisMedico/Http/Controllers/PrecioProductoController.php",
+            "app/SisMedico/Http/Controllers/servicios/ServiciosKController.php",
+            "app/SisMedico/Http/Controllers/Insumos/InvCabTomaFisica.php",
+            "app/SisMedico/Http/Controllers/Insumos/InvContableCab.php",
+            "app/SisMedico/Http/Controllers/Insumos/InvDetTomaFisica.php",
+            "app/SisMedico/Http/Controllers/Insumos/InvDetTomaFisicaLog.php",
+            "app/SisMedico/Http/Controllers/servicios/Log_Apps.php",
+            "app/SisMedico/v3/contable/NotaCreditom.php"
         ]
     },
     "autoload-dev": {
@@ -81,6 +81,9 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan dev"
+        ],
+        "deploy": [
+            "@php artisan app:deploy --force"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",

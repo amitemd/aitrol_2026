@@ -6,7 +6,7 @@ Migración estructural del sistema **Sucursales IECED** a Laravel 13. El objetiv
 
 - Laravel 13.38 sobre PHP 8.4.
 - 5.510 rutas registradas por la aplicación.
-- 1.613 archivos PHP heredados aislados en `app/Legacy`.
+- 1.613 archivos PHP del núcleo funcional integrados en `app/SisMedico`.
 - 3.199 vistas Blade y los recursos públicos originales preservados.
 - Compatibilidad para Laravel Collective, DomPDF, códigos de barras, FFmpeg, Intervention Image, Google API y Redis.
 - Adaptador propio para ejecutar reportes escritos con la API antigua de Laravel Excel/PHPExcel sobre PhpSpreadsheet 5.
@@ -55,6 +55,31 @@ Inicie la aplicación:
 ```
 
 Abra `http://127.0.0.1:8000/mapa-modulos`.
+
+## Despliegue
+
+El proyecto incluye un despliegue completo para Windows y Linux. Ambos activan mantenimiento, actualizan el repositorio, instalan dependencias, compilan Vite, verifican `public/build/manifest.json`, ejecutan migraciones, optimizan Laravel, reinician las colas y vuelven a habilitar el sitio aunque ocurra un error.
+
+Windows:
+
+```powershell
+.\deploy.ps1 -Php 'C:\ruta\php.exe' -Composer 'C:\ruta\composer.phar'
+```
+
+Linux:
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+Para ejecutar solamente la fase Laravel:
+
+```bash
+php artisan app:deploy --force
+```
+
+Consulte todas las opciones y la solución al error de manifiesto Vite en [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Validación
 

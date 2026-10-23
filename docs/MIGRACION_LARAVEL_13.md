@@ -11,7 +11,7 @@ Solicitud HTTP
             │
             ├── 81 archivos de rutas en routes/legacy
             ├── middleware moderno de Laravel 13
-            └── controladores y modelos Sis_medico en app/Legacy
+            └── controladores y modelos Sis_medico en app/SisMedico
                         │
                         ├── Eloquent / base MySQL existente
                         └── capa de compatibilidad
@@ -20,13 +20,13 @@ Solicitud HTTP
                               └── respuesta 501 para código ausente en el origen
 ```
 
-Esta separación permite que las funciones nuevas vivan bajo `App\` y que el sistema histórico permanezca bajo `Sis_medico\`, sin una reescritura masiva que cambie reglas de negocio silenciosamente.
+`app/SisMedico` es ahora el núcleo funcional principal importado. Conserva temporalmente el namespace `Sis_medico\` para no romper referencias; las funciones modernizadas vivirán bajo `App\Modules` y sustituirán cada módulo de forma verificable, sin una reescritura masiva que cambie reglas de negocio silenciosamente.
 
 ## Inventario migrado
 
 | Elemento | Cantidad | Ubicación nueva |
 |---|---:|---|
-| Archivos PHP heredados | 1.613 | `app/Legacy` |
+| Archivos PHP heredados | 1.613 | `app/SisMedico` |
 | Archivos de rutas heredadas | 93 | `routes/legacy` |
 | Rutas registradas | 5.510 | Laravel Router |
 | Vistas Blade | 3.199 | `resources/views` |
