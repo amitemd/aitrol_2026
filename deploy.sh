@@ -9,7 +9,7 @@ SKIP_PULL=0
 SKIP_COMPOSER=0
 SKIP_ASSETS=0
 SKIP_MIGRATIONS=0
-RUN_TESTS=0
+RUN_TESTS=1
 MAINTENANCE_ACTIVATED=0
 
 usage() {
@@ -20,7 +20,8 @@ Uso: ./deploy.sh [opciones]
   --skip-composer     No instalar dependencias PHP
   --skip-assets       No instalar ni compilar recursos frontend
   --skip-migrations   No ejecutar migraciones
-  --run-tests         Ejecutar las pruebas antes de finalizar el despliegue
+  --run-tests         Ejecutar las pruebas (comportamiento predeterminado)
+  --skip-tests        No ejecutar las pruebas automatizadas
   --help              Mostrar esta ayuda
 EOF
 }
@@ -32,6 +33,7 @@ for option in "$@"; do
         --skip-assets) SKIP_ASSETS=1 ;;
         --skip-migrations) SKIP_MIGRATIONS=1 ;;
         --run-tests) RUN_TESTS=1 ;;
+        --skip-tests) RUN_TESTS=0 ;;
         --help) usage; exit 0 ;;
         *) echo "Opción desconocida: $option" >&2; usage; exit 2 ;;
     esac

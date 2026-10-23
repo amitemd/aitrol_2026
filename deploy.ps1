@@ -6,7 +6,8 @@ param(
     [switch]$SkipComposer,
     [switch]$SkipAssets,
     [switch]$SkipMigrations,
-    [switch]$RunTests
+    [switch]$RunTests,
+    [switch]$SkipTests
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,6 +15,11 @@ $projectPath = [System.IO.Path]::GetFullPath($PSScriptRoot)
 $previousPath = (Get-Location).Path
 $maintenanceActivated = $false
 $exitCode = 0
+$shouldRunTests = -not $SkipTests
+
+if ($RunTests) {
+    $shouldRunTests = $true
+}
 
 function Invoke-Checked {
     param(
@@ -61,7 +67,7 @@ try {
     if (-not $SkipComposer) {
         $composerArguments = @('install', '--no-interaction', '--prefer-dist', '--optimize-autoloader')
 
-        if (-not $RunTests) {
+        if (-not $shouldRunTests) {
             $composerArguments += '--no-dev'
         }
 
@@ -79,7 +85,7 @@ try {
         throw 'No existe public\build\manifest.json. No se puede publicar una interfaz sin compilar.'
     }
 
-    if ($RunTests) {
+    if ($shouldRunTests) {
         Invoke-Checked -Command $Php -Arguments @('artisan', 'test', '--compact')
 
         if (-not $SkipComposer) {
@@ -94,6 +100,9 @@ try {
     }
 
     Invoke-Checked -Command $Php -Arguments $deployArguments
+    $maintenanceActivated = $true
+    Invoke-Checked -Command $Php -Arguments @('artisan', 'up')
+    $maintenanceActivated = $false
     Write-Host "`nDespliegue completado correctamente." -ForegroundColor Green
 } catch {
     $exitCode = 1

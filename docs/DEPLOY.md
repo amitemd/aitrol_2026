@@ -42,7 +42,10 @@ Opciones disponibles:
 --skip-assets
 --skip-migrations
 --run-tests
+--skip-tests
 ```
+
+Las pruebas se ejecutan de forma predeterminada. `--skip-tests` debe usarse únicamente cuando la misma revisión ya haya pasado en CI.
 
 Ejemplo sin actualizar Git ni ejecutar migraciones:
 
@@ -67,7 +70,10 @@ Opciones disponibles:
 -SkipAssets
 -SkipMigrations
 -RunTests
+-SkipTests
 ```
+
+Las pruebas se ejecutan de forma predeterminada. `-SkipTests` debe usarse únicamente cuando la misma revisión ya haya pasado en CI.
 
 ## Fase interna de Laravel
 
