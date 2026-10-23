@@ -1,4 +1,5 @@
 <?php
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -9,9 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
  */
-//Route::match(['get', 'post'], 'contable/Banco/notadebito', 'contable\NotaDebitoController@index')->name('notadebito.index');
+// Route::match(['get', 'post'], 'contable/Banco/notadebito', 'contable\NotaDebitoController@index')->name('notadebito.index');
 
-//Route::get('contable/Banco/notadebito/crear/', 'contable\NotaDebitoController@crear')->name('notadebito.crear');
+// Route::get('contable/Banco/notadebito/crear/', 'contable\NotaDebitoController@crear')->name('notadebito.crear');
 Route::get('reporte/liquidacion/comisiones/{id}', 'contable\VentasController@pdf_liquidacion_comision')->name('ventas.pdf_liquidacion_comision');
 Route::get('reporte/liquidacion/comisiones/eliminar/{id}', 'contable\VentasController@eliminar_liquidacion_comision')->name('ventas.eliminar_liquidacion_comision');
 Route::match(['get', 'post'], 'reporte_liquidacion_comisiones/generar_comision', 'contable\VentasController@guardar_comision')->name('ventas.guardar_comision');
@@ -23,7 +24,7 @@ Route::match(['get', 'post'], 'contable/ventas2', 'contable\VentasController@ind
 
 Route::match(['get', 'post'], 'contable/ventas2/buscar', 'contable\VentasController@index2_buscar')->name('venta_index2_buscar');
 
-Route::get('contable/ventas/crear', 'contable\VentasController@crear')->name('ventas_crear');
+Route::get('contable/ventas/crear', 'contable\VentasController@crear')->name('ventas_crear.formulario');
 Route::get('contable/ventas/crear_factura', 'contable\VentasController@crear_factura')->name('ventas_crear');
 Route::post('contable/ventas/store', 'contable\VentasController@store')->name('ventas_store');
 Route::match(['get', 'post'], 'contable/ventas/buscar', 'contable\VentasController@search')->name('ventas_search');
@@ -53,7 +54,7 @@ Route::get('contable/factura/convenios/sell', 'contable\FacturaConveniosControll
 Route::get('contable/venta/previewExcell/{fecha}/{fechafin}/{seguro}/{tipo}/{id_empresa}', 'contable\VentasController@excelPreview')->name('venta.previewx');
 Route::post('contable/venta/previewExcel/', 'contable\VentasController@previewData')->name('venta.preview');
 
-//orden de venta
+// orden de venta
 Route::match(['get', 'post'], 'contable/ventas/ordenes', 'contable\VentasController@ordenes')->name('orden_venta');
 Route::match(['get', 'post'], 'contable/ventas/ordenes_crear_nuevo', 'contable\VentasController@ordenes_crear_nuevo')->name('orden_venta_crear_nuevo');
 Route::match(['get', 'post'], 'contable/ventas/ordenes/search', 'contable\VentasController@searchOrdenes')->name('ventas.searchOrdenes');
@@ -63,20 +64,20 @@ Route::get('contable/ventas/ordenes/crear', 'contable\VentasController@crear_ord
 Route::post('contable/ventas/ordenes/store_ordenes', 'contable\VentasController@store_ordenes')->name('ventas.store_ordenes');
 Route::get('contable/ventas/ordenes/eliminar/{id}', 'contable\VentasController@eliminar')->name('venorden.eliminar');
 
-//facturas de insumos
+// facturas de insumos
 Route::match(['get', 'post'], 'contable/ventas/insumos', 'contable\VentasController@insumos')->name('insumos');
 Route::match(['get', 'post'], 'contable/ventas/insumos/search', 'contable\VentasController@searchInsumos')->name('insumos_search');
 
 Route::match(['get', 'post'], 'contable/ventas/modal/examenes/detalle/{id}', 'contable\VentasController@modalDetalle')->name('ventas.modalDetalleInsumos');
 
-//Productos
-//Route ::get('contable/productos', 'contable\VentasController@index')->name('venta_index');
+// Productos
+// Route ::get('contable/productos', 'contable\VentasController@index')->name('venta_index');
 
 Route::match(['get', 'post'], 'contable/fact/verificar/stock', 'contable\Fact_ContableController@verificarStock')->name('fact_contable.verificarStock');
 
 Route::match(['get', 'post'], 'contable/ventas/verificar/stock/kardex/nuevo', 'contable\NuevoKardexContableController@verificarKardex')->name('nuevokardex.verificarKardex');
 
-//stock
+// stock
 Route::post('contable/ventas/consulta/stock', 'contable\VentasController@validarStock')->name('ventas.stock');
 Route::post('contable/ventas/consulta/inventariable', 'contable\VentasController@esInventariable')->name('ventas.inventariable');
 Route::match(['get', 'post'], 'contable/venta/previewInforme/index', 'contable\VentasController@informe_ventas')->name('venta.informe_ventas');
@@ -87,22 +88,22 @@ Route::match(['get', 'post'], 'contable/venta/inf_liquidaciones_comisiones', 'co
 Route::post('contable/ventas/previewExcelx', 'contable\VentasController@excel_ventas')->name('venta.excel_ventas');
 Route::get('contable/ventas/subir/excel/importar', 'contable\VentasController@masivo_ventas');
 
-Route::match(['get', 'post'], 'contable/ventas/pdf_nuevo', 'contable\VentasController@pdf_nuevo')->name("ventas.pdf_nuevo");
-Route::match(['get', 'post'], 'contable/ventas/pdf_nuevo2', 'contable\VentasController@pdf_nuevo2')->name("ventas.pdf_nuevo2");
-Route::match(['get', 'post'], 'contable/ventas/modalPreviws/s', 'contable\VentasController@modal_preview')->name("ventas.modal_preview");
-Route::match(['get', 'post'], 'contable/ventas/modalPreviews/conglemerada', 'contable\VentasController@modal_preview_c')->name("ventasConglomerada.modal_preview");
-Route::get('contable/ventas/previewPdf/em/{id}', 'contable\VentasController@previewPdf')->name("ventas.previewPdf");
-Route::get('contable/ventas/previewPdfV/ventas/{id}', 'contable\VentasController@pdf_omni')->name("ventas.pdf_omni");
+Route::match(['get', 'post'], 'contable/ventas/pdf_nuevo', 'contable\VentasController@pdf_nuevo')->name('ventas.pdf_nuevo');
+Route::match(['get', 'post'], 'contable/ventas/pdf_nuevo2', 'contable\VentasController@pdf_nuevo2')->name('ventas.pdf_nuevo2');
+Route::match(['get', 'post'], 'contable/ventas/modalPreviws/s', 'contable\VentasController@modal_preview')->name('ventas.modal_preview');
+Route::match(['get', 'post'], 'contable/ventas/modalPreviews/conglemerada', 'contable\VentasController@modal_preview_c')->name('ventasConglomerada.modal_preview');
+Route::get('contable/ventas/previewPdf/em/{id}', 'contable\VentasController@previewPdf')->name('ventas.previewPdf');
+Route::get('contable/ventas/previewPdfV/ventas/{id}', 'contable\VentasController@pdf_omni')->name('ventas.pdf_omni');
 
-Route::get('contable/ventas/previewConglomerada/pdfventas/{id}', 'contable\VentasController@pdf_conglomerada')->name("ventas.pdf_conglomerada");
-Route::get('contable/ventas/ride_pdf/{comprobante}/{id_empresa}/{tipo}', 'ApiFacturacionController@comprobante_publico')->name("ventas.comprobante_publico");
+Route::get('contable/ventas/previewConglomerada/pdfventas/{id}', 'contable\VentasController@pdf_conglomerada')->name('ventas.pdf_conglomerada');
+Route::get('contable/ventas/ride_pdf/{comprobante}/{id_empresa}/{tipo}', 'ApiFacturacionController@comprobante_publico')->name('ventas.comprobante_publico');
 
-Route::get('contable/ventas/getPrice/withClient', 'contable\VentasController@getPrices')->name("ventas.getPrices");
+Route::get('contable/ventas/getPrice/withClient', 'contable\VentasController@getPrices')->name('ventas.getPrices');
 
-Route::match(['get', 'post'], 'contable/ventas/getUses/pdf', 'contable\VentasController@getReportUses')->name("ventas.getReportUses");
-Route::match(['get', 'post'], 'contable/ventas/getReportUsesExcel/excel', 'contable\VentasController@getReportUsesExcel')->name("ventas.getReportUsesExcel");
+Route::match(['get', 'post'], 'contable/ventas/getUses/pdf', 'contable\VentasController@getReportUses')->name('ventas.getReportUses');
+Route::match(['get', 'post'], 'contable/ventas/getReportUsesExcel/excel', 'contable\VentasController@getReportUsesExcel')->name('ventas.getReportUsesExcel');
 // post get put match
-#Cruce de cuentas con factura
+// Cruce de cuentas con factura
 Route::get('contable/cruce_cuentas_clientes/valores', 'contable\CruceClientesController@cruce_cuentas')->name('cr.cruce_cuentas');
 Route::get('contable/cruce_cuentas_clientes/traervalores', 'contable\CruceClientesController@traervalores')->name('cr.traervalores');
 Route::get('contable/cruce_cuentas_clientes/valores/edit/{id}', 'contable\CruceClientesController@cruce_cuentas_edit')->name('cr.cruce_cuentas_edit');
@@ -115,12 +116,12 @@ Route::get('contable/uso_equipo/Insumos', 'contable\UsosController@getUses')->na
 Route::get('contable/ventas/estado/factura/{id}', 'ApiFacturacionController@mod_venta');
 
 Route::post('contable/ventas/retenciones/orden/{id}', 'contable\ClientesRetencionesController@update')->name('clienter.update');
-//08/03/2021
+// 08/03/2021
 Route::match(['get', 'post'], 'contable/venta/infome_labs/index', 'contable\TipoTarjetaController@infome_labs')->name('venta.infome_labs');
 Route::match(['get', 'post'], 'contable/venta/infome_labs/excel', 'contable\TipoTarjetaController@excel_labs')->name('venta.infome_excel');
-//24/03/2021
+// 24/03/2021
 Route::match(['get', 'post'], 'contable/informe_nca/index', 'contable\VentasController@informe_nca')->name('venta.informe_nca');
-Route::post('contable/ventas/informe_nca/excel_ventas_nca', 'contable\VentasController@excel_ventas_nca')->name('venta.excel_ventas_nca');
+Route::post('contable/ventas/informe_nca/excel_ventas_nca', 'contable\VentasController@excel_ventas_nca')->name('venta.excel_ventas_nca.generar');
 
 Route::get('contable/ventas/informes/excel_ventas_nca', 'contable\VentasController@excel_ventas_nca')->name('venta.excel_ventas_nca');
 Route::match(['get', 'post'], 'contable/ventas/informe/estadistico', 'contable\VentasController@estadistico')->name('venta.estadisticos');
@@ -136,7 +137,7 @@ Route::get('contable/ventas/create_recibo/generar', 'contable\VentasController@c
 Route::match(['get', 'post'], 'contable/ventas/create_recibo/index', 'contable\VentasController@index_recibo')->name('venta.index_recibo');
 Route::get('contable/ventas/create_recibo/cargar', 'contable\VentasController@htmlrecibo')->name('venta.cargar_recibo');
 Route::get('contable/masivo/asientos/emigar', 'contable\VentasController@masivCambioAsientos')->name('venta.masivoAsientos');
-# PLANILLA
+// PLANILLA
 Route::get('contable/ventas/planilla/detalle/pdf/{id_venta}/{id_hc_procedimiento}', 'contable\VentasController@imprimirPlanillaDetalle')->name('venta.planilla.detalle.pdf');
 Route::get('contable/ventas/planilla/detalle/{id}', 'contable\VentasController@obtenerPlanillasAgenda')->name('venta.planilla.detalle');
 Route::get('contable/ventas/pdf/ieced/{id}', 'contable\VentasController@pdf_ieced')->name('venta.pdf_ieced');
@@ -144,7 +145,7 @@ Route::get('contable/ventas/pdf/envio/ieced/{id}', 'contable\VentasController@en
 Route::get('contable/ventas/pdf/visualizador/html/{id}', 'contable\VentasController@visualizador_pdf')->name('venta.visualizador_pdf_html');
 
 Route::get('contable/ventas/reproceso/venta/{id}', 'contable\VentasController@getSRI')->name('venta.reprocesar.getSri');
-/*General */
+/* General */
 Route::get('contable/ventas/{opcion}', 'contable\VentasController@index');
 Route::match(['get', 'post'], 'ventas/{opcion}', 'contable\VentasController@index');
 Route::match(['get', 'post'], 'factura_caja/buscador_paciente', 'contable\VentasController@buscador_paciente')->name('ventas.buscador_paciente');
@@ -155,12 +156,12 @@ Route::match(['get', 'post'], 'contable/excel/conglomerada/{id_venta}', 'contabl
 Route::match(['get', 'post'], 'contable/ventas/asignar/egreso/{id_ventas}', 'contable\VentasController@asignar_egreso')->name('ventas.asignar_egreso');
 Route::match(['get', 'post'], 'contable/ventas/guardar/asignar/egreso', 'contable\VentasController@guardar_asignar_egreso')->name('ventas.guardar_asignar_egreso');
 
-//nuevo estadistico
+// nuevo estadistico
 Route::match(['get', 'post'], 'contable/ventas/informe/nuevo_estadistico', 'contable\estadisticonuevoController@nuevo_estadistico')->name('venta.nuevo_estadistico');
 Route::match(['get', 'post'], 'contable/ventas/informe/estadisticohc4/complement2', 'contable\VentasController@graphics2')->name('venta.graphics2');
 Route::match(['get', 'post'], 'contable/reporte/indexFcVendedor', 'contable\VentasController@indexFcVendedor')->name('ventas.indexFcVendedor');
 
-Route::match(['get', 'post'],'contable/reporte/indexFcVendedor/pdf', 'contable\VentasController@indexFcVendedor_pdf')->name('ventas.indexFcVendedor_pdf');
+Route::match(['get', 'post'], 'contable/reporte/indexFcVendedor/pdf', 'contable\VentasController@indexFcVendedor_pdf')->name('ventas.indexFcVendedor_pdf');
 
 // Rutas para verificar y asignar egresos masivamente
 Route::match(['get', 'post'], 'contable/ventas_consulta/sin_egreso', 'contable\VentasController@ventas_sin_egreso')->name('ventas.sin_egreso');

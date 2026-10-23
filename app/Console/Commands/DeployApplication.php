@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 use Throwable;
@@ -45,7 +44,9 @@ class DeployApplication extends Command
             return self::SUCCESS;
         }
 
-        if (! $this->option('no-asset-check') && ! is_file(public_path('build/manifest.json'))) {
+        $assetManifest = (string) config('deployment.asset_manifest');
+
+        if (! $this->option('no-asset-check') && ! is_file($assetManifest)) {
             $this->error('No existe public/build/manifest.json. Ejecute npm ci y npm run build antes del despliegue.');
 
             return self::FAILURE;

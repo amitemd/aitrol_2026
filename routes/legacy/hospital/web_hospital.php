@@ -119,7 +119,7 @@ Route::post('hospital/emergencia/guardar_signos_vitales', 'hospital\Formulario00
 // Guardar paciente a emergencia en la tabla hosp_obstetrica_formulario008
 Route::post('hospital/emergencia/guardar_emer_obstetrica', 'hospital\Formulario008Controller@guardar_emer_obstetrica')->name('emergencias.obstetrica');
 // Modal de Tratamiento
-Route::get('hospital/emergencia/tratamiento/modal', 'hospital\Formulario008Controller@modal_tratamiento')->name('emergencia.tratamiento');
+Route::get('hospital/emergencia/tratamiento/modal', 'hospital\Formulario008Controller@modal_tratamiento')->name('emergencia.tratamiento.modal');
 // Guardar paciente a emergencia en la tabla hosp_tratamiento_formulario008
 Route::post('hospital/emergencia/guardar_emergencia_tratamiento', 'hospital\Formulario008Controller@guardar_tratamiento')->name('guardar.tratamiento');
 // Guardar paciente a emergencia en la tabla hosp_formulario008_alta
@@ -386,7 +386,7 @@ Route::match(['get', 'post'], 'formulario12B/pdf/{id}', 'pdf_hospital\Formulario
 Route::get('formulario12A/pdf', 'pdf_hospital\Formulario007Controller@formulario12A')->name('formulario.12A');
 Route::get('formulario10B/pdf', 'pdf_hospital\Formulario007Controller@formulario10B')->name('formulario.10B');
 Route::get('formulario10A/pdf/{id}', 'pdf_hospital\Formulario007Controller@formulario10A')->name('formulario.10A');
-Route::get('formulario017/pdf/{id}', 'pdf_hospital\Formulario007Controller@formulario017')->name('formulario.017'); // REALIZADO
+Route::get('formulario017/pdf/{id}', 'pdf_hospital\Formulario007Controller@formulario017')->name('formulario.017.por_id'); // REALIZADO
 Route::match(['get', 'post'], 'formulario006/pdf/{id}', 'pdf_hospital\Formulario007Controller@formulario006')->name('formulario.006'); // realizado->revision
 Route::match(['get', 'post'], 'formulario017/pdf', 'pdf_hospital\Formulario007Controller@formulario017')->name('formulario.017'); // REALIZADO
 

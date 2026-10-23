@@ -11,12 +11,20 @@
 |
  */
 
-Route::resource('empleados', 'rrhh\EmpleadosController');
+Route::resource('empleados', 'rrhh\EmpleadosController')->names([
+    'index' => 'rrhh.empleados.index',
+    'create' => 'rrhh.empleados.create',
+    'store' => 'rrhh.empleados.store',
+    'show' => 'rrhh.empleados.show',
+    'edit' => 'rrhh.empleados.edit',
+    'update' => 'rrhh.empleados.update',
+    'destroy' => 'rrhh.empleados.destroy',
+]);
 Route::get('empleados/documentos/{id}', 'rrhh\EmpleadosController@documentos')->name('empleados.documentos');
 
 Route::get('contable/rol/pago/envio/correo/{id}', 'contable\RolPagoController@rol_pago_envio')->name('rolpago.rol_pago_envio');
 
-//rutas de preparcion de emily
+// rutas de preparcion de emily
 Route::match(['get', 'post'], 'preparaciones/index', 'preparaciones\preparacionesController@index')->name('preparaciones.index');
 
 Route::match(['get', 'post'], 'preparaciones/mostrar/pdf', 'preparaciones\preparacionesController@mostrar_pdf')->name('preparaciones.mostrar_pdf');

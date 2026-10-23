@@ -9,7 +9,7 @@ Route::get('contable/cuentas_pagar/{id}/{tipo}', 'contable\CuentasPagarControlle
 Route::get('contable/cuentas/factura/gastos', 'contable\CuentasPagarController@tap_factura_contable')->name('cuentas_pagar.fact_contable');
 Route::match(['get', 'post'], 'contable/acreedores/documentos/cuentas/egreso/varios', 'contable\EgresoAcreedorController@egresosv')->name('egresosv.index');
 Route::get('contable/acreedores/documentos/cuentas/egreso/varios/anular/{id}', 'contable\EgresoAcreedorController@anular_egreso_v')->name('egresosv.anular');
-Route::get('contable/acreedores/documentos/cuentas/egreso/masivo/anular/{id}', 'contable\Egreso_MasivoController@anular')->name('egresom.anular');
+Route::get('contable/acreedores/documentos/cuentas/egreso/masivo/anular/{id}', 'contable\Egreso_MasivoController@anular')->name('egresom.anular.documento');
 Route::get('contable/acreedores/documentos/cuentas/egreso/varios/edit/{id}', 'contable\EgresoAcreedorController@egresosvedit')->name('egresosv.edit');
 Route::get('contable/acreedores/documentos/cuentas/egreso/varios/crear', 'contable\EgresoAcreedorController@egresov_create')->name('egresov.create');
 Route::get('contable/acreedores/documentos/cuentas/egreso/varios/buscar/banco/{id}', 'contable\EgresoAcreedorController@buscar_banco')->name('egresoacreedor.buscar_banco');
@@ -20,7 +20,7 @@ Route::match(['get', 'post'], 'contable/compras/buscar', 'contable\ComprasContro
 Route::match(['get', 'post'], 'contable/acreedores/egresos/compegreso/{id}/{tipo}', 'contable\EgresoAcreedorController@reporte_compegreso')->name('reporte_datos.compegreso');
 Route::match(['get', 'post'], 'contable/acreedores/egresos/compegresom/{id}/{tipo}', 'contable\Egreso_MasivoController@reporte_compegresoma')->name('reporte_datos.compegresom');
 
-Route::match(['get', 'post'], 'contable/comp_egreso/buscar', 'contable\EgresoAcreedorController@buscar')->name('comp_egreso.buscar');
+Route::match(['get', 'post'], 'contable/comp_egreso/buscar', 'contable\EgresoAcreedorController@buscar')->name('comp_egreso.buscar.general');
 
 Route::match(['get', 'post'], 'contable/acreedores/egreso/masivo/reparar/{id}', 'contable\Egreso_MasivoController@repararEgresoMasivo')->name('egresom.anular');
 // MANTENIMIENTO COMPRAS
@@ -33,7 +33,7 @@ Route::get('contable/comprassri', 'contable\ComprasController@verificar_document
 Route::get('tributacion/estadoDocumentos', 'tributacion\TributacionController@estado_documento_sri')->name('estado_documento_sri');
 Route::get('contable/compras/buscar/proveedor', 'contable\ComprasController@proveedorsearch')->name('compras.proveedorsearch');
 Route::post('contable/trearcomprobante', 'contable\ComprasController@traercomprobante')->name('traercomprobante_sri');
-Route::match(['get', 'post'], 'contable/comprasri_store', 'contable\ComprasController@comprasri_store')->name('comprasri_store');
+Route::match(['get', 'post'], 'contable/comprasri_store', 'contable\ComprasController@comprasri_store')->name('comprasri_store.match');
 Route::match(['get', 'post'], 'contable/compras/buscarProducto', 'contable\ComprasController@buscarProducto')->name('compras.buscarProducto');
 Route::match(['get', 'post'], 'contable/compras/buscar', 'contable\ComprasController@buscar')->name('compras.buscar');
 Route::get('contable/compras/crear', 'contable\ComprasController@crear')->name('compra_crear');
@@ -151,7 +151,7 @@ Route::post('contable/cruce/anticipos', 'contable\AnticipoProveedorController@ob
 // AHORA NOTA DE DEBITO ACREEDORES
 Route::get('contable/acreedores/nota/credito', 'contable\NotaCreditoAcreedoresController@index')->name('creditoacreedores.index');
 Route::get('contable/acreedores/nota/credito/editar/{id}', 'contable\NotaCreditoAcreedoresController@edit')->name('creditoacreedores.edit');
-Route::get('contable/acreedores/nota/credito/anular/{id}', 'contable\NotaCreditoAcreedoresController@anular')->name('creditoacreedores.anular');
+Route::get('contable/acreedores/nota/credito/anular/{id}', 'contable\NotaCreditoAcreedoresController@anular')->name('creditoacreedores.anular.por_id');
 Route::match(['get', 'post'], 'contable/acreedores/nota/credito/anular', 'contable\NotaCreditoAcreedoresController@anular')->name('creditoacreedores.anular');
 Route::match(['get', 'post'], 'contable/acreedores/nota/credito/buscar', 'contable\NotaCreditoAcreedoresController@search')->name('creditoacreedores.search');
 Route::get('contable/acreedores/nota/credito/create', 'contable\NotaCreditoAcreedoresController@create')->name('creditoacreedores.create');
@@ -172,7 +172,10 @@ Route::post('contable/acreedores/nota/credito/new/credito/store', 'contable\Nota
 Route::match(['get', 'post'], 'contable/acreedores/new/buscar/facturas/detalle', 'contable\NotaCreditoAcreedoresController@buscarDetalleFacturas')->name('compra.notacredito.buscarDetalleFacturas');
 
 // RUBROS ACREEDORES
-Route::resource('contable/acreedores/mantenimiento/rubrosa', 'contable\RubrosAcreedorController');
+Route::resource('contable/acreedores/mantenimiento/rubrosa', 'contable\RubrosAcreedorController')->names([
+    'store' => 'rubrosa.resource.store',
+    'update' => 'rubrosa.resource.update',
+]);
 Route::post('contable/acreedores/mantenimiento/rubrosa/store', 'contable\RubrosAcreedorController@store')->name('rubrosa.store');
 Route::post('contable/acreedores/mantenimiento/rubrosa/buscar', 'contable\RubrosAcreedorController@search')->name('rubrosa.search');
 Route::get('contable/acreedores/mantenimiento/rubrosa/editar/{codigo}', 'contable\RubrosAcreedorController@editar')->name('rubrosa.editar');

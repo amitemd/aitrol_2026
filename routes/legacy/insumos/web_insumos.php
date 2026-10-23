@@ -70,7 +70,7 @@ Route::post('vt_producto/ingresodato/buscador/serie', 'Insumos\IngresoController
 // codigo de barras
 Route::match(['get', 'post'], 'codigo/barras/', 'Insumos\ProductoController@codigo')->name('codigo.barra');
 Route::match(['get', 'post'], 'codigo/barras/imprimir/{id}', 'Insumos\ProductoController@imprimirbarras')->name('barra.generar');
-Route::match(['get', 'post'], 'codigo/barras/pedido/{id}', 'Insumos\ProductoController@pedido')->name('pedido.seguimiento');
+Route::match(['get', 'post'], 'codigo/barras/pedido/{id}', 'Insumos\ProductoController@pedido')->name('pedido.seguimiento.codigo_barras');
 
 Route::match(['get', 'post'], 'codigo/barras/reportePedido/excel/{id}', 'Insumos\ProductoController@reportePedido')->name('insumos.producto.reportePedido');
 
@@ -212,8 +212,8 @@ Route::get('transito/html/source', 'Insumos\TransitoController@htmlSource')->nam
 Route::get('transito/html/source/lote', 'Insumos\TransitoController@htmlSource_lote')->name('transito.htmlSource_lote');
 Route::get('transito/html/source/pedido', 'Insumos\TransitoController@htmlSourcePedido')->name('transito.htmlSource.pedido');
 Route::post('transito/modal/store', 'Insumos\TransitoController@storenew')->name('transito.storenew');
-Route::get('transito/eliminar/transito/{id}', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar');
-Route::match(['get', 'post'], 'transito/eliminar/transito', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar');
+Route::get('transito/eliminar/transito/{id}', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar.por_id');
+Route::match(['get', 'post'], 'transito/eliminar/transito', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar.sin_id');
 Route::match(['get', 'post'], 'transito/buscar/codigo/producto', 'Insumos\TransitoController@buscarCodigoProducto')->name('transito.buscarCodigoProducto');
 
 Route::get('compras/ingresar/nuevo/pedido/', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar');
