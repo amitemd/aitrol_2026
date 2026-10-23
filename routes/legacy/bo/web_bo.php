@@ -11,14 +11,12 @@
 |
 */
 
-//consulta máster
-
-
+// consulta máster
 
 Route::get('bo/solicitud', 'bo\SolicitudController@index')->name('solicitud.index');
 Route::get('bo/listado', 'bo\SolicitudController@listado')->name('solicitud.listado');
 Route::get('bo/data', 'bo\SolicitudController@data')->name('solicitud.data');
-Route::post('bo/solicitud/crear', 'bo\FacturaController@factura_store')->name('factura.store');
+Route::post('bo/solicitud/crear', 'contable\FacturaController@factura_store')->name('factura.store');
 
 Route::get('privados/agenda', 'bo\SolicitudController@agenda')->name('solicitud.agenda');
 Route::get('privados/calendario/{id}/{fecha}', 'bo\SolicitudController@calendario')->name('solicitud.calendario');

@@ -3,7 +3,6 @@
 namespace App\Compatibility\Excel;
 
 use Closure;
-use Illuminate\Http\Response;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;

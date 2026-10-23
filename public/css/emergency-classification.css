@@ -1,0 +1,41 @@
+.ec-assessment { --ec-line:#dbe5ec; --ec-ink:#17374c; --ec-muted:#566d7f; margin:24px 0; color:var(--ec-ink); }
+.ec-assessment [hidden] { display:none !important; }
+.ec-section { padding:20px 0; border-top:1px solid var(--ec-line); }
+.ec-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px; }
+.ec-eyebrow { display:block; color:#087b85; font-size:10px; font-weight:700; letter-spacing:1.2px; margin-bottom:7px; }
+.ec-heading h3 { font-size:18px !important; color:var(--ec-ink) !important; font-weight:700; margin:0; }
+.ec-help { color:var(--ec-muted); font-size:12px; line-height:1.7; margin:0 0 16px; }
+.ec-score { flex-shrink:0; padding:9px 13px; background:#eaf4f6; color:#155b6b; border-radius:8px; font-size:19px; font-weight:700; }
+.ec-components, .ec-criteria { display:grid; gap:14px; grid-template-columns:repeat(3,minmax(0,1fr)); }
+.ec-criteria { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.ec-assessment label { font-size:12px; font-weight:600; margin-bottom:7px; }
+.ec-assessment .form-control { min-height:44px; border-color:var(--ec-line); font-size:13px; }
+.ec-gcs-detail { color:var(--ec-muted); font-size:12px; line-height:1.7; margin:12px 0; }
+.ec-gcs-ranges { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.ec-gcs-ranges > span { padding:9px 14px; border:1px solid var(--ec-line); border-radius:8px; font-size:12px; color:var(--ec-muted); }
+.ec-gcs-ranges > .is-current { border:2px solid #087b85; padding:8px 13px; background:#eaf4f6; color:#155b6b; font-weight:700; }
+.ec-gcs-ranges > .is-current::before { content:'✓ '; }
+.ec-demo-note, .ec-rule-note { padding:12px 14px; border:1px solid #e8c267; border-radius:8px; background:#fffbeb; color:#6d4c0c; font-size:12px; line-height:1.6; }
+.ec-priorities { margin:20px 0 16px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; min-width:0; }
+.ec-priorities legend { font-size:12px; font-weight:600; margin-bottom:10px; }
+.ec-level-1 { --ec-accent:#b91c1c; --ec-tint:#fff1f2; }
+.ec-level-2 { --ec-accent:#b45309; --ec-tint:#fff7ed; }
+.ec-level-3 { --ec-accent:#856000; --ec-tint:#fffbeb; }
+.ec-level-4 { --ec-accent:#15803d; --ec-tint:#f0fdf4; }
+.ec-level-5 { --ec-accent:#1d4ed8; --ec-tint:#eff6ff; }
+.ec-label { color:var(--ec-accent) !important; }
+.ec-priority { display:block; cursor:pointer; position:relative; min-width:0; margin:0 !important; }
+.ec-priority input { position:absolute; width:1px; height:1px; opacity:0; }
+.ec-priority > span { display:flex; flex-direction:column; height:100%; padding:14px 10px; gap:9px; border:1px solid var(--ec-line); border-top:4px solid var(--ec-accent); border-radius:9px; color:var(--ec-accent); background:var(--ec-tint); }
+.ec-priority strong { font-size:12px; line-height:1.5; }
+.ec-priority small { color:#475569; font-size:11px; }
+.ec-priority input:checked + span { outline:2px solid var(--ec-accent); outline-offset:1px; box-shadow:0 3px 8px #17374c15; }
+.ec-priority input:focus-visible + span { outline:3px solid #17374c; outline-offset:3px; }
+.ec-result { display:flex; flex-direction:column; gap:4px; border:1px solid var(--ec-line); border-left:5px solid var(--ec-accent,#94a3b8); border-radius:9px; padding:14px 17px; color:var(--ec-accent,var(--ec-ink)); background:var(--ec-tint,#f4f8fa); }
+.ec-result strong { font-size:16px; }.ec-result span { color:#475569; font-size:12px; }
+.ec-confirm { display:flex; gap:10px; align-items:flex-start; margin:16px 0 0 !important; line-height:1.7; cursor:pointer; }
+.ec-confirm input { flex-shrink:0; width:18px; height:18px; margin-top:2px; accent-color:#087b85; }
+.ec-assessment :focus-visible { outline:2px solid #087b85; outline-offset:2px; }
+.dark-layout .ec-assessment { --ec-ink:#e5eff7; --ec-muted:#bbcedd; --ec-line:#435267; }
+@media(max-width:1100px) { .ec-priorities { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:600px) { .ec-components, .ec-criteria { grid-template-columns:1fr; }.ec-priorities { grid-template-columns:repeat(2,minmax(0,1fr)); }.ec-heading { align-items:flex-start; }.ec-score { font-size:16px; padding:7px 10px; } }

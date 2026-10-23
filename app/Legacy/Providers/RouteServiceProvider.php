@@ -18,8 +18,6 @@ class RouteServiceProvider extends ServiceProvider
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -88,7 +86,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapWebRoutes_web_archivo_plano();
         $this->mapWebRoutes_web_encuestaslabs();
 
-        //Contable
+        // Contable
         $this->mapWebRoutes_web_plan_cuentas();
         $this->mapWebRoutes_web_compra();
         $this->mapWebRoutes_web_diario();
@@ -131,13 +129,8 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->mapWebRoutes_web_importaciones();
         $this->mapWebRoutes_web_mantenimiento_nomina();
-        //guia de remision
+        // guia de remision
         $this->mapWebRoutes_web_guia_remision();
-
-
-        //guia de remision
-        $this->mapWebRoutes_web_guia_remision();
-
 
         $this->mapWebRoutes_web_sri_electronico();
 
@@ -187,54 +180,63 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/pentax/web_pentax.php'));
     }
+
     protected function mapWebRoutes_insumos()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/insumos/web_insumos.php'));
     }
+
     protected function mapWebRoutes_consultaM()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/consultam/web_consultam.php'));
     }
+
     protected function mapWebRoutes_hc_admision()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_hc_admision.php'));
     }
+
     protected function mapWebRoutes_evolucion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_evolucion.php'));
     }
+
     protected function mapWebRoutes_preparacion()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_preparacion.php'));
     }
+
     protected function mapWebRoutes_epicrisis()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_epicrisis.php'));
     }
+
     protected function mapWebRoutes_empleados()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/rrhh/web_empleados.php'));
     }
+
     protected function mapWebRoutes_hospital_iess()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hospital_iess/web_hospital_iess.php'));
     }
+
     protected function mapWebRoutes_laboratorio()
     {
         Route::middleware('web', 'cors')
@@ -290,6 +292,7 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_cardiologia.php'));
     }
+
     protected function mapWebRoutes_hc_video()
     {
         Route::middleware('web', 'cors')
@@ -310,6 +313,7 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_hc_consulta.php'));
     }
+
     protected function mapWebRoutes_hc_receta()
     {
         Route::middleware('web', 'cors')
@@ -330,6 +334,7 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/hc_admision/web_orden.php'));
     }
+
     protected function mapWebRoutes_web_full_control()
     {
         Route::middleware('web', 'cors')
@@ -612,11 +617,13 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/api_facturacion.php'));
     }
+
     protected function mapWebRoutes_web_servicios()
     {
         Route::namespace($this->namespace)
             ->group(base_path('routes/legacy/web_servicios.php'));
     }
+
     protected function mapWebRoutes_web_encuestaslabs()
     {
         Route::middleware('web', 'cors')
@@ -644,6 +651,7 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/contable/web_importaciones.php'));
     }
+
     protected function mapWebRoutes_web_mantenimiento_nomina()
     {
         Route::middleware('web', 'cors')
@@ -657,9 +665,6 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/guia/web_guia_remision.php'));
     }
-
-
-
 
     protected function mapWebRoutes_web_sri_electronico()
     {
@@ -702,12 +707,14 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/control_temperatura/web_control_temperatura.php'));
     }
+
     protected function mapWebRoutes_web_preanestesico()
     {
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/preanestesico/preanestesico.php'));
     }
+
     protected function mapWebRoutes_webv3()
     {
 

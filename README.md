@@ -1,58 +1,67 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# AITROL 2026
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Migración estructural del sistema **Sucursales IECED** a Laravel 13. El objetivo es conservar sus URLs, reglas de negocio, vistas y módulos, usando una base moderna que permita estabilizarlos y refactorizarlos gradualmente.
 
-## About Laravel
+## Estado actual
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 13.38 sobre PHP 8.4.
+- 5.510 rutas registradas por la aplicación.
+- 1.613 archivos PHP heredados aislados en `app/Legacy`.
+- 3.199 vistas Blade y los recursos públicos originales preservados.
+- Compatibilidad para Laravel Collective, DomPDF, códigos de barras, FFmpeg, Intervention Image, Google API y Redis.
+- Adaptador propio para ejecutar reportes escritos con la API antigua de Laravel Excel/PHPExcel sobre PhpSpreadsheet 5.
+- Catálogo visual de 34 módulos en `/mapa-modulos`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+El código original en `C:\xampp7.4\htdocs\sucursales_ieced` no fue modificado.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requisitos
 
-## Learning Laravel
+- PHP 8.3 o superior con las extensiones requeridas por Laravel y por MySQL.
+- Composer 2.
+- Node.js y npm.
+- La base de datos del sistema Sucursales IECED. Sus 21 migraciones históricas no representan el esquema completo.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+El PHP principal de `C:\xampp\php\php.exe` es 8.2 y no puede ejecutar Laravel 13. En este equipo el proyecto fue validado con:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+C:\xampp\htdocs\borleti\.runtime\php\php.exe
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Instalación local
 
-## Contributing
+```powershell
+Copy-Item .env.example .env
+& 'C:\xampp\htdocs\borleti\.runtime\php\php.exe' 'C:\ProgramData\ComposerSetup\bin\composer.phar' install
+& 'C:\xampp\htdocs\borleti\.runtime\php\php.exe' artisan key:generate
+npm install
+npm run build
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Configure en `.env` la conexión MySQL y las integraciones. No se copiaron contraseñas del proyecto anterior.
 
-## Code of Conduct
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=aitrol
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Inicie la aplicación:
 
-## Security Vulnerabilities
+```powershell
+& 'C:\xampp\htdocs\borleti\.runtime\php\php.exe' artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Abra `http://127.0.0.1:8000/mapa-modulos`.
 
-## License
+## Validación
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```powershell
+& 'C:\xampp\htdocs\borleti\.runtime\php\php.exe' artisan test --compact
+& 'C:\xampp\htdocs\borleti\.runtime\php\php.exe' vendor\bin\pint
+npm run build
+```
+
+La estrategia, los límites del código fuente recibido y los pasos de puesta en producción están documentados en [docs/MIGRACION_LARAVEL_13.md](docs/MIGRACION_LARAVEL_13.md).

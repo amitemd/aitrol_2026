@@ -39,6 +39,29 @@
         },
         "classmap": [
             "app/Legacy/"
+        ],
+        "exclude-from-classmap": [
+            "app/Legacy/Ct_Balances copy.php",
+            "app/Legacy/EstadoResultado200123.php",
+            "app/Legacy/Http/Controllers/archivo_plano/ApPlantillaControllerItem.php",
+            "app/Legacy/Http/Controllers/CierreCajaController.php",
+            "app/Legacy/Http/Controllers/contable/ListaCiudadesController.php",
+            "app/Legacy/Http/Controllers/EgresoAcreedorController.php",
+            "app/Legacy/Http/Controllers/excelCreate_.php",
+            "app/Legacy/Http/Controllers/guia/original/",
+            "app/Legacy/Http/Controllers/auditoria_hc_admision/ConsultaController.php",
+            "app/Legacy/Http/Controllers/contable/ProductoController.php",
+            "app/Legacy/Http/Controllers/hospital/ProveedorController.php",
+            "app/Legacy/Http/Controllers/plantilla_labs/KardexController_.php",
+            "app/Legacy/Http/Controllers/plantilla_labs/PlantillaControlLabsController copy.php",
+            "app/Legacy/Http/Controllers/PrecioProductoController.php",
+            "app/Legacy/Http/Controllers/servicios/ServiciosKController.php",
+            "app/Legacy/Http/Controllers/Insumos/InvCabTomaFisica.php",
+            "app/Legacy/Http/Controllers/Insumos/InvContableCab.php",
+            "app/Legacy/Http/Controllers/Insumos/InvDetTomaFisica.php",
+            "app/Legacy/Http/Controllers/Insumos/InvDetTomaFisicaLog.php",
+            "app/Legacy/Http/Controllers/servicios/Log_Apps.php",
+            "app/Legacy/v3/contable/NotaCreditom.php"
         ]
     },
     "autoload-dev": {

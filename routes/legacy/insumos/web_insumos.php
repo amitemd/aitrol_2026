@@ -11,32 +11,32 @@
 |
  */
 
-//bodegas
+// bodegas
 
 Route::resource('bodega', 'Insumos\BodegaController');
 Route::match(['get', 'post'], 'bodega/search', 'Insumos\BodegaController@search')->name('bodega.search');
 
-//proveedores
+// proveedores
 Route::resource('proveedor', 'Insumos\ProveedorController');
 Route::match(['get', 'post'], 'proveedores/search', 'Insumos\ProveedorController@search')->name('proveedor.search');
 Route::get('proveedor/logo/{name}', 'Insumos\ProveedorController@load');
 Route::post('proveedor/subir_logo', 'Insumos\ProveedorController@subir_logo')->name('proveedor.subir_logo');
 Route::post('proveedor/selected', 'Insumos\ProveedorController@query_cuentas')->name('proveedor.query_cuentas');
-//tipo de proveedores
+// tipo de proveedores
 Route::resource('tipo_proveedor', 'Insumos\TipoProveedorController');
 Route::match(['get', 'post'], 'tipo_proveedores/search', 'Insumos\TipoProveedorController@search')->name('tipoproveedor.search');
 
-//marca
+// marca
 Route::resource('marca', 'Insumos\MarcaController');
 Route::match(['get', 'post'], 'marca/search', 'Insumos\MarcaController@search')->name('marca.search');
 
-//marca
+// marca
 Route::resource('tipo', 'Insumos\TipoController');
 Route::match(['get', 'post'], 'tipo/search', 'Insumos\TipoController@search')->name('tipo.search');
 
-//productos
+// productos
 Route::resource('producto', 'Insumos\ProductoController');
-//Route::match(['get', 'post'],'producto/dar_baja', 'Insumos\ProductoController@bajar_producto')->name('producto.dar_baja');
+// Route::match(['get', 'post'],'producto/dar_baja', 'Insumos\ProductoController@bajar_producto')->name('producto.dar_baja');
 Route::match(['get', 'post'], 'producto_search/search', 'Insumos\ProductoController@search')->name('producto.search');
 Route::match(['get', 'post'], 'producto/codigo_datos/', 'Insumos\ProductoController@codigo')->name('producto.codigo');
 Route::match(['get', 'post'], 'producto_activo/listar/activos', 'Insumos\ProductoController@listar')->name('producto.listar');
@@ -50,31 +50,24 @@ Route::get('producto/revisar/edit/pedido/new/{id_pedido}', 'Insumos\ProductoCont
 
 Route::match(['get', 'post'], 'pedido/ingreso/verificar/cod/siempre', 'Insumos\ProductoController@verificarCodSiempre')->name('insumos.producto.verificarCodSiempre');
 
-
 Route::match(['get', 'post'], 'producto/revisar/edit/pedido/new/update', 'Insumos\TransitoController@editar_pedido_new_update')->name('producto.editar_pedido_new_update');
-
 
 Route::resource('despacho', 'Insumos\DespachoController');
 
-
-
-
-Route::match(['get', 'post'], 'producto/buscadorcodigo/producto', 'Insumos\CompPedidosRealizadosController@codigo2')->name('pedido_realizados.codigo2');
+Route::match(['get', 'post'], 'producto/buscadorcodigo/producto', 'contable\CompPedidosRealizadosController@codigo2')->name('pedido_realizados.codigo2');
 
 Route::match(['get', 'post'], 'producto/buscadorcodigo/buscarProductos', 'Insumos\ProductoController@buscarProductos')->name('pedido_realizados.buscarProductos');
 
 // buscarProductos
 
-
-
-//productos
+// productos
 Route::resource('ingreso_producto', 'Insumos\IngresoController');
 Route::match(['get', 'post'], 'ingreso/search', 'Insumos\IngresoController@search')->name('ingreso_producto.search');
 Route::post('producto/ingresodato', 'Insumos\IngresoController@formulario')->name('ingreso.formulario');
 Route::post('producto/ingresar/informacion/', 'Insumos\IngresoController@guardar')->name('ingreso.guardar');
 Route::post('vt_producto/ingresodato/buscador/serie', 'Insumos\IngresoController@formulario_serie')->name('ingreso.formulario_serie');
 
-//codigo de barras
+// codigo de barras
 Route::match(['get', 'post'], 'codigo/barras/', 'Insumos\ProductoController@codigo')->name('codigo.barra');
 Route::match(['get', 'post'], 'codigo/barras/imprimir/{id}', 'Insumos\ProductoController@imprimirbarras')->name('barra.generar');
 Route::match(['get', 'post'], 'codigo/barras/pedido/{id}', 'Insumos\ProductoController@pedido')->name('pedido.seguimiento');
@@ -83,8 +76,7 @@ Route::match(['get', 'post'], 'codigo/barras/reportePedido/excel/{id}', 'Insumos
 
 Route::match(['get', 'post'], 'codigo/barras/reportePedido/masivo/excel', 'Insumos\ProductoController@reportePedidoMasivo')->name('insumos.producto.reportePedidoMasivo');
 
-
-//productos en transito
+// productos en transito
 Route::resource('transito', 'Insumos\TransitoController');
 Route::match(['get', 'post'], 'producto/transito/nombre_encargado/', 'Insumos\TransitoController@nombre')->name('transito.nombre');
 Route::match(['get', 'post'], 'producto/transito/nombre_encargado2/', 'Insumos\TransitoController@nombre2')->name('transito.nombre2');
@@ -92,16 +84,14 @@ Route::match(['get', 'post'], 'producto/transito/searching/', 'Insumos\TransitoC
 Route::get('transito/insumo/pedido/{id}', 'Insumos\TransitoController@modal')->name('transito.modals');
 Route::match(['get', 'post'], 'producto/transito/codigo/', 'Insumos\TransitoController@codigo')->name('transito.codigo');
 
-//excel transito 1/04/2021
+// excel transito 1/04/2021
 Route::get('transito/descarga/excel', 'contable\TipoTarjetaController@descarga_excel')->name('transito_excel');
 
-//descagar reporte en excel
+// descagar reporte en excel
 Route::get('producto/descarga/archivo', 'Insumos\ProductoController@reporte')->name('producto.reporte');
 Route::get('producto/dar/baja/', 'Insumos\ProductoController@bajar_producto')->name('producto_dar_baja');
 Route::match(['get', 'post'], 'reporte/insumo/dado_de_baja', 'Insumos\ReportesController@reporte_dar_baja')->name('reporte.dar_baja');
 Route::match(['get', 'post'], 'insumos/reporte/descargar_dar_baja', 'Insumos\ReportesController@descargar_dar_baja')->name('descarga.dar_baja.index');
-
-
 
 Route::match(['get', 'post'], 'producto/dar_baja/codigo/', 'Insumos\ProductoController@codigo_baja')->name('producto.codigo_baja');
 Route::post('producto/dar/baja/guardar/', 'Insumos\ProductoController@guardar_bajar_producto')->name('producto_dar_baja_guardar');
@@ -119,7 +109,7 @@ Route::match(['get', 'post'], 'equipo/search', 'Insumos\EquipoController@search'
 Route::match(['get', 'post'], 'producto/reporte/bodega', 'Insumos\ReportesController@reporte_bodega')->name('reporte.reporte_bodega');
 
 Route::match(['get', 'post'], 'producto/buscador/master', 'Insumos\ReportesController@buscador_master')->name('reporte.buscador_master');
-//excel master cambie xq estaba duplicado
+// excel master cambie xq estaba duplicado
 Route::match(['get', 'post'], 'reporte/master/insumos/excel', 'Insumos\ReportesController@reporte_master')->name('reporte.reporte_master_insumos');
 
 Route::match(['get', 'post'], 'producto/buscador/descargar/master', 'Insumos\ReportesController@reporte_master')->name('reporte.reporte_master');
@@ -155,7 +145,7 @@ Route::get('producto/buscador/usos/modal/{id}', 'Insumos\ReportesController@moda
 
 Route::match(['get', 'post'], 'proveedor/validar/ruc', 'Insumos\ProveedorController@validar_ruc')->name('proveedor.validar_ruc');
 
-//plantillas insumos 
+// plantillas insumos
 Route::match(['get', 'post'], 'insumos/plantillas', 'Insumos\PlantillaController@index')->name('plantilla.index');
 Route::get('insumos/plantillas/crear', 'Insumos\PlantillaController@crear_plantilla')->name('plantilla.crear');
 Route::post('insumo/items', 'Insumos\PlantillaController@buscar_item')->name('planilla.find_item');
@@ -169,7 +159,7 @@ Route::get('insumos/plantillas/item_lista2/{id}/{hcid}/{tipo}', 'Insumos\Plantil
 Route::match(['get', 'post'], 'insumos/plantillas/buscar', 'Insumos\PlantillaController@buscar')->name('plantilla.buscar');
 Route::get('insumo/plantilla/eliminar_plantilla/{id}', 'Insumos\PlantillaController@eliminar_plantilla')->name('plantilla.eliminar_plantilla');
 
-//plantilla procededimiento control
+// plantilla procededimiento control
 Route::get('insumos/plantillas/procedimiento/control', 'Insumos\PlantillaControlController@index')->name('plantilla_procedimiento.index');
 Route::get('insumos/plantillas/procedimiento/crear', 'Insumos\PlantillaControlController@create')->name('plantilla_procedimiento.crear');
 Route::post('insumos/plantillas/save', 'Insumos\PlantillaControlController@save')->name('plantilla_procedimiento.save');
@@ -182,11 +172,11 @@ Route::match(['get', 'post'], 'insumos/plantillas/save/subir', 'Insumos\Plantill
 
 Route::match(['get', 'post'], 'insumos/plantillas/procedimiento/buscar/producto', 'Insumos\PlantillaControlController@buscar_producto')->name('plantilla_procedimiento.buscar_producto');
 
-//masivo consecion
+// masivo consecion
 Route::match(['get', 'post'], 'insumos/consecion_detalle', 'Insumos\IngresoController@consecion_detalle')->name('ingreso.consecion_detalle');
 
 Route::get('transito/datails/{id_producto}', 'Insumos\TransitoController@getData')->name('trans.getData');
-//guardar_item_plantilla 1/04/2021
+// guardar_item_plantilla 1/04/2021
 Route::get('enfermeria/insumos/guardar_productos', 'Insumos\PlantillaController@guardar_productos')->name('guardar_productos_nuevo');
 
 Route::get('producto/ingreso/conglomerada', 'Insumos\IngresoController@conglomerada')->name('ingreso.conglomerada');
@@ -203,7 +193,7 @@ Route::get('insumos/busqueda', 'Insumos\InventarioController@busqueda')->name('i
 Route::match(['get', 'post'], 'insumos/busquedaserie', 'Insumos\InventarioController@busquedaserie')->name('insumos.inventario.busqueda.serie');
 Route::match(['get', 'post'], 'insumos/kardex/exportar/nuevo', 'Insumos\KardexController@exportar')->name('insumos.kardex.exportar');
 
-/*Inventario Serie */
+/* Inventario Serie */
 Route::get('insumos/existencias/serie', 'Insumos\InventarioSerieController@index')->name('insumos.inventario_serie.index');
 Route::match(['get', 'post'], 'insumos/existencias/serie/show', 'Insumos\InventarioSerieController@show')->name('insumos.inventario_serie.show');
 Route::get('insumos/serie/busqueda', 'Insumos\InventarioSerieController@busqueda')->name('insumos.inventario_serie.busqueda');
@@ -213,7 +203,6 @@ Route::match(['get', 'post'], 'transito/index/excel_transproducc', 'Insumos\Tran
 Route::match(['get', 'post'], 'transito/index/pdf/{id}', 'Insumos\TransitoController@pdf_transito')->name('transito.pdf_transito');
 
 Route::match(['get', 'post'], 'transito/busqueda/pedido', 'Insumos\TransitoController@detalleTransito')->name('transito.detalle_transito');
-
 
 Route::match(['get', 'post'], 'transito/pedido/newupdate', 'Insumos\TransitoController@updatenew')->name('transito.newupdate');
 Route::get('transito/edit/pedido/{id}', 'Insumos\TransitoController@editnew')->name('transito.editnew');
@@ -227,21 +216,20 @@ Route::get('transito/eliminar/transito/{id}', 'Insumos\TransitoController@elimin
 Route::match(['get', 'post'], 'transito/eliminar/transito', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar');
 Route::match(['get', 'post'], 'transito/buscar/codigo/producto', 'Insumos\TransitoController@buscarCodigoProducto')->name('transito.buscarCodigoProducto');
 
-
 Route::get('compras/ingresar/nuevo/pedido/', 'Insumos\TransitoController@eliminarTransito')->name('transito.eliminar');
-# CONGLOMERADA
+// CONGLOMERADA
 Route::get('producto/editar/conglomerada/{id}', 'Insumos\IngresoController@editar_conglomerada')->name('ingreso.editar_conglomerada');
 Route::post('producto/editar/conglomerada/update', 'Insumos\IngresoController@update_conglomerada')->name('ingreso.update_conglomerada');
 Route::post('producto/editar/conglomerada/crear/orden', 'Insumos\IngresoController@crear_orden_conglomerada')->name('ingreso.crear_orden_conglomerada');
 Route::post('producto/editar/conglomerada/anular/envio/orden', 'Insumos\IngresoController@anular_envio_orden')->name('ingreso.anular_envio_orden');
-# CONGLOMERADA ANTERIOR
+// CONGLOMERADA ANTERIOR
 Route::get('producto/ingreso/conglomerada/anterior', 'Insumos\IngresoController@conglomeradaAnterior')->name('ingreso.conglomerada.anterior');
 Route::get('producto/ingreso/conglomerada/anterior/details', 'Insumos\IngresoController@detailsConglomeradaAnterior')->name('ingreso.details.conglomerada.anterior');
 
-# REPORTE INSUMOS
+// REPORTE INSUMOS
 Route::get('insumos/egresoprocedimiento', 'Insumos\InsumosController@egresoprocedimiento')->name('insumos.inventario.egresoprocedimiento');
 Route::match(['get', 'post'], 'insumos/egresoprocedimiento/show', 'Insumos\InsumosController@show_egresoprocedimiento')->name('insumos.inventario.egresoprocedimiento.show');
-# PROCESOS INVENTARIO
+// PROCESOS INVENTARIO
 Route::match(['get', 'post'], 'insumos/carga_inicial', 'Inventario\InvProcesosController@carga_inicial')->name('insumos.inventario.procesos.carga.inicial');
 Route::match(['get', 'post'], 'insumos/reprocesoInventarioSerie', 'Inventario\InvProcesosController@reproceso_inventario_serie')->name('insumos.inventario.reproceso.inventario.serie');
 Route::match(['get', 'post'], 'insumos/reprocesoInventarioSerieEliminados', 'Inventario\InvProcesosController@reproceso_inventario_serie_eliminados')->name('insumos.inventario.reproceso.inventario.serie.eliminados');
@@ -251,41 +239,36 @@ Route::match(['get', 'post'], 'insumos/reprocesaRoxicaina', 'Inventario\InvProce
 Route::match(['get', 'post'], 'insumos/trasladoMasivoBodega1', 'Inventario\InvProcesosController@trasladoMasivoBodega1')->name('insumos.inventario.traslado.masivo.bodega1');
 
 Route::match(['get', 'post'], 'insumos/plantillas/comprobar', 'Insumos\PlantillaControlController@comprobar')->name('plantilla.comprobar');
-# PACIETE DEL DIA 
+// PACIETE DEL DIA
 Route::match(['get', 'post'], 'transito/paciente/dia/agregar/medicamento', 'Insumos\TransitoController@agregarMedicamentoPacienteDia')->name('transito.agregar.medicamento.paciente.dia');
-# PDF PLANILLAS
+// PDF PLANILLAS
 Route::get('contable/planilla/costo/detalle/pdf/{id_venta}/{id_hc_procedimiento}', 'Insumos\PlantillaController@imprimirPlanillaCostoDetalle')->name('planilla.costo.detalle.pdf');
 Route::get('contable/planilla/costo/detalle/xls/{id_venta}/{id_hc_procedimiento}', 'Insumos\PlantillaController@ExportarPlanillaCostoDetalle')->name('planilla.costo.detalle.xls');
 Route::get('contable/planilla/venta/detalle/pdf/{id_venta}/{id_hc_procedimiento}', 'Insumos\PlantillaController@imprimirPlanillaVentaDetalle')->name('planilla.venta.detalle.pdf');
 Route::get('contable/planilla/venta/vs/costo/detalle/pdf/{id_venta}/{id_hc_procedimiento}', 'Insumos\PlantillaController@imprimirPlanillaVentaVsCostoDetalle')->name('planilla.venta.vs.compra.detalle.pdf');
-# Planillas para el sector publico NO FUNCAN LOPEZ
+// Planillas para el sector publico NO FUNCAN LOPEZ
 Route::get('contable/planilla/ventap/detalle/pdf/{id_venta}/{id_hc_procedimiento}', 'Insumos\PlantillaController@imprimirPlanillaVentapDetalle')->name('planilla.ventap.detalle.pdf');
 Route::get('contable/planilla/ventap/vs/costop/detalle/pdf/{id_venta}/{id_hc_procedimiento}', 'Insumos\PlantillaController@imprimirPlanillaVentapVsCostopDetalle')->name('planilla.ventap.vs.comprap.detalle.pdf');
-# TOMA FISICA INVENTARIO 
+// TOMA FISICA INVENTARIO
 Route::match(['get', 'post'], 'insumos/tomafisica/proceso/{file}/{id_bodega}', 'Insumos\TomaFisicaController@proceso')->name('insumos.tomafisica.proceso');
-# PROCESOS
+// PROCESOS
 Route::match(['get', 'post'], 'insumos/proceso/reingreso/{id_movimiento}', 'Inventario\InvProcesosController@reingreso')->name('inventario.proceso.reingreso');
-# INGRESOS Y EGRESOS VARIOS
+// INGRESOS Y EGRESOS VARIOS
 Route::match(['get', 'post'], 'inventario/ingresos/egresos/varios', 'Inventario\InvIngresoEgresoVarioController@index')->name('inventario.ingresos.egresos.varios');
 Route::get('inventario/ingresos/egresos/crear', 'Inventario\InvIngresoEgresoVarioController@crear')->name('inventario.ingresos.egresos.crear');
 Route::match(['get', 'post'], 'inventario/ingresos/egresos/guardar', 'Inventario\InvIngresoEgresoVarioController@guardar')->name('inventario.ingresos.egresos.guardar');
 Route::get('inventario/ingresos/egresos/editar/{id}', 'Inventario\InvIngresoEgresoVarioController@editar')->name('inventario.ingresos.egresos.editar');
 Route::post('inventario/ingresos/egresos/actualizar', 'Inventario\InvIngresoEgresoVarioController@actualizar')->name('inventario.ingresos.egresos.actualizar');
 
-
 Route::match(['get', 'post'], 'insumos/egresoprocedimiento/excelMaterialesUtilizados', 'Insumos\InsumosController@excelMaterialesUtilizados')->name('insumos.insumos.excelMaterialesUtilizados');
-//Acta de Entrega
+// Acta de Entrega
 Route::match(['get', 'post'], 'insumos/acta_de_entrega.pdf', 'insumos\ProductoController@pdf_acta_de_entrega')->name('producto.pdf_acta_de_entrega');
 
 Route::match(['get', 'post'], 'insumos/valida/numero/pedido', 'Insumos\IngresoController@validarNumeroPedido')->name('insumos.ingreso.validarNumeroPedido');
 
-
 Route::match(['get', 'post'], 'insumos/valida/numero/pedido', 'Insumos\IngresoController@validarNumeroPedido')->name('insumos.ingreso.validarNumeroPedido');
 
-
-
-
-////////////////////////////////Carga Inicial
+// //////////////////////////////Carga Inicial
 Route::match(['get', 'post'], 'insumos/carga/inicial/index', 'Insumos\CargaInicialController@index')->name('insumos.cargaIncial');
 Route::match(['get', 'post'], 'insumos/carga/inicial/store/excel', 'Insumos\CargaInicialController@storeExcel')->name('insumos.storeExcel');
 Route::match(['get', 'post'], 'insumos/carga/inicial/edit/{id}', 'Insumos\CargaInicialController@edit')->name('insumos.edit');
@@ -294,10 +277,7 @@ Route::match(['get', 'post'], 'insumos/carga/inicial/procesar', 'Insumos\CargaIn
 Route::match(['get', 'post'], 'insumos/carga/inicial/delete/{id}', 'Insumos\CargaInicialController@delete')->name('insumos.delete');
 Route::match(['get', 'post'], 'insumos/carga/inicial/crearSerie', 'Insumos\CargaInicialController@crearSerie')->name('insumos.crearSerie');
 
-
 Route::match(['get', 'post'], 'insumos/carga/inicial/verificarSerieVenta', 'Insumos\CargaInicialController@verificarSerieVenta')->name('insumos.verificarSerieVenta');
-
-
 
 Route::get('new_proforma/compras/modal', 'Insumos\ProformaInsumosController@modalTransito')->name('insumos.proformaInsumos.modal');
 Route::post('new_proforma/compras/subir/excel', 'Insumos\ProformaInsumosController@subirExcel')->name('insumos.proformaInsumos.subirExcel');
@@ -309,11 +289,9 @@ Route::match(['get', 'post'], 'new_proforma/transito/insumos/editar/{id}', 'Insu
 
 Route::match(['get', 'post'], 'new_proforma/transito/insumos/new/editarFila', 'Insumos\ProformaInsumosController@editarFila')->name('insumos.proformaInsumos.editarFila');
 
-
 Route::match(['get', 'post'], 'new_proforma/compras/insumos/updatePublica', 'Insumos\ProformaInsumosController@updatePublica')->name('insumos.proformaInsumos.updatePublica');
 Route::match(['get', 'post'], 'new_proforma/compras/insumos/updatePublicaDetails', 'Insumos\ProformaInsumosController@updatePublicaDetails')->name('insumos.proformaInsumos.updatePublicaDetails');
 Route::post('new_proforma/compras/preaprobar', 'Insumos\ProformaInsumosController@preaprobar')->name('insumos.proformaInsumos.preaprobar');
-
 
 Route::get('new_proforma/sin/inventario/compras/insumos', 'Insumos\ProformaInsumosController@proformaSinInventario')->name('insumos.proformaInsumos.sin_inventario');
 Route::get('new_proforma/sin/inventario/compras/insumos/{id}', 'Insumos\ProformaInsumosController@proformaSinInventarioEdit')->name('insumos.proformaInsumos.sin_inventario.edit');
@@ -323,25 +301,14 @@ Route::get('proforma/compra/pdf/sin/kardex/{id}', 'Insumos\ProformaInsumosContro
 Route::match(['get', 'post'], 'new_proforma/compras/insumos/observarProformaSinKardex/{id_proforma}', 'Insumos\ProformaInsumosController@observarProformaSinKardex')->name('insumos.proformaInsumos.observarProformaSinKardex');
 Route::match(['get', 'post'], 'new_proforma/compras/insumos/buscadorResponsable', 'Insumos\ProformaInsumosController@buscadorResponsable')->name('insumos.proformaInsumos.buscadorResponsable');
 
+Route::match(['get', 'post'], 'new_proforma/compras/insumos/buscarAsientoVenta', 'Insumos\ProformaInsumosController@buscarAsientoVenta')->name('insumos.proformaInsumos.buscarAsientoVenta');
+Route::match(['get', 'post'], 'new_proforma/compras/insumos/buscarPosibleAsiento/{id}', 'Insumos\ProformaInsumosController@buscarPosibleAsiento')->name('insumos.proformaInsumos.buscarPosibleAsiento');
+Route::match(['get', 'post'], 'new_proforma/compras/insumos/guardarAsientoAnulado', 'Insumos\ProformaInsumosController@guardarAsientoAnulado')->name('insumos.proformaInsumos.guardarAsientoAnulado');
 
+Route::get('contable/asientoventa/insumos', 'Insumos\ProformaInsumosController@asientoVentaInsumos')->name('insumos.proformaInsumos.asientoVentaInsumos');
+Route::get('contable/masivo/vincular/asiento/costo/venta', 'Insumos\ProformaInsumosController@vincularAsientoVentaInsumos')->name('insumos.proformaInsumos.vincularAsientoVentaInsumos');
 
-
-Route::match(['get', 'post'],'new_proforma/compras/insumos/buscarAsientoVenta', 'Insumos\ProformaInsumosController@buscarAsientoVenta')->name('insumos.proformaInsumos.buscarAsientoVenta');
-Route::match(['get', 'post'],'new_proforma/compras/insumos/buscarPosibleAsiento/{id}', 'Insumos\ProformaInsumosController@buscarPosibleAsiento')->name('insumos.proformaInsumos.buscarPosibleAsiento');
-Route::match(['get', 'post'],'new_proforma/compras/insumos/guardarAsientoAnulado', 'Insumos\ProformaInsumosController@guardarAsientoAnulado')->name('insumos.proformaInsumos.guardarAsientoAnulado');
-
-
-
-
-
-
-
-
-Route::get('contable/asientoventa/insumos','Insumos\ProformaInsumosController@asientoVentaInsumos')->name('insumos.proformaInsumos.asientoVentaInsumos');
-Route::get('contable/masivo/vincular/asiento/costo/venta','Insumos\ProformaInsumosController@vincularAsientoVentaInsumos')->name('insumos.proformaInsumos.vincularAsientoVentaInsumos');
-
-
-/////////////modulo bodega
+// ///////////modulo bodega
 
 Route::match(['get', 'post'], 'insumos/modulo/bodega', 'Insumos\ModuloBodegaController@index')->name('modulobodega.index');
 Route::match(['get', 'post'], 'insumos/modulo/bodega/store', 'Insumos\ModuloBodegaController@store')->name('modulobodega.store');
@@ -352,21 +319,21 @@ Route::match(['get', 'post'], 'insumos/modulo/bodega/mostrarSugerencias', 'Insum
 
 Route::match(['get', 'post'], 'insumos/egreso/ingreso/pdf/{id}', 'Inventario\InvIngresoEgresoVarioController@pdf_ingreso_egreso')->name('InvIngresoEgreso.pdf_ingreso_egreso');
 
-////vt_ingresos_egresos
+// //vt_ingresos_egresos
 Route::match(['get', 'post'], 'vt_inventario/ingreso_egreso/listar_series', 'Inventario\InvIngresoEgresoVarioController@listar_series')->name('inv_ingreso_egreso_vario.listar_series');
 
-//vt nuevo kardex por usos
+// vt nuevo kardex por usos
 Route::match(['get', 'post'], 'vt_kardex_usos/index/serie', 'Insumos\KardexController@vtindex_kardex_usos_series')->name('insumos.kardex.vtindex_kardex_usos_series');
 Route::match(['get', 'post'], 'vt_kardex_usos/index/por_serie/{serie}', 'Insumos\KardexController@vtindex_kardex_usos_por_serie')->name('insumos.kardex.vtindex_kardex_usos_por_serie');
 // Reporte de Costos Global
 Route::match(['get', 'post'], 'reporte/costos/planilla_global/excel', 'Insumos\ReportesController@reporte_global_costos')->name('reporte.reporte_global_costos');
 Route::match(['get', 'post'], 'reporte/costos/planilla_global/index', 'Insumos\ReportesController@index_costos_planillas')->name('reporte.index_costos_planillas');
-//Jorge 
+// Jorge
 Route::match(['get', 'post'], 'producto/ingreso/conglomerada/nueva', 'Insumos\IngresoController@conglomerada_nueva')->name('ingreso.conglomerada_nueva');
 Route::match(['get', 'post'], 'producto/ingreso/conglomerada/nueva/consumibles', 'Insumos\IngresoController@guardar_conglomerada_nueva_consumibles')->name('ingreso.guardar_conglomerada_nueva_consumibles');
 Route::match(['get', 'post'], 'producto/editar/conglomerada/nueva/{id}', 'Insumos\IngresoController@editar_conglomerada_nueva')->name('ingreso.editar_conglomerada_nueva');
 Route::post('producto/guardar/conglomerada/nueva', 'Insumos\IngresoController@guardar_conglomerada_nueva')->name('ingreso.guardar_conglomerada_nueva');
-//nuevo conglomerada
+// nuevo conglomerada
 Route::post('nuevo_conglomerada/actualizar_item', 'Insumos\IngresoController@nvo_cgl_actualizar_item')->name('ingreso.nvo_cgl_actualizar_item');
 Route::post('nuevo_conglomerada/eliminar_item', 'Insumos\IngresoController@nvo_cgl_eliminar_item')->name('ingreso.nvo_cgl_eliminar_item');
 Route::get('nuevo_conglomerada/recalcular/{id}', 'Insumos\IngresoController@recalcular')->name('ingreso.recalcular');
@@ -389,15 +356,13 @@ Route::match(['get', 'post'], 'new_proforma/compras/insumos/excel', 'Insumos\Pro
 
 Route::post('nuevo_conglomerada/eliminar_items_check', 'Insumos\IngresoController@nvo_cgl_eliminar_items_check')->name('ingreso.nvo_cgl_eliminar_items_check');
 Route::match(['get', 'post'], 'new_proforma/compras/seleccionar', 'Insumos\ProformaInsumosController@seleccionarProforma')->name('insumos.proformaInsumos.seleccionar');
-//Reverso de Planilla
+// Reverso de Planilla
 Route::match(['get', 'post'], 'insumos/reverso/planilla_pac/index', 'Insumos\IngresoController@index_reverso')->name('insumos.index_reverso');
 Route::match(['get', 'post'], 'insumos/reverso/planilla_pac', 'Insumos\IngresoController@reverso_planilla')->name('insumos.reverso_planilla');
 Route::get('reverso_planilla_por_procedimiento/{id}', 'Insumos\IngresoController@reverso_planilla_por_procedimiento')->name('insumos.reverso_planilla_por_procedimiento');
 
-  
-//Reporte de Costos Vs Ventas
+// Reporte de Costos Vs Ventas
 Route::match(['get', 'post'], 'reporte/contable/costos_vs_ventas/index', 'contable\ReporteCostosVentasController@index_costos_ventas')->name('reportecostosventas.index_costos_ventas');
-
 
 Route::match(['get', 'post'], 'new_proforma/compras/pdf_proforma/{id}', 'Insumos\ProformaInsumosController@pdf_proforma')->name('insumos.proformaInsumos.pdf_proforma');
 Route::get('nuevo/reporte/plantilla/descargar', 'Insumos\CargaInicialController@nuevo_reporte_plantilla')->name('insumos.nuevo_reporte_plantilla');
@@ -405,19 +370,18 @@ Route::get('nuevo/reporte/plantilla/descargar', 'Insumos\CargaInicialController@
 Route::get('ins_labs/corrige/Kxu', 'ImportarController@insumos_labs_kxu')->name('importar.insumos_labs_kxu');
 
 Route::get('ins_labs/corrige/Kxu/series_kxu', 'ImportarController@actualiza_serie_human')->name('importar.actualiza_serie_human');
-//Masivo Nuevo Kardex
+// Masivo Nuevo Kardex
 Route::get('ins_labs/nuevo_kardex/kxu/{id}', 'Insumos\TransitoController@masivo_kardex_nuevo')->name('transito.masivo_kardex_nuevo');
 
 Route::get('ins_labs/nuevo_kardex/kxu/reproceso/cantidad', 'Insumos\TransitoController@actualiza_kxu')->name('transito.actualiza_kxu');
 Route::get('ins_labs/nuevo_kardex/kxu/reproceso/generar_kxu', 'Insumos\TransitoController@proceso_crear_kardex_nuevo')->name('transito.proceso_crear_kardex_nuevo');
 
-
-//Reporte de Costos Vs Ventas
-//Route::match(['get', 'post'],'reporte/contable/costos_vs_ventas/index', 'Contable\ReporteCostosVentasController@index_costos_ventas')->name('reportecostosventas.index_costos_ventas');
+// Reporte de Costos Vs Ventas
+// Route::match(['get', 'post'],'reporte/contable/costos_vs_ventas/index', 'Contable\ReporteCostosVentasController@index_costos_ventas')->name('reportecostosventas.index_costos_ventas');
 Route::get('contable/precio/producto/index', 'contable\PrecioProductoController@index')->name('insumos.precioProducto.index');
 Route::get('contable/precio/producto/buscador', 'contable\PrecioProductoController@buscador')->name('insumos.precioProducto.buscador');
 
-//reporte de precios 
+// reporte de precios
 Route::get('reporte/contable/precios/index', 'Insumos\ReportesController@precios_gastritech_index')->name('reportes.precio_index');
 Route::match(['get', 'post'], 'reporte/contable/precios/excel', 'Insumos\ReportesController@excel_gastritech')->name('reporte.excel_precios');
 Route::post('reporte/contable/precios/buscador', 'Insumos\IngresoController@buscadorgastritech')->name('precioproducto.buscador');
@@ -428,26 +392,23 @@ Route::post('transito/guia_remision/store', 'Insumos\TransitoController@store_gu
 Route::post('transito/guia_remision/modal', 'Insumos\TransitoController@modal_guia_remision')->name('transito.modal_guia_remision');
 
 Route::post('transito/guia_remision/anular', 'insumos\TransitoController@anular_guia')->name('transito.anular_guia');
-//ejemplo de excel
+// ejemplo de excel
 Route::match(['get', 'post'], 'new_proforma/compras/insumos/excel1', 'Insumos\ProformaInsumosController@excelproforma1')->name('insumos.proformaInsumos.excelproforma1');
 
-//Reporte de Productos para proforma 
+// Reporte de Productos para proforma
 Route::match(['get', 'post'], 'reporte/producto/nuevo_uso_productos/profoma_excel', 'Insumos\ReportesController@reporte_uso_productos_proforma')->name('reporte.reporte_uso_productos_proforma');
 Route::match(['get', 'post'], 'reporte/producto/nuevo_consumibles/profoma_excel', 'Insumos\ReportesController@reporte_consumibles_proforma')->name('reporte.reporte_consumibles_proforma');
 
-
-//Masivo carga incial
+// Masivo carga incial
 Route::get('nuevo/carga/inicial/productos/corregir_producto', 'Insumos\CargaInicialController@corregirDescripcionProducto')->name('insumos.corregirDescripcionProducto');
 Route::get('nuevo/carga/inicial/productos/corregirFechaVenceProducto/{id}', 'Insumos\CargaInicialController@corregirFechaVenceProducto')->name('insumos.corregirFechaVenceProducto');
 
-/*Alex Mite Reporte de Kardex nuevo */
+/* Alex Mite Reporte de Kardex nuevo */
 Route::get('nuevo/modulo/kardex', 'nuevo_insumos\KardexNuevoController@index')->name('nuevo_modulo_karex.index');
 Route::match(['get', 'post'], 'g', 'nuevo_insumos\KardexNuevoController@show')->name('nuevo_modulo_karex.show');
 Route::match(['get', 'post'], 'nuevo/modulo/usos/index/serie', 'nuevo_insumos\KardexNuevoController@vtindex_kardex_usos_series')->name('nuevo_modulo_karex.usos_series');
 Route::match(['get', 'post'], 'nuevo/kardex/usovt_kardex_usos/uso/{serie}', 'nuevo_insumos\KardexNuevoController@vtindex_kardex_usos_por_serie')->name('nuevo_modulo_karex.vtindex_kardex_usos_por_serie');
 Route::get('nuevo/modulo/detalle/producto', 'nuevo_insumos\KardexNuevoController@detalle_kardex')->name('detalle_kardex.detalle');
-
-
 
 Route::get('vtpedido/recalcular/{id}', 'Insumos\IngresoController@recalcular_pedido')->name('insumos.ingreso.recalcular_pedido');
 
@@ -460,19 +421,19 @@ Route::match(['get', 'post'], 'complaint/notificacion', 'complaint\ReporteCompla
 Route::get('complaint/show/{id}', 'complaint\ReporteComplaintController@show')->name('complaint.show');
 Route::post('complaint/buscador', 'complaint\ReporteComplaintController@buscador')->name('complaint.buscador');
 
-//Recalcular Valor Planilla
+// Recalcular Valor Planilla
 Route::get('vtplanilla/recalcular/{id}', 'Insumos\ReportesController@reclacular_detalle_planilla')->name('insumos.reportes.reclacular_detalle_planilla');
 
-//STOCK MINIMO
+// STOCK MINIMO
 Route::match(['get', 'post'], 'insumos/suministros/listado_Stock_minimo', 'Insumos\ReportesController@index_stock_minimo')->name('insumos.reportes.index_stock_minimo');
 
-Route::match(['get', 'post'],'insumos/recalcular/recalcularCargaInicial', 'Insumos\CargaInicialController@recalcularCargaInicial')->name('insumos.recalcularCargaInicial');
+Route::match(['get', 'post'], 'insumos/recalcular/recalcularCargaInicial', 'Insumos\CargaInicialController@recalcularCargaInicial')->name('insumos.recalcularCargaInicial');
 
-//victor pilozo 
-Route::match(['get','post'],'contable/pedidos/insumos', 'contable\PedidoController@pedidos_insumos')->name('PedidoController.pedidos_insumos');
+// victor pilozo
+Route::match(['get', 'post'], 'contable/pedidos/insumos', 'contable\PedidoController@pedidos_insumos')->name('PedidoController.pedidos_insumos');
 Route::post('contable/pedidos/insumos/buscarProveedor', 'contable\PedidoController@buscar_proveedor')->name('PedidoController.buscar_proveedor');
 Route::get('nuevo_conglomerada/recalcular_prepedido/{id}', 'Insumos\IngresoController@recalcular_prepedido')->name('ingreso.recalcular_prepedido');
-// //victor pilozo 
+// //victor pilozo
 Route::get('/ordenes-compra', 'Insumos\InsumosController@index_orden_compra')->name('ordenes_compra.index');
 Route::get('/ordenes-compra/create', 'Insumos\InsumosController@orden_compra')->name('ordenes_compra.create');
 Route::post('/ordenes-compra', 'Insumos\InsumosController@store')->name('ordenes_compra.store');
@@ -480,9 +441,9 @@ Route::get('/ordenes-compra/{id}/edit', 'Insumos\InsumosController@edit')->name(
 Route::post('/ordenes-compra/{id}', 'Insumos\InsumosController@update')->name('ordenes_compra.update');
 Route::get('/ordenes-compra/{id}/pdf', 'Insumos\InsumosController@pdf')->name('ordenes_compra.pdf');
 Route::match(['get', 'post'], 'contable/Insumos/buscar/productos', 'Insumos\InsumosController@buscarProductos')->name('orden_buscar.productos');
-//reporte caducados
+// reporte caducados
 Route::match(['get', 'post'], 'reporte/insumos/caducados/index', 'Insumos\ReportesController@reporteProdCaducados')->name('reporte.reporteProdCaducados');
-//28/5/2026
+// 28/5/2026
 Route::post('carro/paro/cambiar/estado', 'Insumos\InsumosController@insumos_cambiarEstado')->name('insumos_cambiarEstado');
 Route::post('carro/paro/cargar/tipo', 'Insumos\InsumosController@insumos_cargarTipo')->name('insumos_cargarTipo');
 Route::post('carro/paro/guardar', 'Insumos\InsumosController@insumos_guardarForm')->name('insumos_guardarForm');
