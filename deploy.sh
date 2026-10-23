@@ -106,4 +106,7 @@ if [[ "$SKIP_MIGRATIONS" -eq 1 ]]; then
 fi
 
 run "$PHP_BIN" "${deploy_arguments[@]}"
+MAINTENANCE_ACTIVATED=1
+run "$PHP_BIN" artisan up
+MAINTENANCE_ACTIVATED=0
 printf '\nDespliegue completado correctamente.\n'
