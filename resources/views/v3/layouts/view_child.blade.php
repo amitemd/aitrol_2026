@@ -1,0 +1,9 @@
+@extends('v3.layouts.view_plantilla')
+@section('title',view('v3.layouts.view_title'))@show
+@section('css',view('v3.layouts.view_css'))@show
+@section('header',view('v3.layouts.view_header'))@show
+@section('menu',view('v3.layouts.view_menu'))@show
+@section('contenido',view('v3.layouts.view_contenido'))@show
+@section('footer',view('v3.layouts.view_footer'))@show
+@section('variables',view('v3.layouts.view_variables'))@show
+@section('js',view('v3.layouts.view_js'))@show

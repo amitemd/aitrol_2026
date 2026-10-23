@@ -1,0 +1,693 @@
+@extends('contable.ventas.base')
+@section('action-content')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+<style>
+  .dropdown-menu a {
+    display: block;
+    border-radius: 2;
+  }
+
+  <?php
+
+  use Illuminate\Support\Facades\Auth;
+  use Sis_medico\Ct_Clientes;
+  use Sis_medico\Ct_ventas;
+  use Sis_medico\De_Empresa;
+  use Sis_medico\Http\Controllers\ApiFacturacionController;
+
+  if (Auth::user()->id == "0957258056") {
+  ?>* {
+    font-family: 'Poppins',
+      sans-serif;
+  }
+
+  .sidebar-menu>li>a {
+    font-size: 13px;
+  }
+
+  .well>td {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  th {
+    font-size: 12px !important;
+  }
+
+  <?php
+  }
+
+  ?>.button:hover {
+    background-color: red;
+    color: white !important;
+  }
+</style>
+<!-- Ventana modal editar -->
+<?php
+$deempresa = De_Empresa::getDatos(session('id_empresa'));
+/*if (Auth::user()->id == '0921605895') {
+  echo '<pre>';
+  print_r($deempresa);
+  exit;
+}*/
+$ventas = Ct_ventas::where('estado', '<', 2)
+  ->where('id_empresa', session('id_empresa'))
+  ->where('tipo', 'VEN-FA')
+  ->where('electronica', 1)
+  ->where('punto_emision', '!=', 100)
+  ->where('estado_electronica', '<>', 3)
+  ->where('estado', '<>', 0)
+  ->whereYear('fecha', '>', 2021)
+  ->orderby('id', 'desc')
+  ->paginate(10);
+/*if (Auth::user()->id == '0921605895') {
+    echo '<pre>';
+    print_r($ventas);
+    exit;
+  }*/
+if (count($ventas) > 0) {
+  foreach ($ventas as $value) {
+    if ($value->punto_emision != 100) {
+      $cliente = Ct_Clientes::where('identificacion', $value->id_cliente)->first();
+      $seguro = Sis_medico\Seguro::find($value->seguro_paciente);
+      $fecha1 = new DateTime($value->created_at); //fecha inicial
+      $fecha2 = new DateTime(date('Y-m-d H:i:s')); //fecha de cierre
+      $intervalo = $fecha1->diff($fecha2);
+      $minutos = $intervalo->format('%i');
+      $horas = $intervalo->format('%h');
+      $tiempo = $minutos + ($horas * 60);
+      if ($tiempo > 5) {
+        $data['empresa']     = $empresa->id;
+        $data['comprobante'] = $value->nro_comprobante;
+        $data['tipo'] = 'comprobante';
+        try {
+          $envio = ApiFacturacionController::estado_comprobante($data);
+        } catch (Exception $e) {
+        }
+        $estado = 0;
+        $documento = Ct_ventas::find($value->id);
+        if (isset($envio->details)) {
+          if ($envio->details->log[0]->proceso == 'Notificación' || $envio->details->log[0]->mensaje == 'Autorizado') {
+            $estado = 3;
+            $documento->nro_autorizacion =  $envio->details->autorizacion;
+          } elseif ($envio->details->log[0]->mensaje == "Documento recibido") {
+            $estado = 2;
+          } elseif ($envio->details->log[0]->proceso == "Firma") {
+            $estado = 1;
+          } else {
+          }
+        }
+        $documento->estado_electronica =  $estado;
+        $documento->update();
+      }
+    }
+  }
+}
+?>
+<link rel="stylesheet" href="{{ asset('/css/bootstrap-datetimepicker.css') }}">
+<link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css')}}">
+<input type="hidden" id="deempresa" name="deempresa" />
+<div class="modal fade" id="detalle_paquete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content" style="width: 95%;">
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="edit_orde_det_paq" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content" style="width: 95%;">
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="log_factura" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="md_planilla" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="myModalDocumentos" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" >
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- Main content -->
+<section class="content">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Contable')}}</a></li>
+      <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Ventas')}}</a></li>
+      <li class="breadcrumb-item active">{{trans('wfact_venta.Registro de Factura de Ventas')}}</li>
+    </ol>
+  </nav>
+  <div class="box">
+    <div class="box-header header_new">
+      <div class="col-md-9">
+        <h3 class="box-title">{{trans('wfact_venta.Facturas de Venta')}} </h3>
+      </div>
+      <div class="col-md-1 text-right">
+        <button onclick="location.href='<?= route('ventas_crear'); ?>'" class="btn btn-success btn-gray">
+          <i aria-hidden="true"></i>{{trans('wfact_venta.Nueva Factura')}}
+        </button>
+      </div>
+    </div>
+    <div class="row head-title">
+      <div class="col-md-12 cabecera">
+        <label class="color_texto" for="title">{{trans('wfact_venta.BUSCADOR FACTURA DE VENTA')}}</label>
+      </div>
+    </div>
+    <!-- /.box-header -->
+    <div class="box-body dobra">
+      <form method="POST" id="reporte_master" action="{{ route('ventas_search') }}">
+        {{ csrf_field() }}
+        <input type="hidden" id="page" name="page" value="{{ config('data.page') }}" />
+        <div class="row">
+        <div class="form-group col-md-1 col-xs-2">
+          <label class="texto" for="numero">{{trans('wfact_venta.Id')}}</label>
+        </div>
+        <div class="form-group col-md-3 col-xs-10 container-4">
+          <input class="form-control" type="text" id="id" name="id" value="@if(isset($searchingVals)){{$searchingVals['id']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_id')}}" />
+        </div>
+        <div class="form-group col-md-1 col-xs-2">
+          <label class="texto" for="numero">{{trans('wfact_venta.Numero')}}</label>
+        </div>
+        <div class="form-group col-md-3 col-xs-10 container-4">
+          <input class="form-control" type="text" id="numero" name="numero" value="@if(isset($searchingVals)){{$searchingVals['nro_comprobante']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_numero')}}" />
+        </div>
+        <div class="form-group col-md-1 col-xs-2">
+          <label class="texto" for="asiento">{{trans('wfact_venta.Asiento')}}</label>
+        </div>
+        <div class="form-group col-md-3 col-xs-10 container-4">
+          <input class="form-control" type="text" id="id_asiento" name="id_asiento" value="@if(isset($searchingVals)){{$searchingVals['id_asiento']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_asiento')}}" />
+        </div>
+        </div>
+        <div class="row">
+        <div class="form-group col-md-1 col-xs-2">
+          <label class="texto" for="fecha">{{trans('wfact_venta.Fecha')}}</label>
+        </div>
+        <div class="form-group col-md-3 col-xs-10 container-4">
+          <div class="input-group date">
+            <div class="input-group-addon">
+              <i class="fa fa-calendar"></i>
+            </div>
+            <input type="date" name="fecha" class="form-control fecha" id="fecha" value="@if(isset($searchingVals)){{$searchingVals['fecha']}}@endif">
+          </div>
+        </div>
+        <div class="form-group col-md-1 col-xs-2">
+          <label class="texto" for="cliente">{{trans('wfact_venta.Cliente')}}</label>
+        </div>
+        <div class="form-group col-md-3 col-xs-10 container-4">
+          <input class="form-control" type="text" id="nombre_cliente" name="nombre_cliente" value="@if(isset($searchingVals)){{$searchingVals['nombre_cliente']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_cliente')}}" />
+        </div>
+        <div class="form-group col-md-1 col-xs-2">
+          <label class="texto" for="paciente">{{trans('wfact_venta.Paciente')}}</label>
+        </div>
+        <div class="form-group col-md-3 col-xs-10 container-4">
+          <input class="form-control" type="text" id="nombres_paciente" name="nombres_paciente" value="@if(isset($searchingVals)){{$searchingVals['nombres_paciente']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_paciente')}}" />
+        </div>
+        </div>
+        <div class="col-md-2 col-xs-2 col-xs-10 container-4">
+            <button type="submit" id="" class="btn btn-primary">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+            {{ trans('contableM.buscar') }}
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="row head-title">
+      <div class="col-md-12 cabecera">
+        <label class="color_texto">{{trans('wfact_venta.Ventas')}}</label>
+      </div>
+    </div>
+    <div class="box-body dobra">
+      <div class="form-group col-md-12">
+        <div class="form-row">
+          <div id="resultados">
+          </div>
+          <div id="example2_wrapper">
+            <div class="row">
+              <div class="table-responsive col-md-12">
+                <table id="tablaVentas" class="table table-hover" role="grid" aria-describedby="example2_info" width="100%">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>ID Asiento</th>
+                      <th>{{trans('wfact_venta.accion')}}</th>
+                      <th>{{trans('wfact_venta.estadosri')}}</th>
+                      @if($empresa->inventario == 1 && $empresa->egreso_kardex == 1) <th>Egreso</th> @endif
+                      <th>{{trans('wfact_venta.Comprobante')}}</th>
+                      <th>{{trans('wfact_venta.Tipo')}}</th>
+                      <th>{{trans('wfact_venta.Fecha')}}</th>
+                      <th>{{trans('wfact_venta.Cliente')}}</th>
+                      <th>{{trans('wfact_venta.Paciente')}}</th>
+                      <th>{{trans('wfact_venta.seguro')}}</th>
+                      <th>{{trans('wfact_venta.Procedimiento')}}</th>
+                      <th>{{trans('wfact_venta.fecha_procedimiento')}}</th>
+                      <th>{{trans('wfact_venta.creado_por')}}</th>
+                      <th>{{trans('wfact_venta.anulado_por')}}</th>
+                      <!--<th>{{trans('wfact_venta.informacion')}}</th>-->
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php
+                    $tabla = '';
+                    foreach ($dato as $row) {
+                      $venta_kardex = \Sis_medico\Venta_Kardex::where('id_venta', $row->id)->first();
+                      $tabla .= '<tr><td style="color:#4CA5D5;">' . $row->id . '</td><td><a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '"> ' . $row->id_asiento . '</a></td>';
+                      $variable = [];
+                      $tipo = 'Factura';
+                      if ($row->nro_comprobante !== null) {
+                        $variable = explode('-', $row->nro_comprobante);
+                      }
+                      //if (in_array('100', $variable)) {
+                      if ($row->emisor == 'MD' || in_array('100', $variable)) {
+                        $tabla .= '<td><div class="dropdown"><button style="color: black;" class="btn btn-gray btn-xs" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i> <i class="fa fa-caret-down"></i></button>';
+                        $tabla .= '<div style="width: auto;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        if ($row->orden_venta != null) {
+                          /* Revisar la modal */
+                          $tabla .= '<a target="_blank" href="' . route('pdf_comprobante_detalle.paquete', ['id' => $row->id]) . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> <i class="fa fa-list"></i> Detalle orden</a>';
+                        }
+                        if ($row->doc_electronico == 5) {
+                          $tabla .= '<a href="' . asset('/') . 'api_doc_electronico?opcion=descargarXML&clave=' . $row->nro_autorizacion . '" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-code-o"></i> Exportar XML</a>';
+                          $tabla .= '<a href="' . asset('/') . 'api_doc_electronico?opcion=generarPdf&clave=' . $row->nro_autorizacion . '" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-pdf-o"></i> Exportar PDF</a>';
+                        }
+                        // $tabla .= '<a href="#" data-toggle="modal" onclick="limpiarModal();logFactura(\'' . $row->id . '\');" data-target="#log_factura" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-align-left"></i> Log Factura</a>';
+                        $tabla .= '<a href="#" data-toggle="modal" onclick="limpiarModal();verLogDocumento(\'' . $row->id . '\',\'' . $tipo . '\');" data-target="#myModalDocumentos" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-align-left"></i> Log Factura</a>';
+                        $tabla .= '<a href="' . asset('/') . 'contable/ventas/descargarnotaentrega?id=' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-sign-out"></i> Nota entrega</a>';
+                        $tabla .= '<a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-eye"></i> Visualizar</a><a  target="_blank" href="' . asset('/') . 'v3/ventas/descargarComprobanteVenta?id=' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-pdf-o"></i> Comprobante de venta</a>';
+                        if ($row->estado == 0) {
+                          $tabla .= '<a href="#" class="btn-xs dropdown-item" style="text-align: left; color: red; padding: 5px 0px 5px 15px;" ><i class="fa fa-minus"></i> Anulado</a>';
+                        } else {
+                          $tabla .= '<a onclick="anular(' . $row->id . ')" class="btn btn-xs button" style="text-align: left; color: red; padding: 5px 0px 5px 15px;"><i class="fa fa-trash" ></i> Anular</a>';
+                        }
+                        $tabla .= '</div>';
+                        $tabla .= '</td>';
+                      } else {
+                        $tabla .= '<td><div class="dropdown"><button style="color: black;" class="btn btn-gray btn-xs" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i> <i class="fa fa-caret-down"></i></button>';
+                        $tabla .= '<div style="width: auto;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        if ($row->rutapdf != '') {
+                          $tabla .= '<a target="_blank" href="' . route('pdf.vidualizar', ['id' => $ow->id])  . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> Archivo</a>';
+                        }
+                        if ($row->orden_venta != null) {
+                          $tabla .= '<a target="_blank" href="' . route('pdf_comprobante_detalle.paquete', ['id' => $row->id]) . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> <i class="fa fa-list"></i> Detalle orden</a>';
+                        }
+                        if ($row->electronica == 0) {
+                          if ($row->ip_creacion == 'OMNI') {
+                            $tabla .= '<a target="_blank" href="' . route('ventas.pdf_omni', ['id' => $row->id]) . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-pdf-o"></i> Exportar PDF</a>';
+                          } else {
+                            $tabla .= '<a target="_blank" href="' . asset('/') . 'contable/ventas/comprobante/no.tributario/' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-pdf-o"></i> Exportar PDF</a>';
+                          }
+                        } else {
+                          $tabla .= '<a target="_blank" href="' . asset('/') . 'contable/ventas/ride_pdf/' . $row->nro_comprobante . '/' . $row->id_empresa . '/pdf" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-pdf-o"></i> Ride Factura</a>';
+                          $tabla .= '<a target="_blank" href="' . asset('/') . 'contable/ventas/ride_pdf/' . $row->nro_comprobante . '/' . $row->id_empresa . '/xml" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-code-o"></i> Exportar XML</a>';
+                          $tabla .= '<a data-toggle="modal" data-target="#log_factura" href="' . asset('/') . 'contable/ventas/ride_pdf/' . $row->nro_comprobante . '/' . $row->id_empresa . '/comprobante" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-align-left"></i> Log factura</a>';
+                        }
+                        if ($usuario_actual == '0957258056') {
+                          $tabla .= '<a  onclick="enviarSri(' . $row->id . ')" class="btn btn-xs " style="text-align: left; margin-left: 0px; color: black; padding: 5px 0px 5px 15px;">Enviar SRI</a>';
+                        }
+                        $tabla .= '<a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-eye"></i>Visualizar</a>';
+                        if ($row->estado == 1) {
+                          $tabla .= '<a onclick="anular(' . $row->id . ')" class="btn btn-xs button" style="text-align: left; color: red; padding: 5px 0px 5px 15px;"><i class="fa fa-trash" ></i> Anular</a>';
+                        } else {
+                          $tabla .= '<a href="#" class="btn-xs dropdown-item" style="text-align: left; color: red; padding: 5px 0px 5px 15px;" ><i class="fa fa-minus"></i> Anulado</a>';
+                        }
+                        $tabla .= '</div>';
+                        $tabla .= '</td>';
+                      }
+                      $tabla .= '<td>';
+                      if($row->estado == '0'){
+                        $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoplomo.png" style="width:15px;" title="Anulado"></a>';
+                      } else {
+                        if (in_array('100', $variable)) {
+                          if ($row->doc_electronico == 5) {
+                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoverde.png" style="width:20px;" title="Autorizado"></a>';
+                          } else {
+                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoplomo.png" style="width:15px;" title="Sin Autorizar"></a>';
+                          }
+                        } else {
+                          if ($row->estado_electronica == 3) {
+                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoverde.png" style="width:20px;" title="Autorizado"></a>';
+                          } else {
+                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoplomo.png" style="width:15px;" title="Sin Autorizar"></a>';
+                          }
+                        }
+                      }
+                      $tabla .= '</td>';
+                      if ($empresa->inventario == 1 && $empresa->egreso_kardex == 1) {
+                        if (!is_null($venta_kardex)) {
+                          $tabla .= '<td></td>';
+                        } else {
+                          $tabla .= '<td> <a href="' . asset('/') . 'contable/ventas/asignar/egreso/' . $row->id . '" class="btn btn-danger btn-xs" type="button"> Pendiente Asignar Egreso </a> </td>';
+                        }
+                      }
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nro_comprobante . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->tipo . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->fecha . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombre_cliente . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombres_paciente . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombre . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->procedimientos . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $fechapro = $row->fecha_procedimiento != '' ? date('Y-m-d', strtotime($row->fecha_procedimiento)) : '';
+                      //$fechapro = $row->fecha_procedimiento;
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $fechapro . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombre1 . ' ' . $row->apellido1 . '</a>';
+                      $tabla .= '</td>';
+                      $tabla .= '<td>';
+                      if ($row->estado == 0) {
+                        $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombremod1 . ' ' . $row->apellidomod1 . '</a>';
+                      } else {
+                        $tabla .= '';
+                      }
+                      $tabla .= '</td>';
+                    }
+                    echo $tabla;
+                    ?>
+                  </tbody>
+                  <tfoot>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-5">
+                <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
+                  Mostrando {{ 1 + ($dato->currentPage() - 1) * $dato->perPage() }} /
+                  {{ count($dato) + ($dato->currentPage() - 1) * $dato->perPage() }} de
+                  {{ $dato->total() }} registros
+                </div>
+              </div>
+              <div class="col-sm-7">
+                <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
+                  {{ $dato->appends(Request::all())->links() }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#tablaVentas').DataTable({
+      info: false,
+      searching: false,
+      bPaginate: false,
+      responsive: true,
+      order: [
+        [0, 'desc']
+      ],
+      dom: 'lBrtip',
+      search: true,
+      buttons: [{
+        extend: 'excelHtml5',
+        footer: true,
+        title: 'Estado de documentos electrónicos'
+      }],
+    });
+  });
+
+  function verErrorXml(num) {
+    $.ajax({
+      url: "{{ route('sri_electronico/errorGeneral') }}",
+      type: 'post',
+      data: {
+        _token: $('input[name=_token]').val(),
+        id: num
+      },
+      dataType: 'json',
+      success: function(json) {
+        var texto = '';
+        $.each(JSON.parse(json.descripcion_error), function(i, item) {
+          texto += item + '<br/>';
+        });
+        Swal.fire({
+          icon: 'error',
+          html: texto,
+          title: 'Error al generar el XML',
+          confirmButtonText: 'Ok',
+        });
+      }
+    });
+  }
+
+  function verIErrorTributaria(clave) {
+    $.ajax({
+      url: "{{ route('sri_electronico/errorTributario') }}",
+      type: 'post',
+      data: {
+        _token: $('input[name=_token]').val(),
+        clave: clave
+      },
+      dataType: 'json',
+      success: function(json) {
+        console.log(json);
+        $('#estadoErrorT').val(json.xml.estado);
+        $('#claveAccesoErrorT').val(json.xml.comprobantes.comprobante.claveAcceso);
+        $('#mensajeErrorT').val(json.xml.MensajesDb.mensajeDb);
+        $('#modalErrorTributaria').modal('show');
+      }
+    });
+  }
+  //contable/ventas/factura/
+  function anular(id) {
+    Swal.fire({
+      title: "{{trans('wfact_venta.anular_fact')}}",
+      text: "{{trans('wfact_venta.no_revertir')}}",
+      icon: 'error',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: `{{trans('wfact_venta.si')}}`
+    }).then((result) => {
+      if (result.isConfirmed) {
+        let ids = "";
+        var acumulate = "";
+        var mensaje = "";
+        let msj_ingr = "";
+        let msj_ret = "";
+        let msj_cruce = "";
+        let msj_che = "";
+        let msj_cruce_cue = "";
+        let msj_credito = "";
+        let mensajeaux = "";
+        $.ajax({
+          type: 'get',
+          url: "{{ route('ventas.verificar')}}",
+          datatype: 'json',
+          data: {
+            'verificacion': '1',
+            'id_venta': id
+          },
+          success: function(data) {
+            console.log(data)
+
+              if (typeof(data.ingreso) != "undefined") {
+                if (data.ingreso.length > 0) {
+                  for (let i = 0; i < data.ingreso.length; i++) {
+                    mensaje = `${data.ingreso[i]}`;
+                  }
+                  msj_ingr = ` Ingreso: ${mensaje}`;
+                  mensaje = "ok";
+                }
+              }
+              if (typeof(data.retencion) != "undefined") {
+                msj_ret = ` Retencion: ${data.retencion}`;
+                mensaje = "ok";
+              }
+              if (typeof(data.cruce) != "undefined") {
+                if (data.cruce.length > 0) {
+                  for (let i = 0; i < data.cruce.length; i++) {
+                    mensaje = `${data.cruce[i]}`;
+                  }
+                  msj_cruce = ` Cruces: ${mensaje}`;
+                  mensaje = "ok";
+                }
+              }
+              if (typeof(data.chequepost) != "undefined") {
+                for (let i = 0; i < data.chequepost.length; i++) {
+                  mensaje = `${data.chequepost[i]}`;
+                }
+                msj_che = ` Chequepost: ${mensaje}`;
+                mensaje = "ok";
+              }
+              if (typeof(data.cruce_cuentas) != "undefined") {
+                if (data.cruce_cuentas.length > 0) {
+                  for (let i = 0; i < data.cruce_cuentas.length; i++) {
+                    mensaje = `${data.cruce_cuentas[i]}`;
+                  }
+                  msj_cruce = ` Cruce cuentas: ${mensaje}`;
+                  mensaje = "ok";
+                }
+              }
+              if (typeof(data.credito) != "undefined" && data.credito.length > 0) {
+                for (let i = 0; i < data.credito.length; i++) {
+                  mensaje = `${data.credito[i]}`;
+                }
+                msj_credito = ` Credito: ${mensaje}`;
+                mensaje = "ok";
+              }
+
+              if (mensaje != "") {
+                Swal.fire("{{ trans('wfact_venta.error') }}",
+                  `{{ trans('wfact_venta.observacion_encontrada') }} ${msj_ingr}${msj_ret}${msj_cruce}${msj_che}${msj_cruce}${msj_credito}`,
+                  "error");
+              } else {
+                test(id);
+            }
+            /*console.log(data);
+            if (data[1] != 0) {
+              acumulate += "Existe formas de pago, con el id : " + data[1] + " <br> ";
+            }
+            if (data[2] != 0) {
+              acumulate += "Existe formas de pago, con el id : " + data[2] + " <br> ";
+            }
+            if (acumulate != "") {
+              Swal.fire("Error!", "Existen algunos comprobantes generados con esta factura, observaciones encontradas: <br> " + acumulate, "error");
+            } else {
+              console.log("entra aqui" + id);
+              test(id);
+            }*/
+          },
+          error: function(data) {
+            console.log(data);
+          }
+        });
+      }
+    })
+  }
+  async function test(id) {
+    try {
+      const {
+        value: text
+      } = await Swal.fire({
+        input: 'textarea',
+        inputPlaceholder: `{{trans('wfact_venta.motivo_anulacion ')}}`,
+        inputAttributes: {
+          'aria-label': `{{trans('wfact_venta.motivo_anulacion ')}}`
+        },
+        showCancelButton: true
+      })
+      if (text) {
+        $.ajax({
+          type: 'get',
+          url: "{{ url('contable/ventas/factura/')}}/" + id,
+          datatype: 'json',
+          data: {
+            'observacion': text
+          },
+          success: function(data) {
+            if (data.status == "success") {
+              Swal.fire("{{ trans('wfact_venta.correcto') }}", "{{ trans('wfact_venta.anulacion_correcta') }}", "success");
+              setTimeout(() => {
+                location.href = "{{ route('venta_index') }}";
+              }, 1500);
+            } else {
+              Swal.fire("Error", "Error al anular", "error");
+            }
+
+          },
+          error: function(data) {
+            console.log(data);
+          }
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  function limpiarModal() {
+    $('.modal-content').html('');
+  }
+
+  function logFactura(id) {
+
+    $.ajax({
+      url: "ventas/logFactura",
+      type: 'get',
+      data: {
+
+        id: id,
+        tipo: '01',
+
+      },
+      dataType: 'html',
+      success: function(html) {
+        console.log(html);
+        $('.modal-content').html(html);
+      }
+    });
+  }
+
+
+  function verLogDocumento(id, tipo) {
+    var data = {
+      id: id,
+      tipo: tipo,
+      _token: $('input[name=_token]').val(),
+    };
+    $.ajax({
+      url: "{{url('v3/tributario/verLogDocumento')}}",
+      type: 'post',
+      data: data,
+      dataType: 'html',
+      success: function(html) {
+        $('#myModalDocumentos .modal-content').html(`
+                <div class="modal-header">
+                    <h5 class="modal-title" id="titulo_modal_documentos"><i class="fa fa-plus-square"></i> Log Facturación  ${tipo} :  ${id}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="cuerpoDocumento">
+                    ${html} <!-- Aquí va la respuesta HTML que devuelve el servidor -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            `);
+      }
+    });
+  }
+</script>
+@endsection

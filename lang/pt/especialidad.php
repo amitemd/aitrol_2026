@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'listadeespecialidades'            =>  'Lista de especialidades',
+    'administraciondeespecialidades'   =>  'Administração de especialidades',
+    'agregarnuevaespecialidad'         =>  'Adicionar nova especialidade',
+    'nombredelaespecialidad'           =>  'Nome da especialidade',
+    'descripcion'                      =>  'Descrição',
+    'actualizarespecialidad'           =>  'Especialidade de atualização',
+    'nombre'                           =>  'Nome',
+    'actualizar'                       =>  'Atualização',
+    'crearnuevoseguro'                 =>  'Criar um novo seguro',
+    'tipo'                             =>  'Tipo',
+    'publico'                          =>  'Público',
+    'privado'                          =>  'Particular',
+    'colordelaetiqueta'                =>  'Cor do rótulo',
+    'guardar'                          =>  'Salvar',
+    'listadeespecialides'              =>  'lista de especialidades',
+    'nombredeespecialidad'             =>  'Nome da especialidade',
+    'fechadecreado'                    =>  'Data de criação',
+    'accion'                           =>  'Ação',
+    'crear'                            =>  'criar',
+    'mostrando'                        =>  'Exibido em',
+    'registros'                        =>  'Registros',
+];

@@ -1,0 +1,182 @@
+            <div class="box box-primary">
+                        <div class="col-md-12 box box-primary collapsed-box" style="padding-bottom: 20px; border-color:white;">
+                                        <div class="box-header with-border">
+                                            <label>FORMAS DE PAGO</label>
+                                            <div class="box-tools pull-rigth">
+                                                <button type = "button" class = "btn btn-box collapse show" data-widget = "collapse" data-toggle="collapse" ><i class="fa fa-plus"></i></button>
+                                                    <!--<div class="btn-group">
+                                                        
+                                                        </div>-->
+                                            </div>
+                                        </div>
+                            <div class="row box-body collapse">
+                                <div class="form-group col-md-12">
+                                            <div class="card ">
+                                                <div class="row">
+                                                @if(!is_null($formaspagos->valor_efectivo))
+                                                    <div class="form-group col-md-3 col-sm-3">
+                                                        <label for="efectivo" class = "col-form-label-sm">EFECTIVO</label>
+                                                        <input  type="number" id ="valor_efectivo" name="valor_efectivo" class = "form-control form-control-sm" placeholder ="EFECTIVO" value="@if(isset($formaspagos)){{$formaspagos->valor_efectivo}}@endif" disabled>
+                                                    </div>
+                                                @endif
+                                                @if(!is_null($formaspagos->valor_cheque))
+                                                    <div class="form-group col-md-3 col-sm-3">
+                                                        <label for="cheque" class = "col-form-label-sm">CHEQUE</label>
+                                                        <input  type="number" id="valor_cheque" name="valor_cheque"class = "form-control form-control-sm" placeholder = "VALOR" value="@if(isset($formaspagos)){{$formaspagos->valor_cheque}}@endif" disabled>
+                                                    </div>
+                                                @endif
+
+                                                @if(!is_null($formaspagos->valor_credito))
+                                                    <div class="form-group col-md-3 col-sm-3">
+                                                        <label for="tarjetacredito" class = "col-form-label-sm">TARJETA DE CRÉDITO</label>
+                                                        <input  type="number" id = "valor_tarjetacredito" name="valor_tarjetacredito" class ="form-control form-control-sm" placeholder= "VALOR" value="@if(isset($formaspagos)){{$formaspagos  ->valor_credito}}@endif" disabled>
+                                                    </div>
+                                                @endif
+
+                                                @if(!is_null($formaspagos->valor_debito))
+                                                    <div class="form-group col-md-3 col-sm-3">
+                                                        <label for="tarjetadebito" class = "col-form-label-sm">TARJETA DE DÉBITO</label>
+                                                        <input  type="number" disabled id = "valor_tarjetadebito" name="valor_tarjetadebito"  class ="form-control form-control-sm" placeholder = "VALOR" value="@if(isset($formaspagos)){{$formaspagos->valor_debito}}@endif">
+                                                    </div>
+                                                @endif
+                                                    <!--Datos Cheque-->
+                                                    <div class="form-group col-md-12" id="datos_cheque">
+                                                    @if(!is_null($consultabancocheque)) 
+                                                        <div class="card">
+                                                            <div class="row">
+
+                                                                
+                                                                <div class="col-md-12" style="text-align: left;">
+                                                                <label>DATOS CHEQUE</label>
+                                                                </div>
+                                                                <!--Banco-->
+                                                                <div class="col-md-2 col-xs-2">
+                                                                    <label for="banco_cheque" class="control-label" style="font-size: 13px">Banco:</label>
+                                                                    <div class="input-group">
+                                                                      <input type="text" value="@if(!is_null($consultabancocheque)){{$consultabancocheque->nombre}}@endif" disabled>
+                                                                    </div>
+                                                                </div>
+                                                                <!--Cuenta-->
+                                                                <div class="col-md-2 col-xs-2" style="margin-left: 40px;">
+                                                                    <label for="cuenta_cheque" class="control-label" style="font-size: 13px">Cuenta:</label>
+                                                                    <div class="input-group">
+                                                                        <input  type="number" class="form-control" name="cuenta_cheque" value="@if(!is_null($formaspagos)){{$formaspagos->cuenta_cheque}}@endif" disabled id="cuenta_cheque" value="" placeholder="Cuenta" style="text-transform:uppercase;" disabled>
+                                                                    </div>
+                                                                </div>
+                                                                <!--Numero Cheque-->
+                                                                <div class="col-md-2 col-xs-2" style="margin-left: 40px;">
+                                                                    <label for="numero_cheque" class="control-label" style="font-size: 13px">Número de Cheque:</label>
+                                                                    <div class="input-group">
+                                                                        <input  type="number" class="form-control" name="numero_cheque" id="numero_cheque" value="@if(!is_null($formaspagos)){{$formaspagos->cuenta_cheque}}@endif" disabled placeholder="Número de Cheque" style="text-transform:uppercase;">
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <!--Monto-->
+                                                                <!--<div class="col-md-2 col-xs-2" style="margin-left: 40px;">
+                                                                    <label for="monto_cheque" class="control-label" style="font-size: 13px">Monto:</label>
+                                                                    <div class="input-group">
+                                                                        <input  type="number" class="form-control" name="monto_cheque" id="monto_cheque" value="" placeholder="Monto" style="text-transform:uppercase;">
+                                                                    </div>
+                                                                </div>-->
+                                                            </div>
+                                                        </div>
+                                                   @endif    
+                                                    </div>
+                                                    <div class="form-group col-md-12">&nbsp;</div>
+                                                   
+                                                    <!--Datos de Tarjeta de Credito-->
+                                                    <div class="form-group col-md-12" id="datos_tarjeta_credito">
+                                                    @if(!is_null($consultabancocredito))
+                                                        <div class="card">
+                                                            <div class="row">
+                                                                
+                                                                <div class="col-md-12" style="text-align: left;">
+                                                                <label>DATOS TARJETA CR&Eacute;DITO</label>
+                                                                </div>
+                                                                <!--Lista desplegable de marca de Trajetas de Credito-->
+
+                                                                <!--Nombre de la Entidad que emite la tarjeta de Credito-->
+                                                              <div class="col-md-2 col-xs-2">
+                                                                    <label for="banco_credito" class="control-label" style="font-size: 13px">Banco:</label>
+                                                                    <div class="input-group">
+                                                                       <input type="text" name="banco_credito" value="@if(!is_null($consultabancocredito)){{$consultabancocredito->nombre}}@endif" disabled>
+                                                                    </div>
+                                                                </div>
+                                                                <!--Nombre del Titular de la Tarjeta de Credito-->
+                                                                <div class="col-md-2 col-xs-2" style="left: 20px;">
+                                                                    <label for="nombre_titular_credito" class="control-label" style="font-size: 13px">Nombre Titular:</label>
+                                                                    <div class="input-group">
+                                                                        <input  type="text" class="form-control" name="nombre_titular_credito"  id="nombre_titular_credito" value="@if(!is_null($formaspagos)){{$formaspagos->titular_credito}}@endif" disabled placeholder="Nombre del Titular" style="text-transform:uppercase;">
+                                                                    </div>
+                                                                </div>  
+                                                                <!--Numero de Tarjeta Credito-->
+                                                                <div class="col-md-2 col-xs-2">
+                                                                    <label for="numero_tarjeta_credito" class="control-label" style="font-size: 13px">Número Tarjeta:</label>
+                                                                    <div class="input-group">
+                                                                        <input  type="text" class="form-control cc_number"  id="cc_number" name="numero_tarjeta_credito" value="@if(!is_null($formaspagos)){{$formaspagos->num_tarjeta_credito}}@endif" disabled placeholder="Numero de Tarjeta" style="text-transform:uppercase;">
+                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2 col-xs-2" style="top: 30px; right: 60px;">
+                                                                
+                                                                    <span class="form-control-cc"><img style="width:2.775rem"/></span>
+                                                                    
+                                                                </div>
+
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                    </div>
+                                                    <div class="form-group col-md-12">&nbsp;</div>
+                                                    <!--Datos de Tarjeta de Debito-->
+                                                    <div class="form-group col-md-12" id="datos_tarjeta_debito">
+                                                    @if(!is_null($consultabancodebito))
+                                                        <div class="card">
+                                                            <div class="row">
+                                                                
+                                                                <div class="col-md-12" style="text-align: left;">
+                                                                <label>DATOS TARJETA D&Eacute;BITO</label>
+                                                                </div>
+                                                                <!--Marca Tarjeta de Debito-->
+
+                                                                <!--Nombre de la Entidad que emite la tarjeta de Debito-->
+                                                                <div class="col-md-2 col-xs-2">
+                                                                    <label for="banco_debito" class="control-label" style="font-size: 13px">Banco:</label>
+                                                                    <div class="input-group">
+                                                                        <input type="text" name="banco_debito" value="@if(!is_null($consultabancodebito)){{$consultabancodebito->nombre}}@endif" disabled>
+                                                                    </div>
+                                                                </div>
+                                                                <!--Nombre del Titular de la Tarjeta de Debito-->
+                                                                <div class="col-md-2 col-xs-2" style="left: 20px;">
+                                                                    <label for="nombre_titular_debito" class="control-label" style="font-size: 13px">Nombre Titular:</label>
+                                                                    <div class="input-group">
+                                                                        <input  type="text" class="form-control" name="nombre_titular_debito" disabled id="nombre_titular_debito" value="@if(!is_null($formaspagos)){{$formaspagos->titular_debito}}@endif" placeholder="Nombre del Titular" style="text-transform:uppercase;">
+                                                                    </div>
+                                                                </div>
+                                                                <!--Numero de Tarjeta Debito-->
+                                                                <div class="col-md-2 col-xs-2">
+                                                                    <label for="numero_tarjeta_debito" class="control-label" style="font-size: 13px">Número Tarjeta:</label>
+                                                                    <div class="input-group">
+                                                                    <input  type="text" class="form-control cc_number" disabled  id="cc_number2" name="numero_tarjeta_credito" value="@if(!is_null($formaspagos)){{$formaspagos->num_tarjeta_debito}}@endif" placeholder="Numero de Tarjeta" style="text-transform:uppercase;">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2 col-xs-2" style="top: 30px; right: 60px;">
+                                                                
+                                                                    <span class="form-control-cc2"><img style="width:2.775rem"/></span>
+                                                                
+                                                                </div>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    @endif    
+                                                    </div>
+                        
+                                                    
+                                                </div>
+                                            </div>
+                                </div>
+
+                            </div>
+                        </div>
+            </div>

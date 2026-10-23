@@ -1,0 +1,138 @@
+package edu.sri.compel;
+
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import static modelo.GenericXMLSignature.AgregarMensaje;
+import static modelo.GenericXMLSignature.Mensajes;
+import static modelo.GenericXMLSignature.PKCS12_PASSWORD;
+import static modelo.GenericXMLSignature.PKCS12_RESOURCE;
+import modelo.XAdESBESSignature;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+
+public class CompelFirmado {
+
+    public static String nameRoot = "sentinel";
+    private String _dataDoc = "";
+    private String _dataDocSign = "";
+
+    public String getDataDoc() {
+        return _dataDoc;
+    }
+
+    public void setDataDoc(String dataDoc) {
+        this._dataDoc = dataDoc;
+    }
+
+    public String getDataDocSign() {
+        return _dataDocSign;
+    }
+
+    public void setDataDocSign(String dataDocSign) {
+        this._dataDocSign = dataDocSign;
+    }
+
+    public CompelFirmado(String certificado, String clave, String dataDoc) {
+        _dataDoc = dataDoc;
+        String pathFileCertificado = certificado;
+        //String pathFileCertificado = System.getProperty("user.dir") + "/config/" + certificado;
+        PKCS12_RESOURCE = pathFileCertificado;
+        PKCS12_PASSWORD = clave;
+    }
+
+    public void Generar() {
+        String dataDoc = getDataDoc();
+        XAdESBESSignature xadesBesSign = FirmarComprobante(dataDoc);
+        MostrarResultado(xadesBesSign);
+    }
+
+    public XAdESBESSignature FirmarComprobante(String dataDoc) {
+        XAdESBESSignature xadesBesSign = new XAdESBESSignature();
+        xadesBesSign.Mensajes = new ArrayList<>();
+        xadesBesSign.setComprobante(dataDoc);
+        xadesBesSign.executeCertificateFile();
+        xadesBesSign.validarFichero(xadesBesSign.getDocSigned());
+        return xadesBesSign;
+    }
+
+    public void MostrarResultado(XAdESBESSignature xadesBesSign) {
+        Boolean isFirmaValida = xadesBesSign.IsValido();
+        String comprobante = isFirmaValida ? xadesBesSign.getComprobanteFirmado() : xadesBesSign.getComprobante();
+        String result = obtenerRespuestaXml(isFirmaValida, comprobante, Mensajes);
+        this._dataDocSign = result;
+    }
+
+    public String obtenerRespuestaXml(boolean isFirmaValida, String comprobante, String mensaje) {
+        List<String> mensajes = new ArrayList<>();
+        mensajes.add(mensaje);
+        String result = obtenerRespuestaXml(isFirmaValida, comprobante, mensajes);
+        return result;
+    }
+
+    public String obtenerRespuestaXml(boolean isFirmaValida, String comprobante, List<String> mensajes) {
+        String result = "";
+        try {
+            String name = CompelFirmado.nameRoot;
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            DOMImplementation implementation = builder.getDOMImplementation();
+            Document document = implementation.createDocument(null, name, null);
+            document.setXmlVersion("1.0");
+
+            Element root = document.getDocumentElement();
+
+            Element firmadoNode = document.createElement("firmado");
+            Text firmadoNodeValue = document.createTextNode(isFirmaValida ? "VALIDO" : "INVALIDA");
+            firmadoNode.appendChild(firmadoNodeValue);
+            root.appendChild(firmadoNode);
+
+            Element comprobanteNode = document.createElement("comprobante");
+            comprobanteNode.appendChild(document.createCDATASection(comprobante));
+            root.appendChild(comprobanteNode);
+
+            Element mensajesNode = document.createElement("mensajes");
+            for (String item : mensajes) {
+                Element mensajeNode = document.createElement("mensaje");
+                Text mensajeNodeValue = document.createTextNode(item);
+                mensajeNode.appendChild(mensajeNodeValue);
+                mensajesNode.appendChild(mensajeNode);
+            }
+            root.appendChild(mensajesNode);
+            result = obtenerDocumento(document);
+        } catch (ParserConfigurationException ex) {
+            String mensaje = "No se pudo generar documento.\n" + ex.getMessage();
+            result = obtenerRespuestaXml(isFirmaValida, comprobante, mensaje);
+        }
+        return result;
+    }
+
+    protected String obtenerDocumento(Document resource) {
+        try {
+            TransformerFactory tfactory = TransformerFactory.newInstance();
+            StringWriter stringWriter = new StringWriter();
+            Transformer serializer = tfactory.newTransformer();
+            serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            serializer.setOutputProperty(OutputKeys.STANDALONE, "no");
+            serializer.transform(new DOMSource(resource), new StreamResult(stringWriter));
+            String result = stringWriter.toString();
+            return result;
+        } catch (TransformerException ex) {
+            AgregarMensaje("Error al leer el documento", ex.getMessage());
+        }
+        return "";
+    }
+
+}

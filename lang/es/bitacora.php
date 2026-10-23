@@ -1,0 +1,42 @@
+<?php
+//Bitacora ->Pasante
+
+return [
+    'mantenimiento_bitacora' => 'Mantenimiento Bitacoras',
+    'lista_bitacora'=>'Listado de Bitacoras',
+    'agregar'=>'Agregar',
+    'editar'=>'Editar',
+    'eliminar'=>'Elminiar',
+    'descripcion'=>'Descripcion',
+    'formatoBitacora'=>'Bitacora del formato',
+    'documento'=>'Documento',
+    'tipo'=>'Tipo',
+    'estado'=>'Estado',
+    'acciones'=>'Acciones',
+    'agregarBitacora'=>'Agregar bitacora',
+    'modificarBitacora'=>'Modificar bitacora',
+    'guardar'=>'Guardar',
+    'mensaje_update'=>'Datos actualizados correctamente',
+    'mensaje_delete_titulo'=>'¿Estas seguro de eliminar estos datos?',
+    'dato_eliminado'=>'Dato eliminado exitosamente',
+    'si'=>'SI',
+    'no'=>'NO',
+    'cancelar'=>'Cancelar',
+    'correcto'=>'Correcto',
+    'resumen_clinico'=>'Resumen clinico',
+    'estudio_solicitado'=>'Estudio solicitado',
+    'descripcion_estudio'=>'Descripcion del estudio',
+    'prioridad'=>'Prioridad',
+    'tratamiento'=>'Tratamiento',
+    'fecha_toma'=>'Fecha de la toma',
+    'urgente'=>'URGENTE',
+    'rutina'=>'RUTINA',
+    'control'=>'CONTROL',
+    'citogia'=>'CITOGIA',
+    'hispatologia'=>'HISPATOLOGIA',
+    'descargar_form'=>'Descargar formulario',
+    'empresa'=>'Empresa',
+    'formulario013' => 'Formulario 013',
+  
+    
+];

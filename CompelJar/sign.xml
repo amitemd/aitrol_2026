@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<compel>
+  <firmado>INVALIDA</firmado>
+  <comprobante><![CDATA[data]]></comprobante>
+  <mensajes>
+    <mensaje>No se puede generar KeyStore PKCS12
+certificado (El sistema no puede encontrar el archivo especificado)</mensaje>
+    <mensaje>El gestor de claves no se ha obtenido correctamente</mensaje>
+    <mensaje>No se pudo leer documento</mensaje>
+  </mensajes>
+</compel>

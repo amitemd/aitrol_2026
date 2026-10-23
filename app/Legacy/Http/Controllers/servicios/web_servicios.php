@@ -1,0 +1,24 @@
+<?php
+//SERVICIOS PALPATINE
+Route::match(['get','post'],'api/login', 'servicios\ServiciosController@login');
+Route::post('api/getuserinfo', 'servicios\ServiciosController@getuserinfo');
+Route::post('api/registeruser', 'servicios\ServiciosController@registerUser');
+Route::post('api/seguros', 'servicios\ServiciosController@getSeguros');
+Route::post('api/myExam', 'servicios\ServiciosController@myExam');
+Route::post('api/getBanners', 'servicios\ServiciosController@getBanners');
+Route::post('api/createOrderGetPayment', 'servicios\ServiciosController@createOrderGetPayment');
+Route::post('api/getPaymentInformation', 'servicios\ServiciosController@getPaymentInformation');
+Route::get('api/returnUrl', 'servicios\ServiciosController@returnUrl');
+Route::get('api/cancelUrl', 'servicios\ServiciosController@cancelUrl');
+Route::get('api/postprocessUrl', 'servicios\ServiciosController@postprocessUrl');
+Route::get('api/loadPDF', 'servicios\ServiciosController@pdf')->name('api.Loadhtml');
+Route::post('api/getExam', 'servicios\ServiciosController@getExam');
+Route::get('api/previsualizedExam/{id}', 'servicios\ServiciosController@getPDF')->name('api.Previsualized');
+Route::get('api/visualizerExam', 'servicios\ServiciosController@returnHtml')->name('api.visualizer');
+Route::get('hospital/login', 'servicios\ServiciosController@logins')->name('hospital.login');
+Route::get('api/data', 'servicios\ServiciosController@loadData')->name('api.loadData');
+Route::get('api/reedireccionar', 'servicios\ServiciosController@loadUserAgent')->name('api.loadUserAgent');
+Route::match(['get','post'],'iecedapi/login', 'servicios\ServiciosIecedController@login');
+Route::post('api/listDr', 'servicios\ServiciosIecedController@drlist');
+Route::get('api/GenerarExamen', 'servicios\ServiciosIecedController@generarOrdenExamen');
+Route::post('api/iecedBanners', 'servicios\ServiciosIecedController@banners');

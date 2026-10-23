@@ -1,0 +1,66 @@
+<?php
+
+
+return [
+
+    'BIOPSIASREGISTRADAS' => 'Biopsias Registradas',
+    'Inicio' => 'Inicio',
+    'BuscarPorFecha' => 'Buscar Por Fecha',
+    'Desde' => 'Desde',
+    'Hasta' => 'Hasta',
+    'BuscarporFechaSeleccionada' => 'Buscar por Fecha Seleccionada',
+    'FECHA' => 'Fecha',
+    'NOMBREPACIENTE' => 'NOMBRE PACIENTE',
+    'DOCTORSOLICITANTE' => 'DOCTOR SOLICITANTE',
+    'Acción' => 'Acción',
+    'DetalleFrascos' => 'Detalle Frascos',
+    'Mostrando' => 'Mostrando',
+    'al' => 'al',
+    'deRegistros' => 'de Registros',
+    'AgregarCODIGOCIE10_4' => 'Agregar CODIGO CIE 10_4',
+    'Código' => 'Código',
+    'Cie103' => 'Cie 10 3',
+    'NombreLargo' => 'Nombre Largo',
+    'Agregar' => 'Agregar',
+    'ListadoBiopsiasEnviadasHoy' => 'Listado de Biopsias Enviadas Hoy',
+    'NombreCorto' => 'Nombre Corto',
+    'Buscar' => 'Buscar',
+    'Paciente' => 'Paciente',
+    'DoctorSolicitante' => 'Doctor Solicitante',
+    'ProcedimientoRealizado' => 'Procedimiento Realizado',
+    'FRASCO' => 'FRASCO',
+    'OBSERVACIONMUESTRA' => 'OBSERVACION MUESTRA',
+    'CargarResultados' => 'Cargar Resultados',
+    'EditarResultados' => 'Editar Resultados',
+    'Registro' => 'Registro',
+    'NombrePaciente' => 'Nombre del Paciente',
+    'MédicoSolicitante' => 'Médico Solicitante',
+    'Edad' => 'Edad',
+    'Obtenido' => 'Obtenido',
+    'Recibido' => 'Recibido',
+    'Reportado' => 'Reportado',
+    'DatosOrientaciónDiagnóstica' => 'Datos de Orientación Diagnóstica',
+    'Macroscopia' => 'Macroscopia',
+    'Imagen' => 'Imagen',
+    'Diagnóstico' => 'Diagnóstico',
+    'Observación' => 'Observación',
+    'EditarGuardar' => 'Editar y Guardar',
+    'AGREGAR' => 'AGREGAR',
+    'Proveedores' => 'Proveedores',
+    'Logo' => 'Logo',
+    'Ruc' => 'Ruc',
+    'RazónSocial' => 'Razón Social',
+    'NombreComercial' => 'Nombre Comercial',
+    'Emails' => 'Emails',
+    'TipoProveedor' => 'Tipo Proveedor',
+    'Nombre' => 'Nombre',
+    'Descripción' => 'Descripción',
+    'Microscopia' => 'Microscopia',
+    'Guardar' => 'Guardar',
+    
+
+
+
+
+
+];

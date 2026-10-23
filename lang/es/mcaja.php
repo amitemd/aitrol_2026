@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'contable' => 'Contable',
+    'bancos' => 'Bancos',
+    'id' => 'Id',
+    'gastroclinica' => 'GASTROCLINICA',
+    'buscadorpuntoemision' => 'BUSCADOR PUNTO EMISIÓN',
+    'crear' => 'crear',
+    'crearpuntoemision' => 'CREAR PUNTO EMISIÓN',
+    'regresar' => 'Regresar',
+    'codigo' => 'Código',
+    'nombre' => 'Nombre',
+    'estado' => 'Estado',
+    'seleccione' => 'Seleccione',
+    'activo' => 'Activo',
+    'inactivo' => 'Inactivo',
+    'establecimiento' => 'Establecimiento',
+    'guardar' => 'Guardar',
+    'puntodeemision' => 'Punto de emisión',
+    'detallepuntoemision' => 'DETALLE PUNTO EMISIÓN',
+    'actualizar' => 'Actualizar',
+    'ingresecodigo' => 'Ingrese Codigo',
+    'ingresenombre' => 'Ingrese nombre',
+    'agregarpuntoemision' => 'AGREGAR PUNTO EMISIÓN',
+    'buscar' => 'Buscar',
+    'listadopuntoemision' => 'LISTADO PUNTO EMISIÓN',
+    'registros' => 'Registros',
+    'accion' => 'Accion',
+    'mostrando' => 'Mostrando',
+
+];

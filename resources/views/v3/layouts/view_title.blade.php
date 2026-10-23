@@ -1,0 +1,1 @@
+<title>{{config('data.title')}}</title>

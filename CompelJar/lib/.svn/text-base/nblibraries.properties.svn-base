@@ -1,0 +1,30 @@
+libs.CopyLibs.classpath=\
+    ${base}/CopyLibs/org-netbeans-modules-java-j2seproject-copylibstask.jar
+libs.CopyLibs.displayName=CopyLibs Task
+libs.CopyLibs.prop-version=2.0
+libs.SignXadeBes.classpath=\
+    ${base}/SignXadeBes/MITyCLibAPI-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibCert-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibCrypt-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibOCSP-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibPolicy-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibTSA-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibTrust-1.1.7.jar;\
+    ${base}/SignXadeBes/MITyCLibXADES-1.1.7.jar;\
+    ${base}/SignXadeBes/xmlsec-1.4.2-ADSI-1.1.jar;\
+    ${base}/SignXadeBes/DNIeJCAProvider-1.4.jar;\
+    ${base}/SignXadeBes/bcmail-jdk16-1.45.jar;\
+    ${base}/SignXadeBes/bcprov-jdk16-1.45.jar;\
+    ${base}/SignXadeBes/bctsp-jdk16-1.45.jar;\
+    ${base}/SignXadeBes/commons-codec-1.2.jar;\
+    ${base}/SignXadeBes/commons-httpclient-3.0.1.jar;\
+    ${base}/SignXadeBes/commons-lang-2.4.jar;\
+    ${base}/SignXadeBes/commons-logging-1.1.1.jar;\
+    ${base}/SignXadeBes/iaikPkcs11Wrapper-1.1.7.jar;\
+    ${base}/SignXadeBes/jss-4.2.5.jar;\
+    ${base}/SignXadeBes/serializer-2.7.1.jar;\
+    ${base}/SignXadeBes/sunpkcs11-1.0.jar;\
+    ${base}/SignXadeBes/xalan-2.7.1.jar;\
+    ${base}/SignXadeBes/xml-apis-1.3.04.jar;\
+    ${base}/SignXadeBes/java-rt-jar-stubs-1.5.0.jar;\
+    ${base}/SignXadeBes/w3c.jar

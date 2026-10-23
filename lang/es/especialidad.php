@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'listadeespecialidades'=> 'Listado de especialidades',
+    'administraciondeespecialidades'=> 'Admistración de especialidades',
+    'agregarnuevaespecialidad'=> 'Agregar nueva especialidad',
+    'nombredelaespecialidad'=> 'Nombre de la especialidad',
+    'descripcion'=> 'Descripción',
+    'actualizarespecialidad'=> 'Actualizar especialidad',
+    'nombre'=> 'Nombre',
+    'actualizar'=> 'Actualizar',
+    'crearnuevoseguro'=> 'Crear nuevo seguro',
+    'tipo'=> 'Tipo',
+    'publico'=> 'Publico',
+    'privado'=> 'Privado',
+    'colordelaetiqueta'=> 'Color de la etiqueta',
+    'guardar'=> 'Guardar',
+    'listadeespecialides'=> 'lista de especialidades',
+    'nombredeespecialidad'=> 'Nombre de especialidad',
+    'fechadecreado'=> 'Fecha de creado',
+    'accion'=> 'Acción',
+    'crear'=> 'crear',
+    'mostrando'=> 'Mostrado',
+    'registros'=> 'Registros',
+];

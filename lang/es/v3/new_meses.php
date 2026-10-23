@@ -1,0 +1,28 @@
+<?php
+return [
+    'enero' => 'Enero',
+    'febrero' => 'Febrero',
+    'marzo' => 'Marzo',
+    'abril' => 'Abril',
+    'mayo' => 'Mayo',
+    'junio' => 'Junio',
+    'julio' => 'Julio',
+    'agosto' => 'Agosto',
+    'septiembre' => 'Septiembre',
+    'octubre' => 'Octubre',
+    'noviembre' => 'Noviembre',
+    'diciembre' => 'Diciembre',
+
+    'ene' => 'Ene',
+    'feb' => 'Feb',
+    'mar' => 'Mar',
+    'abr' => 'Abr',
+    'may' => 'May',
+    'jun' => 'Jun',
+    'jul' => 'Jul',
+    'ago' => 'Aug',
+    'sep' => 'Sep',
+    'oct' => 'Oct',
+    'nov' => 'Nov',
+    'dic' => 'Dic',
+];

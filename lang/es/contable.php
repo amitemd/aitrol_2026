@@ -1,0 +1,45 @@
+<?php
+
+return [
+
+    'Asiento'               => 'Asiento',
+    'Detalle'               => 'Detalle',
+    'Fecha'                 => 'Fecha',
+    'Secuencia'             => 'Secuencia',
+    'Proveedor'            => 'Proveeedor',
+    'Tipo'                  => 'Tipo',
+    'Sucursal(Empresa)'    => 'Sucursal (Empresa)',
+    'P.Emision(Empresa)'  => 'P. Emisión (Empresa)',
+    'Busquedaporpedido'   => 'Búsqueda por pedido',
+    'Busquedaporfactura'  => 'Búsqueda por factura',
+    'Estado'                => 'Estado',
+    'ID'                    => 'ID',
+    'Dirección'             => 'Dirección',
+    'ApareceArchivoSRI'   => 'Aparece Archivo SRI',
+    'Autorización'          => 'Autorización',
+    'FechaFacturación'     => 'Fecha Facturación',
+    'Término'               => 'Término',
+    'Serie'                 => 'Serie',
+    'SecuenciaFactura'     => 'Secuencia Factura',
+    'CreditoTributario'    => 'Crédito Tributario',
+    'TipodeComprobante'   => 'Tipo de Comprobante',
+    'FechaCaducidad'       => 'Fecha Caducidad',
+    'Concepto'              => 'Concepto',
+    'DescripcióndelProducto' => 'Descripción del Producto',
+    'Cantidad'              => 'Cantidad',
+    'Precio'                =>  'Precio',
+    '%Desc'                 =>  '%Desc',
+    'Descuento'             => 'Descuento',
+    'PrecioNeto'           => 'Precio Neto',
+    'IVA'                   => 'IVA',
+    'Subtotal12%'          => 'Subtotal 12%',
+    'Subtotal0%'           => 'Subtotal 0%',
+    'Subtotal'              =>  'Subtotal',
+    'Tarifaiva12%'        => 'Tarifa iva 12%',
+    'Total'                 => 'Total',
+    'Guardar'               => 'Guardar',
+    'Acción'                => 'Acción',
+    'seleccioneTipoFormatoDescargar'    => 'Seleccione el tipo de formato a descargar'
+
+
+];
