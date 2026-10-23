@@ -189,6 +189,15 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
         </ul>
       </li>
 
+      @if((int) $rolUsuario === 1)
+      <li class="@if(request()->routeIs('deployment.*')) active @endif">
+        <a href="{{ route('deployment.index') }}">
+          <i class="fa fa-cogs"></i>
+          <span>Despliegue del sistema</span>
+        </a>
+      </li>
+      @endif
+
       @if($empresa->compras != 1)
 
       <li class="treeview  @if(strrpos($sidebar, 'atencion')) active @endif ">
