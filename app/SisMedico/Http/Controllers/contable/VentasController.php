@@ -179,7 +179,7 @@ class VentasController extends Controller
             }
 
             return $next($request);
-        });
+        })->except('index');
     }
     private function rol()
     {
