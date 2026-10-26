@@ -44,7 +44,7 @@ class GitDeployment
         }
 
         try {
-            $repositoryCheck = $this->process(['git', 'rev-parse', '--is-inside-work-tree']);
+            $repositoryCheck = $this->process($this->gitCommand(['rev-parse', '--is-inside-work-tree']));
         } catch (Throwable $exception) {
             $status['error'] = 'No fue posible ejecutar Git: '.Str::limit($exception->getMessage(), 200);
 
@@ -58,9 +58,9 @@ class GitDeployment
         }
 
         try {
-            $branch = $this->process(['git', 'branch', '--show-current']);
-            $commit = $this->process(['git', 'rev-parse', '--short', 'HEAD']);
-            $changes = $this->process(['git', 'status', '--porcelain']);
+            $branch = $this->process($this->gitCommand(['branch', '--show-current']));
+            $commit = $this->process($this->gitCommand(['rev-parse', '--short', 'HEAD']));
+            $changes = $this->process($this->gitCommand(['status', '--porcelain']));
         } catch (Throwable $exception) {
             $status['error'] = 'No fue posible consultar Git: '.Str::limit($exception->getMessage(), 200);
 
@@ -103,7 +103,7 @@ class GitDeployment
             ];
         }
 
-        $command = ['git', 'pull', '--ff-only', $status['remote'], $status['target']];
+        $command = $this->gitCommand(['pull', '--ff-only', $status['remote'], $status['target']]);
         try {
             $process = $this->process($command, (float) config('deployment.git.timeout', 300));
         } catch (Throwable $exception) {
@@ -117,9 +117,23 @@ class GitDeployment
         return [
             'successful' => $process->isSuccessful(),
             'output' => implode(PHP_EOL, [
-                '$ '.implode(' ', $command),
+                '$ git pull --ff-only '.$status['remote'].' '.$status['target'],
                 $output !== '' ? $output : 'Git no devolvió salida.',
             ]),
+        ];
+    }
+
+    /**
+     * @param  list<string>  $arguments
+     * @return list<string>
+     */
+    private function gitCommand(array $arguments): array
+    {
+        return [
+            'git',
+            '-c',
+            'safe.directory='.base_path(),
+            ...$arguments,
         ];
     }
 
