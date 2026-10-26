@@ -656,9 +656,6 @@ class DashboardController extends Controller
             ->where('inv_inventario.existencia', '>=', 1)
             ->paginate(10);
 
-        $inventario = DB::select("SELECT * from inv_inventario i join producto p on i.id_producto = p.id where i.existencia < i.existencia_min group by id_producto");
-        // dd($inventario);
-
         $fecha_hoy = date('Y-m-d');
 
         $fecha_desde_ventas = date('Y-m-d', strtotime('-30 days'));
@@ -1202,7 +1199,6 @@ class DashboardController extends Controller
             'bodegas_stock_minimos' => $bodegas_stock_minimos,
             'fecha_hoy' => $fecha_hoy,
             'caducado' => $caducado,
-            'inventario' => $inventario,
             'menu_usuarios' => $menuUsuarios,
             'presentacion' => $presentacion,
             'evolucion_ventas_general' => $evolucion_ventas_general,

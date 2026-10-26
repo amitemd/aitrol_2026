@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use PDO;
 use Throwable;
 
 class DeploymentController extends Controller
@@ -135,6 +137,8 @@ class DeploymentController extends Controller
     {
         $this->authorizeAdministrator();
 
+        $manifestAvailable = $this->assetManifestAvailable();
+
         return view('deployment.index', [
             'operations' => self::OPERATIONS,
             'status' => [
@@ -143,8 +147,8 @@ class DeploymentController extends Controller
                 'php' => PHP_VERSION,
                 'maintenance' => app()->isDownForMaintenance(),
                 'debug' => (bool) config('app.debug'),
-                'manifest' => is_file((string) config('deployment.asset_manifest')),
-                'database' => (string) config('database.default'),
+                'manifest' => $manifestAvailable,
+                'database' => $this->databaseStatus(),
                 'cache' => (string) config('cache.default'),
             ],
         ]);
@@ -169,7 +173,7 @@ class DeploymentController extends Controller
                 ->withInput();
         }
 
-        if ($operation['requires_manifest'] && ! is_file((string) config('deployment.asset_manifest'))) {
+        if ($operation['requires_manifest'] && ! $this->assetManifestAvailable()) {
             return back()->with('deployment_result', [
                 'successful' => false,
                 'title' => $operation['label'],
@@ -237,5 +241,71 @@ class DeploymentController extends Controller
             403,
             'No tiene permisos para administrar despliegues.',
         );
+    }
+
+    /**
+     * @return array{
+     *     connected: bool,
+     *     connection: string,
+     *     driver: string,
+     *     database: string,
+     *     endpoint: string,
+     *     version: string,
+     *     sql_mode: string,
+     *     error: string|null
+     * }
+     */
+    private function databaseStatus(): array
+    {
+        $connectionName = (string) config('database.default');
+        $configuration = (array) config("database.connections.{$connectionName}", []);
+        $driver = (string) ($configuration['driver'] ?? $connectionName);
+        $host = (string) ($configuration['host'] ?? '');
+        $port = (string) ($configuration['port'] ?? '');
+
+        $status = [
+            'connected' => false,
+            'connection' => $connectionName,
+            'driver' => $driver,
+            'database' => (string) ($configuration['database'] ?? ''),
+            'endpoint' => $host === '' ? 'local' : $host.($port === '' ? '' : ":{$port}"),
+            'version' => '',
+            'sql_mode' => '',
+            'error' => null,
+        ];
+
+        try {
+            $connection = DB::connection($connectionName);
+            $connection->selectOne('SELECT 1 AS connection_test');
+
+            $status['connected'] = true;
+            $status['driver'] = $connection->getDriverName();
+            $status['database'] = $connection->getDatabaseName();
+            $status['version'] = (string) $connection->getPdo()->getAttribute(PDO::ATTR_SERVER_VERSION);
+
+            if ($status['driver'] === 'mysql') {
+                $mode = $connection->selectOne('SELECT @@SESSION.sql_mode AS sql_mode');
+                $status['sql_mode'] = (string) data_get($mode, 'sql_mode', '');
+            }
+        } catch (Throwable $exception) {
+            $status['error'] = Str::limit($exception->getMessage(), 240);
+        }
+
+        return $status;
+    }
+
+    private function assetManifestAvailable(): bool
+    {
+        $manifestPath = (string) config('deployment.asset_manifest');
+
+        if (! is_readable($manifestPath)) {
+            return false;
+        }
+
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+
+        return is_array($manifest)
+            && isset($manifest['resources/css/app.css']['file'])
+            && isset($manifest['resources/js/app.js']['file']);
     }
 }

@@ -1,306 +1,225 @@
-@extends('layouts.app-template')
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Despliegue y mantenimiento · AITROL</title>
 
-@section('content')
-<style>
-    .deployment-page {
-        background: #f4f7fb;
-        min-height: calc(100vh - 50px);
-    }
+    @if ($status['manifest'])
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <style>
+            body { margin: 0; background: #f1f5f9; color: #0f172a; font-family: system-ui, sans-serif; }
+            main { box-sizing: border-box; margin: 0 auto; max-width: 1280px; padding: 32px 20px; }
+            article, section, header { box-sizing: border-box; }
+            button, input { font: inherit; }
+        </style>
+    @endif
+</head>
+<body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
+    <div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div class="absolute -top-48 -right-48 h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl"></div>
+        <div class="absolute -bottom-48 -left-48 h-96 w-96 rounded-full bg-blue-300/20 blur-3xl"></div>
+    </div>
 
-    .deployment-page .content-header {
-        padding: 28px 30px 14px;
-    }
+    <main class="relative mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+        <header class="overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-2xl shadow-slate-300/60 sm:p-8">
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div class="flex max-w-3xl flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950">A</span>
+                        <div>
+                            <p class="text-sm font-semibold text-cyan-300">AITROL</p>
+                            <p class="text-xs tracking-[0.18em] text-slate-400 uppercase">Administración del servidor</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Despliegue y mantenimiento</h1>
+                        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">Verifica el estado de Laravel, MySQL y los recursos compilados antes de ejecutar operaciones administrativas.</p>
+                    </div>
+                </div>
 
-    .deployment-page .content-header h1 {
-        color: #17324d;
-        font-size: 28px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .deployment-page .content-header p {
-        color: #6b7c8f;
-        margin: 8px 0 0;
-    }
-
-    .deployment-page .content {
-        padding: 0 30px 30px;
-    }
-
-    .deployment-notice {
-        align-items: flex-start;
-        background: #eef8ff;
-        border: 1px solid #c7e8fa;
-        border-radius: 10px;
-        color: #28536b;
-        display: flex;
-        gap: 12px;
-        margin-bottom: 20px;
-        padding: 15px 18px;
-    }
-
-    .deployment-notice i {
-        color: #1597c9;
-        font-size: 20px;
-        margin-top: 2px;
-    }
-
-    .deployment-status-grid,
-    .deployment-operation-grid {
-        display: grid;
-        gap: 16px;
-    }
-
-    .deployment-status-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        margin-bottom: 24px;
-    }
-
-    .deployment-status-card {
-        background: #fff;
-        border: 1px solid #e4ebf2;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(31, 56, 82, .05);
-        padding: 16px;
-    }
-
-    .deployment-status-card span {
-        color: #718195;
-        display: block;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: .08em;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-    }
-
-    .deployment-status-card strong {
-        color: #17324d;
-        font-size: 17px;
-        word-break: break-word;
-    }
-
-    .deployment-section-title {
-        color: #17324d;
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0 0 14px;
-    }
-
-    .deployment-operation-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .deployment-operation-card {
-        background: #fff;
-        border: 1px solid #e2e9f0;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(31, 56, 82, .06);
-        display: flex;
-        flex-direction: column;
-        min-height: 255px;
-        padding: 20px;
-    }
-
-    .deployment-operation-icon {
-        align-items: center;
-        background: #edf5fb;
-        border-radius: 10px;
-        color: #1769aa;
-        display: flex;
-        font-size: 20px;
-        height: 46px;
-        justify-content: center;
-        margin-bottom: 16px;
-        width: 46px;
-    }
-
-    .deployment-operation-card h3 {
-        color: #17324d;
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0 0 9px;
-    }
-
-    .deployment-operation-card p {
-        color: #6c7d90;
-        flex: 1;
-        font-size: 13px;
-        line-height: 1.6;
-        margin-bottom: 16px;
-    }
-
-    .deployment-confirmation {
-        margin-bottom: 12px;
-    }
-
-    .deployment-confirmation label {
-        color: #58697a;
-        display: block;
-        font-size: 12px;
-        font-weight: 600;
-        margin-bottom: 6px;
-    }
-
-    .deployment-confirmation code {
-        color: #b33b31;
-    }
-
-    .deployment-output {
-        background: #12202e;
-        border: 0;
-        border-radius: 8px;
-        color: #d7e6f3;
-        font-family: Consolas, Monaco, monospace;
-        font-size: 12px;
-        line-height: 1.55;
-        margin: 12px 0 0;
-        max-height: 360px;
-        overflow: auto;
-        padding: 16px;
-        white-space: pre-wrap;
-    }
-
-    @media (max-width: 1199px) {
-        .deployment-status-grid,
-        .deployment-operation-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 767px) {
-        .deployment-page .content-header,
-        .deployment-page .content {
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        .deployment-status-grid,
-        .deployment-operation-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-
-<div class="content-wrapper deployment-page">
-    <section class="content-header">
-        <h1><i class="fa fa-cogs"></i> Despliegue y mantenimiento</h1>
-        <p>Operaciones administrativas de Laravel disponibles únicamente para superadministradores.</p>
-    </section>
-
-    <section class="content">
-        <div class="deployment-notice">
-            <i class="fa fa-info-circle" aria-hidden="true"></i>
-            <div>
-                <strong>Este panel no ejecuta Git.</strong>
-                Primero actualice los archivos del servidor por el medio habitual. Después puede finalizar el despliegue o ejecutar una operación específica desde aquí.
+                <nav class="flex flex-wrap gap-3" aria-label="Enlaces del sistema">
+                    <a href="{{ route('new-system.dashboard') }}" class="inline-flex items-center justify-center rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300">AITROL Nuevo</a>
+                    <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">Sistema legado</a>
+                    <a href="{{ route('deployment.index') }}" class="inline-flex items-center justify-center rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:text-white">Actualizar estado</a>
+                </nav>
             </div>
-        </div>
+        </header>
+
+        @if ($status['debug'] || $status['environment'] !== 'production')
+            <section class="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+                <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-amber-200 font-bold">!</span>
+                <div>
+                    <p class="font-semibold">Configuración no recomendada para el servidor</p>
+                    <p class="mt-1 leading-6 text-amber-800">El entorno figura como <strong>{{ $status['environment'] }}</strong> y la depuración está {{ $status['debug'] ? 'activada' : 'desactivada' }}. En producción use <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code> y luego limpie la configuración.</p>
+                </div>
+            </section>
+        @endif
+
+        <section class="flex gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
+            <svg class="mt-0.5 h-5 w-5 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            <div>
+                <p class="font-semibold">Este panel no ejecuta Git, Composer ni npm.</p>
+                <p class="mt-1 leading-6 text-sky-800">Actualice primero los archivos del servidor por su flujo habitual. Después ejecute “Finalizar despliegue” o una operación específica.</p>
+            </div>
+        </section>
 
         @if ($errors->any())
-            <div class="alert alert-danger">
-                <strong>No se ejecutó la operación.</strong>
-                <ul class="mb-0">
+            <section class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">
+                <p class="font-semibold">No se ejecutó la operación.</p>
+                <ul class="mt-2 list-disc space-y-1 pl-5">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
-            </div>
+            </section>
         @endif
 
         @php($result = session('deployment_result'))
         @if ($result)
-            <div class="alert {{ $result['successful'] ? 'alert-success' : 'alert-danger' }}">
-                <strong>{{ $result['title'] }}:</strong>
-                {{ $result['successful'] ? 'operación completada.' : 'la operación terminó con errores.' }}
-                <pre class="deployment-output">{{ $result['output'] }}</pre>
-            </div>
+            <section @class([
+                'rounded-2xl border p-5',
+                'border-emerald-200 bg-emerald-50 text-emerald-950' => $result['successful'],
+                'border-red-200 bg-red-50 text-red-950' => ! $result['successful'],
+            ]) role="status">
+                <p class="font-semibold">{{ $result['title'] }}: {{ $result['successful'] ? 'operación completada.' : 'la operación terminó con errores.' }}</p>
+                <pre class="mt-4 max-h-96 overflow-auto whitespace-pre-wrap rounded-xl bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-200">{{ $result['output'] }}</pre>
+            </section>
         @endif
 
-        <h2 class="deployment-section-title">Estado del servidor</h2>
-        <div class="deployment-status-grid">
-            <div class="deployment-status-card">
-                <span>Entorno</span>
-                <strong>{{ $status['environment'] }}</strong>
+        <section class="flex flex-col gap-4">
+            <div>
+                <p class="text-sm font-semibold text-cyan-700">Diagnóstico en vivo</p>
+                <h2 class="mt-1 text-2xl font-semibold tracking-tight">Estado del servidor</h2>
             </div>
-            <div class="deployment-status-card">
-                <span>Versiones</span>
-                <strong>Laravel {{ $status['laravel'] }} · PHP {{ $status['php'] }}</strong>
-            </div>
-            <div class="deployment-status-card">
-                <span>Aplicación</span>
-                <strong class="text-{{ $status['maintenance'] ? 'danger' : 'success' }}">
-                    {{ $status['maintenance'] ? 'En mantenimiento' : 'Disponible' }}
-                </strong>
-            </div>
-            <div class="deployment-status-card">
-                <span>Frontend compilado</span>
-                <strong class="text-{{ $status['manifest'] ? 'success' : 'danger' }}">
-                    {{ $status['manifest'] ? 'Manifest disponible' : 'Manifest faltante' }}
-                </strong>
-            </div>
-            <div class="deployment-status-card">
-                <span>Depuración</span>
-                <strong class="text-{{ $status['debug'] ? 'warning' : 'success' }}">
-                    {{ $status['debug'] ? 'Activada' : 'Desactivada' }}
-                </strong>
-            </div>
-            <div class="deployment-status-card">
-                <span>Base de datos</span>
-                <strong>{{ $status['database'] }}</strong>
-            </div>
-            <div class="deployment-status-card">
-                <span>Caché</span>
-                <strong>{{ $status['cache'] }}</strong>
-            </div>
-            <div class="deployment-status-card">
-                <span>Acceso</span>
-                <strong>Superadministrador</strong>
-            </div>
-        </div>
 
-        <h2 class="deployment-section-title">Operaciones disponibles</h2>
-        <div class="deployment-operation-grid">
-            @foreach ($operations as $operationKey => $operation)
-                @php($deployUnavailable = $operationKey === 'deploy' && ! $status['manifest'])
-                <article class="deployment-operation-card">
-                    <div class="deployment-operation-icon">
-                        <i class="fa {{ $operation['icon'] }}" aria-hidden="true"></i>
-                    </div>
-                    <h3>{{ $operation['label'] }}</h3>
-                    <p>{{ $operation['description'] }}</p>
-
-                    <form method="POST"
-                          action="{{ route('deployment.execute') }}"
-                          onsubmit="return window.confirm('¿Confirma que desea ejecutar esta operación?');">
-                        @csrf
-                        <input type="hidden" name="operation" value="{{ $operationKey }}">
-
-                        @if ($operation['confirmation'])
-                            <div class="deployment-confirmation">
-                                <label for="confirmation-{{ $operationKey }}">
-                                    Escriba <code>{{ $operation['confirmation'] }}</code> para confirmar
-                                </label>
-                                <input id="confirmation-{{ $operationKey }}"
-                                       name="confirmation"
-                                       type="text"
-                                       class="form-control"
-                                       autocomplete="off"
-                                       spellcheck="false"
-                                       required>
+            <article @class([
+                'rounded-3xl border bg-white p-5 shadow-sm sm:p-6',
+                'border-emerald-200' => $status['database']['connected'],
+                'border-red-300' => ! $status['database']['connected'],
+            ])>
+                <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                    <div class="flex items-start gap-4">
+                        <span @class([
+                            'grid h-12 w-12 shrink-0 place-items-center rounded-2xl',
+                            'bg-emerald-100 text-emerald-700' => $status['database']['connected'],
+                            'bg-red-100 text-red-700' => ! $status['database']['connected'],
+                        ])>
+                            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+                        </span>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="text-lg font-semibold">Base de datos</h3>
+                                <span @class([
+                                    'rounded-full px-2.5 py-1 text-xs font-bold',
+                                    'bg-emerald-100 text-emerald-700' => $status['database']['connected'],
+                                    'bg-red-100 text-red-700' => ! $status['database']['connected'],
+                                ])>{{ $status['database']['connected'] ? 'Conexión verificada' : 'Sin conexión' }}</span>
                             </div>
-                        @endif
+                            <p class="mt-2 text-sm leading-6 text-slate-500">
+                                {{ $status['database']['connected']
+                                    ? 'Laravel ejecutó SELECT 1 correctamente sobre la conexión configurada.'
+                                    : 'Laravel no pudo completar la prueba de conexión.' }}
+                            </p>
+                        </div>
+                    </div>
 
-                        <button type="submit"
-                                class="btn {{ $operation['button'] }} btn-block"
-                                @disabled($deployUnavailable)>
-                            <i class="fa {{ $operation['icon'] }}"></i>
-                            {{ $deployUnavailable ? 'Compile el frontend primero' : $operation['label'] }}
-                        </button>
-                    </form>
-                </article>
-            @endforeach
-        </div>
-    </section>
-</div>
-@endsection
+                    <dl class="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-5">
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Motor</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ strtoupper($status['database']['driver']) }}</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Base</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ $status['database']['database'] ?: 'No definida' }}</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Servidor</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ $status['database']['endpoint'] }}</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Versión</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ $status['database']['version'] ?: 'No disponible' }}</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Modo SQL</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ str_contains($status['database']['sql_mode'], 'ONLY_FULL_GROUP_BY') ? 'Estricto activo' : 'Estándar' }}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                @if ($status['database']['error'])
+                    <p class="mt-4 rounded-xl bg-red-50 px-4 py-3 font-mono text-xs leading-5 text-red-800">{{ $status['database']['error'] }}</p>
+                @endif
+            </article>
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                @foreach ([
+                    ['label' => 'Entorno', 'value' => $status['environment'], 'healthy' => $status['environment'] === 'production'],
+                    ['label' => 'Aplicación', 'value' => $status['maintenance'] ? 'En mantenimiento' : 'Disponible', 'healthy' => ! $status['maintenance']],
+                    ['label' => 'Frontend', 'value' => $status['manifest'] ? 'Build verificado' : 'Manifest incompleto', 'healthy' => $status['manifest']],
+                    ['label' => 'Caché', 'value' => $status['cache'], 'healthy' => true],
+                ] as $item)
+                    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-xs font-semibold tracking-wider text-slate-400 uppercase">{{ $item['label'] }}</span>
+                            <span class="h-2.5 w-2.5 rounded-full {{ $item['healthy'] ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                        </div>
+                        <p class="mt-3 text-lg font-semibold text-slate-900">{{ $item['value'] }}</p>
+                    </article>
+                @endforeach
+            </div>
+
+            <div class="flex flex-wrap gap-2 text-xs text-slate-500">
+                <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5">Laravel {{ $status['laravel'] }}</span>
+                <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5">PHP {{ $status['php'] }}</span>
+                <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5">Acceso: superadministrador</span>
+            </div>
+        </section>
+
+        <section class="flex flex-col gap-4">
+            <div>
+                <p class="text-sm font-semibold text-cyan-700">Acciones protegidas</p>
+                <h2 class="mt-1 text-2xl font-semibold tracking-tight">Operaciones disponibles</h2>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                @foreach ($operations as $operationKey => $operation)
+                    @php($deployUnavailable = $operationKey === 'deploy' && ! $status['manifest'])
+                    @php($isCritical = in_array($operationKey, ['deploy', 'migrate'], true))
+
+                    <article class="flex min-h-72 flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:p-6">
+                        <div class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-50 text-cyan-700">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+                        </div>
+                        <h3 class="mt-5 text-lg font-semibold text-slate-900">{{ $operation['label'] }}</h3>
+                        <p class="mt-2 flex-1 text-sm leading-6 text-slate-500">{{ $operation['description'] }}</p>
+
+                        <form method="POST" action="{{ route('deployment.execute') }}" class="mt-5 flex flex-col gap-3" onsubmit="return window.confirm('¿Confirma que desea ejecutar esta operación?');">
+                            @csrf
+                            <input type="hidden" name="operation" value="{{ $operationKey }}">
+
+                            @if ($operation['confirmation'])
+                                <label class="flex flex-col gap-2 text-xs font-semibold text-slate-600" for="confirmation-{{ $operationKey }}">
+                                    <span>Escriba <code class="text-red-600">{{ $operation['confirmation'] }}</code> para confirmar</span>
+                                    <input id="confirmation-{{ $operationKey }}" name="confirmation" type="text" autocomplete="off" spellcheck="false" required class="rounded-xl border border-slate-200 px-3 py-2.5 font-mono text-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100">
+                                </label>
+                            @endif
+
+                            <button type="submit" @disabled($deployUnavailable) @class([
+                                'inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500',
+                                'bg-red-600 hover:bg-red-700 focus:ring-red-100' => $isCritical,
+                                'bg-slate-900 hover:bg-cyan-700 focus:ring-cyan-100' => ! $isCritical,
+                            ])>
+                                {{ $deployUnavailable ? 'Compile el frontend primero' : $operation['label'] }}
+                            </button>
+                        </form>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    </main>
+</body>
+</html>
