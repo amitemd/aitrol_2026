@@ -238,34 +238,7 @@
 
     <script src="{{ asset('js/jquery-2.1.4.min.js') }}"></script>
     <script src="{{ asset('js/bootstrap.min.js') }}"></script>
-    <script>
-        window.AdminLTEOptions = {
-            enableControlTreeView: true
-        };
-    </script>
+    <script src="{{ asset('js/new-system-navigation.js') }}?v={{ filemtime(public_path('js/new-system-navigation.js')) }}"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
-    <script>
-        (function () {
-            var search = document.getElementById('new-system-menu-search');
-
-            if (!search) {
-                return;
-            }
-
-            search.addEventListener('input', function () {
-                var value = this.value.toLocaleLowerCase('es').trim();
-
-                var entries = document.querySelectorAll('[data-menu-entry]');
-
-                if (entries.length === 0) {
-                    entries = document.querySelectorAll('.sidebar-menu > li:not(.header)');
-                }
-
-                entries.forEach(function (entry) {
-                    entry.style.display = value === '' || entry.textContent.toLocaleLowerCase('es').includes(value) ? '' : 'none';
-                });
-            });
-        }());
-    </script>
 </body>
 </html>

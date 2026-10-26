@@ -39,6 +39,7 @@ class ExampleTest extends TestCase
             ->assertSee('admin@example.com')
             ->assertSee('Cuenta activa')
             ->assertSee('.ieced-user-menu {', false)
+            ->assertSeeInOrder(['js/new-system-navigation.js', 'js/custom.js'], false)
             ->assertDontSee('Ingresa tus credenciales para acceder a tu cuenta.');
     }
 

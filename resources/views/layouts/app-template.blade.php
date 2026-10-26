@@ -237,7 +237,8 @@ document.onmousedown=click
   }
   ?>
 
-    <!-- AdminLTE App -->
+    <!-- Navegación compartida y AdminLTE App -->
+    <script src="{{ asset('/js/new-system-navigation.js') }}?v={{ filemtime(public_path('js/new-system-navigation.js')) }}" type="text/javascript"></script>
     <script src="{{ asset('/js/custom.js') }}?v={{ filemtime(public_path('js/custom.js')) }}" type="text/javascript"></script>
     <!-- Optionally, you can add Slimscroll and FastClick plugins.
       Both of these plugins are recommended to enhance the
