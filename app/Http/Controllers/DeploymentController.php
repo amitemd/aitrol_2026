@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GitDeployment;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,15 @@ class DeploymentController extends Controller
      * }>
      */
     private const OPERATIONS = [
+        'git-pull' => [
+            'label' => 'Actualizar desde Git',
+            'description' => 'Descarga y aplica únicamente avances directos de origin/main mediante git pull --ff-only. Se bloquea si existen cambios locales.',
+            'icon' => 'fa-code-fork',
+            'button' => 'btn-primary',
+            'confirmation' => 'ACTUALIZAR',
+            'requires_manifest' => false,
+            'commands' => [],
+        ],
         'deploy' => [
             'label' => 'Finalizar despliegue',
             'description' => 'Limpia cachés, ejecuta migraciones pendientes, optimiza Laravel y reinicia las colas. No ejecuta Git, Composer ni npm.',
@@ -133,7 +143,7 @@ class DeploymentController extends Controller
         ],
     ];
 
-    public function index(): View
+    public function index(GitDeployment $gitDeployment): View
     {
         $this->authorizeAdministrator();
 
@@ -150,11 +160,12 @@ class DeploymentController extends Controller
                 'manifest' => $manifestAvailable,
                 'database' => $this->databaseStatus(),
                 'cache' => (string) config('cache.default'),
+                'git' => $gitDeployment->status(),
             ],
         ]);
     }
 
-    public function execute(Request $request): RedirectResponse
+    public function execute(Request $request, GitDeployment $gitDeployment): RedirectResponse
     {
         $this->authorizeAdministrator();
 
@@ -197,19 +208,25 @@ class DeploymentController extends Controller
         try {
             set_time_limit(0);
 
-            foreach ($operation['commands'] as $step) {
-                $outputs[] = '$ php artisan '.$step['command'];
-                $exitCode = Artisan::call($step['command'], $step['arguments']);
-                $commandOutput = trim(Artisan::output());
+            if ($operationKey === 'git-pull') {
+                $gitResult = $gitDeployment->pull();
+                $successful = $gitResult['successful'];
+                $outputs[] = $gitResult['output'];
+            } else {
+                foreach ($operation['commands'] as $step) {
+                    $outputs[] = '$ php artisan '.$step['command'];
+                    $exitCode = Artisan::call($step['command'], $step['arguments']);
+                    $commandOutput = trim(Artisan::output());
 
-                if ($commandOutput !== '') {
-                    $outputs[] = $commandOutput;
-                }
+                    if ($commandOutput !== '') {
+                        $outputs[] = $commandOutput;
+                    }
 
-                if ($exitCode !== 0) {
-                    $successful = false;
-                    $outputs[] = "El comando terminó con código {$exitCode}.";
-                    break;
+                    if ($exitCode !== 0) {
+                        $successful = false;
+                        $outputs[] = "El comando terminó con código {$exitCode}.";
+                        break;
+                    }
                 }
             }
 

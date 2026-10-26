@@ -61,8 +61,8 @@
         <section class="flex gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
             <svg class="mt-0.5 h-5 w-5 shrink-0 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
             <div>
-                <p class="font-semibold">Este panel no ejecuta Git, Composer ni npm.</p>
-                <p class="mt-1 leading-6 text-sky-800">Actualice primero los archivos del servidor por su flujo habitual. Después ejecute “Finalizar despliegue” o una operación específica.</p>
+                <p class="font-semibold">El panel puede actualizar el código desde Git.</p>
+                <p class="mt-1 leading-6 text-sky-800">Ejecute primero “Actualizar desde Git” y, cuando termine correctamente, use “Finalizar despliegue”. Composer y npm continúan fuera del panel.</p>
             </div>
         </section>
 
@@ -94,6 +94,47 @@
                 <p class="text-sm font-semibold text-cyan-700">Diagnóstico en vivo</p>
                 <h2 class="mt-1 text-2xl font-semibold tracking-tight">Estado del servidor</h2>
             </div>
+
+            <article @class([
+                'rounded-3xl border bg-white p-5 shadow-sm sm:p-6',
+                'border-emerald-200' => $status['git']['enabled'] && $status['git']['available'] && $status['git']['writable'] && $status['git']['clean'] && $status['git']['branch'] === $status['git']['target'],
+                'border-amber-300' => ! ($status['git']['enabled'] && $status['git']['available'] && $status['git']['writable'] && $status['git']['clean'] && $status['git']['branch'] === $status['git']['target']),
+            ])>
+                <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-lg font-semibold">Repositorio Git</h3>
+                            <span @class([
+                                'rounded-full px-2.5 py-1 text-xs font-bold',
+                                'bg-emerald-100 text-emerald-700' => $status['git']['enabled'] && $status['git']['available'] && $status['git']['writable'] && $status['git']['clean'] && $status['git']['branch'] === $status['git']['target'],
+                                'bg-amber-100 text-amber-800' => ! ($status['git']['enabled'] && $status['git']['available'] && $status['git']['writable'] && $status['git']['clean'] && $status['git']['branch'] === $status['git']['target']),
+                            ])>
+                                {{ $status['git']['enabled'] && $status['git']['available'] && $status['git']['writable'] && $status['git']['clean'] && $status['git']['branch'] === $status['git']['target'] ? 'Listo para actualizar' : 'Requiere atención' }}
+                            </span>
+                        </div>
+                        <p class="mt-2 text-sm leading-6 text-slate-500">La actualización usa avance rápido únicamente; nunca crea merges automáticos ni solicita credenciales interactivas.</p>
+                    </div>
+
+                    <dl class="grid gap-3 text-sm sm:grid-cols-3">
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Rama</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ $status['git']['branch'] ?: 'No disponible' }}</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Destino</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ $status['git']['remote'] }}/{{ $status['git']['target'] }}</dd>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Commit</dt>
+                            <dd class="mt-1 font-mono font-semibold text-slate-800">{{ $status['git']['commit'] ?: 'No disponible' }}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                @if ($status['git']['error'])
+                    <p class="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm leading-5 text-amber-900">{{ $status['git']['error'] }}</p>
+                @endif
+            </article>
 
             <article @class([
                 'rounded-3xl border bg-white p-5 shadow-sm sm:p-6',
@@ -188,7 +229,9 @@
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($operations as $operationKey => $operation)
                     @php($deployUnavailable = $operationKey === 'deploy' && ! $status['manifest'])
-                    @php($isCritical = in_array($operationKey, ['deploy', 'migrate'], true))
+                    @php($gitUnavailable = $operationKey === 'git-pull' && (! $status['git']['enabled'] || ! $status['git']['available'] || ! $status['git']['writable'] || ! $status['git']['clean'] || $status['git']['branch'] !== $status['git']['target']))
+                    @php($operationUnavailable = $deployUnavailable || $gitUnavailable)
+                    @php($isCritical = in_array($operationKey, ['git-pull', 'deploy', 'migrate'], true))
 
                     <article class="flex min-h-72 flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:p-6">
                         <div class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-50 text-cyan-700">
@@ -196,6 +239,10 @@
                         </div>
                         <h3 class="mt-5 text-lg font-semibold text-slate-900">{{ $operation['label'] }}</h3>
                         <p class="mt-2 flex-1 text-sm leading-6 text-slate-500">{{ $operation['description'] }}</p>
+
+                        @if ($operationKey === 'git-pull' && $status['git']['error'])
+                            <p class="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">{{ $status['git']['error'] }}</p>
+                        @endif
 
                         <form method="POST" action="{{ route('deployment.execute') }}" class="mt-5 flex flex-col gap-3" onsubmit="return window.confirm('¿Confirma que desea ejecutar esta operación?');">
                             @csrf
@@ -208,12 +255,12 @@
                                 </label>
                             @endif
 
-                            <button type="submit" @disabled($deployUnavailable) @class([
+                            <button type="submit" @disabled($operationUnavailable) @class([
                                 'inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-bold text-white transition focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500',
                                 'bg-red-600 hover:bg-red-700 focus:ring-red-100' => $isCritical,
                                 'bg-slate-900 hover:bg-cyan-700 focus:ring-cyan-100' => ! $isCritical,
                             ])>
-                                {{ $deployUnavailable ? 'Compile el frontend primero' : $operation['label'] }}
+                                {{ $deployUnavailable ? 'Compile el frontend primero' : ($gitUnavailable ? 'Git no está listo' : $operation['label']) }}
                             </button>
                         </form>
                     </article>
