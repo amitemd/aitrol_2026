@@ -17,7 +17,6 @@ Route::get('lang/{lang}', function ($lang) {
     return Redirect::back();
 })->middleware('web')->name('change_lang');
 
-Route::get('/', 'DashboardController@index')->middleware('auth');
 Auth::routes();
 Route::get('user/verification/reset', 'Auth\ForgotPasswordController@user')->name('auth.user');
 Route::post('user/password/recover/', 'Auth\ForgotPasswordController@recover')->name('auth.user.recover');
