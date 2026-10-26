@@ -302,7 +302,7 @@ if (count($ventas) > 0) {
                         $tabla .= '<td><div class="dropdown"><button style="color: black;" class="btn btn-gray btn-xs" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i> <i class="fa fa-caret-down"></i></button>';
                         $tabla .= '<div style="width: auto;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
                         if ($row->rutapdf != '') {
-                          $tabla .= '<a target="_blank" href="' . route('pdf.vidualizar', ['id' => $ow->id])  . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> Archivo</a>';
+                          $tabla .= '<a target="_blank" href="' . route('pdf.visualizar', ['id' => $row->id])  . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> Archivo</a>';
                         }
                         if ($row->orden_venta != null) {
                           $tabla .= '<a target="_blank" href="' . route('pdf_comprobante_detalle.paquete', ['id' => $row->id]) . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> <i class="fa fa-list"></i> Detalle orden</a>';
