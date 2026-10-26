@@ -2,83 +2,104 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Ingresar · AITROL Nuevo</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <title>Ingresar | {{ config('app.name', 'Sistema Médico') }}</title>
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}">
+    <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}">
 </head>
-<body class="min-h-screen bg-slate-950 font-sans text-slate-100 antialiased">
-    <main class="relative grid min-h-screen overflow-hidden lg:grid-cols-[1.1fr_0.9fr]">
-        <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-            <div class="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-cyan-400/15 blur-3xl"></div>
-            <div class="absolute right-0 bottom-0 h-[32rem] w-[32rem] rounded-full bg-blue-500/15 blur-3xl"></div>
-        </div>
-
-        <section class="relative hidden flex-col justify-between border-r border-white/10 p-12 lg:flex xl:p-16">
-            <div class="flex items-center gap-3">
-                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-400 text-xl font-black text-slate-950">A</span>
-                <div>
-                    <p class="text-xl font-semibold text-white">AITROL</p>
-                    <p class="text-xs font-semibold tracking-[0.24em] text-cyan-300 uppercase">Nueva plataforma</p>
+<body class="new-system-login-page">
+    <main class="new-system-login-shell">
+        <div class="row">
+            <section class="col-md-6 new-system-login-information">
+                <div class="new-system-login-logo">
+                    <strong>AITROL</strong>
+                    <span>Sistema Médico</span>
                 </div>
-            </div>
 
-            <div class="max-w-xl">
-                <p class="text-sm font-semibold tracking-[0.18em] text-cyan-300 uppercase">Evolución progresiva</p>
-                <h1 class="mt-5 text-5xl font-semibold leading-tight tracking-tight text-white xl:text-6xl">La experiencia nueva, con el conocimiento del sistema legado.</h1>
-                <p class="mt-6 max-w-lg text-lg leading-8 text-slate-300">La misma información, empresas y permisos, sobre una interfaz diseñada para crecer módulo por módulo.</p>
-            </div>
-
-            <p class="text-sm text-slate-500">AITROL · Plataforma administrativa</p>
-        </section>
-
-        <section class="relative flex items-center justify-center px-5 py-12 sm:px-10">
-            <div class="w-full max-w-md">
-                <div class="mb-10 flex items-center gap-3 lg:hidden">
-                    <span class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950">A</span>
-                    <div>
-                        <p class="text-lg font-semibold text-white">AITROL</p>
-                        <p class="text-[0.65rem] font-semibold tracking-[0.2em] text-cyan-300 uppercase">Nueva plataforma</p>
+                <div class="new-system-login-slide">
+                    <div class="new-system-login-slide-image">
+                        <img id="login-slide-image" src="{{ asset('img1.png') }}" alt="Gestión administrativa">
                     </div>
+                    <h2 id="login-slide-title">Controla las finanzas de tu empresa</h2>
+                    <p id="login-slide-description">AITROL te ayuda a controlar los ingresos y egresos de tu operación.</p>
                 </div>
+            </section>
 
-                <div class="rounded-3xl border border-white/10 bg-white/[0.07] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8">
-                    <p class="text-sm font-semibold text-cyan-300">Bienvenido</p>
-                    <h2 class="mt-2 text-3xl font-semibold tracking-tight text-white">Ingresa a tu cuenta</h2>
-                    <p class="mt-3 text-sm leading-6 text-slate-400">Utiliza las mismas credenciales del sistema legado.</p>
+            <section class="col-md-6 new-system-login-form-column">
+                <div class="new-system-login-form">
+                    <div class="new-system-login-logo visible-xs visible-sm text-center" style="color: #1562ad; display: block; margin-bottom: 30px;">
+                        <strong>AITROL</strong>
+                        <span>Sistema Médico</span>
+                    </div>
+                    <h1>Sign In</h1>
+                    <p>Ingresa tus credenciales para acceder a tu cuenta.</p>
 
                     @if ($errors->any())
-                        <div class="mt-6 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
-                            {{ $errors->first() }}
+                        <div class="alert alert-danger">
+                            <i class="fa fa-warning"></i> {{ $errors->first() }}
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('new-system.login.store') }}" class="mt-7 flex flex-col gap-5">
+                    <form method="POST" action="{{ route('new-system.login.store') }}">
                         @csrf
-                        <label class="flex flex-col gap-2">
-                            <span class="text-sm font-medium text-slate-300">Correo electrónico</span>
-                            <input type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/60 focus:ring-4 focus:ring-cyan-400/10" placeholder="usuario@empresa.com">
-                        </label>
+                        <div class="form-group {{ $errors->has('email') ? 'has-error' : '' }}">
+                            <label class="control-label" for="email">Correo electrónico</label>
+                            <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="Email" required autofocus autocomplete="username">
+                        </div>
 
-                        <label class="flex flex-col gap-2">
-                            <span class="text-sm font-medium text-slate-300">Contraseña</span>
-                            <input type="password" name="password" required autocomplete="current-password" class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3.5 text-white outline-none transition focus:border-cyan-400/60 focus:ring-4 focus:ring-cyan-400/10">
-                        </label>
+                        <div class="form-group {{ $errors->has('password') ? 'has-error' : '' }}">
+                            <label class="control-label" for="password">Contraseña</label>
+                            <input id="password" type="password" class="form-control" name="password" placeholder="Contraseña" required autocomplete="current-password">
+                        </div>
 
-                        <label class="flex items-center gap-3 text-sm text-slate-400">
-                            <input type="checkbox" name="remember" value="1" class="h-4 w-4 rounded border-white/20 bg-slate-900 text-cyan-400 focus:ring-cyan-400/30">
-                            Mantener la sesión iniciada
-                        </label>
+                        <div class="form-group clearfix">
+                            <label class="pull-left">
+                                <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}> Mantener la sesión iniciada
+                            </label>
+                            @if (Route::has('password.request'))
+                                <a class="pull-right" href="{{ route('password.request') }}">¿Necesitas ayuda?</a>
+                            @endif
+                        </div>
 
-                        <button type="submit" class="rounded-2xl bg-cyan-400 px-4 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 focus:ring-4 focus:ring-cyan-400/20">Ingresar a AITROL Nuevo</button>
+                        <button type="submit" class="new-system-login-submit">Ingresar</button>
                     </form>
-
-                    <div class="mt-6 border-t border-white/10 pt-5 text-center">
-                        <a href="{{ url('/login') }}" class="text-sm font-medium text-slate-400 transition hover:text-white">Ir al acceso del sistema legado</a>
-                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
+
+    <script>
+        (function () {
+            var slides = [
+                {
+                    image: @json(asset('img1.png')),
+                    title: 'Controla las finanzas de tu empresa',
+                    description: 'AITROL te ayuda a controlar los ingresos y egresos de tu operación.'
+                },
+                {
+                    image: @json(asset('img2.png')),
+                    title: 'Toda la información en un solo lugar',
+                    description: 'Accede a datos, gráficos, reportes y procesos desde una sola plataforma.'
+                },
+                {
+                    image: @json(asset('img3.png')),
+                    title: 'Administra el trabajo operativo',
+                    description: 'Mantén la continuidad de cada módulo mientras avanzamos hacia Laravel 13.'
+                }
+            ];
+            var currentSlide = 0;
+
+            window.setInterval(function () {
+                currentSlide = (currentSlide + 1) % slides.length;
+                document.getElementById('login-slide-image').src = slides[currentSlide].image;
+                document.getElementById('login-slide-title').textContent = slides[currentSlide].title;
+                document.getElementById('login-slide-description').textContent = slides[currentSlide].description;
+            }, 3500);
+        }());
+    </script>
 </body>
 </html>

@@ -5,66 +5,107 @@
     :current-company="$newSystemCurrentCompany"
 >
     @if ($newSystemCurrentCompany === null && $newSystemCompanies->count() > 1)
-        <div class="mb-6 flex flex-col gap-4 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-amber-900 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <p class="font-semibold">Selecciona la empresa de trabajo</p>
-                <p class="mt-1 text-sm text-amber-700">Los datos de los módulos se filtrarán por la empresa activa.</p>
-            </div>
-            <a href="{{ route('new-system.companies.index') }}" class="inline-flex justify-center rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600">Seleccionar empresa</a>
+        <div class="alert alert-warning">
+            <h4><i class="icon fa fa-warning"></i> Selecciona la empresa de trabajo</h4>
+            Los datos de cada módulo se filtrarán utilizando la empresa activa.
+            <a href="{{ route('new-system.companies.index') }}" class="btn btn-warning btn-sm pull-right">Seleccionar empresa</a>
+            <div class="clearfix"></div>
         </div>
     @endif
 
-    <section class="overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950 p-6 text-white shadow-xl shadow-slate-300/30 sm:p-8">
-        <div class="max-w-3xl">
-            <p class="text-sm font-semibold tracking-[0.16em] text-cyan-300 uppercase">AITROL Nuevo</p>
-            <h2 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Una base moderna conectada con toda la operación existente.</h2>
-            <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">Esta plataforma convivirá con el sistema legado mientras cada módulo se reemplaza de forma controlada, conservando usuarios, empresas y datos históricos.</p>
-        </div>
-    </section>
-
-    <section class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Resumen del sistema">
-        @foreach ([
-            ['label' => 'Usuarios activos', 'value' => $stats['activeUsers'], 'tone' => 'text-cyan-700 bg-cyan-50'],
-            ['label' => 'Empresas activas', 'value' => $stats['companies'], 'tone' => 'text-blue-700 bg-blue-50'],
-            ['label' => 'Usuarios en empresa', 'value' => $stats['companyUsers'], 'tone' => 'text-violet-700 bg-violet-50'],
-            ['label' => 'Rutas integradas', 'value' => $stats['legacyRoutes'], 'tone' => 'text-emerald-700 bg-emerald-50'],
-        ] as $stat)
-            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <span class="inline-flex rounded-lg px-2.5 py-1 text-xs font-semibold {{ $stat['tone'] }}">{{ $stat['label'] }}</span>
-                <p class="mt-4 text-3xl font-semibold tracking-tight text-slate-900">{{ number_format($stat['value']) }}</p>
-            </article>
-        @endforeach
-    </section>
-
-    <section class="mt-8">
-        <div class="flex items-end justify-between gap-4">
-            <div>
-                <p class="text-sm font-semibold text-cyan-700">Módulos iniciales</p>
-                <h2 class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Continúa tu trabajo</h2>
+    <div class="row">
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-aqua new-system-stat">
+                <div class="inner">
+                    <h3>{{ number_format($stats['activeUsers']) }}</h3>
+                    <p>Usuarios activos</p>
+                </div>
+                <div class="icon"><i class="fa fa-users"></i></div>
+                <span class="small-box-footer">Sistema compartido <i class="fa fa-check-circle"></i></span>
             </div>
-            <a href="{{ route('modules.index') }}" class="hidden text-sm font-semibold text-slate-500 transition hover:text-cyan-700 sm:inline">Ver mapa completo →</a>
         </div>
-
-        <div class="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            <a href="{{ route('new-system.companies.index') }}" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-lg">
-                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-50 text-xl text-cyan-700">◇</div>
-                <h3 class="mt-5 text-lg font-semibold text-slate-900 group-hover:text-cyan-700">Empresas</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-500">Selecciona el contexto de trabajo compartido con el sistema legado.</p>
-            </a>
-
-            @can('manage-new-system-users')
-                <a href="{{ route('new-system.users.index') }}" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-lg">
-                    <div class="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-xl text-blue-700">◎</div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900 group-hover:text-cyan-700">Usuarios</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-500">Administra accesos, roles, estado y empresas asignadas.</p>
-                </a>
-            @endcan
-
-            <a href="{{ url('/dashboard') }}" class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-lg">
-                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-violet-50 text-xl text-violet-700">↗</div>
-                <h3 class="mt-5 text-lg font-semibold text-slate-900 group-hover:text-cyan-700">Sistema legado</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-500">Accede a los módulos operativos que aún están en proceso de modernización.</p>
-            </a>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-green new-system-stat">
+                <div class="inner">
+                    <h3>{{ number_format($stats['companies']) }}</h3>
+                    <p>Empresas activas</p>
+                </div>
+                <div class="icon"><i class="fa fa-building"></i></div>
+                <a href="{{ route('new-system.companies.index') }}" class="small-box-footer">Seleccionar empresa <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
         </div>
-    </section>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-yellow new-system-stat">
+                <div class="inner">
+                    <h3>{{ number_format($stats['companyUsers']) }}</h3>
+                    <p>Usuarios en empresa</p>
+                </div>
+                <div class="icon"><i class="fa fa-user-md"></i></div>
+                @can('manage-new-system-users')
+                    <a href="{{ route('new-system.users.index') }}" class="small-box-footer">Administrar usuarios <i class="fa fa-arrow-circle-right"></i></a>
+                @else
+                    <span class="small-box-footer">Empresa seleccionada <i class="fa fa-check-circle"></i></span>
+                @endcan
+            </div>
+        </div>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-red new-system-stat">
+                <div class="inner">
+                    <h3>{{ number_format($stats['legacyRoutes']) }}</h3>
+                    <p>Rutas integradas</p>
+                </div>
+                <div class="icon"><i class="fa fa-exchange"></i></div>
+                <a href="{{ url('/dashboard') }}" class="small-box-footer">Abrir sistema legado <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-home"></i> Sistema Médico</h3>
+                </div>
+                <div class="box-body">
+                    <p class="lead">AITROL está siendo actualizado a Laravel 13 conservando la navegación y la experiencia del sistema original.</p>
+                    <p>Los módulos que aún no han sido migrados permanecen disponibles desde el menú lateral. Al modernizar cada módulo, su acceso será reemplazado aquí sin cambiar el flujo de trabajo habitual.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="box box-info new-system-module-box">
+                <div class="box-header with-border"><h3 class="box-title">Empresas</h3></div>
+                <div class="box-body">
+                    <p>Selecciona el contexto de trabajo que comparten la plataforma nueva y el sistema legado.</p>
+                    <span class="icon"><i class="fa fa-building"></i></span>
+                </div>
+                <div class="box-footer"><a href="{{ route('new-system.companies.index') }}" class="btn btn-info btn-flat">Abrir módulo</a></div>
+            </div>
+        </div>
+        @can('manage-new-system-users')
+            <div class="col-md-4">
+                <div class="box box-success new-system-module-box">
+                    <div class="box-header with-border"><h3 class="box-title">Usuarios</h3></div>
+                    <div class="box-body">
+                        <p>Administra accesos, roles, estado y empresas asignadas con la misma información histórica.</p>
+                        <span class="icon"><i class="fa fa-users"></i></span>
+                    </div>
+                    <div class="box-footer"><a href="{{ route('new-system.users.index') }}" class="btn btn-success btn-flat">Abrir módulo</a></div>
+                </div>
+            </div>
+        @endcan
+        <div class="col-md-4">
+            <div class="box box-warning new-system-module-box">
+                <div class="box-header with-border"><h3 class="box-title">Módulos heredados</h3></div>
+                <div class="box-body">
+                    <p>Continúa trabajando con los módulos operativos mientras son revisados y migrados.</p>
+                    <span class="icon"><i class="fa fa-external-link"></i></span>
+                </div>
+                <div class="box-footer"><a href="{{ url('/dashboard') }}" class="btn btn-warning btn-flat">Abrir legado</a></div>
+            </div>
+        </div>
+    </div>
 </x-new-system.layout>
