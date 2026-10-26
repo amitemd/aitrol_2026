@@ -28,6 +28,23 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
+### Habilitar “Actualizar desde Git” en el panel
+
+El servidor web no debe tener permisos generales de escritura sobre el proyecto ni sobre `.git`. Instale una sola vez el ayudante restringido usando una cuenta con `sudo`:
+
+```bash
+cd /var/www/aitrol
+sudo WEB_USER=apache PROJECT_PATH=/var/www/aitrol ./install-git-helper.sh
+```
+
+El instalador detecta como usuario de despliegue al propietario del proyecto. Si Git se administra con otra cuenta, indíquela explícitamente:
+
+```bash
+sudo WEB_USER=apache DEPLOY_USER=deploy PROJECT_PATH=/var/www/aitrol ./install-git-helper.sh
+```
+
+El ayudante permite al usuario web ejecutar únicamente la comprobación y el `git pull --ff-only` de este repositorio. También registra `DEPLOY_GIT_HELPER` y `DEPLOY_GIT_USER` en `.env`. No cambie los permisos del proyecto con `chmod 777`.
+
 Variables opcionales:
 
 ```bash

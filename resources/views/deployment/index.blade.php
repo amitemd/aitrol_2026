@@ -115,7 +115,7 @@
                         <p class="mt-2 text-sm leading-6 text-slate-500">La actualización usa avance rápido únicamente; nunca crea merges automáticos ni solicita credenciales interactivas.</p>
                     </div>
 
-                    <dl class="grid gap-3 text-sm sm:grid-cols-3">
+                    <dl class="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
                         <div class="rounded-xl bg-slate-50 px-4 py-3">
                             <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Rama</dt>
                             <dd class="mt-1 font-semibold text-slate-800">{{ $status['git']['branch'] ?: 'No disponible' }}</dd>
@@ -128,11 +128,24 @@
                             <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Commit</dt>
                             <dd class="mt-1 font-mono font-semibold text-slate-800">{{ $status['git']['commit'] ?: 'No disponible' }}</dd>
                         </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3">
+                            <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Modo</dt>
+                            <dd class="mt-1 font-semibold text-slate-800">{{ ($status['git']['mode'] ?? 'direct') === 'helper' ? 'Ayudante protegido' : 'PHP directo' }}</dd>
+                        </div>
                     </dl>
                 </div>
 
                 @if ($status['git']['error'])
                     <p class="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm leading-5 text-amber-900">{{ $status['git']['error'] }}</p>
+                @endif
+
+                @if (($status['git']['mode'] ?? 'direct') === 'direct' && ! $status['git']['writable'])
+                    <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs leading-5 text-sky-900">
+                        <p class="font-semibold">Ayudante protegido no instalado</p>
+                        <p class="mt-1">Ejecute una sola vez desde una terminal del servidor con permisos de administrador:</p>
+                        <code class="mt-2 block overflow-x-auto rounded-lg bg-slate-950 px-3 py-2 text-slate-100">sudo WEB_USER=apache PROJECT_PATH={{ base_path() }} ./install-git-helper.sh</code>
+                        <p class="mt-2 text-sky-800">El instalador concede únicamente permiso para consultar y actualizar este repositorio. No use <code>chmod 777</code>.</p>
+                    </div>
                 @endif
             </article>
 

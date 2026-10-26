@@ -8,12 +8,15 @@ use Throwable;
 
 class GitDeployment
 {
+    public function __construct(private CommandRunner $commandRunner) {}
+
     /**
      * @return array{
      *     enabled: bool,
      *     available: bool,
      *     clean: bool,
      *     writable: bool,
+     *     mode: string,
      *     branch: string,
      *     remote: string,
      *     target: string,
@@ -25,11 +28,13 @@ class GitDeployment
     {
         $remote = (string) config('deployment.git.remote', 'origin');
         $target = (string) config('deployment.git.branch', 'main');
+        $usesHelper = $this->usesHelper();
         $status = [
             'enabled' => (bool) config('deployment.git.enabled', true),
             'available' => false,
             'clean' => false,
-            'writable' => is_writable(base_path()) && is_writable(base_path('.git')),
+            'writable' => $usesHelper ? false : is_writable(base_path()) && is_writable(base_path('.git')),
+            'mode' => $usesHelper ? 'helper' : 'direct',
             'branch' => '',
             'remote' => $remote,
             'target' => $target,
@@ -39,6 +44,12 @@ class GitDeployment
 
         if (! $status['enabled']) {
             $status['error'] = 'La actualización por Git está deshabilitada en la configuración.';
+
+            return $status;
+        }
+
+        if ($usesHelper && ($configurationError = $this->helperConfigurationError()) !== null) {
+            $status['error'] = $configurationError;
 
             return $status;
         }
@@ -78,8 +89,29 @@ class GitDeployment
         $status['commit'] = trim($commit->getOutput());
         $status['clean'] = trim($changes->getOutput()) === '';
 
+        if ($usesHelper) {
+            try {
+                $helperCheck = $this->process($this->helperCommand(check: true));
+            } catch (Throwable $exception) {
+                $status['error'] = 'No fue posible verificar el ayudante privilegiado: '.Str::limit($exception->getMessage(), 200);
+
+                return $status;
+            }
+
+            if (! $helperCheck->isSuccessful()) {
+                $status['error'] = 'El ayudante privilegiado no está listo: '.$this->processError(
+                    $helperCheck,
+                    'verifique sudoers, el usuario de despliegue y el ejecutable configurado.',
+                );
+
+                return $status;
+            }
+
+            $status['writable'] = true;
+        }
+
         if (! $status['writable']) {
-            $status['error'] = 'El usuario de PHP no tiene permisos de escritura sobre el proyecto o la carpeta .git.';
+            $status['error'] = 'El usuario de PHP no tiene permisos de escritura. Configure el ayudante privilegiado de despliegue; no use chmod 777.';
         } elseif ($status['branch'] !== $target) {
             $status['error'] = "La rama activa es {$status['branch']}; el despliegue está configurado para {$target}.";
         } elseif (! $status['clean']) {
@@ -103,7 +135,9 @@ class GitDeployment
             ];
         }
 
-        $command = $this->gitCommand(['pull', '--ff-only', $status['remote'], $status['target']]);
+        $command = $this->usesHelper()
+            ? $this->helperCommand()
+            : $this->gitCommand(['pull', '--ff-only', $status['remote'], $status['target']]);
         try {
             $process = $this->process($command, (float) config('deployment.git.timeout', 300));
         } catch (Throwable $exception) {
@@ -117,10 +151,54 @@ class GitDeployment
         return [
             'successful' => $process->isSuccessful(),
             'output' => implode(PHP_EOL, [
-                '$ git pull --ff-only '.$status['remote'].' '.$status['target'],
+                '$ '.implode(' ', $command),
                 $output !== '' ? $output : 'Git no devolvió salida.',
             ]),
         ];
+    }
+
+    private function usesHelper(): bool
+    {
+        return trim((string) config('deployment.git.helper')) !== '';
+    }
+
+    private function helperConfigurationError(): ?string
+    {
+        $helper = trim((string) config('deployment.git.helper'));
+        $user = trim((string) config('deployment.git.user'));
+
+        if (! str_starts_with($helper, '/')) {
+            return 'DEPLOY_GIT_HELPER debe contener una ruta absoluta.';
+        }
+
+        if ($user === '') {
+            return 'Defina DEPLOY_GIT_USER cuando configure DEPLOY_GIT_HELPER.';
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function helperCommand(bool $check = false): array
+    {
+        $helper = trim((string) config('deployment.git.helper'));
+        $user = trim((string) config('deployment.git.user'));
+        $command = ['sudo', '-n', '-H'];
+
+        if ($user !== '') {
+            $command[] = '-u';
+            $command[] = $user;
+        }
+
+        $command[] = $helper;
+
+        if ($check) {
+            $command[] = '--check';
+        }
+
+        return $command;
     }
 
     /**
@@ -142,15 +220,7 @@ class GitDeployment
      */
     private function process(array $command, float $timeout = 10): Process
     {
-        $process = new Process(
-            command: $command,
-            cwd: base_path(),
-            env: ['GIT_TERMINAL_PROMPT' => '0'],
-            timeout: $timeout,
-        );
-        $process->run();
-
-        return $process;
+        return $this->commandRunner->run($command, base_path(), $timeout);
     }
 
     private function processError(Process $process, string $fallback): string
