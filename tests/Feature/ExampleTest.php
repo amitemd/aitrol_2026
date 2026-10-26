@@ -56,6 +56,32 @@ class ExampleTest extends TestCase
         $this->assertAuthenticatedAs(User::query()->findOrFail('admin'));
     }
 
+    public function test_login_keeps_a_default_company_for_legacy_modules_when_user_has_multiple_companies(): void
+    {
+        $this->createNewSystemRecords();
+        $this->createSecondaryCompany();
+
+        $this->post('/acceder', [
+            'email' => 'admin@example.com',
+            'password' => 'password',
+        ])->assertRedirectToRoute('new-system.dashboard');
+
+        $this->assertSame('empresa-2', session('id_empresa'));
+    }
+
+    public function test_dashboard_recovers_a_missing_company_context_for_legacy_modules(): void
+    {
+        $user = $this->createNewSystemRecords();
+        $this->createSecondaryCompany();
+
+        $this->actingAs($user)
+            ->withSession([])
+            ->get('/')
+            ->assertOk();
+
+        $this->assertSame('empresa-2', session('id_empresa'));
+    }
+
     public function test_new_system_pages_redirect_guests_to_the_root_url(): void
     {
         $this->get('/usuarios')->assertRedirect('/');
@@ -121,5 +147,18 @@ class ExampleTest extends TestCase
         ]);
 
         return User::query()->findOrFail('admin');
+    }
+
+    private function createSecondaryCompany(): void
+    {
+        DB::table('empresa')->insert([
+            'id' => 'empresa-2',
+            'razonsocial' => 'AITROL DOS S.A.',
+            'nombrecomercial' => 'AITROL DOS',
+            'nombre_corto' => 'AITROL 2',
+            'ciudad' => 'Guayaquil',
+            'estado' => 1,
+            'prioridad' => 2,
+        ]);
     }
 }

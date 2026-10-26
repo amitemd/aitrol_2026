@@ -36,9 +36,10 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
         $companies = $companyAccess->accessibleFor($user);
+        $defaultCompany = $companies->first();
 
-        if ($companies->count() === 1) {
-            $request->session()->put('id_empresa', $companies->first()->id);
+        if ($defaultCompany !== null) {
+            $request->session()->put('id_empresa', $defaultCompany->id);
         } else {
             $request->session()->forget('id_empresa');
         }

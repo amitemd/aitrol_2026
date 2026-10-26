@@ -57,11 +57,17 @@ class ProformaController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->porIva = Utilidades::porcentajeIva();
-        if ($this->porIva == '') {
-            $data['mensajes'] = 'No se ha configurado el porcentaje del iva';
-            return view('errors/204', $data);
-        }
+        $this->middleware(function (Request $request, \Closure $next): mixed {
+            $this->porIva = Utilidades::porcentajeIva();
+
+            if ($this->porIva === null) {
+                return response()->view('errors.204', [
+                    'mensajes' => 'No se ha configurado el porcentaje del iva',
+                ]);
+            }
+
+            return $next($request);
+        });
     }
 
     private function rol()

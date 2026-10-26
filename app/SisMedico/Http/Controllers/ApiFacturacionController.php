@@ -47,7 +47,11 @@ class ApiFacturacionController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->porIva = Utilidades::porcentajeIva();
+        $this->middleware(function (\Illuminate\Http\Request $request, \Closure $next): mixed {
+            $this->porIva = Utilidades::porcentajeIva();
+
+            return $next($request);
+        });
     }
 
     /**

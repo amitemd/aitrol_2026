@@ -472,7 +472,7 @@ class RouteServiceProvider extends ServiceProvider
 
     protected function mapWebRoutes_web_ventas()
     {
-        Route::middleware('web', 'cors')
+        Route::middleware('web', 'cors', 'new.context')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/contable/web_ventas.php'));
     }

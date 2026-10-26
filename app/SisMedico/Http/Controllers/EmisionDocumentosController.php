@@ -85,7 +85,11 @@ class EmisionDocumentosController extends Controller
     private $porIva = '';
     public function __construct()
     {
-        $this->porIva = Utilidades::porcentajeIva();
+        $this->middleware(function (Request $request, \Closure $next): mixed {
+            $this->porIva = Utilidades::porcentajeIva();
+
+            return $next($request);
+        });
     }
 
     public function index(Request $req)
