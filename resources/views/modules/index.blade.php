@@ -28,6 +28,14 @@
                     <p class="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
                         Inventario visual del proyecto Sucursales IECED. Cada tarjeta explica la responsabilidad funcional conservada dentro de la nueva base AITROL.
                     </p>
+                    <div class="mt-7 flex flex-wrap gap-3">
+                        <a href="{{ route('new-system.dashboard') }}" class="inline-flex items-center rounded-xl bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-300">
+                            Abrir AITROL Nuevo
+                        </a>
+                        <a href="{{ url('/dashboard') }}" class="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:border-cyan-300/40 hover:bg-white/10">
+                            Ir al sistema legado
+                        </a>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[32rem]">
                     @foreach ([['value' => $stats['modules'], 'label' => 'Módulos'], ['value' => number_format($stats['routes']), 'label' => 'Rutas'], ['value' => number_format($stats['views']), 'label' => 'Vistas'], ['value' => number_format($stats['legacyFiles']), 'label' => 'Archivos PHP']] as $stat)

@@ -1,7 +1,9 @@
 <?php
 
+use App\Console\Commands\CreateAdministrator;
 use App\Console\Commands\CustomCommand;
 use App\Console\Commands\DeployApplication;
+use App\Http\Middleware\ShareNewSystemContext;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         CustomCommand::class,
+        CreateAdministrator::class,
         DeployApplication::class,
         VerificarApiTributariaV3::class,
         VerificarDespliegueV3::class,
@@ -49,6 +52,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', SetLang::class);
+        $middleware->redirectGuestsTo(
+            fn (Request $request): string => $request->is('nuevo*')
+                ? route('new-system.login')
+                : route('login'),
+        );
 
         $middleware->validateCsrfTokens(except: [
             'maquina/hemograma/prueba',
@@ -58,6 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'cors' => Cors::class,
             'general' => General::class,
+            'new.context' => ShareNewSystemContext::class,
             'operacion.v3' => OperacionMonitoreo::class,
         ]);
     })
