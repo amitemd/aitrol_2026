@@ -35,6 +35,10 @@ class ExampleTest extends TestCase
             ->assertSee('Sistema Médico')
             ->assertSee('Plataforma Laravel 13')
             ->assertSee('Los módulos conservan sus permisos, rutas y operación')
+            ->assertSee('class="ieced-user-email"', false)
+            ->assertSee('admin@example.com')
+            ->assertSee('Cuenta activa')
+            ->assertSee('.ieced-user-menu {', false)
             ->assertDontSee('Ingresa tus credenciales para acceder a tu cuenta.');
     }
 

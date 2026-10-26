@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="{{ asset('css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}">
     <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}">
+    @include('layouts.header_account_styles')
 </head>
 <body class="hold-transition skin-blue sidebar-mini aitrol-shell">
     <div class="wrapper">
@@ -87,8 +88,9 @@
                                     @else
                                         <span class="new-system-avatar new-system-avatar-menu" aria-hidden="true">{{ $userInitials }}</span>
                                     @endif
-                                    <p class="ieced-user-name">Hola {{ $userName }}</p>
-                                    <small>{{ $user->email }}</small>
+                                    <p class="ieced-user-name">Hola, {{ $userName }}</p>
+                                    <span class="ieced-user-status"><i class="fa fa-circle" aria-hidden="true"></i> Cuenta activa</span>
+                                    <small class="ieced-user-email">{{ $user->email }}</small>
                                 </li>
                                 <li class="user-footer ieced-user-footer">
                                     @if (Route::has('gateway_tickets.create') && (int) $user->id_tipo_usuario !== 2)

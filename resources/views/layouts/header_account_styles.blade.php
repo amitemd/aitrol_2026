@@ -87,6 +87,7 @@
 
   .ieced-user-menu {
     width: 300px !important;
+    max-width: calc(100vw - 16px);
     margin-top: 4px !important;
     padding: 0 !important;
     overflow: hidden;
@@ -104,11 +105,26 @@
     text-align: center;
   }
 
+  .ieced-user-menu > .ieced-user-card::before,
+  .ieced-user-menu > .ieced-user-card::after {
+    display: none;
+  }
+
   .ieced-user-menu > .ieced-user-card > .ieced-user-avatar {
     width: 78px !important;
     height: 78px !important;
     margin: 0 auto 12px !important;
     object-fit: cover;
+    border: 3px solid #fff !important;
+    box-shadow: 0 4px 14px rgba(18, 69, 116, .2);
+  }
+
+  .ieced-user-menu > .ieced-user-card > .new-system-avatar-menu {
+    width: 78px !important;
+    height: 78px !important;
+    margin: 0 auto 12px !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, #2387c9 0%, #12558d 100%) !important;
     border: 3px solid #fff !important;
     box-shadow: 0 4px 14px rgba(18, 69, 116, .2);
   }
@@ -120,6 +136,35 @@
     font-weight: 600;
     line-height: 1.35;
     white-space: normal;
+  }
+
+  .ieced-user-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 7px;
+    padding: 4px 8px;
+    color: #216b48;
+    background-color: #e7f6ee;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .ieced-user-status > .fa {
+    color: #2ca56b;
+    font-size: 8px;
+  }
+
+  .ieced-user-email,
+  .ieced-user-menu > .ieced-user-card > small {
+    display: block;
+    margin-top: 8px;
+    color: #647687 !important;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
   }
 
   .ieced-user-menu > .ieced-user-footer {
@@ -147,6 +192,8 @@
     border: 1px solid #dce5ed !important;
     border-radius: 7px !important;
     font-size: 13px;
+    line-height: 1.25;
+    white-space: nowrap;
     transition: background-color .16s ease, border-color .16s ease;
   }
 
@@ -170,5 +217,21 @@
   .ieced-user-signout:focus {
     background-color: #fdecec !important;
     border-color: #e7b9b9 !important;
+  }
+
+  @media (max-width: 767px) {
+    .navbar-custom-menu > .navbar-nav > .ieced-user-dropdown > .ieced-user-menu {
+      right: 8px !important;
+      left: auto !important;
+    }
+
+    .ieced-user-menu > .ieced-user-card {
+      min-height: 0;
+      padding: 20px 16px 16px !important;
+    }
+
+    .ieced-user-menu > .ieced-user-footer {
+      padding: 10px !important;
+    }
   }
 </style>
