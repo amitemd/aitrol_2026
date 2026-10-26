@@ -19,7 +19,10 @@ class ShareNewSystemContext
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        abort_unless($user instanceof User, 401);
+
+        if (! $user instanceof User) {
+            return $next($request);
+        }
 
         $companies = $this->companyAccess->accessibleFor($user);
         $currentCompany = $companies->firstWhere('id', session('id_empresa'));

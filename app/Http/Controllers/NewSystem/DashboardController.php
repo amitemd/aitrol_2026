@@ -14,8 +14,12 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request, CompanyAccess $companyAccess): View
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user instanceof User) {
+            return view('new-system.auth.login');
+        }
+
         $currentCompany = $companyAccess->currentFor($user);
 
         return view('new-system.dashboard', [

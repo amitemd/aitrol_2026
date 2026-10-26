@@ -53,8 +53,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', SetLang::class);
         $middleware->redirectGuestsTo(
-            fn (Request $request): string => $request->is('nuevo*')
-                ? route('new-system.login')
+            fn (Request $request): string => str_starts_with((string) $request->route()?->getName(), 'new-system.')
+                ? route('new-system.dashboard')
                 : route('login'),
         );
 

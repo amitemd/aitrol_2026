@@ -8,9 +8,16 @@ use App\Http\Controllers\NewSystem\DashboardController as NewSystemDashboardCont
 use App\Http\Controllers\NewSystem\UserController as NewSystemUserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('modules.index');
-});
+Route::get('/', NewSystemDashboardController::class)
+    ->middleware('new.context')
+    ->name('new-system.dashboard');
+
+Route::post('/acceder', [NewSystemAuthController::class, 'login'])
+    ->middleware('throttle:new-system-login')
+    ->name('new-system.login.store');
+
+Route::redirect('/nuevo', '/');
+Route::redirect('/nuevo/login', '/');
 
 Route::get('/mapa-modulos', ModuleCatalogController::class)->name('modules.index');
 
@@ -22,25 +29,17 @@ Route::middleware(['auth', 'throttle:10,1'])
         Route::post('/ejecutar', [DeploymentController::class, 'execute'])->name('execute');
     });
 
-Route::prefix('nuevo')->name('new-system.')->group(function (): void {
-    Route::get('/login', [NewSystemAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [NewSystemAuthController::class, 'login'])
-        ->middleware('throttle:new-system-login')
-        ->name('login.store');
+Route::middleware(['auth', 'new.context'])->name('new-system.')->group(function (): void {
+    Route::post('/salir', [NewSystemAuthController::class, 'logout'])->name('logout');
 
-    Route::middleware(['auth', 'new.context'])->group(function (): void {
-        Route::get('/', NewSystemDashboardController::class)->name('dashboard');
-        Route::post('/salir', [NewSystemAuthController::class, 'logout'])->name('logout');
+    Route::get('/empresas', [NewSystemCompanySelectionController::class, 'index'])
+        ->name('companies.index');
+    Route::post('/empresas/seleccionar', [NewSystemCompanySelectionController::class, 'store'])
+        ->name('companies.store');
 
-        Route::get('/empresas', [NewSystemCompanySelectionController::class, 'index'])
-            ->name('companies.index');
-        Route::post('/empresas/seleccionar', [NewSystemCompanySelectionController::class, 'store'])
-            ->name('companies.store');
-
-        Route::resource('usuarios', NewSystemUserController::class)
-            ->parameters(['usuarios' => 'usuario'])
-            ->names('users')
-            ->except(['show', 'destroy'])
-            ->middleware('can:manage-new-system-users');
-    });
+    Route::resource('usuarios', NewSystemUserController::class)
+        ->parameters(['usuarios' => 'usuario'])
+        ->names('users')
+        ->except(['show', 'destroy'])
+        ->middleware('can:manage-new-system-users');
 });

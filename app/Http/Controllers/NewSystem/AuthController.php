@@ -4,7 +4,6 @@ namespace App\Http\Controllers\NewSystem;
 
 use App\Http\Controllers\Controller;
 use App\Services\NewSystem\CompanyAccess;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,15 +13,6 @@ use Sis_medico\User;
 
 class AuthController extends Controller
 {
-    public function showLogin(): View|RedirectResponse
-    {
-        if (Auth::check()) {
-            return redirect()->route('new-system.dashboard');
-        }
-
-        return view('new-system.auth.login');
-    }
-
     public function login(Request $request, CompanyAccess $companyAccess): RedirectResponse
     {
         $credentials = $request->validate([
@@ -53,11 +43,7 @@ class AuthController extends Controller
             $request->session()->forget('id_empresa');
         }
 
-        if ($companies->count() > 1) {
-            return redirect()->route('new-system.companies.index');
-        }
-
-        return redirect()->intended(route('new-system.dashboard'));
+        return redirect()->route('new-system.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -66,6 +52,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('new-system.login');
+        return redirect()->route('new-system.dashboard');
     }
 }
