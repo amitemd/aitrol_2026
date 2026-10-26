@@ -480,6 +480,70 @@ body {
     padding: 6px 0 8px;
 }
 
+/* Keep every navigation depth on a predictable icon column. */
+.aitrol-shell .sidebar-menu > li {
+    --aitrol-menu-icon-offset: 18px;
+}
+
+.aitrol-shell .sidebar-menu > li > .treeview-menu > li {
+    --aitrol-menu-icon-offset: 38px;
+}
+
+.aitrol-shell .sidebar-menu > li > .treeview-menu > li > .treeview-menu > li {
+    --aitrol-menu-icon-offset: 58px;
+}
+
+.aitrol-shell .sidebar-menu > li > .treeview-menu > li > .treeview-menu > li > .treeview-menu > li {
+    --aitrol-menu-icon-offset: 78px;
+}
+
+.aitrol-shell .sidebar-menu .treeview-menu {
+    padding-left: 0 !important;
+}
+
+.aitrol-shell .sidebar-menu li > a {
+    padding-left: var(--aitrol-menu-icon-offset) !important;
+    padding-right: 38px !important;
+}
+
+.aitrol-shell .sidebar-menu li > a > i:first-child {
+    display: inline-block;
+    margin: 0 8px 0 0 !important;
+    text-align: center;
+    width: 18px !important;
+}
+
+.aitrol-shell .sidebar-menu li > a:not(:has(> i:first-child)) {
+    padding-left: calc(var(--aitrol-menu-icon-offset) + 26px) !important;
+}
+
+.aitrol-shell .sidebar-menu li > a > .pull-right-container {
+    right: 12px;
+}
+
+.aitrol-shell .sidebar-menu li.container-clip {
+    display: block !important;
+    position: relative;
+}
+
+.aitrol-shell .sidebar-menu li.container-clip > button {
+    align-items: center;
+    display: flex;
+    height: 28px;
+    justify-content: center;
+    padding: 0 !important;
+    position: absolute;
+    right: 34px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    z-index: 2;
+}
+
+.aitrol-shell .sidebar-menu li.container-clip > a {
+    padding-right: 66px !important;
+}
+
 .aitrol-shell .treeview-menu > li > a {
     color: #9eb4bf !important;
     font-size: 12px;
