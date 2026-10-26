@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}">
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition skin-blue sidebar-mini aitrol-shell">
     <div class="wrapper">
         <header class="main-header new-system-header">
             <a href="{{ route('new-system.dashboard') }}" class="logo" aria-label="Ir al inicio">
@@ -116,6 +116,9 @@
             @csrf
         </form>
 
+        @if (config('new_system.legacy_navigation'))
+            @include('layouts.sidebar', ['newSystemNavigation' => true])
+        @else
         <aside class="main-sidebar">
             <section class="sidebar">
                 <div class="user-panel">
@@ -200,6 +203,7 @@
                 </ul>
             </section>
         </aside>
+        @endif
 
         <div class="content-wrapper">
             <section class="content-header">
@@ -249,7 +253,13 @@
             search.addEventListener('input', function () {
                 var value = this.value.toLocaleLowerCase('es').trim();
 
-                document.querySelectorAll('[data-menu-entry]').forEach(function (entry) {
+                var entries = document.querySelectorAll('[data-menu-entry]');
+
+                if (entries.length === 0) {
+                    entries = document.querySelectorAll('.sidebar-menu > li:not(.header)');
+                }
+
+                entries.forEach(function (entry) {
                     entry.style.display = value === '' || entry.textContent.toLocaleLowerCase('es').includes(value) ? '' : 'none';
                 });
             });

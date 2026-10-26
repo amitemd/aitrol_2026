@@ -21,6 +21,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3 + AdminLTE 2 + skin del sistema legado -->
   <link href="{{ asset('/css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}" rel="stylesheet" type="text/css" />
+  <link href="{{ asset('/css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}" rel="stylesheet" type="text/css" />
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
@@ -473,13 +474,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
 @endphp
 
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition skin-blue sidebar-mini aitrol-shell">
   <div class="wrapper">
 
     <!-- Main Header -->
     @include('layouts.header')
     <!-- Sidebar -->
-    @include('layouts.sidebar')
+    @include('layouts.sidebar', ['newSystemNavigation' => true])
 
 
     <!-- Content Wrapper. Contains page content -->

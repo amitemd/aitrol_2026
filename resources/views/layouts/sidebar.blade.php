@@ -4,10 +4,11 @@ use Illuminate\Support\Facades\Auth;
 use Sis_medico\De_Empresa;
 use Sis_medico\UsuariosControl;
 
-$imagen = Auth::user()->imagen_url;
-if ($imagen == ' ') {
-  $imagen = 'avatar.jpg';
-}
+$imagen = trim((string) Auth::user()->imagen_url);
+$avatarPath = $imagen !== '' ? public_path('avatars/'.$imagen) : null;
+$avatarUrl = $avatarPath !== null && is_file($avatarPath) ? asset('avatars/'.$imagen) : null;
+$nombreUsuario = trim(implode(' ', array_filter([Auth::user()->nombre1, Auth::user()->apellido1])));
+$inicialesUsuario = mb_strtoupper(mb_substr((string) Auth::user()->nombre1, 0, 1).mb_substr((string) Auth::user()->apellido1, 0, 1));
 $rolUsuario = Auth::user()->id_tipo_usuario;
 $id_auth    = Auth::user()->id;
 $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
@@ -136,7 +137,6 @@ $agenda_permiso = Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->wher
 $encuesta_reporte = Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('ip_creacion','like','%REPORTE_ENCUESTAS%')->first();
 $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('estado', 3)->first();
 @endphp
-</style>
 
 <!-- Left side column. contains the logo and sidebar -->
 <aside class="main-sidebar">
@@ -147,14 +147,29 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
     <!-- Sidebar user panel (optional) -->
     <div class="user-panel">
       <div class="pull-left image">
-        <img src="{{asset('/avatars').'/'.$imagen}}" class="img-circle" alt="User Image">
+        @if($avatarUrl)
+          <img src="{{ $avatarUrl }}" class="img-circle" alt="Foto de {{ $nombreUsuario }}">
+        @else
+          <span class="new-system-avatar new-system-avatar-sidebar" aria-hidden="true">{{ $inicialesUsuario }}</span>
+        @endif
       </div>
       <div class="pull-left info">
-        <p>{{ Auth::user()->name}}</p>
+        <p>{{ $nombreUsuario }}</p>
         <!-- Status -->
         <a href="#"><i class="fa fa-circle text-success"></i> @lang('tsidebar.online')</a>
       </div>
     </div>
+
+    @if($newSystemNavigation ?? false)
+      <form class="sidebar-form" onsubmit="return false;">
+        <div class="input-group">
+          <input type="search" id="new-system-menu-search" class="form-control" placeholder="Buscar módulo u opción..." autocomplete="off">
+          <span class="input-group-btn">
+            <button type="button" class="btn btn-flat" aria-label="Buscar en el menú"><i class="fa fa-search"></i></button>
+          </span>
+        </div>
+      </form>
+    @endif
 
     <!-- search form (Optional) -->
     <!--form action="#" method="get" class="sidebar-form">
@@ -170,6 +185,21 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
 
     <!-- Sidebar Menu -->
     <ul class="sidebar-menu">
+      @if($newSystemNavigation ?? false)
+      <li class="header">PLATAFORMA LARAVEL 13</li>
+      <li class="{{ request()->routeIs('new-system.dashboard') ? 'active' : '' }}">
+        <a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> <span>Inicio</span></a>
+      </li>
+      <li class="{{ request()->routeIs('new-system.companies.*') ? 'active' : '' }}">
+        <a href="{{ route('new-system.companies.index') }}"><i class="fa fa-building"></i> <span>Empresas</span></a>
+      </li>
+      @can('manage-new-system-users')
+      <li class="{{ request()->routeIs('new-system.users.*') ? 'active' : '' }}">
+        <a href="{{ route('new-system.users.index') }}"><i class="fa fa-users"></i> <span>Usuarios</span></a>
+      </li>
+      @endcan
+      <li class="header">OPERACIÓN DEL SISTEMA</li>
+      @endif
       <!-- Optionally, you can add icons to the links -->
       <!--<li class="active"><a href="/"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>-->
 

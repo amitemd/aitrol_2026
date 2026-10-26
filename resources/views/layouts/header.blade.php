@@ -3,10 +3,11 @@
 use Illuminate\Support\Facades\Auth;
 use Sis_medico\De_Empresa;
 
-$imagen = Auth::user()->imagen_url;
-if ($imagen == ' ') {
-  $imagen = 'avatar.jpg';
-}
+$imagen = trim((string) Auth::user()->imagen_url);
+$avatarPath = $imagen !== '' ? public_path('avatars/'.$imagen) : null;
+$avatarUrl = $avatarPath !== null && is_file($avatarPath) ? asset('avatars/'.$imagen) : null;
+$nombreUsuario = trim(implode(' ', array_filter([Auth::user()->nombre1, Auth::user()->apellido1])));
+$inicialesUsuario = mb_strtoupper(mb_substr((string) Auth::user()->nombre1, 0, 1).mb_substr((string) Auth::user()->apellido1, 0, 1));
 $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
 
 ?>
@@ -44,7 +45,7 @@ $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
 <header class="main-header">
 
   <!-- Logo -->
-  <a href="{{route('dashboard')}}" class="logo">
+  <a href="{{ route('new-system.dashboard') }}" class="logo">
     <!-- mini logo for sidebar mini 50x50 pixels -->
     <span class="logo-mini"> @if($empresa->compras == 0) <b>S</b>M @else <b> {{$empresa->nombre_corto}} </b> @endif</span>
     <!-- logo for regular state and mobile devices -->
@@ -57,7 +58,9 @@ $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
     <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
       <span class="sr-only">Toggle navigation</span>
     </a>
-    <a class="navbar-brand text-hide" href="#">Brand Text
+    <a class="new-system-brand" href="{{ route('new-system.dashboard') }}" aria-label="AITROL">
+      <strong>AITROL</strong>
+      <span>Sistema Médico</span>
     </a>
     <!-- Navbar Right Menu -->
     <div class="navbar-custom-menu">
@@ -127,14 +130,22 @@ $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
           <!-- Menu Toggle Button -->
           <a href="#" class="dropdown-toggle ieced-user-trigger" data-toggle="dropdown">
             <!-- The user image in the navbar-->
-            <img src="{{asset('/avatars').'/'.$imagen}}" class="user-image" alt="User Image">
+            @if($avatarUrl)
+              <img src="{{ $avatarUrl }}" class="user-image" alt="Foto de {{ $nombreUsuario }}">
+            @else
+              <span class="new-system-avatar new-system-avatar-small" aria-hidden="true">{{ $inicialesUsuario }}</span>
+            @endif
             <!-- hidden-xs hides the username on small devices so only the image appears. -->
             <span class="hidden-xs">{{ Auth::user()->nombre1}} {{ Auth::user()->apellido1}}</span>
           </a>
           <ul class="dropdown-menu ieced-user-menu">
             <!-- The user image in the menu -->
             <li class="user-header ieced-user-card">
-              <img src="{{asset('/avatars').'/'.$imagen}}" class="img-circle ieced-user-avatar" alt="User Image">
+              @if($avatarUrl)
+                <img src="{{ $avatarUrl }}" class="img-circle ieced-user-avatar" alt="Foto de {{ $nombreUsuario }}">
+              @else
+                <span class="new-system-avatar new-system-avatar-menu" aria-hidden="true">{{ $inicialesUsuario }}</span>
+              @endif
 
               <p class="ieced-user-name">
                 Hola {{ Auth::user()->nombre1}} {{ Auth::user()->apellido1}}
@@ -153,7 +164,7 @@ $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
                 <a href="{{ route('perfil.editar') }}" class="btn btn-default btn-flat ieced-user-action">
                   <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Perfil
                 </a>
-                <a class="btn btn-default btn-flat ieced-user-action ieced-user-signout" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                <a class="btn btn-default btn-flat ieced-user-action ieced-user-signout" href="{{ route('new-system.logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
                   <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Cerrar sesión
                 </a>
               @endif
@@ -164,6 +175,6 @@ $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
     </div>
   </nav>
 </header>
-<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+<form id="logout-form" action="{{ route('new-system.logout') }}" method="POST" style="display: none;">
   {{ csrf_field() }}
 </form>

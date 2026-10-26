@@ -4,6 +4,20 @@
     :companies="$newSystemCompanies"
     :current-company="$newSystemCurrentCompany"
 >
+    @php
+        $dashboardUserName = trim(implode(' ', array_filter([$newSystemUser->nombre1, $newSystemUser->apellido1])));
+        $dashboardCompanyName = $newSystemCurrentCompany?->nombrecomercial ?? $newSystemCompanies->first()?->nombrecomercial ?? 'AITROL';
+    @endphp
+
+    <section class="aitrol-welcome">
+        <div class="aitrol-welcome__content">
+            <p class="aitrol-welcome__eyebrow">Plataforma Laravel 13</p>
+            <h2>Bienvenido, {{ $dashboardUserName }}</h2>
+            <p>Continúa trabajando en {{ $dashboardCompanyName }} con la navegación completa del sistema. Los módulos conservan sus permisos, rutas y operación mientras los modernizamos uno por uno.</p>
+        </div>
+        <a href="#modulos-principales" class="aitrol-welcome__action">Ver accesos principales <i class="fa fa-arrow-down"></i></a>
+    </section>
+
     @if ($newSystemCurrentCompany === null && $newSystemCompanies->count() > 1)
         <div class="alert alert-warning">
             <h4><i class="icon fa fa-warning"></i> Selecciona la empresa de trabajo</h4>
@@ -55,26 +69,12 @@
                     <p>Rutas integradas</p>
                 </div>
                 <div class="icon"><i class="fa fa-exchange"></i></div>
-                <a href="{{ url('/dashboard') }}" class="small-box-footer">Abrir sistema legado <i class="fa fa-arrow-circle-right"></i></a>
+                <span class="small-box-footer">Disponibles en el menú lateral <i class="fa fa-check-circle"></i></span>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box box-primary">
-                <div class="box-header with-border">
-                    <h3 class="box-title"><i class="fa fa-home"></i> Sistema Médico</h3>
-                </div>
-                <div class="box-body">
-                    <p class="lead">AITROL está siendo actualizado a Laravel 13 conservando la navegación y la experiencia del sistema original.</p>
-                    <p>Los módulos que aún no han sido migrados permanecen disponibles desde el menú lateral. Al modernizar cada módulo, su acceso será reemplazado aquí sin cambiar el flujo de trabajo habitual.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
+    <div class="row" id="modulos-principales">
         <div class="col-md-4">
             <div class="box box-info new-system-module-box">
                 <div class="box-header with-border"><h3 class="box-title">Empresas</h3></div>
@@ -99,12 +99,12 @@
         @endcan
         <div class="col-md-4">
             <div class="box box-warning new-system-module-box">
-                <div class="box-header with-border"><h3 class="box-title">Módulos heredados</h3></div>
+                <div class="box-header with-border"><h3 class="box-title">Operación completa</h3></div>
                 <div class="box-body">
-                    <p>Continúa trabajando con los módulos operativos mientras son revisados y migrados.</p>
+                    <p>Todos los accesos autorizados del sistema original están disponibles en el menú lateral.</p>
                     <span class="icon"><i class="fa fa-external-link"></i></span>
                 </div>
-                <div class="box-footer"><a href="{{ url('/dashboard') }}" class="btn btn-warning btn-flat">Abrir legado</a></div>
+                <div class="box-footer"><span class="text-muted"><i class="fa fa-bars"></i> Selecciona una opción en el menú lateral</span></div>
             </div>
         </div>
     </div>

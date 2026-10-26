@@ -46,6 +46,7 @@
 
     <link href="{{ asset("/bower_components/AdminLTE/dist/css/skins/_all-skins.min.css")}}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('/css/dropzone.css')}}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -186,12 +187,12 @@ document.onmousedown=click
     |               | sidebar-mini                            |
     |---------------------------------------------------------|
     -->
-  <body class="hold-transition skin-blue  sidebar-mini sidebar-collapse" id="body2" >
+  <body class="hold-transition skin-blue sidebar-mini aitrol-shell" id="body2" >
     <div class="wrapper">
     <!-- Main Header -->
     @include('layouts.header')
     <!-- Sidebar -->
-    @include('layouts.sidebar')
+    @include('layouts.sidebar', ['newSystemNavigation' => true])
     @yield('content')
     <!-- /.content-wrapper -->
     <!-- Footer -->

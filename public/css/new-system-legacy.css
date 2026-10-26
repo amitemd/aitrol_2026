@@ -323,3 +323,472 @@ body {
         padding: 35px 25px;
     }
 }
+
+/* Shared application shell: Laravel 13 and legacy modules. */
+.aitrol-shell {
+    background: #eef3f8;
+    color: #172033;
+    font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+}
+
+.aitrol-shell .wrapper {
+    background: #eef3f8;
+}
+
+.aitrol-shell .main-header {
+    background: linear-gradient(100deg, #1677c8 0%, #075b9f 100%) !important;
+    box-shadow: 0 4px 18px rgb(15 50 82 / 18%) !important;
+    max-height: 64px;
+}
+
+.aitrol-shell .main-header .logo {
+    background: transparent !important;
+    font-size: 20px;
+    font-weight: 600;
+    height: 64px;
+    line-height: 64px;
+    width: 320px !important;
+}
+
+.aitrol-shell .main-header .navbar {
+    background: transparent !important;
+    margin-left: 320px !important;
+    min-height: 64px;
+}
+
+.aitrol-shell .main-header .navbar .sidebar-toggle {
+    padding: 22px 18px;
+}
+
+.aitrol-shell .main-header .navbar-nav > li > a {
+    padding-bottom: 22px;
+    padding-top: 22px;
+}
+
+.aitrol-shell .new-system-brand {
+    top: 12px;
+}
+
+.aitrol-shell .main-sidebar {
+    background: #17262d !important;
+    padding-top: 64px;
+    width: 320px !important;
+}
+
+.aitrol-shell .sidebar {
+    background: #17262d !important;
+    padding-bottom: 28px;
+}
+
+.aitrol-shell .sidebar .user-panel {
+    align-items: center;
+    border-bottom: 1px solid rgb(255 255 255 / 7%);
+    display: flex;
+    min-height: 86px;
+    padding: 18px 20px;
+}
+
+.aitrol-shell .sidebar .user-panel::before,
+.aitrol-shell .sidebar .user-panel::after {
+    display: none;
+}
+
+.aitrol-shell .user-panel > .image > img,
+.aitrol-shell .new-system-avatar-sidebar {
+    border: 2px solid rgb(255 255 255 / 70%);
+    height: 48px;
+    width: 48px;
+}
+
+.aitrol-shell .user-panel > .info {
+    left: auto;
+    padding: 0 0 0 14px;
+    position: relative;
+    top: auto;
+}
+
+.aitrol-shell .user-panel > .info > p {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aitrol-shell .sidebar-form {
+    border: 0 !important;
+    margin: 14px 16px !important;
+}
+
+.aitrol-shell .sidebar-form input,
+.aitrol-shell .sidebar-form .btn,
+.aitrol-shell .input_directo {
+    background: #22343d !important;
+    border: 1px solid rgb(255 255 255 / 8%) !important;
+    color: #e5edf2 !important;
+    height: 40px !important;
+}
+
+.aitrol-shell .sidebar-form input,
+.aitrol-shell .input_directo {
+    border-radius: 8px 0 0 8px !important;
+}
+
+.aitrol-shell .sidebar-form .btn {
+    border-left: 0 !important;
+    border-radius: 0 8px 8px 0 !important;
+}
+
+.aitrol-shell .input_directo {
+    border-radius: 8px !important;
+    width: 100%;
+}
+
+.aitrol-shell .sidebar-menu > li.header {
+    background: #122027;
+    color: #6f95a8;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    padding: 12px 18px;
+}
+
+.aitrol-shell .sidebar-menu > li > a {
+    border-left: 3px solid transparent;
+    color: #c5d3db;
+    font-size: 13px;
+    padding: 13px 18px;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.aitrol-shell .sidebar-menu > li:hover > a,
+.aitrol-shell .sidebar-menu > li.active > a {
+    background: #20333c !important;
+    border-left-color: #24b9e6 !important;
+    color: #fff !important;
+}
+
+.aitrol-shell .sidebar-menu > li.active > a {
+    box-shadow: inset 4px 0 0 #24b9e6;
+}
+
+.aitrol-shell .sidebar-menu > li > .treeview-menu {
+    background: #122027 !important;
+    margin: 0;
+    padding: 6px 0 8px;
+}
+
+.aitrol-shell .treeview-menu > li > a {
+    color: #9eb4bf !important;
+    font-size: 12px;
+    line-height: 1.45;
+    padding: 9px 18px 9px 38px;
+}
+
+.aitrol-shell .treeview-menu > li.active > a,
+.aitrol-shell .treeview-menu > li > a:hover {
+    color: #fff !important;
+}
+
+.aitrol-shell .content-wrapper,
+.aitrol-shell .main-footer {
+    margin-left: 320px !important;
+}
+
+.aitrol-shell .content-wrapper {
+    background: #eef3f8;
+    min-height: calc(100vh - 64px) !important;
+}
+
+.aitrol-shell .content-header {
+    padding: 24px 28px 10px;
+}
+
+.aitrol-shell .content-header > h1 {
+    color: #172033;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+.aitrol-shell .content-header > h1 > small {
+    color: #778397;
+    font-size: 13px;
+    font-weight: 400;
+    margin-left: 6px;
+}
+
+.aitrol-shell .content {
+    padding: 18px 28px 32px;
+}
+
+.aitrol-shell .breadcrumb {
+    color: #778397;
+    top: 27px;
+}
+
+.aitrol-shell .box {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgb(38 63 86 / 6%);
+    overflow: hidden;
+}
+
+.aitrol-shell .box.box-primary,
+.aitrol-shell .box.box-info,
+.aitrol-shell .box.box-success,
+.aitrol-shell .box.box-warning {
+    border-top-width: 3px;
+}
+
+.aitrol-shell .box-header {
+    padding: 15px 18px;
+}
+
+.aitrol-shell .box-header.with-border {
+    border-bottom-color: #edf1f5;
+}
+
+.aitrol-shell .box-body {
+    padding: 18px;
+}
+
+.aitrol-shell .box-footer {
+    background: #fbfcfe;
+    border-top-color: #edf1f5;
+    padding: 12px 18px;
+}
+
+.aitrol-shell .small-box {
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgb(25 55 82 / 10%);
+    min-height: 138px;
+    overflow: hidden;
+    transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.aitrol-shell .small-box:hover {
+    box-shadow: 0 14px 32px rgb(25 55 82 / 16%);
+    transform: translateY(-2px);
+}
+
+.aitrol-shell .small-box > .inner {
+    padding: 18px;
+}
+
+.aitrol-shell .small-box h3 {
+    font-size: 34px;
+    font-weight: 600;
+    margin: 0 0 6px;
+}
+
+.aitrol-shell .small-box .icon {
+    font-size: 72px;
+    right: 16px;
+    top: 14px;
+}
+
+.aitrol-shell .small-box-footer {
+    background: rgb(0 0 0 / 8%);
+    padding: 8px 12px;
+}
+
+.aitrol-shell .new-system-stat.bg-aqua {
+    background: linear-gradient(135deg, #08b9dd, #0797c2) !important;
+}
+
+.aitrol-shell .new-system-stat.bg-green {
+    background: linear-gradient(135deg, #10ad75, #078c5f) !important;
+}
+
+.aitrol-shell .new-system-stat.bg-yellow {
+    background: linear-gradient(135deg, #f3a51b, #de8610) !important;
+}
+
+.aitrol-shell .new-system-stat.bg-red {
+    background: linear-gradient(135deg, #eb5a4c, #cb3d31) !important;
+}
+
+.aitrol-shell .btn {
+    border-radius: 7px;
+    font-weight: 500;
+}
+
+.aitrol-shell .btn-flat {
+    border-radius: 7px;
+}
+
+.aitrol-shell .form-control {
+    border-color: #d9e2ea;
+    border-radius: 7px;
+    box-shadow: none;
+}
+
+.aitrol-shell .form-control:focus {
+    border-color: #24a9dc;
+    box-shadow: 0 0 0 3px rgb(36 169 220 / 12%);
+}
+
+.aitrol-shell .table > thead > tr > th {
+    background: #f7f9fc;
+    border-bottom: 1px solid #dfe7ee;
+    color: #5d6b7f;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.aitrol-shell .main-footer {
+    border-top: 1px solid #dfe7ee;
+    color: #5d6b7f;
+    padding: 17px 24px;
+}
+
+.aitrol-welcome {
+    align-items: center;
+    background: linear-gradient(120deg, #0b2f4a 0%, #0c5f86 60%, #087b9b 100%);
+    border-radius: 14px;
+    box-shadow: 0 14px 32px rgb(21 65 94 / 16%);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    min-height: 168px;
+    overflow: hidden;
+    padding: 30px 34px;
+    position: relative;
+}
+
+.aitrol-welcome::after {
+    background: rgb(255 255 255 / 7%);
+    border-radius: 50%;
+    content: "";
+    height: 260px;
+    position: absolute;
+    right: -70px;
+    top: -120px;
+    width: 260px;
+}
+
+.aitrol-welcome__content {
+    max-width: 760px;
+    position: relative;
+    z-index: 1;
+}
+
+.aitrol-welcome__eyebrow {
+    color: #64d8f3;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    margin-bottom: 9px;
+    text-transform: uppercase;
+}
+
+.aitrol-welcome h2 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin: 0 0 10px;
+}
+
+.aitrol-welcome p {
+    color: #d5e6ef;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.aitrol-welcome__action {
+    background: #fff;
+    border-radius: 9px;
+    color: #075b7a;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px 16px;
+    position: relative;
+    text-decoration: none;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.aitrol-welcome__action:hover,
+.aitrol-welcome__action:focus {
+    color: #05465f;
+    text-decoration: none;
+}
+
+@media (min-width: 768px) {
+    .aitrol-shell.sidebar-collapse .main-sidebar {
+        transform: translate(-270px, 0) !important;
+    }
+
+    .aitrol-shell.sidebar-collapse .content-wrapper,
+    .aitrol-shell.sidebar-collapse .main-footer {
+        margin-left: 50px !important;
+    }
+
+    .aitrol-shell.sidebar-collapse .main-header .logo {
+        width: 50px !important;
+    }
+
+    .aitrol-shell.sidebar-collapse .main-header .navbar {
+        margin-left: 50px !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .aitrol-welcome {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 767px) {
+    .aitrol-shell .main-header {
+        max-height: none;
+    }
+
+    .aitrol-shell .main-header .logo {
+        height: 54px;
+        line-height: 54px;
+        width: 100% !important;
+    }
+
+    .aitrol-shell .main-header .navbar {
+        margin-left: 0 !important;
+        min-height: 54px;
+    }
+
+    .aitrol-shell .main-header .navbar .sidebar-toggle {
+        padding: 17px;
+    }
+
+    .aitrol-shell .main-sidebar {
+        padding-top: 108px;
+        width: 280px !important;
+    }
+
+    .aitrol-shell .content-wrapper,
+    .aitrol-shell .main-footer {
+        margin-left: 0 !important;
+    }
+
+    .aitrol-shell .content-header {
+        padding: 20px 16px 8px;
+    }
+
+    .aitrol-shell .content {
+        padding: 14px 16px 24px;
+    }
+
+    .aitrol-welcome {
+        padding: 24px;
+    }
+
+    .aitrol-welcome h2 {
+        font-size: 23px;
+    }
+}
