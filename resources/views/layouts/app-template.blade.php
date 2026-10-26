@@ -45,7 +45,7 @@
       -->
 
     <link href="{{ asset("/bower_components/AdminLTE/dist/css/skins/_all-skins.min.css")}}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('css/app-template.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('/css/dropzone.css')}}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,7 +96,7 @@ Full screen Modal
 }
 </style>
 
-    <script src="{{ asset ("/bower_components/jquery/dist/jquery.min.js")}}"></script>
+    <script src="{{ asset('/js/jquery-2.1.4.min.js') }}"></script>
 
     <script src="{{ asset ("/bower_components/datatables.net/js/jquery.dataTables.min.js") }}"></script>
     <script src="{{ asset ("/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js") }}"></script>
@@ -206,7 +206,7 @@ document.onmousedown=click
 
     <!-- Bootstrap 3.3.2 JS -->
 
-    <script src="{{ asset ("/bower_components/AdminLTE/bootstrap/js/bootstrap.min.js") }}" type="text/javascript"></script>
+    <script src="{{ asset('/js/bootstrap.min.js') }}" type="text/javascript"></script>
     <script  src="{{ asset ("/bower_components/AdminLTE/plugins/datatables/jquery.dataTables.min.js") }}" type="text/javascript" ></script>
   <?php
     if (config('data.table') == null) {
@@ -237,8 +237,7 @@ document.onmousedown=click
   ?>
 
     <!-- AdminLTE App -->
-    <script src="{{ asset ("/bower_components/AdminLTE/dist/js/app.min.js") }}" type="text/javascript"></script>
-    <script src="{{ asset ("/bower_components/AdminLTE/dist/js/demo.js") }}" type="text/javascript"></script>
+    <script src="{{ asset('/js/custom.js') }}?v={{ filemtime(public_path('js/custom.js')) }}" type="text/javascript"></script>
     <!-- Optionally, you can add Slimscroll and FastClick plugins.
       Both of these plugins are recommended to enhance the
       user experience. Slimscroll is required when using the
