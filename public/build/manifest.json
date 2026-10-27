@@ -27,8 +27,26 @@
     "file": "assets/instrument-sans-600-normal-B9e8oLYv.woff",
     "src": "_instrument-sans-600-normal-B9e8oLYv.woff"
   },
+  "node_modules/pdfmake/build/pdfmake.js": {
+    "file": "assets/pdfmake-Cy9mjdke.js",
+    "name": "pdfmake",
+    "src": "node_modules/pdfmake/build/pdfmake.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/aitrol-datatables.js"
+    ]
+  },
+  "node_modules/pdfmake/build/vfs_fonts.js": {
+    "file": "assets/vfs_fonts-DUq2r6V7.js",
+    "name": "vfs_fonts",
+    "src": "node_modules/pdfmake/build/vfs_fonts.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/aitrol-datatables.js"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-C_-ByJ8b.css",
+    "file": "assets/app-DyKlq_Sl.css",
     "name": "app",
     "names": [
       "app.css"
@@ -37,12 +55,16 @@
     "isEntry": true
   },
   "resources/js/aitrol-datatables.js": {
-    "file": "assets/aitrol-datatables-CN9cUssk.js",
+    "file": "assets/aitrol-datatables-rdX_tTWo.js",
     "name": "aitrol-datatables",
     "src": "resources/js/aitrol-datatables.js",
     "isEntry": true,
+    "dynamicImports": [
+      "node_modules/pdfmake/build/pdfmake.js",
+      "node_modules/pdfmake/build/vfs_fonts.js"
+    ],
     "css": [
-      "assets/aitrol-datatables-C4bsdpoj.css"
+      "assets/aitrol-datatables-fAbRGRVQ.css"
     ]
   },
   "resources/js/app.js": {

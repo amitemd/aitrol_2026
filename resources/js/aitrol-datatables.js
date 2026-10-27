@@ -2,6 +2,7 @@ import DataTable from 'datatables.net-dt';
 import 'datatables.net-responsive-dt';
 import 'datatables.net-buttons-dt';
 import 'datatables.net-buttons/js/buttons.html5.mjs';
+import 'datatables.net-buttons/js/buttons.print.mjs';
 import JSZip from 'jszip';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 import 'datatables.net-responsive-dt/css/responsive.dataTables.css';
@@ -11,6 +12,31 @@ import '../css/aitrol-datatables.css';
 if (DataTable.Buttons?.jszip) {
     DataTable.Buttons.jszip(JSZip);
 }
+
+let pdfMakePromise;
+
+const loadPdfMake = () => {
+    if (!pdfMakePromise) {
+        pdfMakePromise = Promise.all([
+            import('pdfmake/build/pdfmake.js'),
+            import('pdfmake/build/vfs_fonts.js'),
+        ])
+            .then(([pdfMakeModule, pdfFontsModule]) => {
+                const pdfMake = pdfMakeModule.default;
+
+                pdfMake.addVirtualFileSystem(pdfFontsModule.default);
+                DataTable.Buttons.pdfMake(pdfMake);
+
+                return pdfMake;
+            })
+            .catch((error) => {
+                pdfMakePromise = undefined;
+                throw error;
+            });
+    }
+
+    return pdfMakePromise;
+};
 
 const spanishLanguage = {
     decimal: ',',
@@ -25,6 +51,13 @@ const spanishLanguage = {
     search: 'Buscar:',
     searchPlaceholder: 'Buscar en la tabla',
     zeroRecords: 'No se encontraron resultados',
+    buttons: {
+        copyTitle: 'Datos copiados',
+        copySuccess: {
+            _: '%d filas copiadas',
+            1: '1 fila copiada',
+        },
+    },
     paginate: {
         first: 'Primero',
         last: 'Último',
@@ -52,14 +85,64 @@ const initializeDataTable = (table) => {
     const exportName = table.dataset.exportName;
     const orderColumn = Number.parseInt(table.dataset.orderColumn ?? '', 10);
     const orderDirection = table.dataset.orderDirection === 'asc' ? 'asc' : 'desc';
+    const exportOptions = {
+        modifier: {
+            order: 'applied',
+            page: 'all',
+            search: 'applied',
+        },
+    };
     const buttons = exportName
-        ? [{
-            extend: 'excelHtml5',
-            text: '<i class="fa fa-file-excel-o" aria-hidden="true"></i> Exportar Excel',
-            className: 'aitrol-export-button',
-            title: exportName,
-            footer: true,
-        }]
+        ? [
+            {
+                extend: 'copyHtml5',
+                text: '<i class="fa fa-clone" aria-hidden="true"></i><span class="sr-only">Copiar</span>',
+                titleAttr: 'Copiar datos',
+                className: 'aitrol-export-button aitrol-export-button--copy',
+                exportOptions,
+            },
+            {
+                extend: 'excelHtml5',
+                text: '<i class="fa fa-file-excel-o" aria-hidden="true"></i><span class="sr-only">Excel</span>',
+                titleAttr: 'Exportar a Excel',
+                className: 'aitrol-export-button aitrol-export-button--excel',
+                title: exportName,
+                footer: true,
+                exportOptions,
+            },
+            {
+                extend: 'pdfHtml5',
+                available: () => true,
+                text: '<i class="fa fa-file-pdf-o" aria-hidden="true"></i><span class="sr-only">PDF</span>',
+                titleAttr: 'Exportar a PDF',
+                className: 'aitrol-export-button aitrol-export-button--pdf',
+                title: exportName,
+                footer: true,
+                orientation: 'landscape',
+                pageSize: 'A3',
+                exportOptions,
+                async: 100,
+                action: async function (event, dataTable, button, config, done) {
+                    try {
+                        await loadPdfMake();
+                        DataTable.ext.buttons.pdfHtml5.action.call(this, event, dataTable, button, config, done);
+                    } catch (error) {
+                        console.error('No se pudo generar el PDF de la tabla.', error);
+                        window.alert('No se pudo generar el PDF. Inténtelo nuevamente.');
+                        done();
+                    }
+                },
+            },
+            {
+                extend: 'print',
+                text: '<i class="fa fa-print" aria-hidden="true"></i><span class="sr-only">Imprimir</span>',
+                titleAttr: 'Imprimir tabla',
+                className: 'aitrol-export-button aitrol-export-button--print',
+                title: exportName,
+                footer: true,
+                exportOptions,
+            },
+        ]
         : [];
 
     const options = {

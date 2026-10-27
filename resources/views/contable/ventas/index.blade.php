@@ -224,7 +224,7 @@ if (count($ventas) > 0) {
                 <table id="tablaVentas" class="table table-hover aitrol-table" role="grid" aria-describedby="example2_info" width="100%"
                   data-aitrol-datatable
                   data-paging="false"
-                  data-searching="false"
+                  data-searching="true"
                   data-info="false"
                   data-order-column="0"
                   data-order-direction="desc"
