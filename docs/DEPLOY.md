@@ -28,22 +28,19 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
-### Habilitar “Actualizar desde Git” en el panel
+### Habilitar “Actualizar desde Git” sin sudo
 
-El servidor web no debe tener permisos generales de escritura sobre el proyecto ni sobre `.git`. Instale una sola vez el ayudante restringido usando una cuenta con `sudo`:
+El panel ejecuta `git pull --ff-only` directamente con el usuario de PHP. Configure una sola vez las ACL usando la cuenta propietaria del repositorio; el comando no utiliza `sudo`:
 
 ```bash
 cd /var/www/aitrol
-sudo WEB_USER=apache PROJECT_PATH=/var/www/aitrol ./install-git-helper.sh
+chmod +x install-git-direct.sh
+WEB_USER=apache PROJECT_PATH=/var/www/aitrol ./install-git-direct.sh
 ```
 
-El instalador detecta como usuario de despliegue al propietario del proyecto. Si Git se administra con otra cuenta, indíquela explícitamente:
+El instalador concede al usuario web escritura sobre los archivos versionados, sus directorios y `.git`; excluye `vendor` y `node_modules`, configura ACL predeterminadas para archivos futuros y mantiene `.env` como solo lectura. Las variables antiguas `DEPLOY_GIT_HELPER` y `DEPLOY_GIT_USER` se limpian automáticamente. No use `chmod 777`.
 
-```bash
-sudo WEB_USER=apache DEPLOY_USER=deploy PROJECT_PATH=/var/www/aitrol ./install-git-helper.sh
-```
-
-El ayudante permite al usuario web ejecutar únicamente la comprobación y el `git pull --ff-only` de este repositorio. También registra `DEPLOY_GIT_HELPER` y `DEPLOY_GIT_USER` en `.env`. No cambie los permisos del proyecto con `chmod 777`.
+Este modo elimina la elevación de privilegios, pero también permite que el proceso web modifique el código. Mantenga el panel limitado a superadministradores, use autenticación fuerte y restrinja su acceso por red cuando sea posible.
 
 Variables opcionales:
 

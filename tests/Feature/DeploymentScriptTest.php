@@ -30,16 +30,18 @@ class DeploymentScriptTest extends TestCase
         $this->assertSame(2, substr_count($script, "@('artisan', 'up')"));
     }
 
-    public function test_git_helper_installer_uses_a_restricted_sudo_rule_without_unsafe_permissions(): void
+    public function test_direct_git_installer_uses_acl_without_sudo_or_unsafe_permissions(): void
     {
-        $script = file_get_contents(base_path('install-git-helper.sh'));
+        $script = file_get_contents(base_path('install-git-direct.sh'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('visudo -cf', $script);
-        $this->assertStringContainsString('NOPASSWD:', $script);
-        $this->assertStringContainsString('--check', $script);
-        $this->assertStringContainsString("upsert_env 'DEPLOY_GIT_HELPER'", $script);
-        $this->assertStringContainsString("upsert_env 'DEPLOY_GIT_USER'", $script);
+        $this->assertStringContainsString('setfacl', $script);
+        $this->assertStringContainsString('git -C "$PROJECT_PATH" ls-files -z', $script);
+        $this->assertStringContainsString('u:$WEB_USER:rwX', $script);
+        $this->assertStringContainsString('u:$WEB_USER:r--', $script);
+        $this->assertStringNotContainsString('sudo -', $script);
+        $this->assertStringNotContainsString('visudo', $script);
+        $this->assertStringNotContainsString('NOPASSWD', $script);
         $this->assertStringNotContainsString('chmod 777', $script);
     }
 }

@@ -29,7 +29,7 @@ class DeploymentPanelTest extends TestCase
             ->assertSee('origin/main');
     }
 
-    public function test_panel_explains_how_to_enable_the_secure_git_helper_when_php_cannot_write(): void
+    public function test_panel_explains_how_to_enable_direct_git_access_when_php_cannot_write(): void
     {
         $administrator = $this->createUser(role: 1);
         $status = $this->readyGitStatus();
@@ -44,8 +44,10 @@ class DeploymentPanelTest extends TestCase
         $this->actingAs($administrator)
             ->get(route('deployment.index'))
             ->assertOk()
-            ->assertSee('Ayudante protegido no instalado')
-            ->assertSee('install-git-helper.sh');
+            ->assertSee('Acceso directo de Git no configurado')
+            ->assertSee('PHP directo, sin sudo')
+            ->assertSee('install-git-direct.sh')
+            ->assertDontSee('install-git-helper.sh');
     }
 
     public function test_superadministrator_can_update_the_repository_from_the_deployment_panel(): void

@@ -11,76 +11,30 @@ use Tests\TestCase;
 
 class GitDeploymentTest extends TestCase
 {
-    public function test_rejects_a_privileged_helper_without_a_deployment_user(): void
-    {
-        config()->set([
-            'deployment.git.helper' => '/usr/local/sbin/aitrol-git-pull',
-            'deployment.git.user' => null,
-        ]);
-
-        $runner = Mockery::mock(CommandRunner::class);
-        $runner->shouldNotReceive('run');
-
-        $status = (new GitDeployment($runner))->status();
-
-        $this->assertFalse($status['available']);
-        $this->assertFalse($status['writable']);
-        $this->assertSame(
-            'Defina DEPLOY_GIT_USER cuando configure DEPLOY_GIT_HELPER.',
-            $status['error'],
-        );
-    }
-
-    public function test_reports_the_privileged_helper_as_ready_when_its_check_succeeds(): void
+    public function test_reports_the_repository_as_ready_using_direct_git_commands(): void
     {
         config()->set([
             'deployment.git.helper' => '/usr/local/sbin/aitrol-git-pull',
             'deployment.git.user' => 'aitrol-deploy',
         ]);
 
-        $runner = $this->mockReadyRepository(helperCheck: $this->process(successful: true));
+        $runner = $this->mockReadyRepository();
 
         $status = (new GitDeployment($runner))->status();
 
-        $this->assertSame('helper', $status['mode']);
+        $this->assertSame('direct', $status['mode']);
+        $this->assertTrue($status['available']);
         $this->assertTrue($status['writable']);
         $this->assertNull($status['error']);
     }
 
-    public function test_reports_the_helper_error_when_privileged_access_is_not_configured(): void
+    public function test_pull_uses_git_directly_without_sudo(): void
     {
-        config()->set([
-            'deployment.git.helper' => '/usr/local/sbin/aitrol-git-pull',
-            'deployment.git.user' => 'aitrol-deploy',
-        ]);
-
-        $runner = $this->mockReadyRepository(helperCheck: $this->process(
-            successful: false,
-            error: 'sudo: a password is required',
-        ));
-
-        $status = (new GitDeployment($runner))->status();
-
-        $this->assertSame('helper', $status['mode']);
-        $this->assertFalse($status['writable']);
-        $this->assertSame(
-            'El ayudante privilegiado no está listo: sudo: a password is required',
-            $status['error'],
-        );
-    }
-
-    public function test_pull_uses_only_the_configured_privileged_helper(): void
-    {
-        config()->set([
-            'deployment.git.helper' => '/usr/local/sbin/aitrol-git-pull',
-            'deployment.git.user' => 'aitrol-deploy',
-        ]);
-
         $runner = Mockery::mock(CommandRunner::class);
         $runner->shouldReceive('run')
             ->once()
             ->with(
-                ['sudo', '-n', '-H', '-u', 'aitrol-deploy', '/usr/local/sbin/aitrol-git-pull'],
+                ['git', '-c', 'safe.directory='.base_path(), 'pull', '--ff-only', 'origin', 'main'],
                 base_path(),
                 300.0,
             )
@@ -92,25 +46,18 @@ class GitDeploymentTest extends TestCase
         $result = $deployment->pull();
 
         $this->assertTrue($result['successful']);
-        $this->assertStringContainsString('$ sudo -n -H -u aitrol-deploy /usr/local/sbin/aitrol-git-pull', $result['output']);
+        $this->assertStringContainsString('$ git -c safe.directory=', $result['output']);
+        $this->assertStringNotContainsString('sudo', $result['output']);
         $this->assertStringContainsString('Already up to date.', $result['output']);
     }
 
-    private function mockReadyRepository(Process $helperCheck): MockInterface
+    private function mockReadyRepository(): MockInterface
     {
         $runner = Mockery::mock(CommandRunner::class);
         $runner->shouldReceive('run')->once()->andReturn($this->process(successful: true, output: 'true'));
         $runner->shouldReceive('run')->once()->andReturn($this->process(successful: true, output: 'main'));
         $runner->shouldReceive('run')->once()->andReturn($this->process(successful: true, output: 'abc1234'));
         $runner->shouldReceive('run')->once()->andReturn($this->process(successful: true));
-        $runner->shouldReceive('run')
-            ->once()
-            ->with(
-                ['sudo', '-n', '-H', '-u', 'aitrol-deploy', '/usr/local/sbin/aitrol-git-pull', '--check'],
-                base_path(),
-                10.0,
-            )
-            ->andReturn($helperCheck);
 
         return $runner;
     }
@@ -131,7 +78,7 @@ class GitDeploymentTest extends TestCase
      *     available: true,
      *     clean: true,
      *     writable: true,
-     *     mode: 'helper',
+     *     mode: 'direct',
      *     branch: 'main',
      *     remote: 'origin',
      *     target: 'main',
@@ -146,7 +93,7 @@ class GitDeploymentTest extends TestCase
             'available' => true,
             'clean' => true,
             'writable' => true,
-            'mode' => 'helper',
+            'mode' => 'direct',
             'branch' => 'main',
             'remote' => 'origin',
             'target' => 'main',
