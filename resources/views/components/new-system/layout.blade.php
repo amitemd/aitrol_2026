@@ -163,6 +163,14 @@
                                 <a href="{{ route('deployment.index') }}"><i class="fa fa-cogs"></i> <span>Despliegue del sistema</span></a>
                             </li>
                         @endif
+                        @if (Route::has('observability.logs.index'))
+                            <li class="{{ request()->routeIs('observability.logs.*') ? 'active' : '' }}" data-menu-entry>
+                                <a href="{{ route('observability.logs.index') }}"><i class="fa fa-stethoscope"></i> <span>Logs y diagnóstico</span></a>
+                            </li>
+                            <li class="{{ request()->routeIs('observability.audit.*') ? 'active' : '' }}" data-menu-entry>
+                                <a href="{{ route('observability.audit.index') }}"><i class="fa fa-shield"></i> <span>Auditoría del sistema</span></a>
+                            </li>
+                        @endif
                     @endcan
 
                     <li class="header">MÓDULOS DEL SISTEMA</li>

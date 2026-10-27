@@ -2,6 +2,9 @@
 
 namespace Sis_medico\Http\Controllers\hc_admision;
 
+use App\Modules\Diagnostics\Application\Data\DiagnosisCode;
+use App\Modules\Diagnostics\Application\Queries\FindDiagnosisCodeFromLabel;
+use App\Modules\Diagnostics\Application\Queries\SearchDiagnosisCodes;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -578,70 +581,32 @@ class EpicrisisController extends Controller
 
     }
 
-    public function cie10_nombre(Request $request)
+    public function cie10_nombre(Request $request, SearchDiagnosisCodes $query): array
     {
-        $nombre_cie10 = $request['term'];
-        $data         = null;
+        $validated = $request->validate([
+            'term' => ['required', 'string', 'max:100'],
+        ]);
 
-        $seteo = '%' . $nombre_cie10 . '%';
+        $diagnoses = $query->handle($validated['term']);
 
-        $query1 = "SELECT id, descripcion
-                  FROM cie_10_3
-                  WHERE descripcion like '" . $seteo . "' or id like '" . $seteo . "'  LIMIT 100
-                  ";
-
-        $query2 = "SELECT id, descripcion
-                  FROM cie_10_4
-                  WHERE descripcion like '" . $seteo . "' or id like '" . $seteo . "'  LIMIT 100
-                  ";
-
-        $cie10_3 = DB::select($query1);
-        $cie10_4 = DB::select($query2);
-
-        foreach ($cie10_3 as $value) {
-            $data[] = array('value' => '(' . $value->id . ') ' . $value->descripcion, 'id' => $value->id);
-        }
-        foreach ($cie10_4 as $value) {
-            $data[] = array('value' => '(' . $value->id . ') ' . $value->descripcion, 'id' => $value->id);
-        }
-        if (count($data) > 0) {
-            return $data;
-        } else {
+        if ($diagnoses->isEmpty()) {
             return ['value' => 'No se encontraron resultados', 'id' => ''];
         }
 
+        return $diagnoses
+            ->map(fn (DiagnosisCode $diagnosis): array => $diagnosis->toLegacySearchOption())
+            ->all();
     }
 
-    public function cie10_nombre2(Request $request)
+    public function cie10_nombre2(Request $request, FindDiagnosisCodeFromLabel $query): array|string
     {
+        $label = $request->input('cie10');
 
-        $nombre_cie10 = $request['cie10'];
-        //dd($nombre_cie10);
-        $data = null;
-
-        $porciones = explode(")", $nombre_cie10);
-        if (count($porciones) > 1) {
-            $nombre_cie10 = substr($porciones[0], 1);
-
-        } else {
+        if (! is_string($label) || mb_strlen($label) > 255) {
             return '0';
         }
 
-        $cie10_3 = Cie_10_3::where('id', $nombre_cie10)->get();
-        $cie10_4 = Cie_10_4::where('id', $nombre_cie10)->get();
-        //dd($cie10_3);
-
-        foreach ($cie10_3 as $value) {
-            $data[] = array('value' => $value->descripcion, 'id' => $value->id);
-        }
-        foreach ($cie10_4 as $value) {
-            $data[] = array('value' => $value->descripcion, 'id' => $value->id);
-        }
-        if (count($data) > 0) {
-            return $data[0];
-        } else {
-            return '0';
-        }
+        return $query->handle($label)?->toLegacySelection() ?? '0';
     }
     //aquii proc_agregar_cie10
     public function agregar_cie10(Request $request)

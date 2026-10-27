@@ -2,6 +2,8 @@
 
 namespace Sis_medico\Http\Controllers;
 
+use App\Modules\ClinicalCare\Application\Data\PatientSearchResult;
+use App\Modules\ClinicalCare\Application\Queries\SearchPatientsByName;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -888,30 +890,22 @@ class PacienteController extends Controller
         return view('paciente/buscaxnombre', ['paciente' => $query, 'searchingVals' => $constraints, 'id_doc' => $id_doc, 'fecha' => $fecha, 'sala' => $sala]);
     }
 
-    public function nombre(Request $request)
+    /** @return list<array{value: string, id: string}>|array{value: string, id: string} */
+    public function nombre(Request $request, SearchPatientsByName $searchPatients): array
     {
-        $nombre_encargado = $request['term'];
-        $data             = null;
-        $nuevo_nombre     = explode(' ', $nombre_encargado);
-        $seteo            = "%";
-        foreach ($nuevo_nombre as $value) {
-            $seteo = $seteo . $value . '%';
-        }
+        $validated = $request->validate([
+            'term' => ['required', 'string', 'max:100'],
+        ]);
 
-        $query = "SELECT CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) as completo, id
-                  FROM paciente
-                  WHERE CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like '" . $seteo . "' LIMIT 100
-                  ";
-        $nombres = DB::select($query);
-        foreach ($nombres as $product) {
-            $data[] = array('value' => $product->completo, 'id' => $product->id);
-        }
-        if (count($data)) {
-            return $data;
-        } else {
+        $patients = $searchPatients->handle($validated['term']);
+
+        if ($patients->isEmpty()) {
             return ['value' => 'No se encontraron resultados', 'id' => ''];
         }
-        return $productos;
+
+        return $patients
+            ->map(fn (PatientSearchResult $patient): array => $patient->toLegacyOption())
+            ->all();
     }
 
     public function nombre2(Request $request)

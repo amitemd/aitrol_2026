@@ -56,7 +56,12 @@ Los 34 módulos inventariados en `config/modules.php` están asignados exactamen
 
 ## Estado inicial
 
-El primer corte corresponde a Facturación de ventas. La consulta de una factura para edición ya atraviesa un puerto de lectura y un adaptador que consulta `ct_ventas` en la conexión predeterminada. La vista recibe el mismo objeto compatible que utilizaba antes.
+- **Identidad e institucional:** la empresa activa y las empresas accesibles ya atraviesan casos de uso y un adaptador que consulta `empresa` y `usuario_empresa` en la conexión predeterminada. La fachada histórica se conserva para compatibilidad.
+- **Pacientes y atención clínica:** el autocompletado de pacientes ya atraviesa un contrato y un adaptador seguro sobre `paciente`, conservando la ruta y el formato de respuesta heredados.
+- **Diagnóstico:** la búsqueda y selección CIE-10 atraviesa un contrato de catálogo que consulta `cie_10_3` y `cie_10_4` con parámetros enlazados, manteniendo las respuestas del autocompletado existente.
+- **Hospitalización:** la pantalla de pacientes hospitalizados obtiene episodios, paciente y sala mediante un único adaptador sobre las tablas actuales, conservando rutas, filtros y vista.
+- **Facturación de ventas:** la consulta de una factura para edición ya atraviesa un puerto de lectura y un adaptador que consulta `ct_ventas` en la conexión predeterminada. La vista recibe el mismo objeto compatible que utilizaba antes.
+- **Soporte e integraciones:** los visores administrativos de logs y auditoría atraviesan puertos de lectura. Los adaptadores consultan `storage/logs`, `log_usuario` y `new_db_auditorias` sin alterar la estructura ni los datos existentes.
 
 ## Regla para documentación futura
 

@@ -16,7 +16,7 @@ return [
     'contexts' => [
         'institutional' => [
             'name' => 'Identidad e institucional',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => [],
             'legacy_modules' => [
                 'Núcleo institucional',
@@ -26,7 +26,7 @@ return [
         ],
         'clinical-care' => [
             'name' => 'Pacientes y atención clínica',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional'],
             'legacy_modules' => [
                 'Historia clínica y admisión',
@@ -41,7 +41,7 @@ return [
         ],
         'diagnostics' => [
             'name' => 'Diagnóstico',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional', 'clinical-care'],
             'legacy_modules' => [
                 'Laboratorio',
@@ -51,7 +51,7 @@ return [
         ],
         'hospitalization' => [
             'name' => 'Hospitalización',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional', 'clinical-care', 'diagnostics'],
             'legacy_modules' => [
                 'Hospitalización',
@@ -102,7 +102,7 @@ return [
         ],
         'support-integrations' => [
             'name' => 'Soporte e integraciones',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional'],
             'legacy_modules' => [
                 'Permisos y tickets',

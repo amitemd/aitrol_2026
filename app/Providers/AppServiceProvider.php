@@ -47,6 +47,11 @@ class AppServiceProvider extends ServiceProvider
             fn (User $user): bool => (int) $user->id_tipo_usuario === 1,
         );
 
+        Gate::define(
+            'view-system-observability',
+            fn (User $user): bool => (int) $user->id_tipo_usuario === 1,
+        );
+
         RateLimiter::for('new-system-password-reset', function (Request $request): array {
             $email = Str::lower($request->string('email')->trim()->toString());
             $accountHash = hash('sha256', $email);

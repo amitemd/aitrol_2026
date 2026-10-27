@@ -2,48 +2,36 @@
 
 namespace App\Services\NewSystem;
 
+use App\Modules\Institutional\Application\Data\CompanyView;
+use App\Modules\Institutional\Application\Queries\FindCurrentCompany;
+use App\Modules\Institutional\Application\Queries\ListAccessibleCompanies;
 use Illuminate\Support\Collection;
-use Sis_medico\Empresa;
 use Sis_medico\User;
 
 class CompanyAccess
 {
-    /** @return Collection<int, Empresa> */
+    public function __construct(
+        private readonly ListAccessibleCompanies $accessibleCompanies,
+        private readonly FindCurrentCompany $currentCompany,
+    ) {}
+
+    /** @return Collection<int, CompanyView> */
     public function accessibleFor(User $user): Collection
     {
-        $query = Empresa::query()
-            ->select([
-                'empresa.id',
-                'empresa.razonsocial',
-                'empresa.nombrecomercial',
-                'empresa.nombre_corto',
-                'empresa.ciudad',
-                'empresa.estado',
-                'empresa.prioridad',
-            ])
-            ->where('empresa.estado', 1);
-
-        if ((int) $user->id_tipo_usuario !== 1) {
-            $query->join('usuario_empresa as access', 'access.id_empresa', '=', 'empresa.id')
-                ->where('access.id_usuario', $user->getKey());
-        }
-
-        return $query
-            ->distinct()
-            ->orderByDesc('empresa.prioridad')
-            ->orderBy('empresa.nombrecomercial')
-            ->orderBy('empresa.id')
-            ->get();
+        return $this->accessibleCompanies->handle(
+            (string) $user->getKey(),
+            (int) $user->id_tipo_usuario === 1,
+        );
     }
 
-    public function currentFor(User $user): ?Empresa
+    public function currentFor(User $user): ?CompanyView
     {
         $companyId = session('id_empresa');
 
-        if ($companyId === null) {
-            return null;
-        }
-
-        return $this->accessibleFor($user)->firstWhere('id', $companyId);
+        return $this->currentCompany->handle(
+            (string) $user->getKey(),
+            (int) $user->id_tipo_usuario === 1,
+            $companyId === null ? null : (string) $companyId,
+        );
     }
 }

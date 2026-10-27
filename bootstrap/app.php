@@ -3,6 +3,7 @@
 use App\Console\Commands\CreateAdministrator;
 use App\Console\Commands\CustomCommand;
 use App\Console\Commands\DeployApplication;
+use App\Http\Middleware\AuditHttpRequest;
 use App\Http\Middleware\EnforceHttps;
 use App\Http\Middleware\SecureAuthenticationResponse;
 use App\Http\Middleware\ShareNewSystemContext;
@@ -56,6 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustHosts();
 
         $middleware->appendToGroup('web', SetLang::class);
+        $middleware->appendToGroup('web', AuditHttpRequest::class);
         $middleware->redirectGuestsTo(
             fn (Request $request): string => str_starts_with((string) $request->route()?->getName(), 'new-system.')
                 ? route('new-system.dashboard')

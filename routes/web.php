@@ -7,6 +7,8 @@ use App\Http\Controllers\NewSystem\CompanySelectionController as NewSystemCompan
 use App\Http\Controllers\NewSystem\DashboardController as NewSystemDashboardController;
 use App\Http\Controllers\NewSystem\PasswordResetController as NewSystemPasswordResetController;
 use App\Http\Controllers\NewSystem\UserController as NewSystemUserController;
+use App\Http\Controllers\Observability\SystemAuditController;
+use App\Http\Controllers\Observability\SystemLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', NewSystemDashboardController::class)
@@ -40,6 +42,19 @@ Route::middleware(['auth', 'throttle:10,1'])
     ->group(function (): void {
         Route::get('/', [DeploymentController::class, 'index'])->name('index');
         Route::post('/ejecutar', [DeploymentController::class, 'execute'])->name('execute');
+    });
+
+Route::middleware(['auth', 'can:view-system-observability', 'throttle:120,1'])
+    ->prefix('administracion/observabilidad')
+    ->name('observability.')
+    ->group(function (): void {
+        Route::get('/logs', [SystemLogController::class, 'index'])->name('logs.index');
+        Route::post('/logs/filtrar', [SystemLogController::class, 'filter'])->name('logs.filter');
+        Route::post('/logs/limpiar', [SystemLogController::class, 'reset'])->name('logs.reset');
+
+        Route::get('/auditoria', [SystemAuditController::class, 'index'])->name('audit.index');
+        Route::post('/auditoria/filtrar', [SystemAuditController::class, 'filter'])->name('audit.filter');
+        Route::post('/auditoria/limpiar', [SystemAuditController::class, 'reset'])->name('audit.reset');
     });
 
 Route::middleware(['auth', 'new.context'])->name('new-system.')->group(function (): void {

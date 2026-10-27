@@ -2,9 +2,13 @@
 
 namespace Sis_medico\Http\Controllers\hospital\hospitalizacion;
 
+use App\Modules\Hospitalization\Application\Data\HospitalizedPatientFilters;
+use App\Modules\Hospitalization\Application\Queries\ListHospitalizedPatients;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Sis_medico\Bodega;
 use Sis_medico\Ct_Ven_Orden;
 use Sis_medico\Ct_Ven_Orden_Detalle;
@@ -12,7 +16,6 @@ use Sis_medico\Ho_Solicitud;
 use Sis_medico\Http\Controllers\Controller;
 use Sis_medico\Opcion_Usuario;
 use Sis_medico\Sala;
-use Sis_medico\Ho_Traspaso_Sala008;
 use Sis_medico\hc_receta;
 use Sis_medico\Movimiento;
 use Sis_medico\Hc_Evolucion;
@@ -41,67 +44,59 @@ class HospitalizacionController extends Controller
             return true;
         }
     }
-    public function master()
+    public function master(ListHospitalizedPatients $query): View
     {
         $fecha_desde = date('Y-m-d');
         $fecha_hasta = date('Y-m-d');
 
         $salas = Sala::where('estado', '1')->where('id_hospital', '5')->get();
-        $en_habitacion = Ho_Traspaso_Sala008::where('ho_traspaso_sala008.estado', '2')
-            ->whereBetween('fecha', [$fecha_desde . ' 00:00', $fecha_hasta . ' 23:59'])
-            ->join('sala as s', 's.id', 'ho_traspaso_sala008.id_sala')
-            ->select('ho_traspaso_sala008.*', 's.nombre_sala')
-            ->get();
-        //dd($en_habitacion);
-        //dd($en_habitacion);
+        $en_habitacion = $query
+            ->handle(new HospitalizedPatientFilters(
+                fromDate: $fecha_desde,
+                toDate: $fecha_hasta,
+            ))
+            ->map->toLegacyRecord();
 
         return view('hospital/habitacion/master', ['salas' => $salas, 'en_habitacion' => $en_habitacion, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'cedula' => '', 'nombres' => '', 'sala' => '']);
     }
 
-    public function buscar_hospitalizado(Request $request)
+    public function buscar_hospitalizado(Request $request, ListHospitalizedPatients $query): View
     {
-        //$fecha_hoy = date('Y-m-d');
-        $fecha_desde = $request['fecha_desde'];
-        $fecha_hasta = $request['fecha_hasta'];
-        $sala = $request['sala'];
-        $nombres = $request['paciente'];
-        $cedula = $request['cedula'];
-        //dd($request->all());
-        $en_habitacion = Ho_Traspaso_Sala008::where('ho_traspaso_sala008.estado', '2')
-            ->join('paciente as p', 'p.id', 'ho_traspaso_sala008.id_paciente')
-            ->join('sala as s', 's.id', 'ho_traspaso_sala008.id_sala')
-            ->select('ho_traspaso_sala008.*', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 's.nombre_sala');
+        $request->merge([
+            'sala' => trim((string) $request->input('sala')) ?: null,
+        ]);
 
-        if ($fecha_desde != null && $fecha_hasta != null) {
-            $en_habitacion = $en_habitacion->whereBetween('fecha', [$fecha_desde . ' 00:00', $fecha_hasta . ' 23:59']);
+        $validated = $request->validate([
+            'fecha_desde' => ['nullable', 'date_format:Y-m-d'],
+            'fecha_hasta' => ['nullable', 'date_format:Y-m-d'],
+            'sala' => ['nullable', 'integer', 'min:1'],
+            'paciente' => ['nullable', 'string', 'max:120'],
+            'cedula' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        if (
+            isset($validated['fecha_desde'], $validated['fecha_hasta'])
+            && $validated['fecha_hasta'] < $validated['fecha_desde']
+        ) {
+            throw ValidationException::withMessages([
+                'fecha_hasta' => 'La fecha final debe ser posterior o igual a la fecha inicial.',
+            ]);
         }
 
-        if ($sala != null) {
-            $en_habitacion = $en_habitacion->where('id_sala', $sala);
-        }
-
-
-        if ($cedula != null) {
-            $en_habitacion = $en_habitacion->where('id_paciente', $cedula);
-        }
-
-        if ($nombres != null) {
-            $nombres2 = explode(" ", $nombres);
-            $cantidad = count($nombres2);
-
-            if ($cantidad == '2' || $cantidad == '3') {
-                $en_habitacion = $en_habitacion->where(function ($jq1) use ($nombres) {
-                    $jq1->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', ['%' . $nombres . '%'])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', ['%' . $nombres . '%']);
-                });
-            } else {
-
-                $en_habitacion = $en_habitacion->whereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', ['%' . $nombres . '%']);
-            }
-        }
-
-        $en_habitacion = $en_habitacion->get();
-        //dd($en_habitacion);
+        $fecha_desde = $validated['fecha_desde'] ?? null;
+        $fecha_hasta = $validated['fecha_hasta'] ?? null;
+        $sala = isset($validated['sala']) ? (int) $validated['sala'] : null;
+        $nombres = $validated['paciente'] ?? null;
+        $cedula = $validated['cedula'] ?? null;
+        $en_habitacion = $query
+            ->handle(new HospitalizedPatientFilters(
+                fromDate: $fecha_desde,
+                toDate: $fecha_hasta,
+                roomId: $sala,
+                patientId: $cedula,
+                patientName: $nombres,
+            ))
+            ->map->toLegacyRecord();
 
         $salas = Sala::where('estado', '1')->where('id_hospital', '5')->get();
 

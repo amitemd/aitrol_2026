@@ -226,6 +226,18 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
           <span>Despliegue del sistema</span>
         </a>
       </li>
+      <li class="@if(request()->routeIs('observability.logs.*')) active @endif">
+        <a href="{{ route('observability.logs.index') }}">
+          <i class="fa fa-stethoscope"></i>
+          <span>Logs y diagnóstico</span>
+        </a>
+      </li>
+      <li class="@if(request()->routeIs('observability.audit.*')) active @endif">
+        <a href="{{ route('observability.audit.index') }}">
+          <i class="fa fa-shield"></i>
+          <span>Auditoría del sistema</span>
+        </a>
+      </li>
       @endif
 
       @if($empresa->compras != 1)
