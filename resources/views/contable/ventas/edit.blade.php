@@ -185,46 +185,60 @@ $valorIva = $porIva->iva;
                         <input type="hidden" class="form-control input-sm" name="cedula_vendedor" id="cedula_vendedor" value="{{ old('cedula_recaudador')}}" placeholder="Cédula" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                     </div>
                 </div>
-                <div class="form-group col-xs-12  px-1">
-                    <div class="col-md-12 px-0">
-                        <label for="cliente" class="label_header text-left">Cliente</label>
+                <section class="form-group col-xs-12 aitrol-party-card aitrol-party-card--client">
+                    <div class="aitrol-party-card__header">
+                        <span class="aitrol-party-card__icon" aria-hidden="true"><i class="fa fa-user"></i></span>
+                        <span>Datos del cliente</span>
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-card__grid">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="identificacion_cliente">Identificaci&oacute;n</label>
                         <input id="identificacion_cliente" type="text" class="form-control" name="identificacion_cliente" value="@if(!is_null($ventas)){{$ventas->id_cliente}}@endif" onchange="reloadCliente()">
                     </div>
                     @php
                     $cliente= DB::table('ct_clientes')->where('identificacion',$ventas->id_cliente)->first();
                     @endphp
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="nombre_cliente">Nombre o raz&oacute;n social</label>
                         <input id="nombre_cliente" type="text" class="form-control" name="nombre_cliente" value="{{$cliente->nombre}}">
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="direccion_cliente">Direcci&oacute;n</label>
                         <input id="direccion_cliente" type="text" class="form-control" name="direccion_cliente" value="@if(!is_null($ventas)){{$ventas->direccion_cliente}}@endif">
 
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="ciudad_cliente">Ciudad</label>
                         <input id="ciudad_cliente" type="text" class="form-control" name="ciudad_cliente" value="@if(!is_null($ventas)){{$ventas->direccion_cliente}}@endif">
 
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="mail_cliente">Correo electr&oacute;nico</label>
                         <input id="mail_cliente" type="text" class="form-control" name="mail_cliente" value="@if(!is_null($ventas)){{$ventas->email_cliente}}@endif">
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="telefono_cliente">Tel&eacute;fono</label>
                         <input id="telefono_cliente" type="text" class="form-control" name="telefono_cliente" value="@if(!is_null($ventas)){{$ventas->telefono_cliente}}@endif">
                     </div>
-                </div>
-                <div class="form-group col-xs-12  px-1">
-                    <div class="col-md-12 px-0">
-                        <label for="paciente" class="label_header text-left">Paciente</label>
                     </div>
-                    <div class="col-md-2 px-0">
+                </section>
+                <section class="form-group col-xs-12 aitrol-party-card aitrol-party-card--patient">
+                    <div class="aitrol-party-card__header">
+                        <span class="aitrol-party-card__icon" aria-hidden="true"><i class="fa fa-heartbeat"></i></span>
+                        <span>Datos del paciente</span>
+                    </div>
+                    <div class="aitrol-party-card__grid">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="identificacion_paciente">Identificaci&oacute;n</label>
                         <input id="identificacion_paciente" type="text" class="form-control" name="identificacion_paciente" value="@if(!is_null($ventas)){{$ventas->id_paciente}}@endif">
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="nombre_paciente">Nombre completo</label>
                         <input id="nombre_paciente" type="text" class="form-control" name="nombre_paciente" value="@if(!is_null($ventas)){{$ventas->nombres_paciente}}@endif">
 
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="id_seguro">Seguro</label>
                         <select class="form-control" name="id_seguro" id="id_seguro">
                             <option value="">Seguro ...</option>
                             @foreach($seguros as $seguro)
@@ -232,20 +246,24 @@ $valorIva = $porIva->iva;
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="procedimiento">Procedimiento</label>
                         <input id="procedimiento" type="text" class="form-control" name="procedimiento" value="@if(!is_null($ventas)){{$ventas->procedimientos}}@endif">
                     </div>
-                    <div class="col-md-2 px-0">
-                        <input readonly type="date" class="form-control" name="fecha_procedimiento" value="@if(!is_null($ventas)){{date('Y-m-d',strtotime($ventas->fecha_procedimiento))}}@endif">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="fecha_procedimiento">Fecha del procedimiento</label>
+                        <input readonly id="fecha_procedimiento" type="date" class="form-control" name="fecha_procedimiento" value="@if(!is_null($ventas)){{date('Y-m-d',strtotime($ventas->fecha_procedimiento))}}@endif">
                     </div>
-                    <div class="col-md-2 px-0">
+                    <div class="aitrol-party-field">
+                        <label class="aitrol-party-field__label" for="tipo_consulta">Tipo de atenci&oacute;n</label>
                         <select class="form-control" name="tipo_consulta" id="tipo_consulta" readonly>
                             <option value=""> --- Tipo --- </option>
                             <option value="1" {{ $ventas->tipo_consulta == "1" ? 'selected' : ''}}>Consulta</option>
                             <option value="2" {{ $ventas->tipo_consulta == "2" ? 'selected' : ''}}>Procedimiento</option>
                         </select>
                     </div>
-                </div>
+                    </div>
+                </section>
                 <div class="form-group col-xs-10  px-1">
                     <label for="concepto" class="label_header">Concepto</label>
                     <input type="text" class="form-control" name="concepto" id="concepto" value="@if(!is_null($ventas->concepto)){{$ventas->concepto}} @endif">

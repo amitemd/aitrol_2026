@@ -148,9 +148,6 @@ document.onmousedown=click
       .size_text{
         font-size: 12px !important;
       }
-      .content-wrapper{
-	min-height: 2304px !important;	
-      }
       .sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>a>span:not(.pull-right),.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu{
         width: 310px;
       }
