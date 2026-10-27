@@ -7629,27 +7629,45 @@ class VentasController extends Controller
         }
         return $query->where('estado', '<', '2')->where('tipo', "VEN-FA")->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(20);
     }
+
+    private function groupedSalesDetails(int|string $saleId): Collection
+    {
+        return DB::table('ct_detalle_venta as ct_detalle')
+            ->where('ct_detalle.id_ct_ventas', $saleId)
+            ->where('ct_detalle.estado', 1)
+            ->select('ct_detalle.id_ct_productos')
+            ->selectRaw('MAX(ct_detalle.nombre) as nombre')
+            ->selectRaw('SUM(ct_detalle.precio) as precio')
+            ->selectRaw('SUM(ct_detalle.cantidad) as cantidad')
+            ->selectRaw('SUM(ct_detalle.descuento) as descuento')
+            ->groupBy('ct_detalle.id_ct_productos')
+            ->get();
+    }
+
     public function editar($id, Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
+
+        $id_empresa = $request->session()->get('id_empresa');
         $ventas = DB::table('ct_ventas as ct_v')
             ->leftjoin('ct_clientes as ct_c', 'ct_c.identificacion', 'ct_v.id_cliente')
             ->where('ct_v.id', $id)
-            ->select('ct_v.*')->first();
+            ->where('ct_v.id_empresa', $id_empresa)
+            ->select('ct_v.*')
+            ->first();
+
+        if ($ventas === null) {
+            abort(404);
+        }
+
         $detalle_venta = DB::table('ct_detalle_venta as ct_det_vent')
             ->where('ct_det_vent.id_ct_ventas', $id)
             ->where('ct_det_vent.estado', '1')
             ->select('ct_det_vent.*')
             ->get();
-        $detalle_venfaco = DB::table('ct_detalle_venta as ct_detalle')
-            ->where('ct_detalle.id_ct_ventas', $id)
-            ->where('ct_detalle.estado', '1')
-            ->groupBy('ct_detalle.id_ct_productos')
-            ->select('id_ct_productos', 'nombre')
-            ->select(DB::raw('id_ct_productos, nombre, SUM(precio) as precio, SUM(cantidad) as cantidad', 'SUM(descuento) as descuento'))
-            ->get();
+        $detalle_venfaco = $this->groupedSalesDetails($id);
         $clientes   = Ct_Clientes::where('estado', '1')->get();
         $forma_pago = DB::table('ct_forma_pago')
             ->where('id_ct_ventas', $id)
@@ -7662,7 +7680,6 @@ class VentasController extends Controller
         $tip_tarjeta     = Ct_Tipo_Tarjeta::where('estado', '1')->get();
         $banco           = Ct_Bancos::where('estado', '1')->get();
         $divisas         = Ct_Divisas::where('estado', '1')->get();
-        $id_empresa      = $request->session()->get('id_empresa');
         $empresa         = Empresa::where('id', $id_empresa)->first();
         $seguros         = Seguro::all();
         $user_recaudador = User::where('id_tipo_usuario', 18)
@@ -8077,13 +8094,7 @@ class VentasController extends Controller
             $cliente         = Ct_Clientes::where('identificacion', $fact_venta->id_cliente)->first();
             $pacient         = Paciente::find($fact_venta->id_paciente);
             $deta_vent       = Ct_detalle_venta::where('id_ct_ventas', $id)->get();
-            $detalle_venfaco = DB::table('ct_detalle_venta as ct_detalle')
-                ->where('ct_detalle.id_ct_ventas', $id)
-                ->where('ct_detalle.estado', '1')
-                ->groupBy('ct_detalle.id_ct_productos')
-                ->select('id_ct_productos', 'nombre')
-                ->select(DB::raw('id_ct_productos, nombre, SUM(precio) as precio, SUM(cantidad) as cantidad', 'SUM(descuento) as descuento'))
-                ->get();
+            $detalle_venfaco = $this->groupedSalesDetails($id);
         }
 
         $vistaurl = "contable.ventas.pdf_comprobante_tributario";
