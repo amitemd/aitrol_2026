@@ -313,8 +313,7 @@ class Ct_ventas extends Model
 
         return $query
             ->orderByDesc('ct_ventas.id')
-            ->paginate(self::registrosPorPagina($request))
-            ->withQueryString();
+            ->paginate(self::registrosPorPagina($request));
     }
 
     public static function getBusqueda(Request $request): LengthAwarePaginator
@@ -351,8 +350,7 @@ class Ct_ventas extends Model
 
         return $query
             ->orderByDesc('ct_ventas.id')
-            ->paginate(self::registrosPorPagina($request))
-            ->withQueryString();
+            ->paginate(self::registrosPorPagina($request));
     }
 
     private static function consultaListadoVentas(string $idEmpresa): Builder
@@ -435,7 +433,7 @@ class Ct_ventas extends Model
 
     private static function terminoBusqueda(Request $request): string
     {
-        $searchTerm = $request->query('q');
+        $searchTerm = $request->input('q');
 
         if (! is_string($searchTerm) && ! is_numeric($searchTerm)) {
             return '';

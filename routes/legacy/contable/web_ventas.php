@@ -27,7 +27,7 @@ Route::match(['get', 'post'], 'contable/ventas2/buscar', 'contable\VentasControl
 Route::get('contable/ventas/crear', 'contable\VentasController@crear')->name('ventas_crear.formulario');
 Route::get('contable/ventas/crear_factura', 'contable\VentasController@crear_factura')->name('ventas_crear');
 Route::post('contable/ventas/store', 'contable\VentasController@store')->name('ventas_store');
-Route::match(['get', 'post'], 'contable/ventas/buscar', 'contable\VentasController@search')->name('ventas_search');
+Route::post('contable/ventas/buscar', 'contable\VentasController@search')->name('ventas_search');
 Route::post('contable/ventas/precio_producto', 'contable\VentasController@precios')->name('precios');
 
 Route::get('contable/ventas/crear_orden', 'contable\VentasController@crear_orden')->name('orden_crear');

@@ -234,6 +234,7 @@
     border: 1px solid #cbd5e1;
     border-radius: 7px;
     color: #475569;
+    cursor: pointer;
     display: inline-flex;
     font-size: 12px;
     font-weight: 600;
@@ -246,7 +247,9 @@
 }
 
 .aitrol-sales-page a.aitrol-server-pagination__button:hover,
-.aitrol-sales-page a.aitrol-server-pagination__button:focus {
+.aitrol-sales-page a.aitrol-server-pagination__button:focus,
+.aitrol-sales-page button.aitrol-server-pagination__button:hover,
+.aitrol-sales-page button.aitrol-server-pagination__button:focus {
     background: #f0f9ff;
     border-color: #38bdf8;
     color: #0369a1;

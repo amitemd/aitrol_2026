@@ -78,13 +78,44 @@ const createServerSearch = (table) => {
     const form = document.createElement('form');
     const fieldId = `${table.id || 'aitrol-table'}-server-search`;
     const action = table.dataset.serverSearchUrl || window.location.pathname;
+    const method = table.dataset.serverSearchMethod === 'post' ? 'post' : 'get';
     const currentSearch = table.dataset.serverSearchValue || '';
     const currentPerPage = table.dataset.serverPerPage || '25';
 
     form.action = action;
     form.className = 'aitrol-server-search';
-    form.method = 'get';
+    form.method = method;
     form.setAttribute('role', 'search');
+
+    if (method === 'post') {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.name = '_token';
+            csrfInput.type = 'hidden';
+            csrfInput.value = csrfToken;
+            form.append(csrfInput);
+        }
+    }
+
+    const filterForm = document.getElementById(table.dataset.serverFilterForm || '');
+
+    if (filterForm instanceof HTMLFormElement) {
+        const excludedFields = new Set(['_token', 'page', 'per_page', 'q']);
+
+        new FormData(filterForm).forEach((value, name) => {
+            if (excludedFields.has(name) || typeof value !== 'string' || value.trim() === '') {
+                return;
+            }
+
+            const filterInput = document.createElement('input');
+            filterInput.name = name;
+            filterInput.type = 'hidden';
+            filterInput.value = value;
+            form.append(filterInput);
+        });
+    }
 
     const pageSizeLabel = document.createElement('label');
     pageSizeLabel.className = 'aitrol-server-search__page-size';
@@ -138,15 +169,16 @@ const createServerSearch = (table) => {
     form.append(pageSizeLabel, searchGroup);
 
     if (currentSearch !== '') {
-        const clearUrl = new URL(action, window.location.origin);
-        clearUrl.searchParams.set('per_page', currentPerPage);
-
-        const clearLink = document.createElement('a');
-        clearLink.className = 'aitrol-server-search__clear';
-        clearLink.href = clearUrl.toString();
-        clearLink.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Limpiar búsqueda</span>';
-        clearLink.title = 'Limpiar búsqueda';
-        form.append(clearLink);
+        const clearButton = document.createElement('button');
+        clearButton.className = 'aitrol-server-search__clear';
+        clearButton.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Limpiar búsqueda</span>';
+        clearButton.title = 'Limpiar búsqueda';
+        clearButton.type = 'button';
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            form.submit();
+        });
+        form.append(clearButton);
     }
 
     pageSize.addEventListener('change', () => form.submit());

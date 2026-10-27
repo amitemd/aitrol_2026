@@ -89,7 +89,8 @@
     </div>
     <!-- /.box-header -->
     <div class="box-body dobra aitrol-filter-panel">
-      <form method="GET" id="reporte_master" action="{{ route('ventas_search') }}">
+      <form method="POST" id="reporte_master" action="{{ route('ventas_search') }}">
+        @csrf
         <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}" />
         <div class="row">
         <div class="form-group col-md-1 col-xs-2">
@@ -160,7 +161,9 @@
                   data-paging="false"
                   data-searching="false"
                   data-server-search="true"
-                  data-server-search-url="{{ route('venta_index') }}"
+                  data-server-search-url="{{ route('ventas_search') }}"
+                  data-server-search-method="post"
+                  data-server-filter-form="reporte_master"
                   data-server-search-value="{{ request('q') }}"
                   data-server-per-page="{{ $dato->perPage() }}"
                   data-info="false"
@@ -346,19 +349,39 @@
                 de <strong>{{ number_format($dato->total(), 0, ',', '.') }}</strong> registros
               </div>
               @if ($dato->hasPages())
+                @php
+                  $salesSearchParameters = request()->only([
+                    'q',
+                    'id',
+                    'numero',
+                    'id_asiento',
+                    'fecha',
+                    'nombre_cliente',
+                    'nombres_paciente',
+                  ]);
+                @endphp
+                <form id="sales-pagination-form" method="POST" action="{{ route('ventas_search') }}" class="hidden" aria-hidden="true">
+                  @csrf
+                  <input type="hidden" name="per_page" value="{{ $dato->perPage() }}">
+                  @foreach ($salesSearchParameters as $filterName => $filterValue)
+                    @if ($filterValue !== null && $filterValue !== '')
+                      <input type="hidden" name="{{ $filterName }}" value="{{ $filterValue }}">
+                    @endif
+                  @endforeach
+                </form>
                 <nav class="aitrol-server-pagination" aria-label="Paginación de facturas">
                   @if ($dato->onFirstPage())
                     <span class="aitrol-server-pagination__button is-disabled" aria-disabled="true" title="Página anterior">
                       <i class="fa fa-chevron-left" aria-hidden="true"></i>
                     </span>
                   @else
-                    <a class="aitrol-server-pagination__button" href="{{ $dato->previousPageUrl() }}" rel="prev" title="Página anterior">
+                    <button class="aitrol-server-pagination__button" type="submit" form="sales-pagination-form" name="page" value="{{ $currentPage - 1 }}" title="Página anterior">
                       <i class="fa fa-chevron-left" aria-hidden="true"></i>
-                    </a>
+                    </button>
                   @endif
 
                   @if ($firstVisiblePage > 1)
-                    <a class="aitrol-server-pagination__button" href="{{ $dato->url(1) }}">1</a>
+                    <button class="aitrol-server-pagination__button" type="submit" form="sales-pagination-form" name="page" value="1">1</button>
                     @if ($firstVisiblePage > 2)
                       <span class="aitrol-server-pagination__ellipsis" aria-hidden="true">…</span>
                     @endif
@@ -368,7 +391,7 @@
                     @if ($page === $currentPage)
                       <span class="aitrol-server-pagination__button is-active" aria-current="page">{{ $page }}</span>
                     @else
-                      <a class="aitrol-server-pagination__button" href="{{ $dato->url($page) }}">{{ $page }}</a>
+                      <button class="aitrol-server-pagination__button" type="submit" form="sales-pagination-form" name="page" value="{{ $page }}">{{ $page }}</button>
                     @endif
                   @endfor
 
@@ -376,13 +399,13 @@
                     @if ($lastVisiblePage < $lastPage - 1)
                       <span class="aitrol-server-pagination__ellipsis" aria-hidden="true">…</span>
                     @endif
-                    <a class="aitrol-server-pagination__button" href="{{ $dato->url($lastPage) }}">{{ $lastPage }}</a>
+                    <button class="aitrol-server-pagination__button" type="submit" form="sales-pagination-form" name="page" value="{{ $lastPage }}">{{ $lastPage }}</button>
                   @endif
 
                   @if ($dato->hasMorePages())
-                    <a class="aitrol-server-pagination__button" href="{{ $dato->nextPageUrl() }}" rel="next" title="Página siguiente">
+                    <button class="aitrol-server-pagination__button" type="submit" form="sales-pagination-form" name="page" value="{{ $currentPage + 1 }}" title="Página siguiente">
                       <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                    </a>
+                    </button>
                   @else
                     <span class="aitrol-server-pagination__button is-disabled" aria-disabled="true" title="Página siguiente">
                       <i class="fa fa-chevron-right" aria-hidden="true"></i>

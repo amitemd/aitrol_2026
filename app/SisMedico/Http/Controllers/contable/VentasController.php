@@ -7595,6 +7595,7 @@ class VentasController extends Controller
         $rules = [
             'q' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'in:10,25,50'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
 
         if ($includeAdvancedFilters) {
