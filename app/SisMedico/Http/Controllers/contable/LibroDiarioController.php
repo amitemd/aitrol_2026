@@ -129,9 +129,10 @@ class LibroDiarioController extends Controller
         $detalle = Ct_Asientos_Detalle::where('ct_asientos_detalle.id_asiento_cabecera', $id)
             ->join('plan_cuentas_empresa as p', 'p.id_plan', 'ct_asientos_detalle.id_plan_cuenta')
             ->where('p.id_empresa', $id_empresa)
-            ->groupBy('ct_asientos_detalle.id_plan_cuenta')
-            ->select('p.plan as id_plan_cuenta', 'ct_asientos_detalle.descripcion')
-            ->select(DB::raw('p.plan as id_plan_cuenta, ct_asientos_detalle.descripcion, SUM(ct_asientos_detalle.debe) as debe, SUM(ct_asientos_detalle.haber) as haber, p.nombre as nombre'))
+            ->select('p.plan as id_plan_cuenta', 'p.nombre')
+            ->selectRaw('MAX(ct_asientos_detalle.descripcion) as descripcion')
+            ->selectRaw('SUM(ct_asientos_detalle.debe) as debe, SUM(ct_asientos_detalle.haber) as haber')
+            ->groupBy('p.id_plan', 'p.plan', 'p.nombre')
             ->get();
         //$empresa = Empresa::where('id', '0992704152001')->first();
         //$empresa = Empresa::where('id', '0992704152001')->first();
@@ -155,8 +156,11 @@ class LibroDiarioController extends Controller
         $detalle = Ct_Asientos_Detalle::where('ct_asientos_detalle.id_asiento_cabecera', $id)
             ->join('plan_cuentas_empresa as p', 'p.id_plan', 'ct_asientos_detalle.id_plan_cuenta')
             ->where('p.id_empresa', $id_empresa)
-            ->groupBy('ct_asientos_detalle.id_plan_cuenta')
-            ->select(DB::raw('ct_asientos_detalle.id_asiento_cabecera,p.id_plan as id_plan_cuenta, ct_asientos_detalle.descripcion, SUM(ct_asientos_detalle.debe) as debe, SUM(ct_asientos_detalle.haber) as haber'))
+            ->select('p.id_plan as id_plan_cuenta')
+            ->selectRaw('MAX(ct_asientos_detalle.id_asiento_cabecera) as id_asiento_cabecera')
+            ->selectRaw('MAX(ct_asientos_detalle.descripcion) as descripcion')
+            ->selectRaw('SUM(ct_asientos_detalle.debe) as debe, SUM(ct_asientos_detalle.haber) as haber')
+            ->groupBy('p.id_plan')
             ->get();
         $empresa = Empresa::where('id', $id_empresa)
             ->where('estado', '1')
@@ -1469,9 +1473,10 @@ class LibroDiarioController extends Controller
             ->paginate(10);
         $registro = Ct_Asientos_Cabecera::findorfail($id);
         $detalle  = Ct_Asientos_Detalle::where('id_asiento_cabecera', $id)
+            ->select('id_plan_cuenta')
+            ->selectRaw('MAX(descripcion) as descripcion')
+            ->selectRaw('SUM(debe) as debe, SUM(haber) as haber')
             ->groupBy('id_plan_cuenta')
-            ->select('id_plan_cuenta', 'descripcion')
-            ->select(DB::raw('id_plan_cuenta, descripcion, SUM(debe) as debe, SUM(haber) as haber'))
             ->get();
         //dd($compras);
         //dd($edit->estado_uso);
