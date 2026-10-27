@@ -74,13 +74,23 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('new-system.login.store') }}" class="new-system-login-form-fields">
+                    <form
+                        method="POST"
+                        action="{{ route('new-system.login.store') }}"
+                        class="new-system-login-form-fields {{ $loginLocked ? 'is-locked' : '' }}"
+                        aria-disabled="{{ $loginLocked ? 'true' : 'false' }}"
+                    >
                         @csrf
                         <div class="form-group {{ $errors->has('email') ? 'has-error' : '' }}">
                             <label class="control-label" for="email">Correo electrónico</label>
                             <div class="new-system-login-input">
                                 <i class="fa fa-envelope-o" aria-hidden="true"></i>
-                                <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="nombre@empresa.com" required autofocus autocomplete="username" inputmode="email" spellcheck="false">
+                                <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="nombre@empresa.com" required autofocus autocomplete="username" inputmode="email" spellcheck="false" @disabled($loginLocked)>
+                                @if ($loginLocked)
+                                    <span class="new-system-login-field-lock" aria-hidden="true">
+                                        <i class="fa fa-lock"></i>
+                                    </span>
+                                @endif
                             </div>
                         </div>
 
@@ -88,21 +98,26 @@
                             <label class="control-label" for="password">Contraseña</label>
                             <div class="new-system-login-input">
                                 <i class="fa fa-key" aria-hidden="true"></i>
-                                <input id="password" type="password" class="form-control" name="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+                                <input id="password" type="password" class="form-control" name="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password" @disabled($loginLocked)>
+                                @if ($loginLocked)
+                                    <span class="new-system-login-field-lock" aria-hidden="true">
+                                        <i class="fa fa-lock"></i>
+                                    </span>
+                                @endif
                             </div>
                         </div>
 
                         <div class="form-group new-system-login-options">
-                            <label class="new-system-login-remember">
-                                <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                            <label class="new-system-login-remember {{ $loginLocked ? 'is-disabled' : '' }}">
+                                <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} @disabled($loginLocked)>
                                 <span>Mantener la sesión iniciada</span>
                             </label>
                             <a href="{{ route('new-system.password.request') }}">¿Olvidaste tu contraseña?</a>
                         </div>
 
-                        <button type="submit" class="new-system-login-submit">
+                        <button type="submit" class="new-system-login-submit" @disabled($loginLocked)>
                             <span>Ingresar</span>
-                            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                            <i class="fa {{ $loginLocked ? 'fa-lock' : 'fa-arrow-right' }}" aria-hidden="true"></i>
                         </button>
                     </form>
 

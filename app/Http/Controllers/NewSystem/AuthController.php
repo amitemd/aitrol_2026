@@ -28,6 +28,8 @@ class AuthController extends Controller
         $limiters = $this->loginLimiters($request, $email);
 
         if ($blockedLimiter = $this->blockedLimiter($limiters)) {
+            $this->rememberLockout($request, $blockedLimiter);
+
             throw ValidationException::withMessages([
                 'email' => $this->lockoutMessage($blockedLimiter),
             ]);
@@ -48,6 +50,10 @@ class AuthController extends Controller
 
             $blockedLimiter = $this->blockedLimiter($limiters);
 
+            if ($blockedLimiter !== null) {
+                $this->rememberLockout($request, $blockedLimiter);
+            }
+
             throw ValidationException::withMessages([
                 'email' => $blockedLimiter !== null
                     ? $this->lockoutMessage($blockedLimiter)
@@ -57,6 +63,7 @@ class AuthController extends Controller
 
         RateLimiter::clear($limiters['pair']['key']);
         RateLimiter::clear($limiters['account']['key']);
+        $request->session()->forget('new_system.login_locked_until');
         $request->session()->regenerate();
         $request->session()->regenerateToken();
 
@@ -129,6 +136,19 @@ class AuthController extends Controller
         }
 
         return 'El acceso está temporalmente bloqueado por seguridad. Inténtalo nuevamente más tarde.';
+    }
+
+    /**
+     * @param  array{key: string, max: int, decay: int, attempts?: int}  $limiter
+     */
+    private function rememberLockout(Request $request, array $limiter): void
+    {
+        $retryAfter = max(1, RateLimiter::availableIn($limiter['key']));
+
+        $request->session()->put(
+            'new_system.login_locked_until',
+            now()->addSeconds($retryAfter)->getTimestamp(),
+        );
     }
 
     public function logout(Request $request): RedirectResponse

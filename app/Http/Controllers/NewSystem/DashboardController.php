@@ -17,7 +17,16 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if (! $user instanceof User) {
-            return view('new-system.auth.login');
+            $lockedUntil = (int) $request->session()->get('new_system.login_locked_until', 0);
+            $loginLocked = $lockedUntil > now()->getTimestamp();
+
+            if (! $loginLocked && $lockedUntil !== 0) {
+                $request->session()->forget('new_system.login_locked_until');
+            }
+
+            return view('new-system.auth.login', [
+                'loginLocked' => $loginLocked,
+            ]);
         }
 
         $currentCompany = $companyAccess->currentFor($user);
