@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -30,10 +31,14 @@ class AppServiceProvider extends ServiceProvider
             fn (User $user): bool => (int) $user->id_tipo_usuario === 1,
         );
 
-        RateLimiter::for('new-system-login', function (Request $request): Limit {
+        RateLimiter::for('new-system-password-reset', function (Request $request): Limit {
             $email = Str::lower($request->string('email')->trim()->toString());
 
-            return Limit::perMinute(5)->by(Str::transliterate($email.'|'.$request->ip()));
+            return Limit::perMinutes(5, 3)
+                ->by(Str::transliterate($email.'|'.$request->ip()))
+                ->response(fn (Request $request, array $headers): RedirectResponse => back()
+                    ->withErrors(['email' => 'Demasiadas solicitudes. Inténtalo nuevamente en cinco minutos.'])
+                    ->withHeaders($headers));
         });
     }
 }

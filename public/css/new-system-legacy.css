@@ -167,10 +167,12 @@ body {
 }
 
 .new-system-login-page {
+    align-items: center;
     background: #042647;
+    display: flex;
     font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
-    padding: 26px 15px;
+    padding: 36px 15px;
 }
 
 .new-system-login-shell {
@@ -179,16 +181,17 @@ body {
     border-radius: 12px;
     box-shadow: 0 24px 70px rgb(0 18 38 / 38%);
     margin: 0 auto;
-    max-width: 1170px;
-    min-height: calc(100vh - 52px);
+    max-width: 1080px;
+    min-height: min(760px, calc(100vh - 72px));
     overflow: hidden;
+    width: 100%;
 }
 
 .new-system-login-information {
     background: linear-gradient(0deg, #1462ac 20%, #60bcca 93%);
     color: #fff;
-    min-height: calc(100vh - 52px);
-    padding: 38px 45px 30px;
+    min-height: min(760px, calc(100vh - 72px));
+    padding: 32px 40px 28px;
     position: relative;
     text-align: center;
 }
@@ -216,7 +219,7 @@ body {
 
 .new-system-login-logo strong {
     display: block;
-    font-size: 42px;
+    font-size: 38px;
     line-height: 1;
 }
 
@@ -228,8 +231,8 @@ body {
 }
 
 .new-system-login-slide {
-    margin: 7vh auto 0;
-    max-width: 440px;
+    margin: 46px auto 0;
+    max-width: 410px;
     position: relative;
     z-index: 1;
 }
@@ -241,10 +244,10 @@ body {
     border-radius: 14px;
     box-shadow: 0 18px 45px rgb(0 59 111 / 18%);
     display: flex;
-    height: 290px;
+    height: 250px;
     justify-content: center;
-    margin: 0 auto 25px;
-    width: 290px;
+    margin: 0 auto 22px;
+    width: 250px;
 }
 
 .new-system-login-slide-image img {
@@ -253,7 +256,7 @@ body {
 }
 
 .new-system-login-slide h2 {
-    font-size: 29px;
+    font-size: 26px;
     font-weight: 500;
     line-height: 1.25;
     margin: 0 0 10px;
@@ -311,18 +314,18 @@ body {
 .new-system-login-form-column {
     align-items: center;
     display: flex;
-    min-height: calc(100vh - 52px);
-    padding: 45px 64px;
+    min-height: min(760px, calc(100vh - 72px));
+    padding: 38px 56px;
 }
 
 .new-system-login-form {
     margin: auto;
-    max-width: 470px;
+    max-width: 430px;
     width: 100%;
 }
 
 .new-system-login-heading {
-    margin-bottom: 32px;
+    margin-bottom: 26px;
     text-align: center;
 }
 
@@ -339,7 +342,7 @@ body {
 
 .new-system-login-heading h1 {
     color: #172033;
-    font-size: 34px;
+    font-size: 31px;
     font-weight: 700;
     letter-spacing: -0.025em;
     margin: 0 0 10px;
@@ -358,11 +361,11 @@ body {
     display: flex;
     gap: 9px;
     line-height: 1.45;
-    margin-bottom: 22px;
+    margin-bottom: 18px;
 }
 
 .new-system-login-form-fields .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 17px;
 }
 
 .new-system-login-form-fields .control-label {
@@ -393,8 +396,8 @@ body {
     border-radius: 7px;
     box-shadow: none;
     color: #172033;
-    height: 50px;
-    padding: 12px 15px 12px 44px;
+    height: 46px;
+    padding: 10px 15px 10px 44px;
     transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
@@ -455,7 +458,7 @@ body {
     display: flex;
     font-weight: 700;
     justify-content: center;
-    padding: 13px;
+    padding: 12px;
     position: relative;
     transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
     width: 100%;
@@ -479,7 +482,7 @@ body {
 .new-system-login-support {
     color: #8290a4;
     font-size: 12px;
-    margin: 24px 0 0;
+    margin: 20px 0 0;
     text-align: center;
 }
 

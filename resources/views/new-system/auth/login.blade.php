@@ -67,6 +67,13 @@
                         </div>
                     @endif
 
+                    @if (session('status'))
+                        <div class="alert alert-success new-system-login-alert" role="status">
+                            <i class="fa fa-check-circle" aria-hidden="true"></i>
+                            <span>{{ session('status') }}</span>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('new-system.login.store') }}" class="new-system-login-form-fields">
                         @csrf
                         <div class="form-group {{ $errors->has('email') ? 'has-error' : '' }}">
@@ -90,9 +97,7 @@
                                 <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
                                 <span>Mantener la sesión iniciada</span>
                             </label>
-                            @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
-                            @endif
+                            <a href="{{ route('new-system.password.request') }}">¿Olvidaste tu contraseña?</a>
                         </div>
 
                         <button type="submit" class="new-system-login-submit">

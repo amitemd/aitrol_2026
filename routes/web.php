@@ -5,6 +5,7 @@ use App\Http\Controllers\ModuleCatalogController;
 use App\Http\Controllers\NewSystem\AuthController as NewSystemAuthController;
 use App\Http\Controllers\NewSystem\CompanySelectionController as NewSystemCompanySelectionController;
 use App\Http\Controllers\NewSystem\DashboardController as NewSystemDashboardController;
+use App\Http\Controllers\NewSystem\PasswordResetController as NewSystemPasswordResetController;
 use App\Http\Controllers\NewSystem\UserController as NewSystemUserController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,8 +14,19 @@ Route::get('/', NewSystemDashboardController::class)
     ->name('new-system.dashboard');
 
 Route::post('/acceder', [NewSystemAuthController::class, 'login'])
-    ->middleware('throttle:new-system-login')
     ->name('new-system.login.store');
+
+Route::middleware('guest')->group(function (): void {
+    Route::get('/recuperar-contrasena', [NewSystemPasswordResetController::class, 'requestForm'])
+        ->name('new-system.password.request');
+    Route::post('/recuperar-contrasena', [NewSystemPasswordResetController::class, 'sendLink'])
+        ->middleware('throttle:new-system-password-reset')
+        ->name('new-system.password.email');
+    Route::get('/restablecer-contrasena/{token}', [NewSystemPasswordResetController::class, 'resetForm'])
+        ->name('new-system.password.reset');
+    Route::post('/restablecer-contrasena', [NewSystemPasswordResetController::class, 'reset'])
+        ->name('new-system.password.update');
+});
 
 Route::redirect('/nuevo', '/');
 Route::redirect('/nuevo/login', '/');

@@ -9,12 +9,12 @@ use Sis_medico\Notifications\MyResetPassword;
 class User extends Authenticatable
 {
     use Notifiable;
-    
+
     /**
-    * The attributes that aren't mass assignable.
-    *
-    * @var array
-    */
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
     protected $guarded = ['remember_token'];
 
     /**
@@ -30,14 +30,19 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function sendPasswordResetNotification($token)
+    /**
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token)
     {
-        $this->notify(new MyResetPassword($token));
+        $this->notify(new MyResetPassword((string) $token));
     }
+
     public function usuario()
     {
         return $this->belongsTo('Sis_medico\Ct_Nomina', 'id_user');
     }
+
     public function permisos()
     {
         return $this->belongsTo('Sis_medico\Ct_Nomina', 'id_user');
