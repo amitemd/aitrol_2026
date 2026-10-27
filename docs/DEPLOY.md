@@ -34,8 +34,7 @@ El panel ejecuta `git pull --ff-only` directamente con el usuario de PHP. Config
 
 ```bash
 cd /var/www/aitrol
-chmod +x install-git-direct.sh
-WEB_USER=apache PROJECT_PATH=/var/www/aitrol ./install-git-direct.sh
+WEB_USER=apache PROJECT_PATH=/var/www/aitrol bash install-git-direct.sh
 ```
 
 El instalador concede al usuario web escritura sobre los archivos versionados, sus directorios y `.git`; excluye `vendor` y `node_modules`, configura ACL predeterminadas para archivos futuros y mantiene `.env` como solo lectura. Las variables antiguas `DEPLOY_GIT_HELPER` y `DEPLOY_GIT_USER` se limpian automáticamente. No use `chmod 777`.

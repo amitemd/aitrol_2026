@@ -143,7 +143,7 @@
                     <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs leading-5 text-sky-900">
                         <p class="font-semibold">Acceso directo de Git no configurado</p>
                         <p class="mt-1">Ejecute una sola vez como propietario del repositorio, sin <code>sudo</code>:</p>
-                        <code class="mt-2 block overflow-x-auto rounded-lg bg-slate-950 px-3 py-2 text-slate-100">chmod +x install-git-direct.sh &amp;&amp; WEB_USER=apache PROJECT_PATH={{ base_path() }} ./install-git-direct.sh</code>
+                        <code class="mt-2 block overflow-x-auto rounded-lg bg-slate-950 px-3 py-2 text-slate-100">WEB_USER=apache PROJECT_PATH={{ base_path() }} bash install-git-direct.sh</code>
                         <p class="mt-2 text-sky-800">El instalador usa ACL para permitir la actualización y conserva <code>.env</code> como solo lectura. No use <code>chmod 777</code>.</p>
                     </div>
                 @endif

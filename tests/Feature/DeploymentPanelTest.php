@@ -47,6 +47,8 @@ class DeploymentPanelTest extends TestCase
             ->assertSee('Acceso directo de Git no configurado')
             ->assertSee('PHP directo, sin sudo')
             ->assertSee('install-git-direct.sh')
+            ->assertSee('bash install-git-direct.sh')
+            ->assertDontSee('chmod +x install-git-direct.sh')
             ->assertDontSee('install-git-helper.sh');
     }
 
