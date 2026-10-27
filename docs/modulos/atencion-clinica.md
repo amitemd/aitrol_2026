@@ -2,7 +2,7 @@
 
 ## Estado
 
-Migración incremental en curso. La búsqueda de pacientes por nombre ya utiliza el nuevo contexto; las demás pantallas y operaciones continúan en el legado.
+Migración incremental en curso. La búsqueda por nombre y el directorio paginado de pacientes ya utilizan el nuevo contexto; las demás pantallas y operaciones continúan en el legado.
 
 ## Uso
 
@@ -34,6 +34,14 @@ Se conservarán las tablas clínicas actuales y sus identificadores durante toda
 `LaravelPatientSearchRepository` consulta la tabla existente `paciente` mediante la conexión predeterminada. Excluye el paciente genérico `9999999999`, limita la respuesta a 100 resultados y aplica un orden determinista por apellidos, nombres e identificación.
 
 La búsqueda utiliza parámetros enlazados. El texto escrito por el usuario ya no se concatena dentro de la sentencia SQL.
+
+### Directorio de pacientes
+
+`ListPatients` obtiene el listado mediante `PatientDirectoryRepository`. El adaptador consulta `paciente` y enlaza una sola vez las cuentas de `users` necesarias para mostrar creador y correo. La vista ya no ejecuta dos consultas adicionales por cada fila.
+
+Los filtros de cédula, nombres, apellidos y correo se validan por POST, se conservan en sesión y no se muestran en la URL. La paginación mantiene un orden estable por apellidos, nombres e identificación.
+
+Esta operación es de solo lectura, conserva los identificadores y excluye el registro genérico `9999999999` igual que el flujo anterior.
 
 ## Soporte
 

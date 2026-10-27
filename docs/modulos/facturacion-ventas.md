@@ -25,17 +25,23 @@ El módulo permite consultar, crear, editar, emitir, visualizar, anular y export
 
 ## Diseño técnico
 
-### Caso de uso migrado
+### Casos de uso migrados
 
 `FindSalesInvoiceForCompany` obtiene una factura para la empresa activa. El controlador no conoce cómo se consulta la base y depende del contrato `SalesInvoiceReadRepository`.
+
+`ListSalesInvoices` obtiene el directorio paginado de facturas para la empresa activa. Recibe filtros validados mediante `SalesInvoiceDirectoryFilters` y depende del contrato `SalesInvoiceDirectoryRepository`.
 
 ### Adaptador actual
 
 `LaravelSalesInvoiceReadRepository` usa la conexión predeterminada de Laravel y consulta la tabla existente `ct_ventas`. No crea tablas ni utiliza una segunda base de datos.
 
+`LaravelSalesInvoiceDirectoryRepository` conserva las columnas visibles del listado heredado, el cálculo de valor sin IVA y la comprobación de kardex. La búsqueda avanzada continúa por `POST`; la consulta global, la paginación y el límite de registros se procesan en servidor.
+
 ### Compatibilidad
 
 `SalesInvoiceView::toLegacyRecord()` entrega temporalmente un objeto con las mismas propiedades que consumen las vistas heredadas. Esto permite migrar la lógica sin reescribir la pantalla en el mismo cambio.
+
+El listado entrega el mismo paginador y las mismas propiedades que consume `contable/ventas/index.blade.php`. Por ello, las rutas, acciones y pantalla actual continúan funcionando mientras la consulta queda desacoplada del modelo heredado.
 
 ### Tablas relacionadas todavía gestionadas por el legado
 
@@ -66,7 +72,8 @@ La reversión consiste en devolver la consulta del método `editar` al Query Bui
 
 ## Verificación local
 
-- La prueba de unidad valida que el caso de uso respete el identificador de empresa.
-- La prueba del contenedor valida el contrato y su adaptador.
+- Las pruebas validan que ambos casos de uso respeten el identificador de empresa.
+- La prueba del directorio valida filtros, paginación, valor sin IVA, seguro y existencia de kardex.
+- Las pruebas del contenedor validan los contratos y sus adaptadores.
 - Las pruebas de compatibilidad existentes continúan validando rutas y vista de ventas.
 - La revisión manual debe abrir una factura real de la empresa activa y otra inexistente o perteneciente a otra empresa.

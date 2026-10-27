@@ -2,7 +2,9 @@
 
 namespace Sis_medico\Http\Controllers\contable;
 
+use App\Modules\Billing\Application\Data\SalesInvoiceDirectoryFilters;
 use App\Modules\Billing\Application\Queries\FindSalesInvoiceForCompany;
+use App\Modules\Billing\Application\Queries\ListSalesInvoices;
 use DateTime;
 use Excel;
 use Exception;
@@ -15,21 +17,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Mail;
 use PHPExcel_Worksheet_Drawing;
-use Response;
 use Session;
 use Sis_medico\Agenda;
 use Sis_medico\Bodega;
 use Sis_medico\Contable;
-use Sis_medico\Hc_Evolucion;
 use Sis_medico\Ct_Asientos_Cabecera;
 use Sis_medico\Ct_Asientos_Detalle;
 use Sis_medico\Ct_Bancos;
 use Sis_medico\Ct_Bodegas;
 use Sis_medico\Ct_Caja;
-use Sis_medico\CtCajaCobro;
 use Sis_medico\Ct_Caja_Banco;
-use Sis_medico\Ct_Clientes;
 use Sis_medico\Ct_Cliente_Retencion;
+use Sis_medico\Ct_Clientes;
+use Sis_medico\Ct_Comision_Cabecera;
+use Sis_medico\Ct_Comision_Detalle;
 use Sis_medico\Ct_Comprobante_Egreso;
 use Sis_medico\Ct_Comprobante_Egreso_Varios;
 use Sis_medico\Ct_Comprobante_Ingreso;
@@ -42,80 +43,77 @@ use Sis_medico\Ct_detalle_venta;
 use Sis_medico\Ct_Detalle_Venta_Conglomerada;
 use Sis_medico\Ct_Detalle_Venta_Omni;
 use Sis_medico\Ct_Divisas;
+use Sis_medico\Ct_Empresa_Relacionada;
 use Sis_medico\Ct_Factura_Omni;
 use Sis_medico\Ct_Factura_Procedimiento;
 use Sis_medico\Ct_Forma_Pago;
 use Sis_medico\Ct_Kardex;
+use Sis_medico\Ct_Nota_Credito_Clientes;
 use Sis_medico\Ct_Orden_Venta;
 use Sis_medico\Ct_Orden_Venta_Detalle;
 use Sis_medico\Ct_Orden_Venta_Pago;
 use Sis_medico\Ct_Porcentajes_Retencion_Fuente;
 use Sis_medico\Ct_Porcentajes_Retencion_Iva;
 use Sis_medico\Ct_productos;
+use Sis_medico\Ct_productos_insumos;
 use Sis_medico\Ct_Productos_Tarifario;
 use Sis_medico\Ct_Retencion_Fventas;
 use Sis_medico\Ct_Sucursales;
 use Sis_medico\Ct_Tipo_Pago;
 use Sis_medico\Ct_Tipo_Tarjeta;
-use Sis_medico\Ct_ventas;
-use Sis_medico\Ct_Ventas_Recibo_Cobro;
 use Sis_medico\Ct_Ven_Orden;
 use Sis_medico\Ct_Ven_Orden_Detalle;
+use Sis_medico\Ct_ventas;
+use Sis_medico\Ct_Ventas_Recibo_Cobro;
+use Sis_medico\CtCajaCobro;
+use Sis_medico\De_Empresa;
+use Sis_medico\De_Info_Tributaria;
 use Sis_medico\Empresa;
 use Sis_medico\EntregaMercaderia;
 use Sis_medico\EntregaMercaderiaTrazabilidad;
 use Sis_medico\Examen_Orden;
 use Sis_medico\Examen_Orden_Agenda;
-use Sis_medico\hc_procedimientos;
+use Sis_medico\Hc_Evolucion;
 use Sis_medico\Hc_Procedimiento_Final;
+use Sis_medico\hc_procedimientos;
 use Sis_medico\hc_protocolo;
 use Sis_medico\Http\Controllers\ApiFacturacionController;
-use Sis_medico\Http\Controllers\Controller;
-use Sis_medico\Inventario;
-use Sis_medico\Log_usuario;
-use Sis_medico\Movimiento;
-use Sis_medico\Movimiento_Paciente;
-use Sis_medico\Paciente;
-use Sis_medico\ParametersConglomerada;
-use Sis_medico\Planilla;
-use Sis_medico\Plan_Cuentas;
-use Sis_medico\PrecioProducto;
-use Sis_medico\Procedimiento;
-use Sis_medico\Producto;
-use Sis_medico\Seguro;
-use Sis_medico\User;
-use Sis_medico\Validate_Decimals;
-use Sis_medico\LogConfig;
-use Sis_medico\Ct_Comision_Detalle;
-use Sis_medico\Ct_Comision_Cabecera;
-use Sis_medico\Ct_Nota_Credito_Clientes;
-use Sis_medico\Ct_productos_insumos;
-use Sis_medico\De_Empresa;
-use Sis_medico\De_Info_Tributaria;
 use Sis_medico\Http\Controllers\contable\VentasController as ContableVentasController;
+use Sis_medico\Http\Controllers\Controller;
 use Sis_medico\Http\Controllers\EmisionDocumentosController;
 use Sis_medico\Http\Controllers\excelCreate;
 use Sis_medico\InvCabMovimientos;
+use Sis_medico\InvContableCab;
 use Sis_medico\InvDetMovimientos;
 use Sis_medico\InvDocumentosBodegas;
+use Sis_medico\Inventario;
 use Sis_medico\InvInventario;
 use Sis_medico\InvInventarioSerie;
 use Sis_medico\InvKardex;
 use Sis_medico\InvTransaccionesBodegas;
-use Sis_medico\Log_movimiento;
-use Sis_medico\LogAsiento;
-use Sis_medico\Pais;
-use Sis_medico\Proforma_Venta_Cab;
-use Sis_medico\Ct_Cierre_Cabecera;
-use Sis_medico\Ct_Empresa_Relacionada;
-use Sis_medico\Http\Requests\Request as RequestsRequest;
-use Sis_medico\InvContableCab;
-use Sis_medico\Planilla_Cabecera;
+use Sis_medico\Log_usuario;
 use Sis_medico\Log_Venta_Costo;
+use Sis_medico\LogAsiento;
+use Sis_medico\LogConfig;
 use Sis_medico\LogReciboDeCobro;
-use Sis_medico\Venta_Kardex;
+use Sis_medico\Movimiento;
+use Sis_medico\Movimiento_Paciente;
+use Sis_medico\Paciente;
+use Sis_medico\Pais;
+use Sis_medico\ParametersConglomerada;
+use Sis_medico\Plan_Cuentas;
+use Sis_medico\Planilla;
+use Sis_medico\PrecioProducto;
+use Sis_medico\Procedimiento;
+use Sis_medico\Producto;
+use Sis_medico\Proforma_Venta_Cab;
+use Sis_medico\Seguro;
 use Sis_medico\SeguroTipos;
+use Sis_medico\User;
 use Sis_medico\Utilidades;
+use Sis_medico\Validate_Decimals;
+use Sis_medico\Venta_Kardex;
+
 use function Illuminate\Support\defer;
 
 class VentasController extends Controller
@@ -167,7 +165,9 @@ class VentasController extends Controller
     }
 
     private $controlador = 'ventas';
+
     private $porIva = '';
+
     public function __construct()
     {
         $this->middleware('auth');
@@ -183,18 +183,20 @@ class VentasController extends Controller
             return $next($request);
         })->except('index');
     }
+
     private function rol()
     {
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $id_auth = Auth::user()->id;
-        if (in_array($rolUsuario, array(1, 4, 5, 20, 22)) == false) {
+        if (in_array($rolUsuario, [1, 4, 5, 20, 22]) == false) {
             return true;
         }
     }
+
     /*******************************
      ***LISTADO FACTURAS DE VENTA ***
     /******************************/
-    public function index(Request $request)
+    public function index(Request $request, ListSalesInvoices $listSalesInvoices)
     {
         $this->validateSalesListingRequest($request);
 
@@ -205,12 +207,14 @@ class VentasController extends Controller
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::find(session('id_empresa'));
         $permitidos = ParametersConglomerada::pdf_permitidos($id_empresa);
-        //echo '<pre>';print_r($request->opcion);exit;
+        // echo '<pre>';print_r($request->opcion);exit;
         if ($request->opcion == '') {
-            $dato = Ct_ventas::getListadoVentas($request);
+            $dato = $listSalesInvoices->handle(
+                $this->salesInvoiceDirectoryFilters($request, (string) $id_empresa),
+            );
             $this->deferElectronicInvoiceStatusRefresh($id_empresa);
 
-            return view('contable/ventas/index', ['empresa' => $empresa, 'dato' => $dato, 'permitidos' => $permitidos, "usuario_actual" => $usuario_actual]);
+            return view('contable/ventas/index', ['empresa' => $empresa, 'dato' => $dato, 'permitidos' => $permitidos, 'usuario_actual' => $usuario_actual]);
         } elseif ($request->opcion == 'logFactura') {
             $datoFact = DB::table('de_log_facturacion')
                 ->join('de_pasos as p', 'de_log_facturacion.id_pasos', '=', 'p.id')
@@ -224,7 +228,7 @@ class VentasController extends Controller
                     'de_log_facturacion.created_at',
                     'de_log_facturacion.informacion',
                     'c.nombre as cliente',
-                    'nro_comprobante'
+                    'nro_comprobante',
                 ]);
             $tabla = '<table style="width:100%;cc">
             <tr>
@@ -232,11 +236,11 @@ class VentasController extends Controller
                     <table align="center">
                         <tr>
                             <td><b>Cliente: </b></td>
-                            <td>' . $datoFact[0]->cliente . '</td>
+                            <td>'.$datoFact[0]->cliente.'</td>
                         </tr>
                         <tr>
                             <td><b>Factura No.: &nbsp;</b></td>
-                            <td>' . $datoFact[0]->nro_comprobante . '</td>
+                            <td>'.$datoFact[0]->nro_comprobante.'</td>
                         </tr>
                     </table>
                 </td>
@@ -252,9 +256,9 @@ class VentasController extends Controller
             if (count($datoFact) > 0) {
                 foreach ($datoFact as $row) {
                     $tabla .= '<tr>
-                    <td align="center" style="border-bottom:1px gray solid;">' . $row->created_at . '</td>
-                    <td style="border-bottom:1px gray solid;">' . $row->nombre . '</td>
-                    <td style="border-bottom:1px gray solid;">' . $row->informacion . '</td>
+                    <td align="center" style="border-bottom:1px gray solid;">'.$row->created_at.'</td>
+                    <td style="border-bottom:1px gray solid;">'.$row->nombre.'</td>
+                    <td style="border-bottom:1px gray solid;">'.$row->informacion.'</td>
                     </tr>';
                 }
             }
@@ -265,11 +269,12 @@ class VentasController extends Controller
             $data['controlador'] = $this->controlador;
             $data['id_empresa'] = $request->session()->get('id_empresa');
             $data['empresa'] = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-            $data['pais'] = pais::where('estado', '1')->get();
+            $data['pais'] = Pais::where('estado', '1')->get();
             $data['venta'] = Ct_ventas::where('id', $request->id)->first();
             $data['cliente'] = Ct_Clientes::where('identificacion', $data['venta']->id_cliente)->first();
             $data['forma_pago'] = Ct_Tipo_Pago::where('estado', '1')->get();
             config(['data' => $data]);
+
             return view('contable/ventas/editarCabeceraFactura', $data);
         } elseif ($request->opcion == 'updateClienteFactura') {
             $arrayCliente = [
@@ -279,25 +284,27 @@ class VentasController extends Controller
             ];
             Ct_Clientes::where('identificacion', $request->identificacion)->update($arrayCliente);
             $arrayFact = [
-                'doc_electronico' => 0
+                'doc_electronico' => 0,
             ];
             Ct_ventas::where('id', $request->id_venta)->update($arrayFact);
+
             return redirect('contable/ventas');
         } elseif ($request->opcion == 'descargarnotaentrega') {
             $tipoText = 'Nota de entrega de la factura-';
             $data['venta'] = Ct_ventas::find($request->id);
             $data['empresa'] = $empresa;
-            $data['title'] = $tipoText . $data['venta']->nro_comprobante;
+            $data['title'] = $tipoText.$data['venta']->nro_comprobante;
             $pdf_ = 'sri_electronico.documentosgenerados.view_notaentregapdf';
             $view = \Illuminate\Support\Facades\View::make($pdf_, $data)->render();
             $pdf = \Illuminate\Support\Facades\App::make('dompdf.wrapper');
             $pdf->loadHTML($view)->setPaper('a4', 'landscape');
-            return $pdf->download($tipoText . $data['venta']->nro_comprobante . '.pdf');
+
+            return $pdf->download($tipoText.$data['venta']->nro_comprobante.'.pdf');
         } elseif ($request->opcion == 'guardarFacturaSeguros') {
             if ($this->rol()) {
                 return response()->view('errors.404');
             }
-            $ip_cliente = $_SERVER["REMOTE_ADDR"];
+            $ip_cliente = $_SERVER['REMOTE_ADDR'];
             $idusuario = Auth::user()->id;
             $fecha_as = $request['fecha_asiento'];
             $id_empresa = $request->session()->get('id_empresa');
@@ -307,14 +314,14 @@ class VentasController extends Controller
             $nfactura = 0;
             $num_comprobante = 0;
             $empresa = Empresa::find($id_empresa);
-            $msjk = ", Store: no tiene inventario";
+            $msjk = ', Store: no tiene inventario';
             if ($empresa->inventario == 1) {
-                $msjk = ", Store: tiene inventario";
+                $msjk = ', Store: tiene inventario';
             }
             $cliente = Ct_Clientes::where('identificacion', '=', $request['identificacion_cliente'])->count();
             $id_proforma = $request->proforma;
             DB::beginTransaction();
-            $msj = "no";
+            $msj = 'no';
             try {
                 $verifica_cierre = LogAsiento::verificar_cierre_anio($request->fecha_asiento);
                 if ($verifica_cierre['status'] == 'error') {
@@ -346,22 +353,22 @@ class VentasController extends Controller
                     $c_caja = $cod_caj->codigo_caja;
                     $proced = $request['procedimiento'];
                     if ($request['electronica'] == 1) {
-                        $nfactura = "";
-                        $num_comprobante = "";
-                    } else if (!is_null($numero)) {
-                        $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+                        $nfactura = '';
+                        $num_comprobante = '';
+                    } elseif (! is_null($numero)) {
+                        $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                         $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                             ->where('nro_comprobante', $num_comprobante)
                             ->where('tipo', '<>', 'VEN-FACT')
                             ->where('estado', '!=', '0')->first();
-                        if (!is_null($verifica_num_factura)) {
-                            return ["respuesta" => "existe", 'mensaje' => "Ya existe un n�mero de factura"];
+                        if (! is_null($verifica_num_factura)) {
+                            return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un n�mero de factura'];
                         } else {
                             $nfactura = $numero;
                         }
                     } else {
                         $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                        $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                        $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
                     }
                 } else {
                     $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('codigo_sucursal', $empresa->establecimiento)->first();
@@ -370,34 +377,34 @@ class VentasController extends Controller
                     $c_caja = $cod_caj->codigo_caja;
                     $proced = $request['procedimiento'];
                     if ($request['electronica'] == 1) {
-                        $nfactura = "";
-                        $num_comprobante = "";
-                    } else if (!is_null($numero)) {
-                        $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+                        $nfactura = '';
+                        $num_comprobante = '';
+                    } elseif (! is_null($numero)) {
+                        $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                         $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                             ->where('nro_comprobante', $num_comprobante)
                             ->where('tipo', '<>', 'VEN-FACT')
                             ->where('estado', '!=', '0')->first();
-                        if (!is_null($verifica_num_factura)) {
-                            return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                        if (! is_null($verifica_num_factura)) {
+                            return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                         } else {
                             $nfactura = $numero;
                         }
                     } else {
                         $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                        $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                        $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
                     }
                 }
-                $pac = "";
-                if ($request['nombre_paciente'] != "") {
-                    $pac = " | " . $request['nombre_paciente'];
+                $pac = '';
+                if ($request['nombre_paciente'] != '') {
+                    $pac = ' | '.$request['nombre_paciente'];
                 }
-                $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+                $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
                 $id_paciente = $request['identificacion_paciente'];
                 $patient = Paciente::find($id_paciente);
-                $pc = "9999999999";
+                $pc = '9999999999';
                 if (is_null($patient)) {
-                    $pc = "9999999999";
+                    $pc = '9999999999';
                 } else {
                     $pc = $patient->id;
                 }
@@ -407,7 +414,7 @@ class VentasController extends Controller
                     'fecha_asiento' => $fecha_as,
                     'fact_numero' => $nfactura,
                     'id_empresa' => $id_empresa,
-                    'observacion' => $text . " " . $request['concepto'],
+                    'observacion' => $text.' '.$request['concepto'],
                     'valor' => $request['total1'],
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
@@ -415,21 +422,21 @@ class VentasController extends Controller
                     'ip_modificacion' => $ip_cliente,
                 ];
                 $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
-                $diasPlazo = "0";
-                $nota_electronica = "";
+                $diasPlazo = '0';
+                $nota_electronica = '';
                 if ($request['electronica'] == 1) {
                     $diasPlazo = $request->diasPlazo;
                     $nota_electronica = [
                         $request['concepto'],
-                        $request['procedimiento']
+                        $request['procedimiento'],
                     ];
                 }
                 if ($num_comprobante == '') {
                     $datos = [
                         'sucursal' => $c_sucursal,
-                        'punto_emision' => $c_caja
+                        'punto_emision' => $c_caja,
                     ];
-                    $num_comprobante = VentasController::generarNumeroFactura($datos);
+                    $num_comprobante = ContableVentasController::generarNumeroFactura($datos);
                 }
                 $secuencialserie = explode('-', $num_comprobante);
                 $factura_venta = [
@@ -444,7 +451,7 @@ class VentasController extends Controller
                     'divisas' => $request['divisas'],
                     'nombre_cliente' => $request['nombre_cliente'],
                     'tipo_consulta' => $request['tipo_consulta'],
-                    'id_cliente' => $request['identificacion_cliente'], //nombre_cliente
+                    'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
                     'direccion_cliente' => $request['direccion_cliente'],
                     'ruc_id_cliente' => $request['identificacion_cliente'],
                     'telefono_cliente' => $request['telefono_cliente'],
@@ -471,15 +478,15 @@ class VentasController extends Controller
                     'total_final' => $request['total1'],
                     'valor_contable' => $request['total1'],
                     'dias_plazo' => $diasPlazo,
-                    'nota_electronica' => $nota_electronica != "" ? json_encode($nota_electronica) : json_encode([]),
+                    'nota_electronica' => $nota_electronica != '' ? json_encode($nota_electronica) : json_encode([]),
                     'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
-                    'mensaje_kardex' => $request["kardex_descripcion"] . "" . $msjk,
-                    'nota_array' => $nota_electronica != "" ? json_encode($nota_electronica) : json_encode([]),
+                    'mensaje_kardex' => $request['kardex_descripcion'].''.$msjk,
+                    'nota_array' => $nota_electronica != '' ? json_encode($nota_electronica) : json_encode([]),
                     'doc_electronico' => $c_caja == 100 ? 0 : null,
-                    'emisor' => 'MD'
+                    'emisor' => 'MD',
                 ];
                 if (is_null($id_paciente)) {
                     $factura_venta = [
@@ -494,7 +501,7 @@ class VentasController extends Controller
                         'divisas' => $request['divisas'],
                         'nombre_cliente' => $request['nombre_cliente'],
                         'tipo_consulta' => $request['tipo_consulta'],
-                        'id_cliente' => $request['identificacion_cliente'], //nombre_cliente
+                        'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
                         'direccion_cliente' => $request['direccion_cliente'],
                         'ruc_id_cliente' => $request['identificacion_cliente'],
                         'telefono_cliente' => $request['telefono_cliente'],
@@ -520,15 +527,15 @@ class VentasController extends Controller
                         'total_final' => $request['total1'],
                         'valor_contable' => $request['total1'],
                         'dias_plazo' => $diasPlazo,
-                        'nota_electronica' => $nota_electronica != "" ? json_encode($nota_electronica) : json_encode([]),
+                        'nota_electronica' => $nota_electronica != '' ? json_encode($nota_electronica) : json_encode([]),
                         'ip_creacion' => $ip_cliente,
                         'ip_modificacion' => $ip_cliente,
                         'id_usuariocrea' => $idusuario,
                         'id_usuariomod' => $idusuario,
-                        'mensaje_kardex' => $request["kardex_descripcion"] . "" . $msjk,
-                        'nota_array' => $nota_electronica != "" ? json_encode($nota_electronica) : json_encode([]),
+                        'mensaje_kardex' => $request['kardex_descripcion'].''.$msjk,
+                        'nota_array' => $nota_electronica != '' ? json_encode($nota_electronica) : json_encode([]),
                         'doc_electronico' => $c_caja == 100 ? 0 : null,
-                        'emisor' => 'MD'
+                        'emisor' => 'MD',
                     ];
                 }
                 $id_venta = Ct_ventas::insertGetId($factura_venta);
@@ -536,29 +543,29 @@ class VentasController extends Controller
                 $total_iva = 0;
                 $total_impuesto = 0;
                 $total_0 = 0;
-                for ($i = 0; $i < count($request->input("nombre")); $i++) {
-                    if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
-                        $dato = $request->input("descrip_prod")[$i];
+                for ($i = 0; $i < count($request->input('nombre')); $i++) {
+                    if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
+                        $dato = $request->input('descrip_prod')[$i];
                         $cadena = $dato;
-                        $buscar = "|";
+                        $buscar = '|';
                         $resultado = strpos($cadena, $buscar);
-                        if ($resultado !== FALSE) {
+                        if ($resultado !== false) {
                             $dato = json_encode(explode('|', $dato));
                         }
                         $arr = [
-                            'nombre' => $request->input("nombre")[$i],
-                            'cantidad' => $request->input("cantidad")[$i],
-                            'bodega' => $request->input("bodega")[$i],
-                            'codigo' => $request->input("codigo")[$i],
-                            'precio' => $request->input("precio")[$i],
-                            'descpor' => $request->input("descpor")[$i],
-                            'copago' => $request->input("copago")[$i],
-                            'descuento' => $request->input("desc")[$i],
-                            'precioneto' => $request->input("precioneto")[$i],
+                            'nombre' => $request->input('nombre')[$i],
+                            'cantidad' => $request->input('cantidad')[$i],
+                            'bodega' => $request->input('bodega')[$i],
+                            'codigo' => $request->input('codigo')[$i],
+                            'precio' => $request->input('precio')[$i],
+                            'descpor' => $request->input('descpor')[$i],
+                            'copago' => $request->input('copago')[$i],
+                            'descuento' => $request->input('desc')[$i],
+                            'precioneto' => $request->input('precioneto')[$i],
                             'detalle' => $dato,
-                            'iva' => $request->input("iva")[$i],
-                            'bodega' => $request->input("bodega")[$i],
-                            'id_inv_serie' => $request->input("id_inv_serie")[$i],
+                            'iva' => $request->input('iva')[$i],
+                            'bodega' => $request->input('bodega')[$i],
+                            'id_inv_serie' => $request->input('id_inv_serie')[$i],
                         ];
                         array_push($arr_total, $arr);
                     }
@@ -572,7 +579,7 @@ class VentasController extends Controller
                     if ($request->codigo_publico != '' || $request->descripcion_publico != '') {
                         $otros = [
                             'codigo_publico' => $request->codigo_publico[$cont],
-                            'descripcion_publico' => $request->descripcion_publico[$cont]
+                            'descripcion_publico' => $request->descripcion_publico[$cont],
                         ];
                     }
                     $detalle = [
@@ -594,8 +601,8 @@ class VentasController extends Controller
                         'ip_modificacion' => $ip_cliente,
                         'id_usuariocrea' => $idusuario,
                         'id_usuariomod' => $idusuario,
-                        'id_inv_serie' => $valor["id_inv_serie"],
-                        'otros' => json_encode($otros)
+                        'id_inv_serie' => $valor['id_inv_serie'],
+                        'otros' => json_encode($otros),
                     ];
                     Ct_detalle_venta::create($detalle);
                     $cont++;
@@ -684,19 +691,19 @@ class VentasController extends Controller
                 }
                 $variable = $request['contador_pago'];
                 for ($i = 0; $i < $variable; $i++) {
-                    $visibilidad_p = $request['visibilidad_pago' . $i];
+                    $visibilidad_p = $request['visibilidad_pago'.$i];
                     if ($visibilidad_p == 1) {
                         Ct_Forma_Pago::create([
                             'id_ct_ventas' => $id_venta,
-                            'tipo' => $request['id_tip_pago' . $i],
-                            'fecha' => $request['fecha_pago' . $i],
-                            'tipo_tarjeta' => $request['tipo_tarjeta' . $i],
-                            'numero' => $request['numero_pago' . $i],
-                            'banco' => $request['id_banco_pago' . $i],
-                            'cuenta' => $request['id_cuenta_pago' . $i],
-                            'giradoa' => $request['giradoa' . $i],
-                            'valor' => $request['valor' . $i],
-                            'valor_base' => $request['valor_base' . $i],
+                            'tipo' => $request['id_tip_pago'.$i],
+                            'fecha' => $request['fecha_pago'.$i],
+                            'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                            'numero' => $request['numero_pago'.$i],
+                            'banco' => $request['id_banco_pago'.$i],
+                            'cuenta' => $request['id_cuenta_pago'.$i],
+                            'giradoa' => $request['giradoa'.$i],
+                            'valor' => $request['valor'.$i],
+                            'valor_base' => $request['valor_base'.$i],
                             'id_usuariocrea' => $idusuario,
                             'id_usuariomod' => $idusuario,
                             'ip_creacion' => $ip_cliente,
@@ -707,27 +714,27 @@ class VentasController extends Controller
                 $arr_p = [];
                 $validates = false;
                 for ($i = 0; $i < $variable; $i++) {
-                    $visibilidad_pa = $request['visibilidad_pago' . $i];
+                    $visibilidad_pa = $request['visibilidad_pago'.$i];
                     if ($visibilidad_pa == 1) {
                         if ($request['id_tip_pago'][$i] == '7') {
                             $validates = true;
                         }
                         $arr_pagos = [
-                            'id_tip_pago' => $request['id_tip_pago' . $i],
-                            'fecha_pago' => $request['fecha_pago' . $i],
-                            'tipo_tarjeta' => $request['tipo_tarjeta' . $i],
-                            'numero_pago' => $request['numero_pago' . $i],
-                            'id_banco_pago' => $request['id_banco_pago' . $i],
-                            'id_cuenta_pago' => $request['id_cuenta_pago' . $i],
-                            'giradoa' => $request['giradoa' . $i],
-                            'valor' => $request['valor' . $i],
-                            'valor_base' => $request['valor_base' . $i],
+                            'id_tip_pago' => $request['id_tip_pago'.$i],
+                            'fecha_pago' => $request['fecha_pago'.$i],
+                            'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                            'numero_pago' => $request['numero_pago'.$i],
+                            'id_banco_pago' => $request['id_banco_pago'.$i],
+                            'id_cuenta_pago' => $request['id_cuenta_pago'.$i],
+                            'giradoa' => $request['giradoa'.$i],
+                            'valor' => $request['valor'.$i],
+                            'valor_base' => $request['valor_base'.$i],
                         ];
                         array_push($arr_p, $arr_pagos);
                     }
                 }
                 $erf = [];
-                if ($request['id_venta'] != "") {
+                if ($request['id_venta'] != '') {
                     $nuevo_copago = [
                         'copago' => '0',
                     ];
@@ -737,34 +744,35 @@ class VentasController extends Controller
                     $id_ct_ventas = [
                         'id_ct_venta' => $id_venta,
                     ];
-                    Ct_ven_orden::where('id', $orden_id)->update($id_ct_ventas);
+                    Ct_Ven_Orden::where('id', $orden_id)->update($id_ct_ventas);
                 } else {
                     $orden_id = 0;
                 }
                 $data['id'] = $id_venta;
                 $data['tipo'] = 'VEN-FA';
-                $asiento_costo_kardex = "";
-                $kardex["asiento_costo"] = "";
+                $asiento_costo_kardex = '';
+                $kardex['asiento_costo'] = '';
                 if ($empresa->egreso_kardex == 1 and $empresa->inventario == 1) {
                     $kardex = NuevoKardexContableController::generarKardex($id_venta, $request);
-                    if ($kardex["status"] == "error") {
+                    if ($kardex['status'] == 'error') {
                         DB::rollBack();
+
                         return $kardex;
                     }
-                    $kardex["asiento_costo"] = $kardex["asiento_costo"];
+                    $kardex['asiento_costo'] = $kardex['asiento_costo'];
                 }
                 $num_sec_vent = Ct_ventas::find($id_venta);
                 $num_vent = $num_sec_vent->numero;
                 $asiento_kardex = Contable::kardex_asiento($id_venta);
-                $getSri = "No";
-                $id_comprobante_ingreso = "";
+                $getSri = 'No';
+                $id_comprobante_ingreso = '';
                 if ($c_caja != 100) {
                     if ($request['electronica'] == '1') {
                         if ($empresa->electronica == 1) {
                             $getSri = $this->getSRI($id_venta);
-                            if (isset($getSri["comprobante"])) {
-                                $nfactura = $getSri["comprobante"];
-                                $getSri = $getSri["status"];
+                            if (isset($getSri['comprobante'])) {
+                                $nfactura = $getSri['comprobante'];
+                                $getSri = $getSri['status'];
                             } else {
                                 $getSri = $getSri;
                             }
@@ -776,20 +784,21 @@ class VentasController extends Controller
                     $nfactura = $num_vent;
                 }
 
-                if (!$validates) {
-                    $erf = VentasController::newCrearComprobante($nfactura, $request, $arr_p, $id_venta);
-                    if ($erf["status"] != "success") {
+                if (! $validates) {
+                    $erf = ContableVentasController::newCrearComprobante($nfactura, $request, $arr_p, $id_venta);
+                    if ($erf['status'] != 'success') {
                         DB::rollBack();
+
                         return $erf;
                     }
-                    $id_comprobante_ingreso = $erf["id_ingreso"];
+                    $id_comprobante_ingreso = $erf['id_ingreso'];
                 }
                 $inventario = null;
-                if ($id_empresa == "0993069299001") {
-                    $info = VentasController::darBajaProducto($request, $id_venta);
+                if ($id_empresa == '0993069299001') {
+                    $info = ContableVentasController::darBajaProducto($request, $id_venta);
                 }
                 DB::commit();
-                if (!is_null($id_proforma) and trim($id_proforma) != "") {
+                if (! is_null($id_proforma) and trim($id_proforma) != '') {
                     $proforma = Proforma_Venta_Cab::find($id_proforma);
                     $proforma->id_venta = $id_venta;
                     $proforma->id_usuariomod = $idusuario;
@@ -797,8 +806,9 @@ class VentasController extends Controller
                     $proforma->save();
                 }
                 $inventario = Inventario::build_process('V', $id_venta, $id_empresa);
+
                 return [
-                    'status' => "success",
+                    'status' => 'success',
                     'idasiento' => $id_asiento_cabecera,
                     'idventa' => $id_venta,
                     'orden_id' => $orden_id,
@@ -807,15 +817,16 @@ class VentasController extends Controller
                     'getSri' => $getSri,
                     'num_vent' => $num_vent,
                     'error' => 'no',
-                    "respuesta" => "si",
-                    'mensaje' => "exito",
-                    'msj' => "Guardado Correctamente",
+                    'respuesta' => 'si',
+                    'mensaje' => 'exito',
+                    'msj' => 'Guardado Correctamente',
                     'inventario' => $inventario,
-                    "asiento_costo" => $kardex["asiento_costo"],
-                    "id_comprobante_ingreso" => $id_comprobante_ingreso
+                    'asiento_costo' => $kardex['asiento_costo'],
+                    'id_comprobante_ingreso' => $id_comprobante_ingreso,
                 ];
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 DB::rollBack();
+
                 return ['status' => 'error', 'error' => $e->getMessage(), 'linea' => $e->getLine()];
             }
         } elseif ($request->opcion == 'informeNeto') {
@@ -837,15 +848,15 @@ class VentasController extends Controller
             $proveedor = $request['id_cliente'];
             $vendedor = $request['id_vendedor'];
             $estado = $request['estado'];
-            if (!is_null($fecha_hasta)) {
-                $fecha_actual = date("Y-m-d", strtotime($fecha_hasta . "+ 1 days"));
+            if (! is_null($fecha_hasta)) {
+                $fecha_actual = date('Y-m-d', strtotime($fecha_hasta.'+ 1 days'));
                 $data['fecha_desde'] = $fecha_desde;
                 $data['fecha_hasta'] = $fecha_hasta;
                 $data['empresa'] = $empresa;
                 $data['id_cliente'] = $proveedor;
                 $data['id_vendedor'] = $vendedor;
                 $data['estado'] = $request['estado'];
-                //DB::enableQueryLog();
+                // DB::enableQueryLog();
                 $data['ventas'] = Ct_ventas::select(
                     'ct_ventas.fecha',
                     'ct_ventas.nro_comprobante',
@@ -855,8 +866,8 @@ class VentasController extends Controller
                     'ct_ventas.subtotal_0',
                     'ct_ventas.subtotal_12',
                     'ct_ventas.descuento',
-                    DB::raw("(SELECT SUM(nc0.subtotal0) FROM ct_nota_credito_clientes as nc0 WHERE nc0.id_factura = ct_ventas.id AND nc0.estado != 0) as subtotal0"),
-                    DB::raw("(SELECT SUM(nc12.subtotal12) FROM ct_nota_credito_clientes as nc12 WHERE nc12.id_factura = ct_ventas.id AND nc12.estado != 0) as subtotal12"),
+                    DB::raw('(SELECT SUM(nc0.subtotal0) FROM ct_nota_credito_clientes as nc0 WHERE nc0.id_factura = ct_ventas.id AND nc0.estado != 0) as subtotal0'),
+                    DB::raw('(SELECT SUM(nc12.subtotal12) FROM ct_nota_credito_clientes as nc12 WHERE nc12.id_factura = ct_ventas.id AND nc12.estado != 0) as subtotal12'),
                     'ct_ventas.estado',
                     'uc.nombre1 as creado_por',
                     'um.nombre1 as modificado_por'
@@ -910,6 +921,7 @@ class VentasController extends Controller
                         $arrayDatos['ventaNeta'] = 0;
                         $arrayDatos['numFacturas'] = 0;
                     }
+
                     return json_encode($arrayDatos);
                 }
             }
@@ -946,15 +958,16 @@ class VentasController extends Controller
             return view('contable/ventas/view_informe_neto', $data);
         } elseif ($request->opcion == 'getCliente') {
             $data = Ct_Clientes::selectRaw('identificacion as id, CONCAT(identificacion," | ",nombre) as text')
-                ->where('identificacion', 'like', '%' . $request->term . '%')
-                ->orWhere('nombre', 'like', '%' . $request->term . '%')
+                ->where('identificacion', 'like', '%'.$request->term.'%')
+                ->orWhere('nombre', 'like', '%'.$request->term.'%')
                 ->get();
-            $results = array(
-                "sEcho" => 1,
-                "iTotalRecords" => count($data),
-                "iTotalDisplayRecords" => count($data),
-                "aaData" => $data
-            );
+            $results = [
+                'sEcho' => 1,
+                'iTotalRecords' => count($data),
+                'iTotalDisplayRecords' => count($data),
+                'aaData' => $data,
+            ];
+
             return json_encode($results);
         } elseif ($request->opcion == 'cobrar') {
             return view('contable/ventas/view_cobrar');
@@ -966,7 +979,7 @@ class VentasController extends Controller
             $ventas = Ct_ventas::getVentasExamenes(2023);
             $html = '';
             if (count($ventas) > 0) {
-                $html .= '<button onclick="exportTableToExcel(\'Reporte\', \'Reporte Ventas y ordenes examenes' . date('Y-m-d H:i:s') . '\')">Exportar archivo en excel</button><br/><table id="Reporte" style="width:100%;font-size:10px;">
+                $html .= '<button onclick="exportTableToExcel(\'Reporte\', \'Reporte Ventas y ordenes examenes'.date('Y-m-d H:i:s').'\')">Exportar archivo en excel</button><br/><table id="Reporte" style="width:100%;font-size:10px;">
                 <tr>
                     <td>Fecha</td>
                     <td>Sucursal</td>
@@ -988,27 +1001,27 @@ class VentasController extends Controller
                     if ($row->nota_array != null) {
                         $orden = json_decode($row->nota_array, true);
                         if (isset($orden[0]) && $orden[0] != '') {
-                            $validacion = array_search("ORDEN", array_column($orden, 'nombre'));
+                            $validacion = array_search('ORDEN', array_column($orden, 'nombre'));
                             if ($validacion !== false) {
-                                $array_2 = isset($orden[$validacion]["valor"]) ? $orden[$validacion]["valor"] : '';
+                                $array_2 = isset($orden[$validacion]['valor']) ? $orden[$validacion]['valor'] : '';
                             }
                         }
                     }
                     $valor = ($row->precio - $row->descuento);
                     $html .= '<tr>
-                    <td>' . $row->fecha . '</td>
-                    <td>' . $row->sucursal . '</td>
-                    <td>' . $array_2 . '</td>
-                    <td>' . $row->nro_comprobante . '</td>
-                    <td>' . $row->nombres_paciente . '</td>
-                    <td>' . $row->nombre_cliente . '</td>
-                    <td>' . $row->id_cliente . '</td>
-                    <td>' . $row->seguro . '</td>
-                    <td>' . $row->precio . '</td>
-                    <td>' . $row->descuento . '</td>
-                    <td>' . $valor . '</td>
-                    <td>' . $row->id_ct_productos . '</td>
-                    <td>' . $row->producto . '</td>
+                    <td>'.$row->fecha.'</td>
+                    <td>'.$row->sucursal.'</td>
+                    <td>'.$array_2.'</td>
+                    <td>'.$row->nro_comprobante.'</td>
+                    <td>'.$row->nombres_paciente.'</td>
+                    <td>'.$row->nombre_cliente.'</td>
+                    <td>'.$row->id_cliente.'</td>
+                    <td>'.$row->seguro.'</td>
+                    <td>'.$row->precio.'</td>
+                    <td>'.$row->descuento.'</td>
+                    <td>'.$valor.'</td>
+                    <td>'.$row->id_ct_productos.'</td>
+                    <td>'.$row->producto.'</td>
                     </tr>';
                 }
                 $html .= '</table>
@@ -1048,7 +1061,7 @@ class VentasController extends Controller
                 $paciente = $agenda->paciente;
                 $cliente = $ordenVenta->cliente;
                 $procedimiento = $agenda->procedimiento;
-                $ip_cliente = $_SERVER["REMOTE_ADDR"];
+                $ip_cliente = $_SERVER['REMOTE_ADDR'];
                 $arrayOrden = [
                     'sucursal' => 0,
                     'punto_emision' => 0,
@@ -1065,7 +1078,7 @@ class VentasController extends Controller
                     'ruc_id_cliente' => $cliente->identificacion,
                     'telefono_cliente' => $cliente->telefono_representante,
                     'email_cliente' => $cliente->email_representante,
-                    'nombres_paciente' => $paciente->nombre1 . ' ' . $paciente->nombre2 . ' ' . $paciente->apellido1 . ' ' . $paciente->apellido2,
+                    'nombres_paciente' => $paciente->nombre1.' '.$paciente->nombre2.' '.$paciente->apellido1.' '.$paciente->apellido2,
                     'seguro_paciente' => $ordenVenta->id_seguro,
                     'procedimientos' => $procedimiento->nombre,
                     'fecha_procedimiento' => $agenda->fechaini,
@@ -1087,7 +1100,7 @@ class VentasController extends Controller
                     'orden_venta' => $request->id,
                     'nombre_cliente' => $cliente->nombre,
                     'valor_contable' => $ordenVenta->valor_oda,
-                    'copago' => $ordenVenta->valor_oda
+                    'copago' => $ordenVenta->valor_oda,
                 ];
                 $idVenOrden = Ct_Ven_Orden::insertGetId($arrayOrden);
                 foreach ($ordenVenta->detalles as $detalle) {
@@ -1110,7 +1123,7 @@ class VentasController extends Controller
                         'updated_at' => date('Y-m-d H:i:s'),
                         'detalle' => $detalle->descripcion,
                         'copago' => $detalle->cobrar_seguro,
-                        'id_paciente' => $agenda->id_paciente
+                        'id_paciente' => $agenda->id_paciente,
                     ];
                     Ct_Ven_Orden_Detalle::insert($arrayDetalle);
                 }
@@ -1143,7 +1156,7 @@ class VentasController extends Controller
             $id_comprobante_ingreso = 0;
             DB::beginTransaction();
             try {
-                $ip_cliente = $_SERVER["REMOTE_ADDR"];
+                $ip_cliente = $_SERVER['REMOTE_ADDR'];
                 $idusuario = Auth::user()->id;
                 $fecha_as = date('Y-m-d H:i:s');
                 $id_empresa = $request->session()->get('id_empresa');
@@ -1182,7 +1195,7 @@ class VentasController extends Controller
                     return [
                         'status' => 'info',
                         'code' => 500,
-                        'message' => 'Debe seleccionar una sucursal'
+                        'message' => 'Debe seleccionar una sucursal',
                     ];
                 }
 
@@ -1191,7 +1204,7 @@ class VentasController extends Controller
                     return [
                         'status' => 'info',
                         'code' => 500,
-                        'message' => 'la orden ya ha sido facturada'
+                        'message' => 'la orden ya ha sido facturada',
                     ];
                 }
 
@@ -1200,15 +1213,15 @@ class VentasController extends Controller
                     return [
                         'status' => 'info',
                         'code' => 500,
-                        'message' => 'la orden ya ha sido facturada'
+                        'message' => 'la orden ya ha sido facturada',
                     ];
                 }
                 $establecimiento = Ct_Sucursales::find(explode('-', $request->sucursal)[0]);
                 $emision = Ct_Caja::find(explode('-', $request->sucursal)[1]);
                 $nfactura = $this->obtener_numero_factura($id_empresa, $establecimiento->codigo_sucursal, $emision->codigo_caja);
-                $num_comprobante = $establecimiento->codigo_sucursal . '-' . $emision->codigo_caja . '-' . $nfactura;
+                $num_comprobante = $establecimiento->codigo_sucursal.'-'.$emision->codigo_caja.'-'.$nfactura;
                 $paciente = Paciente::find($orden->agenda->id_paciente);
-                $text = 'Fact #' . ':' . $num_comprobante . '-' . $request->observacion . ' ' . $paciente->nombre1 . ' ' . $paciente->nombre2 . ' ' . $paciente->apellido1 . ' ' . $paciente->apellido2;
+                $text = 'Fact #'.':'.$num_comprobante.'-'.$request->observacion.' '.$paciente->nombre1.' '.$paciente->nombre2.' '.$paciente->apellido1.' '.$paciente->apellido2;
 
                 foreach ($orden->detalles as $detalle) {
                     $producto = Ct_productos::where('codigo', $detalle->cod_prod)->where('id_empresa', session('id_empresa'))->first();
@@ -1235,7 +1248,7 @@ class VentasController extends Controller
                     'email_cliente' => $cliente->email_representante,
                     'orden_venta' => $orden->id,
                     'id_paciente' => $paciente->id,
-                    'nombres_paciente' => $paciente->nombre1 . ' ' . $paciente->nombre2 . ' ' . $paciente->apellido1 . ' ' . $paciente->apellido2,
+                    'nombres_paciente' => $paciente->nombre1.' '.$paciente->nombre2.' '.$paciente->apellido1.' '.$paciente->apellido2,
                     'id_hc_procedimiento' => $request['mov_paciente'],
                     'seguro_paciente' => $orden->agenda->id_seguro,
                     'procedimientos' => $request['procedimiento'],
@@ -1253,7 +1266,7 @@ class VentasController extends Controller
                     'ip_modificacion' => $ip_cliente,
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
-                    'nota_array' => $request['nota_electronica'] != "" ?  json_encode($request['nota_electronica']) : json_encode([]),
+                    'nota_array' => $request['nota_electronica'] != '' ? json_encode($request['nota_electronica']) : json_encode([]),
                     'doc_electronico' => $emision->codigo_caja == 100 ? 0 : null,
                     'emisor' => 'MD',
                     'contraentrega' => $request['contraentrega'] != '' ? $request['contraentrega'] : 0,
@@ -1298,7 +1311,7 @@ class VentasController extends Controller
                         'email_cliente' => $cliente->email_representante,
                         'orden_venta' => $orden->id,
                         'id_paciente' => $paciente->id,
-                        'nombres_paciente' => $paciente->nombre1 . ' ' . $paciente->nombre2 . ' ' . $paciente->apellido1 . ' ' . $paciente->apellido2,
+                        'nombres_paciente' => $paciente->nombre1.' '.$paciente->nombre2.' '.$paciente->apellido1.' '.$paciente->apellido2,
                         'id_hc_procedimiento' => $request['mov_paciente'],
                         'seguro_paciente' => $orden->agenda->id_seguro,
                         'procedimientos' => $request['procedimiento'],
@@ -1318,7 +1331,7 @@ class VentasController extends Controller
                         'ip_modificacion' => $ip_cliente,
                         'id_usuariocrea' => $idusuario,
                         'id_usuariomod' => $idusuario,
-                        'nota_array' => $request['nota_electronica'] != "" ?  json_encode($request['nota_electronica']) : json_encode([]),
+                        'nota_array' => $request['nota_electronica'] != '' ? json_encode($request['nota_electronica']) : json_encode([]),
                         'doc_electronico' => $emision->codigo_caja == 100 ? 0 : null,
                         'emisor' => 'MD',
                         'contraentrega' => $request['contraentrega'] != '' ? $request['contraentrega'] : 0,
@@ -1382,15 +1395,15 @@ class VentasController extends Controller
                         $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                         $arrayDetalleAsiento = [
                             'id_asiento_cabecera' => $id_asiento_cabecera,
-                            'id_plan_cuenta'      => $plan_cuentas->id,
-                            'descripcion'         => $plan_cuentas->nombre,
-                            'fecha'               => $fecha_as,
-                            'debe'                => $orden->total,
-                            'haber'               => '0',
-                            'id_usuariocrea'      => $idusuario,
-                            'id_usuariomod'       => $idusuario,
-                            'ip_creacion'         => $ip_cliente,
-                            'ip_modificacion'     => $ip_cliente,
+                            'id_plan_cuenta' => $plan_cuentas->id,
+                            'descripcion' => $plan_cuentas->nombre,
+                            'fecha' => $fecha_as,
+                            'debe' => $orden->total,
+                            'haber' => '0',
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
                         ];
                         Ct_Asientos_Detalle::create($arrayDetalleAsiento);
                     }
@@ -1399,15 +1412,15 @@ class VentasController extends Controller
                         $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                         $arrayDetalleAsiento = [
                             'id_asiento_cabecera' => $id_asiento_cabecera,
-                            'id_plan_cuenta'      => $plan_cuentas->id,
-                            'descripcion'         => $plan_cuentas->nombre,
-                            'fecha'               => $fecha_as,
-                            'debe'                => '0',
-                            'haber'               => $orden->iva,
-                            'id_usuariocrea'      => $idusuario,
-                            'id_usuariomod'       => $idusuario,
-                            'ip_creacion'         => $ip_cliente,
-                            'ip_modificacion'     => $ip_cliente,
+                            'id_plan_cuenta' => $plan_cuentas->id,
+                            'descripcion' => $plan_cuentas->nombre,
+                            'fecha' => $fecha_as,
+                            'debe' => '0',
+                            'haber' => $orden->iva,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
                         ];
                         Ct_Asientos_Detalle::create($arrayDetalleAsiento);
                     }
@@ -1416,15 +1429,15 @@ class VentasController extends Controller
                         $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                         $arrayDetalleAsiento = [
                             'id_asiento_cabecera' => $id_asiento_cabecera,
-                            'id_plan_cuenta'      => $plan_cuentas->id,
-                            'descripcion'         => $plan_cuentas->nombre,
-                            'fecha'               => $fecha_as,
-                            'debe'                => '0',
-                            'haber'               => $orden->subtotal_12,
-                            'id_usuariocrea'      => $idusuario,
-                            'id_usuariomod'       => $idusuario,
-                            'ip_creacion'         => $ip_cliente,
-                            'ip_modificacion'     => $ip_cliente,
+                            'id_plan_cuenta' => $plan_cuentas->id,
+                            'descripcion' => $plan_cuentas->nombre,
+                            'fecha' => $fecha_as,
+                            'debe' => '0',
+                            'haber' => $orden->subtotal_12,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
                         ];
                         Ct_Asientos_Detalle::create($arrayDetalleAsiento);
                     }
@@ -1433,15 +1446,15 @@ class VentasController extends Controller
                         $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                         $arrayDetalleAsiento = [
                             'id_asiento_cabecera' => $id_asiento_cabecera,
-                            'id_plan_cuenta'      => $plan_cuentas->id,
-                            'descripcion'         => $plan_cuentas->nombre,
-                            'fecha'               => $fecha_as,
-                            'debe'                => '0',
-                            'haber'               => $orden->subtotal_0,
-                            'id_usuariocrea'      => $idusuario,
-                            'id_usuariomod'       => $idusuario,
-                            'ip_creacion'         => $ip_cliente,
-                            'ip_modificacion'     => $ip_cliente,
+                            'id_plan_cuenta' => $plan_cuentas->id,
+                            'descripcion' => $plan_cuentas->nombre,
+                            'fecha' => $fecha_as,
+                            'debe' => '0',
+                            'haber' => $orden->subtotal_0,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
                         ];
                         Ct_Asientos_Detalle::create($arrayDetalleAsiento);
                     }
@@ -1450,15 +1463,15 @@ class VentasController extends Controller
                         $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                         Ct_Asientos_Detalle::create([
                             'id_asiento_cabecera' => $id_asiento_cabecera,
-                            'id_plan_cuenta'      => $plan_cuentas->id,
-                            'descripcion'         => $plan_cuentas->nombre,
-                            'fecha'               => $fecha_as,
-                            'haber'               => '0',
-                            'debe'                => $orden->descuento,
-                            'id_usuariocrea'      => $idusuario,
-                            'id_usuariomod'       => $idusuario,
-                            'ip_creacion'         => $ip_cliente,
-                            'ip_modificacion'     => $ip_cliente,
+                            'id_plan_cuenta' => $plan_cuentas->id,
+                            'descripcion' => $plan_cuentas->nombre,
+                            'fecha' => $fecha_as,
+                            'haber' => '0',
+                            'debe' => $orden->descuento,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
                         ]);
                     }
                     $formasPago = Ct_Orden_Venta_Pago::where('id_orden', $orden->id)->get();
@@ -1485,13 +1498,13 @@ class VentasController extends Controller
                                 $arr_pagos = [
                                     'id_tip_pago' => $formaPago->tipo,
                                     'fecha_pago' => $formaPago->fecha,
-                                    'tipo_tarjeta' =>  $formaPago->tipo_tarjeta,
+                                    'tipo_tarjeta' => $formaPago->tipo_tarjeta,
                                     'numero_pago' => $formaPago->numero,
-                                    'id_banco_pago' =>  $formaPago->banco,
+                                    'id_banco_pago' => $formaPago->banco,
                                     'id_cuenta_pago' => $formaPago->cuenta,
                                     'valor' => $formaPago->valor,
                                     'valor_base' => $formaPago->valor_base,
-                                    'giradoa' => ''
+                                    'giradoa' => '',
                                 ];
                                 array_push($arr_p, $arr_pagos);
                             }
@@ -1504,19 +1517,19 @@ class VentasController extends Controller
                     $id_ct_ventas = [
                         'id_ct_venta' => $id_venta,
                     ];
-                    Ct_ven_orden::where('id', $orden_id)->update($id_ct_ventas);
+                    Ct_Ven_Orden::where('id', $orden_id)->update($id_ct_ventas);
                 } else {
                     $orden_id = 0;
                 }
                 $data['id'] = $id_venta;
-                $data['tipo']   = 'VEN-FA';
+                $data['tipo'] = 'VEN-FA';
                 if ($orden->total > 0) {
                     $msj = Ct_Kardex::generar_kardex($data);
                 }
                 /*$num_sec_vent = Ct_ventas::find($id_venta);
                 $num_vent = $num_sec_vent->numero;
                 $nfactura = $num_sec_vent->nro_comprobante;*/
-                //$orden->nro_comprobante = $nfactura;
+                // $orden->nro_comprobante = $nfactura;
                 if ($orden->total > 0) {
                     $orden->nro_comprobante = '000-000-000000000';
                     $orden->save();
@@ -1524,60 +1537,64 @@ class VentasController extends Controller
                 if ($orden->total > 0) {
                     $asiento_kardex = Contable::kardex_asiento($id_venta);
                 }
-                $kardex["asiento_costo"] = "";
+                $kardex['asiento_costo'] = '';
                 $id_proforma = null;
                 if ($orden->total > 0) {
-                    if ($empresa->egreso_kardex == 1 and $empresa->inventario == 1 or !is_null($id_proforma)) {
+                    if ($empresa->egreso_kardex == 1 and $empresa->inventario == 1 or ! is_null($id_proforma)) {
                         $kardex = NuevoKardexContableController::newgenerarKardex($id_venta);
-                        if ($kardex["status"] ==  "error" or !$kardex["status"]) {
+                        if ($kardex['status'] == 'error' or ! $kardex['status']) {
                             DB::rollBack();
+
                             return $kardex;
                         }
-                        if (isset($kardex["generate"]) and $kardex["generate"]) {
-                            $kardex["asiento_costo"] = $kardex["asiento_costo"];
-                            $logCosto = LogAsiento::guardarAsientoCostoVenta($id_venta, $kardex["asiento_costo"]);
-                            if ($logCosto["status"] == "error") {
+                        if (isset($kardex['generate']) and $kardex['generate']) {
+                            $kardex['asiento_costo'] = $kardex['asiento_costo'];
+                            $logCosto = LogAsiento::guardarAsientoCostoVenta($id_venta, $kardex['asiento_costo']);
+                            if ($logCosto['status'] == 'error') {
                                 DB::rollBack();
+
                                 return $logCosto;
                             }
                         }
                     }
                 }
-                $getSri = "No";
-                $id_comprobante_ingreso = "";
+                $getSri = 'No';
+                $id_comprobante_ingreso = '';
                 if ($orden->total > 0) {
                     $num_sec_vent = Ct_ventas::find($id_venta);
                     $num_vent = $num_sec_vent->numero;
                     $nfactura = $num_sec_vent->nro_comprobante;
                 }
-                if (!$validates) {
+                if (! $validates) {
                     $request['fecha_asiento'] = date('Y-m-d H:i:s');
                     $request['identificacion_cliente'] = $cliente->identificacion;
                     $request['valor_totalPagos'] = $orden->total;
                     $request['total1'] = $orden->total;
                     if ($orden->total > 0) {
                         if (count($arr_p) > 0) {
-                            $erf = VentasController::newCrearComprobante($nfactura, $request, $arr_p, $id_venta);
-                            if ($erf["status"] != "success") {
+                            $erf = ContableVentasController::newCrearComprobante($nfactura, $request, $arr_p, $id_venta);
+                            if ($erf['status'] != 'success') {
                                 DB::rollBack();
+
                                 return $erf;
                             }
-                            $id_comprobante_ingreso = $erf["id_ingreso"];
+                            $id_comprobante_ingreso = $erf['id_ingreso'];
                         }
                     }
                 }
                 $arr_log_recibo = [
                     'id_ct_orden_venta' => $orden->id,
-                    'descripcion'       => 'FACTURADA EL: ' . date('Y-m-d H:i:s'),
-                    'id_usuariocrea'    => $idusuario,
-                    'id_usuariomod'     => $idusuario,
-                    'ip_creacion'       => $ip_cliente,
-                    'ip_modificacion'   => $ip_cliente,
+                    'descripcion' => 'FACTURADA EL: '.date('Y-m-d H:i:s'),
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ];
                 LogReciboDeCobro::create($arr_log_recibo);
                 DB::commit();
+
                 return [
-                    'status' => "success",
+                    'status' => 'success',
                     'code' => 200,
                     'message' => 'Orden facturada correctamente',
                     'idasiento' => $id_asiento_cabecera,
@@ -1588,29 +1605,31 @@ class VentasController extends Controller
                     'getSri' => $getSri,
                     'num_vent' => $num_vent,
                     'error' => 'no',
-                    "respuesta" => "si",
-                    'mensaje' => "exito",
-                    'msj' => "Guardado Correctamente",
+                    'respuesta' => 'si',
+                    'mensaje' => 'exito',
+                    'msj' => 'Guardado Correctamente',
                     'inventario' => null,
-                    "asiento_costo" => $kardex["asiento_costo"],
-                    "id_comprobante_ingreso" => $id_comprobante_ingreso
+                    'asiento_costo' => $kardex['asiento_costo'],
+                    'id_comprobante_ingreso' => $id_comprobante_ingreso,
                 ];
             } catch (Exception $e) {
                 DB::rollback();
+
                 return $arrayRespuesta = [
                     'status' => 'error',
                     'code' => 500,
                     'message' => $e->getMessage(),
                     'line' => $e->getLine(),
                     'file' => $e->getFile(),
-                    'codigo' => $e->getCode()
+                    'codigo' => $e->getCode(),
                 ];
             }
         }
     }
+
     public function ordenVentaFC($id_v, $orden, $data)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $idusuario = Auth::user()->id;
         $id_empresa = session('id_empresa');
         $factura_venta = [
@@ -1652,7 +1671,7 @@ class VentasController extends Controller
             'id_ct_venta' => $id_v,
         ];
 
-        $id_venta = Ct_ven_orden::insertGetId($factura_venta);
+        $id_venta = Ct_Ven_Orden::insertGetId($factura_venta);
         $arr_total = [];
         $subtotal0 = 0;
         $subtotal_impuesto = 0;
@@ -1662,7 +1681,7 @@ class VentasController extends Controller
                 'nombre' => $detalle->nombre_producto,
                 'cantidad' => $detalle->cantidad,
                 'codigo' => $detalle->cod_prod,
-                'precio' =>  $detalle->valor_oda,
+                'precio' => $detalle->valor_oda,
                 'descpor' => $detalle->p_dcto,
                 'copago' => $detalle->valor_oda,
                 'descuento' => $detalle->descuento,
@@ -1688,41 +1707,45 @@ class VentasController extends Controller
 
         foreach ($arr_total as $valor) {
             $detalle = [
-                'id_ct_ven_orden'      => $id_venta,
-                'id_ct_productos'      => $valor['codigo'],
-                'nombre'               => $valor['nombre'],
-                'cantidad'             => $valor['cantidad'],
-                'precio'               => $valor['precio'],
+                'id_ct_ven_orden' => $id_venta,
+                'id_ct_productos' => $valor['codigo'],
+                'nombre' => $valor['nombre'],
+                'cantidad' => $valor['cantidad'],
+                'precio' => $valor['precio'],
                 'descuento_porcentaje' => $valor['descpor'],
-                'descuento'            => $valor['descuento'],
-                'extendido'            => $valor['copago'],
-                'detalle'              => $valor['detalle'],
-                'copago'               => $valor['copago'],
-                'check_iva'            => $valor['iva'],
-                'ip_creacion'          => $ip_cliente,
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
+                'descuento' => $valor['descuento'],
+                'extendido' => $valor['copago'],
+                'detalle' => $valor['detalle'],
+                'copago' => $valor['copago'],
+                'check_iva' => $valor['iva'],
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
-            Ct_ven_orden_detalle::create($detalle);
+            Ct_Ven_Orden_Detalle::create($detalle);
         }
         $arr_log_recibo = [
             'id_ct_orden_venta' => $orden->id,
-            'descripcion'       => 'EN CONGLOMERADA EL: ' . date('Y-m-d H:i:s'),
-            'id_usuariocrea'    => $idusuario,
-            'id_usuariomod'     => $idusuario,
-            'ip_creacion'       => $ip_cliente,
-            'ip_modificacion'   => $ip_cliente,
+            'descripcion' => 'EN CONGLOMERADA EL: '.date('Y-m-d H:i:s'),
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'ip_creacion' => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
         ];
         LogReciboDeCobro::create($arr_log_recibo);
+
         return ['id' => $id_venta];
     }
+
     public function ventascrm(Request $r)
     {
         $data['porIva'] = $this->porIva;
         $data['empresa'] = Empresa::find(session('id_empresa'));
+
         return view('contable/ventas/view_ventascrm', $data);
     }
+
     public function ventascrearcrm()
     {
         $id_empresa = session('id_empresa');
@@ -1740,8 +1763,10 @@ class VentasController extends Controller
         $id_plan_confg = LogConfig::busqueda('4.1.01.02');
         $data['iva'] = Ct_Configuraciones::where('id_plan', $id_plan_confg)->where('estado', '1')->first();
         $data['porIva'] = $this->porIva;
+
         return view('contable/ventas/view_ventascrearcrm', $data);
     }
+
     public function verificarplanillas(Request $r)
     {
         $id_empresa = session('id_empresa');
@@ -1749,12 +1774,15 @@ class VentasController extends Controller
         if ($r->desde != '' && $r->hasta != '') {
             $data['datos'] = Agenda::getProcedimientosInsumos($r, 0);
         }
+
         return view('contable/ventas/view_verificarplanillas', $data);
     }
+
     public function detalleplanilla(Request $r)
     {
         return Agenda::detalleplanilla($r->id);
     }
+
     public function informe_ventas_mensual(Request $r)
     {
         $data['subtotal12'] = 0;
@@ -1795,6 +1823,7 @@ class VentasController extends Controller
             $this->exportar_informe_ventas_mensual($r);
         }
     }
+
     public function exportar_informe_ventas_mensual(Request $r)
     {
         try {
@@ -1802,7 +1831,7 @@ class VentasController extends Controller
                 ini_set('max_execution_time', 300);
                 $desde = date('Y-m-d', strtotime($r->fecha_desde));
                 $hasta = date('Y-m-d', strtotime($r->fecha_hasta));
-                $empresa = empresa::find(session('id_empresa'));
+                $empresa = Empresa::find(session('id_empresa'));
                 $informe = Ct_ventas::where('id_empresa', $empresa->id)
                     ->where('fecha', '>', $desde)
                     ->where('fecha', '<=', $hasta)
@@ -1820,7 +1849,7 @@ class VentasController extends Controller
                         if ($empresa->logo != '') {
                             if (file_exists($empresa->logo)) {
                                 $objDrawing = new PHPExcel_Worksheet_Drawing;
-                                $objDrawing->setPath(base_path() . '/storage/app/logo/' . $empresa->logo);
+                                $objDrawing->setPath(base_path().'/storage/app/logo/'.$empresa->logo);
                                 $objDrawing->setCoordinates('N2');
                                 $objDrawing->setHeight(70);
                                 $objDrawing->setWorksheet($sheet);
@@ -1851,11 +1880,11 @@ class VentasController extends Controller
                         $sheet->mergeCells('E3:O3');
                         $sheet->cell('E3', function ($cell) use ($desde, $hasta) {
                             // manipulate the cel
-                            $cell->setValue('Desde' . $desde . ' - Hasta' . $hasta);
+                            $cell->setValue('Desde'.$desde.' - Hasta'.$hasta);
                             $cell->setFontWeight('bold');
                             $cell->setAlignment('center');
                         });
-                        //tabla faltante
+                        // tabla faltante
                         $sheet->cell('A4', function ($cell) {
                             $cell->setValue('Mes');
                             $cell->setFontWeight('bold');
@@ -1879,7 +1908,6 @@ class VentasController extends Controller
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
 
-
                         $sheet->cell('D4', function ($cell) {
 
                             $cell->setValue('Subtotal');
@@ -1895,7 +1923,6 @@ class VentasController extends Controller
                             $cell->setBackground('#929899');
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
-
 
                         $sheet->cell('F4', function ($cell) {
 
@@ -1913,10 +1940,10 @@ class VentasController extends Controller
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
                         $i = 5;
-                        //Inicio omar
+                        // Inicio omar
                         foreach ($periodo as $periodoInicial) {
                             $fecha_periodo = explode('-', $periodoInicial->fecha);
-                            $anio = $fecha_periodo[0] . '-' . $fecha_periodo[1];
+                            $anio = $fecha_periodo[0].'-'.$fecha_periodo[1];
                             $n_credito = 0;
                             $final_credito = 0;
                             $total_mes = 0;
@@ -1931,7 +1958,7 @@ class VentasController extends Controller
                             $final_con_credito = 0;
                             foreach ($informe as $infoInicial) {
                                 $fecha_venta = explode('-', $infoInicial->fecha);
-                                $anio_venta = $fecha_venta[0] . '-' . $fecha_venta[1];
+                                $anio_venta = $fecha_venta[0].'-'.$fecha_venta[1];
                                 if (isset($informe) && count($informe) > 0) {
                                     if ($anio == $anio_venta) {
                                         if ((int) $infoInicial->estado !== 1) {
@@ -1941,7 +1968,7 @@ class VentasController extends Controller
                                         $nota_credito = DB::table('ct_detalle_credito_clientes')
                                             ->where('id_factura', $infoInicial->id)
                                             ->first();
-                                        if (!is_null($nota_credito)) {
+                                        if (! is_null($nota_credito)) {
                                             $valor_nota_credito = (float) $nota_credito->abono;
                                             $final_con_credito = (($infoInicial->subtotal_0 + $infoInicial->subtotal_12) - $infoInicial->descuento) - (float) $valor_nota_credito;
                                             $n_credito += $valor_nota_credito;
@@ -1951,8 +1978,8 @@ class VentasController extends Controller
                                             $final_credito += ($infoInicial->subtotal_0 + $infoInicial->subtotal_12) - $infoInicial->descuento;
                                         }
 
-                                        //$subtotalTotal = $subtotalTotal + $infoInicial->subtotal_total == '' ? 0.00 : $infoInicial->subtotal_total;
-                                        $subtotalTotal += empty($infoInicial->subtotal_total)? 0.00: (float) $infoInicial->subtotal_total;
+                                        // $subtotalTotal = $subtotalTotal + $infoInicial->subtotal_total == '' ? 0.00 : $infoInicial->subtotal_total;
+                                        $subtotalTotal += empty($infoInicial->subtotal_total) ? 0.00 : (float) $infoInicial->subtotal_total;
                                         $subtotal = $subtotal + $infoInicial->subtotal_total;
                                         $subtotal0 = $subtotal0 + $infoInicial->subtotal_0;
                                         $subtotal12 = $subtotal12 + $infoInicial->subtotal_12;
@@ -1965,68 +1992,68 @@ class VentasController extends Controller
                                         $mesTabla = '';
                                         switch ($fecha_periodo[1]) {
                                             case '01':
-                                                $mesTabla = 'Enero - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Enero - '.$fecha_periodo[0];
                                                 break;
                                             case '02':
-                                                $mesTabla = 'Febrero - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Febrero - '.$fecha_periodo[0];
                                                 break;
                                             case '03':
-                                                $mesTabla = 'Marzo - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Marzo - '.$fecha_periodo[0];
                                                 break;
                                             case '04':
-                                                $mesTabla = 'Abril - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Abril - '.$fecha_periodo[0];
                                                 break;
                                             case '05':
-                                                $mesTabla = 'Mayo - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Mayo - '.$fecha_periodo[0];
                                                 break;
                                             case '06':
-                                                $mesTabla = 'Junio - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Junio - '.$fecha_periodo[0];
                                                 break;
                                             case '07':
-                                                $mesTabla = 'Julio - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Julio - '.$fecha_periodo[0];
                                                 break;
                                             case '08':
-                                                $mesTabla = 'Agosto - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Agosto - '.$fecha_periodo[0];
                                                 break;
                                             case '09':
-                                                $mesTabla = 'Septiembre - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Septiembre - '.$fecha_periodo[0];
                                                 break;
                                             case '10':
-                                                $mesTabla = 'Octubre - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Octubre - '.$fecha_periodo[0];
                                                 break;
                                             case '11':
-                                                $mesTabla = 'Noviembre - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Noviembre - '.$fecha_periodo[0];
                                                 break;
                                             default:
 
-                                                $mesTabla = 'Diciembre - ' . $fecha_periodo[0];
+                                                $mesTabla = 'Diciembre - '.$fecha_periodo[0];
                                                 break;
                                         }
                                     }
 
-                                    $sheet->setColumnFormat(array(
+                                    $sheet->setColumnFormat([
                                         'B' => '$ 0.00',
                                         'C' => '$ 0.00',
                                         'D' => '$ 0.00',
                                         'E' => '$ 0.00',
                                         'F' => '$ 0.00',
                                         'G' => '$ 0.00',
-                                    ));
+                                    ]);
 
-                                    $sheet->cell('A' . $i, function ($cell) use ($mesTabla) {
+                                    $sheet->cell('A'.$i, function ($cell) use ($mesTabla) {
                                         // manipulate the cel
                                         $cell->setValue($mesTabla);
                                         $cell->setFontWeight('bold');
                                         $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     });
-                                    $sheet->cell('B' . $i, function ($cell) use ($subtotal0) {
+                                    $sheet->cell('B'.$i, function ($cell) use ($subtotal0) {
                                         // manipulate the cel
                                         $cell->setValue(number_format($subtotal0, 2, '.', ','));
                                         $cell->setFontWeight('bold');
                                         $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     });
 
-                                    $sheet->cell('C' . $i, function ($cell) use ($subtotal12) {
+                                    $sheet->cell('C'.$i, function ($cell) use ($subtotal12) {
                                         // manipulate the cel
                                         $cell->setValue(number_format($subtotal12, 2, '.', ','));
                                         $cell->setFontWeight('bold');
@@ -2034,7 +2061,7 @@ class VentasController extends Controller
                                         $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     });
 
-                                    $sheet->cell('D' . $i, function ($cell) use ($subtotal) {
+                                    $sheet->cell('D'.$i, function ($cell) use ($subtotal) {
                                         // manipulate the cel
                                         $cell->setValue(number_format($subtotal, 2, '.', ','));
                                         $cell->setFontWeight('bold');
@@ -2042,8 +2069,7 @@ class VentasController extends Controller
                                         $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     });
 
-
-                                    $sheet->cell('E' . $i, function ($cell) use ($descuento) {
+                                    $sheet->cell('E'.$i, function ($cell) use ($descuento) {
                                         // manipulate the cel
                                         $cell->setValue(number_format($descuento, 2, '.', ','));
                                         $cell->setFontWeight('bold');
@@ -2051,7 +2077,7 @@ class VentasController extends Controller
                                         $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     });
 
-                                    $sheet->cell('F' . $i, function ($cell) use ($impuesto) {
+                                    $sheet->cell('F'.$i, function ($cell) use ($impuesto) {
                                         // manipulate the cel
                                         $cell->setValue(number_format($impuesto, 2, '.', ','));
                                         $cell->setFontWeight('bold');
@@ -2059,8 +2085,7 @@ class VentasController extends Controller
                                         $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     });
 
-
-                                    $sheet->cell('G' . $i, function ($cell) use ($totales) {
+                                    $sheet->cell('G'.$i, function ($cell) use ($totales) {
                                         // manipulate the cel
                                         if ($totales >= 1000) {
                                             $cell->setValue(number_format($totales, 2, ',', ','));
@@ -2076,114 +2101,114 @@ class VentasController extends Controller
                             $i++;
                         }
 
-                        //fin omar
+                        // fin omar
                         $i += 2;
                         $total_anio = 0;
 
                         foreach ($periodo as $peri) {
                             $fecha_periodo = explode('-', $peri->fecha);
-                            $anio = $fecha_periodo[0] . '-' . $fecha_periodo[1];
+                            $anio = $fecha_periodo[0].'-'.$fecha_periodo[1];
                             $subtotalIndividual = 0.00;
                             $n_credito = 0.00;
-                            $sheet->cell('A' . $i, function ($cell) {
+                            $sheet->cell('A'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Fecha');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('B' . $i, function ($cell) {
+                            $sheet->cell('B'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Número');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('C' . $i, function ($cell) {
+                            $sheet->cell('C'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('CI');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('D' . $i, function ($cell) {
+                            $sheet->cell('D'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Cliente');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('E' . $i, function ($cell) {
+                            $sheet->cell('E'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Tipo');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('F' . $i, function ($cell) {
+                            $sheet->cell('F'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Detalle');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('G' . $i, function ($cell) {
+                            $sheet->cell('G'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('SubTotal0');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('H' . $i, function ($cell) {
+                            $sheet->cell('H'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('SubTotal12');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('I' . $i, function ($cell) {
+                            $sheet->cell('I'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Descuento');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('J' . $i, function ($cell) {
+                            $sheet->cell('J'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Subtotal');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('K' . $i, function ($cell) {
+                            $sheet->cell('K'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Impuesto');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('L' . $i, function ($cell) {
+                            $sheet->cell('L'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Ventas Brutas');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('M' . $i, function ($cell) {
+                            $sheet->cell('M'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Total NCA');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('N' . $i, function ($cell) {
+                            $sheet->cell('N'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Ventas Netas');
                                 $cell->setFontWeight('bold');
                                 $cell->setBackground('#929899');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('O' . $i, function ($cell) {
+                            $sheet->cell('O'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('Estado');
                                 $cell->setFontWeight('bold');
@@ -2203,7 +2228,7 @@ class VentasController extends Controller
                             $impuesto = 0;
                             $total_ventas_netas = 0;
                             $i++;
-                            $sheet->setColumnFormat(array(
+                            $sheet->setColumnFormat([
                                 'G' => '$ 0.00',
                                 'H' => '$ 0.00',
                                 'I' => '$ 0.00',
@@ -2212,10 +2237,10 @@ class VentasController extends Controller
                                 'L' => '$ 0.00',
                                 'M' => '$ 0.00',
                                 'N' => '$ 0.00',
-                            ));
+                            ]);
                             foreach ($informe as $info) {
                                 $fecha_venta = explode('-', $info->fecha);
-                                $anio_venta = $fecha_venta[0] . '-' . $fecha_venta[1];
+                                $anio_venta = $fecha_venta[0].'-'.$fecha_venta[1];
                                 if (isset($informe) && count($informe) > 0) {
                                     if ($anio == $anio_venta) {
                                         $notaCredito = Ct_Nota_Credito_Clientes::where(
@@ -2230,7 +2255,7 @@ class VentasController extends Controller
 
                                         $n_creditoFactura = 0.00;
 
-                                        if (!is_null($notaCredito)) {
+                                        if (! is_null($notaCredito)) {
                                             $n_creditoFactura = (float) $notaCredito->total_credito;
                                         }
                                         $ventas_netas = $subtotalIndividual - $n_creditoFactura;
@@ -2247,79 +2272,79 @@ class VentasController extends Controller
                                             $total_ventas_netas += $ventas_netas;
                                         }
 
-                                        $sheet->cell('A' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('A'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue($info->fecha);
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('B' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('B'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue($info->nro_comprobante);
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('C' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('C'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue($info->ruc_id_cliente);
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('D' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('D'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue($info->nombre_cliente);
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('E' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('E'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue($info->tipo);
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('F' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('F'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue($info->concepto);
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('G' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('G'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($info->subtotal_0, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('H' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('H'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($info->subtotal_12, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('I' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('I'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($info->descuento, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('J' . $i, function ($cell) use ($subtotalIndividual) {
+                                        $sheet->cell('J'.$i, function ($cell) use ($subtotalIndividual) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($subtotalIndividual, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('K' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('K'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($info->impuesto, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('L' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('L'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($info->total_final, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('M' . $i, function ($cell) use ($n_creditoFactura) {
+                                        $sheet->cell('M'.$i, function ($cell) use ($n_creditoFactura) {
                                             $cell->setValue(
                                                 number_format($n_creditoFactura, 2, '.', ',')
                                             );
 
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('N' . $i, function ($cell) use ($ventas_netas) {
+                                        $sheet->cell('N'.$i, function ($cell) use ($ventas_netas) {
                                             // manipulate the cel
                                             $cell->setValue(number_format($ventas_netas, 2, '.', ','));
                                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                         });
-                                        $sheet->cell('O' . $i, function ($cell) use ($info) {
+                                        $sheet->cell('O'.$i, function ($cell) use ($info) {
                                             // manipulate the cel
                                             if ($info->estado == 1) {
                                                 $cell->setValue('Activo');
@@ -2334,46 +2359,46 @@ class VentasController extends Controller
                             }
                             $total_anio = $total_anio + $total_mes;
 
-                            $sheet->mergeCells('A' . $i . ':' . 'F' . $i);
-                            $sheet->cell('A' . $i, function ($cell) use ($fecha_periodo, $total_mes) {
+                            $sheet->mergeCells('A'.$i.':'.'F'.$i);
+                            $sheet->cell('A'.$i, function ($cell) use ($fecha_periodo, $total_mes) {
                                 // manipulate the cel
                                 $mes = '';
                                 switch ($fecha_periodo[1]) {
                                     case '01':
-                                        $mes = 'Total Enero: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Enero: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '02':
-                                        $mes = 'Total Febrero: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Febrero: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '03':
-                                        $mes = 'Total Marzo: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Marzo: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '04':
-                                        $mes = 'Total Abril: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Abril: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '05':
-                                        $mes = 'Total Mayo: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Mayo: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '06':
-                                        $mes = 'Total Junio: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Junio: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '07':
-                                        $mes = 'Total Julio: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Julio: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '08':
-                                        $mes = 'Total Agosto: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Agosto: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '09':
-                                        $mes = 'Total Septiembre: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Septiembre: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '10':
-                                        $mes = 'Total Octubre: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Octubre: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     case '11':
-                                        $mes = 'Total Noviembre: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Noviembre: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                     default:
-                                        $mes = 'Total Diciembre: $ ' . number_format($total_mes, 2, '.', ',');
+                                        $mes = 'Total Diciembre: $ '.number_format($total_mes, 2, '.', ',');
                                         break;
                                 }
                                 $cell->setValue($mes);
@@ -2381,63 +2406,63 @@ class VentasController extends Controller
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('G' . $i, function ($cell) use ($subtotal0) {
+                            $sheet->cell('G'.$i, function ($cell) use ($subtotal0) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($subtotal0, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('H' . $i, function ($cell) use ($subtotal12) {
+                            $sheet->cell('H'.$i, function ($cell) use ($subtotal12) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($subtotal12, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('I' . $i, function ($cell) use ($descuento) {
+                            $sheet->cell('I'.$i, function ($cell) use ($descuento) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($descuento, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('J' . $i, function ($cell) use ($subtotalTotal) {
+                            $sheet->cell('J'.$i, function ($cell) use ($subtotalTotal) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($subtotalTotal, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('K' . $i, function ($cell) use ($impuesto) {
+                            $sheet->cell('K'.$i, function ($cell) use ($impuesto) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($impuesto, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('L' . $i, function ($cell) use ($totales) {
+                            $sheet->cell('L'.$i, function ($cell) use ($totales) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($totales, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('M' . $i, function ($cell) use ($final_credito) {
+                            $sheet->cell('M'.$i, function ($cell) use ($final_credito) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($final_credito, 2, '.', ','));
                                 $cell->setAlignment('right');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('N' . $i, function ($cell) use ($total_ventas_netas) {
+                            $sheet->cell('N'.$i, function ($cell) use ($total_ventas_netas) {
                                 // manipulate the cel
                                 $cell->setValue(number_format($total_ventas_netas, 2, '.', ','));
                                 $cell->setAlignment('rigth');
                                 $cell->setFontWeight('bold');
                                 $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             });
-                            $sheet->cell('O' . $i, function ($cell) {
+                            $sheet->cell('O'.$i, function ($cell) {
                                 // manipulate the cel
                                 $cell->setValue('');
                                 $cell->setAlignment('rigth');
@@ -2446,10 +2471,10 @@ class VentasController extends Controller
                             });
                             $i++;
                         }
-                        $sheet->mergeCells('A' . $i . ':' . 'O' . $i);
-                        $sheet->cell('A' . $i, function ($cell) use ($total_anio) {
+                        $sheet->mergeCells('A'.$i.':'.'O'.$i);
+                        $sheet->cell('A'.$i, function ($cell) use ($total_anio) {
                             // manipulate the cel
-                            $cell->setValue('Total : $' . number_format($total_anio, 2, '.', ','));
+                            $cell->setValue('Total : $'.number_format($total_anio, 2, '.', ','));
                             $cell->setAlignment('left');
                             $cell->setFontWeight('bold');
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
@@ -2458,10 +2483,11 @@ class VentasController extends Controller
                     });
                 })->export('xlsx');
             }
-        } catch (\Exception $ex) {
-            echo '<pre>' . $ex->getMessage() . ' Line: ' . $ex->getLine();
+        } catch (Exception $ex) {
+            echo '<pre>'.$ex->getMessage().' Line: '.$ex->getLine();
         }
     }
+
     public function index2(Request $request)
     {
         if ($this->rol()) {
@@ -2472,10 +2498,12 @@ class VentasController extends Controller
         $ventas = Ct_ventas::where('estado', '<', 2)
             ->whereNotNull('nro_comprobante')
             ->where('id_empresa', $id_empresa)
-            ->where('tipo', "VENFA-CO")
+            ->where('tipo', 'VENFA-CO')
             ->orderby('id', 'desc')->paginate(10);
+
         return view('contable/ventas/index2', ['ventas' => $ventas, 'empresa' => $empresa]);
     }
+
     public function index2_buscar(Request $request)
     {
         if ($this->rol()) {
@@ -2494,22 +2522,23 @@ class VentasController extends Controller
             'nombres_paciente' => $request['nombres_paciente'],
         ];
         $fields = array_keys($constraints);
-        $ventas = array();
+        $ventas = [];
         for ($i = 0; $i < count($constraints); $i++) {
-            if (!is_null($constraints[$fields[$i]])) {
-                $ventas = Ct_ventas::where($fields[$i], "LIKE", "%" . $constraints[$fields[$i]] . "%")->where('id_empresa', $id_empresa)->where('tipo', "VENFA-CO")->paginate(10);
+            if (! is_null($constraints[$fields[$i]])) {
+                $ventas = Ct_ventas::where($fields[$i], 'LIKE', '%'.$constraints[$fields[$i]].'%')->where('id_empresa', $id_empresa)->where('tipo', 'VENFA-CO')->paginate(10);
                 break;
             }
         }
         if (count($ventas) <= 0) {
             $ventas = Ct_ventas::where('estado', '<', 2)
                 ->where('id_empresa', $id_empresa)
-                ->where('tipo', "VENFA-CO")
+                ->where('tipo', 'VENFA-CO')
                 ->orderby('id', 'desc')->paginate(10);
         }
 
         return view('contable/ventas/index2', ['ventas' => $ventas, 'empresa' => $empresa]);
     }
+
     /*******************************************
      **********ANULAMOS LA FACTURA VENTA*********
     /*******************************************/
@@ -2520,13 +2549,13 @@ class VentasController extends Controller
         }
         DB::beginTransaction();
         try {
-            //Obtenemos la fecha de Hoy
-            $fechahoy = Date('Y-m-d H:i:s');
-            $ip_cliente = $_SERVER["REMOTE_ADDR"];
+            // Obtenemos la fecha de Hoy
+            $fechahoy = date('Y-m-d H:i:s');
+            $ip_cliente = $_SERVER['REMOTE_ADDR'];
             $idusuario = Auth::user()->id;
             $concepto = $request['concepto'];
             $estado_ventas = Ct_ventas::where('id', $id)->where('estado', '<>', 0)->first();
-            if (!empty($estado_ventas)) {
+            if (! empty($estado_ventas)) {
                 $act_estado = [
                     'estado' => '0',
                     'id_usuariomod' => $idusuario,
@@ -2538,7 +2567,7 @@ class VentasController extends Controller
                 $msj = Ct_Kardex::anular_kardex($data);
                 Ct_ventas::where('id', $id)->update($act_estado);
                 $ordenes = Ct_Ven_Orden::where('id_referencia', $id)->get();
-                if (!is_null($ordenes)) {
+                if (! is_null($ordenes)) {
                     foreach ($ordenes as $v) {
                         $vs = Ct_Ven_Orden::find($v->id);
                         $act_estadox = [
@@ -2548,21 +2577,21 @@ class VentasController extends Controller
                         $vs->update($act_estadox);
                     }
                 }
-                //INVERSO
-                //Lo que esta en el Haber va al Debe
-                //Lo que esta en el Debe va al Haber
+                // INVERSO
+                // Lo que esta en el Haber va al Debe
+                // Lo que esta en el Debe va al Haber
 
                 $consulta_cabecera_ctventas = Ct_Asientos_Cabecera::where('estado', '1')
                     ->where('id', $registro_venta->id_asiento)->first();
 
-                $text = 'Fact #' . ':' . $registro_venta->nro_comprobante . '-' . $registro_venta->procedimientos . '-' . 'ANULACION FACTURA';
+                $text = 'Fact #'.':'.$registro_venta->nro_comprobante.'-'.$registro_venta->procedimientos.'-'.'ANULACION FACTURA';
 
                 $input_cabecera = [
 
                     'fecha_asiento' => $consulta_cabecera_ctventas->fecha_asiento,
                     'fact_numero' => $consulta_cabecera_ctventas->fact_numero,
                     'id_empresa' => $registro_venta->id_empresa,
-                    'observacion' => $concepto . " " . $text,
+                    'observacion' => $concepto.' '.$text,
                     'valor' => $consulta_cabecera_ctventas->valor,
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
@@ -2593,7 +2622,7 @@ class VentasController extends Controller
                         ]);
                     }
                 }
-                LogAsiento::anulacion("VEN-FA", $id_asiento_cab, $consulta_cabecera_ctventas->id);
+                LogAsiento::anulacion('VEN-FA', $id_asiento_cab, $consulta_cabecera_ctventas->id);
                 // $kardex = Venta_Kardex::where('id_venta', $id)->where('estado', 1)->first();
                 // if (!is_null($kardex)) {
                 //     InvCabMovimientos::anularTransaccionBodega($kardex->id_cab_moviento);
@@ -2608,12 +2637,13 @@ class VentasController extends Controller
                         InvCabMovimientos::anularTransaccionBodega($item->id_cab_moviento);
                         $actualizar = Venta_Kardex::where('estado', 1)->where('id_cab_moviento', $item->id_cab_moviento)->update(['estado' => 0, 'id_usuariomod' => $idusuario, 'ip_modificacion' => $ip_cliente]);
                     }
-                    $asientoCosto = Log_Venta_Costo::where("id_venta", $id)->where("estado", 1)->first();
-                    if (!is_null($asientoCosto)) {
+                    $asientoCosto = Log_Venta_Costo::where('id_venta', $id)->where('estado', 1)->first();
+                    if (! is_null($asientoCosto)) {
                         $asientoCostoAnt = Ct_Asientos_Cabecera::find($asientoCosto->id_asiento);
-                        $anuladoAsCosto = LogAsiento::anularAsiento($asientoCosto->id_asiento, "", "");
-                        if ($anuladoAsCosto["status"] == "error") {
+                        $anuladoAsCosto = LogAsiento::anularAsiento($asientoCosto->id_asiento, '', '');
+                        if ($anuladoAsCosto['status'] == 'error') {
                             DB::rollback();
+
                             return $anuladoAsCosto;
                         }
                         $asientoCosto->estado = 0;
@@ -2623,45 +2653,48 @@ class VentasController extends Controller
                     }
                 }
                 DB::commit();
-                return ["status" => "success", "msj" => "Registro Anulado"];
+
+                return ['status' => 'success', 'msj' => 'Registro Anulado'];
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollback();
-            return ["status" => "error", "msj" => $e->getmessage(), 'linea' => $e->getLine()];
+
+            return ['status' => 'error', 'msj' => $e->getmessage(), 'linea' => $e->getLine()];
         }
     }
+
     public function crearComprobante($nfactura, Request $request, $array_pagos, $factura_id)
     {
         $id_empresa = $request->session()->get('id_empresa');
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $idusuario = Auth::user()->id;
         $contador_ctv = DB::table('ct_comprobante_ingreso')->where('id_empresa', $id_empresa)->get()->count();
         $numero_factura = 0;
         if (is_null($nfactura)) {
             $nfactura = $contador_ctv;
             if ($contador_ctv == 0) {
-                //return 'No Retorno nada';
+                // return 'No Retorno nada';
                 $num = '1';
-                $numero_factura = str_pad($num, 9, "0", STR_PAD_LEFT);
+                $numero_factura = str_pad($num, 9, '0', STR_PAD_LEFT);
             } else {
-                //Obtener Ultimo Registro de la Tabla ct_compras
+                // Obtener Ultimo Registro de la Tabla ct_compras
                 $max_id = DB::table('ct_comprobante_ingreso')->where('id_empresa', $id_empresa)->latest()->first();
-                //dd($max_id);
+                // dd($max_id);
                 $secuencia = intval($max_id->secuencia);
-                //dd($max_id->secuencia);
+                // dd($max_id->secuencia);
                 if (strlen($secuencia) < 10) {
                     $nu = $secuencia + 1;
-                    $numero_factura = str_pad($nu, 9, "0", STR_PAD_LEFT);
+                    $numero_factura = str_pad($nu, 9, '0', STR_PAD_LEFT);
                 }
             }
             $nfactura = $numero_factura;
         }
-        $objeto_validar = new Validate_Decimals();
+        $objeto_validar = new Validate_Decimals;
         $id_comprobante = 0;
-        if (sizeOf($array_pagos) > 0) {
+        if (count($array_pagos) > 0) {
             $total_pagos = $request['valor_totalPagos'];
             $input_cabecera = [
-                'observacion' => 'COMPROBANTE DE INGRESO FACT:' . $nfactura,
+                'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura,
                 'fecha_asiento' => $request['fecha_asiento'],
                 'fact_numero' => $nfactura,
                 'valor' => $objeto_validar->set_round($total_pagos),
@@ -2674,7 +2707,7 @@ class VentasController extends Controller
             ];
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
             $confg = LogConfig::busqueda('1.01.02.05.01');
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
             $desc_cuenta = Plan_Cuentas::where('id', $confg)->first();
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
@@ -2691,7 +2724,7 @@ class VentasController extends Controller
             ]);
 
             $input_comprobante = [
-                'observaciones' => 'COMPROBANTE DE INGRESO FACT: ' . $nfactura,
+                'observaciones' => 'COMPROBANTE DE INGRESO FACT: '.$nfactura,
                 'estado' => '1',
                 'id_asiento_cabecera' => $id_asiento_cabecera,
                 'fecha' => $request['fecha_asiento'],
@@ -2700,7 +2733,7 @@ class VentasController extends Controller
                 'id_empresa' => $id_empresa,
                 'total_ingreso' => $objeto_validar->set_round($total_pagos),
                 'id_cliente' => $request['identificacion_cliente'],
-                'autollenar' => "Cancela FV : " . $nfactura,
+                'autollenar' => 'Cancela FV : '.$nfactura,
                 'id_vendedor' => $request['cedula_vendedor'],
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
@@ -2708,17 +2741,17 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
             ];
             $id_comprobante = Ct_Comprobante_Ingreso::insertGetId($input_comprobante);
-            //formas de pago detalle
+            // formas de pago detalle
             foreach ($array_pagos as $valor) {
-                if ($valor['fecha_pago'] != "") {
+                if ($valor['fecha_pago'] != '') {
                 }
                 $val = 0;
-                if (!is_null($valor['valor'])) {
+                if (! is_null($valor['valor'])) {
                     $val = $valor['valor'];
                 } else {
                     $val = $valor['valor_base'];
                 }
-                $fecha_pago = $valor['fecha_pago'] != "" ? $valor['fecha_pago'] : $request['fecha_asiento'];
+                $fecha_pago = $valor['fecha_pago'] != '' ? $valor['fecha_pago'] : $request['fecha_asiento'];
                 $arraydetallepago = [
                     'id_comprobante' => $id_comprobante,
                     'fecha' => $fecha_pago,
@@ -2735,23 +2768,23 @@ class VentasController extends Controller
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
                 ];
-                //echo '<pre>';print_r($arraydetallepago);exit;
+                // echo '<pre>';print_r($arraydetallepago);exit;
                 Ct_Detalle_Pago_Ingreso::insert($arraydetallepago);
             }
 
             $confg = LogConfig::busqueda('1.01.01.1.01');
 
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
 
             $desc_cuenta = Plan_Cuentas::where('id', $confg)->first();
 
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.01.1.01',
+                // 'id_plan_cuenta'      => '1.01.01.1.01',
                 'id_plan_cuenta' => $confg,
                 'descripcion' => $desc_cuenta->nombre,
                 'fecha' => $request['fecha_asiento'],
-                'debe' => $total_pagos, //$nuevo_saldof,
+                'debe' => $total_pagos, // $nuevo_saldof,
                 'haber' => '0',
                 'estado' => '1',
                 'id_usuariocrea' => $idusuario,
@@ -2766,11 +2799,11 @@ class VentasController extends Controller
                 Ct_Detalle_Comprobante_Ingreso::create([
                     'id_comprobante' => $id_comprobante,
                     'fecha' => $request['fecha_asiento'],
-                    'observaciones' => "Cancela FV : " . $nfactura,
-                    'id_factura' => $factura_id, ////$consulta_venta->id,
-                    'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                    'total_factura' => $request['total1'], //$request['saldo_a'.$i],
-                    'total' => $total_pagos, //$request['abono_a'.$i],
+                    'observaciones' => 'Cancela FV : '.$nfactura,
+                    'id_factura' => $factura_id, // //$consulta_venta->id,
+                    'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                    'total_factura' => $request['total1'], // $request['saldo_a'.$i],
+                    'total' => $total_pagos, // $request['abono_a'.$i],
                     'estado' => '1',
                     'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
@@ -2779,13 +2812,13 @@ class VentasController extends Controller
                 ]);
             }
             if ($total_pagos < $request['total1']) {
-                //aqui creo una orden de venta nueva
+                // aqui creo una orden de venta nueva
 
             }
             $valor_actual = Ct_ventas::where('id', $factura_id)->first();
             $id__ventas = [
 
-                'valor_contable' => floatVal($valor_actual->valor_contable) - $total_pagos,
+                'valor_contable' => floatval($valor_actual->valor_contable) - $total_pagos,
                 'estado_pago' => 2,
             ];
 
@@ -2798,6 +2831,7 @@ class VentasController extends Controller
             return 0;
         }
     }
+
     /**********************************************
      ****CREAR FACTURAS DE VENTA DESDE LA AGENDA****
     /**********************************************/
@@ -2810,11 +2844,11 @@ class VentasController extends Controller
         $procedimiento = hc_procedimientos::find($protocolo->id_hc_procedimientos);
         $agenda = Agenda::findorfail($procedimiento->historia->id_agenda);
         $paciente = Paciente::findorfail($agenda->id_paciente);
-        $ct_cliente = ct_clientes::where('identificacion', $paciente->id_usuario)->first();
+        $ct_cliente = Ct_Clientes::where('identificacion', $paciente->id_usuario)->first();
         $divisas = Ct_Divisas::where('estado', '1')->get();
         $clientes = Ct_Clientes::where('estado', '1')->get();
-        $bodega = bodega::where('estado', '1')->get();
-        //$tipo_pago = Ct_Forma_Pago::where('estado', '1')->get();
+        $bodega = Bodega::where('estado', '1')->get();
+        // $tipo_pago = Ct_Forma_Pago::where('estado', '1')->get();
         $seguros = Seguro::all();
         $user_recaudador = User::where('id_tipo_usuario', 18)
             ->where('estado', 1)->get();
@@ -2822,28 +2856,30 @@ class VentasController extends Controller
             ->where('estado', 1)->get();
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empresa_general = Empresa::all();
         $empresa_sucurs = Empresa::findorfail($agenda->id_empresa);
-        //Obtenemos los % de Retenciones al Iva y la Fuente
+        // Obtenemos los % de Retenciones al Iva y la Fuente
         $rete_iva = Ct_Porcentajes_Retencion_Iva::where('estado', '1')->get();
         $rete_fuente = Ct_Porcentajes_Retencion_Fuente::where('estado', '1')->get();
-        //Obtenemos el Tipo de Pago
+        // Obtenemos el Tipo de Pago
         $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
-        //Obtenemos el Listado de bancos
+        // Obtenemos el Listado de bancos
         $lista_banco = Ct_Bancos::where('estado', '1')->get();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
         $id_plan_confg = LogConfig::busqueda('4.1.01.02');
         $iva = Ct_Configuraciones::where('id_plan', $id_plan_confg)->where('estado', '1')->first();
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->get();
+
         return view('contable/ventas/create', ['clientes' => $clientes, 'bodega' => $bodega, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'divisas' => $divisas, 'procedimiento' => $procedimiento, 'seguros' => $seguros, 'ct_cliente' => $ct_cliente, 'id_cliente' => $paciente->id_usuario, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'empresa' => $empresa, 'empresa_general' => $empresa_general, 'empresa_sucurs' => $empresa_sucurs, 'rete_iva' => $rete_iva, 'rete_fuente' => $rete_fuente, 'cuentas' => $cuentas, 'sucursales' => $sucursales, 'productos' => $productos, 'iva' => $iva]);
     }
+
     /*************************************
      ****CREAR FACTURAS DE VENTA MANUAL****
     /*************************************/
@@ -2857,8 +2893,8 @@ class VentasController extends Controller
         $clientes = Ct_Clientes::where('estado', '1')->get();
         $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
         $lista_banco = Ct_Bancos::where('estado', '1')->get();
-        //$seguros         = Seguro::all();
-        //Obtenemos los seguros Validos
+        // $seguros         = Seguro::all();
+        // Obtenemos los seguros Validos
         $seguros = Seguro::where('seguros.inactivo', '1')
             ->where('promo_seguro', '<>', 1)
             ->orderBy('nombre', 'asc')->get();
@@ -2884,32 +2920,33 @@ class VentasController extends Controller
             $user_vendedor = User::whereIn('id', $idVendedores)
                 ->where('estado', 1)
                 ->get();
-        } else
+        } else {
             $user_vendedor = User::where('id_tipo_usuario', 17)
                 ->where('estado', 1)
                 ->get();
+        }
         $id_empresa = $request->session()->get('id_empresa');
         $bodega = Ct_Bodegas::where('estado', '1')->where('id_empresa', $id_empresa)->get();
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->where('id_empresa', $id_empresa)->get();
         $confg = LogConfig::busqueda('4.1.01.02');
-        //$iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
-        //$iva = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
+        // $iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+        // $iva = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
         $tipo_tarjeta = Ct_Tipo_Tarjeta::all();
         /********************PROFORMasAS**********************/
         $proformas = Proforma_Venta_Cab::where('estado', 1)->where('id_empresa', $id_empresa)->where('tipo', 1)->where('id_venta', null)->get();
@@ -2922,8 +2959,10 @@ class VentasController extends Controller
                 ->where('estado', 'ENTREGADA')
                 ->findOrFail($request->entrega_mercaderia);
         }
-        return view('contable/ventas/create_factura', ['porIva' => $this->porIva, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas, 'tipo_tarjeta' => $tipo_tarjeta,  "proformas" => $proformas, 'entregaMercaderia' => $entregaMercaderia]);
+
+        return view('contable/ventas/create_factura', ['porIva' => $this->porIva, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas, 'tipo_tarjeta' => $tipo_tarjeta,  'proformas' => $proformas, 'entregaMercaderia' => $entregaMercaderia]);
     }
+
     /*************************************
      ****CREAR Orden DE VENTA MANUAL****
     /*************************************/
@@ -2943,36 +2982,38 @@ class VentasController extends Controller
             ->where('estado', 1)->get();
         $id_empresa = $request->session()->get('id_empresa');
         $bodega = Ct_Bodegas::where('estado', '1')->where('id_empresa', $id_empresa)->get();
-        //dd($bodega);
+        // dd($bodega);
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
         $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->get();
         $confg = LogConfig::busqueda('4.1.01.02');
-        //$iva       = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
-        //$iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+
+        // $iva       = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
+        // $iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
         return view('contable/ventas/create_orden', ['porIva' => $this->porIva, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas]);
     }
+
     public function precios(Request $request)
     {
 
         $producto_id = $request->id;
-        $id_seguro   = $request->id_seguro;
-        $id_nivel    = $request->id_nivel;
+        $id_seguro = $request->id_seguro;
+        $id_nivel = $request->id_nivel;
 
         $precios = PrecioProducto::where('codigo_producto', $producto_id)
             ->where('estado', 1)->get();
@@ -2986,6 +3027,7 @@ class VentasController extends Controller
 
         return $inf_prod_tar;
     }
+
     /*************************************
      ****CREAR FACTURAS DE VENTA MANUAL****
     /*************************************/
@@ -3003,51 +3045,53 @@ class VentasController extends Controller
             ->where('estado', 1)->get();
         $user_vendedor = User::where('id_tipo_usuario', 17)
             ->where('estado', 1)->get();
-        $bodega = bodega::where('estado', '1')->get();
+        $bodega = Bodega::where('estado', '1')->get();
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->get();
         $confg = LogConfig::busqueda('4.1.01.02');
-        //$iva = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
-        //$iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
-        //$searchinsumos= $this->searchInsumos($request);
-        $primeros_datos = "";
-        $segundos_datos = "";
-        $fecha_desde = "";
+        // $iva = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
+        // $iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+        // $searchinsumos= $this->searchInsumos($request);
+        $primeros_datos = '';
+        $segundos_datos = '';
+        $fecha_desde = '';
         $tipox = 0;
-        $fecha_hasta = "";
-        //dd($searchinsumos);
+        $fecha_hasta = '';
+        // dd($searchinsumos);
         $tipo_tarjeta = Ct_Tipo_Tarjeta::all();
-        $bodegas      = Ct_Bodegas::where('estado', '1')->where('id_empresa', $id_empresa)->get();
+        $bodegas = Ct_Bodegas::where('estado', '1')->where('id_empresa', $id_empresa)->get();
+
         return view('contable/ventas/insumos', ['porIva' => $this->porIva, 'bodegas' => $bodegas, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas, 'primeros_datos' => $primeros_datos, 'segundos_datos' => $segundos_datos, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'tipo_tarjeta' => $tipo_tarjeta, 'tipox' => $tipox]);
     }
+
     public function searchInsumos(Request $request)
     {
-        //$finicio, $ffin, $seguro){ ahora tb el tipo
+        // $finicio, $ffin, $seguro){ ahora tb el tipo
         $fecha = $request->fecha_desde;
         $fecha_hasta = $request->fecha_hasta;
         $personal = [];
         $total = [];
         $id_empresa = $request->session()->get('id_empresa');
         $paciente = $request->identificacion_paciente;
-        $ordenes = "";
+        $ordenes = '';
         $secure = $request->id_seguro;
-        $sss = [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:59'];
+        $sss = [$fecha.' 00:00:00', $fecha_hasta.' 23:59:59'];
         $tipo_tarjeta = Ct_Tipo_Tarjeta::all();
         $tipox = 1;
         if ($request->tipo_servicio == 2) {
@@ -3058,11 +3102,11 @@ class VentasController extends Controller
             if ($secure != 0) {
                 $ordenes = $ordenes->where('seguro_paciente', $secure);
             }
-            $ordenes = $ordenes->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha) . ' 00:00:00', str_replace('/', '-', $fecha_hasta) . ' 23:59:59'])
+            $ordenes = $ordenes->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha).' 00:00:00', str_replace('/', '-', $fecha_hasta).' 23:59:59'])
                 ->orderBy('fecha_procedimiento', 'desc')->get();
-            //dd($ordenes);
+            // dd($ordenes);
             $tipox = 2;
-        } else if ($request->tipo_servicio == 1) {
+        } elseif ($request->tipo_servicio == 1) {
             $tipox = 1;
             $ordenes = Ct_Ven_Orden::where('estado', '1')->where('id_empresa', $id_empresa)
                 ->where('estado_pago', '<>', '1')
@@ -3070,15 +3114,15 @@ class VentasController extends Controller
             if ($secure != 0) {
                 $ordenes = $ordenes->where('seguro_paciente', $secure);
             }
-            $ordenes = $ordenes->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha) . ' 00:00:00', str_replace('/', '-', $fecha_hasta) . ' 23:59:59'])
+            $ordenes = $ordenes->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha).' 00:00:00', str_replace('/', '-', $fecha_hasta).' 23:59:59'])
                 ->orderBy('fecha_procedimiento', 'desc')->get();
-        } else if ($request->tipo_servicio == 3) {
+        } elseif ($request->tipo_servicio == 3) {
             $tipox = 3;
             $ordenes = Ct_Ven_Orden::where('estado', '1')->where('id_empresa', $id_empresa)->where('estado_pago', '<>', '1');
             if ($secure != 0) {
                 $ordenes = $ordenes->where('seguro_paciente', $secure);
             }
-            $ordenes = $ordenes->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha) . ' 00:00:00', str_replace('/', '-', $fecha_hasta) . ' 23:59:59'])->orderBy('fecha_procedimiento', 'desc')->get();
+            $ordenes = $ordenes->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha).' 00:00:00', str_replace('/', '-', $fecha_hasta).' 23:59:59'])->orderBy('fecha_procedimiento', 'desc')->get();
         }
         $divisas = Ct_Divisas::where('estado', '1')->get();
         $clientes = Ct_Clientes::where('estado', '1')->get();
@@ -3089,32 +3133,32 @@ class VentasController extends Controller
             ->where('estado', 1)->get();
         $user_vendedor = User::where('id_tipo_usuario', 17)
             ->where('estado', 1)->get();
-        $bodega = bodega::where('estado', '1')->get();
+        $bodega = Bodega::where('estado', '1')->get();
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->where('id_empresa', $id_empresa)->get();
         // $iva            = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
         $confg = LogConfig::busqueda('4.1.01.02');
-        //$iva = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
-        $searchinsumos = "";
-        $primeros_datos = "";
-        $segundos_datos = "";
-        //dd($productos);
+        // $iva = Ct_Configuraciones::where('id_plan', $confg)->where('estado', '1')->first();
+        $searchinsumos = '';
+        $primeros_datos = '';
+        $segundos_datos = '';
+        // dd($productos);
         $fecha_desde = $fecha;
         $fecha_hasta = $request->fecha_hasta;
         if (is_null($fecha_desde)) {
@@ -3125,11 +3169,13 @@ class VentasController extends Controller
         }
         $secure = $request->id_seguro;
         $bodegas = Ct_Bodegas::where('estado', '1')->where('id_empresa', $id_empresa)->get();
+
         return view('contable/ventas/insumos', ['porIva' => $this->porIva, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'tipo_tarjeta' => $tipo_tarjeta, 'cuentas' => $cuentas, 'searchinsumos' => $searchinsumos, 'ordenes' => $ordenes, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'tipox' => $tipox, 'secure' => $secure, 'bodegas' => $bodegas]);
     }
+
     public function modalDetalle($id, Request $request)
     {
-        //dd($request->all());
+        // dd($request->all());
         $ven_orden = Ct_Ven_Orden::find($request->id);
 
         $venta_orden = Ct_Orden_Venta::find($ven_orden->orden_venta);
@@ -3141,44 +3187,50 @@ class VentasController extends Controller
 
         return view('contable/ventas/modal_detalles', ['examen_detalle' => $ex_detalle, 'id' => $request->id]);
     }
+
     public function selectsearch(Request $request)
     {
         $id_empresa = $request->session()->get('id_empresa');
         $productos = [];
         if ($request['search'] != null) {
-            $productos = Ct_productos::where('id_empresa', $id_empresa)->where('nombre', 'LIKE', '%' . $request['search'] . '%')->select('ct_productos.codigo as id', 'ct_productos.nombre as text')->get();
+            $productos = Ct_productos::where('id_empresa', $id_empresa)->where('nombre', 'LIKE', '%'.$request['search'].'%')->select('ct_productos.codigo as id', 'ct_productos.nombre as text')->get();
         }
 
         return response()->json($productos);
     }
+
     public function clientesearch(Request $request)
     {
         $id_empresa = $request->session()->get('id_empresa');
-        $clientes  = [];
+        $clientes = [];
         if ($request['search'] != null) {
             if ($request['type'] == 0) {
-                $clientes = Ct_Clientes::where('nombre', 'LIKE', '%' . $request['search'] . '%')->select('ct_clientes.nombre', 'ct_clientes.telefono1_representante', 'ct_clientes.email_representante', 'ct_clientes.ciudad_representante', 'ct_clientes.direccion_representante', 'ct_clientes.identificacion as id', 'ct_clientes.nombre as text')->get();
-            } else
-                $clientes = Ct_Clientes::where('identificacion', 'LIKE', '%' . $request['search'] . '%')->select('ct_clientes.nombre', 'ct_clientes.telefono1_representante', 'ct_clientes.email_representante', 'ct_clientes.ciudad_representante', 'ct_clientes.direccion_representante', 'ct_clientes.identificacion as id', 'ct_clientes.identificacion as text')->get();
+                $clientes = Ct_Clientes::where('nombre', 'LIKE', '%'.$request['search'].'%')->select('ct_clientes.nombre', 'ct_clientes.telefono1_representante', 'ct_clientes.email_representante', 'ct_clientes.ciudad_representante', 'ct_clientes.direccion_representante', 'ct_clientes.identificacion as id', 'ct_clientes.nombre as text')->get();
+            } else {
+                $clientes = Ct_Clientes::where('identificacion', 'LIKE', '%'.$request['search'].'%')->select('ct_clientes.nombre', 'ct_clientes.telefono1_representante', 'ct_clientes.email_representante', 'ct_clientes.ciudad_representante', 'ct_clientes.direccion_representante', 'ct_clientes.identificacion as id', 'ct_clientes.identificacion as text')->get();
+            }
         }
+
         return response()->json($clientes);
     }
+
     public function cedulasearch(Request $request)
     {
         $id_empresa = $request->session()->get('id_empresa');
-        $cedula_cliente  = [];
+        $cedula_cliente = [];
         if ($request['search'] != null) {
-            $cedula_cliente = Ct_Clientes::where('identificacion', 'LIKE', '%' . $request['search'] . '%')->select('ct_clientes.identificacion as id', 'ct_clientes.identificacion as text')->get();
+            $cedula_cliente = Ct_Clientes::where('identificacion', 'LIKE', '%'.$request['search'].'%')->select('ct_clientes.identificacion as id', 'ct_clientes.identificacion as text')->get();
         }
 
         return response()->json($cedula_cliente);
     }
+
     public function productosearch(Request $request)
     {
         $id_empresa = $request->session()->get('id_empresa');
         $productos = [];
         if ($request['search'] != null) {
-            $productos = Ct_productos::where('nombre', 'LIKE', '%' . $request['search'] . '%')
+            $productos = Ct_productos::where('nombre', 'LIKE', '%'.$request['search'].'%')
                 ->where('estado_tabla', '1')
                 ->where('id_empresa', $id_empresa)
                 ->select('ct_productos.codigo as id', 'ct_productos.nombre as text')->get();
@@ -3186,29 +3238,31 @@ class VentasController extends Controller
 
         return response()->json($productos);
     }
+
     public function buscar_producto_codigo(Request $request)
     {
-        //dd($request->all());
+        // dd($request->all());
         $id_empresa = $request->session()->get('id_empresa');
-        //$buscador = $request['search'];
+        // $buscador = $request['search'];
         $buscador = trim($request->q);
-        $productos  = [];
+        $productos = [];
 
         if ($buscador != null) {
             $productos = Ct_productos::where('id_empresa', $id_empresa)->where('estado_tabla', '1');
 
             $productos = $productos->where(function ($jq1) use ($buscador) {
-                $jq1->orwhere('codigo', "LIKE", "%{$buscador}%")
+                $jq1->orwhere('codigo', 'LIKE', "%{$buscador}%")
                     ->orwhere('nombre', 'LIKE', "%{$buscador}%");
             });
 
             $productos = $productos->select('codigo as id', DB::raw('CONCAT(codigo," | ",nombre) as text'))->get();
         }
 
-        //dd($productos);
+        // dd($productos);
 
         return response()->json($productos);
     }
+
     public function paginate($items, $perPage = 5, $page = null, $baseUrl = null, $options = [])
     {
         $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
@@ -3223,12 +3277,13 @@ class VentasController extends Controller
 
         return $lap;
     }
+
     public function previewData(Request $request)
     {
-        //$finicio, $ffin, $seguro){
+        // $finicio, $ffin, $seguro){
 
-        $fecha       = date("Y/m/d", strtotime($request->finicio));
-        $fecha_hasta = date("Y/m/d", strtotime($request->ffin));
+        $fecha = date('Y/m/d', strtotime($request->finicio));
+        $fecha_hasta = date('Y/m/d', strtotime($request->ffin));
 
         $consultas = DB::table('hc_evolucion as he')
             ->join('historiaclinica as h', 'h.hcid', 'he.hcid')
@@ -3245,7 +3300,7 @@ class VentasController extends Controller
             ->select('he.*', 'ov.*', 'v.id as asd', 'v.seguro_paciente', 'vo.total_final as valor_final', 'vo.id as idventa', 'p.apellido1', 'p.apellido2', 'p.nombre1', 'p.nombre2', 'p.id as id_paciente', 'pc.nombre_general', 'a.fechaini', 'p.id as id_paciente', 'hp.id_seguro', 'hp.id_doctor_examinador', 'hs.nombre as hsnombre', 'hu.apellido1 as huapellido', 'hu.nombre1 as hunombre', 'pc.nombre_general', 'hd.apellido1 as hdapellido', 'hd.nombre1 as hdnombre', 'a.proc_consul')->where('pc.id', '40');
 
         if ($fecha != null) {
-            $consultas = $consultas->whereBetween('a.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->orderBy('a.fechaini');
+            $consultas = $consultas->whereBetween('a.fechaini', [$fecha.' 00:00', $fecha_hasta.' 23:59'])->orderBy('a.fechaini');
         } else {
             $consultas = $consultas->orderBy('a.fechaini', 'desc');
         }
@@ -3258,93 +3313,94 @@ class VentasController extends Controller
 
         return $consultas;
     }
-    public function excelPreview($fecha, $fecha_hasta, $seguro, $tipo, $id_empresa, $secuencia = "001-00022-002")
+
+    public function excelPreview($fecha, $fecha_hasta, $seguro, $tipo, $id_empresa, $secuencia = '001-00022-002')
     {
 
-        $date  = new DateTime();
+        $date = new DateTime;
         $fecha = date('Y-m-d', ($fecha / 1000));
 
         $fecha_hasta = date('Y-m-d', ($fecha_hasta / 1000));
-        $ordenes     = "";
+        $ordenes = '';
         if ($tipo == 2) {
             $ordenes = Ct_Ven_Orden::where('estado', '1')
                 ->where('seguro_paciente', $seguro)
                 ->where('id_empresa', $id_empresa)
                 ->where('estado_pago', '<>', '1')
                 ->where('tipo_consulta', '2')
-                ->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha) . ' 00:00:00', str_replace('/', '-', $fecha_hasta . ' 23:59:59')])
+                ->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha).' 00:00:00', str_replace('/', '-', $fecha_hasta.' 23:59:59')])
                 ->orderBy('fecha', 'desc')
                 ->get();
             $tipox = 2;
-        } else if ($tipo == 1) {
+        } elseif ($tipo == 1) {
             $tipox = 1;
 
             $ordenes = Ct_Ven_Orden::where('estado', '1')->where('seguro_paciente', $seguro)->where('id_empresa', $id_empresa)
                 ->where('estado_pago', '<>', '1')
                 ->where('tipo_consulta', '1')
-                ->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha) . ' 00:00:00', str_replace('/', '-', $fecha_hasta . ' 00:00:00')])
+                ->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha).' 00:00:00', str_replace('/', '-', $fecha_hasta.' 00:00:00')])
                 ->orderBy('fecha_procedimiento', 'desc')->get();
-        } else if ($tipo == 3) {
-            $tipox   = 3;
-            $ordenes = Ct_Ven_Orden::where('estado', '1')->where('seguro_paciente', $seguro)->where('id_empresa', $id_empresa)->where('estado_pago', '<>', '1')->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha) . ' 00:00:00', str_replace('/', '-', $fecha_hasta . ' 00:00:00')])->orderBy('fecha_procedimiento', 'desc')->get();
+        } elseif ($tipo == 3) {
+            $tipox = 3;
+            $ordenes = Ct_Ven_Orden::where('estado', '1')->where('seguro_paciente', $seguro)->where('id_empresa', $id_empresa)->where('estado_pago', '<>', '1')->whereBetween('fecha_procedimiento', [str_replace('/', '-', $fecha).' 00:00:00', str_replace('/', '-', $fecha_hasta.' 00:00:00')])->orderBy('fecha_procedimiento', 'desc')->get();
         }
 
-        //array_push($personal, $consultas);
-        //dd($ordenes);
+        // array_push($personal, $consultas);
+        // dd($ordenes);
 
-        Excel::create('Consultas Pre-Factura Conglomerada', function ($excel) use ($fecha, $fecha_hasta, $ordenes, $secuencia) {
-            $excel->sheet('Factura por confirmar ', function ($sheet) use ($ordenes, $fecha, $fecha_hasta, $secuencia) {
-                $sheet->mergeCells('A1' . ':D1');
+        Excel::create('Consultas Pre-Factura Conglomerada', function ($excel) use ($ordenes, $secuencia) {
+            $excel->sheet('Factura por confirmar ', function ($sheet) use ($ordenes, $secuencia) {
+                $sheet->mergeCells('A1'.':D1');
                 $contador = 1;
-                $sheet->cell('A1', function ($cell) use ($fecha_hasta, $fecha, $secuencia) {
+                $sheet->cell('A1', function ($cell) use ($secuencia) {
                     // manipulate the cel
-                    $cell->setValue('FACTURA ' . $secuencia);
+                    $cell->setValue('FACTURA '.$secuencia);
                     $cell->setFontWeight('bold');
                 });
                 $contador++;
-                $sheet->cell('A' . $contador, function ($cell) {
+                $sheet->cell('A'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('ODA');
                     $cell->setFontWeight('bold');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('B' . $contador, function ($cell) {
+                $sheet->cell('B'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('FECHA');
                     $cell->setFontWeight('bold');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('C' . $contador, function ($cell) {
+                $sheet->cell('C'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('PACIENTE');
                     $cell->setFontWeight('bold');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('D' . $contador, function ($cell) {
+                $sheet->cell('D'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('TITULAR');
                     $cell->setFontWeight('bold');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('E' . $contador, function ($cell) {
+                $sheet->cell('E'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('PLAN');
                     $cell->setFontWeight('bold');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('F' . $contador, function ($cell) {
+                $sheet->cell('F'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('VALOR');
                     $cell->setFontWeight('bold');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
                 $contador = 3;
-                $sumatot  = 0;
+                $sumatot = 0;
                 foreach ($ordenes as $x) {
 
                     $sumatot += $x->copago;
-                    if (!is_null($x)) {
-                        $sheet->cell('A' . $contador, function ($cell) use ($x) {
+                    if (! is_null($x)) {
+                        $sheet->cell('A'.$contador, function ($cell) use ($x) {
                             // manipulate the cel
                             /*$id_x= $x->id_ct_venta;
                             $consult= Ct_ventas::where('id',$id_x)->where('estado','!=','0')->first();
@@ -3357,31 +3413,31 @@ class VentasController extends Controller
                             $cell->setValue($x->id);
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
-                        $sheet->cell('B' . $contador, function ($cell) use ($x) {
+                        $sheet->cell('B'.$contador, function ($cell) use ($x) {
                             // manipulate the cel
                             $cell->setValue(substr($x->fecha_procedimiento, 0, 10));
 
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
-                        $sheet->cell('C' . $contador, function ($cell) use ($x) {
+                        $sheet->cell('C'.$contador, function ($cell) use ($x) {
                             // manipulate the cel
                             $cell->setValue($x->nombres_paciente);
 
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
-                        $sheet->cell('D' . $contador, function ($cell) use ($x) {
+                        $sheet->cell('D'.$contador, function ($cell) use ($x) {
                             // manipulate the cel
                             $cell->setValue($x->nombre_cliente);
 
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
-                        $sheet->cell('E' . $contador, function ($cell) use ($x) {
+                        $sheet->cell('E'.$contador, function ($cell) use ($x) {
                             // manipulate the cel
                             $cell->setValue($x->estado_pago);
 
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                         });
-                        $sheet->cell('F' . $contador, function ($cell) use ($x) {
+                        $sheet->cell('F'.$contador, function ($cell) use ($x) {
                             // manipulate the cel
                             $total = $x->copago;
                             $cell->setValue(number_format($total, 2, '.', ','));
@@ -3392,49 +3448,54 @@ class VentasController extends Controller
                     $contador++;
                 }
                 $contador++;
-                $sheet->cell('D' . $contador, function ($cell) {
+                $sheet->cell('D'.$contador, function ($cell) {
                     // manipulate the cel
                     $cell->setValue('TOTAL');
                     $cell->setFontWeight('bold');
                 });
-                $sheet->cell('F' . $contador, function ($cell) use ($sumatot) {
+                $sheet->cell('F'.$contador, function ($cell) use ($sumatot) {
                     // manipulate the cel
                     $cell->setValue(number_format($sumatot, 2, '.', ','));
                 });
             });
         })->export('xlsx');
-        //return $request;
+        // return $request;
 
     }
+
     public function validarStock(Request $request)
     {
         $producto = $request->producto;
-        $bodega   = $request->bodega;
+        $bodega = $request->bodega;
 
-        //$query = Ct_Inventario::where('bodega_id',$bodega)->where('producto_id', $producto)->first();
+        // $query = Ct_Inventario::where('bodega_id',$bodega)->where('producto_id', $producto)->first();
         $query = DB::table('ct_productos as p')
             ->join('ct_inventario as i', 'i.producto_id', 'p.id')
             ->where('i.bodega_id', $bodega)
             ->join('ct_productos_insumos as pi', 'pi.id_producto', 'p.id')->where('p.codigo', $producto)
             ->select('*')
             ->get();
+
         return $query;
     }
+
     public function esInventariable(Request $request)
     {
         $producto = $request->producto;
 
-        //$query = Ct_Productos_Insumos::where('id_producto',$producto)->count();
+        // $query = Ct_Productos_Insumos::where('id_producto',$producto)->count();
 
         $query = DB::table('ct_productos as p')
             ->where('p.codigo', $producto)
             ->join('ct_productos_insumos as pi', 'pi.id_producto', 'p.id')
             ->count();
+
         return $query;
     }
+
     public function excel($id, Request $request)
     {
-        $factura   = $id;
+        $factura = $id;
         $consultas = DB::table('ct_factura_procedimientos as fp')
             ->join('hc_evolucion as he', 'he.hc_id_procedimiento', 'fp.id_hc_procedimientos')
             ->join('historiaclinica as h', 'h.hcid', 'he.hcid')
@@ -3452,7 +3513,7 @@ class VentasController extends Controller
 
         $consultas = $consultas->where('a.espid', '<>', '10');
         // dd($consultas);
-        Excel::create('Reporte Consultas Factura -' . $factura, function ($excel) use ($factura) {
+        Excel::create('Reporte Consultas Factura -'.$factura, function ($excel) use ($factura) {
 
             $consultas = DB::table('ct_factura_procedimientos as fp')
                 ->join('hc_evolucion as he', 'he.hc_id_procedimiento', 'fp.id_hc_procedimientos')
@@ -3493,25 +3554,25 @@ class VentasController extends Controller
                 });
                 $contador = 2;
                 foreach ($consultas as $value) {
-                    $sheet->cell('A' . $contador, function ($cell) use ($value) {
+                    $sheet->cell('A'.$contador, function ($cell) use ($value) {
                         // manipulate the cel
                         $cell->setValue($value->numero_oda);
                     });
-                    $sheet->cell('B' . $contador, function ($cell) use ($value) {
+                    $sheet->cell('B'.$contador, function ($cell) use ($value) {
                         // manipulate the cel
                         $cell->setValue($value->fechaini);
                     });
-                    $sheet->cell('C' . $contador, function ($cell) use ($value) {
+                    $sheet->cell('C'.$contador, function ($cell) use ($value) {
                         // manipulate the cel
                         $nombre = "$value->apellido1 $value->apellido2 $value->nombre1 $value->apellido2";
                         $cell->setValue($value->id_paciente);
                     });
-                    $sheet->cell('D' . $contador, function ($cell) use ($value) {
+                    $sheet->cell('D'.$contador, function ($cell) use ($value) {
                         // manipulate the cel
                         $nombre = "$value->apellido1 $value->apellido2 $value->nombre1 $value->apellido2";
                         $cell->setValue($nombre);
                     });
-                    $sheet->cell('E' . $contador, function ($cell) use ($value) {
+                    $sheet->cell('E'.$contador, function ($cell) use ($value) {
                         // manipulate the cel
                         $cell->setValue($value->total);
                     });
@@ -3520,6 +3581,7 @@ class VentasController extends Controller
             });
         })->export('xlsx');
     }
+
     /*************************************
      ****CARGA PRODUCTOS DESDE LA AGENDA***
     /*************************************/
@@ -3527,9 +3589,9 @@ class VentasController extends Controller
     {
 
         $id_proced = $request['id_hc_proced'];
-        $data      = null;
+        $data = null;
 
-        if (!is_null($id_proced)) {
+        if (! is_null($id_proced)) {
 
             $insumos = DB::table('movimiento_paciente as mp')
                 ->where('mp.id_hc_procedimientos', $id_proced)
@@ -3543,23 +3605,25 @@ class VentasController extends Controller
         if ($insumos != '[]') {
 
             $data = [$insumos];
+
             return $data;
         } else {
             return ['value' => 'no resultados'];
         }
     }
+
     /*******************************************
      ***OBTENEMOS SECUENCIA DE LA FACTURA VENTA**
     /*******************************************/
     public function obtener_numero_factura($idempresa, $sucursal, $punto_emision)
     {
-        $contador_ctv   = Ct_ventas::where('id_empresa', $idempresa)->where('sucursal', $sucursal)->where('punto_emision', $punto_emision)->get()->count();
+        $contador_ctv = Ct_ventas::where('id_empresa', $idempresa)->where('sucursal', $sucursal)->where('punto_emision', $punto_emision)->get()->count();
         $numero_factura = 0;
         if ($contador_ctv == 0) {
-            $num            = '1';
-            $numero_factura = str_pad($num, 9, "0", STR_PAD_LEFT);
+            $num = '1';
+            $numero_factura = str_pad($num, 9, '0', STR_PAD_LEFT);
         } else {
-            //Obtener Ultimo Registro de la Tabla ct_compras
+            // Obtener Ultimo Registro de la Tabla ct_compras
             $max_id = Ct_ventas::where('id_empresa', $idempresa)
                 ->where('sucursal', $sucursal)
                 ->where('punto_emision', $punto_emision)
@@ -3567,14 +3631,16 @@ class VentasController extends Controller
                 ->latest()
                 ->first();
             $max_id = intval($max_id->numero);
-            //dd(strlen($max_id));
+            // dd(strlen($max_id));
             if (strlen($max_id) < 9) {
                 $nu = $max_id + 1;
-                $numero_factura = str_pad($nu, 9, "0", STR_PAD_LEFT);
+                $numero_factura = str_pad($nu, 9, '0', STR_PAD_LEFT);
             }
         }
+
         return $numero_factura;
     }
+
     private static function generarNumeroFactura($data)
     {
         $num = De_Info_Tributaria::where('id_empresa', session('id_empresa'))
@@ -3591,17 +3657,19 @@ class VentasController extends Controller
         } else {
             $num = $num->secuencial_nro;
         }
-        if ($num == '')
-            $num = $data['sucursal'] . '-' . $data['punto_emision'] . '-' . '000000001';
-        else {
+        if ($num == '') {
+            $num = $data['sucursal'].'-'.$data['punto_emision'].'-'.'000000001';
+        } else {
             $num = $num + 1;
-            $num = $data['sucursal'] . '-' . $data['punto_emision'] . '-' . str_pad($num, 9, 0, STR_PAD_LEFT);
+            $num = $data['sucursal'].'-'.$data['punto_emision'].'-'.str_pad($num, 9, 0, STR_PAD_LEFT);
         }
+
         return $num;
     }
+
     public static function ventasStore($request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $idusuario = Auth::user()->id;
         $ct_clientes = Ct_Clientes::find($request->identificacion_cliente);
         $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
@@ -3612,7 +3680,7 @@ class VentasController extends Controller
         $factura_venta = [
             'sucursal' => $c_sucursal,
             'punto_emision' => $c_caja,
-            'nro_comprobante' => "",
+            'nro_comprobante' => '',
             'id_empresa' => $request['id_empresa'],
             'tipo' => $request['tipo'],
             'fecha' => $request['fecha_asiento'],
@@ -3650,7 +3718,7 @@ class VentasController extends Controller
             'ip_modificacion' => $ip_cliente,
             'id_usuariocrea' => $idusuario,
             'id_usuariomod' => $idusuario,
-            'nota_array' => $request['nota_electronica'] != "" ?  json_encode($request['nota_electronica']) : json_encode([]),
+            'nota_array' => $request['nota_electronica'] != '' ? json_encode($request['nota_electronica']) : json_encode([]),
             'doc_electronico' => 0,
             'emisor' => 'MD',
             'contraentrega' => $request['contraentrega'] != '' ? $request['contraentrega'] : 0,
@@ -3660,45 +3728,45 @@ class VentasController extends Controller
             echo '<pre>',print_r($factura_venta);DB::rollBack();exit;
         }*/
         $data['empresa'] = $request->empresa ?? $request->id_empresa;
-        $getType = "5";
+        $getType = '5';
         if (strlen($getType) == 1) {
-            $getType = '0' . $getType;
+            $getType = '0'.$getType;
         }
-        $cliente['cedula']   = $ct_clientes->identificacion;
-        $cliente['tipo']     = $getType;
-        $cliente['nombre']   = $ct_clientes->nombre;
+        $cliente['cedula'] = $ct_clientes->identificacion;
+        $cliente['tipo'] = $getType;
+        $cliente['nombre'] = $ct_clientes->nombre;
         $cliente['apellido'] = '';
-        $explode             = explode(" ", $ct_clientes->nombre);
+        $explode = explode(' ', $ct_clientes->nombre);
         if (count($explode) >= 4) {
-            $cliente['nombre'] = $explode[0] . ' ' . $explode[1];
+            $cliente['nombre'] = $explode[0].' '.$explode[1];
             for ($i = 2; $i < count($explode); $i++) {
-                $cliente['apellido'] = trim($cliente['apellido'] . ' ' . $explode[$i]);
+                $cliente['apellido'] = trim($cliente['apellido'].' '.$explode[$i]);
             }
         }
         if (count($explode) == 3) {
-            $cliente['nombre']   = $explode[0];
-            $cliente['apellido'] = $explode[1] . ' ' . $explode[2];
+            $cliente['nombre'] = $explode[0];
+            $cliente['apellido'] = $explode[1].' '.$explode[2];
         }
         if (count($explode) == 2) {
-            $cliente['nombre']   = $explode[0];
+            $cliente['nombre'] = $explode[0];
             $cliente['apellido'] = $explode[1];
         }
-        $cliente['email']     = $factura_venta["email_cliente"];
-        $cliente['telefono']  = $factura_venta["telefono_cliente"];
-        $direccion['calle']   = $factura_venta["direccion_cliente"];
-        $direccion['ciudad']  = $ct_clientes->ciudad_representante;
+        $cliente['email'] = $factura_venta['email_cliente'];
+        $cliente['telefono'] = $factura_venta['telefono_cliente'];
+        $direccion['calle'] = $factura_venta['direccion_cliente'];
+        $direccion['ciudad'] = $ct_clientes->ciudad_representante;
         $cliente['direccion'] = $direccion;
-        $data['cliente']      = $cliente;
+        $data['cliente'] = $cliente;
         $otros = [];
         if ($request->codigo_publico != '' || $request->descripcion_publico != '') {
             $otros = [
                 'codigo_publico' => $request->codigo_publico[$cont],
-                'descripcion_publico' => $request->descripcion_publico[$cont]
+                'descripcion_publico' => $request->descripcion_publico[$cont],
             ];
         }
         $agenda = null;
         $orden = Ct_Orden_Venta::find($request['orden_venta']);
-        if (!is_null($orden)) {
+        if (! is_null($orden)) {
             $agenda = Agenda::find($orden->id_agenda);
         }
         for ($i = 0; $i < count($request->nombre); $i++) {
@@ -3720,51 +3788,51 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
-                //'id_inv_serie'         => $valor["id_inv_serie"],
-                'otros' => json_encode($otros)
+                // 'id_inv_serie'         => $valor["id_inv_serie"],
+                'otros' => json_encode($otros),
             ];
-            $detalle = trim(preg_replace("/\s+/", " ", $detalle['detalle']));
-            $producto['sku'] = $request['codigo'][$i]; //ID EXAMEN
-            $producto['nombre'] = $request['nombre'][$i] . ' ' . $request['descrip_prod'][$i]; // NOMBRE DEL EXAMEN
+            $detalle = trim(preg_replace("/\s+/", ' ', $detalle['detalle']));
+            $producto['sku'] = $request['codigo'][$i]; // ID EXAMEN
+            $producto['nombre'] = $request['nombre'][$i].' '.$request['descrip_prod'][$i]; // NOMBRE DEL EXAMEN
             $producto['cantidad'] = $request['cantidad'][$i];
-            $producto['precio'] = $request['precio'][$i]; //DETALLE
+            $producto['precio'] = $request['precio'][$i]; // DETALLE
             if ($request['copago'][$i] > 0) {
                 $producto['precio'] = $request['precioneto'][$i] / $request['cantidad'][$i];
             }
             $pricetot = ($request['cantidad'][$i] * $request['precio'][$i]) - $request['copago'][$i];
             $producto['descuento'] = $request['desc'][$i];
-            $producto['subtotal']  = $pricetot - $request['desc'][$i]; //precio-descuento
-            $tax = "0";
+            $producto['subtotal'] = $pricetot - $request['desc'][$i]; // precio-descuento
+            $tax = '0';
             if ($request['iva'][$i] == 1) {
                 $tax = ($pricetot - $request['desc'][$i]) * $request['ivareal'];
             }
-            $producto['tax']    = $tax;
-            $producto['total']  = $pricetot - $request['desc'][$i]; //SUBTOTAL
+            $producto['tax'] = $tax;
+            $producto['total'] = $pricetot - $request['desc'][$i]; // SUBTOTAL
             $producto['copago'] = $request['totalc'];
-            $productos[$i]   = $producto;
+            $productos[$i] = $producto;
         }
         $data['productos'] = $productos;
         if ($request['identificacion_paciente'] != null) {
-            $info_adicional['nombre'] = "PACIENTE";
-            $info_adicional['valor']  = $request['identificacion_paciente'] . ' ' . $request['nombre_paciente'];
+            $info_adicional['nombre'] = 'PACIENTE';
+            $info_adicional['valor'] = $request['identificacion_paciente'].' '.$request['nombre_paciente'];
             $info[0] = $info_adicional;
         }
 
-        $info_adicional['nombre'] = "MAIL";
-        $info_adicional['valor']  = $request['mail_cliente']; //EMAIL
+        $info_adicional['nombre'] = 'MAIL';
+        $info_adicional['valor'] = $request['mail_cliente']; // EMAIL
         $info[2] = $info_adicional;
 
-        $info_adicional['nombre'] = "CIUDAD";
-        $info_adicional['valor']  = $request->ciudad_cliente; //EMAIL
+        $info_adicional['nombre'] = 'CIUDAD';
+        $info_adicional['valor'] = $request->ciudad_cliente; // EMAIL
         $info[3] = $info_adicional;
 
-        $info_adicional['nombre'] = "DIRECCION";
-        $info_adicional['valor']  = $request->direccion_cliente; //EMAIL
+        $info_adicional['nombre'] = 'DIRECCION';
+        $info_adicional['valor'] = $request->direccion_cliente; // EMAIL
         $info[4] = $info_adicional;
-        if (!is_null($orden)) {
+        if (! is_null($orden)) {
             if ($orden->seguro != null) {
-                $info_adicional['nombre'] = "SEGURO";
-                $info_adicional['valor'] = $orden->seguro->nombre; //SEGURO
+                $info_adicional['nombre'] = 'SEGURO';
+                $info_adicional['valor'] = $orden->seguro->nombre; // SEGURO
                 $info[5] = $info_adicional;
             }
         }
@@ -3785,26 +3853,26 @@ class VentasController extends Controller
         $pago['informacion_adicional'] = $info;
         $pago['dias_plazo'] = "{$request['diasPlazo']}";
         $data['pago'] = $pago;
-        $data['contable'] = 0; //si se marca 1 crea factura, 0 no crea factura
+        $data['contable'] = 0; // si se marca 1 crea factura, 0 no crea factura
         $data['laboratorio'] = 0;
         if ($request['identificacion_paciente'] != null) {
             $data['paciente'] = $request['identificacion_paciente'];
         }
         $arr_p = [];
         for ($i = 0; $i < $request['contador_pago']; $i++) {
-            $visibilidad_pa = $request['visibilidad_pago' . $i];
+            $visibilidad_pa = $request['visibilidad_pago'.$i];
             if ($visibilidad_pa == 1) {
                 $arr_pagos = [
-                    'id_tipo' => $request['id_tip_pago' . $i],
-                    'fecha' => $request['fecha_pago' . $i],
-                    'tipo_tarjeta' => $request['tipo_tarjeta' . $i],
-                    'numero_transaccion' => $request['numero_pago' . $i],
-                    'id_banco' => $request['id_banco_pago' . $i],
-                    'cuenta' => $request['id_cuenta_pago' . $i],
-                    'giradoa' => $request['giradoa' . $i],
-                    'valor' => $request['valor' . $i],
-                    'valor_base' => $request['valor_base' . $i],
-                    'info_banco' => Ct_Bancos::find($request['id_banco_pago' . $i])
+                    'id_tipo' => $request['id_tip_pago'.$i],
+                    'fecha' => $request['fecha_pago'.$i],
+                    'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                    'numero_transaccion' => $request['numero_pago'.$i],
+                    'id_banco' => $request['id_banco_pago'.$i],
+                    'cuenta' => $request['id_cuenta_pago'.$i],
+                    'giradoa' => $request['giradoa'.$i],
+                    'valor' => $request['valor'.$i],
+                    'valor_base' => $request['valor_base'.$i],
+                    'info_banco' => Ct_Bancos::find($request['id_banco_pago'.$i]),
                 ];
                 array_push($arr_p, $arr_pagos);
             }
@@ -3812,15 +3880,15 @@ class VentasController extends Controller
         $data['formas_pago'] = $arr_p;
         $data['procedimiento'] = $request['procedimiento'];
         $data['fecha_procedimiento'] = $request['fecha_proced'];
-        $data['concepto'] = 'Factura Electronica -' . $request['procedimiento'];
+        $data['concepto'] = 'Factura Electronica -'.$request['procedimiento'];
         $data['copago_'] = $request['totalc'];
-        $data['id_seguro'] = $request['id_seguro']; //si se marca 1 se crea un solo producto por id de laboratorioo, 0 graba detalle de datos
+        $data['id_seguro'] = $request['id_seguro']; // si se marca 1 se crea un solo producto por id de laboratorioo, 0 graba detalle de datos
         $data['total_factura'] = $request['valor_totalPagos'];
         $data['sucursal'] = $c_sucursal;
         $data['punto_emision'] = $c_caja;
         $data['emisor'] = $factura_venta['emisor'];
         $data['orden'] = $orden;
-        if (!is_null($agenda)) {
+        if (! is_null($agenda)) {
             $data['agenda'] = $agenda;
         }
         $data['idUsuario'] = $idusuario;
@@ -3829,7 +3897,7 @@ class VentasController extends Controller
         $data['dataCompleta'] = $request->input();
         $data['llevaOrden'] = 'no';
         $envio = ApiFacturacionController::envio_factura($data);
-        if (Auth::user()->id == "0952510444") {
+        if (Auth::user()->id == '0952510444') {
             dd($envio);
         }
         /*if (Auth::user()->id == '0921605895') {
@@ -3837,31 +3905,33 @@ class VentasController extends Controller
             print_r($envio);
             exit;
         }*/
-        if (!is_null($orden)) {
+        if (! is_null($orden)) {
             $orden->update([
                 'nro_comprobante' => $envio->comprobante,
-                'fecha_envio'     => date('Y-m-d H:i:s'),
+                'fecha_envio' => date('Y-m-d H:i:s'),
             ]);
         }
-        //$manage = $envio->status->status . '-' . $envio->status->message . '-' . $envio->status->reason;
+        // $manage = $envio->status->status . '-' . $envio->status->message . '-' . $envio->status->reason;
         Log_usuario::create([
-            'id_usuario'  => $idusuario,
-            'ip_usuario'  => $ip_cliente,
+            'id_usuario' => $idusuario,
+            'ip_usuario' => $ip_cliente,
             'descripcion' => $empresa->razonsocial,
-            //'dato_ant1'   => $orden->id,
-            'dato1'       => 'envio',
-            'dato_ant2'   => "ENVIAR AL SRI",
-            //'dato_ant4'   => $manage,
+            // 'dato_ant1'   => $orden->id,
+            'dato1' => 'envio',
+            'dato_ant2' => 'ENVIAR AL SRI',
+            // 'dato_ant4'   => $manage,
         ]);
+
         // return "ok";
-        return ["status" => "success", "comprobante" => $envio->comprobante];
+        return ['status' => 'success', 'comprobante' => $envio->comprobante];
     }
+
     public function store(Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $idusuario = Auth::user()->id;
         $fecha_as = $request['fecha_asiento'];
         $id_empresa = $request->id_empresa !== null ? $request->id_empresa : $request->session()->get('id_empresa');
@@ -3871,17 +3941,17 @@ class VentasController extends Controller
         $nfactura = 0;
         $num_comprobante = 0;
         $empresa = Empresa::find($id_empresa);
-        //if ($id_empresa !== '0992704152001') {
-        //return self::ventasStore($request);
-        //}
-        $msjk = ", Store: no tiene inventario";
+        // if ($id_empresa !== '0992704152001') {
+        // return self::ventasStore($request);
+        // }
+        $msjk = ', Store: no tiene inventario';
         if ($empresa->inventario == 1) {
-            $msjk = ", Store: tiene inventario";
+            $msjk = ', Store: tiene inventario';
         }
         $cliente = Ct_Clientes::where('identificacion', $request['identificacion_cliente'])->count();
         $id_proforma = $request->proforma;
         DB::beginTransaction();
-        $msj = "no";
+        $msj = 'no';
         try {
             $entregaMercaderia = $this->validarEntregaMercaderia($request, $id_empresa);
             if ($cliente == 0) {
@@ -3910,24 +3980,24 @@ class VentasController extends Controller
                 $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
                 $c_caja = $cod_caj->codigo_caja;
                 $proced = $request['procedimiento'];
-                //Aqui verificar si es electronica
+                // Aqui verificar si es electronica
                 if ($request['electronica'] == 1) {
-                    $nfactura = "";
-                    $num_comprobante = "";
-                } else if (!is_null($numero)) {
-                    $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+                    $nfactura = '';
+                    $num_comprobante = '';
+                } elseif (! is_null($numero)) {
+                    $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                     $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                         ->where('nro_comprobante', $num_comprobante)
                         ->where('tipo', '<>', 'VEN-FACT')
                         ->where('estado', '!=', '0')->first();
-                    if (!is_null($verifica_num_factura)) {
-                        return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                    if (! is_null($verifica_num_factura)) {
+                        return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                     } else {
                         $nfactura = $numero;
                     }
                 } else {
                     $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                    $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                    $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
                 }
             } else {
                 $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('codigo_sucursal', $empresa->establecimiento)->first();
@@ -3935,48 +4005,48 @@ class VentasController extends Controller
                 $cod_caj = Ct_Caja::where('estado', '1')->where('codigo_caja', $empresa->punto_emision)->first();
                 $c_caja = $cod_caj->codigo_caja;
                 $proced = $request['procedimiento'];
-                //Aqui verificar si es electronica
+                // Aqui verificar si es electronica
                 if ($request['electronica'] == 1) {
-                    $nfactura = "";
-                    $num_comprobante = "";
-                } else if (!is_null($numero)) {
-                    $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+                    $nfactura = '';
+                    $num_comprobante = '';
+                } elseif (! is_null($numero)) {
+                    $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                     $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                         ->where('nro_comprobante', $num_comprobante)
                         ->where('tipo', '<>', 'VEN-FACT')
                         ->where('estado', '!=', '0')->first();
-                    if (!is_null($verifica_num_factura)) {
-                        return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                    if (! is_null($verifica_num_factura)) {
+                        return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                     } else {
                         $nfactura = $numero;
                     }
                 } else {
                     $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                    $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                    $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
                 }
             }
-            $pac = "";
-            if ($request['nombre_paciente'] != "") {
-                $pac = " | " . $request['nombre_paciente'];
+            $pac = '';
+            if ($request['nombre_paciente'] != '') {
+                $pac = ' | '.$request['nombre_paciente'];
             }
-            $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+            $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
             $id_paciente = $request['identificacion_paciente'];
             $patient = Paciente::find($id_paciente);
-            $pc = "9999999999";
+            $pc = '9999999999';
             if (is_null($patient)) {
-                $pc = "9999999999";
+                $pc = '9999999999';
             } else {
                 $pc = $patient->id;
             }
-            //***GUARDADO EN LA TABLA LOG FACTURAS VENTA***
-            //7******GUARDAdo TABLA ASIENTO CABECERA********
+            // ***GUARDADO EN LA TABLA LOG FACTURAS VENTA***
+            // 7******GUARDAdo TABLA ASIENTO CABECERA********
             $input_cabecera = [
                 'sucursal' => $c_sucursal,
                 'punto_emision' => $c_caja,
                 'fecha_asiento' => $fecha_as,
                 'fact_numero' => $nfactura,
                 'id_empresa' => $id_empresa,
-                'observacion' => $text . " " . $request['concepto'],
+                'observacion' => $text.' '.$request['concepto'],
                 'valor' => $request['total1'],
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
@@ -3984,10 +4054,10 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
             ];
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
-            //$id_asiento_cabecera = 0;
-            //GUARDAdo TABLA CT_VENTA.
-            $diasPlazo = "0";
-            $nota_electronica = "";
+            // $id_asiento_cabecera = 0;
+            // GUARDAdo TABLA CT_VENTA.
+            $diasPlazo = '0';
+            $nota_electronica = '';
             if ($request->electronica == 1) {
                 $diasPlazo = $request->diasPlazo;
                 $nota_electronica = isset($request['nota_electronica'][0]) ? $request['nota_electronica'][0] : '';
@@ -3995,16 +4065,16 @@ class VentasController extends Controller
             if ($num_comprobante == '') {
                 $datos = [
                     'sucursal' => $c_sucursal,
-                    'punto_emision' => $c_caja
+                    'punto_emision' => $c_caja,
                 ];
-                $num_comprobante = VentasController::generarNumeroFactura($datos);
+                $num_comprobante = ContableVentasController::generarNumeroFactura($datos);
             }
             $cliente = Ct_Clientes::where('identificacion', '=', $request['identificacion_cliente'])->first();
             $secuencialserie = explode('-', $num_comprobante);
             $factura_venta = [
                 'sucursal' => $c_sucursal,
                 'punto_emision' => $c_caja,
-                //'numero' => isset($secuencialserie[2]) ? $secuencialserie[2] : '',
+                // 'numero' => isset($secuencialserie[2]) ? $secuencialserie[2] : '',
                 'nro_comprobante' => $num_comprobante,
                 'id_asiento' => $id_asiento_cabecera,
                 'id_empresa' => $id_empresa,
@@ -4013,7 +4083,7 @@ class VentasController extends Controller
                 'divisas' => $request['divisas'],
                 'nombre_cliente' => $cliente->nombre,
                 'tipo_consulta' => $request['tipo_consulta'],
-                'id_cliente' => $request['identificacion_cliente'], //nombre_cliente
+                'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
                 'direccion_cliente' => $request['direccion_cliente'],
                 'ruc_id_cliente' => $request['identificacion_cliente'],
                 'telefono_cliente' => $request['telefono_cliente'],
@@ -4024,7 +4094,7 @@ class VentasController extends Controller
                 'nombres_paciente' => $request['nombre_paciente'],
                 'id_hc_procedimiento' => $request['mov_paciente'],
                 'seguro_paciente' => $request['id_seguro'],
-                //'id_nivel' => $request['id_nivel'],
+                // 'id_nivel' => $request['id_nivel'],
                 'procedimientos' => $request['procedimiento'],
                 'fecha_procedimiento' => $request['fecha_proced'],
                 'concepto' => $request['concepto'],
@@ -4033,10 +4103,10 @@ class VentasController extends Controller
                 'ci_vendedor' => $request['cedula_vendedor'],
                 'vendedor' => $request['vendedor'],
                 'electronica' => $request['electronica'],
-                //'nota' => $request['nota'],
+                // 'nota' => $request['nota'],
                 'subtotal_0' => $request['subtotal_01'],
                 'subtotal_12' => $request['subtotal_121'],
-                //'subtotal' => $request['subtotal1'],
+                // 'subtotal' => $request['subtotal1'],
                 'descuento' => $request['descuento1'],
                 'base_imponible' => $request['subtotal_121'],
                 'impuesto' => $request['tarifa_iva1'],
@@ -4049,9 +4119,9 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
-                'nota_array' => $request['nota_electronica'] != "" ?  json_encode($request['nota_electronica']) : json_encode([]),
-                'doc_electronico' => $request['electronica'] == 1  ? 0 : null,
-                //'doc_electronico' => $c_caja == 100 ? 0 : null,
+                'nota_array' => $request['nota_electronica'] != '' ? json_encode($request['nota_electronica']) : json_encode([]),
+                'doc_electronico' => $request['electronica'] == 1 ? 0 : null,
+                // 'doc_electronico' => $c_caja == 100 ? 0 : null,
                 'emisor' => 'MD',
                 'contraentrega' => $request['contraentrega'] != '' ? $request['contraentrega'] : 0,
             ];
@@ -4059,7 +4129,7 @@ class VentasController extends Controller
                 $factura_venta = [
                     'sucursal' => $c_sucursal,
                     'punto_emision' => $c_caja,
-                    //'numero' => $nfactura,
+                    // 'numero' => $nfactura,
                     'nro_comprobante' => $num_comprobante,
                     'id_asiento' => $id_asiento_cabecera,
                     'id_empresa' => $id_empresa,
@@ -4068,7 +4138,7 @@ class VentasController extends Controller
                     'divisas' => $request['divisas'],
                     'nombre_cliente' => $cliente->nombre,
                     'tipo_consulta' => $request['tipo_consulta'],
-                    'id_cliente' => $request['identificacion_cliente'], //nombre_cliente
+                    'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
                     'direccion_cliente' => $request['direccion_cliente'],
                     'ruc_id_cliente' => $request['identificacion_cliente'],
                     'telefono_cliente' => $request['telefono_cliente'],
@@ -4099,38 +4169,38 @@ class VentasController extends Controller
                     'ip_modificacion' => $ip_cliente,
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
-                    'nota_array' => $request['nota_electronica'] != "" ?  json_encode($request['nota_electronica']) : json_encode([]),
-                    'doc_electronico' => $request['electronica'] == 1  ? 0 : null,
-                    //'doc_electronico' => $c_caja == 100 ? 0 : null,
+                    'nota_array' => $request['nota_electronica'] != '' ? json_encode($request['nota_electronica']) : json_encode([]),
+                    'doc_electronico' => $request['electronica'] == 1 ? 0 : null,
+                    // 'doc_electronico' => $c_caja == 100 ? 0 : null,
                     'emisor' => 'MD',
                     'contraentrega' => $request['contraentrega'] != '' ? $request['contraentrega'] : 0,
                 ];
             }
             $id_venta = Ct_ventas::insertGetId($factura_venta);
-            //$id_venta = 0;
+            // $id_venta = 0;
             $arr_total = [];
             $total_iva = 0;
             $total_impuesto = 0;
             $total_0 = 0;
-            for ($i = 0; $i < count($request->input("nombre")); $i++) {
-                if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
+            for ($i = 0; $i < count($request->input('nombre')); $i++) {
+                if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
                     // if(Auth::user()->id =="0955728803"){
                     //         dd($request->input("nombre"),$request->input("cantidad"),$request->input("bodega"),$request->input("codigo"),$request->input("precio"),$request->input("descpor"),$request->input("copago"),$request->input("desc"),
                     //         $request->input("precioneto"),$request->input("descrip_prod"),$request->input("iva"),$request->input("bodega"));
                     // }
                     $arr = [
-                        'nombre'        => $request->input("nombre")[$i],
-                        'cantidad'      => $request->input("cantidad")[$i],
-                        'bodega'        => isset($request["bodega"][$i]) ? $request->input("bodega")[$i] : null,
-                        'codigo'        => $request->input("codigo")[$i],
-                        'precio'        => $request->input("precio")[$i],
-                        'descpor'       => $request->input("descpor")[$i],
-                        'copago'        => $request->input("copago")[$i],
-                        'descuento'     => $request->input("desc")[$i],
-                        'precioneto'    => $request->input("precioneto")[$i],
-                        'detalle'       => $request->input("descrip_prod")[$i],
-                        'iva'           => $request->input("iva")[$i],
-                        'id_inv_serie'  => isset($request["id_inv_serie"][$i]) ? $request->input("id_inv_serie")[$i] : null,
+                        'nombre' => $request->input('nombre')[$i],
+                        'cantidad' => $request->input('cantidad')[$i],
+                        'bodega' => isset($request['bodega'][$i]) ? $request->input('bodega')[$i] : null,
+                        'codigo' => $request->input('codigo')[$i],
+                        'precio' => $request->input('precio')[$i],
+                        'descpor' => $request->input('descpor')[$i],
+                        'copago' => $request->input('copago')[$i],
+                        'descuento' => $request->input('desc')[$i],
+                        'precioneto' => $request->input('precioneto')[$i],
+                        'detalle' => $request->input('descrip_prod')[$i],
+                        'iva' => $request->input('iva')[$i],
+                        'id_inv_serie' => isset($request['id_inv_serie'][$i]) ? $request->input('id_inv_serie')[$i] : null,
                     ];
                     array_push($arr_total, $arr);
                 }
@@ -4138,7 +4208,7 @@ class VentasController extends Controller
             $cont = 0;
             foreach ($arr_total as $valor) {
                 if ($valor['copago'] > 0) {
-                    //registra orden de venta
+                    // registra orden de venta
                     $llevaOrden = true;
                 }
                 $otros = [];
@@ -4154,7 +4224,7 @@ class VentasController extends Controller
                 if (isset($request->codigo_publico[$cont]) && isset($request->descripcion_publico[$cont])) {
                     $otros = [
                         'codigo_publico' => $request->codigo_publico[$cont],
-                        'descripcion_publico' => $request->descripcion_publico[$cont]
+                        'descripcion_publico' => $request->descripcion_publico[$cont],
                     ];
                 }
                 /*if (Auth::user()->id == "0921605895") {
@@ -4164,48 +4234,48 @@ class VentasController extends Controller
                     exit;
                 }*/
                 $detalle = [
-                    'id_ct_ventas'         => $id_venta,
-                    'id_ct_productos'      => $valor['codigo'],
-                    'nombre'               => $valor['nombre'],
+                    'id_ct_ventas' => $id_venta,
+                    'id_ct_productos' => $valor['codigo'],
+                    'nombre' => $valor['nombre'],
                     'descripcion_producto' => $valor['nombre'],
-                    'bodega'               => $valor['bodega'],
-                    'cantidad'             => $valor['cantidad'],
-                    'precio'               => $valor['precio'],
+                    'bodega' => $valor['bodega'],
+                    'cantidad' => $valor['cantidad'],
+                    'precio' => $valor['precio'],
                     'descuento_porcentaje' => $valor['descpor'],
-                    'descuento'            => $valor['descuento'],
-                    'extendido'            => $valor['precioneto'],
-                    'detalle'              => $valor['detalle'],
-                    'copago'               => $valor['copago'],
-                    'check_iva'            => $valor['iva'],
-                    'porcentaje'           => $request['ivareal'],
-                    'ip_creacion'          => $ip_cliente,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariocrea'       => $idusuario,
-                    'id_usuariomod'        => $idusuario,
-                    'id_inv_serie'         => $valor["id_inv_serie"],
-                    'otros' => json_encode($otros)
+                    'descuento' => $valor['descuento'],
+                    'extendido' => $valor['precioneto'],
+                    'detalle' => $valor['detalle'],
+                    'copago' => $valor['copago'],
+                    'check_iva' => $valor['iva'],
+                    'porcentaje' => $request['ivareal'],
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'id_inv_serie' => $valor['id_inv_serie'],
+                    'otros' => json_encode($otros),
                 ];
                 Ct_detalle_venta::create($detalle);
                 $cont++;
             }
-            //***MODULO CUENTA POR COBRAR***
-            //cUENTAS X COBRAR CLIENTES
+            // ***MODULO CUENTA POR COBRAR***
+            // cUENTAS X COBRAR CLIENTES
             $val_tol = $request['total1'];
             if ($val_tol > 0) {
                 $id_plan = LogConfig::busqueda('1.01.02.05.01');
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    //'id_plan_cuenta'      => '1.01.02.05.01',
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => $request['total1'],
-                    'haber'               => '0',
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    // 'id_plan_cuenta'      => '1.01.02.05.01',
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => $request['total1'],
+                    'haber' => '0',
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
             //    2.01.07.01.01 iva sobre ventas
@@ -4214,15 +4284,15 @@ class VentasController extends Controller
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['tarifa_iva1'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['tarifa_iva1'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
             // 4.1.01.02    Ventas Mercaderia Tarifa 12%
@@ -4232,72 +4302,72 @@ class VentasController extends Controller
                 // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_121'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_121'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
             // 4.1.01.01    Ventas Mercaderia Tarifa 0%
             if ($request['subtotal_01'] > 0) {
                 $id_plan = LogConfig::busqueda('4.1.01.01');
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_01'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_01'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
             $valor_descuento = $request['descuento1'];
             if ($valor_descuento > 0) {
                 $id_plan = LogConfig::busqueda('4.1.06.01');
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan)->first();
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.06.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.06.01')->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'haber'               => '0',
-                    'debe'                => $request['descuento1'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'haber' => '0',
+                    'debe' => $request['descuento1'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
             $variable = $request['contador_pago'];
-            //dd($variable);
+            // dd($variable);
             for ($i = 0; $i < $variable; $i++) {
-                $visibilidad_p = $request['visibilidad_pago' . $i];
+                $visibilidad_p = $request['visibilidad_pago'.$i];
                 if ($visibilidad_p == 1) {
                     Ct_Forma_Pago::create([
-                        'id_ct_ventas'    => $id_venta,
-                        'tipo'            => $request['id_tip_pago' . $i],
-                        'fecha'           => $request['fecha_pago' . $i],
-                        'tipo_tarjeta'    => $request['tipo_tarjeta' . $i],
-                        'numero'          => $request['numero_pago' . $i],
-                        'banco'           => $request['id_banco_pago' . $i],
-                        'cuenta'          => $request['id_cuenta_pago' . $i],
-                        'giradoa'         => $request['giradoa' . $i],
-                        'valor'           => $request['valor' . $i],
-                        'valor_base'      => $request['valor_base' . $i],
-                        'id_usuariocrea'  => $idusuario,
-                        'id_usuariomod'   => $idusuario,
-                        'ip_creacion'     => $ip_cliente,
+                        'id_ct_ventas' => $id_venta,
+                        'tipo' => $request['id_tip_pago'.$i],
+                        'fecha' => $request['fecha_pago'.$i],
+                        'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                        'numero' => $request['numero_pago'.$i],
+                        'banco' => $request['id_banco_pago'.$i],
+                        'cuenta' => $request['id_cuenta_pago'.$i],
+                        'giradoa' => $request['giradoa'.$i],
+                        'valor' => $request['valor'.$i],
+                        'valor_base' => $request['valor_base'.$i],
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
                         'ip_modificacion' => $ip_cliente,
                     ]);
                 }
@@ -4306,90 +4376,92 @@ class VentasController extends Controller
                 //     echo "<pre>";
                 //     print_r ($prueba_fp);
                 //     DB::rollBack();
-                //     exit;                   
+                //     exit;
                 // }
             }
-            $arr_p     = [];
+            $arr_p = [];
             $validates = false;
-            //dd($variable);
+            // dd($variable);
             for ($i = 0; $i < $variable; $i++) {
-                $visibilidad_pa = $request['visibilidad_pago' . $i];
+                $visibilidad_pa = $request['visibilidad_pago'.$i];
                 if ($visibilidad_pa == 1) {
-                    if ($request['id_tip_pago' . $i] == '7') {
+                    if ($request['id_tip_pago'.$i] == '7') {
                         $validates = true;
                     }
                     $arr_pagos = [
-                        'id_tip_pago'    => $request['id_tip_pago' . $i],
-                        'fecha_pago'     => $request['fecha_pago' . $i],
-                        'tipo_tarjeta'   => $request['tipo_tarjeta' . $i],
-                        'numero_pago'    => $request['numero_pago' . $i],
-                        'id_banco_pago'  => $request['id_banco_pago' . $i],
-                        'id_cuenta_pago' => $request['id_cuenta_pago' . $i],
-                        'giradoa'        => $request['giradoa' . $i],
-                        'valor'          => $request['valor' . $i],
-                        'valor_base'     => $request['valor_base' . $i],
+                        'id_tip_pago' => $request['id_tip_pago'.$i],
+                        'fecha_pago' => $request['fecha_pago'.$i],
+                        'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                        'numero_pago' => $request['numero_pago'.$i],
+                        'id_banco_pago' => $request['id_banco_pago'.$i],
+                        'id_cuenta_pago' => $request['id_cuenta_pago'.$i],
+                        'giradoa' => $request['giradoa'.$i],
+                        'valor' => $request['valor'.$i],
+                        'valor_base' => $request['valor_base'.$i],
                     ];
                     array_push($arr_p, $arr_pagos);
                 }
             }
-            //agregar comprobantes de ingreso
-            $erf = "";
+            // agregar comprobantes de ingreso
+            $erf = '';
             // if ($validates == true) {
             // } else {
             //     //$erf = $this->crearComprobante($nfactura, $request, $arr_p, $id_venta);
             // }
-            if ($request['id_venta'] != "") {
+            if ($request['id_venta'] != '') {
                 $nuevo_copago = [
                     'copago' => '0',
                 ];
-                //Ct_ventas::where('id', $request['id_venta'])->update($nuevo_copago);
+                // Ct_ventas::where('id', $request['id_venta'])->update($nuevo_copago);
             }
             if ($llevaOrden) {
-                $orden_id     = $this->ordenVenta($request['id_venta'], $request);
+                $orden_id = $this->ordenVenta($request['id_venta'], $request);
                 $id_ct_ventas = [
                     'id_ct_venta' => $id_venta,
                 ];
-                Ct_ven_orden::where('id', $orden_id)->update($id_ct_ventas);
+                Ct_Ven_Orden::where('id', $orden_id)->update($id_ct_ventas);
             } else {
                 $orden_id = 0;
             }
-            $data['id']     = $id_venta;
-            $data['tipo']   = 'VEN-FA';
-            //2022-09-08
-            $msj = $entregaMercaderia ? 'Inventario descargado en la entrega ' . $entregaMercaderia->numero : Ct_Kardex::generar_kardex($data);
-            $num_sec_vent   = Ct_ventas::find($id_venta);
-            $num_vent       = $num_sec_vent->numero;
-            $nfactura       = $num_sec_vent->nro_comprobante;
+            $data['id'] = $id_venta;
+            $data['tipo'] = 'VEN-FA';
+            // 2022-09-08
+            $msj = $entregaMercaderia ? 'Inventario descargado en la entrega '.$entregaMercaderia->numero : Ct_Kardex::generar_kardex($data);
+            $num_sec_vent = Ct_ventas::find($id_venta);
+            $num_vent = $num_sec_vent->numero;
+            $nfactura = $num_sec_vent->nro_comprobante;
             $asiento_kardex = $entregaMercaderia
                 ? $entregaMercaderia->id_asiento_costo
                 : Contable::kardex_asiento($id_venta);
-            $kardex["asiento_costo"] = "";
-            if (!$entregaMercaderia && ($empresa->egreso_kardex == 1 and $empresa->inventario == 1 or !is_null($id_proforma))) {
+            $kardex['asiento_costo'] = '';
+            if (! $entregaMercaderia && ($empresa->egreso_kardex == 1 and $empresa->inventario == 1 or ! is_null($id_proforma))) {
                 $kardex = NuevoKardexContableController::newgenerarKardex($id_venta);
-                if ($kardex["status"] ==  "error" or !$kardex["status"]) {
+                if ($kardex['status'] == 'error' or ! $kardex['status']) {
                     DB::rollBack();
+
                     return $kardex;
                 }
 
-                if (isset($kardex["generate"]) and $kardex["generate"]) {
-                    $kardex["asiento_costo"] = $kardex["asiento_costo"];
-                    $logCosto = LogAsiento::guardarAsientoCostoVenta($id_venta, $kardex["asiento_costo"]);
-                    if ($logCosto["status"] == "error") {
+                if (isset($kardex['generate']) and $kardex['generate']) {
+                    $kardex['asiento_costo'] = $kardex['asiento_costo'];
+                    $logCosto = LogAsiento::guardarAsientoCostoVenta($id_venta, $kardex['asiento_costo']);
+                    if ($logCosto['status'] == 'error') {
                         DB::rollBack();
+
                         return $logCosto;
                     }
                 }
             }
-            $getSri         = "No";
-            $id_comprobante_ingreso = "";
+            $getSri = 'No';
+            $id_comprobante_ingreso = '';
             if ($c_caja != 100) {
                 if ($request['electronica'] == '1') {
                     if ($empresa->electronica == 1) {
                         $getSri = $this->getSRI($id_venta);
 
-                        if (isset($getSri["comprobante"])) {
-                            $nfactura = $getSri["comprobante"];
-                            $getSri = $getSri["status"];
+                        if (isset($getSri['comprobante'])) {
+                            $nfactura = $getSri['comprobante'];
+                            $getSri = $getSri['status'];
                         } else {
                             $getSri = $getSri;
                         }
@@ -4400,14 +4472,15 @@ class VentasController extends Controller
                 $num_vent = $num_sec_vent->numero;
                 $nfactura = $num_sec_vent->nro_comprobante;
             }
-            //dd($nfactura);
-            if (!$validates) {
-                $erf = VentasController::newCrearComprobante($nfactura, $request, $arr_p, $id_venta);
-                if ($erf["status"] != "success") {
+            // dd($nfactura);
+            if (! $validates) {
+                $erf = ContableVentasController::newCrearComprobante($nfactura, $request, $arr_p, $id_venta);
+                if ($erf['status'] != 'success') {
                     DB::rollBack();
+
                     return $erf;
                 }
-                $id_comprobante_ingreso = $erf["id_ingreso"];
+                $id_comprobante_ingreso = $erf['id_ingreso'];
             }
             $inventario = null;
             // if (Auth::user()->id == "0957258056") {
@@ -4431,19 +4504,20 @@ class VentasController extends Controller
                 ]);
             }
             DB::commit();
-            if (!is_null($id_proforma) and trim($id_proforma) != "") {
+            if (! is_null($id_proforma) and trim($id_proforma) != '') {
                 $proforma = Proforma_Venta_Cab::find($id_proforma);
-                $proforma->id_venta         = $id_venta;
-                $proforma->id_usuariomod    = $idusuario;
-                $proforma->ip_modificacion  = $ip_cliente;
+                $proforma->id_venta = $id_venta;
+                $proforma->id_usuariomod = $idusuario;
+                $proforma->ip_modificacion = $ip_cliente;
                 $proforma->save();
             }
             // $arrayProforma = [
             //     'id_venta' => $id_venta
             // ];
-            $inventario = $entregaMercaderia ? 'Inventario descargado previamente en ' . $entregaMercaderia->numero : Inventario::build_process('V', $id_venta, $id_empresa);
+            $inventario = $entregaMercaderia ? 'Inventario descargado previamente en '.$entregaMercaderia->numero : Inventario::build_process('V', $id_venta, $id_empresa);
+
             return [
-                'status' => "success",
+                'status' => 'success',
                 'idasiento' => $id_asiento_cabecera,
                 'idventa' => $id_venta,
                 'orden_id' => $orden_id,
@@ -4452,17 +4526,18 @@ class VentasController extends Controller
                 'getSri' => $getSri,
                 'num_vent' => $num_vent,
                 'error' => 'no',
-                "respuesta" => "si",
-                'mensaje' => "exito",
-                'msj' => "Guardado Correctamente",
+                'respuesta' => 'si',
+                'mensaje' => 'exito',
+                'msj' => 'Guardado Correctamente',
                 'inventario' => $inventario,
-                "asiento_costo" => $kardex["asiento_costo"],
-                "id_comprobante_ingreso" => $id_comprobante_ingreso
+                'asiento_costo' => $kardex['asiento_costo'],
+                'id_comprobante_ingreso' => $id_comprobante_ingreso,
             ];
-        } catch (\Exception $e) {
-            //if there is an error/exception in the above code before commit, it'll rollback
+        } catch (Exception $e) {
+            // if there is an error/exception in the above code before commit, it'll rollback
             DB::rollBack();
-            return ['msj' => $e->getMessage(), "status" => "error", 'Linea' => $e->getLine()];
+
+            return ['msj' => $e->getMessage(), 'status' => 'error', 'Linea' => $e->getLine()];
         }
     }
 
@@ -4473,7 +4548,7 @@ class VentasController extends Controller
      */
     private function validarEntregaMercaderia(Request $request, $idEmpresa)
     {
-        if (!$request->has('entrega_mercaderia_id') || trim((string) $request->input('entrega_mercaderia_id')) === '') {
+        if (! $request->has('entrega_mercaderia_id') || trim((string) $request->input('entrega_mercaderia_id')) === '') {
             return null;
         }
 
@@ -4484,10 +4559,10 @@ class VentasController extends Controller
             ->whereNull('id_venta')
             ->lockForUpdate()
             ->find($request->entrega_mercaderia_id);
-        if (!$entrega) {
+        if (! $entrega) {
             throw new Exception('La entrega no está disponible, no pertenece al cliente o ya fue facturada.');
         }
-        if (!$entrega->id_movimiento_inventario || !$entrega->id_asiento_costo || !$entrega->id_guia_remision) {
+        if (! $entrega->id_movimiento_inventario || ! $entrega->id_asiento_costo || ! $entrega->id_guia_remision) {
             throw new Exception('La entrega no tiene completos el egreso, el asiento de costo y la guía.');
         }
 
@@ -4499,7 +4574,7 @@ class VentasController extends Controller
         }
         $recibido = [];
         foreach ((array) $request->input('codigo', []) as $indice => $codigo) {
-            $cantidad = (float) $request->input('cantidad.' . $indice, 0);
+            $cantidad = (float) $request->input('cantidad.'.$indice, 0);
             $recibido[$codigo] = isset($recibido[$codigo]) ? $recibido[$codigo] + $cantidad : $cantidad;
         }
         ksort($esperado);
@@ -4509,22 +4584,23 @@ class VentasController extends Controller
         }
         foreach ($esperado as $codigo => $cantidad) {
             if (abs($cantidad - $recibido[$codigo]) > 0.0001) {
-                throw new Exception('La cantidad facturada de ' . $codigo . ' no coincide con la cantidad entregada.');
+                throw new Exception('La cantidad facturada de '.$codigo.' no coincide con la cantidad entregada.');
             }
         }
+
         return $entrega;
     }
 
     public static function newCrearComprobante($nfactura, Request $request, $array_pagos, $factura_id)
     {
         try {
-            $id_empresa     = $request->session()->get('id_empresa');
-            $ip_cliente     = $_SERVER["REMOTE_ADDR"];
-            $idusuario      = Auth::user()->id;
-            $contador_ctv   = DB::table('ct_comprobante_ingreso')->where('id_empresa', $id_empresa)->get()->count();
-            $numero_factura = "";
+            $id_empresa = $request->session()->get('id_empresa');
+            $ip_cliente = $_SERVER['REMOTE_ADDR'];
+            $idusuario = Auth::user()->id;
+            $contador_ctv = DB::table('ct_comprobante_ingreso')->where('id_empresa', $id_empresa)->get()->count();
+            $numero_factura = '';
 
-            $secuencia_ing = "";
+            $secuencia_ing = '';
             // if (is_null($nfactura)) {
             //     $nfactura = $contador_ctv;
             //     if ($contador_ctv == 0) {
@@ -4546,154 +4622,154 @@ class VentasController extends Controller
             //     dd("Holaa", $nfactura, $numero_factura);
             // }
 
-            $arrFactura = explode("-", $nfactura);
+            $arrFactura = explode('-', $nfactura);
             if ($contador_ctv == 0) {
-                $num            = '1';
-                $numero_factura = str_pad($num, 10, "0", STR_PAD_LEFT);
+                $num = '1';
+                $numero_factura = str_pad($num, 10, '0', STR_PAD_LEFT);
             } else {
                 $max_id = DB::table('ct_comprobante_ingreso')->where('id_empresa', $id_empresa)->latest()->first();
                 $secuencia = intval($max_id->secuencia);
                 if (strlen($secuencia) < 10) {
-                    $nu             = $secuencia + 1;
-                    $numero_factura = str_pad($nu, 10, "0", STR_PAD_LEFT);
+                    $nu = $secuencia + 1;
+                    $numero_factura = str_pad($nu, 10, '0', STR_PAD_LEFT);
                 }
             }
             $secuencia_ing = $numero_factura;
-            if (is_null($nfactura) or trim($nfactura) == "") {
+            if (is_null($nfactura) or trim($nfactura) == '') {
                 $nfactura = $secuencia_ing;
             }
-            $objeto_validar = new Validate_Decimals();
+            $objeto_validar = new Validate_Decimals;
             $id_comprobante = 0;
-            if (sizeOf($array_pagos) == 0) {
-                return ["status" => "error", "msj" => "No se creo el comprobante de ingreso"];
+            if (count($array_pagos) == 0) {
+                return ['status' => 'error', 'msj' => 'No se creo el comprobante de ingreso'];
             }
-            //if (sizeOf($array_pagos) > 0) {
+            // if (sizeOf($array_pagos) > 0) {
             $total_pagos = $request['valor_totalPagos'];
             $input_cabecera = [
-                'observacion'     => 'COMPROBANTE DE INGRESO FACT:' . $nfactura,
-                'fecha_asiento'   => $request['fecha_asiento'],
-                'fact_numero'     => $nfactura,
-                'valor'           => $objeto_validar->set_round($total_pagos),
-                'id_empresa'      => $id_empresa,
-                'estado'          => '1',
-                'ip_creacion'     => $ip_cliente,
+                'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura,
+                'fecha_asiento' => $request['fecha_asiento'],
+                'fact_numero' => $nfactura,
+                'valor' => $objeto_validar->set_round($total_pagos),
+                'id_empresa' => $id_empresa,
+                'estado' => '1',
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
             $confg = LogConfig::busqueda('1.01.02.05.01');
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
             $desc_cuenta = Plan_Cuentas::where('id', $confg)->first();
             if (is_null($desc_cuenta)) {
-                return ["status" => "error", "msj" => "No tiene configurado cuentas para crear el comprobante de ingreso"];
+                return ['status' => 'error', 'msj' => 'No tiene configurado cuentas para crear el comprobante de ingreso'];
             }
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                'id_plan_cuenta'      => $confg,
-                'descripcion'         => $desc_cuenta->nombre,
-                'fecha'               => $request['fecha_asiento'],
-                'haber'               => $objeto_validar->set_round($total_pagos),
-                'debe'                => '0',
-                'estado'              => '1',
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                'id_plan_cuenta' => $confg,
+                'descripcion' => $desc_cuenta->nombre,
+                'fecha' => $request['fecha_asiento'],
+                'haber' => $objeto_validar->set_round($total_pagos),
+                'debe' => '0',
+                'estado' => '1',
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ]);
 
             $input_comprobante = [
-                'observaciones'       => 'COMPROBANTE DE INGRESO FACT: ' . $nfactura,
-                'estado'              => '1',
+                'observaciones' => 'COMPROBANTE DE INGRESO FACT: '.$nfactura,
+                'estado' => '1',
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                'fecha'               => $request['fecha_asiento'],
-                'secuencia'           => $secuencia_ing,
-                'divisas'             => '1',
-                'id_empresa'          => $id_empresa,
-                'total_ingreso'       => $objeto_validar->set_round($total_pagos),
-                'id_cliente'          => $request['identificacion_cliente'],
-                'autollenar'          => "Cancela FV : " . $nfactura,
-                'id_vendedor'         => $request['cedula_vendedor'],
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                'fecha' => $request['fecha_asiento'],
+                'secuencia' => $secuencia_ing,
+                'divisas' => '1',
+                'id_empresa' => $id_empresa,
+                'total_ingreso' => $objeto_validar->set_round($total_pagos),
+                'id_cliente' => $request['identificacion_cliente'],
+                'autollenar' => 'Cancela FV : '.$nfactura,
+                'id_vendedor' => $request['cedula_vendedor'],
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ];
             $id_comprobante = Ct_Comprobante_Ingreso::insertGetId($input_comprobante);
-            //formas de pago detalle
+            // formas de pago detalle
             foreach ($array_pagos as $valor) {
-                if ($valor['fecha_pago'] != "") {
+                if ($valor['fecha_pago'] != '') {
                 }
-                $val = "";
-                if (!is_null($valor['valor'])) {
+                $val = '';
+                if (! is_null($valor['valor'])) {
                     $val = $valor['valor'];
                 } else {
                     $val = $valor['valor_base'];
                 }
-                $fecha_pago = $valor['fecha_pago'] != "" ? $valor['fecha_pago'] : $request['fecha_asiento'];
+                $fecha_pago = $valor['fecha_pago'] != '' ? $valor['fecha_pago'] : $request['fecha_asiento'];
                 Ct_Detalle_Pago_Ingreso::create([
-                    'id_comprobante'  => $id_comprobante,
-                    'fecha'           => $fecha_pago,
-                    'numero'          => $valor['numero_pago'],
-                    'id_banco'        => $valor['id_banco_pago'],
+                    'id_comprobante' => $id_comprobante,
+                    'fecha' => $fecha_pago,
+                    'numero' => $valor['numero_pago'],
+                    'id_banco' => $valor['id_banco_pago'],
                     'id_tipo_tarjeta' => $valor['tipo_tarjeta'],
-                    'id_tipo'         => $valor['id_tip_pago'],
-                    'total'           => $val,
-                    'cuenta'          => $valor['id_cuenta_pago'],
-                    'girador'         => $valor['giradoa'],
-                    'estado'          => '1',
-                    'ip_creacion'     => $ip_cliente,
+                    'id_tipo' => $valor['id_tip_pago'],
+                    'total' => $val,
+                    'cuenta' => $valor['id_cuenta_pago'],
+                    'girador' => $valor['giradoa'],
+                    'estado' => '1',
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ]);
             }
 
             $confg = LogConfig::busqueda('1.01.01.1.01');
             $desc_cuenta = Plan_Cuentas::where('id', $confg)->first();
             if (is_null($desc_cuenta)) {
-                return ["status" => "error", "Falta configurar cuenta para el Comprobante de Ingreso", "exp" => ""];
+                return ['status' => 'error', 'Falta configurar cuenta para el Comprobante de Ingreso', 'exp' => ''];
             }
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.01.1.01',
-                'id_plan_cuenta'      => $confg,
-                'descripcion'         => $desc_cuenta->nombre,
-                'fecha'               => $request['fecha_asiento'],
-                'debe'                => $total_pagos, //$nuevo_saldof,
-                'haber'               => '0',
-                'estado'              => '1',
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                // 'id_plan_cuenta'      => '1.01.01.1.01',
+                'id_plan_cuenta' => $confg,
+                'descripcion' => $desc_cuenta->nombre,
+                'fecha' => $request['fecha_asiento'],
+                'debe' => $total_pagos, // $nuevo_saldof,
+                'haber' => '0',
+                'estado' => '1',
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ]);
-            $consulta_venta    = null;
+            $consulta_venta = null;
             $input_comprobante = null;
 
             if (floatval($total_pagos) > 0) {
                 Ct_Detalle_Comprobante_Ingreso::create([
-                    'id_comprobante'    => $id_comprobante,
-                    'fecha'             => $request['fecha_asiento'],
-                    'observaciones'     => "Cancela FV : " . $nfactura,
-                    'id_factura'        => $factura_id, ////$consulta_venta->id,
-                    'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                    'total_factura'     => $request['total1'], //$request['saldo_a'.$i],
-                    'total'             => $total_pagos, //$request['abono_a'.$i],
-                    'estado'            => '1',
-                    'ip_creacion'       => $ip_cliente,
-                    'ip_modificacion'   => $ip_cliente,
-                    'id_usuariocrea'    => $idusuario,
-                    'id_usuariomod'     => $idusuario,
+                    'id_comprobante' => $id_comprobante,
+                    'fecha' => $request['fecha_asiento'],
+                    'observaciones' => 'Cancela FV : '.$nfactura,
+                    'id_factura' => $factura_id, // //$consulta_venta->id,
+                    'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                    'total_factura' => $request['total1'], // $request['saldo_a'.$i],
+                    'total' => $total_pagos, // $request['abono_a'.$i],
+                    'estado' => '1',
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ]);
             }
             if ($total_pagos < $request['total1']) {
-                //aqui creo una orden de venta nueva
+                // aqui creo una orden de venta nueva
             }
-            //$orden_id = $this->ordenVenta($request['id_venta'], $request);
+            // $orden_id = $this->ordenVenta($request['id_venta'], $request);
             $valor_actual = Ct_ventas::find($factura_id);
             $valor_actual->valor_contable = $valor_actual->valor_contable - $total_pagos;
-            $valor_actual->estado_pago    = 2;
+            $valor_actual->estado_pago = 2;
             $valor_actual->save();
             // $id__ventas   = [
 
@@ -4705,175 +4781,178 @@ class VentasController extends Controller
             // $consulta_venta  = null;
             // $input_actualiza = null;
 
-            return ["status" => "success", "msj" => "Se creo el <b>Comprobante Ingreso</b> correctamente", "id_ingreso" => $id_comprobante];
-            //} else {
+            return ['status' => 'success', 'msj' => 'Se creo el <b>Comprobante Ingreso</b> correctamente', 'id_ingreso' => $id_comprobante];
+            // } else {
             //     return 0;
             // }
-        } catch (\Exception $e) {
-            return ["status" => "error", "msj" => "No se creo el <b>Comprobante de ingreso</b>", "exp" => $e->getMessage()];
+        } catch (Exception $e) {
+            return ['status' => 'error', 'msj' => 'No se creo el <b>Comprobante de ingreso</b>', 'exp' => $e->getMessage()];
         }
     }
+
     public function update($id, Request $request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         $id_empresa = $request->session()->get('id_empresa');
-        $fecha_as   = date('Y-m-d', strtotime($request['fecha_asiento']));
-        //dd($fecha_as);
+        $fecha_as = date('Y-m-d', strtotime($request['fecha_asiento']));
+        // dd($fecha_as);
         $ventas = Ct_ventas::find($id);
         if ($ventas->electronica != 1) {
             $asiento_cabecera = Ct_Asientos_Cabecera::find($ventas->id_asiento);
-            $input_cabecera   = [
-                'fecha_asiento'   => $fecha_as,
-                'fact_numero'     => $ventas->nro_comprobante,
-                'id_empresa'      => $id_empresa,
-                'observacion'     => $request['concepto'],
-                'id_usuariomod'   => $idusuario,
+            $input_cabecera = [
+                'fecha_asiento' => $fecha_as,
+                'fact_numero' => $ventas->nro_comprobante,
+                'id_empresa' => $id_empresa,
+                'observacion' => $request['concepto'],
+                'id_usuariomod' => $idusuario,
                 'ip_modificacion' => $ip_cliente,
             ];
-            //dd($request->all());
+            // dd($request->all());
             $id_asiento_cabecera = $asiento_cabecera->update($input_cabecera);
             foreach ($asiento_cabecera->detalles as $value) {
-                $detalis                = Ct_Asientos_Detalle::find($value->id);
-                $detalis->fecha         = $fecha_as;
+                $detalis = Ct_Asientos_Detalle::find($value->id);
+                $detalis->fecha = $fecha_as;
                 $detalis->id_usuariomod = $idusuario;
                 $detalis->save();
             }
-            $cod_sucurs      = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
-            $c_sucursal      = $cod_sucurs->codigo_sucursal;
-            $cod_caj         = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
-            $c_caja          = $cod_caj->codigo_caja;
-            $num_comprobante = $c_caja . '-' . $c_sucursal . '-' . $request['numero'];
-            $id_paciente     = $request['identificacion_paciente'];
-            $patient         = Paciente::find($id_paciente);
-            $pc              = "9999999999";
+            $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
+            $c_sucursal = $cod_sucurs->codigo_sucursal;
+            $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+            $c_caja = $cod_caj->codigo_caja;
+            $num_comprobante = $c_caja.'-'.$c_sucursal.'-'.$request['numero'];
+            $id_paciente = $request['identificacion_paciente'];
+            $patient = Paciente::find($id_paciente);
+            $pc = '9999999999';
             if (is_null($patient)) {
-                $pc = "9999999999";
+                $pc = '9999999999';
             } else {
                 $pc = $patient->id;
             }
             $factura_venta = [
-                'numero'              => $request['numero'],
-                'nro_comprobante'     => $num_comprobante,
-                'fecha'               => $fecha_as,
-                'nombre_cliente'      => $request['nombre_cliente'],
-                'tipo_consulta'       => $request['tipo_consulta'],
-                'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-                'direccion_cliente'   => $request['direccion_cliente'],
-                'ruc_id_cliente'      => $request['identificacion_cliente'],
-                'telefono_cliente'    => $request['telefono_cliente'],
-                'email_cliente'       => $request['mail_cliente'],
-                'orden_venta'         => $request['orden_venta'],
-                'nro_autorizacion'    => $request['numero_autorizacion'],
-                'id_paciente'         => $pc,
-                'nombres_paciente'    => $request['nombre_paciente'],
+                'numero' => $request['numero'],
+                'nro_comprobante' => $num_comprobante,
+                'fecha' => $fecha_as,
+                'nombre_cliente' => $request['nombre_cliente'],
+                'tipo_consulta' => $request['tipo_consulta'],
+                'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+                'direccion_cliente' => $request['direccion_cliente'],
+                'ruc_id_cliente' => $request['identificacion_cliente'],
+                'telefono_cliente' => $request['telefono_cliente'],
+                'email_cliente' => $request['mail_cliente'],
+                'orden_venta' => $request['orden_venta'],
+                'nro_autorizacion' => $request['numero_autorizacion'],
+                'id_paciente' => $pc,
+                'nombres_paciente' => $request['nombre_paciente'],
                 'id_hc_procedimiento' => $request['mov_paciente'],
-                'seguro_paciente'     => $request['id_seguro'],
-                //'id_nivel'            => $request['id_nivel'],
-                'procedimientos'      => $request['procedimiento'],
+                'seguro_paciente' => $request['id_seguro'],
+                // 'id_nivel'            => $request['id_nivel'],
+                'procedimientos' => $request['procedimiento'],
                 'fecha_procedimiento' => $request['fecha_procedimiento'],
-                'concepto'            => $request['concepto'],
-                'id_recaudador'       => $request['cedula_recaudador'],
-                'ci_vendedor'         => $request['cedula_vendedor'],
-                'vendedor'            => $request['vendedor'],
-                'ip_modificacion'     => $ip_cliente,
-                'id_usuariomod'       => $idusuario,
+                'concepto' => $request['concepto'],
+                'id_recaudador' => $request['cedula_recaudador'],
+                'ci_vendedor' => $request['cedula_vendedor'],
+                'vendedor' => $request['vendedor'],
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariomod' => $idusuario,
             ];
             $ventas->update($factura_venta);
         }
+
         return redirect()->back()->withErrors(['msg', 'The Message']);
     }
+
     public function getSRI($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
 
-        $orden           = Ct_ventas::find($id);
+        $orden = Ct_ventas::find($id);
         $data['empresa'] = $orden->id_empresa; // DR CARLOS ROBLES
-        //$data['empresa']      = '0992704152001';   //gastroclinica
+        // $data['empresa']      = '0992704152001';   //gastroclinica
         $getType = $orden->cliente->tipo;
         if (strlen($getType) == 1) {
-            $getType = '0' . $getType;
+            $getType = '0'.$getType;
         }
-        $cliente['cedula']   = $orden->ruc_id_cliente;
-        $cliente['tipo']     = $getType; //eduardo dice q el lo calcula
-        $cliente['nombre']   = $orden->cliente->nombre;
+        $cliente['cedula'] = $orden->ruc_id_cliente;
+        $cliente['tipo'] = $getType; // eduardo dice q el lo calcula
+        $cliente['nombre'] = $orden->cliente->nombre;
         $cliente['apellido'] = '';
-        $explode             = explode(" ", $orden->cliente->nombre);
+        $explode = explode(' ', $orden->cliente->nombre);
         if (count($explode) >= 4) {
-            $cliente['nombre'] = $explode[0] . ' ' . $explode[1];
+            $cliente['nombre'] = $explode[0].' '.$explode[1];
             for ($i = 2; $i < count($explode); $i++) {
-                $cliente['apellido'] = $cliente['apellido'] . ' ' . $explode[$i];
+                $cliente['apellido'] = $cliente['apellido'].' '.$explode[$i];
             }
         }
         if (count($explode) == 3) {
-            $cliente['nombre']   = $explode[0];
-            $cliente['apellido'] = $explode[1] . ' ' . $explode[2];
+            $cliente['nombre'] = $explode[0];
+            $cliente['apellido'] = $explode[1].' '.$explode[2];
         }
         if (count($explode) == 2) {
-            $cliente['nombre']   = $explode[0];
+            $cliente['nombre'] = $explode[0];
             $cliente['apellido'] = $explode[1];
         }
-        //dd($cliente);
-        $cliente['email']     = $orden->email_cliente;
-        $cliente['telefono']  = $orden->telefono_cliente;
-        $direccion['calle']   = $orden->direccion_cliente;
-        $direccion['ciudad']  = $orden->cliente->ciudad_representante;
+        // dd($cliente);
+        $cliente['email'] = $orden->email_cliente;
+        $cliente['telefono'] = $orden->telefono_cliente;
+        $direccion['calle'] = $orden->direccion_cliente;
+        $direccion['ciudad'] = $orden->cliente->ciudad_representante;
         $cliente['direccion'] = $direccion;
-        $data['cliente']      = $cliente;
-        //dd($direccion);
-        $msn_error  = '';
+        $data['cliente'] = $cliente;
+        // dd($direccion);
+        $msn_error = '';
         $flag_error = false;
         if ($cliente['cedula'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en cedula';
+            $msn_error = 'Error en cedula';
         }
         if ($cliente['nombre'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en Nombre';
+            $msn_error = 'Error en Nombre';
         }
         if ($cliente['email'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en email';
+            $msn_error = 'Error en email';
         }
         if ($cliente['telefono'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en telefono';
+            $msn_error = 'Error en telefono';
         }
         if ($direccion['calle'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en calle';
+            $msn_error = 'Error en calle';
         }
         if ($direccion['ciudad'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en Ciudad';
+            $msn_error = 'Error en Ciudad';
         }
 
-        $cant          = 0;
+        $cant = 0;
         $venta_detalle = Ct_detalle_venta::where('id_ct_ventas', $id)->get();
-        $setProducto   = "EXAMEN LABS";
-        //dd($venta_detalle);
+        $setProducto = 'EXAMEN LABS';
+        // dd($venta_detalle);
 
         foreach ($venta_detalle as $value) {
-            $detalle               = trim(preg_replace("/\s+/", " ", $value->detalle));
-            $producto['sku']       = $value->id_ct_productos; //ID EXAMEN
-            $producto['nombre']    = $value->nombre . ' ' . $detalle; // NOMBRE DEL EXAMEN
-            $producto['cantidad']  = $value->cantidad;
-            $producto['precio']    = $value->precio; //DETALLE
+            $detalle = trim(preg_replace("/\s+/", ' ', $value->detalle));
+            $producto['sku'] = $value->id_ct_productos; // ID EXAMEN
+            $producto['nombre'] = $value->nombre.' '.$detalle; // NOMBRE DEL EXAMEN
+            $producto['cantidad'] = $value->cantidad;
+            $producto['precio'] = $value->precio; // DETALLE
             if ($value->copago > 0) {
-                $producto['precio']    = $value->extendido / $value->cantidad;
+                $producto['precio'] = $value->extendido / $value->cantidad;
             }
-            $pricetot              = $value->cantidad * $value->precio;
+            $pricetot = $value->cantidad * $value->precio;
             $producto['descuento'] = $value->descuento;
-            $producto['subtotal']  = $pricetot - $value->descuento; //precio-descuento
-            $tax                   = "0";
+            $producto['subtotal'] = $pricetot - $value->descuento; // precio-descuento
+            $tax = '0';
             if ($value->check_iva == 1) {
                 $tax = ($pricetot - $value->descuento) * $value->porcentaje;
             }
-            $producto['tax']    = $tax;
-            $producto['total']  = $pricetot - $value->valor_descuento; //SUBTOTAL
-            $producto['copago'] = "0";
-            $productos[$cant]   = $producto;
+            $producto['tax'] = $tax;
+            $producto['total'] = $pricetot - $value->valor_descuento; // SUBTOTAL
+            $producto['copago'] = '0';
+            $productos[$cant] = $producto;
             $cant++;
         }
         $data['productos'] = $productos;
@@ -4892,63 +4971,63 @@ class VentasController extends Controller
         $info[0]                       = $info_adicional;
          */
         if ($orden->id_paciente != null) {
-            $info_adicional['nombre'] = "PACIENTE";
-            $info_adicional['valor']  = $orden->id_paciente . ' ' . $orden->paciente->apellido1 . ' ' . $orden->paciente->nombre1;
-            $info[0]                  = $info_adicional;
+            $info_adicional['nombre'] = 'PACIENTE';
+            $info_adicional['valor'] = $orden->id_paciente.' '.$orden->paciente->apellido1.' '.$orden->paciente->nombre1;
+            $info[0] = $info_adicional;
         }
 
-        $info_adicional['nombre'] = "MAIL";
-        $info_adicional['valor']  = $orden->email_cliente; //EMAIL
-        $info[2]                  = $info_adicional;
+        $info_adicional['nombre'] = 'MAIL';
+        $info_adicional['valor'] = $orden->email_cliente; // EMAIL
+        $info[2] = $info_adicional;
 
-        $info_adicional['nombre'] = "CIUDAD";
-        $info_adicional['valor']  = $orden->cliente->ciudad_representante; //EMAIL
-        $info[3]                  = $info_adicional;
+        $info_adicional['nombre'] = 'CIUDAD';
+        $info_adicional['valor'] = $orden->cliente->ciudad_representante; // EMAIL
+        $info[3] = $info_adicional;
 
-        $info_adicional['nombre'] = "DIRECCION";
-        $info_adicional['valor']  = $orden->direccion_cliente; //EMAIL
-        $info[4]                  = $info_adicional;
+        $info_adicional['nombre'] = 'DIRECCION';
+        $info_adicional['valor'] = $orden->direccion_cliente; // EMAIL
+        $info[4] = $info_adicional;
         /*
         $info_adicional['nombre']      = "ORDEN";
         $info_adicional['valor']       = ''.$orden->id.'';//EMAIL
         $info[5]                       = $info_adicional;
          */
         if ($orden->seguro != null) {
-            $info_adicional['nombre'] = "SEGURO";
-            $info_adicional['valor']  = $orden->seguro->nombre; //SEGURO
-            $info[5]                  = $info_adicional;
+            $info_adicional['nombre'] = 'SEGURO';
+            $info_adicional['valor'] = $orden->seguro->nombre; // SEGURO
+            $info[5] = $info_adicional;
         }
         $sform = Ct_Detalle_Comprobante_Ingreso::where('id_factura', $id)->get();
 
-        $forma_pago = array();
+        $forma_pago = [];
         if (count($sform) > 1) {
-            $sformid                  = $sform[0]->id_comprobante;
-            $forma_pago               = Ct_Detalle_Pago_Ingreso::where('id_comprobante', $sformid)->get();
-            $pago['forma_pago']       = '20';
-            $info_adicional['nombre'] = "FORMA_PAGO";
-            $texto                    = '';
+            $sformid = $sform[0]->id_comprobante;
+            $forma_pago = Ct_Detalle_Pago_Ingreso::where('id_comprobante', $sformid)->get();
+            $pago['forma_pago'] = '20';
+            $info_adicional['nombre'] = 'FORMA_PAGO';
+            $texto = '';
 
             foreach ($forma_pago as $fp) {
                 $total = $fp->total;
                 $total = round($total, 2);
-                $texto = $texto . ' ' . $fp->tipo_pago->nombre . ': ' . $total;
+                $texto = $texto.' '.$fp->tipo_pago->nombre.': '.$total;
             }
             $info_adicional['valor'] = $texto;
-            $info[6]                 = $info_adicional;
+            $info[6] = $info_adicional;
         } else {
-            //dd("hi");
+            // dd("hi");
             if ($sform == '[]') {
-                $pago['forma_pago']       = '20';
-                $texto                    = "OTROS UTILIZANDO EL SISTEMA FINANCIERO";
-                $info_adicional['nombre'] = "FORMA_PAGO";
-                $info_adicional['valor']  = $texto;
-                $info[6]                  = $info_adicional;
+                $pago['forma_pago'] = '20';
+                $texto = 'OTROS UTILIZANDO EL SISTEMA FINANCIERO';
+                $info_adicional['nombre'] = 'FORMA_PAGO';
+                $info_adicional['valor'] = $texto;
+                $info[6] = $info_adicional;
             } else {
                 $sformid = $sform[0]->id_comprobante;
 
                 $forma_pago = Ct_Detalle_Pago_Ingreso::where('id_comprobante', $sformid)->get();
-                //$forma_pago = $orden->detalle_forma_pago->first();
-                //dd($forma_pago);
+                // $forma_pago = $orden->detalle_forma_pago->first();
+                // dd($forma_pago);
                 $tipo = $forma_pago[0]->id_tipo;
                 if ($tipo == '1') {
                     $pago['forma_pago'] = '01';
@@ -4969,69 +5048,70 @@ class VentasController extends Controller
         $pago['informacion_adicional'] = $info;
         //  $pago['dias_plazo']            = '30';
         // if(Auth::user()->id == "0957258056"){
-        $pago['dias_plazo']            = "{$orden->dias_plazo}";
+        $pago['dias_plazo'] = "{$orden->dias_plazo}";
         // }
 
-        $data['pago']                  = $pago;
-        $data['contable']              = 0; //si se marca 1 crea factura, 0 no crea factura
-        $data['laboratorio']           = 0;
+        $data['pago'] = $pago;
+        $data['contable'] = 0; // si se marca 1 crea factura, 0 no crea factura
+        $data['laboratorio'] = 0;
         if ($orden->id_paciente != null) {
             $data['paciente'] = $orden->id_paciente;
         }
-        $data['concepto']      = 'Factura Electronica -' . $orden->concepto;
-        $data['copago']        = 0;
-        $data['id_seguro']     = '0'; //si se marca 1 se crea un solo producto por id de laboratorioo, 0 graba detalle de datos
+        $data['concepto'] = 'Factura Electronica -'.$orden->concepto;
+        $data['copago'] = 0;
+        $data['id_seguro'] = '0'; // si se marca 1 se crea un solo producto por id de laboratorioo, 0 graba detalle de datos
         $data['total_factura'] = $orden->total_final;
-        //dd($data);
+        // dd($data);
         $fp_cant = 0;
-        //dd($forma_pago);
+        // dd($forma_pago);
         if (count($forma_pago) > 0) {
             foreach ($forma_pago as $fp) {
-                $tipos_pago['id_tipo']            = $fp->id_tipo; //metodo de pago efectivo, tarjeta, etc
-                $tipos_pago['fecha']              = substr($fp->fecha, 0, 10);
-                $tipos_pago['tipo_tarjeta']       = $fp->id_tipo_tarjeta; //si es efectivo no se envia
-                $tipos_pago['numero_transaccion'] = $fp->numero; //si es efectivo no se envia
-                $tipos_pago['id_banco']           = $fp->id_banco; //si es efectivo no se envia
-                $tipos_pago['cuenta']             = $fp->cuenta; //si es efectivo no se envia
-                $tipos_pago['giradoa']            = $fp->girador; //si es efectivo no se envia
-                $tipos_pago['valor']              = $fp->total; //valor a pagar de total
-                $tipos_pago['valor_base']         = $fp->total; //valor a pagar de base
+                $tipos_pago['id_tipo'] = $fp->id_tipo; // metodo de pago efectivo, tarjeta, etc
+                $tipos_pago['fecha'] = substr($fp->fecha, 0, 10);
+                $tipos_pago['tipo_tarjeta'] = $fp->id_tipo_tarjeta; // si es efectivo no se envia
+                $tipos_pago['numero_transaccion'] = $fp->numero; // si es efectivo no se envia
+                $tipos_pago['id_banco'] = $fp->id_banco; // si es efectivo no se envia
+                $tipos_pago['cuenta'] = $fp->cuenta; // si es efectivo no se envia
+                $tipos_pago['giradoa'] = $fp->girador; // si es efectivo no se envia
+                $tipos_pago['valor'] = $fp->total; // valor a pagar de total
+                $tipos_pago['valor_base'] = $fp->total; // valor a pagar de base
 
                 $pagos[$fp_cant] = $tipos_pago;
                 $fp_cant++;
             }
         } else {
-            $tipos_pago['id_tipo']            = "7"; //metodo de pago efectivo, tarjeta, etc
-            $tipos_pago['fecha']              = substr($orden->fecha, 0, 10);
-            $tipos_pago['tipo_tarjeta']       = ""; //si es efectivo no se envia
-            $tipos_pago['numero_transaccion'] = ""; //si es efectivo no se envia
-            $tipos_pago['id_banco']           = ""; //si es efectivo no se envia
-            $tipos_pago['cuenta']             = ""; //si es efectivo no se envia
-            $tipos_pago['giradoa']            = ""; //si es efectivo no se envia
-            $tipos_pago['valor']              = "0"; //valor a pagar de total
-            $tipos_pago['valor_base']         = "0"; //valor a pagar de base
-            $pagos[0]                         = $tipos_pago;
+            $tipos_pago['id_tipo'] = '7'; // metodo de pago efectivo, tarjeta, etc
+            $tipos_pago['fecha'] = substr($orden->fecha, 0, 10);
+            $tipos_pago['tipo_tarjeta'] = ''; // si es efectivo no se envia
+            $tipos_pago['numero_transaccion'] = ''; // si es efectivo no se envia
+            $tipos_pago['id_banco'] = ''; // si es efectivo no se envia
+            $tipos_pago['cuenta'] = ''; // si es efectivo no se envia
+            $tipos_pago['giradoa'] = ''; // si es efectivo no se envia
+            $tipos_pago['valor'] = '0'; // valor a pagar de total
+            $tipos_pago['valor_base'] = '0'; // valor a pagar de base
+            $pagos[0] = $tipos_pago;
         }
 
-        //dd($forma_pago);
-        //dd($pagos);
+        // dd($forma_pago);
+        // dd($pagos);
         $data['formas_pago'] = $pagos;
 
         if ($orden->fecha_envio != null) {
             $flag_error = true;
-            $msn_error  = 'Ya enviado al SRI';
+            $msn_error = 'Ya enviado al SRI';
         }
         if ($flag_error) {
             Log_usuario::create([
-                'id_usuario'  => $idusuario,
-                'ip_usuario'  => $ip_cliente,
-                'descripcion' => "CARLOS ROBLES",
-                'dato_ant1'   => $orden->id,
-                'dato1'       => $orden->id_paciente,
-                'dato_ant2'   => "ERROR AL ENVIAR AL SRI",
-                'dato_ant4'   => $msn_error,
+                'id_usuario' => $idusuario,
+                'ip_usuario' => $ip_cliente,
+                'descripcion' => 'CARLOS ROBLES',
+                'dato_ant1' => $orden->id,
+                'dato1' => $orden->id_paciente,
+                'dato_ant2' => 'ERROR AL ENVIAR AL SRI',
+                'dato_ant4' => $msn_error,
             ]);
-            return "error";
+
+            return 'error';
         }
 
         $orden->update([
@@ -5040,89 +5120,91 @@ class VentasController extends Controller
         $envio = ApiFacturacionController::envio_factura($data);
         $orden->update([
             'nro_comprobante' => $envio->comprobante,
-            'fecha_envio'     => date('Y-m-d H:i:s'),
+            'fecha_envio' => date('Y-m-d H:i:s'),
         ]);
-        $manage = $envio->status->status . '-' . $envio->status->message . '-' . $envio->status->reason;
+        $manage = $envio->status->status.'-'.$envio->status->message.'-'.$envio->status->reason;
         Log_usuario::create([
-            'id_usuario'  => $idusuario,
-            'ip_usuario'  => $ip_cliente,
-            'descripcion' => "CARLOS ROBLES FAC VENTA",
-            'dato_ant1'   => $orden->id,
-            'dato1'       => 'envio',
-            'dato_ant2'   => "ENVIAR AL SRI",
-            'dato_ant4'   => $manage,
+            'id_usuario' => $idusuario,
+            'ip_usuario' => $ip_cliente,
+            'descripcion' => 'CARLOS ROBLES FAC VENTA',
+            'dato_ant1' => $orden->id,
+            'dato1' => 'envio',
+            'dato_ant2' => 'ENVIAR AL SRI',
+            'dato_ant4' => $manage,
         ]);
+
         // return "ok";
-        return ["status" => "ok", "comprobante" => $envio->comprobante];
+        return ['status' => 'ok', 'comprobante' => $envio->comprobante];
     }
+
     public function getSRI1($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         $orden = Ct_ventas::find($id);
         $data['empresa'] = $orden->id_empresa; // DR CARLOS ROBLES
-        //$data['empresa']      = '0992704152001';   //gastroclinica
+        // $data['empresa']      = '0992704152001';   //gastroclinica
         $getType = $orden->cliente->tipo;
         if (strlen($getType) == 1) {
-            $getType = '0' . $getType;
+            $getType = '0'.$getType;
         }
-        $cliente['cedula']   = $orden->ruc_id_cliente;
-        $cliente['tipo']     = $getType; //eduardo dice q el lo calcula
-        $cliente['nombre']   = $orden->cliente->nombre;
+        $cliente['cedula'] = $orden->ruc_id_cliente;
+        $cliente['tipo'] = $getType; // eduardo dice q el lo calcula
+        $cliente['nombre'] = $orden->cliente->nombre;
         $cliente['apellido'] = '';
-        $explode             = explode(" ", $orden->cliente->nombre);
+        $explode = explode(' ', $orden->cliente->nombre);
         if (count($explode) >= 4) {
-            $cliente['nombre'] = $explode[0] . ' ' . $explode[1];
+            $cliente['nombre'] = $explode[0].' '.$explode[1];
             for ($i = 2; $i < count($explode); $i++) {
-                $cliente['apellido'] = $cliente['apellido'] . ' ' . $explode[$i];
+                $cliente['apellido'] = $cliente['apellido'].' '.$explode[$i];
             }
         }
         if (count($explode) == 3) {
-            $cliente['nombre']   = $explode[0];
-            $cliente['apellido'] = $explode[1] . ' ' . $explode[2];
+            $cliente['nombre'] = $explode[0];
+            $cliente['apellido'] = $explode[1].' '.$explode[2];
         }
         if (count($explode) == 2) {
-            $cliente['nombre']   = $explode[0];
+            $cliente['nombre'] = $explode[0];
             $cliente['apellido'] = $explode[1];
         }
-        //dd($cliente);
-        $cliente['email']     = $orden->email_cliente;
-        $cliente['telefono']  = $orden->telefono_cliente;
-        $direccion['calle']   = $orden->direccion_cliente;
-        $direccion['ciudad']  = $orden->cliente->ciudad_representante;
+        // dd($cliente);
+        $cliente['email'] = $orden->email_cliente;
+        $cliente['telefono'] = $orden->telefono_cliente;
+        $direccion['calle'] = $orden->direccion_cliente;
+        $direccion['ciudad'] = $orden->cliente->ciudad_representante;
         $cliente['direccion'] = $direccion;
-        $data['cliente']      = $cliente;
-        //dd($direccion);
-        $msn_error  = '';
+        $data['cliente'] = $cliente;
+        // dd($direccion);
+        $msn_error = '';
         $flag_error = false;
         if ($cliente['cedula'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en cedula';
+            $msn_error = 'Error en cedula';
         }
         if ($cliente['nombre'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en Nombre';
+            $msn_error = 'Error en Nombre';
         }
         if ($cliente['email'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en email';
+            $msn_error = 'Error en email';
         }
         if ($cliente['telefono'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en telefono';
+            $msn_error = 'Error en telefono';
         }
         if ($direccion['calle'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en calle';
+            $msn_error = 'Error en calle';
         }
         if ($direccion['ciudad'] == null) {
             $flag_error = true;
-            $msn_error  = 'Error en Ciudad';
+            $msn_error = 'Error en Ciudad';
         }
-        $cant          = 0;
+        $cant = 0;
         $venta_detalle = Ct_detalle_venta::where('id_ct_ventas', $id)->get();
-        $setProducto   = "EXAMEN LABS";
-        //dd($venta_detalle);
+        $setProducto = 'EXAMEN LABS';
+        // dd($venta_detalle);
         // if (count($venta_detalle) > 0) {
         //     if ($orden->id_empresa == '0993075000001') {
         //         $prices  = Ct_detalle_venta::where('id_ct_ventas', $id)->sum('precio');
@@ -5178,32 +5260,32 @@ class VentasController extends Controller
         // }
         if (count($venta_detalle) > 0) {
             foreach ($venta_detalle as $value) {
-                $detalle = trim(preg_replace("/\s+/", " ", $value->detalle));
-                //se envian los productos
+                $detalle = trim(preg_replace("/\s+/", ' ', $value->detalle));
+                // se envian los productos
                 $ct_producto_nombre = Ct_productos::where('codigo', $value->id_ct_productos)->where('id_empresa', $data['empresa'])->first();
-                $producto['sku']       = $value->id_ct_productos; //ID EXAMEN
-                $producto['nombre']    = $ct_producto_nombre->nombre . ' ' . $detalle; // NOMBRE DEL EXAMEN
-                $producto['cantidad']  = $value->cantidad;
-                $producto['precio']    = $value->precio; //DETALLE
+                $producto['sku'] = $value->id_ct_productos; // ID EXAMEN
+                $producto['nombre'] = $ct_producto_nombre->nombre.' '.$detalle; // NOMBRE DEL EXAMEN
+                $producto['cantidad'] = $value->cantidad;
+                $producto['precio'] = $value->precio; // DETALLE
                 if ($value->copago > 0) {
-                    $producto['precio']    = $value->extendido / $value->cantidad;
+                    $producto['precio'] = $value->extendido / $value->cantidad;
                 }
-                $pricetot              = $value->cantidad * $value->precio;
+                $pricetot = $value->cantidad * $value->precio;
                 $producto['descuento'] = $value->descuento;
-                $producto['subtotal']  = $pricetot - $value->descuento; //precio-descuento
-                $tax                   = "0";
+                $producto['subtotal'] = $pricetot - $value->descuento; // precio-descuento
+                $tax = '0';
                 if ($value->check_iva == 1) {
                     $tax = ($pricetot - $value->descuento) * $value->porcentaje;
                 }
-                $producto['tax']    = $tax;
-                $producto['total']  = $pricetot - $value->valor_descuento; //SUBTOTAL
-                $producto['copago'] = "0";
-                $productos[$cant]   = $producto;
+                $producto['tax'] = $tax;
+                $producto['total'] = $pricetot - $value->valor_descuento; // SUBTOTAL
+                $producto['copago'] = '0';
+                $productos[$cant] = $producto;
                 $cant++;
             }
         }
         $data['productos'] = $productos;
-        //dd($data);
+        // dd($data);
         /*01  SIN UTILIZACION DEL SISTEMA FINANCIERO
         15  COMPENSACIÓN DE DEUDAS
         16  TARJETA DE DÉBITO
@@ -5219,55 +5301,55 @@ class VentasController extends Controller
         $info[0]                       = $info_adicional;
          */
         if ($orden->id_paciente != null) {
-            $info_adicional['nombre'] = "PACIENTE";
-            $info_adicional['valor']  = $orden->id_paciente . ' ' . $orden->paciente->apellido1 . ' ' . $orden->paciente->nombre1;
-            $info[0]                  = $info_adicional;
+            $info_adicional['nombre'] = 'PACIENTE';
+            $info_adicional['valor'] = $orden->id_paciente.' '.$orden->paciente->apellido1.' '.$orden->paciente->nombre1;
+            $info[0] = $info_adicional;
         }
 
-        $info_adicional['nombre'] = "MAIL";
-        $info_adicional['valor']  = $orden->email_cliente; //EMAIL
-        $info[2]                  = $info_adicional;
+        $info_adicional['nombre'] = 'MAIL';
+        $info_adicional['valor'] = $orden->email_cliente; // EMAIL
+        $info[2] = $info_adicional;
 
-        $info_adicional['nombre'] = "CIUDAD";
-        $info_adicional['valor']  = $orden->cliente->ciudad_representante; //EMAIL
-        $info[3]                  = $info_adicional;
+        $info_adicional['nombre'] = 'CIUDAD';
+        $info_adicional['valor'] = $orden->cliente->ciudad_representante; // EMAIL
+        $info[3] = $info_adicional;
 
-        $info_adicional['nombre'] = "DIRECCION";
-        $info_adicional['valor']  = $orden->direccion_cliente; //EMAIL
-        $info[4]                  = $info_adicional;
+        $info_adicional['nombre'] = 'DIRECCION';
+        $info_adicional['valor'] = $orden->direccion_cliente; // EMAIL
+        $info[4] = $info_adicional;
         if ($orden->seguro != null) {
-            $info_adicional['nombre'] = "SEGURO";
-            $info_adicional['valor']  = $orden->seguro->nombre; //SEGURO
-            $info[5]                  = $info_adicional;
+            $info_adicional['nombre'] = 'SEGURO';
+            $info_adicional['valor'] = $orden->seguro->nombre; // SEGURO
+            $info[5] = $info_adicional;
         }
         $sform = Ct_Detalle_Comprobante_Ingreso::where('id_factura', $id)->get();
-        $forma_pago = array();
+        $forma_pago = [];
         if (count($sform) > 1) {
-            $sformid                  = $sform[0]->id_comprobante;
-            $forma_pago               = Ct_Detalle_Pago_Ingreso::where('id_comprobante', $sformid)->get();
-            $pago['forma_pago']       = '20';
-            $info_adicional['nombre'] = "FORMA_PAGO";
-            $texto                    = '';
+            $sformid = $sform[0]->id_comprobante;
+            $forma_pago = Ct_Detalle_Pago_Ingreso::where('id_comprobante', $sformid)->get();
+            $pago['forma_pago'] = '20';
+            $info_adicional['nombre'] = 'FORMA_PAGO';
+            $texto = '';
             foreach ($forma_pago as $fp) {
                 $total = $fp->total;
                 $total = round($total, 2);
-                $texto = $texto . ' ' . $fp->tipo_pago->nombre . ': ' . $total;
+                $texto = $texto.' '.$fp->tipo_pago->nombre.': '.$total;
             }
             $info_adicional['valor'] = $texto;
-            $info[6]                 = $info_adicional;
+            $info[6] = $info_adicional;
         } else {
-            //dd("hi");
+            // dd("hi");
             if ($sform == '[]') {
-                $pago['forma_pago']       = '20';
-                $texto                    = "OTROS UTILIZANDO EL SISTEMA FINANCIERO";
-                $info_adicional['nombre'] = "FORMA_PAGO";
-                $info_adicional['valor']  = $texto;
-                $info[6]                  = $info_adicional;
+                $pago['forma_pago'] = '20';
+                $texto = 'OTROS UTILIZANDO EL SISTEMA FINANCIERO';
+                $info_adicional['nombre'] = 'FORMA_PAGO';
+                $info_adicional['valor'] = $texto;
+                $info[6] = $info_adicional;
             } else {
                 $sformid = $sform[0]->id_comprobante;
                 $forma_pago = Ct_Detalle_Pago_Ingreso::where('id_comprobante', $sformid)->get();
-                //$forma_pago = $orden->detalle_forma_pago->first();
-                //dd($forma_pago);
+                // $forma_pago = $orden->detalle_forma_pago->first();
+                // dd($forma_pago);
                 $tipo = $forma_pago[0]->id_tipo;
                 if ($tipo == '1') {
                     $pago['forma_pago'] = '01';
@@ -5285,64 +5367,65 @@ class VentasController extends Controller
             }
         }
         $pago['informacion_adicional'] = $info;
-        $pago['dias_plazo']            = '30';
-        $data['pago']                  = $pago;
-        $data['contable']              = 0; //si se marca 1 crea factura, 0 no crea factura
-        $data['laboratorio']           = 0;
+        $pago['dias_plazo'] = '30';
+        $data['pago'] = $pago;
+        $data['contable'] = 0; // si se marca 1 crea factura, 0 no crea factura
+        $data['laboratorio'] = 0;
         if ($orden->id_paciente != null) {
             $data['paciente'] = $orden->id_paciente;
         }
-        $data['concepto']      = 'Factura Electronica -' . $orden->concepto;
-        $data['copago']        = 0;
-        $data['id_seguro']     = '0'; //si se marca 1 se crea un solo producto por id de laboratorioo, 0 graba detalle de datos
+        $data['concepto'] = 'Factura Electronica -'.$orden->concepto;
+        $data['copago'] = 0;
+        $data['id_seguro'] = '0'; // si se marca 1 se crea un solo producto por id de laboratorioo, 0 graba detalle de datos
         $data['total_factura'] = $orden->total_final;
-        //dd($data);
+        // dd($data);
         $fp_cant = 0;
-        //dd($forma_pago);
+        // dd($forma_pago);
         if (count($forma_pago) > 0) {
             foreach ($forma_pago as $fp) {
-                $tipos_pago['id_tipo']            = $fp->id_tipo; //metodo de pago efectivo, tarjeta, etc
-                $tipos_pago['fecha']              = substr($fp->fecha, 0, 10);
-                $tipos_pago['tipo_tarjeta']       = $fp->id_tipo_tarjeta; //si es efectivo no se envia
-                $tipos_pago['numero_transaccion'] = $fp->numero; //si es efectivo no se envia
-                $tipos_pago['id_banco']           = $fp->id_banco; //si es efectivo no se envia
-                $tipos_pago['cuenta']             = $fp->cuenta; //si es efectivo no se envia
-                $tipos_pago['giradoa']            = $fp->girador; //si es efectivo no se envia
-                $tipos_pago['valor']              = $fp->total; //valor a pagar de total
-                $tipos_pago['valor_base']         = $fp->total; //valor a pagar de base
+                $tipos_pago['id_tipo'] = $fp->id_tipo; // metodo de pago efectivo, tarjeta, etc
+                $tipos_pago['fecha'] = substr($fp->fecha, 0, 10);
+                $tipos_pago['tipo_tarjeta'] = $fp->id_tipo_tarjeta; // si es efectivo no se envia
+                $tipos_pago['numero_transaccion'] = $fp->numero; // si es efectivo no se envia
+                $tipos_pago['id_banco'] = $fp->id_banco; // si es efectivo no se envia
+                $tipos_pago['cuenta'] = $fp->cuenta; // si es efectivo no se envia
+                $tipos_pago['giradoa'] = $fp->girador; // si es efectivo no se envia
+                $tipos_pago['valor'] = $fp->total; // valor a pagar de total
+                $tipos_pago['valor_base'] = $fp->total; // valor a pagar de base
                 $pagos[$fp_cant] = $tipos_pago;
                 $fp_cant++;
             }
         } else {
-            $tipos_pago['id_tipo']            = "7"; //metodo de pago efectivo, tarjeta, etc
-            $tipos_pago['fecha']              = substr($orden->fecha, 0, 10);
-            $tipos_pago['tipo_tarjeta']       = ""; //si es efectivo no se envia
-            $tipos_pago['numero_transaccion'] = ""; //si es efectivo no se envia
-            $tipos_pago['id_banco']           = ""; //si es efectivo no se envia
-            $tipos_pago['cuenta']             = ""; //si es efectivo no se envia
-            $tipos_pago['giradoa']            = ""; //si es efectivo no se envia
-            $tipos_pago['valor']              = "0"; //valor a pagar de total
-            $tipos_pago['valor_base']         = "0"; //valor a pagar de base
-            $pagos[0]                         = $tipos_pago;
+            $tipos_pago['id_tipo'] = '7'; // metodo de pago efectivo, tarjeta, etc
+            $tipos_pago['fecha'] = substr($orden->fecha, 0, 10);
+            $tipos_pago['tipo_tarjeta'] = ''; // si es efectivo no se envia
+            $tipos_pago['numero_transaccion'] = ''; // si es efectivo no se envia
+            $tipos_pago['id_banco'] = ''; // si es efectivo no se envia
+            $tipos_pago['cuenta'] = ''; // si es efectivo no se envia
+            $tipos_pago['giradoa'] = ''; // si es efectivo no se envia
+            $tipos_pago['valor'] = '0'; // valor a pagar de total
+            $tipos_pago['valor_base'] = '0'; // valor a pagar de base
+            $pagos[0] = $tipos_pago;
         }
-        //dd($forma_pago);
-        //dd($pagos);
+        // dd($forma_pago);
+        // dd($pagos);
         $data['formas_pago'] = $pagos;
         if ($orden->fecha_envio != null) {
             $flag_error = true;
-            $msn_error  = 'Ya enviado al SRI';
+            $msn_error = 'Ya enviado al SRI';
         }
         if ($flag_error) {
             Log_usuario::create([
-                'id_usuario'  => $idusuario,
-                'ip_usuario'  => $ip_cliente,
-                'descripcion' => "CARLOS ROBLES",
-                'dato_ant1'   => $orden->id,
-                'dato1'       => $orden->id_paciente,
-                'dato_ant2'   => "ERROR AL ENVIAR AL SRI",
-                'dato_ant4'   => $msn_error,
+                'id_usuario' => $idusuario,
+                'ip_usuario' => $ip_cliente,
+                'descripcion' => 'CARLOS ROBLES',
+                'dato_ant1' => $orden->id,
+                'dato1' => $orden->id_paciente,
+                'dato_ant2' => 'ERROR AL ENVIAR AL SRI',
+                'dato_ant4' => $msn_error,
             ]);
-            return "error";
+
+            return 'error';
         }
         $orden->update([
             'fecha_envio' => date('Y-m-d H:i:s'),
@@ -5375,123 +5458,126 @@ class VentasController extends Controller
             'dato_ant4'   => $manage,
         ]);*/
 
-        return "ok";
+        return 'ok';
     }
+
     public function store_ordenes(Request $request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = $request['fecha_asiento'];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = $request['fecha_asiento'];
         $id_empresa = $request->session()->get('id_empresa');
-        $c_sucursal      = 0;
-        $c_caja          = 0;
+        $c_sucursal = 0;
+        $c_caja = 0;
         $num_comprobante = 0;
-        $nfactura        = 0;
-        $proced          = $request['procedimiento'];
-        $pac             = "";
-        if ($request['nombre_paciente'] != "") {
-            $pac = " | " . $request['nombre_paciente'];
+        $nfactura = 0;
+        $proced = $request['procedimiento'];
+        $pac = '';
+        if ($request['nombre_paciente'] != '') {
+            $pac = ' | '.$request['nombre_paciente'];
         }
-        $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
         $id_asiento_cabecera = 0;
-        //GUARDAdo TABLA CT_VENTA.
+        // GUARDAdo TABLA CT_VENTA.
         $factura_venta = [
-            'sucursal'            => $c_sucursal,
-            'punto_emision'       => $c_caja,
-            'numero'              => $nfactura,
-            'nro_comprobante'     => $num_comprobante,
-            'id_asiento'          => $id_asiento_cabecera,
-            'id_empresa'          => $id_empresa,
-            'tipo'                => $request['tipo'],
-            'fecha'               => $request['fecha_asiento'],
-            'divisas'             => $request['divisas'],
-            'nombre_cliente'      => $request['nombre_cliente'],
-            'tipo_consulta'       => $request['tipo_consulta'],
-            'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-            'direccion_cliente'   => $request['direccion_cliente'],
-            'ruc_id_cliente'      => $request['identificacion_cliente'],
-            'telefono_cliente'    => $request['telefono_cliente'],
-            'email_cliente'       => $request['mail_cliente'],
-            'orden_venta'         => $request['orden_venta'],
-            'estado_pago'         => '0',
-            'id_paciente'         => $request['identificacion_paciente'],
-            'nombres_paciente'    => $request['nombre_paciente'],
+            'sucursal' => $c_sucursal,
+            'punto_emision' => $c_caja,
+            'numero' => $nfactura,
+            'nro_comprobante' => $num_comprobante,
+            'id_asiento' => $id_asiento_cabecera,
+            'id_empresa' => $id_empresa,
+            'tipo' => $request['tipo'],
+            'fecha' => $request['fecha_asiento'],
+            'divisas' => $request['divisas'],
+            'nombre_cliente' => $request['nombre_cliente'],
+            'tipo_consulta' => $request['tipo_consulta'],
+            'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+            'direccion_cliente' => $request['direccion_cliente'],
+            'ruc_id_cliente' => $request['identificacion_cliente'],
+            'telefono_cliente' => $request['telefono_cliente'],
+            'email_cliente' => $request['mail_cliente'],
+            'orden_venta' => $request['orden_venta'],
+            'estado_pago' => '0',
+            'id_paciente' => $request['identificacion_paciente'],
+            'nombres_paciente' => $request['nombre_paciente'],
             'id_hc_procedimiento' => $request['mov_paciente'],
-            'seguro_paciente'     => $request['id_seguro'],
-            'procedimientos'      => $request['procedimiento'],
+            'seguro_paciente' => $request['id_seguro'],
+            'procedimientos' => $request['procedimiento'],
             'fecha_procedimiento' => $request['fecha_proced'],
-            'copago'              => $request['total1'],
-            'id_recaudador'       => $request['cedula_recaudador'],
-            'ci_vendedor'         => $request['cedula_vendedor'],
-            'vendedor'            => $request['vendedor'],
-            //'nota'                          => $request['nota'],
-            'subtotal_0'          => $request['subtotal_01'],
-            'subtotal_12'         => $request['subtotal_121'],
-            //'subtotal'                      => $request['subtotal1'],
-            'descuento'           => $request['descuento1'],
-            'base_imponible'      => $request['subtotal_121'],
-            'impuesto'            => $request['tarifa_iva1'],
+            'copago' => $request['total1'],
+            'id_recaudador' => $request['cedula_recaudador'],
+            'ci_vendedor' => $request['cedula_vendedor'],
+            'vendedor' => $request['vendedor'],
+            // 'nota'                          => $request['nota'],
+            'subtotal_0' => $request['subtotal_01'],
+            'subtotal_12' => $request['subtotal_121'],
+            // 'subtotal'                      => $request['subtotal1'],
+            'descuento' => $request['descuento1'],
+            'base_imponible' => $request['subtotal_121'],
+            'impuesto' => $request['tarifa_iva1'],
             // 'transporte'                    => $request['transporte'],
-            'total_final'         => $request['totalc'],
-            'valor_contable'      => $request['total1'],
-            'ip_creacion'         => $ip_cliente,
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariocrea'      => $idusuario,
-            'id_usuariomod'       => $idusuario,
+            'total_final' => $request['totalc'],
+            'valor_contable' => $request['total1'],
+            'ip_creacion' => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
         ];
         // return $factura_venta;
-        $id_venta = Ct_ven_orden::insertGetId($factura_venta);
-        //$id_venta = 0;
-        $arr_total      = [];
-        $total_iva      = 0;
+        $id_venta = Ct_Ven_Orden::insertGetId($factura_venta);
+        // $id_venta = 0;
+        $arr_total = [];
+        $total_iva = 0;
         $total_impuesto = 0;
-        $total_0        = 0;
-        for ($i = 0; $i < count($request->input("nombre")); $i++) {
-            if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
+        $total_0 = 0;
+        for ($i = 0; $i < count($request->input('nombre')); $i++) {
+            if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
                 $arr = [
-                    'nombre'     => $request->input("nombre")[$i],
-                    'cantidad'   => $request->input("cantidad")[$i],
-                    'codigo'     => $request->input("codigo")[$i],
-                    'precio'     => $request->input("precio")[$i],
-                    'descpor'    => $request->input("descpor")[$i],
-                    'copago'     => $request->input("copago")[$i],
-                    'descuento'  => $request->input("desc")[$i],
-                    'precioneto' => $request->input("precioneto")[$i],
-                    'detalle'    => $request->input("descrip_prod")[$i],
-                    'iva'        => $request->input("iva")[$i],
+                    'nombre' => $request->input('nombre')[$i],
+                    'cantidad' => $request->input('cantidad')[$i],
+                    'codigo' => $request->input('codigo')[$i],
+                    'precio' => $request->input('precio')[$i],
+                    'descpor' => $request->input('descpor')[$i],
+                    'copago' => $request->input('copago')[$i],
+                    'descuento' => $request->input('desc')[$i],
+                    'precioneto' => $request->input('precioneto')[$i],
+                    'detalle' => $request->input('descrip_prod')[$i],
+                    'iva' => $request->input('iva')[$i],
                 ];
                 array_push($arr_total, $arr);
             }
         }
         foreach ($arr_total as $valor) {
             $detalle = [
-                'id_ct_ven_orden'      => $id_venta,
-                'id_ct_productos'      => $valor['codigo'],
-                'nombre'               => $valor['nombre'],
-                'cantidad'             => $valor['cantidad'],
-                'precio'               => $valor['precio'],
+                'id_ct_ven_orden' => $id_venta,
+                'id_ct_productos' => $valor['codigo'],
+                'nombre' => $valor['nombre'],
+                'cantidad' => $valor['cantidad'],
+                'precio' => $valor['precio'],
                 'descuento_porcentaje' => $valor['descpor'],
-                'descuento'            => $valor['descuento'],
-                'extendido'            => $valor['copago'],
-                'detalle'              => $valor['detalle'],
-                'copago'               => $valor['precioneto'],
-                'check_iva'            => $valor['iva'],
-                'ip_creacion'          => $ip_cliente,
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
+                'descuento' => $valor['descuento'],
+                'extendido' => $valor['copago'],
+                'detalle' => $valor['detalle'],
+                'copago' => $valor['precioneto'],
+                'check_iva' => $valor['iva'],
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
 
-            Ct_ven_orden_detalle::create($detalle);
+            Ct_Ven_Orden_Detalle::create($detalle);
         }
+
         return ['id' => $id_venta];
     }
+
     public function valida_numero_factura($idempresa, $sucursal, $punto_emision, $numero)
     {
-        $numeroconcadenado    = $sucursal . '-' . $punto_emision . '-' . $numero;
+        $numeroconcadenado = $sucursal.'-'.$punto_emision.'-'.$numero;
         $verifica_num_factura = null;
-        $validate             = true;
-        $nfactura             = '';
+        $validate = true;
+        $nfactura = '';
 
         // do{
         $verifica_num_factura = Ct_ventas::where('id_empresa', $idempresa)
@@ -5510,97 +5596,98 @@ class VentasController extends Controller
         //     //dd ("sii entra");
         //     break;
         // }
-        //}while(true);
+        // }while(true);
         if (is_null($verifica_num_factura)) {
             //   dd("Numero");
             return $numero;
         } else {
             //  dd("existe");
-            return "existe";
+            return 'existe';
         }
         // dd("si {$numeroconcadenado}");
 
     }
+
     public function ordenVenta($id_v, Request $request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = Date('Y-m-d H:i:s');
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = date('Y-m-d H:i:s');
         $id_empresa = $request->session()->get('id_empresa');
         if (Auth::user()->id == '0951561075') {
-            //$id_empresa = '0916293723001';
-            //dd($request->all());
+            // $id_empresa = '0916293723001';
+            // dd($request->all());
         }
-        $c_sucursal      = 0;
-        $c_caja          = 0;
+        $c_sucursal = 0;
+        $c_caja = 0;
         $num_comprobante = 0;
-        $nfactura        = 0;
-        $proced          = $request['procedimiento'];
-        $pac             = "";
-        if ($request['nombre_paciente'] != "") {
-            $pac = " | " . $request['nombre_paciente'];
+        $nfactura = 0;
+        $proced = $request['procedimiento'];
+        $pac = '';
+        if ($request['nombre_paciente'] != '') {
+            $pac = ' | '.$request['nombre_paciente'];
         }
-        $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
 
         $id_asiento_cabecera = 0;
-        //GUARDAdo TABLA CT_VENTA.
+        // GUARDAdo TABLA CT_VENTA.
         $factura_venta = [
-            'sucursal'            => $c_sucursal,
-            'punto_emision'       => $c_caja,
-            'numero'              => $nfactura,
-            'nro_comprobante'     => $num_comprobante,
-            'id_asiento'          => $id_asiento_cabecera,
-            'id_empresa'          => $id_empresa,
-            'tipo'                => $request['tipo'],
-            'fecha'               => $request['fecha_asiento'],
-            'divisas'             => $request['divisas'],
-            'nombre_cliente'      => $request['nombre_cliente'],
-            'tipo_consulta'       => $request['tipo_consulta'],
-            'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-            'direccion_cliente'   => $request['direccion_cliente'],
-            'ruc_id_cliente'      => $request['identificacion_cliente'],
-            'telefono_cliente'    => $request['telefono_cliente'],
-            'email_cliente'       => $request['mail_cliente'],
-            'orden_venta'         => $request['orden_venta'],
-            'estado_pago'         => '0',
-            'id_paciente'         => $request['identificacion_paciente'],
-            'nombres_paciente'    => $request['nombre_paciente'],
+            'sucursal' => $c_sucursal,
+            'punto_emision' => $c_caja,
+            'numero' => $nfactura,
+            'nro_comprobante' => $num_comprobante,
+            'id_asiento' => $id_asiento_cabecera,
+            'id_empresa' => $id_empresa,
+            'tipo' => $request['tipo'],
+            'fecha' => $request['fecha_asiento'],
+            'divisas' => $request['divisas'],
+            'nombre_cliente' => $request['nombre_cliente'],
+            'tipo_consulta' => $request['tipo_consulta'],
+            'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+            'direccion_cliente' => $request['direccion_cliente'],
+            'ruc_id_cliente' => $request['identificacion_cliente'],
+            'telefono_cliente' => $request['telefono_cliente'],
+            'email_cliente' => $request['mail_cliente'],
+            'orden_venta' => $request['orden_venta'],
+            'estado_pago' => '0',
+            'id_paciente' => $request['identificacion_paciente'],
+            'nombres_paciente' => $request['nombre_paciente'],
             'id_hc_procedimiento' => $request['mov_paciente'],
-            'seguro_paciente'     => $request['id_seguro'],
-            'procedimientos'      => $request['procedimiento'],
+            'seguro_paciente' => $request['id_seguro'],
+            'procedimientos' => $request['procedimiento'],
             'fecha_procedimiento' => $request['fecha_proced'],
-            'copago'              => $request['total1'],
-            'id_recaudador'       => $request['cedula_recaudador'],
-            'ci_vendedor'         => $request['cedula_vendedor'],
-            'vendedor'            => $request['vendedor'],
-            'subtotal_0'          => $request['subtotal_01'],
-            'subtotal_12'         => $request['subtotal_121'],
-            'descuento'           => $request['descuento1'],
-            'base_imponible'      => $request['subtotal_121'],
-            'impuesto'            => $request['tarifa_iva1'],
-            'total_final'         => $request['totalc'],
-            'valor_contable'      => $request['total1'],
-            'ip_creacion'         => $ip_cliente,
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariocrea'      => $idusuario,
-            'id_usuariomod'       => $idusuario,
-            'id_ct_venta'         => $id_v,
+            'copago' => $request['total1'],
+            'id_recaudador' => $request['cedula_recaudador'],
+            'ci_vendedor' => $request['cedula_vendedor'],
+            'vendedor' => $request['vendedor'],
+            'subtotal_0' => $request['subtotal_01'],
+            'subtotal_12' => $request['subtotal_121'],
+            'descuento' => $request['descuento1'],
+            'base_imponible' => $request['subtotal_121'],
+            'impuesto' => $request['tarifa_iva1'],
+            'total_final' => $request['totalc'],
+            'valor_contable' => $request['total1'],
+            'ip_creacion' => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'id_ct_venta' => $id_v,
         ];
-        $id_venta  = Ct_ven_orden::insertGetId($factura_venta);
+        $id_venta = Ct_Ven_Orden::insertGetId($factura_venta);
         $arr_total = [];
-        for ($i = 0; $i < count($request->input("nombre")); $i++) {
-            if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
+        for ($i = 0; $i < count($request->input('nombre')); $i++) {
+            if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
                 $arr = [
-                    'nombre'     => $request->input("nombre")[$i],
-                    'cantidad'   => $request->input("cantidad")[$i],
-                    'codigo'     => $request->input("codigo")[$i],
-                    'precio'     => $request->input("precio")[$i],
-                    'descpor'    => $request->input("descpor")[$i],
-                    'copago'     => $request->input("copago")[$i],
-                    'descuento'  => $request->input("desc")[$i],
-                    'precioneto' => $request->input("precioneto")[$i],
-                    'detalle'    => $request->input("descrip_prod")[$i],
-                    'iva'        => $request->input("iva")[$i],
+                    'nombre' => $request->input('nombre')[$i],
+                    'cantidad' => $request->input('cantidad')[$i],
+                    'codigo' => $request->input('codigo')[$i],
+                    'precio' => $request->input('precio')[$i],
+                    'descpor' => $request->input('descpor')[$i],
+                    'copago' => $request->input('copago')[$i],
+                    'descuento' => $request->input('desc')[$i],
+                    'precioneto' => $request->input('precioneto')[$i],
+                    'detalle' => $request->input('descrip_prod')[$i],
+                    'iva' => $request->input('iva')[$i],
 
                 ];
                 array_push($arr_total, $arr);
@@ -5608,117 +5695,119 @@ class VentasController extends Controller
         }
         foreach ($arr_total as $valor) {
             $detalle = [
-                'id_ct_ven_orden'      => $id_venta,
-                'id_ct_productos'      => $valor['codigo'],
-                'nombre'               => $valor['nombre'],
-                'cantidad'             => $valor['cantidad'],
-                'precio'               => $valor['precio'],
+                'id_ct_ven_orden' => $id_venta,
+                'id_ct_productos' => $valor['codigo'],
+                'nombre' => $valor['nombre'],
+                'cantidad' => $valor['cantidad'],
+                'precio' => $valor['precio'],
                 'descuento_porcentaje' => $valor['descpor'],
-                'descuento'            => $valor['descuento'],
-                'extendido'            => $valor['precioneto'],
-                'detalle'              => $valor['detalle'],
-                'copago'               => $valor['copago'],
-                'check_iva'            => $valor['iva'],
-                'ip_creacion'          => $ip_cliente,
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
+                'descuento' => $valor['descuento'],
+                'extendido' => $valor['precioneto'],
+                'detalle' => $valor['detalle'],
+                'copago' => $valor['copago'],
+                'check_iva' => $valor['iva'],
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
-            Ct_ven_orden_detalle::create($detalle);
+            Ct_Ven_Orden_Detalle::create($detalle);
         }
+
         return ['id' => $id_venta];
     }
+
     public function updateorden(Request $request)
     {
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = Date('Y-m-d H:i:s');
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = date('Y-m-d H:i:s');
         $id_empresa = $request->session()->get('id_empresa');
 
-        $c_sucursal      = 0;
-        $c_caja          = 0;
+        $c_sucursal = 0;
+        $c_caja = 0;
         $num_comprobante = 0;
-        $nfactura        = 0;
-        $proced          = $request['procedimiento'];
-        $pac             = "";
-        if ($request['nombre_paciente'] != "") {
-            $pac = " | " . $request['nombre_paciente'];
+        $nfactura = 0;
+        $proced = $request['procedimiento'];
+        $pac = '';
+        if ($request['nombre_paciente'] != '') {
+            $pac = ' | '.$request['nombre_paciente'];
         }
-        $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
 
         $id_asiento_cabecera = 0;
-        //GUARDAdo TABLA CT_VENTA.
+        // GUARDAdo TABLA CT_VENTA.
         $factura_venta = [
-            'sucursal'            => $c_sucursal,
-            'punto_emision'       => $c_caja,
-            'numero'              => $nfactura,
-            'nro_comprobante'     => $num_comprobante,
-            'id_asiento'          => $id_asiento_cabecera,
-            'id_empresa'          => $id_empresa,
-            'tipo'                => $request['tipo'],
-            'fecha'               => $request['fecha_asiento'],
-            'divisas'             => $request['divisas'],
-            'nombre_cliente'      => $request['nombre_cliente'],
-            'tipo_consulta'       => $request['tipo_consulta'],
-            'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-            'direccion_cliente'   => $request['direccion_cliente'],
-            'ruc_id_cliente'      => $request['identificacion_cliente'],
-            'telefono_cliente'    => $request['telefono_cliente'],
-            'email_cliente'       => $request['mail_cliente'],
-            'orden_venta'         => $request['orden_venta'],
-            'nro_autorizacion'    => $request['numero_autorizacion'],
-            'id_paciente'         => $request['identificacion_paciente'],
-            'nombres_paciente'    => $request['nombre_paciente'],
+            'sucursal' => $c_sucursal,
+            'punto_emision' => $c_caja,
+            'numero' => $nfactura,
+            'nro_comprobante' => $num_comprobante,
+            'id_asiento' => $id_asiento_cabecera,
+            'id_empresa' => $id_empresa,
+            'tipo' => $request['tipo'],
+            'fecha' => $request['fecha_asiento'],
+            'divisas' => $request['divisas'],
+            'nombre_cliente' => $request['nombre_cliente'],
+            'tipo_consulta' => $request['tipo_consulta'],
+            'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+            'direccion_cliente' => $request['direccion_cliente'],
+            'ruc_id_cliente' => $request['identificacion_cliente'],
+            'telefono_cliente' => $request['telefono_cliente'],
+            'email_cliente' => $request['mail_cliente'],
+            'orden_venta' => $request['orden_venta'],
+            'nro_autorizacion' => $request['numero_autorizacion'],
+            'id_paciente' => $request['identificacion_paciente'],
+            'nombres_paciente' => $request['nombre_paciente'],
             'id_hc_procedimiento' => $request['mov_paciente'],
-            'seguro_paciente'     => $request['id_seguro'],
-            'procedimientos'      => $request['procedimiento'],
+            'seguro_paciente' => $request['id_seguro'],
+            'procedimientos' => $request['procedimiento'],
             'fecha_procedimiento' => $request['fecha_proced'],
 
-            'copago'              => $request['totalc'],
-            'id_recaudador'       => $request['cedula_recaudador'],
-            'ci_vendedor'         => $request['cedula_vendedor'],
-            'vendedor'            => $request['vendedor'],
-            //'nota'                          => $request['nota'],
-            'subtotal_0'          => $request['subtotal_01'],
-            'subtotal_12'         => $request['subtotal_121'],
-            //'subtotal'                      => $request['subtotal1'],
-            'descuento'           => $request['descuento1'],
-            'base_imponible'      => $request['subtotal_121'],
-            'impuesto'            => $request['tarifa_iva1'],
+            'copago' => $request['totalc'],
+            'id_recaudador' => $request['cedula_recaudador'],
+            'ci_vendedor' => $request['cedula_vendedor'],
+            'vendedor' => $request['vendedor'],
+            // 'nota'                          => $request['nota'],
+            'subtotal_0' => $request['subtotal_01'],
+            'subtotal_12' => $request['subtotal_121'],
+            // 'subtotal'                      => $request['subtotal1'],
+            'descuento' => $request['descuento1'],
+            'base_imponible' => $request['subtotal_121'],
+            'impuesto' => $request['tarifa_iva1'],
             // 'transporte'                    => $request['transporte'],
-            'total_final'         => $request['total1'],
-            'valor_contable'      => $request['total1'],
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariomod'       => $idusuario,
+            'total_final' => $request['total1'],
+            'valor_contable' => $request['total1'],
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariomod' => $idusuario,
 
         ];
 
         // return $factura_venta;
 
-        Ct_ven_orden::where('id', $request['id'])->update($factura_venta);
+        Ct_Ven_Orden::where('id', $request['id'])->update($factura_venta);
 
-        //$id_venta = Ct_ven_orden::insertGetId($factura_venta);
-        $id_venta       = 0;
-        $arr_total      = [];
-        $total_iva      = 0;
+        // $id_venta = Ct_ven_orden::insertGetId($factura_venta);
+        $id_venta = 0;
+        $arr_total = [];
+        $total_iva = 0;
         $total_impuesto = 0;
-        $total_0        = 0;
+        $total_0 = 0;
 
-        for ($i = 0; $i < count($request->input("nombre")); $i++) {
-            if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
+        for ($i = 0; $i < count($request->input('nombre')); $i++) {
+            if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
                 $arr = [
-                    'nombre'     => $request->input("nombre")[$i],
-                    'id_detalle' => $request->input("id_detalle")[$i],
-                    'cantidad'   => $request->input("cantidad")[$i],
-                    'codigo'     => $request->input("codigo")[$i],
-                    'precio'     => $request->input("precio")[$i],
-                    'descpor'    => $request->input("descpor")[$i],
-                    'copago'     => $request->input("copago")[$i],
-                    'descuento'  => $request->input("desc")[$i],
-                    'precioneto' => $request->input("precioneto")[$i],
-                    'detalle'    => $request->input("descrip_prod")[$i],
-                    'iva'        => $request->input("iva")[$i],
+                    'nombre' => $request->input('nombre')[$i],
+                    'id_detalle' => $request->input('id_detalle')[$i],
+                    'cantidad' => $request->input('cantidad')[$i],
+                    'codigo' => $request->input('codigo')[$i],
+                    'precio' => $request->input('precio')[$i],
+                    'descpor' => $request->input('descpor')[$i],
+                    'copago' => $request->input('copago')[$i],
+                    'descuento' => $request->input('desc')[$i],
+                    'precioneto' => $request->input('precioneto')[$i],
+                    'detalle' => $request->input('descrip_prod')[$i],
+                    'iva' => $request->input('iva')[$i],
 
                 ];
                 array_push($arr_total, $arr);
@@ -5726,29 +5815,30 @@ class VentasController extends Controller
         }
         foreach ($arr_total as $valor) {
             $detalle = [
-                //'id_ct_ven_orden'                  => $id_venta,
-                'id_ct_productos'      => $valor['codigo'],
-                'nombre'               => $valor['nombre'],
-                'cantidad'             => $valor['cantidad'],
-                'precio'               => $valor['precio'],
+                // 'id_ct_ven_orden'                  => $id_venta,
+                'id_ct_productos' => $valor['codigo'],
+                'nombre' => $valor['nombre'],
+                'cantidad' => $valor['cantidad'],
+                'precio' => $valor['precio'],
                 'descuento_porcentaje' => $valor['descpor'],
-                'descuento'            => $valor['descuento'],
-                'extendido'            => $valor['precioneto'],
-                'detalle'              => $valor['detalle'],
-                'copago'               => $valor['copago'],
-                'check_iva'            => $valor['iva'],
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariomod'        => $idusuario,
+                'descuento' => $valor['descuento'],
+                'extendido' => $valor['precioneto'],
+                'detalle' => $valor['detalle'],
+                'copago' => $valor['copago'],
+                'check_iva' => $valor['iva'],
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariomod' => $idusuario,
             ];
 
             // Ct_ven_orden_detalle::create($detalle);
-            Ct_ven_orden_detalle::where('id', $valor['id_detalle'])->update($detalle);
+            Ct_Ven_Orden_Detalle::where('id', $valor['id_detalle'])->update($detalle);
         }
 
-        //$request['id'];
-        //return ['fact' => $factura_venta, 'det' => $detalle];
+        // $request['id'];
+        // return ['fact' => $factura_venta, 'det' => $detalle];
         return ['id' => $request['id']];
     }
+
     public function index_cierre(Request $request)
     {
         if ($this->rol()) {
@@ -5764,7 +5854,7 @@ class VentasController extends Controller
         }
         $id_empresa = $request['id_empresa'];
         if (is_null($id_empresa)) {
-            //$id_empresa = Empresa::where('prioridad', '1')->first()->id;
+            // $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
         $caja = $request['caja'];
         $doctor = $request['doctor'];
@@ -5781,7 +5871,7 @@ class VentasController extends Controller
         //                         ->where('p.id_seguro', '<>', '3')
         //                         ->where('p.id_seguro', '<>', '6')
         //                         ->whereNull('orden.id');
-        //$facturas_pendientes = Agenda::leftjoin('ct_orden_venta as orden', 'orden.id_agenda', 'agenda.id')
+        // $facturas_pendientes = Agenda::leftjoin('ct_orden_venta as orden', 'orden.id_agenda', 'agenda.id')
         $facturas_pendientes = Agenda::leftjoin('ct_orden_venta as orden', function ($join) {
             $join->on(function ($query) {
                 $query->on('orden.id_agenda', 'agenda.id')
@@ -5790,7 +5880,7 @@ class VentasController extends Controller
         })
             ->join('paciente as p', 'p.id', 'agenda.id_paciente')
             ->join('users as u', 'agenda.id_usuariomod', 'u.id')
-            ->whereBetween('agenda.fechaini', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
+            ->whereBetween('agenda.fechaini', [$fecha.' 00:00:00', $fecha_hasta.' 23:59:00'])
             ->join('seguros as s', 's.id', 'agenda.id_seguro')
             ->where('s.tipo', '<>', '0')->where('agenda.proc_consul', '<', '2')
             ->whereRaw('(agenda.omni = "%NO%" OR agenda.omni IS NULL)')
@@ -5802,17 +5892,17 @@ class VentasController extends Controller
             ->where('agenda.id_doctor1', '<>', '4444444444');
         $ordenes = Ct_Orden_Venta::where('ct_orden_venta.estado', 1)
             ->join('agenda as a', 'a.id', 'ct_orden_venta.id_agenda')
-            //->where('ct_orden_venta.id_empresa', $id_empresa)
-            ->whereBetween('ct_orden_venta.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
+            // ->where('ct_orden_venta.id_empresa', $id_empresa)
+            ->whereBetween('ct_orden_venta.fecha_emision', [$fecha.' 00:00:00', $fecha_hasta.' 23:59:00'])
             ->select('ct_orden_venta.*', 'a.id_doctor1', 'a.proc_consul');
-        if (!is_null($id_empresa)) {
-            $ordenes  = $ordenes->where('ct_orden_venta.id_empresa', $id_empresa);
+        if (! is_null($id_empresa)) {
+            $ordenes = $ordenes->where('ct_orden_venta.id_empresa', $id_empresa);
         }
-        if (!is_null($tipo)) {
-            $ordenes             = $ordenes->where('a.proc_consul', $tipo);
+        if (! is_null($tipo)) {
+            $ordenes = $ordenes->where('a.proc_consul', $tipo);
             $facturas_pendientes = $facturas_pendientes->where('agenda.proc_consul', $tipo);
         }
-        if (!is_null($caja)) {
+        if (! is_null($caja)) {
             $ordenes = $ordenes->where('ct_orden_venta.caja', $caja);
             if ($caja == 'LABORATORIO') {
                 $ordenes = $ordenes->where('ct_orden_venta.caja', $caja)->where('ct_orden_venta.id_Seguro', '<>', '1');
@@ -5820,89 +5910,91 @@ class VentasController extends Controller
         } else {
             $ordenes = $ordenes->where('ct_orden_venta.caja', '<>', 'LABORATORIO');
         }
-        if (!is_null($doctor)) {
-            $ordenes             = $ordenes->where('a.id_doctor1', $doctor);
+        if (! is_null($doctor)) {
+            $ordenes = $ordenes->where('a.id_doctor1', $doctor);
             $facturas_pendientes = $facturas_pendientes->where('agenda.id_doctor1', $doctor);
         }
-        if (!is_null($id_paciente)) {
-            $ordenes  = $ordenes->where('a.id_paciente', $id_paciente);
+        if (! is_null($id_paciente)) {
+            $ordenes = $ordenes->where('a.id_paciente', $id_paciente);
             $usuario_paciente = Paciente::find($id_paciente);
         }
         $ordenes = $ordenes->get();
         $doctores = User::where('id_tipo_usuario', '3')->where('training', '0')->where('uso_sistema', '0')->orderby('apellido1')->get();
-        $cajas      = CtCajaCobro::where('estado', 1)->get();
-        $empresas            = Empresa::where('prioridad', '1')->where('estado', 1)->get();
+        $cajas = CtCajaCobro::where('estado', 1)->get();
+        $empresas = Empresa::where('prioridad', '1')->where('estado', 1)->get();
         $facturas_pendientes = $facturas_pendientes->select('agenda.*', 'p.nombre1 as nombre1', 'p.apellido1 as apellido1', 'p.apellido2 as apellido2', 'u.nombre1 as unombre1', 'u.apellido1 as uapellido1', 'u.apellido2 as uapellido2')->get();
+
         return view('contable/ventas/index_cierre', ['empresas' => $empresas, 'facturas_pendientes' => $facturas_pendientes, 'fecha' => $fecha, 'fecha_hasta' => $fecha_hasta, 'ordenes' => $ordenes, 'request' => $request, 'doctores' => $doctores, 'usuario_paciente' => $usuario_paciente, 'cajas' => $cajas]);
     }
+
     public function facturas_omni(Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        $consultar     = $request->all();
-        $fecha         = $request['fecha'];
-        $fechafin      = $request['fecha_hasta'];
-        $id_empresa    = $request->session()->get('id_empresa'); //$request['id_empresa'];
-        $empresas      = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
+        $consultar = $request->all();
+        $fecha = $request['fecha'];
+        $fechafin = $request['fecha_hasta'];
+        $id_empresa = $request->session()->get('id_empresa'); // $request['id_empresa'];
+        $empresas = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
         $procedimiento = Procedimiento::all();
         if ($fecha == 0) {
             $fecha_2 = date('Y-m-d');
-            $fecha   = $fecha_2;
+            $fecha = $fecha_2;
         } else {
             $fecha_2 = $fecha;
         }
         if ($fechafin == 0) {
             $fechafin1 = date('Y-m-d');
-            $fechafin  = $fechafin1;
+            $fechafin = $fechafin1;
         } else {
             $fechafin1 = $fechafin;
         }
-        $nombres        = $request['nombres'];
-        $cedula         = $request['cedula'];
-        $seguros        = Seguro::where('inactivo', '1')->orderBy('nombre', 'asc')->get();
+        $nombres = $request['nombres'];
+        $cedula = $request['cedula'];
+        $seguros = Seguro::where('inactivo', '1')->orderBy('nombre', 'asc')->get();
         $procedimientos = [];
         if ($request->id_agenda != null) {
             $procedimientos = Agenda::whereIn('id', $request->id_agenda)->get();
         } else {
             if ($request->tipo != null) {
-                $procedimientos = Agenda::where("agenda.estado_cita", "4")->where('agenda.proc_consul', $request->tipo);
+                $procedimientos = Agenda::where('agenda.estado_cita', '4')->where('agenda.proc_consul', $request->tipo);
             } else {
-                $procedimientos = Agenda::where("agenda.estado_cita", "4")->where('agenda.proc_consul', '<>', 2);
+                $procedimientos = Agenda::where('agenda.estado_cita', '4')->where('agenda.proc_consul', '<>', 2);
             }
 
-            $procedimientos = $procedimientos->whereBetween('agenda.fechaini', [$fecha_2 . ' 00:00:00', $fechafin1 . ' 23:59:59']);
+            $procedimientos = $procedimientos->whereBetween('agenda.fechaini', [$fecha_2.' 00:00:00', $fechafin1.' 23:59:59']);
             $procedimientos = $procedimientos->join('historiaclinica as h', 'h.id_agenda', 'agenda.id');
-            if (!is_null($request['id_seguro'])) {
+            if (! is_null($request['id_seguro'])) {
 
                 $procedimientos = $procedimientos->whereIn('h.id_seguro', $request['id_seguro']);
             }
-            if (!is_null($request['procedimientos'])) {
+            if (! is_null($request['procedimientos'])) {
                 $procedimientos = $procedimientos->whereIn('agenda.id_procedimiento', $request['procedimientos']);
             }
-            if (!is_null($request['omni'])) {
-                if ($request['omni'] == "SI") {
+            if (! is_null($request['omni'])) {
+                if ($request['omni'] == 'SI') {
                     $procedimientos = $procedimientos->whereRaw('(agenda.omni LIKE "%OM%" OR agenda.omni LIKE "%SI%")');
                 } else {
                     $procedimientos = $procedimientos->where('agenda.omni', $request['omni']);
                 }
             }
             $procedimientos = $procedimientos->join('paciente', 'agenda.id_paciente', '=', 'paciente.id');
-            if (!is_null($cedula)) {
+            if (! is_null($cedula)) {
                 $procedimientos->where('id_paciente', $cedula);
             }
 
             if ($nombres != null) {
-                //dd("dada");
-                $nombres2 = explode(" ", $nombres);
+                // dd("dada");
+                $nombres2 = explode(' ', $nombres);
                 $cantidad = count($nombres2);
 
                 $nombres_sql = '';
 
                 foreach ($nombres2 as $n) {
-                    $nombres_sql = $nombres_sql . '%' . $n;
+                    $nombres_sql = $nombres_sql.'%'.$n;
                 }
-                $nombres_sql = $nombres_sql . '%';
+                $nombres_sql = $nombres_sql.'%';
 
                 if ($cantidad > 1) {
                     $procedimientos = $procedimientos->where(function ($jq1) use ($nombres_sql) {
@@ -5919,14 +6011,15 @@ class VentasController extends Controller
                     });
                 }
             }
-            //dd($procedimientos);
+            // dd($procedimientos);
             $procedimientos = $procedimientos->select('agenda.*', 'h.id_seguro as seguro_final')->get();
         }
 
-        //dd($request->all());
+        // dd($request->all());
         return view('contable/ventas/facturas_omni', ['procedimientos' => $procedimientos, 'procedimiento' => $procedimiento, 'empresas' => $empresas, 'empresa' => $empresas, 'seguros' => $seguros, 'fecha' => $fecha, 'fecha_hasta' => $fechafin, 'request' => $request]);
     }
-    //crea la factura desde el recibo/reporte de caja
+
+    // crea la factura desde el recibo/reporte de caja
     public function factura_caja($id_orden, Request $request)
     {
         $porIva = $this->porIva;
@@ -5934,7 +6027,7 @@ class VentasController extends Controller
         $request['id_agenda'] = $fact_venta->id_agenda;
         $getReload = $this->getReloadRecibo($request);
         $ct_for_pag = Ct_Orden_Venta_Pago::where('id_orden', $id_orden)->get();
-        $vistaurl = "contable.facturacion.pdf_comprobante_tributario";
+        $vistaurl = 'contable.facturacion.pdf_comprobante_tributario';
         $view = \View::make($vistaurl, compact('fact_venta', 'ct_for_pag', 'porIva'))->render();
         $divisas = Ct_Divisas::where('estado', '1')->get();
         $clientes = Ct_Clientes::where('estado', '1')->get();
@@ -5945,33 +6038,35 @@ class VentasController extends Controller
             ->where('estado', 1)->get();
         $user_vendedor = User::where('id_tipo_usuario', 17)
             ->where('estado', 1)->get();
-        $bodega = bodega::where('estado', '1')->get();
+        $bodega = Bodega::where('estado', '1')->get();
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->where('id_empresa', $id_empresa)->get();
         $id_plan = LogConfig::busqueda('4.1.01.02');
-        //$iva = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
-        //$iva = Ct_Configuraciones::where('id_plan', $id_plan)->where('estado', '1')->first();
+        // $iva = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+        // $iva = Ct_Configuraciones::where('id_plan', $id_plan)->where('estado', '1')->first();
         $tipo_tarjeta = Ct_Tipo_Tarjeta::all();
         $fact_venta_detalle = Ct_Orden_Venta_Detalle::where('id_orden', $id_orden)->get();
         $bodega_in = Ct_Bodegas::where('estado', '1')->where('id_empresa', $id_empresa)->get();
+
         return view('contable/ventas/create_facturaRecibo', ['porIva' => $this->porIva, 'bodega_in' => $bodega_in, 'fact_venta' => $fact_venta, 'tipo_tarjeta' => $tipo_tarjeta, 'fact_venta_detalle' => $fact_venta_detalle, 'ct_for_pag' => $ct_for_pag, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas]);
     }
+
     public function store_varios(Request $request)
     {
         if ($this->rol()) {
@@ -5980,7 +6075,7 @@ class VentasController extends Controller
         foreach (['total1', 'totalc', 'subtotal_01', 'subtotal_121', 'descuento1', 'base1', 'tarifa_iva1'] as $campo) {
             if ($request->has($campo) && is_numeric($request->input($campo))) {
                 $request->merge([
-                    $campo => round((float) $request->input($campo), 2, PHP_ROUND_HALF_UP)
+                    $campo => round((float) $request->input($campo), 2, PHP_ROUND_HALF_UP),
                 ]);
             }
         }
@@ -5991,20 +6086,20 @@ class VentasController extends Controller
                         return is_numeric($valor)
                             ? round((float) $valor, 2, PHP_ROUND_HALF_UP)
                             : $valor;
-                    }, $request->input($campo))
+                    }, $request->input($campo)),
                 ]);
             }
         }
         $request->merge($this->calcularTotalesConglomerada($request->all()));
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = $request['fecha_asiento'];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = $request['fecha_asiento'];
         $id_empresa = $request->session()->get('id_empresa');
         $llevaOrden = false;
-        $idusuario  = Auth::user()->id;
+        $idusuario = Auth::user()->id;
         $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
-        $numero     = $request['numero'];
-        $cod_caj    = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+        $numero = $request['numero'];
+        $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
         $proced = $request['procedimiento'];
         if ($request['sucursal'] != 0) {
             $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
@@ -6012,21 +6107,21 @@ class VentasController extends Controller
             $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
             $c_caja = $cod_caj->codigo_caja;
             $proced = $request['procedimiento'];
-            if (!is_null($numero)) {
-                $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+            if (! is_null($numero)) {
+                $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                 $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                     ->where('nro_comprobante', $num_comprobante)
                     ->where('tipo', '<>', 'VEN-FACT')
                     ->where('estado', '!=', '0')
                     ->first();
-                if (!is_null($verifica_num_factura)) {
-                    return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                if (! is_null($verifica_num_factura)) {
+                    return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                 } else {
                     $nfactura = $numero;
                 }
             } else {
                 $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
             }
         } else {
             $c_sucursal = 0;
@@ -6035,25 +6130,26 @@ class VentasController extends Controller
             $nfactura = 0;
             $proced = $request['procedimiento'];
         }
-        $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced;
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced;
         DB::beginTransaction();
         try {
             $input_cabecera = [
-                'fecha_asiento'   => $fecha_as,
-                'fact_numero'     => $nfactura,
-                'id_empresa'      => $id_empresa,
-                'observacion'     => $text,
-                'valor'           => $request['total1'],
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
+                'fecha_asiento' => $fecha_as,
+                'fact_numero' => $nfactura,
+                'id_empresa' => $id_empresa,
+                'observacion' => $text,
+                'valor' => $request['total1'],
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
             ];
-            $arr_total2          = [];
-            if ($id_empresa == '0993075000001')
+            $arr_total2 = [];
+            if ($id_empresa == '0993075000001') {
                 $id_asiento_cabecera = 0;
-            else
-                $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera); //activo
+            } else {
+                $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
+            } // activo
             $factura_venta = [
                 'sucursal' => $cod_sucurs->codigo_sucursal,
                 'punto_emision' => $cod_caj->codigo_caja,
@@ -6069,7 +6165,7 @@ class VentasController extends Controller
                 'divisas' => $request['divisas'],
                 'nombre_cliente' => $request['nombre_cliente'],
                 'tipo_consulta' => $request['tipo_consulta'],
-                'id_cliente' => $request['identificacion_cliente'], //nombre_cliente
+                'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
                 'direccion_cliente' => $request['direccion_cliente'],
                 'ruc_id_cliente' => $request['identificacion_cliente'],
                 'telefono_cliente' => $request['telefono_cliente'],
@@ -6081,7 +6177,7 @@ class VentasController extends Controller
                 'id_hc_procedimiento' => $request['mov_paciente'],
                 'concepto' => $request['concepto'],
                 'seguro_paciente' => $request['id_seguro'],
-                'electronica' =>  $c_caja == 100 ? 1 : $request['electronica'],
+                'electronica' => $c_caja == 100 ? 1 : $request['electronica'],
                 'procedimientos' => $request['procedimiento'],
                 'fecha_procedimiento' => $request['fecha_proced'],
                 'copago' => $request['totalc'],
@@ -6093,7 +6189,7 @@ class VentasController extends Controller
                 'impuesto' => $request['tarifa_iva1'],
                 'total_final' => $request['total1'],
                 'valor_contable' => $request['total1'],
-                'ip_creacion' => "conglomerada",
+                'ip_creacion' => 'conglomerada',
                 'ip_modificacion' => $ip_cliente,
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
@@ -6101,102 +6197,103 @@ class VentasController extends Controller
                 'doc_electronico' => $c_caja == 100 ? 0 : null,
                 'emisor' => $c_caja == 100 ? 'MD' : null,
             ];
-            if ($id_empresa == '0993075000001')
+            if ($id_empresa == '0993075000001') {
                 $id_venta = 0;
-            else
+            } else {
                 $id_venta = Ct_ventas::insertGetId($factura_venta);
+            }
             for ($i = 0; $i < count($request->codigo); $i++) {
                 $upd = [
-                    'estado_pago'     => '1',
-                    'id_referencia'   => $id_venta,
+                    'estado_pago' => '1',
+                    'id_referencia' => $id_venta,
                     'ip_modificacion' => $ip_cliente,
-                    'id_usuariomod'   => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
-                $nombre = "";
-                if (isset($request->input("nombre_producto")[$i])) {
-                    $nombre = $request->input("nombre_producto")[$i];
+                $nombre = '';
+                if (isset($request->input('nombre_producto')[$i])) {
+                    $nombre = $request->input('nombre_producto')[$i];
                 }
-                $codigo = "";
-                if (isset($request->input("codigo")[$i])) {
-                    $codigo = $request->input("codigo")[$i];
+                $codigo = '';
+                if (isset($request->input('codigo')[$i])) {
+                    $codigo = $request->input('codigo')[$i];
                 }
                 $cantidad = 0;
-                if (isset($request->input("cantidad")[$i])) {
-                    $cantidad = $request->input("cantidad")[$i];
+                if (isset($request->input('cantidad')[$i])) {
+                    $cantidad = $request->input('cantidad')[$i];
                 }
-                $paciente = "";
-                if (isset($request->input("paciente")[$i])) {
-                    $paciente = $request->input("paciente")[$i];
+                $paciente = '';
+                if (isset($request->input('paciente')[$i])) {
+                    $paciente = $request->input('paciente')[$i];
                 }
                 $precio = 0;
-                if (isset($request->input("precio")[$i])) {
-                    $precio = $request->input("precio")[$i];
+                if (isset($request->input('precio')[$i])) {
+                    $precio = $request->input('precio')[$i];
                 }
                 $descuentopor = 0;
-                if (isset($request->input("descpor")[$i])) {
-                    $descuentopor = $request->input("descpor")[$i];
+                if (isset($request->input('descpor')[$i])) {
+                    $descuentopor = $request->input('descpor')[$i];
                 }
                 $descuento = 0;
-                if (isset($request->input("desc")[$i])) {
-                    $descuento = $request->input("desc")[$i];
+                if (isset($request->input('desc')[$i])) {
+                    $descuento = $request->input('desc')[$i];
                 }
                 $copago = 0;
-                if (isset($request->input("copago")[$i])) {
-                    $copago = $request->input("copago")[$i];
+                if (isset($request->input('copago')[$i])) {
+                    $copago = $request->input('copago')[$i];
                 }
                 $precio_neto = 0;
-                if (isset($request->input("precioneto")[$i])) {
-                    $precio_neto = $request->input("precioneto")[$i];
+                if (isset($request->input('precioneto')[$i])) {
+                    $precio_neto = $request->input('precioneto')[$i];
                 }
-                $detalle = "";
-                $detalle = $request->input("descrip_prod")[$i];
+                $detalle = '';
+                $detalle = $request->input('descrip_prod')[$i];
                 $iva = 0;
-                if (isset($request->input("iva")[$i])) {
-                    $iva = $request->input("iva")[$i];
+                if (isset($request->input('iva')[$i])) {
+                    $iva = $request->input('iva')[$i];
                 }
                 $id_orden = 1;
-                if (isset($request->input("id_orden")[$i])) {
-                    $id_orden = $request->input("id_orden")[$i];
-                    $ventax = Ct_ven_orden::where('id', $request->input("id_orden")[$i])->first();
+                if (isset($request->input('id_orden')[$i])) {
+                    $id_orden = $request->input('id_orden')[$i];
+                    $ventax = Ct_Ven_Orden::where('id', $request->input('id_orden')[$i])->first();
                     if ($ventax != '') {
-                        Ct_ven_orden::where('id', $request->input("id_orden")[$i])->update($upd);
+                        Ct_Ven_Orden::where('id', $request->input('id_orden')[$i])->update($upd);
                     }
                 }
-                $bodega_in = "";
-                if (isset($request->input("bodega")[$i])) {
-                    $bodega_in = $request->input("bodega")[$i];
+                $bodega_in = '';
+                if (isset($request->input('bodega')[$i])) {
+                    $bodega_in = $request->input('bodega')[$i];
                 }
                 $arr = [
-                    'nombre'      => $nombre,
-                    'cantidad'    => $cantidad,
-                    'codigo'      => $codigo,
+                    'nombre' => $nombre,
+                    'cantidad' => $cantidad,
+                    'codigo' => $codigo,
                     'id_paciente' => $paciente,
-                    'precio'      => $precio,
-                    'id_orden'    => $id_orden,
-                    'descpor'     => $descuentopor,
-                    'copago'      => $copago,
-                    'descuento'   => $descuento,
-                    'precioneto'  => $precio_neto,
-                    'detalle'     => $detalle,
-                    'iva'         => $iva,
-                    'id_hc_proc'  => $request->input('id_hc_proc')[$i],
-                    'obs_pac'     => $text,
-                    'bodega'      => $bodega_in,
+                    'precio' => $precio,
+                    'id_orden' => $id_orden,
+                    'descpor' => $descuentopor,
+                    'copago' => $copago,
+                    'descuento' => $descuento,
+                    'precioneto' => $precio_neto,
+                    'detalle' => $detalle,
+                    'iva' => $iva,
+                    'id_hc_proc' => $request->input('id_hc_proc')[$i],
+                    'obs_pac' => $text,
+                    'bodega' => $bodega_in,
                 ];
                 array_push($arr_total2, $arr);
             }
             $detalleConglomerada = [];
             foreach ($arr_total2 as $valor) {
-                //dd($valor);
-                $paciente = "";
+                // dd($valor);
+                $paciente = '';
                 if (isset($valor['paciente'])) {
                     $paciente = $valor['paciente'];
                 }
-                $precio_neto = "";
+                $precio_neto = '';
                 if (isset($valor['precioneto'])) {
                     $precio_neto = $valor['precioneto'];
                 }
-                $nombre = "";
+                $nombre = '';
                 if (isset($valor['nombre'])) {
                     $nombre = $valor['nombre'];
                 }
@@ -6204,15 +6301,15 @@ class VentasController extends Controller
                 if (isset($valor['cantidad'])) {
                     $cantidad = $valor['cantidad'];
                 }
-                $codigo = "";
+                $codigo = '';
                 if (isset($valor['codigo'])) {
                     $codigo = $valor['codigo'];
                 }
-                $nombre_procedimiento = "";
+                $nombre_procedimiento = '';
                 if (isset($valor['nombre_procedimiento'])) {
                     $nombre_procedimiento = $valor['nombre_procedimiento'];
                 }
-                $fecha_procedimiento = "";
+                $fecha_procedimiento = '';
                 if (isset($valor['fecha_procedimiento'])) {
                     $fecha_procedimiento = $valor['fecha_procedimiento'];
                 }
@@ -6220,7 +6317,7 @@ class VentasController extends Controller
                 if (isset($valor['precio'])) {
                     $precio = $valor['precio'];
                 }
-                $paciente = "";
+                $paciente = '';
                 if (isset($valor['paciente'])) {
                     $paciente = $valor['paciente'];
                 }
@@ -6232,11 +6329,11 @@ class VentasController extends Controller
                 if (isset($valor['descuento'])) {
                     $descuento = $valor['descuento'];
                 }
-                $descrip_prod = "";
+                $descrip_prod = '';
                 if (isset($valor['detalle'])) {
                     $descrip_prod = $valor['detalle'];
                 }
-                $id_hc_proc = "";
+                $id_hc_proc = '';
                 if (isset($valor['id_hc_proc'])) {
                     $id_hc_proc = $valor['id_hc_proc'];
                 }
@@ -6244,7 +6341,7 @@ class VentasController extends Controller
                 if (isset($valor['id_orden'])) {
                     $id_orden = $valor['id_orden'];
                 }
-                $bodega_in = "";
+                $bodega_in = '';
                 if (isset($valor['bodega'])) {
                     $bodega_in = $valor['bodega'];
                 }
@@ -6271,8 +6368,9 @@ class VentasController extends Controller
                     'id_usuariomod' => $idusuario,
                     'bodega' => $bodega_in,
                 ];
-                if ($id_empresa != '0993075000001')
-                    Ct_detalle_venta::create($detalle); //
+                if ($id_empresa != '0993075000001') {
+                    Ct_detalle_venta::create($detalle);
+                } //
                 $detalles = [
                     'id_ct_ventas' => $id_venta,
                     'id_ct_productos' => $codigo,
@@ -6294,35 +6392,36 @@ class VentasController extends Controller
                     'id_usuariomod' => $idusuario,
                 ];
                 array_push($detalleConglomerada, $detalles);
-                if ($id_empresa != '0993075000001')
+                if ($id_empresa != '0993075000001') {
                     Ct_Detalle_Venta_Conglomerada::create($detalles);
+                }
             }
-            //*
-            //***MODULO CUENTA POR COBRAR***
+            // *
+            // ***MODULO CUENTA POR COBRAR***
             //
-            //cUENTAS X COBRAR CLIENTES
+            // cUENTAS X COBRAR CLIENTES
             // --activo
             $val_tol = $request['total1'];
             $data['id'] = $id_venta;
             $data['tipo'] = 'VEN-FA';
-            $getSri = "No";
+            $getSri = 'No';
             $empresa = Empresa::find($id_empresa);
 
             $arr_p = [];
             for ($i = 0; $i < $request['contador_pago']; $i++) {
-                $visibilidad_pa = $request['visibilidad_pago' . $i];
+                $visibilidad_pa = $request['visibilidad_pago'.$i];
                 if ($visibilidad_pa == 1) {
                     $arr_pagos = [
-                        'id_tipo'    => $request['id_tip_pago' . $i],
-                        'fecha'     => $request['fecha_pago' . $i],
-                        'tipo_tarjeta'   => $request['tipo_tarjeta' . $i],
-                        'numero_transaccion'    => $request['numero_pago' . $i],
-                        'id_banco'  => $request['id_banco_pago' . $i],
-                        'cuenta' => $request['id_cuenta_pago' . $i],
-                        'giradoa'        => $request['giradoa' . $i],
-                        'valor'          => $request['valor' . $i],
-                        'valor_base'     => $request['valor_base' . $i],
-                        'info_banco' => Ct_Bancos::find($request['id_banco_pago' . $i])
+                        'id_tipo' => $request['id_tip_pago'.$i],
+                        'fecha' => $request['fecha_pago'.$i],
+                        'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                        'numero_transaccion' => $request['numero_pago'.$i],
+                        'id_banco' => $request['id_banco_pago'.$i],
+                        'cuenta' => $request['id_cuenta_pago'.$i],
+                        'giradoa' => $request['giradoa'.$i],
+                        'valor' => $request['valor'.$i],
+                        'valor_base' => $request['valor_base'.$i],
+                        'info_banco' => Ct_Bancos::find($request['id_banco_pago'.$i]),
                     ];
                     array_push($arr_p, $arr_pagos);
                 }
@@ -6335,29 +6434,29 @@ class VentasController extends Controller
                 'seguro' => Seguro::find($request['id_seguro']),
                 'idUsuario' => $idusuario,
                 'detalleConglomerada' => $detalleConglomerada,
-                'formas_pago' => $arr_p
+                'formas_pago' => $arr_p,
             ];
             if ($id_empresa == '0993075000001') {
-                $characters   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
                 $nonce = EmisionDocumentosController::getNonce(15);
-                $appId     = date('YmdHis') . '-Humanlabs';
+                $appId = date('YmdHis').'-Humanlabs';
                 $appSecret = 'jdjdjKJOS(/68759856498465';
-                $date      = date('c');
-                $Token     = base64_encode(sha1($nonce . $date . $appSecret));
-                $options = array(
-                    'http' => array(
-                        'header'  => "Content-type: application/json\r\n" . "AppId: " . $appId . "\r\n" . "Token: " . $Token . "\r\n" . "Seed: " . $date . "\r\n" . "Nonce: " . base64_encode($nonce) . "\r\n",
-                        'method'  => 'GET',
+                $date = date('c');
+                $Token = base64_encode(sha1($nonce.$date.$appSecret));
+                $options = [
+                    'http' => [
+                        'header' => "Content-type: application/json\r\n".'AppId: '.$appId."\r\n".'Token: '.$Token."\r\n".'Seed: '.$date."\r\n".'Nonce: '.base64_encode($nonce)."\r\n",
+                        'method' => 'GET',
                         'content' => json_encode($arrayDatos),
-                    ),
-                    "ssl"  => array(
-                        "verify_peer"      => false,
-                        "verify_peer_name" => false,
-                    ),
-                );
-                //echo '<pre>';print_r($arrayDatos);DB::rollBack();exit;
+                    ],
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ],
+                ];
+                // echo '<pre>';print_r($arrayDatos);DB::rollBack();exit;
                 $urllink = 'https://humanlabs.aitrol.com';
-                $url = $urllink . '/apifacturaopciones/construirConglomerada';
+                $url = $urllink.'/apifacturaopciones/construirConglomerada';
                 $context = stream_context_create($options);
                 try {
                     $orden = file_get_contents($url, false, $context);
@@ -6368,11 +6467,11 @@ class VentasController extends Controller
                 }
                 echo '<pre>';
                 print_r($orden);
-                //DB::rollBack();
+                // DB::rollBack();
                 exit;
             }
 
-            //dd("hola");
+            // dd("hola");
             if ($request['electronica'] == '1') {
                 if ($empresa->electronica == 1) {
                     $getSri = $this->getSRI1($id_venta);
@@ -6381,7 +6480,7 @@ class VentasController extends Controller
             $msj = Ct_Kardex::generar_kardex($data);
             if ($val_tol > 0) {
                 $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
@@ -6402,21 +6501,21 @@ class VentasController extends Controller
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['tarifa_iva1'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['tarifa_iva1'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
             // 4.1.01.02    Ventas Mercaderia Tarifa 12%
             if ($request['subtotal_121'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('4.1.01.02');
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
                 Ct_Asientos_Detalle::create([
 
@@ -6435,104 +6534,107 @@ class VentasController extends Controller
             // 4.1.01.01    Ventas Mercaderia Tarifa 0%
             if ($request['subtotal_01'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('4.1.01.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_01'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_01'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
-            //****REGISTRO FORMAS DE PAGO*** --activo falta****
+            // ****REGISTRO FORMAS DE PAGO*** --activo falta****
             $arr_p = [];
             for ($i = 0; $i < $request['contador_pago']; $i++) {
-                $visibilidad_pa = $request['visibilidad_pago' . $i];
+                $visibilidad_pa = $request['visibilidad_pago'.$i];
                 if ($visibilidad_pa == 1) {
                     $arr_pagos = [
-                        'id_tip_pago' => $request['id_tip_pago' . $i],
-                        'fecha_pago' => $request['fecha_pago' . $i],
-                        'tipo_tarjeta' => $request['tipo_tarjeta' . $i],
-                        'numero_pago' => $request['numero_pago' . $i],
-                        'id_banco_pago' => $request['id_banco_pago' . $i],
-                        'id_cuenta_pago' => $request['id_cuenta_pago' . $i],
-                        'giradoa' => $request['giradoa' . $i],
-                        'valor' => $request['valor' . $i],
-                        'valor_base' => $request['valor_base' . $i],
+                        'id_tip_pago' => $request['id_tip_pago'.$i],
+                        'fecha_pago' => $request['fecha_pago'.$i],
+                        'tipo_tarjeta' => $request['tipo_tarjeta'.$i],
+                        'numero_pago' => $request['numero_pago'.$i],
+                        'id_banco_pago' => $request['id_banco_pago'.$i],
+                        'id_cuenta_pago' => $request['id_cuenta_pago'.$i],
+                        'giradoa' => $request['giradoa'.$i],
+                        'valor' => $request['valor'.$i],
+                        'valor_base' => $request['valor_base'.$i],
                     ];
                     array_push($arr_p, $arr_pagos);
                 }
             }
             foreach ($arr_p as $valor) {
                 Ct_Forma_Pago::create([
-                    'id_ct_ventas'    => $id_venta,
-                    'tipo'            => $valor['id_tip_pago'], //$request['id_tip_pago'.$i],
-                    'fecha'           => $valor['fecha_pago'], //$request['fecha'.$i],
-                    'numero'          => $valor['numero_pago'], //$request['numero'.$i],
-                    'banco'           => $valor['id_banco_pago'], //$request['id_banco'.$i],
-                    'cuenta'          => $valor['id_cuenta_pago'], //$request['id_cuenta'.$i],
-                    'giradoa'         => $valor['giradoa'], //$request['id_cuenta'.$i],
-                    'valor'           => $valor['valor'], //$request['valor'.$i],
-                    'valor_base'      => $valor['valor_base'], //$request['valor_base'.$i],
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
-                    'ip_creacion'     => $ip_cliente,
+                    'id_ct_ventas' => $id_venta,
+                    'tipo' => $valor['id_tip_pago'], // $request['id_tip_pago'.$i],
+                    'fecha' => $valor['fecha_pago'], // $request['fecha'.$i],
+                    'numero' => $valor['numero_pago'], // $request['numero'.$i],
+                    'banco' => $valor['id_banco_pago'], // $request['id_banco'.$i],
+                    'cuenta' => $valor['id_cuenta_pago'], // $request['id_cuenta'.$i],
+                    'giradoa' => $valor['giradoa'], // $request['id_cuenta'.$i],
+                    'valor' => $valor['valor'], // $request['valor'.$i],
+                    'valor_base' => $valor['valor_base'], // $request['valor_base'.$i],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
                 ]);
             }
-            //agregar comprobantes de ingreso
+            // agregar comprobantes de ingreso
             $this->crearComprobante($nfactura, $request, $arr_p, $id_venta);
             DB::commit();
-            return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'kardex' => $msj, 'prd_val' => $request->input("prd_val"), 'llevaOrden' => $llevaOrden, 'mis inputs' => $request->all(), 'getSri' => $getSri, "respuesta" => "exito", 'mensaje' => "Guardado exitosamente"];
-        } catch (\Exception $e) {
-            //if there is an error/exception in the above code before commit, it'll rollback
+
+            return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'kardex' => $msj, 'prd_val' => $request->input('prd_val'), 'llevaOrden' => $llevaOrden, 'mis inputs' => $request->all(), 'getSri' => $getSri, 'respuesta' => 'exito', 'mensaje' => 'Guardado exitosamente'];
+        } catch (Exception $e) {
+            // if there is an error/exception in the above code before commit, it'll rollback
             DB::rollBack();
-            return 'Error: ' . $e->getMessage() . ' Linea: ' . $e->getLine() . ' Archivo:' . $e->getFile();
+
+            return 'Error: '.$e->getMessage().' Linea: '.$e->getLine().' Archivo:'.$e->getFile();
         }
     }
+
     public function view_omni(Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        //dd($request->all());
-        $divisas         = Ct_Divisas::where('estado', '1')->get();
-        $clientes        = Ct_Clientes::where('estado', '1')->get();
-        $tipo_pago       = Ct_Tipo_Pago::where('estado', '1')->get();
-        $lista_banco     = Ct_Bancos::where('estado', '1')->get();
-        $seguros         = Seguro::all();
+        // dd($request->all());
+        $divisas = Ct_Divisas::where('estado', '1')->get();
+        $clientes = Ct_Clientes::where('estado', '1')->get();
+        $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
+        $lista_banco = Ct_Bancos::where('estado', '1')->get();
+        $seguros = Seguro::all();
         $user_recaudador = User::where('id_tipo_usuario', 18)
             ->where('estado', 1)->get();
         $validate = $request['validate'];
         $user_vendedor = User::where('id_tipo_usuario', 17)
             ->where('estado', 1)->get();
-        $bodega     = bodega::where('estado', '1')->get();
+        $bodega = Bodega::where('estado', '1')->get();
         $id_empresa = $request->session()->get('id_empresa');
-        $empresa    = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
-        //dd($request->all());
-        //$productos = Producto::where('estado', '1')->get();
+        // dd($request->all());
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->get();
-        //$iva = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+        // $iva = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
         /*
         if (!empty($request->input("id_agenda"))) {
         for ($i = 0; $i < count($request->input("id_agenda")); $i++) {
@@ -6649,19 +6751,19 @@ class VentasController extends Controller
 
         }*/
         $final = $this->getReloadOmni($request);
-        //dd($final);
-        //dd($pacientes);
-        //dd(array_unique($group_procedures));
-        //dd($request->all());
+        // dd($final);
+        // dd($pacientes);
+        // dd(array_unique($group_procedures));
+        // dd($request->all());
         $tipo_tarjeta = Ct_Tipo_Tarjeta::all();
-        $sec_part     = array();
-        $sec_private  = array();
-        $last_public  = array();
-        //$array_todos = array();
+        $sec_part = [];
+        $sec_private = [];
+        $last_public = [];
+        // $array_todos = array();
         $t_factura = $request['tipo_fact'];
-        //solo equipos
+        // solo equipos
         if ($t_factura == 2) {
-            $sec_part    = ParametersConglomerada::particulares($seguros);
+            $sec_part = ParametersConglomerada::particulares($seguros);
             $sec_private = ParametersConglomerada::privados($seguros);
             $last_public = ParametersConglomerada::publicos($seguros);
         }
@@ -6669,175 +6771,181 @@ class VentasController extends Controller
         if ($t_factura == 3) {
             return view('contable/ventas/createHonorarios', ['porIva' => $this->porIva, 'finalArray' => $final, 'tipo_tarjeta' => $tipo_tarjeta, 't_factura' => $t_factura, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'sec_part' => $sec_part, 'sec_private' => $sec_private, 'last_public' => $last_public, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas]);
         }
+
         return view('contable/ventas/create_facturaOmni', ['porIva' => $this->porIva, 'bodegas_hosp' => $bodegas_hosp, 'finalArray' => $final, 'tipo_tarjeta' => $tipo_tarjeta, 't_factura' => $t_factura, 'divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'sec_part' => $sec_part, 'sec_private' => $sec_private, 'last_public' => $last_public, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'cuentas' => $cuentas]);
     }
+
     public function getReloadOmni(Request $request)
     {
-        if (!is_null($request)) {
-            $array_Pusher = array();
-            $group2       = array();
+        if (! is_null($request)) {
+            $array_Pusher = [];
+            $group2 = [];
 
-            if (!empty($request->input("id_agenda"))) {
-                for ($i = 0; $i < count($request->input("id_agenda")); $i++) {
-                    $agenda = Agenda::find($request->input("id_agenda")[$i]);
-                    //$patient= Paciente::find($request->input("paciente")[$i]);
+            if (! empty($request->input('id_agenda'))) {
+                for ($i = 0; $i < count($request->input('id_agenda')); $i++) {
+                    $agenda = Agenda::find($request->input('id_agenda')[$i]);
+                    // $patient= Paciente::find($request->input("paciente")[$i]);
                     $procedimientos = hc_procedimientos::join('historiaclinica as hc', 'hc.hcid', '=', 'hc_procedimientos.id_hc')
-                        ->where('hc.id_agenda', $request->input("id_agenda")[$i])->get();
+                        ->where('hc.id_agenda', $request->input('id_agenda')[$i])->get();
                     foreach ($procedimientos as $value) {
-                        $texto = "";
+                        $texto = '';
                         if ($value->nombre_general == null) {
-                            $adicionales = Hc_procedimiento_Final::where('id_hc_procedimientos', $value->id)->get();
-                            $mas         = true;
-                            $texto       = "";
+                            $adicionales = Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id)->get();
+                            $mas = true;
+                            $texto = '';
                             foreach ($adicionales as $value2) {
                                 if ($mas == true) {
-                                    $texto = $texto . $value2->procedimiento->nombre;
-                                    $mas   = false;
+                                    $texto = $texto.$value2->procedimiento->nombre;
+                                    $mas = false;
                                 } else {
-                                    $texto = $texto . ' + ' . $value2->procedimiento->nombre;
+                                    $texto = $texto.' + '.$value2->procedimiento->nombre;
                                 }
                             }
                         }
                         $arr_AC = [];
 
-                        //$productos =Movimiento_Paciente::where('id_hc_procedimientos', $value->id)->get();
-                        $productos                    = DB::table('movimiento_paciente as mp')->where('mp.id_hc_procedimientos', $value->id)->join('movimiento as m', 'm.id', 'mp.id_movimiento')->join('ct_productos_insumos as pro', 'pro.id_insumo', 'm.id_producto')->join('ct_productos as productos', 'productos.id', 'pro.id_producto')->groupBy('m.id_producto')->select(DB::raw('COUNT(DISTINCT(m.id)) AS cantidad'), 'productos.codigo as codigo', 'productos.nombre as nombre')->get();
-                        $arr_AC['paciente_principal'] = $request->input("paciente")[$i];
-                        $arr_AC['nombre_principal']   = $texto;
-                        $arr_AC['hc_procedimiento']   = $value->id;
-                        $arr_AC['fecha']              = $agenda->fechaini;
-                        $arr_AC['agenda']             = $agenda->id;
-                        $productosAC                  = [];
+                        // $productos =Movimiento_Paciente::where('id_hc_procedimientos', $value->id)->get();
+                        $productos = DB::table('movimiento_paciente as mp')->where('mp.id_hc_procedimientos', $value->id)->join('movimiento as m', 'm.id', 'mp.id_movimiento')->join('ct_productos_insumos as pro', 'pro.id_insumo', 'm.id_producto')->join('ct_productos as productos', 'productos.id', 'pro.id_producto')->groupBy('m.id_producto')->select(DB::raw('COUNT(DISTINCT(m.id)) AS cantidad'), 'productos.codigo as codigo', 'productos.nombre as nombre')->get();
+                        $arr_AC['paciente_principal'] = $request->input('paciente')[$i];
+                        $arr_AC['nombre_principal'] = $texto;
+                        $arr_AC['hc_procedimiento'] = $value->id;
+                        $arr_AC['fecha'] = $agenda->fechaini;
+                        $arr_AC['agenda'] = $agenda->id;
+                        $productosAC = [];
                         foreach ($productos as $xsa) {
-                            //$arr_AC['productos']=$xsa;
-                            //dd($xsa);
+                            // $arr_AC['productos']=$xsa;
+                            // dd($xsa);
                             array_push($productosAC, $xsa);
                         }
                         $arr_AC['productos'] = $productosAC;
-                        //update date 19 January 2021
-                        //update date 16 March
-                        //dd($value,$agenda->seguro);
+                        // update date 19 January 2021
+                        // update date 16 March
+                        // dd($value,$agenda->seguro);
 
-                        $seguro            = DB::table('seguros')->where('id', $value->id_seguro)->first();
+                        $seguro = DB::table('seguros')->where('id', $value->id_seguro)->first();
                         $arr_AC['seguros'] = $seguro->nombre;
                         array_push($array_Pusher, $arr_AC);
                     }
                 }
-                //dd($array_Pusher);
+                // dd($array_Pusher);
                 foreach ($array_Pusher as $array_Pusher) {
-                    if (!empty($array_Pusher)) {
-                        //dd($array_Pusher);
+                    if (! empty($array_Pusher)) {
+                        // dd($array_Pusher);
                         $group2[$array_Pusher['paciente_principal']][] = $array_Pusher;
                     }
                 }
             }
-            //dd($group2);
+
+            // dd($group2);
             return $group2;
         } else {
-            return response()->json("error no llega el request");
+            return response()->json('error no llega el request');
         }
     }
+
     public function getReloadRecibo(Request $request)
     {
-        if (!is_null($request)) {
-            $array_Pusher = array();
-            $group2       = array();
+        if (! is_null($request)) {
+            $array_Pusher = [];
+            $group2 = [];
 
-            if (!empty($request->input("id_agenda"))) {
-                $agenda         = Agenda::find($request->input("id_agenda"));
+            if (! empty($request->input('id_agenda'))) {
+                $agenda = Agenda::find($request->input('id_agenda'));
                 $procedimientos = hc_procedimientos::join('historiaclinica as hc', 'hc.hcid', '=', 'hc_procedimientos.id_hc')
-                    ->where('hc.id_agenda', $request->input("id_agenda"))->get();
+                    ->where('hc.id_agenda', $request->input('id_agenda'))->get();
                 foreach ($procedimientos as $value) {
-                    $texto = "";
+                    $texto = '';
                     if ($value->nombre_general == null) {
-                        $adicionales = Hc_procedimiento_Final::where('id_hc_procedimientos', $value->id)->get();
-                        $mas         = true;
-                        $texto       = "";
+                        $adicionales = Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id)->get();
+                        $mas = true;
+                        $texto = '';
                         foreach ($adicionales as $value2) {
                             if ($mas == true) {
-                                $texto = $texto . $value2->procedimiento->nombre;
-                                $mas   = false;
+                                $texto = $texto.$value2->procedimiento->nombre;
+                                $mas = false;
                             } else {
-                                $texto = $texto . ' + ' . $value2->procedimiento->nombre;
+                                $texto = $texto.' + '.$value2->procedimiento->nombre;
                             }
                         }
                     }
                     $arr_AC = [];
 
-                    //$productos =Movimiento_Paciente::where('id_hc_procedimientos', $value->id)->get();
+                    // $productos =Movimiento_Paciente::where('id_hc_procedimientos', $value->id)->get();
                     $productos = DB::table('movimiento_paciente as mp')->where('mp.id_hc_procedimientos', $value->id)->join('movimiento as m', 'm.id', 'mp.id_movimiento')->join('ct_productos_insumos as pro', 'pro.id_insumo', 'm.id_producto')->join('ct_productos as productos', 'productos.id', 'pro.id_producto')->groupBy('m.id_producto')->select(DB::raw('COUNT(DISTINCT(m.id)) AS cantidad'), 'productos.codigo as codigo', 'productos.nombre as nombre')->get();
 
                     $arr_AC['paciente_principal'] = $agenda->paciente->id;
-                    $arr_AC['nombre_principal']   = $texto;
-                    $arr_AC['hc_procedimiento']   = $value->id;
-                    $arr_AC['fecha']              = $agenda->fechaini;
-                    $arr_AC['agenda']             = $agenda->id;
-                    $productosAC                  = [];
+                    $arr_AC['nombre_principal'] = $texto;
+                    $arr_AC['hc_procedimiento'] = $value->id;
+                    $arr_AC['fecha'] = $agenda->fechaini;
+                    $arr_AC['agenda'] = $agenda->id;
+                    $productosAC = [];
                     foreach ($productos as $xsa) {
-                        //$arr_AC['productos']=$xsa;
-                        //dd($xsa);
+                        // $arr_AC['productos']=$xsa;
+                        // dd($xsa);
                         array_push($productosAC, $xsa);
                     }
                     $arr_AC['productos'] = $productosAC;
-                    //update date 19 January 2021
+                    // update date 19 January 2021
                     $arr_AC['seguros'] = $agenda->seguro->nombre;
                     array_push($array_Pusher, $arr_AC);
                 }
-                //dd($array_Pusher);
+                // dd($array_Pusher);
                 foreach ($array_Pusher as $array_Pusher) {
-                    if (!empty($array_Pusher)) {
-                        //dd($array_Pusher);
+                    if (! empty($array_Pusher)) {
+                        // dd($array_Pusher);
                         $group2[$array_Pusher['paciente_principal']][] = $array_Pusher;
                     }
                 }
             }
-            //dd($group2);
+
+            // dd($group2);
             return $group2;
         } else {
-            return response()->json("error no llega el request");
+            return response()->json('error no llega el request');
         }
     }
+
     public function store_omni(Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        //aqui ando
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = $request['fecha_asiento'];
+        // aqui ando
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = $request['fecha_asiento'];
         $id_empresa = $request->session()->get('id_empresa');
         $llevaOrden = false;
-        $validate   = $request['validate'];
-        $numero     = $request->numero;
-        //$idusuario  = Auth::user()->id;
-        $cod_sucurs      = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
-        $nfactura        = 0;
-        $cod_caj         = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+        $validate = $request['validate'];
+        $numero = $request->numero;
+        // $idusuario  = Auth::user()->id;
+        $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
+        $nfactura = 0;
+        $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
         $num_comprobante = 0;
-        //dd($request->all());
+        // dd($request->all());
         $proced = $request['procedimiento'];
         if ($request['sucursal'] != 0) {
             $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
             $c_sucursal = $cod_sucurs->codigo_sucursal;
-            $cod_caj    = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
-            $c_caja     = $cod_caj->codigo_caja;
-            $proced     = $request['procedimiento'];
-            //if($idusuario != "0957258056"){
-            if (!is_null($numero)) {
-                $num_comprobante      = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+            $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+            $c_caja = $cod_caj->codigo_caja;
+            $proced = $request['procedimiento'];
+            // if($idusuario != "0957258056"){
+            if (! is_null($numero)) {
+                $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                 $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                     ->where('nro_comprobante', $num_comprobante)
                     ->where('tipo', '<>', 'VEN-FACT')
                     ->where('estado', '!=', '0')->first();
-                if (!is_null($verifica_num_factura)) {
-                    return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                if (! is_null($verifica_num_factura)) {
+                    return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                 } else {
                     $nfactura = $numero;
                 }
             } else {
                 $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
             }
             /*}else{
         if (!is_null($numero)) {
@@ -6858,195 +6966,195 @@ class VentasController extends Controller
         }
         }*/
         } else {
-            $c_sucursal      = 0;
-            $c_caja          = 0;
+            $c_sucursal = 0;
+            $c_caja = 0;
             $num_comprobante = 0;
-            $nfactura        = 0;
-            $proced          = $request['procedimiento'];
+            $nfactura = 0;
+            $proced = $request['procedimiento'];
         }
-        $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced;
-        //**
-        //***GUARDADO EN LA TABLA LOG FACTURAS VENTA***
-        //*
-        //*
-        //******GUARDAdo TABLA ASIENTO CABECERA********
-        //*
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced;
+        // **
+        // ***GUARDADO EN LA TABLA LOG FACTURAS VENTA***
+        // *
+        // *
+        // ******GUARDAdo TABLA ASIENTO CABECERA********
+        // *
         if ($request['tipo_factura'] == 3) {
-            //dd("sa");
+            // dd("sa");
             $get = $this->getHonorarios($request);
         } else {
             DB::beginTransaction();
-            $msj = "no    o";
+            $msj = 'no    o';
             try {
                 $input_cabecera = [
-                    'fecha_asiento'   => $fecha_as,
-                    'fact_numero'     => $nfactura,
-                    'id_empresa'      => $id_empresa,
-                    'observacion'     => $text,
-                    'valor'           => $request['total1'],
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
-                    'ip_creacion'     => $ip_cliente,
+                    'fecha_asiento' => $fecha_as,
+                    'fact_numero' => $nfactura,
+                    'id_empresa' => $id_empresa,
+                    'observacion' => $text,
+                    'valor' => $request['total1'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
                 ];
-                $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera); //activo
-                //$id_asiento_cabecera = 0;
-                //GUARDAdo TABLA CT_VENTA.
+                $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera); // activo
+                // $id_asiento_cabecera = 0;
+                // GUARDAdo TABLA CT_VENTA.
                 $factura_venta = [
-                    'sucursal'            => $cod_sucurs->codigo_sucursal,
-                    'punto_emision'       => $cod_caj->codigo_caja,
-                    'numero'              => $nfactura,
-                    'nro_comprobante'     => $num_comprobante,
-                    'id_asiento'          => $id_asiento_cabecera,
-                    'id_empresa'          => $id_empresa,
-                    'tipo'                => $request['tipo'],
-                    'fecha'               => $request['fecha_asiento'],
-                    'divisas'             => $request['divisas'],
-                    'nombre_cliente'      => $request['nombre_cliente'],
-                    'tipo_consulta'       => $request['tipo_consulta'],
-                    'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-                    'direccion_cliente'   => $request['direccion_cliente'],
-                    'ruc_id_cliente'      => $request['identificacion_cliente'],
-                    'telefono_cliente'    => $request['telefono_cliente'],
-                    'email_cliente'       => $request['mail_cliente'],
-                    'orden_venta'         => $request['orden_venta'],
-                    'nro_autorizacion'    => $request['numero_autorizacion'],
-                    'id_paciente'         => $request['identificacion_paciente'],
-                    'nombres_paciente'    => $request['pacienteinfo'],
+                    'sucursal' => $cod_sucurs->codigo_sucursal,
+                    'punto_emision' => $cod_caj->codigo_caja,
+                    'numero' => $nfactura,
+                    'nro_comprobante' => $num_comprobante,
+                    'id_asiento' => $id_asiento_cabecera,
+                    'id_empresa' => $id_empresa,
+                    'tipo' => $request['tipo'],
+                    'fecha' => $request['fecha_asiento'],
+                    'divisas' => $request['divisas'],
+                    'nombre_cliente' => $request['nombre_cliente'],
+                    'tipo_consulta' => $request['tipo_consulta'],
+                    'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+                    'direccion_cliente' => $request['direccion_cliente'],
+                    'ruc_id_cliente' => $request['identificacion_cliente'],
+                    'telefono_cliente' => $request['telefono_cliente'],
+                    'email_cliente' => $request['mail_cliente'],
+                    'orden_venta' => $request['orden_venta'],
+                    'nro_autorizacion' => $request['numero_autorizacion'],
+                    'id_paciente' => $request['identificacion_paciente'],
+                    'nombres_paciente' => $request['pacienteinfo'],
                     'id_hc_procedimiento' => $request['mov_paciente'],
-                    'seguro_paciente'     => $request['segurosinfo'],
-                    'procedimientos'      => $request['procedimientoinfo'],
+                    'seguro_paciente' => $request['segurosinfo'],
+                    'procedimientos' => $request['procedimientoinfo'],
                     'fecha_procedimiento' => $request['fecha_proced'],
-                    'copago'              => $request['totalc'],
-                    'id_recaudador'       => $request['cedula_recaudador'],
-                    'subtotal_0'          => $request['subtotal_01'],
-                    'subtotal_12'         => $request['subtotal_121'],
-                    'descuento'           => $request['descuento1'],
-                    'base_imponible'      => $request['subtotal_121'],
-                    'valor_contable'      => $request['total1'],
-                    'impuesto'            => $request['tarifa_iva1'],
-                    'total_final'         => $request['total1'],
-                    'ip_creacion'         => "OMNI",
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
+                    'copago' => $request['totalc'],
+                    'id_recaudador' => $request['cedula_recaudador'],
+                    'subtotal_0' => $request['subtotal_01'],
+                    'subtotal_12' => $request['subtotal_121'],
+                    'descuento' => $request['descuento1'],
+                    'base_imponible' => $request['subtotal_121'],
+                    'valor_contable' => $request['total1'],
+                    'impuesto' => $request['tarifa_iva1'],
+                    'total_final' => $request['total1'],
+                    'ip_creacion' => 'OMNI',
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
 
-                $id_venta       = Ct_ventas::insertGetId($factura_venta); //activo
-                $arr_total      = [];
-                $total_iva      = 0;
+                $id_venta = Ct_ventas::insertGetId($factura_venta); // activo
+                $arr_total = [];
+                $total_iva = 0;
                 $total_impuesto = 0;
-                $total_0        = 0;
-                $arr_id_hc      = [];
-                $arr_activos    = [];
-                $cont           = 0;
-                $arr_obs        = [];
-                if (!empty($request->input("veractivo"))) {
-                    for ($i = 0; $i < count($request->input("veractivo")); $i++) {
-                        if ($request->input("veractivo")[$i] == 1) {
-                            $ar = $request->input("hc_procedimiento")[$i];
+                $total_0 = 0;
+                $arr_id_hc = [];
+                $arr_activos = [];
+                $cont = 0;
+                $arr_obs = [];
+                if (! empty($request->input('veractivo'))) {
+                    for ($i = 0; $i < count($request->input('veractivo')); $i++) {
+                        if ($request->input('veractivo')[$i] == 1) {
+                            $ar = $request->input('hc_procedimiento')[$i];
                             array_push($arr_activos, $ar);
                             $aobs = [
-                                'procedimiento' => $request->input("hc_procedimiento")[$i],
-                                'obs'           => $request->input("nom_paciente")[$i] . " - " . $request->input("obs_paciente")[$i],
+                                'procedimiento' => $request->input('hc_procedimiento')[$i],
+                                'obs' => $request->input('nom_paciente')[$i].' - '.$request->input('obs_paciente')[$i],
                             ];
                             array_push($arr_obs, $aobs);
                         }
                     }
                 }
 
-                $observacion = "";
-                if (!empty($request->input("nombre"))) {
-                    for ($i = 0; $i < count($request->input("nombre")); $i++) {
-                        if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
-                            for ($k = 0; $k < sizeof($arr_obs); $k++) {
+                $observacion = '';
+                if (! empty($request->input('nombre'))) {
+                    for ($i = 0; $i < count($request->input('nombre')); $i++) {
+                        if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
+                            for ($k = 0; $k < count($arr_obs); $k++) {
                                 if ($arr_obs[$k]['procedimiento'] == $request->input('id_hc_proc')[$i]) {
                                     $observacion = $arr_obs[$k]['obs'];
                                 }
                             }
-                            $paciente = "";
-                            if (isset($request->input("paciente")[$i])) {
-                                $paciente = $request->input("paciente")[$i];
+                            $paciente = '';
+                            if (isset($request->input('paciente')[$i])) {
+                                $paciente = $request->input('paciente')[$i];
                             }
-                            $precio_neto = "";
-                            if (isset($request->input("precioneto")[$i])) {
-                                $precio_neto = $request->input("precioneto")[$i];
+                            $precio_neto = '';
+                            if (isset($request->input('precioneto')[$i])) {
+                                $precio_neto = $request->input('precioneto')[$i];
                             }
-                            $nombre = "";
-                            if (isset($request->input("nombre")[$i])) {
-                                $nombre = $request->input("nombre")[$i];
+                            $nombre = '';
+                            if (isset($request->input('nombre')[$i])) {
+                                $nombre = $request->input('nombre')[$i];
                             }
                             $cantidad = 0;
-                            if (isset($request->input("cantidad")[$i])) {
-                                $cantidad = $request->input("cantidad")[$i];
+                            if (isset($request->input('cantidad')[$i])) {
+                                $cantidad = $request->input('cantidad')[$i];
                             }
-                            $codigo = "";
-                            if (isset($request->input("codigo")[$i])) {
-                                $codigo = $request->input("codigo")[$i];
+                            $codigo = '';
+                            if (isset($request->input('codigo')[$i])) {
+                                $codigo = $request->input('codigo')[$i];
                             }
-                            $nombre_procedimiento = "";
-                            if (isset($request->input("id_principal")[$i])) {
-                                $nombre_procedimiento = $request->input("id_principal")[$i];
+                            $nombre_procedimiento = '';
+                            if (isset($request->input('id_principal')[$i])) {
+                                $nombre_procedimiento = $request->input('id_principal')[$i];
                             }
-                            $fecha_procedimiento = "";
-                            if (isset($request->input("fecha_procedimiento")[$i])) {
-                                $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                            $fecha_procedimiento = '';
+                            if (isset($request->input('fecha_procedimiento')[$i])) {
+                                $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                             }
                             $precio = 0;
-                            if (isset($request->input("precio")[$i])) {
-                                $precio = $request->input("precio")[$i];
+                            if (isset($request->input('precio')[$i])) {
+                                $precio = $request->input('precio')[$i];
                             }
-                            $paciente = "";
-                            if (isset($request->input("paciente")[$i])) {
-                                $paciente = $request->input("paciente")[$i];
+                            $paciente = '';
+                            if (isset($request->input('paciente')[$i])) {
+                                $paciente = $request->input('paciente')[$i];
                             }
-                            $iva = "";
-                            if (isset($request->input("iva")[$i])) {
-                                $iva = $request->input("iva")[$i];
+                            $iva = '';
+                            if (isset($request->input('iva')[$i])) {
+                                $iva = $request->input('iva')[$i];
                             }
-                            $descuento = "";
-                            if (isset($request->input("desc")[$i])) {
-                                $descuento = $request->input("desc")[$i];
+                            $descuento = '';
+                            if (isset($request->input('desc')[$i])) {
+                                $descuento = $request->input('desc')[$i];
                             }
-                            $descrip_prod = "";
-                            if (isset($request->input("descrip_prod")[$i])) {
-                                $descrip_prod = $request->input("descrip_prod")[$i];
+                            $descrip_prod = '';
+                            if (isset($request->input('descrip_prod')[$i])) {
+                                $descrip_prod = $request->input('descrip_prod')[$i];
                             }
-                            $id_hc_proc = "";
-                            if (isset($request->input("id_hc_proc")[$i])) {
-                                $id_hc_proc = $request->input("id_hc_proc")[$i];
+                            $id_hc_proc = '';
+                            if (isset($request->input('id_hc_proc')[$i])) {
+                                $id_hc_proc = $request->input('id_hc_proc')[$i];
                             }
-                            $id_agenda = "";
-                            if (isset($request->input("id_agenda")[$i])) {
-                                $id_agenda = $request->input("id_agenda")[$i];
+                            $id_agenda = '';
+                            if (isset($request->input('id_agenda')[$i])) {
+                                $id_agenda = $request->input('id_agenda')[$i];
                             }
-                            $hc_procedimiento = "";
-                            if (isset($request->input("hc_procedimiento")[$i])) {
-                                $hc_procedimiento = $request->input("hc_procedimiento")[$i];
+                            $hc_procedimiento = '';
+                            if (isset($request->input('hc_procedimiento')[$i])) {
+                                $hc_procedimiento = $request->input('hc_procedimiento')[$i];
                             }
 
-                            $bodega_in = "";
-                            if (isset($request->input("bodega")[$i])) {
-                                $bodega_in = $request->input("bodega")[$i];
+                            $bodega_in = '';
+                            if (isset($request->input('bodega')[$i])) {
+                                $bodega_in = $request->input('bodega')[$i];
                             }
 
                             $precioneto = $cantidad * $precio;
-                            $arr        = [
-                                'nombre'     => $nombre,
-                                'cantidad'   => $cantidad,
-                                'codigo'     => $codigo,
-                                'precio'     => $precio,
-                                'descpor'    => "0.12",
-                                'copago'     => "",
-                                'descuento'  => $descuento,
+                            $arr = [
+                                'nombre' => $nombre,
+                                'cantidad' => $cantidad,
+                                'codigo' => $codigo,
+                                'precio' => $precio,
+                                'descpor' => '0.12',
+                                'copago' => '',
+                                'descuento' => $descuento,
                                 'precioneto' => $precio_neto,
-                                'detalle'    => $descrip_prod,
-                                'iva'        => $iva,
+                                'detalle' => $descrip_prod,
+                                'iva' => $iva,
                                 'id_hc_proc' => $hc_procedimiento,
-                                'obs_pac'    => $observacion,
-                                'bodega_in'  => $bodega_in,
+                                'obs_pac' => $observacion,
+                                'bodega_in' => $bodega_in,
                             ];
-                            if ($request["tipo_servicio"] == "2") {
+                            if ($request['tipo_servicio'] == '2') {
                                 $id_hc = ['id' => $request->input('id_hc_proc')[$i]];
                                 if (in_array($request->input('id_hc_proc')[$i], $arr_activos)) {
                                     // array_push($arr, [);
@@ -7054,7 +7162,7 @@ class VentasController extends Controller
                                     // $cont++;
                                     array_push($arr_id_hc, $id_hc);
                                 }
-                            } elseif ($request["tipo_servicio"] == "1") {
+                            } elseif ($request['tipo_servicio'] == '1') {
                                 array_push($arr_total, $arr);
                             }
                         }
@@ -7062,13 +7170,13 @@ class VentasController extends Controller
                 }
 
                 $arr_consultas = [];
-                if (!empty($request->input("prd_id"))) {
-                    for ($i = 0; $i < count($request->input("prd_id")); $i++) {
-                        if ($request->input("prd_id")[$i] != "" || $request->input("prd_id")[$i] != null) {
+                if (! empty($request->input('prd_id'))) {
+                    for ($i = 0; $i < count($request->input('prd_id')); $i++) {
+                        if ($request->input('prd_id')[$i] != '' || $request->input('prd_id')[$i] != null) {
                             $arr_con = [
-                                'value'      => $request->input("prd_val")[$i],
-                                'prd_id'     => $request->input("prd_id")[$i],
-                                'prd_activo' => $request->input("prd_activo")[$i],
+                                'value' => $request->input('prd_val')[$i],
+                                'prd_id' => $request->input('prd_id')[$i],
+                                'prd_activo' => $request->input('prd_activo')[$i],
                             ];
                             array_push($arr_consultas, $arr_con);
                         }
@@ -7077,60 +7185,60 @@ class VentasController extends Controller
                 // $ids_consultas = json_encode($request->input('id_hc_consulta'));
 
                 foreach ($arr_total as $valor) {
-                    //dd($valor);
+                    // dd($valor);
                     if ($valor['copago'] > 0) {
-                        //registra orden de venta
+                        // registra orden de venta
                         $llevaOrden = true;
                     }
                     $detalle = [
-                        'id_ct_ventas'         => $id_venta,
-                        'id_ct_productos'      => $valor['codigo'],
-                        'nombre'               => $valor['nombre'],
-                        'cantidad'             => $valor['cantidad'],
-                        'precio'               => $valor['precio'],
+                        'id_ct_ventas' => $id_venta,
+                        'id_ct_productos' => $valor['codigo'],
+                        'nombre' => $valor['nombre'],
+                        'cantidad' => $valor['cantidad'],
+                        'precio' => $valor['precio'],
                         'descuento_porcentaje' => $valor['descpor'],
-                        'descuento'            => $valor['descuento'],
-                        'extendido'            => $valor['precioneto'],
-                        'detalle'              => $valor['detalle'],
-                        'copago'               => $valor['copago'],
-                        'check_iva'            => $valor['iva'],
-                        'codigo'               => $valor['obs_pac'],
-                        'ip_creacion'          => $ip_cliente,
-                        'ip_modificacion'      => $ip_cliente,
-                        'id_usuariocrea'       => $idusuario,
-                        'id_usuariomod'        => $idusuario,
-                        'bodega'               => $valor['bodega'],
+                        'descuento' => $valor['descuento'],
+                        'extendido' => $valor['precioneto'],
+                        'detalle' => $valor['detalle'],
+                        'copago' => $valor['copago'],
+                        'check_iva' => $valor['iva'],
+                        'codigo' => $valor['obs_pac'],
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'bodega' => $valor['bodega'],
 
                     ];
 
-                    Ct_detalle_venta::create($detalle); //activo
+                    Ct_detalle_venta::create($detalle); // activo
                 }
 
-                //*
-                //***MODULO CUENTA POR COBRAR***
+                // *
+                // ***MODULO CUENTA POR COBRAR***
                 //
-                //cUENTAS X COBRAR CLIENTES
+                // cUENTAS X COBRAR CLIENTES
                 // --activo
                 $val_tol = $request['total1'];
 
                 if ($val_tol > 0) {
                     $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
 
-                    //$plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+                    // $plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                     $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                     Ct_Asientos_Detalle::create([
 
                         'id_asiento_cabecera' => $id_asiento_cabecera,
-                        'id_plan_cuenta'      => $plan_cuentas->id,
-                        'descripcion'         => $plan_cuentas->nombre,
-                        'fecha'               => $fecha_as,
-                        'debe'                => $request['total1'],
-                        'haber'               => '0',
-                        'id_usuariocrea'      => $idusuario,
-                        'id_usuariomod'       => $idusuario,
-                        'ip_creacion'         => $ip_cliente,
-                        'ip_modificacion'     => $ip_cliente,
+                        'id_plan_cuenta' => $plan_cuentas->id,
+                        'descripcion' => $plan_cuentas->nombre,
+                        'fecha' => $fecha_as,
+                        'debe' => $request['total1'],
+                        'haber' => '0',
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
 
                     ]);
                 }
@@ -7139,21 +7247,21 @@ class VentasController extends Controller
                 if ($request['tarifa_iva1'] > 0) {
                     $id_plan_confg = LogConfig::busqueda('2.01.07.01.01');
 
-                    //$plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
+                    // $plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
                     $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                     Ct_Asientos_Detalle::create([
 
                         'id_asiento_cabecera' => $id_asiento_cabecera,
-                        'id_plan_cuenta'      => $plan_cuentas->id,
-                        'descripcion'         => $plan_cuentas->nombre,
-                        'fecha'               => $fecha_as,
-                        'debe'                => '0',
-                        'haber'               => $request['tarifa_iva1'],
-                        'id_usuariocrea'      => $idusuario,
-                        'id_usuariomod'       => $idusuario,
-                        'ip_creacion'         => $ip_cliente,
-                        'ip_modificacion'     => $ip_cliente,
+                        'id_plan_cuenta' => $plan_cuentas->id,
+                        'descripcion' => $plan_cuentas->nombre,
+                        'fecha' => $fecha_as,
+                        'debe' => '0',
+                        'haber' => $request['tarifa_iva1'],
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
 
                     ]);
                 }
@@ -7161,21 +7269,21 @@ class VentasController extends Controller
                 if ($request['subtotal_121'] > 0) {
                     $id_plan_confg = LogConfig::busqueda('4.1.01.02');
 
-                    //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
+                    // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
                     $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                     Ct_Asientos_Detalle::create([
 
                         'id_asiento_cabecera' => $id_asiento_cabecera,
-                        'id_plan_cuenta'      => $plan_cuentas->id,
-                        'descripcion'         => $plan_cuentas->nombre,
-                        'fecha'               => $fecha_as,
-                        'debe'                => '0',
-                        'haber'               => $request['subtotal_121'],
-                        'id_usuariocrea'      => $idusuario,
-                        'id_usuariomod'       => $idusuario,
-                        'ip_creacion'         => $ip_cliente,
-                        'ip_modificacion'     => $ip_cliente,
+                        'id_plan_cuenta' => $plan_cuentas->id,
+                        'descripcion' => $plan_cuentas->nombre,
+                        'fecha' => $fecha_as,
+                        'debe' => '0',
+                        'haber' => $request['subtotal_121'],
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
 
                     ]);
                 }
@@ -7188,32 +7296,32 @@ class VentasController extends Controller
                     $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
                     Ct_Asientos_Detalle::create([
                         'id_asiento_cabecera' => $id_asiento_cabecera,
-                        'id_plan_cuenta'      => $plan_cuentas->id,
-                        'descripcion'         => $plan_cuentas->nombre,
-                        'fecha'               => $fecha_as,
-                        'debe'                => '0',
-                        'haber'               => $request['subtotal_01'],
-                        'id_usuariocrea'      => $idusuario,
-                        'id_usuariomod'       => $idusuario,
-                        'ip_creacion'         => $ip_cliente,
-                        'ip_modificacion'     => $ip_cliente,
+                        'id_plan_cuenta' => $plan_cuentas->id,
+                        'descripcion' => $plan_cuentas->nombre,
+                        'fecha' => $fecha_as,
+                        'debe' => '0',
+                        'haber' => $request['subtotal_01'],
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
                     ]);
                 }
 
-                //****REGISTRO FORMAS DE PAGO*** --activo falta****
+                // ****REGISTRO FORMAS DE PAGO*** --activo falta****
                 $arr_p = [];
-                if (!empty($request->input("id_tip_pago"))) {
-                    for ($i = 0; $i < count($request->input("id_tip_pago")); $i++) {
-                        if ($request->input("valor")[$i] != "" || $request->input("valor_base")[$i] != null) {
+                if (! empty($request->input('id_tip_pago'))) {
+                    for ($i = 0; $i < count($request->input('id_tip_pago')); $i++) {
+                        if ($request->input('valor')[$i] != '' || $request->input('valor_base')[$i] != null) {
                             $arr_pagos = [
-                                'id_tip_pago'    => $request->input("id_tip_pago")[$i],
-                                'fecha_pago'     => $request->input("fecha_pago")[$i],
-                                'numero_pago'    => $request->input("numero_pago")[$i],
-                                'id_banco_pago'  => $request->input("id_banco_pago")[$i],
-                                'id_cuenta_pago' => $request->input("id_cuenta_pago")[$i],
-                                'giradoa'        => $request->input("giradoa")[$i],
-                                'valor'          => $request->input("valor")[$i],
-                                'valor_base'     => $request->input("valor_base")[$i],
+                                'id_tip_pago' => $request->input('id_tip_pago')[$i],
+                                'fecha_pago' => $request->input('fecha_pago')[$i],
+                                'numero_pago' => $request->input('numero_pago')[$i],
+                                'id_banco_pago' => $request->input('id_banco_pago')[$i],
+                                'id_cuenta_pago' => $request->input('id_cuenta_pago')[$i],
+                                'giradoa' => $request->input('giradoa')[$i],
+                                'valor' => $request->input('valor')[$i],
+                                'valor_base' => $request->input('valor_base')[$i],
                             ];
                             array_push($arr_p, $arr_pagos);
                         }
@@ -7222,117 +7330,117 @@ class VentasController extends Controller
 
                 foreach ($arr_p as $valor) {
                     Ct_Forma_Pago::create([
-                        'id_ct_ventas'    => $id_venta,
-                        'tipo'            => $valor['id_tip_pago'], //$request['id_tip_pago'.$i],
-                        'fecha'           => $valor['fecha_pago'], //$request['fecha'.$i],
-                        'numero'          => $valor['numero_pago'], //$request['numero'.$i],
-                        'banco'           => $valor['id_banco_pago'], //$request['id_banco'.$i],
-                        'cuenta'          => $valor['id_cuenta_pago'], //$request['id_cuenta'.$i],
-                        'giradoa'         => $valor['giradoa'], //$request['id_cuenta'.$i],
-                        'valor'           => $valor['valor'], //$request['valor'.$i],
-                        'valor_base'      => $valor['valor_base'], //$request['valor_base'.$i],
-                        'id_usuariocrea'  => $idusuario,
-                        'id_usuariomod'   => $idusuario,
-                        'ip_creacion'     => $ip_cliente,
+                        'id_ct_ventas' => $id_venta,
+                        'tipo' => $valor['id_tip_pago'], // $request['id_tip_pago'.$i],
+                        'fecha' => $valor['fecha_pago'], // $request['fecha'.$i],
+                        'numero' => $valor['numero_pago'], // $request['numero'.$i],
+                        'banco' => $valor['id_banco_pago'], // $request['id_banco'.$i],
+                        'cuenta' => $valor['id_cuenta_pago'], // $request['id_cuenta'.$i],
+                        'giradoa' => $valor['giradoa'], // $request['id_cuenta'.$i],
+                        'valor' => $valor['valor'], // $request['valor'.$i],
+                        'valor_base' => $valor['valor_base'], // $request['valor_base'.$i],
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
                         'ip_modificacion' => $ip_cliente,
                     ]);
                 }
 
-                //agregar comprobantes de ingreso
+                // agregar comprobantes de ingreso
                 $this->crearComprobante($nfactura, $request, $arr_p, $id_venta);
                 $arr_agendas = [];
                 if ($request->tipo_factura == 1) {
                     foreach ($arr_consultas as $valor) {
-                        if ($valor['prd_activo'] == "1") {
-                            Ct_factura_procedimiento::create([
-                                'id_ct_ventas'         => $id_venta,
+                        if ($valor['prd_activo'] == '1') {
+                            Ct_Factura_Procedimiento::create([
+                                'id_ct_ventas' => $id_venta,
                                 'id_hc_procedimientos' => $valor['prd_id'],
-                                'estado'               => "1",
-                                'id_usuariocrea'       => $idusuario,
-                                'id_usuariomod'        => $idusuario,
-                                'ip_creacion'          => $ip_cliente,
-                                'ip_modificacion'      => $ip_cliente,
+                                'estado' => '1',
+                                'id_usuariocrea' => $idusuario,
+                                'id_usuariomod' => $idusuario,
+                                'ip_creacion' => $ip_cliente,
+                                'ip_modificacion' => $ip_cliente,
                             ]);
                         }
                     }
 
                     if ($llevaOrden) {
-                        $orden_id     = $this->ordenVenta($id_venta, $request);
+                        $orden_id = $this->ordenVenta($id_venta, $request);
                         $id_ct_ventas = [
 
                             'id_ct_venta' => $id_venta,
 
                         ];
 
-                        Ct_ven_orden::where('id', $orden_id)->update($id_ct_ventas);
+                        Ct_Ven_Orden::where('id', $orden_id)->update($id_ct_ventas);
                     } else {
                         $orden_id = 0;
                     }
                     $arr_agendas = [];
-                    if (!empty($request->input("hc_procedimiento"))) {
+                    if (! empty($request->input('hc_procedimiento'))) {
 
-                        for ($i = 0; $i < count($request->input("hc_procedimiento")); $i++) {
+                        for ($i = 0; $i < count($request->input('hc_procedimiento')); $i++) {
 
-                            if ($request->input("hc_procedimiento")[$i] != "" || $request->input("paciente")[$i] != null) {
-                                $paciente = "";
-                                if (isset($request->input("paciente")[$i])) {
-                                    $paciente = $request->input("paciente")[$i];
+                            if ($request->input('hc_procedimiento')[$i] != '' || $request->input('paciente')[$i] != null) {
+                                $paciente = '';
+                                if (isset($request->input('paciente')[$i])) {
+                                    $paciente = $request->input('paciente')[$i];
                                 }
-                                $precio_neto = "";
-                                if (isset($request->input("precioneto")[$i])) {
-                                    $precio_neto = $request->input("precioneto")[$i];
+                                $precio_neto = '';
+                                if (isset($request->input('precioneto')[$i])) {
+                                    $precio_neto = $request->input('precioneto')[$i];
                                 }
-                                $nombre = "";
-                                if (isset($request->input("nombre")[$i])) {
-                                    $nombre = $request->input("nombre")[$i];
+                                $nombre = '';
+                                if (isset($request->input('nombre')[$i])) {
+                                    $nombre = $request->input('nombre')[$i];
                                 }
                                 $cantidad = 0;
-                                if (isset($request->input("cantidad")[$i])) {
-                                    $cantidad = $request->input("cantidad")[$i];
+                                if (isset($request->input('cantidad')[$i])) {
+                                    $cantidad = $request->input('cantidad')[$i];
                                 }
-                                $codigo = "";
-                                if (isset($request->input("codigo")[$i])) {
-                                    $codigo = $request->input("codigo")[$i];
+                                $codigo = '';
+                                if (isset($request->input('codigo')[$i])) {
+                                    $codigo = $request->input('codigo')[$i];
                                 }
-                                $nombre_procedimiento = "";
-                                if (isset($request->input("id_principal")[$i])) {
-                                    $nombre_procedimiento = $request->input("id_principal")[$i];
+                                $nombre_procedimiento = '';
+                                if (isset($request->input('id_principal')[$i])) {
+                                    $nombre_procedimiento = $request->input('id_principal')[$i];
                                 }
-                                $fecha_procedimiento = "";
-                                if (isset($request->input("fecha_procedimiento")[$i])) {
-                                    $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                                $fecha_procedimiento = '';
+                                if (isset($request->input('fecha_procedimiento')[$i])) {
+                                    $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                                 }
                                 $precio = 0;
-                                if (isset($request->input("precio")[$i])) {
-                                    $precio = $request->input("precio")[$i];
+                                if (isset($request->input('precio')[$i])) {
+                                    $precio = $request->input('precio')[$i];
                                 }
-                                $paciente = "";
-                                if (isset($request->input("paciente")[$i])) {
-                                    $paciente = $request->input("paciente")[$i];
+                                $paciente = '';
+                                if (isset($request->input('paciente')[$i])) {
+                                    $paciente = $request->input('paciente')[$i];
                                 }
-                                $iva = "";
-                                if (isset($request->input("iva")[$i])) {
-                                    $iva = $request->input("iva")[$i];
+                                $iva = '';
+                                if (isset($request->input('iva')[$i])) {
+                                    $iva = $request->input('iva')[$i];
                                 }
-                                $descuento = "";
-                                if (isset($request->input("desc")[$i])) {
-                                    $descuento = $request->input("desc")[$i];
+                                $descuento = '';
+                                if (isset($request->input('desc')[$i])) {
+                                    $descuento = $request->input('desc')[$i];
                                 }
-                                $descrip_prod = "";
-                                if (isset($request->input("descrip_prod")[$i])) {
-                                    $descrip_prod = $request->input("descrip_prod")[$i];
+                                $descrip_prod = '';
+                                if (isset($request->input('descrip_prod')[$i])) {
+                                    $descrip_prod = $request->input('descrip_prod')[$i];
                                 }
-                                $id_hc_proc = "";
-                                if (isset($request->input("id_hc_proc")[$i])) {
-                                    $id_hc_proc = $request->input("id_hc_proc")[$i];
+                                $id_hc_proc = '';
+                                if (isset($request->input('id_hc_proc')[$i])) {
+                                    $id_hc_proc = $request->input('id_hc_proc')[$i];
                                 }
-                                $id_agenda = "";
-                                if (isset($request->input("id_agenda")[$i])) {
-                                    $id_agenda = $request->input("id_agenda")[$i];
+                                $id_agenda = '';
+                                if (isset($request->input('id_agenda')[$i])) {
+                                    $id_agenda = $request->input('id_agenda')[$i];
                                 }
-                                $hc_procedimiento = "";
-                                if (isset($request->input("hc_procedimiento")[$i])) {
-                                    $hc_procedimiento = $request->input("hc_procedimiento")[$i];
+                                $hc_procedimiento = '';
+                                if (isset($request->input('hc_procedimiento')[$i])) {
+                                    $hc_procedimiento = $request->input('hc_procedimiento')[$i];
                                 }
                                 $arr_ags = ['id_agenda' => $id_agenda, 'id_paciente' => $paciente, 'producto' => $codigo, 'descripcion' => $descrip_prod, 'cantidad' => $cantidad, 'precio' => $precio, 'check_iva' => $iva, 'hc_procedimiento' => $hc_procedimiento, 'nombre_principal' => $nombre_procedimiento, 'fecha_procedimiento' => $fecha_procedimiento, 'nombre' => $nombre];
                                 array_push($arr_agendas, $arr_ags);
@@ -7342,130 +7450,130 @@ class VentasController extends Controller
                     $contador = 1;
                     foreach ($arr_agendas as $agenda) {
                         $id_omni = Ct_Factura_Omni::insertGetId([
-                            'id_ct_ventas'    => $id_venta,
-                            'id_agenda'       => $agenda["id_agenda"],
-                            'id_paciente'     => $agenda["id_paciente"],
-                            'tipo_factura'    => $request['tipo_factura'],
-                            'fecha'           => $agenda['fecha_procedimiento'],
-                            'estado'          => "1",
-                            'id_empresa'      => $id_empresa,
-                            'id_usuariocrea'  => $idusuario,
-                            'id_usuariomod'   => $idusuario,
-                            'ip_creacion'     => $ip_cliente,
+                            'id_ct_ventas' => $id_venta,
+                            'id_agenda' => $agenda['id_agenda'],
+                            'id_paciente' => $agenda['id_paciente'],
+                            'tipo_factura' => $request['tipo_factura'],
+                            'fecha' => $agenda['fecha_procedimiento'],
+                            'estado' => '1',
+                            'id_empresa' => $id_empresa,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
                             'ip_modificacion' => $ip_cliente,
                         ]);
                         $precio_neto = $agenda['cantidad'] * ($agenda['precio']);
-                        $serie       = "";
+                        $serie = '';
 
                         if ($agenda['hc_procedimiento'] != null) {
 
                             $sx = Movimiento_Paciente::where('id_hc_procedimientos', $agenda['hc_procedimiento'])->get();
 
-                            if (!is_null($sx)) {
+                            if (! is_null($sx)) {
                                 foreach ($sx as $p) {
 
                                     $movimiento = Movimiento::find($p->id_movimiento);
 
-                                    if (!is_null($movimiento)) {
+                                    if (! is_null($movimiento)) {
 
                                         $find = Ct_Detalle_Venta_Omni::where('serie', $movimiento->serie)->where('id_hc_procedimiento', $agenda['hc_procedimiento'])->first();
                                         if (is_null($find)) {
                                             $serie = $movimiento->serie;
                                         } else {
-                                            //$serie= $p->serie;
+                                            // $serie= $p->serie;
                                         }
                                     }
                                 }
                             }
                         }
                         Ct_Detalle_Venta_Omni::create([
-                            'id_ct_ventas'         => $id_venta,
-                            'id_ct_productos'      => $agenda['producto'],
-                            'nombre'               => $agenda['producto'],
-                            'id_omni'              => $id_omni,
-                            'cantidad'             => $agenda['cantidad'],
-                            'fecha_procedimiento'  => $agenda['fecha_procedimiento'],
-                            'id_agenda'            => $agenda['id_agenda'],
-                            'nombre_principal'     => $agenda['nombre_principal'],
-                            'id_hc_procedimiento'  => $agenda['hc_procedimiento'],
-                            'precio'               => $agenda['precio'],
-                            'serie'                => $serie, //serie
+                            'id_ct_ventas' => $id_venta,
+                            'id_ct_productos' => $agenda['producto'],
+                            'nombre' => $agenda['producto'],
+                            'id_omni' => $id_omni,
+                            'cantidad' => $agenda['cantidad'],
+                            'fecha_procedimiento' => $agenda['fecha_procedimiento'],
+                            'id_agenda' => $agenda['id_agenda'],
+                            'nombre_principal' => $agenda['nombre_principal'],
+                            'id_hc_procedimiento' => $agenda['hc_procedimiento'],
+                            'precio' => $agenda['precio'],
+                            'serie' => $serie, // serie
                             'descuento_porcentaje' => $request['iva_real'],
-                            'extendido'            => $precio_neto,
-                            'id_paciente'          => $agenda['id_paciente'],
-                            'detalle'              => $agenda['descripcion'],
-                            'check_iva'            => $agenda['check_iva'],
-                            'ip_creacion'          => $ip_cliente,
-                            'ip_modificacion'      => $ip_cliente,
-                            'id_usuariocrea'       => $idusuario,
-                            'id_usuariomod'        => $idusuario,
+                            'extendido' => $precio_neto,
+                            'id_paciente' => $agenda['id_paciente'],
+                            'detalle' => $agenda['descripcion'],
+                            'check_iva' => $agenda['check_iva'],
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
                         ]);
                     }
-                    $data['id']   = $id_venta;
+                    $data['id'] = $id_venta;
                     $data['tipo'] = 'VEN-FA';
                     $data['omni'] = '1';
-                    $msj          = Ct_Kardex::generar_kardex($data);
+                    $msj = Ct_Kardex::generar_kardex($data);
                 } else {
-                    //dd("dsadsa");
+                    // dd("dsadsa");
                     $arr_agendas = [];
-                    if (!empty($request->input("codigo"))) {
-                        for ($i = 0; $i < count($request->input("codigo")); $i++) {
-                            if ($request->input("codigo")[$i] != "" || $request->input("codigo")[$i] != null) {
-                                $paciente = "";
-                                if (isset($request->input("paciente")[$i])) {
-                                    $paciente = $request->input("paciente")[$i];
+                    if (! empty($request->input('codigo'))) {
+                        for ($i = 0; $i < count($request->input('codigo')); $i++) {
+                            if ($request->input('codigo')[$i] != '' || $request->input('codigo')[$i] != null) {
+                                $paciente = '';
+                                if (isset($request->input('paciente')[$i])) {
+                                    $paciente = $request->input('paciente')[$i];
                                 }
-                                $precio_neto = "";
-                                if (isset($request->input("precioneto")[$i])) {
-                                    $precio_neto = $request->input("precioneto")[$i];
+                                $precio_neto = '';
+                                if (isset($request->input('precioneto')[$i])) {
+                                    $precio_neto = $request->input('precioneto')[$i];
                                 }
-                                $nombre = "";
-                                if (isset($request->input("nombre")[$i])) {
-                                    $nombre = $request->input("nombre")[$i];
+                                $nombre = '';
+                                if (isset($request->input('nombre')[$i])) {
+                                    $nombre = $request->input('nombre')[$i];
                                 }
                                 $cantidad = 0;
-                                if (isset($request->input("cantidad")[$i])) {
-                                    $cantidad = $request->input("cantidad")[$i];
+                                if (isset($request->input('cantidad')[$i])) {
+                                    $cantidad = $request->input('cantidad')[$i];
                                 }
-                                $codigo = "";
-                                if (isset($request->input("codigo")[$i])) {
-                                    $codigo = $request->input("codigo")[$i];
+                                $codigo = '';
+                                if (isset($request->input('codigo')[$i])) {
+                                    $codigo = $request->input('codigo')[$i];
                                 }
-                                $nombre_procedimiento = "";
-                                if (isset($request->input("id_principal")[$i])) {
-                                    $nombre_procedimiento = $request->input("id_principal")[$i];
+                                $nombre_procedimiento = '';
+                                if (isset($request->input('id_principal')[$i])) {
+                                    $nombre_procedimiento = $request->input('id_principal')[$i];
                                 }
-                                $fecha_procedimiento = "";
-                                if (isset($request->input("fecha_procedimiento")[$i])) {
-                                    $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                                $fecha_procedimiento = '';
+                                if (isset($request->input('fecha_procedimiento')[$i])) {
+                                    $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                                 }
                                 $precio = 0;
-                                if (isset($request->input("precio")[$i])) {
-                                    $precio = $request->input("precio")[$i];
+                                if (isset($request->input('precio')[$i])) {
+                                    $precio = $request->input('precio')[$i];
                                 }
-                                $paciente = "";
-                                if (isset($request->input("paciente")[$i])) {
-                                    $paciente = $request->input("paciente")[$i];
+                                $paciente = '';
+                                if (isset($request->input('paciente')[$i])) {
+                                    $paciente = $request->input('paciente')[$i];
                                 }
-                                $iva = "";
-                                if (isset($request->input("iva")[$i])) {
-                                    $iva = $request->input("iva")[$i];
+                                $iva = '';
+                                if (isset($request->input('iva')[$i])) {
+                                    $iva = $request->input('iva')[$i];
                                 }
-                                $descuento = "";
-                                if (isset($request->input("desc")[$i])) {
-                                    $descuento = $request->input("desc")[$i];
+                                $descuento = '';
+                                if (isset($request->input('desc')[$i])) {
+                                    $descuento = $request->input('desc')[$i];
                                 }
-                                $descrip_prod = "";
-                                if (isset($request->input("descrip_prod")[$i])) {
-                                    $descrip_prod = $request->input("descrip_prod")[$i];
+                                $descrip_prod = '';
+                                if (isset($request->input('descrip_prod')[$i])) {
+                                    $descrip_prod = $request->input('descrip_prod')[$i];
                                 }
-                                $id_agenda = "";
-                                if (isset($request->input("id_agenda")[$i])) {
-                                    $id_agenda = $request->input("id_agenda")[$i];
+                                $id_agenda = '';
+                                if (isset($request->input('id_agenda')[$i])) {
+                                    $id_agenda = $request->input('id_agenda')[$i];
                                 }
-                                $hc_procedimiento = "";
-                                if (isset($request->input("hc_procedimiento")[$i])) {
-                                    $hc_procedimiento = $request->input("hc_procedimiento")[$i];
+                                $hc_procedimiento = '';
+                                if (isset($request->input('hc_procedimiento')[$i])) {
+                                    $hc_procedimiento = $request->input('hc_procedimiento')[$i];
                                 }
                                 $arr_ags = ['id_agenda' => $id_agenda, 'id_paciente' => $paciente, 'producto' => $codigo, 'descripcion' => $descrip_prod, 'cantidad' => $cantidad, 'precio' => $precio, 'check_iva' => $iva, 'hc_procedimiento' => $hc_procedimiento, 'nombre_principal' => $nombre_procedimiento, 'fecha_procedimiento' => $fecha_procedimiento];
                                 array_push($arr_agendas, $arr_ags);
@@ -7475,67 +7583,72 @@ class VentasController extends Controller
                     foreach ($arr_agendas as $agenda) {
 
                         $id_omni = Ct_Factura_Omni::insertGetId([
-                            'id_ct_ventas'    => $id_venta,
-                            'id_agenda'       => $agenda['id_agenda'],
-                            'fecha'           => $agenda['fecha_procedimiento'],
-                            'id_paciente'     => $agenda["id_paciente"],
-                            'tipo_factura'    => $request['tipo_factura'],
-                            'estado'          => "1",
-                            'id_empresa'      => $id_empresa,
-                            'id_usuariocrea'  => $idusuario,
-                            'id_usuariomod'   => $idusuario,
-                            'ip_creacion'     => $ip_cliente,
+                            'id_ct_ventas' => $id_venta,
+                            'id_agenda' => $agenda['id_agenda'],
+                            'fecha' => $agenda['fecha_procedimiento'],
+                            'id_paciente' => $agenda['id_paciente'],
+                            'tipo_factura' => $request['tipo_factura'],
+                            'estado' => '1',
+                            'id_empresa' => $id_empresa,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
                             'ip_modificacion' => $ip_cliente,
                         ]);
                         $precio_neto = $agenda['cantidad'] * ($agenda['precio']);
                         Ct_Detalle_Venta_Omni::create([
-                            'id_ct_ventas'         => $id_venta,
-                            'id_omni'              => $id_omni,
-                            'id_ct_productos'      => $agenda['producto'],
-                            'nombre'               => $agenda['producto'],
-                            'cantidad'             => $agenda['cantidad'],
-                            'fecha_procedimiento'  => $agenda['fecha_procedimiento'],
-                            'id_hc_procedimiento'  => $agenda['hc_procedimiento'],
-                            'nombre_principal'     => $agenda['nombre_principal'],
-                            'precio'               => $agenda['precio'],
+                            'id_ct_ventas' => $id_venta,
+                            'id_omni' => $id_omni,
+                            'id_ct_productos' => $agenda['producto'],
+                            'nombre' => $agenda['producto'],
+                            'cantidad' => $agenda['cantidad'],
+                            'fecha_procedimiento' => $agenda['fecha_procedimiento'],
+                            'id_hc_procedimiento' => $agenda['hc_procedimiento'],
+                            'nombre_principal' => $agenda['nombre_principal'],
+                            'precio' => $agenda['precio'],
                             'descuento_porcentaje' => $request['iva_real'],
-                            'extendido'            => $precio_neto,
-                            'id_paciente'          => $agenda['id_paciente'],
-                            'detalle'              => $agenda['descripcion'],
-                            'check_iva'            => $agenda['check_iva'],
-                            'ip_creacion'          => $ip_cliente,
-                            'ip_modificacion'      => $ip_cliente,
-                            'id_usuariocrea'       => $idusuario,
-                            'id_usuariomod'        => $idusuario,
+                            'extendido' => $precio_neto,
+                            'id_paciente' => $agenda['id_paciente'],
+                            'detalle' => $agenda['descripcion'],
+                            'check_iva' => $agenda['check_iva'],
+                            'ip_creacion' => $ip_cliente,
+                            'ip_modificacion' => $ip_cliente,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
                         ]);
                     }
                 }
-                $data['id']   = $id_venta;
+                $data['id'] = $id_venta;
                 $data['tipo'] = 'VEN-FA';
-                $msj          = Ct_Kardex::generar_kardex($data);
+                $msj = Ct_Kardex::generar_kardex($data);
                 DB::commit();
-                return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'arr_consultas' => $arr_consultas, 'prd_val' => $request->input("prd_val"), 'request' => $request, 'llevaOrden' => $llevaOrden, 'arr_agendas' => $arr_agendas, 'kardex' => $msj, "respuesta" => "exito", 'mensaje' => "Guardado exitosamente"];
-            } catch (\Exception $e) {
+
+                return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'arr_consultas' => $arr_consultas, 'prd_val' => $request->input('prd_val'), 'request' => $request, 'llevaOrden' => $llevaOrden, 'arr_agendas' => $arr_agendas, 'kardex' => $msj, 'respuesta' => 'exito', 'mensaje' => 'Guardado exitosamente'];
+            } catch (Exception $e) {
 
                 DB::rollBack();
+
                 return $e->getMessage();
             }
         }
 
         return $request;
     }
-    public function search(Request $request)
+
+    public function search(Request $request, ListSalesInvoices $listSalesInvoices)
     {
         $this->validateSalesListingRequest($request, true);
 
-        $usuario_actual    = Auth::user()->id;
+        $usuario_actual = Auth::user()->id;
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::find($id_empresa);
         $permitidos = ParametersConglomerada::pdf_permitidos($id_empresa);
-        $dato = Ct_ventas::getBusqueda($request);
+        $dato = $listSalesInvoices->handle(
+            $this->salesInvoiceDirectoryFilters($request, (string) $id_empresa, true),
+        );
         $this->deferElectronicInvoiceStatusRefresh($id_empresa);
 
-        return view('contable/ventas/index', ['empresa' => $empresa, 'dato' => $dato, 'permitidos' => $permitidos, "usuario_actual" => $usuario_actual]);
+        return view('contable/ventas/index', ['empresa' => $empresa, 'dato' => $dato, 'permitidos' => $permitidos, 'usuario_actual' => $usuario_actual]);
     }
 
     private function deferElectronicInvoiceStatusRefresh(int|string $idEmpresa): void
@@ -7613,6 +7726,27 @@ class VentasController extends Controller
         $request->validate($rules);
     }
 
+    private function salesInvoiceDirectoryFilters(
+        Request $request,
+        string $companyId,
+        bool $includeAdvancedFilters = false,
+    ): SalesInvoiceDirectoryFilters {
+        $filters = $request->only(['q', 'page', 'per_page']);
+
+        if ($includeAdvancedFilters) {
+            $filters += $request->only([
+                'id',
+                'numero',
+                'id_asiento',
+                'fecha',
+                'nombre_cliente',
+                'nombres_paciente',
+            ]);
+        }
+
+        return SalesInvoiceDirectoryFilters::fromArray($companyId, $filters);
+    }
+
     private function doSearchingQuery($constraints, $id_empresa)
     {
         $query = Ct_ventas::query();
@@ -7620,16 +7754,17 @@ class VentasController extends Controller
         $index = 0;
         foreach ($constraints as $constraint) {
             if ($constraint != null) {
-                $query = $query->where($fields[$index], 'like', '%' . $constraint . '%');
-                if ($fields[$index] == "id" || $fields[$index] == "id_asiento") {
+                $query = $query->where($fields[$index], 'like', '%'.$constraint.'%');
+                if ($fields[$index] == 'id' || $fields[$index] == 'id_asiento') {
                     $query = $query->where($fields[$index], $constraint);
                 } else {
-                    $query = $query->where($fields[$index], 'like', '%' . $constraint . '%');
+                    $query = $query->where($fields[$index], 'like', '%'.$constraint.'%');
                 }
             }
             $index++;
         }
-        return $query->where('estado', '<', '2')->where('tipo', "VEN-FA")->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(20);
+
+        return $query->where('estado', '<', '2')->where('tipo', 'VEN-FA')->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(20);
     }
 
     private function groupedSalesDetails(int|string $saleId): Collection
@@ -7666,7 +7801,7 @@ class VentasController extends Controller
             ->select('ct_det_vent.*')
             ->get();
         $detalle_venfaco = $this->groupedSalesDetails($id);
-        $clientes   = Ct_Clientes::where('estado', '1')->get();
+        $clientes = Ct_Clientes::where('estado', '1')->get();
         $forma_pago = DB::table('ct_forma_pago')
             ->where('id_ct_ventas', $id)
             ->where('estado', '1')
@@ -7675,11 +7810,11 @@ class VentasController extends Controller
         if (Auth::user()->id == '0951561075') {
             //  dd($forma_pago);
         }
-        $tip_tarjeta     = Ct_Tipo_Tarjeta::where('estado', '1')->get();
-        $banco           = Ct_Bancos::where('estado', '1')->get();
-        $divisas         = Ct_Divisas::where('estado', '1')->get();
-        $empresa         = Empresa::where('id', $id_empresa)->first();
-        $seguros         = Seguro::all();
+        $tip_tarjeta = Ct_Tipo_Tarjeta::where('estado', '1')->get();
+        $banco = Ct_Bancos::where('estado', '1')->get();
+        $divisas = Ct_Divisas::where('estado', '1')->get();
+        $empresa = Empresa::where('id', $id_empresa)->first();
+        $seguros = Seguro::all();
         $user_recaudador = User::where('id_tipo_usuario', 18)
             ->where('estado', 1)->get();
         $user_vendedor = User::where('id_tipo_usuario', 17)
@@ -7687,18 +7822,20 @@ class VentasController extends Controller
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        $tipo_pago   = Ct_Tipo_Pago::where('estado', '1')->get();
-        $cuentas     = Plan_Cuentas::where('estado', '2')->get();
+        $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
+        $cuentas = Plan_Cuentas::where('estado', '2')->get();
         $lista_banco = Ct_Bancos::where('estado', '1')->get();
+
         return view('contable/ventas/edit', ['porIva' => $this->porIva, 'ventas' => $ventas, 'sucursales' => $sucursales, 'clientes' => $clientes, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'detalle_venta' => $detalle_venta, 'forma_pago' => $forma_pago, 'tip_tarjeta' => $tip_tarjeta, 'seguros' => $seguros, 'banco' => $banco, 'divisas' => $divisas, 'empresa' => $empresa, 'tipo_pago' => $tipo_pago, 'cuentas' => $cuentas, 'detalle_venfaco' => $detalle_venfaco, 'lista_banco' => $lista_banco]);
     }
+
     public function excelConglomerada($id_venta)
     {
         $venta = Ct_ventas::find($id_venta);
         $detalle = [];
         if ($venta->tipo == 'VENFA-CO') {
             $detalle = Ct_Detalle_Venta_Conglomerada::where('id_ct_ventas', $venta->id)->get();
-        } else if ($venta->omni == 1) {
+        } elseif ($venta->omni == 1) {
             $detalle = Ct_Detalle_Venta_Omni::where('id_ct_ventas', $venta->id)->get()->toArray();
         }
         // dd($venta, $detalle);
@@ -7710,57 +7847,58 @@ class VentasController extends Controller
                     ->get();
                 $comienzo = 1;
                 $titulo = $venta->tipo == 'VENFA-CO' ? 'FACTURA CONGLOMERADA' : '';
-                $title["data"] = [$titulo];
-                $title["direccion"] = "normal";
-                $title["letra_inicial"] = "A";
-                $title["letra_final"] = "F";
-                $title["num_inicial"] = $comienzo;
-                $title["num_final"]  = $comienzo;
+                $title['data'] = [$titulo];
+                $title['direccion'] = 'normal';
+                $title['letra_inicial'] = 'A';
+                $title['letra_final'] = 'F';
+                $title['num_inicial'] = $comienzo;
+                $title['num_final'] = $comienzo;
                 // $tile['background-color'] = "#FFFFFF";
                 excelCreate::mergeCells($sheet, $title);
                 $comienzo++;
 
-                $titles = ["Cod principal", "Descripción", "Cantidad", "P. unitario", "Descuento", "P. total"];
+                $titles = ['Cod principal', 'Descripción', 'Cantidad', 'P. unitario', 'Descuento', 'P. total'];
 
                 foreach ($detalle as $value) {
-                    $nombre_paciente = "";
+                    $nombre_paciente = '';
                     if (isset($value->paciente)) {
                         $nombre_paciente = "{$value->paciente->nombre1} {$value->paciente->apellido1} {$value->paciente->apellido2}";
-                    } else if (isset($value->cliente)) {
+                    } elseif (isset($value->cliente)) {
                         $nombre_paciente = "{$value->cliente->nombre}";
                     }
-                    $title["data"] = ["CLIENTE:  {$nombre_paciente}"];
-                    $title["num_inicial"] = $comienzo;
-                    $title["num_final"]  = $comienzo;
-                    $title['background-color'] = "#B8B9FD";
+                    $title['data'] = ["CLIENTE:  {$nombre_paciente}"];
+                    $title['num_inicial'] = $comienzo;
+                    $title['num_final'] = $comienzo;
+                    $title['background-color'] = '#B8B9FD';
 
                     excelCreate::mergeCells($sheet, $title);
                     $comienzo++;
 
-                    $titulos_detalle["data"] = $titles;
-                    $titulos_detalle["comienzo"] = $comienzo;
+                    $titulos_detalle['data'] = $titles;
+                    $titulos_detalle['comienzo'] = $comienzo;
                     excelCreate::details($sheet, $titulos_detalle);
                     $comienzo++;
 
                     $producto = Ct_productos::where('codigo', $value->id_ct_productos)->where('id_empresa', Session::get('id_empresa'))->first();
                     // dd($value, $producto);
 
-                    $detalle["data"] = [$producto->codigo, $producto->nombre, $value->cantidad, $value->precio, $value->descuento, $value->extendido];
-                    $detalle["comienzo"] = $comienzo;
+                    $detalle['data'] = [$producto->codigo, $producto->nombre, $value->cantidad, $value->precio, $value->descuento, $value->extendido];
+                    $detalle['comienzo'] = $comienzo;
                     excelCreate::details($sheet, $detalle);
                     $comienzo++;
                 }
             });
         })->export('xlsx');
     }
+
     public function buscarCliente(Request $request)
     {
         $nombre = $request['term'];
-        $data   = array();
-        //$productos = DB::table('ct_clientes')->where('nombre', 'like', '%' . $nombre . '%')->get();
-        $clientes = Ct_Clientes::where('nombre', 'like', '%' . $nombre . '%')->where('estado', '1')->get();
+        $data = [];
+        // $productos = DB::table('ct_clientes')->where('nombre', 'like', '%' . $nombre . '%')->get();
+        $clientes = Ct_Clientes::where('nombre', 'like', '%'.$nombre.'%')->where('estado', '1')->get();
         foreach ($clientes as $cliente) {
-            $data[] = array('value' => $cliente->nombre, 'id' => $cliente->identificacion, 'direccion' => $cliente->direccion_representante, 'ciudad' => $cliente->ciudad_representante, 'mail' => $cliente->email_representante, 'telefono' => $cliente->telefono1_representante, 'tipo' => $cliente->clase);
+            $data[] = ['value' => $cliente->nombre, 'id' => $cliente->identificacion, 'direccion' => $cliente->direccion_representante, 'ciudad' => $cliente->ciudad_representante, 'mail' => $cliente->email_representante, 'telefono' => $cliente->telefono1_representante, 'tipo' => $cliente->clase];
         }
         // print_r($clientes);
         if (count($data) > 0) {
@@ -7769,19 +7907,21 @@ class VentasController extends Controller
             return ['value' => 'No se encontraron resultados', 'id' => ''];
         }
     }
+
     public function buscarClientexId(Request $request)
     {
-        //dd($request->valor);
+        // dd($request->valor);
         $busqueda = 'identificacion';
-        $nombre   = $request['term'];
-        $data     = array();
-        if ($request->busq == "identificacion2") {
-            $busqueda = "identificacion";
+        $nombre = $request['term'];
+        $data = [];
+        if ($request->busq == 'identificacion2') {
+            $busqueda = 'identificacion';
         }
         // dd($request->all());
-        //$productos = DB::table('ct_clientes')->where('nombre', 'like', '%' . $nombre . '%')->get();
+        // $productos = DB::table('ct_clientes')->where('nombre', 'like', '%' . $nombre . '%')->get();
         $clientes = Ct_Clientes::where($busqueda, $request->valor)->where('estado', '1')->first();
-        //dd($clientes);
+
+        // dd($clientes);
         // foreach ($clientes as $cliente) {
         //     $data[] = array('value' => $cliente->identificacion, 'nombre' => $cliente->nombre, 'direccion' => $cliente->direccion_representante, 'ciudad' => $cliente->ciudad_representante, 'mail' => $cliente->email_representante, 'telefono' => $cliente->telefono1_representante, 'tipo' => $cliente->clase);
         // }
@@ -7793,16 +7933,17 @@ class VentasController extends Controller
         // }
         return $clientes;
     }
+
     public function buscarPaciente(Request $request)
     {
         $nombre = $request['term'];
-        $data   = array();
+        $data = [];
 
-        //$productos = DB::table('ct_clientes')->where('nombre', 'like', '%' . $nombre . '%')->get();
-        $paciente = Paciente::where('id', 'like', $nombre . '%')->get();
+        // $productos = DB::table('ct_clientes')->where('nombre', 'like', '%' . $nombre . '%')->get();
+        $paciente = Paciente::where('id', 'like', $nombre.'%')->get();
         foreach ($paciente as $value) {
             $nom_completo = "$value->nombre1 $value->nombre2 $value->apellido1 $value->apellido2";
-            $data[]       = array('value' => $value->id, 'nombre' => $nom_completo, 'seguro' => $value->id_seguro);
+            $data[] = ['value' => $value->id, 'nombre' => $nom_completo, 'seguro' => $value->id_seguro];
         }
         // print_r($clientes);
         if (count($data) > 0) {
@@ -7811,27 +7952,28 @@ class VentasController extends Controller
             return ['value' => 'No se encontraron resultados', 'id' => ''];
         }
     }
+
     public function buscarPaciente_nombre(Request $request)
     {
-        $nombres  = $request['term'];
-        $data     = array();
+        $nombres = $request['term'];
+        $data = [];
         $paciente = Paciente::where('id', '<>', '7777773333');
         if ($nombres != null) {
-            $nombres2 = explode(" ", $nombres);
+            $nombres2 = explode(' ', $nombres);
             $cantidad = count($nombres2);
             if ($cantidad == '2' || $cantidad == '3') {
                 $paciente = $paciente->where(function ($jq1) use ($nombres) {
-                    $jq1->orwhereraw('CONCAT(paciente.nombre1," ",paciente.nombre2," ",paciente.apellido1," ",paciente.apellido2) LIKE ?', ['%' . $nombres . '%'])
-                        ->orwhereraw('CONCAT(paciente.nombre1," ",paciente.apellido1," ",paciente.apellido2) LIKE ?', ['%' . $nombres . '%']);
+                    $jq1->orwhereraw('CONCAT(paciente.nombre1," ",paciente.nombre2," ",paciente.apellido1," ",paciente.apellido2) LIKE ?', ['%'.$nombres.'%'])
+                        ->orwhereraw('CONCAT(paciente.nombre1," ",paciente.apellido1," ",paciente.apellido2) LIKE ?', ['%'.$nombres.'%']);
                 });
             } else {
-                $paciente = $paciente->whereraw('CONCAT(paciente.nombre1," ",paciente.nombre2," ",paciente.apellido1," ",paciente.apellido2) LIKE ?', ['%' . $nombres . '%']);
+                $paciente = $paciente->whereraw('CONCAT(paciente.nombre1," ",paciente.nombre2," ",paciente.apellido1," ",paciente.apellido2) LIKE ?', ['%'.$nombres.'%']);
             }
         }
         $paciente = $paciente->get();
         foreach ($paciente as $value) {
             $nom_completo = "$value->nombre1 $value->nombre2 $value->apellido1 $value->apellido2";
-            $data[]       = array('value' => $nom_completo, 'nombre' => $value->id, 'seguro' => $value->id_seguro);
+            $data[] = ['value' => $nom_completo, 'nombre' => $value->id, 'seguro' => $value->id_seguro];
         }
         if (count($data) > 0) {
             return $data;
@@ -7839,76 +7981,87 @@ class VentasController extends Controller
             return ['value' => 'No se encontraron resultados', 'id' => ''];
         }
     }
+
     public function buscarProducto(Request $request)
     {
-        $codigo    = $request['codigo'];
-        $data      = null;
+        $codigo = $request['codigo'];
+        $data = null;
         $productos = DB::table('ct_productos')->where('codigo', $codigo)->first();
-        if (!is_null($productos)) {
+        if (! is_null($productos)) {
             $data = $productos->nombre;
+
             return $data;
         } else {
-            //return ['value' => 'No se encontraron resultados'];
-            return "error";
+            // return ['value' => 'No se encontraron resultados'];
+            return 'error';
         }
     }
+
     public function buscar_identificacion(Request $request)
     {
 
         $id_cliente = $request['cliente'];
-        $clientes   = DB::table('ct_clientes')->where('identificacion', $id_cliente)->first();
-        if (!is_null($clientes)) {
-            $client_cedula         = $clientes->cedula_representante;
-            $client_direccion      = $clientes->direccion_representante;
+        $clientes = DB::table('ct_clientes')->where('identificacion', $id_cliente)->first();
+        if (! is_null($clientes)) {
+            $client_cedula = $clientes->cedula_representante;
+            $client_direccion = $clientes->direccion_representante;
             $client_identificacion = $clientes->identificacion;
-            $client_telefono       = $clientes->telefono1_representante;
-            $client_email          = $clientes->email_representante;
-            $client_ciudad         = $clientes->ciudad_representante;
+            $client_telefono = $clientes->telefono1_representante;
+            $client_email = $clientes->email_representante;
+            $client_ciudad = $clientes->ciudad_representante;
+
             return ['client_cedula' => $client_cedula, 'client_direccion' => $client_direccion, 'client_identificacion' => $client_identificacion, 'client_telefono' => $client_telefono, 'client_email' => $client_email, 'client_ciudad' => $client_ciudad];
         } else {
             return ['value' => 'No se encontraron resultados'];
         }
     }
+
     public function buscador_paciente(Request $request)
     {
         $paciente = [];
         if ($request['search'] != null) {
-            $paciente = Paciente::whereRaw("CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like '%" . $request['search'] . "%' ")->select(DB::raw('CONCAT_WS(" ", apellido1, " " , apellido2, " ", nombre1," ", nombre2) as text'), 'id as id')->get();
+            $paciente = Paciente::whereRaw("CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like '%".$request['search']."%' ")->select(DB::raw('CONCAT_WS(" ", apellido1, " " , apellido2, " ", nombre1," ", nombre2) as text'), 'id as id')->get();
         }
+
         return response()->json($paciente);
     }
-    //Vendedor
+
+    // Vendedor
     public function buscar_identificacion_vendedor(Request $request)
     {
-        $id_vendedor   = $request['vendedor'];
+        $id_vendedor = $request['vendedor'];
         $user_vendedor = User::where('id', $id_vendedor)
             ->where('estado', 1)->first();
-        if (!is_null($user_vendedor)) {
+        if (! is_null($user_vendedor)) {
             $vendedor_cedula = $user_vendedor->id;
+
             return ['vendedor_cedula' => $vendedor_cedula];
         } else {
             return ['value' => 'No se encontraron resultados'];
         }
     }
+
     public function buscar_identificacion_recaudador(Request $request)
     {
-        $id_recaudador   = $request['recaudador'];
+        $id_recaudador = $request['recaudador'];
         $user_recaudador = User::where('id', $id_recaudador)
             ->where('estado', 1)->first();
-        if (!is_null($user_recaudador)) {
+        if (! is_null($user_recaudador)) {
             $recaudador_cedula = $user_recaudador->id;
+
             return ['recaudador_cedula' => $recaudador_cedula];
         } else {
             return ['value' => 'No se encontraron resultados'];
         }
     }
+
     public function buscar_nombre(Request $request)
     {
         $nombre = $request['term'];
-        $data   = array();
-        $productos = DB::table('ct_productos')->where('nombre', 'like', '%' . $nombre . '%')->get();
+        $data = [];
+        $productos = DB::table('ct_productos')->where('nombre', 'like', '%'.$nombre.'%')->get();
         foreach ($productos as $product) {
-            $data[] = array('value' => $product->nombre, 'id' => $product->codigo);
+            $data[] = ['value' => $product->nombre, 'id' => $product->codigo];
         }
         if (count($data) > 0) {
             return $data;
@@ -7916,40 +8069,42 @@ class VentasController extends Controller
             return ['value' => 'No se encontraron resultados', 'id' => ''];
         }
     }
+
     public function buscar_codigo(Request $request)
     {
-        //return  $request->all();
+        // return  $request->all();
         $nombre = $request['nombre'];
         $data = null;
         $productos = DB::table('ct_productos')->where('nombre', $nombre)->first();
-        if (!is_null($productos)) {
+        if (! is_null($productos)) {
             $prod_insum = DB::table('producto as prd')->where('codigo', $productos->codigo)
                 ->select('prd.iva as iva_prod')
                 ->first();
             $iva_prod = $prod_insum->iva_prod;
-            $cod_product    = $productos->codigo;
-            $prec_uno       = $productos->precio1;
-            $prec_dos       = $productos->precio2;
-            $prec_tres      = $productos->precio3;
-            $prec_cuatr     = $productos->precio4;
+            $cod_product = $productos->codigo;
+            $prec_uno = $productos->precio1;
+            $prec_dos = $productos->precio2;
+            $prec_tres = $productos->precio3;
+            $prec_cuatr = $productos->precio4;
             $prec_promocion = $productos->promocion;
-            $cost_vent      = $productos->ultima_compra;
+            $cost_vent = $productos->ultima_compra;
 
             return ['cod_product' => $cod_product, 'prec_uno' => $prec_uno, 'prec_dos' => $prec_dos, 'prec_tres' => $prec_tres, 'prec_cuatr' => $prec_cuatr, 'prec_promocion' => $prec_promocion, 'prec_promocion' => $prec_promocion, 'cost_vent' => $cost_vent, 'iva_prod' => $iva_prod];
-            //return $productos;
+            // return $productos;
 
         } else {
 
-            return "error";
+            return 'error';
         }
     }
+
     public function buscar_codigo2(Request $request)
     {
         $codigo = $request['term'];
-        $data = array();
-        $productos = DB::table('ct_productos')->where('codigo', 'like', '%' . $codigo . '%')->get();
+        $data = [];
+        $productos = DB::table('ct_productos')->where('codigo', 'like', '%'.$codigo.'%')->get();
         foreach ($productos as $product) {
-            $data[] = array('value' => $product->codigo);
+            $data[] = ['value' => $product->codigo];
         }
         if (count($data) > 0) {
             return $data;
@@ -7957,19 +8112,22 @@ class VentasController extends Controller
             return ['value' => 'No se encontraron resultados'];
         }
     }
+
     public function buscar_nombre2(Request $request)
     {
-        $codigo    = $request['codigo'];
-        $data      = null;
+        $codigo = $request['codigo'];
+        $data = null;
         $productos = DB::table('ct_productos')->where('codigo', $codigo)->first();
-        if (!is_null($productos)) {
+        if (! is_null($productos)) {
             $data = $productos->nombre;
+
             return $data;
         } else {
-            //return ['value' => 'No se encontraron resultados'];
-            return "error";
+            // return ['value' => 'No se encontraron resultados'];
+            return 'error';
         }
     }
+
     public function update_direccion(Request $request)
     {
         if ($this->rol()) {
@@ -7977,9 +8135,9 @@ class VentasController extends Controller
         }
 
         $iden_cliente = $request['ident_cliente'];
-        $direccion    = $request['direc_cliente'];
+        $direccion = $request['direc_cliente'];
 
-        if (!is_null($iden_cliente)) {
+        if (! is_null($iden_cliente)) {
 
             $input_direccion = [
 
@@ -7990,15 +8148,16 @@ class VentasController extends Controller
             Ct_Clientes::where('identificacion', $iden_cliente)->update($input_direccion);
         }
     }
+
     public function completa_cedula_pacie(Request $request)
     {
         $id_pacient = $request['term'];
-        $data       = array();
+        $data = [];
 
-        $paciente = DB::table('paciente')->where('id', 'like', '%' . $id_pacient . '%')->get();
+        $paciente = DB::table('paciente')->where('id', 'like', '%'.$id_pacient.'%')->get();
 
         foreach ($paciente as $pac) {
-            $data[] = array('value' => $pac->id);
+            $data[] = ['value' => $pac->id];
         }
         if (count($data) > 0) {
             return $data;
@@ -8006,23 +8165,24 @@ class VentasController extends Controller
             return ['value' => 'No se encontraron resultados'];
         }
     }
+
     public function buscar_paciente(Request $request)
     {
         $ced_pacient = $request['ced_paciente'];
 
         $paciente = Paciente::find($ced_pacient);
 
-        //return $paciente;
+        // return $paciente;
 
-        if (!is_null($paciente)) {
+        if (! is_null($paciente)) {
 
-            //$texto = $paciente->nombre1. ' ' . $paciente->nombre2. ' ' . $paciente->apellido1. ' ' .$paciente->apellido2;
+            // $texto = $paciente->nombre1. ' ' . $paciente->nombre2. ' ' . $paciente->apellido1. ' ' .$paciente->apellido2;
 
-            $texto = $paciente->nombre1 . ' ' . $paciente->apellido1;
+            $texto = $paciente->nombre1.' '.$paciente->apellido1;
 
             $seguro = Seguro::find($paciente->id_seguro);
 
-            if (!is_null($seguro)) {
+            if (! is_null($seguro)) {
 
                 $id_seg = $seguro->id;
             }
@@ -8030,9 +8190,10 @@ class VentasController extends Controller
             return ['texto' => $texto, 'id_seg' => $id_seg];
         } else {
 
-            return "error";
+            return 'error';
         }
     }
+
     /************************************************************
      ***************OBTENER SUCURSAL DE CADA EMPRESA**************
     /************************************************************/
@@ -8044,7 +8205,7 @@ class VentasController extends Controller
 
         $id_empre = $request['id_emp'];
 
-        if (!is_null($id_empre)) {
+        if (! is_null($id_empre)) {
 
             $suc_caja = DB::table('ct_sucursales as ct_s')
                 ->where('ct_s.estado', 1)
@@ -8056,6 +8217,7 @@ class VentasController extends Controller
 
         return 'no';
     }
+
     /************************************************************
      *************OBTENER LAS CAJAS DE CADA SUCURSAL**************
     /************************************************************/
@@ -8065,16 +8227,19 @@ class VentasController extends Controller
             return response()->view('errors.404');
         }
         $id_sucur = $request['id_sucur'];
-        if (!is_null($id_sucur)) {
+        if (! is_null($id_sucur)) {
             $caja = DB::table('ct_sucursales as ct_s')
                 ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
                 ->where('ct_c.estado', 1)
                 ->where('ct_s.id', $id_sucur)
                 ->get();
+
             return $caja;
         }
+
         return 'no';
     }
+
     /************************************************************
      *************IMPRIMIR COMPROBANTE FACTURA DE VENTA***********
     /************************************************************/
@@ -8087,60 +8252,62 @@ class VentasController extends Controller
 
         if ($fact_venta != null) {
 
-            $emp             = Empresa::find($fact_venta->id_empresa);
-            $recaud          = User::find($fact_venta->id_recaudador);
-            $cliente         = Ct_Clientes::where('identificacion', $fact_venta->id_cliente)->first();
-            $pacient         = Paciente::find($fact_venta->id_paciente);
-            $deta_vent       = Ct_detalle_venta::where('id_ct_ventas', $id)->get();
+            $emp = Empresa::find($fact_venta->id_empresa);
+            $recaud = User::find($fact_venta->id_recaudador);
+            $cliente = Ct_Clientes::where('identificacion', $fact_venta->id_cliente)->first();
+            $pacient = Paciente::find($fact_venta->id_paciente);
+            $deta_vent = Ct_detalle_venta::where('id_ct_ventas', $id)->get();
             $detalle_venfaco = $this->groupedSalesDetails($id);
         }
 
-        $vistaurl = "contable.ventas.pdf_comprobante_tributario";
-        $view     = \View::make($vistaurl, compact('fact_venta', 'emp', 'recaud', 'cliente', 'pacient', 'deta_vent', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret'))->render();
+        $vistaurl = 'contable.ventas.pdf_comprobante_tributario';
+        $view = \View::make($vistaurl, compact('fact_venta', 'emp', 'recaud', 'cliente', 'pacient', 'deta_vent', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret'))->render();
 
-        //return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
+        // return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('resultado-' . $id . '.pdf');
+        return $pdf->stream('resultado-'.$id.'.pdf');
     }
+
     public function ordenes(Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        $seguro     = Seguro::where('inactivo', 1)->get();
+        $seguro = Seguro::where('inactivo', 1)->get();
         $id_empresa = $request->session()->get('id_empresa');
-        $empresa    = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
+        $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
         if ($request->fecha_hasta == null) {
             $request->fecha_hasta = date('Y-m-d');
         }
-        $ventas = Ct_ven_orden::where('estado', '!=', null)->where('id_empresa', $id_empresa);
+        $ventas = Ct_Ven_Orden::where('estado', '!=', null)->where('id_empresa', $id_empresa);
         if ($request['id'] != null) {
             $ventas = $ventas->where('id', $request->id);
         } else {
             if ($request->fecha_desde != null && $request->fecha_hasta != null) {
-                $ventas = $ventas->whereBetween('fecha', [$request->fecha_desde . ' 00:00:00', $request->fecha_hasta . ' 23:59:59']);
+                $ventas = $ventas->whereBetween('fecha', [$request->fecha_desde.' 00:00:00', $request->fecha_hasta.' 23:59:59']);
             }
             if ($request->fecha_desde == null) {
-                $ventas = $ventas->where('fecha', '<', $request->fecha_hasta . ' 23:59:59');
+                $ventas = $ventas->where('fecha', '<', $request->fecha_hasta.' 23:59:59');
             }
             if ($request->nombres_paciente != null) {
-                $ventas = $ventas->where('nombres_paciente', 'LIKE', '%' . $request->nombres_paciente . '%');
+                $ventas = $ventas->where('nombres_paciente', 'LIKE', '%'.$request->nombres_paciente.'%');
             }
             if ($request->nombre_cliente != null) {
-                $ventas = $ventas->where('nombre_cliente', 'LIKE', '%' . $request->nombre_cliente . '%');
+                $ventas = $ventas->where('nombre_cliente', 'LIKE', '%'.$request->nombre_cliente.'%');
             }
             if ($request->nro_comprobante != null) {
-                $ventas = $ventas->where('nro_comprobante', 'LIKE', '%' . $request->nro_comprobante . '%');
+                $ventas = $ventas->where('nro_comprobante', 'LIKE', '%'.$request->nro_comprobante.'%');
             }
         }
         $ventas = $ventas->orderby('id', 'desc')->paginate(10);
 
         return view('contable/ventas/ordenes', ['ventas' => $ventas, 'empresa' => $empresa, 'request' => $request, 'seguro' => $seguro]);
     }
+
     public function ordenes_crear_nuevo(Request $request)
     {
         if ($this->rol()) {
@@ -8150,33 +8317,33 @@ class VentasController extends Controller
         $orden_venta = Ct_Orden_Venta::find($request['id_orden']);
         $paciente = Paciente::find($orden_venta->agenda->id_paciente);
         $proc_consulta = Agenda::where('id', $orden_venta->id_agenda)->first();
-        $tipo_proc_con = "CONSULTA";
+        $tipo_proc_con = 'CONSULTA';
         $tipo_consulta = '1';
-        if (!is_null($proc_consulta) && $proc_consulta->proc_consul == 1) {
-            $tipo_proc_con = "PROCEDIMIENTO";
+        if (! is_null($proc_consulta) && $proc_consulta->proc_consul == 1) {
+            $tipo_proc_con = 'PROCEDIMIENTO';
             $tipo_consulta = '2';
         }
         $request['tipo'] = 'VEN-OV';
-        $request['fecha_asiento']   = $orden_venta->fecha_emision;
-        $request['orden_venta']     = $orden_venta->id;
-        $request['divisas']         = 1;
-        $request['identificacion_cliente']   = $orden_venta->identificacion;
-        $request['identificacion_paciente']   = $paciente->id;
-        $request['nombre_cliente']   =   $orden_venta->razon_social;
-        $request['nombre_paciente']   =   $paciente->apellido1 . ' ' . $paciente->apellido2 . ' ' . $paciente->nombre1 . ' ' . $paciente->nombre2;;
-        $request['direccion_cliente']   =  $orden_venta->direccion;
-        $request['mail_cliente']   =  $orden_venta->email;
-        $request['telefono_cliente']   =  $orden_venta->telefono;
-        $request['id_seguro']  =  $orden_venta->id_seguro;
-        $request['procedimiento']  = $tipo_proc_con;
-        $request['fecha_proced']   =  $orden_venta->nueva_fecha;
-        $request['tipo_consulta']  =  $tipo_consulta;
-        $request['subtotal_121']   =  $orden_venta->subtotal_12;
-        $request['subtotal_01']   =  $orden_venta->subtotal_0;
-        $request['descuento1']   =  $orden_venta->descuento;
-        $request['tarifa_iva1']  =  $orden_venta->iva;
-        $request['total1']   =   $orden_venta->total;
-        $request['totalc']   =   $orden_venta->valor_oda;
+        $request['fecha_asiento'] = $orden_venta->fecha_emision;
+        $request['orden_venta'] = $orden_venta->id;
+        $request['divisas'] = 1;
+        $request['identificacion_cliente'] = $orden_venta->identificacion;
+        $request['identificacion_paciente'] = $paciente->id;
+        $request['nombre_cliente'] = $orden_venta->razon_social;
+        $request['nombre_paciente'] = $paciente->apellido1.' '.$paciente->apellido2.' '.$paciente->nombre1.' '.$paciente->nombre2;
+        $request['direccion_cliente'] = $orden_venta->direccion;
+        $request['mail_cliente'] = $orden_venta->email;
+        $request['telefono_cliente'] = $orden_venta->telefono;
+        $request['id_seguro'] = $orden_venta->id_seguro;
+        $request['procedimiento'] = $tipo_proc_con;
+        $request['fecha_proced'] = $orden_venta->nueva_fecha;
+        $request['tipo_consulta'] = $tipo_consulta;
+        $request['subtotal_121'] = $orden_venta->subtotal_12;
+        $request['subtotal_01'] = $orden_venta->subtotal_0;
+        $request['descuento1'] = $orden_venta->descuento;
+        $request['tarifa_iva1'] = $orden_venta->iva;
+        $request['total1'] = $orden_venta->total;
+        $request['totalc'] = $orden_venta->valor_oda;
         $cont_codigo = 0;
         $orden_venta_detalle = Ct_Orden_Venta_Detalle::where('id_orden', $id_orden)->get();
         foreach ($orden_venta_detalle as $ov) {
@@ -8203,47 +8370,49 @@ class VentasController extends Controller
         $request['desc'] = $desc;
         $request['precioneto'] = $precioneto;
         $id_orden = null;
-        $orden_id     = $this->ordenVenta($id_orden, $request);
-        if (!is_null($orden_id)) {
+        $orden_id = $this->ordenVenta($id_orden, $request);
+        if (! is_null($orden_id)) {
             return ['msj' => 'si'];
         } else {
             return ['msj' => 'no'];
         }
     }
+
     public function searchOrdenes(Request $request)
     {
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        $ventas      = array();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
+        $ventas = [];
         $constraints = [
-            'id'               => $request['id'],
-            'fecha_desde'      => $request['fecha_desde'],
-            'fecha_hasta'      => $request['fecha_hasta'],
-            'nombre_cliente'   => $request['nombre_cliente'],
+            'id' => $request['id'],
+            'fecha_desde' => $request['fecha_desde'],
+            'fecha_hasta' => $request['fecha_hasta'],
+            'nombre_cliente' => $request['nombre_cliente'],
             'nombres_paciente' => $request['nombres_paciente'],
-            'nro_comprobante'  => $request['nro_comprobante'],
+            'nro_comprobante' => $request['nro_comprobante'],
         ];
         if ($request['id'] != null || $request['numero'] != null || $request['fecha'] != null || $request['nombre_cliente'] != null || $request['nombres_paciente'] != null) {
             $constraints = [
-                'id'               => $request['id'],
-                'fecha_desde'      => $request['fecha_desde'],
-                'fecha_hasta'      => $request['fecha_hasta'],
-                'nombre_cliente'   => $request['nombre_cliente'],
+                'id' => $request['id'],
+                'fecha_desde' => $request['fecha_desde'],
+                'fecha_hasta' => $request['fecha_hasta'],
+                'nombre_cliente' => $request['nombre_cliente'],
                 'nombres_paciente' => $request['nombres_paciente'],
-                'nro_comprobante'  => $request['nro_comprobante'],
+                'nro_comprobante' => $request['nro_comprobante'],
             ];
 
             $ventas = $this->doSearchingQuery2($constraints, $id_empresa);
         } else {
-            $ventas = Ct_Ven_Orden::where('estado', '<', '2')->where('tipo', "VEN-FA")->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(10);
+            $ventas = Ct_Ven_Orden::where('estado', '<', '2')->where('tipo', 'VEN-FA')->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(10);
         }
         $idusuario = Auth::user()->id;
-        if ($idusuario == "0957258056") {
+        if ($idusuario == '0957258056') {
             // dd($constraints);
         }
 
         return view('contable/ventas/ordenes', ['ventas' => $ventas, 'empresa' => $empresa, 'searchingVals' => $constraints]);
     }
+
     private function doSearchingQuery2($constraints, $id_empresa)
     {
         $query = Ct_Ven_Orden::query();
@@ -8251,12 +8420,14 @@ class VentasController extends Controller
         $index = 0;
         foreach ($constraints as $constraint) {
             if ($constraint != null) {
-                $query = $query->where($fields[$index], 'like', '%' . $constraint . '%');
+                $query = $query->where($fields[$index], 'like', '%'.$constraint.'%');
             }
             $index++;
         }
-        return $query->where('estado', '<', '2')->where('tipo', "VEN-FA")->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(10);
+
+        return $query->where('estado', '<', '2')->where('tipo', 'VEN-FA')->where('id_empresa', $id_empresa)->orderby('id', 'desc')->paginate(10);
     }
+
     /*************************************
      **CREAR FACTURAS DE VENTA DESDE ORDEN**
     /*************************************/
@@ -8265,16 +8436,16 @@ class VentasController extends Controller
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        $divisas     = Ct_Divisas::where('estado', '1')->get();
-        $clientes    = Ct_Clientes::where('estado', '1')->get();
-        $tipo_pago   = Ct_Tipo_Pago::where('estado', '1')->get();
+        $divisas = Ct_Divisas::where('estado', '1')->get();
+        $clientes = Ct_Clientes::where('estado', '1')->get();
+        $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
         $lista_banco = Ct_Bancos::where('estado', '1')->get();
-        $seguros     = Seguro::all();
-        $idusuario   = Auth::user()->id;
+        $seguros = Seguro::all();
+        $idusuario = Auth::user()->id;
         $user_recaudador = User::where('id_tipo_usuario', 18)
             ->where('estado', 1)->get();
-        $bodega = bodega::where('estado', '1')->get();
-        //$venta  = Ct_ventas::findorfail($id); //::where("id", $id)->first();
+        $bodega = Bodega::where('estado', '1')->get();
+        // $venta  = Ct_ventas::findorfail($id); //::where("id", $id)->first();
         if ($idusuario == '0957258056') {
             // dd($venta);
         }
@@ -8282,63 +8453,66 @@ class VentasController extends Controller
         $id_empresa = $request->session()->get('id_empresa');
 
         $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        //sucursales
+        // sucursales
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
-        //punto emision
+        // punto emision
         $punto = DB::table('ct_sucursales as ct_s')
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
-            //->where('ct_s.id', $sucursales['id'])
+            // ->where('ct_s.id', $sucursales['id'])
             ->get();
 
-        //Obtenemos Todas las Empresas que van a Emitir Facturas
+        // Obtenemos Todas las Empresas que van a Emitir Facturas
         $empre = Empresa::all();
 
-        //Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
+        // Obtenemos el listado de Cuentas de la Tabla Plan de Cuentas
         $cuentas = Plan_Cuentas::where('estado', '2')->get();
 
-        //$productos = Producto::where('estado', '1')->get();
+        // $productos = Producto::where('estado', '1')->get();
         $productos = Ct_productos::where('estado_tabla', '1')->get();
 
         $id_plan_confg = LogConfig::busqueda('4.1.01.02');
 
-        //$iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
-        $iva       = Ct_Configuraciones::where('id_plan', $id_plan_confg)->where('estado', '1')->first();
+        // $iva       = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+        $iva = Ct_Configuraciones::where('id_plan', $id_plan_confg)->where('estado', '1')->first();
 
-        $detalle = Ct_ven_orden_detalle::where("id_ct_ven_orden", $id)->get();
+        $detalle = Ct_Ven_Orden_Detalle::where('id_ct_ven_orden', $id)->get();
 
-        $orden_venta = Ct_ven_orden::findorfail($id); //::where("id",$id)->get();//::where("id", $id)->first();
-        //return $id;
+        $orden_venta = Ct_Ven_Orden::findorfail($id); // ::where("id",$id)->get();//::where("id", $id)->first();
+        // return $id;
 
-        return view('contable/ventas/create_facturaOrden', ['divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'iva' => $iva, 'cuentas' => $cuentas, "venta" => $orden_venta, "detalle" => $detalle]);
+        return view('contable/ventas/create_facturaOrden', ['divisas' => $divisas, 'sucursales' => $sucursales, 'punto' => $punto, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'bodega' => $bodega, 'empresa' => $empresa, 'empre' => $empre, 'productos' => $productos, 'iva' => $iva, 'cuentas' => $cuentas, 'venta' => $orden_venta, 'detalle' => $detalle]);
     }
+
     public function eliminar($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $ventas     = Ct_ven_orden::where('id', $id)->first();
-        $inp        = [
-            'estado'          => '0',
-            'estado_pago'     => '0',
-            'ip_creacion'     => $ip_cliente,
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $ventas = Ct_Ven_Orden::where('id', $id)->first();
+        $inp = [
+            'estado' => '0',
+            'estado_pago' => '0',
+            'ip_creacion' => $ip_cliente,
             'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
         ];
         $ventas->update($inp);
+
         return redirect()->route('orden_venta');
     }
-    //function to upload more data with differents values and move to process contable
+
+    // function to upload more data with differents values and move to process contable
     public function masivo_ventas(Request $request)
     {
         $ventas = Ct_ventas::where('id_empresa', '0993075000001')->get();
-        //$facturas= $this->vf($book,$idusuario,$ip_cliente);
-        //we can return excel invoker to load big data
-        //$verd= $this->cliente_retencion();
-        //$ahor = $this->egresoMasivo();
-        //$kardex= $this->updateKardex();
+        // $facturas= $this->vf($book,$idusuario,$ip_cliente);
+        // we can return excel invoker to load big data
+        // $verd= $this->cliente_retencion();
+        // $ahor = $this->egresoMasivo();
+        // $kardex= $this->updateKardex();
         Excel::filter('chunk')->load('vfactura.xlsx')->chunk(250, function ($reader) {
             /*
             "fecha_de_emision" => "12/01/2021"
@@ -8357,185 +8531,187 @@ class VentasController extends Controller
             "iva" => 0.0
             "total" => 361.45
             "estado" => null*/
-            $idusuario  = "1316262193";
-            $ip_cliente = "subidach";
+            $idusuario = '1316262193';
+            $ip_cliente = 'subidach';
             foreach ($reader as $book) {
-                //dd($book);
+                // dd($book);
                 $cliente = Ct_Clientes::where('identificacion', $book->ruc)->first();
                 if (is_null($cliente)) {
                     Ct_Clientes::create([
-                        'identificacion'          => $book->ruc,
-                        'nombre'                  => $book->cliente,
-                        'tipo'                    => '5',
-                        'clase'                   => 'normal',
-                        'nombre_representante'    => $book->cliente,
-                        'cedula_representante'    => $book->ruc,
-                        'ciudad_representante'    => 'GUAYAQUIL',
+                        'identificacion' => $book->ruc,
+                        'nombre' => $book->cliente,
+                        'tipo' => '5',
+                        'clase' => 'normal',
+                        'nombre_representante' => $book->cliente,
+                        'cedula_representante' => $book->ruc,
+                        'ciudad_representante' => 'GUAYAQUIL',
                         'telefono1_representante' => '11111',
-                        'pais'                    => 'Ecuador',
-                        'estado'                  => '1',
-                        'id_usuariocrea'          => $idusuario,
-                        'id_usuariomod'           => $idusuario,
-                        'ip_creacion'             => $ip_cliente,
-                        'ip_modificacion'         => $ip_cliente,
+                        'pais' => 'Ecuador',
+                        'estado' => '1',
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
                     ]);
                 }
                 $input_cabecera = [
-                    'fecha_asiento'   => date('Y-m-d', strtotime($book->fecha_de_emision)),
-                    'fact_numero'     => $book->numero_de_factura,
-                    'id_empresa'      => '1307189140001',
-                    'observacion'     => 'Factura #' . $book->numero_de_factura,
-                    'valor'           => $book->total,
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
-                    'ip_creacion'     => $ip_cliente,
+                    'fecha_asiento' => date('Y-m-d', strtotime($book->fecha_de_emision)),
+                    'fact_numero' => $book->numero_de_factura,
+                    'id_empresa' => '1307189140001',
+                    'observacion' => 'Factura #'.$book->numero_de_factura,
+                    'valor' => $book->total,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
                 ];
                 if (isset($book->estado)) {
-                    if ($book->estado == "ANULADA") {
+                    if ($book->estado == 'ANULADA') {
                         $input_cabecera = [
-                            'fecha_asiento'   => date('Y-m-d', strtotime($book->fecha_de_emision)),
-                            'fact_numero'     => $book->factura,
-                            'id_empresa'      => '0993075000001',
-                            'estado'          => '0',
-                            'observacion'     => 'Factura #' . $book->factura,
-                            'valor'           => $book->total,
-                            'id_usuariocrea'  => $idusuario,
-                            'id_usuariomod'   => $idusuario,
-                            'ip_creacion'     => $ip_cliente,
+                            'fecha_asiento' => date('Y-m-d', strtotime($book->fecha_de_emision)),
+                            'fact_numero' => $book->factura,
+                            'id_empresa' => '0993075000001',
+                            'estado' => '0',
+                            'observacion' => 'Factura #'.$book->factura,
+                            'valor' => $book->total,
+                            'id_usuariocrea' => $idusuario,
+                            'id_usuariomod' => $idusuario,
+                            'ip_creacion' => $ip_cliente,
                             'ip_modificacion' => $ip_cliente,
                         ];
                     }
                 }
                 $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
-                $punto               = $book->numero_de_factura;
-                $sucursal            = substr($punto, 0, 3);
-                $punto_emision       = substr($punto, 4, 3);
-                $nfactura            = substr($punto, 8);
-                $factura_venta       = [
-                    'sucursal'            => $sucursal,
-                    'punto_emision'       => $punto_emision,
-                    'numero'              => $nfactura,
-                    'nro_comprobante'     => $book->numero_de_factura,
-                    'id_asiento'          => $id_asiento_cabecera,
-                    'id_empresa'          => '1307189140001',
-                    'tipo'                => 'VEN-FA',
-                    'fecha'               => date('Y-m-d', strtotime($book->fecha_de_emision)),
-                    'divisas'             => '1',
-                    'nombre_cliente'      => $book->cliente,
-                    'tipo_consulta'       => '1',
-                    'id_cliente'          => $book->ruc, //nombre_cliente
-                    'direccion_cliente'   => 'DIRECCION',
-                    'ruc_id_cliente'      => $book->ruc,
-                    'telefono_cliente'    => '1111',
-                    'email_cliente'       => '',
-                    'orden_venta'         => '',
-                    'nro_autorizacion'    => $book->autorizacion, //autorizacion de humanlabs
-                    'id_paciente'         => '9999999999',
-                    'nombres_paciente'    => $book->paciente,
+                $punto = $book->numero_de_factura;
+                $sucursal = substr($punto, 0, 3);
+                $punto_emision = substr($punto, 4, 3);
+                $nfactura = substr($punto, 8);
+                $factura_venta = [
+                    'sucursal' => $sucursal,
+                    'punto_emision' => $punto_emision,
+                    'numero' => $nfactura,
+                    'nro_comprobante' => $book->numero_de_factura,
+                    'id_asiento' => $id_asiento_cabecera,
+                    'id_empresa' => '1307189140001',
+                    'tipo' => 'VEN-FA',
+                    'fecha' => date('Y-m-d', strtotime($book->fecha_de_emision)),
+                    'divisas' => '1',
+                    'nombre_cliente' => $book->cliente,
+                    'tipo_consulta' => '1',
+                    'id_cliente' => $book->ruc, // nombre_cliente
+                    'direccion_cliente' => 'DIRECCION',
+                    'ruc_id_cliente' => $book->ruc,
+                    'telefono_cliente' => '1111',
+                    'email_cliente' => '',
+                    'orden_venta' => '',
+                    'nro_autorizacion' => $book->autorizacion, // autorizacion de humanlabs
+                    'id_paciente' => '9999999999',
+                    'nombres_paciente' => $book->paciente,
                     'id_hc_procedimiento' => '',
-                    'seguro_paciente'     => $book->seguro,
-                    'procedimientos'      => $book->procedimiento,
+                    'seguro_paciente' => $book->seguro,
+                    'procedimientos' => $book->procedimiento,
                     'fecha_procedimiento' => date('Y-m-d', strtotime($book->fecha_de_procedimeinto)),
-                    'concepto'            => '',
-                    'copago'              => '',
-                    'ci_vendedor'         => '',
-                    'vendedor'            => '',
-                    //'nota'                          => $request['nota'],
-                    'subtotal_0'          => $book->subtotal,
-                    'subtotal_12'         => '0',
-                    //'subtotal'                      => $request['subtotal1'],
-                    'descuento'           => $book->descuento,
-                    'base_imponible'      => $book->descuento,
-                    'impuesto'            => '0',
+                    'concepto' => '',
+                    'copago' => '',
+                    'ci_vendedor' => '',
+                    'vendedor' => '',
+                    // 'nota'                          => $request['nota'],
+                    'subtotal_0' => $book->subtotal,
+                    'subtotal_12' => '0',
+                    // 'subtotal'                      => $request['subtotal1'],
+                    'descuento' => $book->descuento,
+                    'base_imponible' => $book->descuento,
+                    'impuesto' => '0',
                     // 'transporte'                    => $request['transporte'],
-                    'total_final'         => $book->total,
-                    'valor_contable'      => $book->total,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
+                    'total_final' => $book->total,
+                    'valor_contable' => $book->total,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
                 $id_venta = Ct_ventas::insertGetId($factura_venta);
                 $plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => '1.01.02.05.01',
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => date('Y-m-d', strtotime($book->fecha_de_emision)),
-                    'debe'                => $book->total,
-                    'haber'               => '0',
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => '1.01.02.05.01',
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => date('Y-m-d', strtotime($book->fecha_de_emision)),
+                    'debe' => $book->total,
+                    'haber' => '0',
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
                 // 4.1.01.01    Ventas Mercaderia Tarifa 0%
                 $precio = 0;
-                $iva    = 0;
+                $iva = 0;
                 if ($book->subtotal_12 > 0) {
-                    $precio       = $book->subtotal_12;
-                    $iva          = 1;
+                    $precio = $book->subtotal_12;
+                    $iva = 1;
                     $plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
                     Ct_Asientos_Detalle::create([
 
                         'id_asiento_cabecera' => $id_asiento_cabecera,
-                        'id_plan_cuenta'      => '2.01.07.01.01',
-                        'descripcion'         => $plan_cuentas->nombre,
-                        'fecha'               => date('Y-m-d', strtotime($book->fecha_de_emision)),
-                        'debe'                => '0',
-                        'haber'               => $book->subtotal_12,
-                        'id_usuariocrea'      => $idusuario,
-                        'id_usuariomod'       => $idusuario,
-                        'ip_creacion'         => $ip_cliente,
-                        'ip_modificacion'     => $ip_cliente,
+                        'id_plan_cuenta' => '2.01.07.01.01',
+                        'descripcion' => $plan_cuentas->nombre,
+                        'fecha' => date('Y-m-d', strtotime($book->fecha_de_emision)),
+                        'debe' => '0',
+                        'haber' => $book->subtotal_12,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
                     ]);
                 } else {
-                    $precio       = $book->subtotal_0;
+                    $precio = $book->subtotal_0;
                     $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
                     Ct_Asientos_Detalle::create([
 
                         'id_asiento_cabecera' => $id_asiento_cabecera,
-                        'id_plan_cuenta'      => '4.1.01.01',
-                        'descripcion'         => $plan_cuentas->nombre,
-                        'fecha'               => date('Y-m-d', strtotime($book->fecha_de_emision)),
-                        'debe'                => '0',
-                        'haber'               => $book->subtotal_0,
-                        'id_usuariocrea'      => $idusuario,
-                        'id_usuariomod'       => $idusuario,
-                        'ip_creacion'         => $ip_cliente,
-                        'ip_modificacion'     => $ip_cliente,
+                        'id_plan_cuenta' => '4.1.01.01',
+                        'descripcion' => $plan_cuentas->nombre,
+                        'fecha' => date('Y-m-d', strtotime($book->fecha_de_emision)),
+                        'debe' => '0',
+                        'haber' => $book->subtotal_0,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
                     ]);
                 }
                 $detalle = [
-                    'id_ct_ventas'         => $id_venta,
-                    'id_ct_productos'      => 'HON-MED',
-                    'nombre'               => 'HON-MED',
-                    'cantidad'             => '1',
-                    'precio'               => $precio,
+                    'id_ct_ventas' => $id_venta,
+                    'id_ct_productos' => 'HON-MED',
+                    'nombre' => 'HON-MED',
+                    'cantidad' => '1',
+                    'precio' => $precio,
                     'descuento_porcentaje' => '',
-                    'descuento'            => $book->descuento,
-                    'extendido'            => $book->total,
-                    'detalle'              => 'HON-MED',
-                    'copago'               => '',
-                    'check_iva'            => $iva,
-                    'porcentaje'           => $this->porIva->iva,
-                    'ip_creacion'          => $ip_cliente,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariocrea'       => $idusuario,
-                    'id_usuariomod'        => $idusuario,
+                    'descuento' => $book->descuento,
+                    'extendido' => $book->total,
+                    'detalle' => 'HON-MED',
+                    'copago' => '',
+                    'check_iva' => $iva,
+                    'porcentaje' => $this->porIva->iva,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
                 Ct_detalle_venta::create($detalle);
             }
         });
+
         return response()->json(['mensaje' => 'disculpe se guardo correctamente']);
     }
+
     public function cliente_retencion()
     {
         $cliente_retencion = Ct_Cliente_Retencion::all();
         foreach ($cliente_retencion as $retencion) {
-            $fecha = "";
+            $fecha = '';
             foreach ($retencion->detalle_retencion as $value) {
                 if ($value->fechaauto != null) {
                     $fecha = $value->fechaauto;
@@ -8548,23 +8724,24 @@ class VentasController extends Controller
             }
         }
     }
+
     public function debitoBancario()
-    { //No la hice porque no vi que se usa
-        $default        = "";
+    { // No la hice porque no vi que se usa
+        $default = '';
         $debitoBancario = Ct_Debito_Bancario::where('id_empresa', '0992704152001')->get();
 
         foreach ($debitoBancario as $values) {
-            //dd($values);
-            $as           = Ct_Caja_Banco::find($values->id_banco);
+            // dd($values);
+            $as = Ct_Caja_Banco::find($values->id_banco);
             $cuenta_mayor = $as->cuenta_mayor;
-            if (!is_null($values)) {
+            if (! is_null($values)) {
                 $asiento = Ct_Asientos_Detalle::where('id_asiento_cabecera', $values->id_asiento)->get();
                 foreach ($asiento as $asi) {
 
-                    if ($asi->id_plan_cuenta != "2.01.03.01.01" && $asi->id_plan_cuenta != "2.01.03.01.02") {
+                    if ($asi->id_plan_cuenta != '2.01.03.01.01' && $asi->id_plan_cuenta != '2.01.03.01.02') {
                         $asi = Ct_Asientos_Detalle::find($asi->id);
-                        //dd($asi);
-                        if (!is_null($asi)) {
+                        // dd($asi);
+                        if (! is_null($asi)) {
                             $asi->id_plan_cuenta = $cuenta_mayor;
                             $asi->save();
                         }
@@ -8573,25 +8750,26 @@ class VentasController extends Controller
             }
         }
     }
+
     public function egresoVarios()
     {
-        $default        = "";
+        $default = '';
         $debitoBancario = Ct_Comprobante_Egreso_Varios::where('id_empresa', '0992704152001')->get();
 
         foreach ($debitoBancario as $values) {
-            //dd($values);
-            $as           = Ct_Caja_Banco::find($values->id_caja_banco);
+            // dd($values);
+            $as = Ct_Caja_Banco::find($values->id_caja_banco);
             $cuenta_mayor = $as->cuenta_mayor;
-            if (!is_null($values)) {
+            if (! is_null($values)) {
                 $asiento = Ct_Asientos_Detalle::where('id_asiento_cabecera', $values->id_asiento_cabecera)->get();
                 foreach ($asiento as $asi) {
 
                     if ($asi->debe == 0) {
                         $asi = Ct_Asientos_Detalle::find($asi->id);
-                        //dd($asi,$cuenta_mayor);
-                        if (!is_null($asi)) {
-                            $asi->id_plan_cuenta  = $cuenta_mayor;
-                            $asi->ip_modificacion = "sistemas";
+                        // dd($asi,$cuenta_mayor);
+                        if (! is_null($asi)) {
+                            $asi->id_plan_cuenta = $cuenta_mayor;
+                            $asi->ip_modificacion = 'sistemas';
                             $asi->save();
                         }
                     }
@@ -8599,26 +8777,27 @@ class VentasController extends Controller
             }
         }
     }
+
     public function egresoMasivo()
     {
-        $default        = "";
+        $default = '';
         $debitoBancario = Ct_Comprobante_Egreso::where('id_empresa', '0992704152001')->get();
 
         foreach ($debitoBancario as $values) {
-            //dd($values);
+            // dd($values);
             $as = Ct_Caja_Banco::find($values->id_caja_banco);
-            if (!is_null($as)) {
+            if (! is_null($as)) {
                 $cuenta_mayor = $as->cuenta_mayor;
-                if (!is_null($values)) {
+                if (! is_null($values)) {
                     $asiento = Ct_Asientos_Detalle::where('id_asiento_cabecera', $values->id_asiento_cabecera)->get();
                     foreach ($asiento as $asi) {
 
                         if ($asi->debe == 0) {
                             $asi = Ct_Asientos_Detalle::find($asi->id);
-                            //dd($asi,$cuenta_mayor);
-                            if (!is_null($asi)) {
-                                $asi->id_plan_cuenta  = $cuenta_mayor;
-                                $asi->ip_modificacion = "sistemas";
+                            // dd($asi,$cuenta_mayor);
+                            if (! is_null($asi)) {
+                                $asi->id_plan_cuenta = $cuenta_mayor;
+                                $asi->ip_modificacion = 'sistemas';
                                 $asi->save();
                             }
                         }
@@ -8627,9 +8806,10 @@ class VentasController extends Controller
             }
         }
     }
+
     public function identificar_pagos($pago)
     {
-        $id_ = "";
+        $id_ = '';
         if ($pago->tipo == 'CREDITO') {
             switch ($pago) {
                 case 'MASTERCARD':
@@ -8670,7 +8850,7 @@ class VentasController extends Controller
                     break;
             }
         } else {
-            //banco
+            // banco
             switch ($pago) {
                 case 'PICHINCHA':
                     $id_ = 1;
@@ -8716,69 +8896,71 @@ class VentasController extends Controller
                     break;
             }
         }
+
         return $id_;
     }
-    //details master invoice, method paid, etc.
-    //important more square values with covid at Monday
-    //UPDATE: success function at 7 December 2020
-    //NO UPDATE: no work at day 28 December 2020
+
+    // details master invoice, method paid, etc.
+    // important more square values with covid at Monday
+    // UPDATE: success function at 7 December 2020
+    // NO UPDATE: no work at day 28 December 2020
     public function vf($book, $idusuario, $ip_cliente)
     {
         $cliente = Ct_Clientes::where('identificacion', $book->cedula)->first();
-        if (!is_null($cliente)) {
+        if (! is_null($cliente)) {
             $input_cabecera = [
-                'fecha_asiento'   => $book->fecha,
-                'fact_numero'     => $book->factura,
-                'id_empresa'      => '0993075000001',
-                'observacion'     => 'Factura #' . $book->factura,
-                'valor'           => $book->total,
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
+                'fecha_asiento' => $book->fecha,
+                'fact_numero' => $book->factura,
+                'id_empresa' => '0993075000001',
+                'observacion' => 'Factura #'.$book->factura,
+                'valor' => $book->total,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
             ];
             if (isset($book->estado)) {
-                if ($book->estado == "ANULADA") {
+                if ($book->estado == 'ANULADA') {
                     $input_cabecera = [
-                        'fecha_asiento'   => $book->fecha,
-                        'fact_numero'     => $book->factura,
-                        'id_empresa'      => '0993075000001',
-                        'estado'          => '0',
-                        'observacion'     => 'Factura #' . $book->factura,
-                        'valor'           => $book->total,
-                        'id_usuariocrea'  => $idusuario,
-                        'id_usuariomod'   => $idusuario,
-                        'ip_creacion'     => $ip_cliente,
+                        'fecha_asiento' => $book->fecha,
+                        'fact_numero' => $book->factura,
+                        'id_empresa' => '0993075000001',
+                        'estado' => '0',
+                        'observacion' => 'Factura #'.$book->factura,
+                        'valor' => $book->total,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
                         'ip_modificacion' => $ip_cliente,
                     ];
                 }
             }
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
-            $punto               = $book->factura;
-            $sucursal            = substr($punto, 0, 3);
-            $punto_emision       = substr($punto, 4, 3);
-            $nfactura            = substr($punto, 8);
-            $factura_venta       = [
-                'sucursal'            => $sucursal,
-                'punto_emision'       => $punto_emision,
-                'numero'              => $nfactura,
-                'nro_comprobante'     => $book->factura,
-                'id_asiento'          => $id_asiento_cabecera,
-                'id_empresa'          => '0993075000001',
-                'tipo'                => 'VEN-FA',
-                'fecha'               => $book->fecha,
-                'divisas'             => '1',
-                'nombre_cliente'      => $book->paciente,
-                'tipo_consulta'       => '1',
-                'id_cliente'          => $book->cedula, //nombre_cliente
-                'direccion_cliente'   => 'DIRECCION',
-                'ruc_id_cliente'      => $book->cedula,
-                'telefono_cliente'    => '1111',
-                'email_cliente'       => '',
-                'orden_venta'         => '',
-                'nro_autorizacion'    => '1127272146', //autorizacion de humanlabs
-                'id_paciente'         => $book->cedula,
-                'nombres_paciente'    => $book->paciente,
+            $punto = $book->factura;
+            $sucursal = substr($punto, 0, 3);
+            $punto_emision = substr($punto, 4, 3);
+            $nfactura = substr($punto, 8);
+            $factura_venta = [
+                'sucursal' => $sucursal,
+                'punto_emision' => $punto_emision,
+                'numero' => $nfactura,
+                'nro_comprobante' => $book->factura,
+                'id_asiento' => $id_asiento_cabecera,
+                'id_empresa' => '0993075000001',
+                'tipo' => 'VEN-FA',
+                'fecha' => $book->fecha,
+                'divisas' => '1',
+                'nombre_cliente' => $book->paciente,
+                'tipo_consulta' => '1',
+                'id_cliente' => $book->cedula, // nombre_cliente
+                'direccion_cliente' => 'DIRECCION',
+                'ruc_id_cliente' => $book->cedula,
+                'telefono_cliente' => '1111',
+                'email_cliente' => '',
+                'orden_venta' => '',
+                'nro_autorizacion' => '1127272146', // autorizacion de humanlabs
+                'id_paciente' => $book->cedula,
+                'nombres_paciente' => $book->paciente,
                 'id_hc_procedimiento' => '',
                 'seguro_paciente' => 'PRIVADO',
                 'procedimientos' => '',
@@ -8787,10 +8969,10 @@ class VentasController extends Controller
                 'copago' => '',
                 'ci_vendedor' => '',
                 'vendedor' => '',
-                //'nota'                          => $request['nota'],
+                // 'nota'                          => $request['nota'],
                 'subtotal_0' => $book->subtotal,
                 'subtotal_12' => '0',
-                //'subtotal'                      => $request['subtotal1'],
+                // 'subtotal'                      => $request['subtotal1'],
                 'descuento' => $book->descuento,
                 'base_imponible' => $book->descuento,
                 'impuesto' => '0',
@@ -8810,7 +8992,7 @@ class VentasController extends Controller
             Ct_Asientos_Detalle::create([
 
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.02.05.01',
+                // 'id_plan_cuenta'      => '1.01.02.05.01',
                 'id_plan_cuenta' => $plan_cuentas->id,
                 'descripcion' => $plan_cuentas->nombre,
                 'fecha' => $book->fecha,
@@ -8885,7 +9067,7 @@ class VentasController extends Controller
                 'fecha_asiento' => $book->fecha,
                 'fact_numero' => $book->factura,
                 'id_empresa' => '0993075000001',
-                'observacion' => 'Factura #' . $book->factura,
+                'observacion' => 'Factura #'.$book->factura,
                 'valor' => $book->total,
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
@@ -8893,13 +9075,13 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
             ];
             if (isset($book->estado)) {
-                if ($book->estado == "ANULADA") {
+                if ($book->estado == 'ANULADA') {
                     $input_cabecera = [
                         'fecha_asiento' => $book->fecha,
                         'fact_numero' => $book->factura,
                         'id_empresa' => '0993075000001',
                         'estado' => '0',
-                        'observacion' => 'Factura #' . $book->factura,
+                        'observacion' => 'Factura #'.$book->factura,
                         'valor' => $book->total,
                         'id_usuariocrea' => $idusuario,
                         'id_usuariomod' => $idusuario,
@@ -8925,13 +9107,13 @@ class VentasController extends Controller
                 'divisas' => '1',
                 'nombre_cliente' => $book->paciente,
                 'tipo_consulta' => '1',
-                'id_cliente' => $book->cedula, //nombre_cliente
+                'id_cliente' => $book->cedula, // nombre_cliente
                 'direccion_cliente' => 'DIRECCION',
                 'ruc_id_cliente' => $book->cedula,
                 'telefono_cliente' => '1111',
                 'email_cliente' => '',
                 'orden_venta' => '',
-                'nro_autorizacion' => '1127272146', //autorizacion de humanlabs
+                'nro_autorizacion' => '1127272146', // autorizacion de humanlabs
                 'id_paciente' => $book->cedula,
                 'nombres_paciente' => $book->paciente,
                 'id_hc_procedimiento' => '',
@@ -8942,10 +9124,10 @@ class VentasController extends Controller
                 'copago' => '',
                 'ci_vendedor' => '',
                 'vendedor' => '',
-                //'nota'                          => $request['nota'],
+                // 'nota'                          => $request['nota'],
                 'subtotal_0' => $book->subtotal,
                 'subtotal_12' => '0',
-                //'subtotal'                      => $request['subtotal1'],
+                // 'subtotal'                      => $request['subtotal1'],
                 'descuento' => $book->descuento,
                 'base_imponible' => $book->descuento,
                 'impuesto' => '0',
@@ -8958,7 +9140,7 @@ class VentasController extends Controller
                 'id_usuariomod' => $idusuario,
             ];
             if (isset($book->estado)) {
-                if ($book->estado == "ANULADA") {
+                if ($book->estado == 'ANULADA') {
                     $factura_venta = [
                         'sucursal' => $sucursal,
                         'punto_emision' => $punto_emision,
@@ -8972,13 +9154,13 @@ class VentasController extends Controller
                         'estado' => '0',
                         'nombre_cliente' => $book->paciente,
                         'tipo_consulta' => '1',
-                        'id_cliente' => $book->cedula, //nombre_cliente
+                        'id_cliente' => $book->cedula, // nombre_cliente
                         'direccion_cliente' => 'DIRECCION',
                         'ruc_id_cliente' => $book->cedula,
                         'telefono_cliente' => '1111',
                         'email_cliente' => '',
                         'orden_venta' => '',
-                        'nro_autorizacion' => '1127272146', //autorizacion de humanlabs
+                        'nro_autorizacion' => '1127272146', // autorizacion de humanlabs
                         'id_paciente' => $book->cedula,
                         'nombres_paciente' => $book->paciente,
                         'id_hc_procedimiento' => '',
@@ -8989,10 +9171,10 @@ class VentasController extends Controller
                         'copago' => '',
                         'ci_vendedor' => '',
                         'vendedor' => '',
-                        //'nota'                          => $request['nota'],
+                        // 'nota'                          => $request['nota'],
                         'subtotal_0' => $book->subtotal,
                         'subtotal_12' => '0',
-                        //'subtotal'                      => $request['subtotal1'],
+                        // 'subtotal'                      => $request['subtotal1'],
                         'descuento' => $book->descuento,
                         'base_imponible' => $book->descuento,
                         'impuesto' => '0',
@@ -9017,7 +9199,7 @@ class VentasController extends Controller
             Ct_Asientos_Detalle::create([
 
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.02.05.01',
+                // 'id_plan_cuenta'      => '1.01.02.05.01',
                 'id_plan_cuenta' => $plan_cuentas->id,
                 'descripcion' => $plan_cuentas->nombre,
                 'fecha' => $book->fecha,
@@ -9032,12 +9214,12 @@ class VentasController extends Controller
             // 4.1.01.01    Ventas Mercaderia Tarifa 0%
             $id_plan_confg = LogConfig::busqueda('4.1.01.01');
             $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
-            //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
+            // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
 
             Ct_Asientos_Detalle::create([
 
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '4.1.01.01',
+                // 'id_plan_cuenta'      => '4.1.01.01',
                 'id_plan_cuenta' => $plan_cuentas->id,
                 'descripcion' => $plan_cuentas->nombre,
                 'fecha' => $book->fecha,
@@ -9049,17 +9231,18 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
 
             ]);
-            //master detail
+            // master detail
             $detail = $this->vf_detail($book, $idusuario, $ip_cliente, $nfactura, $id_venta);
         }
     }
+
     public function vf_detail($book, $idusuario, $ip_cliente, $nfactura, $id_venta)
     {
-        //would change with other name
-        //had left subtotal_0
-        $numero_factura = "";
-        if (!is_null($book->examen_laboratorio)) {
-            //1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
+        // would change with other name
+        // had left subtotal_0
+        $numero_factura = '';
+        if (! is_null($book->examen_laboratorio)) {
+            // 1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
             $total_final = $this->indentify_valor($book, 1);
             $detalle = [
                 'id_ct_ventas' => $id_venta,
@@ -9082,7 +9265,7 @@ class VentasController extends Controller
 
             Ct_detalle_venta::create($detalle);
         }
-        if (!is_null($book->prueba_covid)) {
+        if (! is_null($book->prueba_covid)) {
             $total_final = $this->indentify_valor($book, 1);
             $detalle = [
                 'id_ct_ventas' => $id_venta,
@@ -9105,7 +9288,7 @@ class VentasController extends Controller
 
             Ct_detalle_venta::create($detalle);
         }
-        if (!is_null($book->fee)) {
+        if (! is_null($book->fee)) {
             $total_final = $this->indentify_valor($book, 1);
             $detalle = [
                 'id_ct_ventas' => $id_venta,
@@ -9127,16 +9310,16 @@ class VentasController extends Controller
             ];
             Ct_detalle_venta::create($detalle);
         }
-        //retenciones
+        // retenciones
         /*
         if(!is_null($book->retencion)){
         $rete= $this->retencionv($book,$idusuario,$ip_cliente,$numero_factura,$id_venta);
         }*/
-        //comprobante de ingreso and values with paid method
-        if (!is_null($book->efectivo)) {
-            $numero_factura = str_pad($nfactura, 9, "0", STR_PAD_LEFT);
+        // comprobante de ingreso and values with paid method
+        if (! is_null($book->efectivo)) {
+            $numero_factura = str_pad($nfactura, 9, '0', STR_PAD_LEFT);
             $input_cabecera = [
-                'observacion' => 'COMPROBANTE DE INGRESO FACT:' . $nfactura . ' POR LA CANTIDAD DE ' . $book->efectivo,
+                'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura.' POR LA CANTIDAD DE '.$book->efectivo,
                 'fecha_asiento' => $book->fecha,
                 'fact_numero' => $numero_factura,
                 'valor' => $book->efectivo,
@@ -9147,14 +9330,14 @@ class VentasController extends Controller
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
             ];
-            //1.01.02.05.01
-            //TRAER PAGOS
+            // 1.01.02.05.01
+            // TRAER PAGOS
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
 
             $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
             $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
                 'id_plan_cuenta' => $desc_cuenta->id,
@@ -9170,7 +9353,7 @@ class VentasController extends Controller
             ]);
 
             $input_comprobante = [
-                'observaciones' => 'COMPROBANTE DE INGRESO REF: ' . $nfactura . ' POR LA CANTIDAD DE ' . $book->efectivo,
+                'observaciones' => 'COMPROBANTE DE INGRESO REF: '.$nfactura.' POR LA CANTIDAD DE '.$book->efectivo,
                 'estado' => '1',
                 'id_asiento_cabecera' => $id_asiento_cabecera,
                 'fecha' => $book->fecha,
@@ -9179,7 +9362,7 @@ class VentasController extends Controller
                 'id_empresa' => '0993075000001',
                 'total_ingreso' => $book->efectivo,
                 'id_cliente' => $book->cedula,
-                'autollenar' => "Cancela FV : " . $nfactura,
+                'autollenar' => 'Cancela FV : '.$nfactura,
                 'id_vendedor' => '',
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
@@ -9207,14 +9390,14 @@ class VentasController extends Controller
             $id_plan_confg = LogConfig::busqueda('1.01.01.1.01');
             $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.01.1.01',
+                // 'id_plan_cuenta'      => '1.01.01.1.01',
                 'id_plan_cuenta' => $desc_cuenta->id,
                 'descripcion' => $desc_cuenta->nombre,
                 'fecha' => $book->fecha,
-                'debe' => $book->efectivo, //$nuevo_saldof,
+                'debe' => $book->efectivo, // $nuevo_saldof,
                 'haber' => '0',
                 'estado' => '1',
                 'id_usuariocrea' => $idusuario,
@@ -9225,25 +9408,25 @@ class VentasController extends Controller
             Ct_Detalle_Comprobante_Ingreso::create([
                 'id_comprobante' => $id_comprobante,
                 'fecha' => $book->fecha,
-                'observaciones' => "Cancela FV : " . $nfactura,
-                'id_factura' => $id_venta, ////$consulta_venta->id,
-                'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                'total_factura' => $book->total, //$request['saldo_a'.$i],
-                'total' => $book->efectivo, //$request['abono_a'.$i],
+                'observaciones' => 'Cancela FV : '.$nfactura,
+                'id_factura' => $id_venta, // //$consulta_venta->id,
+                'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                'total_factura' => $book->total, // $request['saldo_a'.$i],
+                'total' => $book->efectivo, // $request['abono_a'.$i],
                 'estado' => '1',
                 'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
             ]);
-        } elseif (!is_null($book->tcredito)) {
-            //1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
+        } elseif (! is_null($book->tcredito)) {
+            // 1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
             $tots = $this->indentify_valor($book, 2);
-            if (!is_null($book->comision)) {
+            if (! is_null($book->comision)) {
                 $tedua = $book->tcredito + $book->comision;
-                $numero_factura = str_pad($nfactura, 9, "0", STR_PAD_LEFT);
+                $numero_factura = str_pad($nfactura, 9, '0', STR_PAD_LEFT);
                 $input_cabecera = [
-                    'observacion' => 'COMPROBANTE DE INGRESO FACT:' . $nfactura . ' POR LA CANTIDAD DE ' . $tedua,
+                    'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura.' POR LA CANTIDAD DE '.$tedua,
                     'fecha_asiento' => $book->fecha,
                     'fact_numero' => $numero_factura,
                     'valor' => $tedua,
@@ -9254,16 +9437,16 @@ class VentasController extends Controller
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
                 ];
-                //1.01.02.05.01
+                // 1.01.02.05.01
                 $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
 
                 $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
                 $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
-                //$desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+                // $desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    //'id_plan_cuenta'      => '1.01.02.05.01',
+                    // 'id_plan_cuenta'      => '1.01.02.05.01',
                     'id_plan_cuenta' => $desc_cuenta->id,
                     'descripcion' => $desc_cuenta->nombre,
                     'fecha' => $book->fecha,
@@ -9277,7 +9460,7 @@ class VentasController extends Controller
                 ]);
 
                 $input_comprobante = [
-                    'observaciones' => 'COMPROBANTE DE INGRESO REF: ' . $nfactura . ' POR LA CANTIDAD DE ' . $tedua,
+                    'observaciones' => 'COMPROBANTE DE INGRESO REF: '.$nfactura.' POR LA CANTIDAD DE '.$tedua,
                     'estado' => '1',
                     'id_asiento_cabecera' => $id_asiento_cabecera,
                     'fecha' => $book->fecha,
@@ -9286,7 +9469,7 @@ class VentasController extends Controller
                     'id_empresa' => '0993075000001',
                     'total_ingreso' => $tedua,
                     'id_cliente' => $book->cedula,
-                    'autollenar' => "Cancela FV : " . $nfactura,
+                    'autollenar' => 'Cancela FV : '.$nfactura,
                     'id_vendedor' => '',
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
@@ -9296,8 +9479,8 @@ class VentasController extends Controller
                 $id_comprobante = Ct_Comprobante_Ingreso::insertGetId($input_comprobante);
 
                 $identificar_pagos = $this->identificar_pagos($book);
-                //type with decide the moment to save paid method
-                if (!is_null($book->tipo)) {
+                // type with decide the moment to save paid method
+                if (! is_null($book->tipo)) {
                     if ($book->tipo == 'CREDITO') {
                         Ct_Detalle_Pago_Ingreso::create([
                             'id_comprobante' => $id_comprobante,
@@ -9336,11 +9519,11 @@ class VentasController extends Controller
                 Ct_Detalle_Comprobante_Ingreso::create([
                     'id_comprobante' => $id_comprobante,
                     'fecha' => $book->fecha,
-                    'observaciones' => "Cancela FV : " . $nfactura,
-                    'id_factura' => $id_venta, ////$consulta_venta->id,
-                    'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                    'total_factura' => $book->total, //$request['saldo_a'.$i],
-                    'total' => $tedua, //$request['abono_a'.$i],
+                    'observaciones' => 'Cancela FV : '.$nfactura,
+                    'id_factura' => $id_venta, // //$consulta_venta->id,
+                    'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                    'total_factura' => $book->total, // $request['saldo_a'.$i],
+                    'total' => $tedua, // $request['abono_a'.$i],
                     'estado' => '1',
                     'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
@@ -9351,13 +9534,13 @@ class VentasController extends Controller
                 $id_plan_confg = LogConfig::busqueda('1.01.01.1.01');
                 $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
-                //$desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
+                // $desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
                     'id_plan_cuenta' => $desc_cuenta->id,
                     'descripcion' => $desc_cuenta->nombre,
                     'fecha' => $book->fecha,
-                    'debe' => $tedua, //$nuevo_saldof,
+                    'debe' => $tedua, // $nuevo_saldof,
                     'haber' => '0',
                     'estado' => '1',
                     'id_usuariocrea' => $idusuario,
@@ -9367,9 +9550,9 @@ class VentasController extends Controller
                 ]);
             } else {
                 $tedua = $book->tcredito;
-                $numero_factura = str_pad($nfactura, 10, "0", STR_PAD_LEFT);
+                $numero_factura = str_pad($nfactura, 10, '0', STR_PAD_LEFT);
                 $input_cabecera = [
-                    'observacion' => 'COMPROBANTE DE INGRESO FACT:' . $nfactura . ' POR LA CANTIDAD DE ' . $tedua,
+                    'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura.' POR LA CANTIDAD DE '.$tedua,
                     'fecha_asiento' => $book->fecha,
                     'fact_numero' => $numero_factura,
                     'valor' => $book->efectivo,
@@ -9380,10 +9563,10 @@ class VentasController extends Controller
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
                 ];
-                //1.01.02.05.01
+                // 1.01.02.05.01
                 $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
                 $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-                //$desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+                // $desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                 $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
@@ -9401,7 +9584,7 @@ class VentasController extends Controller
                 ]);
 
                 $input_comprobante = [
-                    'observaciones' => 'COMPROBANTE DE INGRESO REF: ' . $nfactura . ' POR LA CANTIDAD DE ' . $tedua,
+                    'observaciones' => 'COMPROBANTE DE INGRESO REF: '.$nfactura.' POR LA CANTIDAD DE '.$tedua,
                     'estado' => '1',
                     'id_asiento_cabecera' => $id_asiento_cabecera,
                     'fecha' => $book->fecha,
@@ -9410,7 +9593,7 @@ class VentasController extends Controller
                     'id_empresa' => '0993075000001',
                     'total_ingreso' => $tedua,
                     'id_cliente' => $book->cedula,
-                    'autollenar' => "Cancela FV : " . $nfactura,
+                    'autollenar' => 'Cancela FV : '.$nfactura,
                     'id_vendedor' => '',
                     'id_usuariocrea' => $idusuario,
                     'id_usuariomod' => $idusuario,
@@ -9420,7 +9603,7 @@ class VentasController extends Controller
                 $id_comprobante = Ct_Comprobante_Ingreso::insertGetId($input_comprobante);
                 $tedua = $book->tcredito + $book->comision;
                 $identificar_pagos = $this->identificar_pagos($book);
-                //identify paid method
+                // identify paid method
                 if ($book->tipo == 'CREDITO') {
                     Ct_Detalle_Pago_Ingreso::create([
                         'id_comprobante' => $id_comprobante,
@@ -9437,7 +9620,7 @@ class VentasController extends Controller
                         'id_usuariocrea' => $idusuario,
                         'id_usuariomod' => $idusuario,
                     ]);
-                } else if ($book->tipo == 'DEBITO') {
+                } elseif ($book->tipo == 'DEBITO') {
                     Ct_Detalle_Pago_Ingreso::create([
                         'id_comprobante' => $id_comprobante,
                         'fecha' => $book->fecha,
@@ -9458,16 +9641,16 @@ class VentasController extends Controller
                 $id_plan_confg = LogConfig::busqueda('1.01.01.1.01');
                 $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
-                //$desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
+                // $desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
 
-                //aqui me quede
+                // aqui me quede
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    //'id_plan_cuenta'      => '1.01.01.1.01',
+                    // 'id_plan_cuenta'      => '1.01.01.1.01',
                     'id_plan_cuenta' => $desc_cuenta->id,
                     'descripcion' => $desc_cuenta->nombre,
                     'fecha' => $book->fecha,
-                    'debe' => $tedua, //$nuevo_saldof,
+                    'debe' => $tedua, // $nuevo_saldof,
                     'haber' => '0',
                     'estado' => '1',
                     'id_usuariocrea' => $idusuario,
@@ -9478,11 +9661,11 @@ class VentasController extends Controller
                 Ct_Detalle_Comprobante_Ingreso::create([
                     'id_comprobante' => $id_comprobante,
                     'fecha' => $book->fecha,
-                    'observaciones' => "Cancela FV : " . $nfactura,
-                    'id_factura' => $id_venta, ////$consulta_venta->id,
-                    'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                    'total_factura' => $book->total, //$request['saldo_a'.$i],
-                    'total' => $tedua, //$request['abono_a'.$i],
+                    'observaciones' => 'Cancela FV : '.$nfactura,
+                    'id_factura' => $id_venta, // //$consulta_venta->id,
+                    'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                    'total_factura' => $book->total, // $request['saldo_a'.$i],
+                    'total' => $tedua, // $request['abono_a'.$i],
                     'estado' => '1',
                     'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
@@ -9490,12 +9673,12 @@ class VentasController extends Controller
                     'id_usuariomod' => $idusuario,
                 ]);
             }
-        } elseif (!is_null($book->transfdep)) {
-            //1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
+        } elseif (! is_null($book->transfdep)) {
+            // 1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
             $tots = $this->indentify_valor($book, 4);
-            $numero_factura = str_pad($nfactura, 10, "0", STR_PAD_LEFT);
+            $numero_factura = str_pad($nfactura, 10, '0', STR_PAD_LEFT);
             $input_cabecera = [
-                'observacion' => 'COMPROBANTE DE INGRESO FACT:' . $nfactura . ' POR LA CANTIDAD DE ' . $book->transfdep,
+                'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura.' POR LA CANTIDAD DE '.$book->transfdep,
                 'fecha_asiento' => $book->fecha,
                 'fact_numero' => $numero_factura,
                 'valor' => $book->transfdep,
@@ -9506,12 +9689,12 @@ class VentasController extends Controller
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
             ];
-            //1.01.02.05.01
+            // 1.01.02.05.01
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
 
             $id_plan_confg = LogConfig::busqueda('1.01.01.1.01');
 
-            //$desc_cuenta         = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+            // $desc_cuenta         = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
             $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
             Ct_Asientos_Detalle::create([
@@ -9528,7 +9711,7 @@ class VentasController extends Controller
                 'ip_modificacion' => $ip_cliente,
             ]);
             $input_comprobante = [
-                'observaciones' => 'COMPROBANTE DE INGRESO REF: ' . $nfactura . ' POR LA CANTIDAD DE ' . $book->transfdep,
+                'observaciones' => 'COMPROBANTE DE INGRESO REF: '.$nfactura.' POR LA CANTIDAD DE '.$book->transfdep,
                 'estado' => '1',
                 'id_asiento_cabecera' => $id_asiento_cabecera,
                 'fecha' => $book->fecha,
@@ -9537,7 +9720,7 @@ class VentasController extends Controller
                 'id_empresa' => '0993075000001',
                 'total_ingreso' => $book->transfdep,
                 'id_cliente' => $book->cedula,
-                'autollenar' => "Cancela FV : " . $nfactura,
+                'autollenar' => 'Cancela FV : '.$nfactura,
                 'id_vendedor' => '',
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
@@ -9564,402 +9747,406 @@ class VentasController extends Controller
             ]);
 
             $id_plan_confg = LogConfig::busqueda('1.01.01.1.01');
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
             $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.01.1.01',
-                'id_plan_cuenta'      => $desc_cuenta->id,
-                'descripcion'         => $desc_cuenta->nombre,
-                'fecha'               => $book->fecha,
-                'debe'                => $book->transfdep, //$nuevo_saldof,
-                'haber'               => '0',
-                'estado'              => '1',
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                // 'id_plan_cuenta'      => '1.01.01.1.01',
+                'id_plan_cuenta' => $desc_cuenta->id,
+                'descripcion' => $desc_cuenta->nombre,
+                'fecha' => $book->fecha,
+                'debe' => $book->transfdep, // $nuevo_saldof,
+                'haber' => '0',
+                'estado' => '1',
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ]);
             Ct_Detalle_Comprobante_Ingreso::create([
-                'id_comprobante'    => $id_comprobante,
-                'fecha'             => $book->fecha,
-                'observaciones'     => "Cancela FV : " . $nfactura,
-                'id_factura'        => $id_venta, ////$consulta_venta->id,
-                'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                'total_factura'     => $book->total, //$request['saldo_a'.$i],
-                'total'             => $book->transfdep, //$request['abono_a'.$i],
-                'estado'            => '1',
-                'ip_creacion'       => $ip_cliente,
-                'ip_modificacion'   => $ip_cliente,
-                'id_usuariocrea'    => $idusuario,
-                'id_usuariomod'     => $idusuario,
-            ]);
-        } elseif (!is_null($book->cheque)) {
-            //1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
-            $tots           = $this->indentify_valor($book, 3);
-            $numero_factura = str_pad($nfactura, 10, "0", STR_PAD_LEFT);
-            $input_cabecera = [
-                'observacion'     => 'COMPROBANTE DE INGRESO FACT:' . $nfactura . ' POR LA CANTIDAD DE ' . $book->cheque,
-                'fecha_asiento'   => $book->fecha,
-                'fact_numero'     => $numero_factura,
-                'valor'           => $book->cheque,
-                'id_empresa'      => '0993075000001',
-                'estado'          => '1',
-                'ip_creacion'     => $ip_cliente,
+                'id_comprobante' => $id_comprobante,
+                'fecha' => $book->fecha,
+                'observaciones' => 'Cancela FV : '.$nfactura,
+                'id_factura' => $id_venta, // //$consulta_venta->id,
+                'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                'total_factura' => $book->total, // $request['saldo_a'.$i],
+                'total' => $book->transfdep, // $request['abono_a'.$i],
+                'estado' => '1',
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+            ]);
+        } elseif (! is_null($book->cheque)) {
+            // 1: EFECTIVO 2: TARJETA DE CREDITO 3: CHEQUE 4: TRANSFERENCIA
+            $tots = $this->indentify_valor($book, 3);
+            $numero_factura = str_pad($nfactura, 10, '0', STR_PAD_LEFT);
+            $input_cabecera = [
+                'observacion' => 'COMPROBANTE DE INGRESO FACT:'.$nfactura.' POR LA CANTIDAD DE '.$book->cheque,
+                'fecha_asiento' => $book->fecha,
+                'fact_numero' => $numero_factura,
+                'valor' => $book->cheque,
+                'id_empresa' => '0993075000001',
+                'estado' => '1',
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
 
             $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
             $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                //'id_plan_cuenta'      => '1.01.02.05.01',
-                'id_plan_cuenta'      => $desc_cuenta->id,
-                'descripcion'         => $desc_cuenta->nombre,
-                'fecha'               => $book->fecha,
-                'haber'               => $book->cheque,
-                'debe'                => '0',
-                'estado'              => '1',
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                // 'id_plan_cuenta'      => '1.01.02.05.01',
+                'id_plan_cuenta' => $desc_cuenta->id,
+                'descripcion' => $desc_cuenta->nombre,
+                'fecha' => $book->fecha,
+                'haber' => $book->cheque,
+                'debe' => '0',
+                'estado' => '1',
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ]);
 
             $input_comprobante = [
-                'observaciones'       => 'COMPROBANTE DE INGRESO REF: ' . $nfactura . ' POR LA CANTIDAD DE ' . $book->cheque,
-                'estado'              => '1',
+                'observaciones' => 'COMPROBANTE DE INGRESO REF: '.$nfactura.' POR LA CANTIDAD DE '.$book->cheque,
+                'estado' => '1',
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                'fecha'               => $book->fecha,
-                'secuencia'           => $nfactura,
-                'divisas'             => '1',
-                'id_empresa'          => '0993075000001',
-                'total_ingreso'       => $book->transfdep,
-                'id_cliente'          => $book->cedula,
-                'autollenar'          => "Cancela FV : " . $nfactura,
-                'id_vendedor'         => '',
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                'fecha' => $book->fecha,
+                'secuencia' => $nfactura,
+                'divisas' => '1',
+                'id_empresa' => '0993075000001',
+                'total_ingreso' => $book->transfdep,
+                'id_cliente' => $book->cedula,
+                'autollenar' => 'Cancela FV : '.$nfactura,
+                'id_vendedor' => '',
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ];
-            $id_comprobante    = Ct_Comprobante_Ingreso::insertGetId($input_comprobante);
+            $id_comprobante = Ct_Comprobante_Ingreso::insertGetId($input_comprobante);
             $identificar_pagos = $this->identificar_pagos($book);
 
             Ct_Detalle_Pago_Ingreso::create([
-                'id_comprobante'  => $id_comprobante,
-                'fecha'           => $book->fecha,
-                'numero'          => '',
+                'id_comprobante' => $id_comprobante,
+                'fecha' => $book->fecha,
+                'numero' => '',
                 'id_tipo_tarjeta' => '',
-                'id_tipo'         => '2',
-                'total'           => $book->cheque,
-                'cuenta'          => '',
-                'girador'         => $book->paciente,
-                'estado'          => '1',
-                'ip_creacion'     => $ip_cliente,
+                'id_tipo' => '2',
+                'total' => $book->cheque,
+                'cuenta' => '',
+                'girador' => $book->paciente,
+                'estado' => '1',
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ]);
 
             $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-            //$desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
+            // $desc_cuenta = Plan_Cuentas::where('id', '1.01.01.1.01')->first();
 
             $desc_cuenta = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
             Ct_Asientos_Detalle::create([
                 'id_asiento_cabecera' => $id_asiento_cabecera,
-                'id_plan_cuenta'      => $desc_cuenta->id,
-                'descripcion'         => $desc_cuenta->nombre,
-                'fecha'               => $book->fecha,
-                'debe'                => $book->cheque, //$nuevo_saldof,
-                'haber'               => '0',
-                'estado'              => '1',
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
+                'id_plan_cuenta' => $desc_cuenta->id,
+                'descripcion' => $desc_cuenta->nombre,
+                'fecha' => $book->fecha,
+                'debe' => $book->cheque, // $nuevo_saldof,
+                'haber' => '0',
+                'estado' => '1',
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
             ]);
             Ct_Detalle_Comprobante_Ingreso::create([
-                'id_comprobante'    => $id_comprobante,
-                'fecha'             => $book->fecha,
-                'observaciones'     => "Cancela FV : " . $nfactura,
-                'id_factura'        => $id_venta, ////$consulta_venta->id,
-                'secuencia_factura' => $nfactura, //$request['numero'.$i],
-                'total_factura'     => $book->total, //$request['saldo_a'.$i],
-                'total'             => $book->cheque, //$request['abono_a'.$i],
-                'estado'            => '1',
-                'ip_creacion'       => $ip_cliente,
-                'ip_modificacion'   => $ip_cliente,
-                'id_usuariocrea'    => $idusuario,
-                'id_usuariomod'     => $idusuario,
+                'id_comprobante' => $id_comprobante,
+                'fecha' => $book->fecha,
+                'observaciones' => 'Cancela FV : '.$nfactura,
+                'id_factura' => $id_venta, // //$consulta_venta->id,
+                'secuencia_factura' => $nfactura, // $request['numero'.$i],
+                'total_factura' => $book->total, // $request['saldo_a'.$i],
+                'total' => $book->cheque, // $request['abono_a'.$i],
+                'estado' => '1',
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ]);
         }
     }
+
     public function retencionv($book, $idusuario, $ip_cliente, $numero_factura, $id_venta)
     {
-        //function retencion
+        // function retencion
         $cabeceraa = [
-            'observacion'     => 'Retencion: ' . $numero_factura . " ",
-            'fecha_asiento'   => $book->fecha,
-            'fact_numero'     => $numero_factura,
-            'valor'           => $book->retencion,
-            'estado'          => '2',
-            'id_empresa'      => '0993075000001',
-            'ip_creacion'     => $ip_cliente,
+            'observacion' => 'Retencion: '.$numero_factura.' ',
+            'fecha_asiento' => $book->fecha,
+            'fact_numero' => $numero_factura,
+            'valor' => $book->retencion,
+            'estado' => '2',
+            'id_empresa' => '0993075000001',
+            'ip_creacion' => $ip_cliente,
             'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
         ];
         $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($cabeceraa);
         // $id_asiento_cabecera      = 1;
         $input = [
             'id_asiento_cabecera' => $id_asiento_cabecera,
-            'id_cliente'          => $book->cedula,
-            'autorizacion'        => '',
-            'id_factura'          => $id_venta,
-            'nro_comprobante'     => $numero_factura,
-            'valor_fuente'        => $book->retencion,
-            'valor_iva'           => '0',
-            'id_empresa'          => '0993075000001',
-            'tipo'                => '1',
-            'id_tipo'             => '15',
-            'descripcion'         => 'retencion ventas',
-            'estado'              => '1',
-            'total'               => $book->total,
-            'secuencia'           => $numero_factura,
-            'ip_creacion'         => $ip_cliente,
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariocrea'      => $idusuario,
-            'id_usuariomod'       => $idusuario,
+            'id_cliente' => $book->cedula,
+            'autorizacion' => '',
+            'id_factura' => $id_venta,
+            'nro_comprobante' => $numero_factura,
+            'valor_fuente' => $book->retencion,
+            'valor_iva' => '0',
+            'id_empresa' => '0993075000001',
+            'tipo' => '1',
+            'id_tipo' => '15',
+            'descripcion' => 'retencion ventas',
+            'estado' => '1',
+            'total' => $book->total,
+            'secuencia' => $numero_factura,
+            'ip_creacion' => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
         ];
         $id_retenciones = Ct_Cliente_Retencion::insertGetId($input);
         Ct_Detalle_Cliente_Retencion::create([
             'id_cliente_retencion' => $id_retenciones,
-            'observacion'          => 'RETENCION FUENTE',
-            'numerorefs'           => $numero_factura,
-            'fechaauto'            => $book->fecha,
-            'id_tipo'              => '15',
-            'tipo'                 => 'RENTA',
-            'id_porcentaje'        => '15',
-            'codigo'               => '3440',
-            'base_imponible'       => $book->total,
-            'estado'               => '1',
-            'totales'              => $book->retencion,
-            'ip_creacion'          => $ip_cliente,
-            'ip_modificacion'      => $ip_cliente,
-            'id_usuariocrea'       => $idusuario,
-            'id_usuariomod'        => $idusuario,
+            'observacion' => 'RETENCION FUENTE',
+            'numerorefs' => $numero_factura,
+            'fechaauto' => $book->fecha,
+            'id_tipo' => '15',
+            'tipo' => 'RENTA',
+            'id_porcentaje' => '15',
+            'codigo' => '3440',
+            'base_imponible' => $book->total,
+            'estado' => '1',
+            'totales' => $book->retencion,
+            'ip_creacion' => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
         ]);
-        //query ventas
+        // query ventas
         $ventas = Ct_ventas::find($id_venta);
-        if (!is_null($ventas)) {
-            $totalf                 = $ventas->valor_contable - $book->retencion;
-            $ventas->estado_pago    = 2;
+        if (! is_null($ventas)) {
+            $totalf = $ventas->valor_contable - $book->retencion;
+            $ventas->estado_pago = 2;
             $ventas->valor_contable = $totalf;
             $ventas->save();
         }
 
         $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-        //En guayaquil esta 1.01.02.05.01 cuenta x cobrar clientes comerciales
+        // En guayaquil esta 1.01.02.05.01 cuenta x cobrar clientes comerciales
         $consulta_plan = Ct_Configuraciones::where('id', 5)->first();
 
         Ct_Asientos_Detalle::create([
             'id_asiento_cabecera' => $id_asiento_cabecera,
-            'id_plan_cuenta'      => $consulta_plan->id_plan,
-            'descripcion'         => $consulta_plan->cuenta->nombre, //aqui puse el nombre de la cuenta del acreedor
-            'fecha'               => $book->fecha,
-            'debe'                => '0',
-            'haber'               => $book->retencion,
-            'estado'              => '1',
-            'id_usuariocrea'      => $idusuario,
-            'id_usuariomod'       => $idusuario,
-            'ip_creacion'         => $idusuario,
-            'ip_modificacion'     => $idusuario,
+            'id_plan_cuenta' => $consulta_plan->id_plan,
+            'descripcion' => $consulta_plan->cuenta->nombre, // aqui puse el nombre de la cuenta del acreedor
+            'fecha' => $book->fecha,
+            'debe' => '0',
+            'haber' => $book->retencion,
+            'estado' => '1',
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'ip_creacion' => $idusuario,
+            'ip_modificacion' => $idusuario,
         ]);
 
         $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-        //$consulta_plan_debe = Plan_Cuentas::find('1.01.05.02.12');
+        // $consulta_plan_debe = Plan_Cuentas::find('1.01.05.02.12');
         $consulta_plan_debe = Plan_Cuentas::find($id_plan_confg);
 
         Ct_Asientos_Detalle::create([
             'id_asiento_cabecera' => $id_asiento_cabecera,
-            'id_plan_cuenta'      => $consulta_plan_debe->cuenta_deudora,
-            'descripcion'         => $consulta_plan_debe->nombre,
-            'fecha'               => $book->fecha,
-            'debe'                => $book->retencion,
-            'haber'               => '0',
-            'estado'              => '1',
-            'id_usuariocrea'      => $idusuario,
-            'id_usuariomod'       => $idusuario,
-            'ip_creacion'         => $idusuario,
-            'ip_modificacion'     => $idusuario,
+            'id_plan_cuenta' => $consulta_plan_debe->cuenta_deudora,
+            'descripcion' => $consulta_plan_debe->nombre,
+            'fecha' => $book->fecha,
+            'debe' => $book->retencion,
+            'haber' => '0',
+            'estado' => '1',
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'ip_creacion' => $idusuario,
+            'ip_modificacion' => $idusuario,
         ]);
     }
+
     public function indentify_valor($book, $referencia)
     {
-        $data                          = [];
-        $data['total_efectivo']        = 0;
+        $data = [];
+        $data['total_efectivo'] = 0;
         $data['total_tarjeta_credito'] = 0;
-        $data['total_cheque']          = 0;
-        $data['total_transferencia']   = 0;
-        $data['comision']              = 0;
+        $data['total_cheque'] = 0;
+        $data['total_transferencia'] = 0;
+        $data['comision'] = 0;
         if ($referencia == 1) {
             $data['total_efectivo'] = floatval($book->efectivo);
-        } else if ($referencia == 2) {
+        } elseif ($referencia == 2) {
             $data['total_tarjeta_credito'] = floatval($book->tcredito);
-        } else if ($referencia == 3) {
+        } elseif ($referencia == 3) {
             $data['total_cheque'] = floatval($book->cheque);
-        } else if ($referencia == 4) {
+        } elseif ($referencia == 4) {
             $data['total_transferencia'] = floatval($book->transfdep);
         }
         $data['total'] = floatval($book->tcredito) + floatval($book->transfdep) + floatval($book->cheque);
         if ($book->comision != null) {
             $data['comision'] = floatval($book->comision);
         }
+
         return $data;
     }
-    //use this for the finally way to process fact_omni and conglomerada when the products have the same code, build to the array.
-    public function getArrayPreview(Request $request, $tipo = "")
+
+    // use this for the finally way to process fact_omni and conglomerada when the products have the same code, build to the array.
+    public function getArrayPreview(Request $request, $tipo = '')
     {
         $idusuario = Auth::user()->id;
-        if (!is_null($request)) {
-            //dd($request->all());
+        if (! is_null($request)) {
+            // dd($request->all());
             $group_productos = [];
-            $empresa         = Empresa::find($request->session()->get('id_empresa'));
-            $arr             = [];
-            $cod_sucurs      = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
-            $c_sucursal      = $cod_sucurs->codigo_sucursal;
-            $cod_caj         = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
-            $c_caja          = $cod_caj->codigo_caja;
-            $proced          = $request['procedimiento'];
-            $numero          = $request['numero'];
-            $num_comprobante = "";
+            $empresa = Empresa::find($request->session()->get('id_empresa'));
+            $arr = [];
+            $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
+            $c_sucursal = $cod_sucurs->codigo_sucursal;
+            $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+            $c_caja = $cod_caj->codigo_caja;
+            $proced = $request['procedimiento'];
+            $numero = $request['numero'];
+            $num_comprobante = '';
 
-            //if($idusuario != "0957258056"){
-            if (!is_null($numero)) {
-                $num_comprobante      = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+            // if($idusuario != "0957258056"){
+            if (! is_null($numero)) {
+                $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                 $verifica_num_factura = Ct_ventas::where('id_empresa', $empresa->id)
                     ->where('nro_comprobante', $num_comprobante)
                     ->where('tipo', '<>', 'VEN-FACT')
                     ->where('estado', '!=', '0')->first();
-                if (!is_null($verifica_num_factura)) {
-                    return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                if (! is_null($verifica_num_factura)) {
+                    return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                 } else {
                     $nfactura = $numero;
                 }
             } else {
-                $nfactura        = $this->obtener_numero_factura($empresa->id, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                $nfactura = $this->obtener_numero_factura($empresa->id, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
+                $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
             }
-            $cabecera                           = [];
-            $cabecera['nro_comprobante']        = $num_comprobante;
-            $cabecera['direccion']              = $empresa->direccion;
-            $cabecera['nombre']                 = $empresa->nombrecomercial;
-            $cabecera['razonsocial']            = $empresa->razonsocial;
-            $cabecera['direccion']              = $empresa->direccion;
-            $cabecera['logo']                   = $empresa->logo;
-            $cabecera['cliente']                = $request->identificacion_cliente;
-            $cabecera['nombre_cliente']         = $request->nombre_cliente;
-            $cabecera['mail_cliente']           = $request->mail_cliente;
-            $cabecera['fecha']                  = $request->fecha_asiento;
-            $cabecera['autorizacion']           = $request->numero_autorizacion;
-            $cabecera['emailinfo']              = $request->emailinfo;
-            $cabecera['procedimientoinfo']      = $request->procedimientoinfo;
-            $cabecera['pacienteinfo']           = $request->pacienteinfo;
-            $cabecera['seguroinfo']             = $request->segurosinfo;
-            $cabecera['direccioninfo']          = $request->direccioninfo;
+            $cabecera = [];
+            $cabecera['nro_comprobante'] = $num_comprobante;
+            $cabecera['direccion'] = $empresa->direccion;
+            $cabecera['nombre'] = $empresa->nombrecomercial;
+            $cabecera['razonsocial'] = $empresa->razonsocial;
+            $cabecera['direccion'] = $empresa->direccion;
+            $cabecera['logo'] = $empresa->logo;
+            $cabecera['cliente'] = $request->identificacion_cliente;
+            $cabecera['nombre_cliente'] = $request->nombre_cliente;
+            $cabecera['mail_cliente'] = $request->mail_cliente;
+            $cabecera['fecha'] = $request->fecha_asiento;
+            $cabecera['autorizacion'] = $request->numero_autorizacion;
+            $cabecera['emailinfo'] = $request->emailinfo;
+            $cabecera['procedimientoinfo'] = $request->procedimientoinfo;
+            $cabecera['pacienteinfo'] = $request->pacienteinfo;
+            $cabecera['seguroinfo'] = $request->segurosinfo;
+            $cabecera['direccioninfo'] = $request->direccioninfo;
             $cabecera['fechaprocedimientoinfo'] = $request->fechaprocedimientoinfo;
-            $cabecera['id']                     = $empresa->id;
-            $cabecera['total']                  = $request->total1;
-            $cabecera['tipo_factura']           = $request->tipo_factura;
-            $cabecera['subtotal_0']             = $request->subtotal_01;
-            $cabecera['subtotal_12']            = $request->subtotal_121;
-            $cabecera['impuesto']               = $request->tarifa_iva1;
-            $cabecera['descuento']              = $request->descuento1;
-            $cabecera['subtotal']               = number_format($request->subtotal_01 + $request->subtotal12, 2, '.', '');
-            $err                                = [];
-            $arr_total                          = [];
-            if (!empty($request->input("nombre"))) {
-                for ($i = 0; $i < count($request->input("nombre")); $i++) {
-                    if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
-                        $paciente = "";
-                        if (isset($request->input("paciente")[$i])) {
-                            $paciente = $request->input("paciente")[$i];
+            $cabecera['id'] = $empresa->id;
+            $cabecera['total'] = $request->total1;
+            $cabecera['tipo_factura'] = $request->tipo_factura;
+            $cabecera['subtotal_0'] = $request->subtotal_01;
+            $cabecera['subtotal_12'] = $request->subtotal_121;
+            $cabecera['impuesto'] = $request->tarifa_iva1;
+            $cabecera['descuento'] = $request->descuento1;
+            $cabecera['subtotal'] = number_format($request->subtotal_01 + $request->subtotal12, 2, '.', '');
+            $err = [];
+            $arr_total = [];
+            if (! empty($request->input('nombre'))) {
+                for ($i = 0; $i < count($request->input('nombre')); $i++) {
+                    if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
+                        $paciente = '';
+                        if (isset($request->input('paciente')[$i])) {
+                            $paciente = $request->input('paciente')[$i];
                         }
-                        $precio_neto = "";
-                        if (isset($request->input("precioneto")[$i])) {
-                            $precio_neto = $request->input("precioneto")[$i];
+                        $precio_neto = '';
+                        if (isset($request->input('precioneto')[$i])) {
+                            $precio_neto = $request->input('precioneto')[$i];
                         }
-                        $nombre = "";
-                        if (isset($request->input("nombre")[$i])) {
-                            $nombre = $request->input("nombre")[$i];
+                        $nombre = '';
+                        if (isset($request->input('nombre')[$i])) {
+                            $nombre = $request->input('nombre')[$i];
                         }
                         $cantidad = 0;
-                        if (isset($request->input("cantidad")[$i])) {
-                            $cantidad = $request->input("cantidad")[$i];
+                        if (isset($request->input('cantidad')[$i])) {
+                            $cantidad = $request->input('cantidad')[$i];
                         }
-                        $codigo = "";
-                        if (isset($request->input("codigo")[$i])) {
-                            $codigo = $request->input("codigo")[$i];
+                        $codigo = '';
+                        if (isset($request->input('codigo')[$i])) {
+                            $codigo = $request->input('codigo')[$i];
                         }
-                        $nombre_procedimiento = "";
-                        if (isset($request->input("id_principal")[$i])) {
-                            $nombre_procedimiento = $request->input("id_principal")[$i];
+                        $nombre_procedimiento = '';
+                        if (isset($request->input('id_principal')[$i])) {
+                            $nombre_procedimiento = $request->input('id_principal')[$i];
                         }
-                        $fecha_procedimiento = "";
-                        if (isset($request->input("fecha_procedimiento")[$i])) {
-                            $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                        $fecha_procedimiento = '';
+                        if (isset($request->input('fecha_procedimiento')[$i])) {
+                            $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                         }
                         $precio = 0;
-                        if (isset($request->input("precio")[$i])) {
-                            $precio = $request->input("precio")[$i];
+                        if (isset($request->input('precio')[$i])) {
+                            $precio = $request->input('precio')[$i];
                         }
-                        $paciente = "";
-                        if (isset($request->input("paciente")[$i])) {
-                            $paciente = $request->input("paciente")[$i];
+                        $paciente = '';
+                        if (isset($request->input('paciente')[$i])) {
+                            $paciente = $request->input('paciente')[$i];
                         }
                         $iva = 0;
-                        if (isset($request->input("iva")[$i])) {
-                            $iva = $request->input("iva")[$i];
+                        if (isset($request->input('iva')[$i])) {
+                            $iva = $request->input('iva')[$i];
                         }
                         $descuento = 0;
-                        if (isset($request->input("desc")[$i])) {
-                            $descuento = $request->input("desc")[$i];
+                        if (isset($request->input('desc')[$i])) {
+                            $descuento = $request->input('desc')[$i];
                         }
-                        $descrip_prod = "";
-                        if (isset($request->input("descrip_prod")[$i])) {
-                            $descrip_prod = $request->input("descrip_prod")[$i];
+                        $descrip_prod = '';
+                        if (isset($request->input('descrip_prod')[$i])) {
+                            $descrip_prod = $request->input('descrip_prod')[$i];
                         }
-                        $id_hc_proc = "";
-                        if (isset($request->input("hc_procedimiento")[$i])) {
-                            $id_hc_proc = $request->input("hc_procedimiento")[$i];
+                        $id_hc_proc = '';
+                        if (isset($request->input('hc_procedimiento')[$i])) {
+                            $id_hc_proc = $request->input('hc_procedimiento')[$i];
                         }
                         $precio_neto = floatval($cantidad) * floatval($precio);
-                        $arr         = array(
-                            'nombre'               => $nombre,
-                            'cantidad'             => $cantidad,
-                            'codigo'               => $codigo,
+                        $arr = [
+                            'nombre' => $nombre,
+                            'cantidad' => $cantidad,
+                            'codigo' => $codigo,
                             'nombre_procedimiento' => $nombre_procedimiento,
-                            'fecha_procedimiento'  => $fecha_procedimiento,
-                            'precio'               => $precio,
-                            'id_paciente'          => $paciente,
-                            'descpor'              => "0.12",
-                            'copago'               => "",
-                            'descuento'            => $descuento,
-                            'precioneto'           => $precio_neto,
-                            'detalle'              => $descrip_prod,
-                            'iva'                  => $iva,
-                            'id_hc_proc'           => $id_hc_proc,
-                            'obs_pac'              => $request['ss'],
-                        );
-                        //$arrayFinally= $this->getProductPrices($arr);
+                            'fecha_procedimiento' => $fecha_procedimiento,
+                            'precio' => $precio,
+                            'id_paciente' => $paciente,
+                            'descpor' => '0.12',
+                            'copago' => '',
+                            'descuento' => $descuento,
+                            'precioneto' => $precio_neto,
+                            'detalle' => $descrip_prod,
+                            'iva' => $iva,
+                            'id_hc_proc' => $id_hc_proc,
+                            'obs_pac' => $request['ss'],
+                        ];
+                        // $arrayFinally= $this->getProductPrices($arr);
                         array_push($arr_total, $arr);
                     }
                 }
@@ -9967,37 +10154,40 @@ class VentasController extends Controller
             $id_seguro = $request->id_seguro;
             $ambulatorio = $request->amBu;
             $data = $this->getProductPrices($arr_total, $tipo, $id_seguro, $ambulatorio);
-            $group_productos = $this->group_by("id_paciente", $data);
+            $group_productos = $this->group_by('id_paciente', $data);
             if ($request->tipo_factura == 1) {
-                $group_productos = $this->group_by("id_hc_proc", $arr_total);
+                $group_productos = $this->group_by('id_hc_proc', $arr_total);
             }
             if ($request->tipo_factura == 3) {
-                $group_productos = $this->group_by("id_paciente", $arr_total);
+                $group_productos = $this->group_by('id_paciente', $arr_total);
             }
             if ($ambulatorio == 1) {
-                $group_productos = $this->group_by("id_paciente", $arr_total);
+                $group_productos = $this->group_by('id_paciente', $arr_total);
             }
+
             return [$group_productos, $cabecera];
         } else {
             $ds = [];
+
             return $ds;
         }
     }
-    //created by A. Chilan at 20 January 2021
-    //use this array function to send invoice with process Faustos's API
-    //only work with use
-    public function getProductPrices($data, $tipo = "", $id_seguro = "", $ambulatorio = "")
+
+    // created by A. Chilan at 20 January 2021
+    // use this array function to send invoice with process Faustos's API
+    // only work with use
+    public function getProductPrices($data, $tipo = '', $id_seguro = '', $ambulatorio = '')
     {
-        //if u want sum values and group by values
-        $groups = array();
+        // if u want sum values and group by values
+        $groups = [];
         foreach ($data as $ks => $item) {
-            //dd($item);
+            // dd($item);
             $key = $item['codigo'];
-            //only when key is distinc to null
-            if (!is_null($key)) {
-                if (!is_null($item['nombre'])) {
-                    if ($tipo == "conglomerada") {
-                        //esta son las combinaciones para facturacion humana  Procedimientos Ambulatorios de Gastroenterologia
+            // only when key is distinc to null
+            if (! is_null($key)) {
+                if (! is_null($item['nombre'])) {
+                    if ($tipo == 'conglomerada') {
+                        // esta son las combinaciones para facturacion humana  Procedimientos Ambulatorios de Gastroenterologia
                         if ($id_seguro == 4) {
                             if ($ambulatorio == 1) {
                                 $key = $item['codigo'];
@@ -10014,17 +10204,17 @@ class VentasController extends Controller
                             }
                         }
                     }
-                    if (!array_key_exists($key, $groups)) {
+                    if (! array_key_exists($key, $groups)) {
                         $codigo = $item['codigo'];
                         $nombre = $item['nombre'];
-                        if ($tipo == "conglomerada") {
-                            //esta son las combinaciones para facturacion humana  Procedimientos Ambulatorios de Gastroenterologia
+                        if ($tipo == 'conglomerada') {
+                            // esta son las combinaciones para facturacion humana  Procedimientos Ambulatorios de Gastroenterologia
                             if ($id_seguro == 4) {
                                 if ($ambulatorio == 1) {
                                     $codigo = $item['codigo'];
                                 } else {
                                     $getParameters = ParametersConglomerada::getHumana($codigo);
-                                    //dd($getParameters);
+                                    // dd($getParameters);
                                     if ($getParameters != false) {
                                         $codigo = $getParameters;
                                     }
@@ -10035,218 +10225,234 @@ class VentasController extends Controller
                                 }
                             }
                         }
-                        $nombre       = Ct_productos::where('codigo', $codigo)->first();
-                        $nombre       = $nombre->descripcion; //no hay valicacion aqui
-                        $groups[$key] = array(
-                            'codigo'               => $codigo,
-                            'nombre'               => $nombre,
-                            'fecha_procedimiento'  => $item['fecha_procedimiento'],
+                        $nombre = Ct_productos::where('codigo', $codigo)->first();
+                        $nombre = $nombre->descripcion; // no hay valicacion aqui
+                        $groups[$key] = [
+                            'codigo' => $codigo,
+                            'nombre' => $nombre,
+                            'fecha_procedimiento' => $item['fecha_procedimiento'],
                             'nombre_procedimiento' => $item['nombre_procedimiento'],
-                            'id_paciente'          => $item['id_paciente'],
-                            'precio'               => $item['precio'],
-                            'precioneto'           => $item['precioneto'],
-                            'cantidad'             => $item['cantidad'],
-                            'descuento'            => $item['descuento'],
-                            'detalle'              => $item['detalle'],
-                        );
+                            'id_paciente' => $item['id_paciente'],
+                            'precio' => $item['precio'],
+                            'precioneto' => $item['precioneto'],
+                            'cantidad' => $item['cantidad'],
+                            'descuento' => $item['descuento'],
+                            'detalle' => $item['detalle'],
+                        ];
                     } else {
-                        if ($tipo == "conglomerada") {
-                            /*need to group by procedures endoscopia+colono+cpre+eco, en humana es  41253 Procedimientos Ambulatorios de Gastroenterologia - ecografias ,en humana es  46877Ultrasonografia Diagnostica*/
-                            //dd($groups[$key]['precio'],$item['precio']);
-                            //no group procedures
-                            $groups[$key]['precio'] = $groups[$key]['precio'] + $item['precio']; //no working date 26 January 2021
+                        if ($tipo == 'conglomerada') {
+                            /* need to group by procedures endoscopia+colono+cpre+eco, en humana es  41253 Procedimientos Ambulatorios de Gastroenterologia - ecografias ,en humana es  46877Ultrasonografia Diagnostica */
+                            // dd($groups[$key]['precio'],$item['precio']);
+                            // no group procedures
+                            $groups[$key]['precio'] = $groups[$key]['precio'] + $item['precio']; // no working date 26 January 2021
                         } else {
                             $groups[$key]['cantidad'] = $groups[$key]['cantidad'] + $item['cantidad'];
                         }
-                        $groups[$key]['detalle']    = $groups[$key]['detalle'];
+                        $groups[$key]['detalle'] = $groups[$key]['detalle'];
                         $groups[$key]['precioneto'] = $groups[$key]['precioneto'] + $item['precioneto'];
-                        $groups[$key]['descuento']  = $groups[$key]['descuento'] + $item['descuento'];
+                        $groups[$key]['descuento'] = $groups[$key]['descuento'] + $item['descuento'];
                     }
                 }
             }
         }
-        //dd($groups);
+
+        // dd($groups);
         return $groups;
     }
+
     public function getLoader(Request $request)
     {
         $arPor = $request['getLoader'];
-        if (!is_null($arPor)) {
+        if (! is_null($arPor)) {
             $arPor = json_decode($request['getLoader']);
             if (count($arPor) > 0) {
-                $fecha = "";
-                if ($arPor->fecha != "") {
+                $fecha = '';
+                if ($arPor->fecha != '') {
                     $fecha = $arPor->fecha;
                 }
-                $comprobante = "";
-                if ($arPor->comprobante != "") {
+                $comprobante = '';
+                if ($arPor->comprobante != '') {
                     $comprobante = $arPor->comprobante;
                 }
-                $eq = "";
-                if ($arPor->eqs != "") {
+                $eq = '';
+                if ($arPor->eqs != '') {
                     $eq = $arPor->eqs;
                 }
-                $cs = "";
-                if ($arPor->cs != "") {
+                $cs = '';
+                if ($arPor->cs != '') {
                     $cs = $arPor->cs;
                 }
-                $ep = "";
-                if ($arPor->ep != "") {
+                $ep = '';
+                if ($arPor->ep != '') {
                     $ep = $arPor->ep;
                 }
-                $px = "";
-                if ($arPor->px != "") {
+                $px = '';
+                if ($arPor->px != '') {
                     $px = $arPor->px;
                 }
-                $fff = "";
+                $fff = '';
                 if ($arPor->fff != null) {
                     $fff = $arPor->fff;
                 }
             }
-            return response()->json("ok");
+
+            return response()->json('ok');
         }
-        return response()->json("error");
+
+        return response()->json('error');
     }
+
     public function group_by($key, $data)
     {
-        $result = array();
-        //result data or group by
+        $result = [];
+        // result data or group by
         foreach ($data as $val) {
             if (array_key_exists($key, $val)) {
                 $result[$val[$key]][] = $val;
             } else {
-                $result[""][] = $val;
+                $result[''][] = $val;
             }
         }
 
         return $result;
     }
+
     public function modal_preview(Request $request)
     {
-        $arrayGroup = $this->getArrayPreview($request, "");
+        $arrayGroup = $this->getArrayPreview($request, '');
+
         return view('contable/ventas/modal_preview', ['arrayGroup' => $arrayGroup]);
     }
+
     public function modal_preview_c(Request $request)
     {
         $tipo_servicio = $request->tipo_servicio;
-        $arrayGroup    = $this->getArrayPreview($request, "conglomerada");
+        $arrayGroup = $this->getArrayPreview($request, 'conglomerada');
+
         return view('contable/ventas/modal_previewc', ['arrayGroup' => $arrayGroup]);
     }
-    public function pdf_nuevo($id = "1", Request $request)
+
+    public function pdf_nuevo($id, Request $request)
     {
-        $vistaurl = "contable.ventas.pdf_nuevo";
+        $vistaurl = 'contable.ventas.pdf_nuevo';
 
         if (is_null($request->getCabecera)) {
-            $id       = $request['id'];
+            $id = $request['id'];
             $detalles = DB::table('ct_detalle_venta_c as c')->join('ct_productos as productos', 'productos.codigo', 'c.id_ct_productos')->join('ct_ventas as v', 'v.id', 'c.id_ct_ventas')->join('paciente as p', 'c.id_paciente', 'p.id')->where('v.id', $id)->select(DB::raw('SUM(c.extendido) as sumatoria'), 'productos.nombre as nombre_producto', 'productos.codigo as codigo_producto', 'p.nombre1 as nombre1', 'p.apellido1 as apellido')->get();
-            $valid    = 0;
-            $ventas   = Ct_ventas::find($id);
-            $view     = \View::make($vistaurl, compact('detalles', 'emp', 'recaud', 'cliente', 'pacient', 'ventas', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret', 'valid'))->render();
-            //return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
+            $valid = 0;
+            $ventas = Ct_ventas::find($id);
+            $view = \View::make($vistaurl, compact('detalles', 'emp', 'recaud', 'cliente', 'pacient', 'ventas', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret', 'valid'))->render();
+            // return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
             $pdf = \App::make('dompdf.wrapper');
             $pdf->loadHTML($view);
-            $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+            $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
             $pdf->setPaper('A4', 'portrait');
 
-            return $pdf->stream('PreImpresoVentas-' . '.pdf');
+            return $pdf->stream('PreImpresoVentas-'.'.pdf');
         } else {
-            //dd("a");
-            //dd($request->all());
+            // dd("a");
+            // dd($request->all());
             $detalles = json_decode($request['arrayPreview']);
-            $ventas   = json_decode($request['getCabecera']);
-            //dd($ventas->descuento);
+            $ventas = json_decode($request['getCabecera']);
+            // dd($ventas->descuento);
             $valid = 1;
-            $view  = \View::make($vistaurl, compact('detalles', 'emp', 'recaud', 'cliente', 'pacient', 'ventas', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret', 'valid'))->render();
+            $view = \View::make($vistaurl, compact('detalles', 'emp', 'recaud', 'cliente', 'pacient', 'ventas', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret', 'valid'))->render();
 
-            //return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
+            // return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
             $pdf = \App::make('dompdf.wrapper');
             $pdf->loadHTML($view);
-            $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+            $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
             $pdf->setPaper('A4', 'portrait');
 
-            return $pdf->stream('PreImpresoVentas-' . '.pdf');
+            return $pdf->stream('PreImpresoVentas-'.'.pdf');
         }
     }
-    public function pdf_nuevo2($id = "1", Request $request)
+
+    public function pdf_nuevo2($id, Request $request)
     {
-        $vistaurl = "contable.ventas.pdf_nuevo2";
+        $vistaurl = 'contable.ventas.pdf_nuevo2';
         $detalles = json_decode($request['arrayPreview']);
-        $ventas   = json_decode($request['getCabecera']);
-        $valid    = 1;
-        $view     = \View::make($vistaurl, compact('detalles', 'emp', 'recaud', 'cliente', 'pacient', 'ventas', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret', 'valid'))->render();
-        $pdf      = \App::make('dompdf.wrapper');
+        $ventas = json_decode($request['getCabecera']);
+        $valid = 1;
+        $view = \View::make($vistaurl, compact('detalles', 'emp', 'recaud', 'cliente', 'pacient', 'ventas', 'detalle_venfaco', 'ct_for_pag', 'ct_val_ret', 'valid'))->render();
+        $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('PreImpresoVentas-' . '.pdf');
+        return $pdf->stream('PreImpresoVentas-'.'.pdf');
     }
+
     public function getPrices(Request $request)
     {
         $codigo_producto = $request->codigo_producto;
-        $id_cliente      = $request->id_cliente;
-        if (!is_null($codigo_producto) && !is_null($id_cliente)) {
+        $id_cliente = $request->id_cliente;
+        if (! is_null($codigo_producto) && ! is_null($id_cliente)) {
             $cliente = Ct_Clientes::where('identificacion', $id_cliente)->first();
-            $clase   = $cliente->clase;
+            $clase = $cliente->clase;
             if ($clase != null) {
                 $producto = PrecioProducto::where('codigo_producto', $codigo_producto)->where('nivel', $clase)->first();
-                if (!is_null($producto)) {
+                if (! is_null($producto)) {
                     return response()->json($producto->precio);
                 }
-                return response()->json("vacio");
+
+                return response()->json('vacio');
             } else {
-                return response()->json("no tiene clase");
+                return response()->json('no tiene clase');
             }
         }
-        return response()->json("error");
+
+        return response()->json('error');
     }
+
     public function getReportUses(Request $request)
     {
-        //usar fecha desde y fecha hasta
-        $fecha_desde     = date('Y-m-d', strtotime($request->fecha));
-        $fecha_hasta     = date('Y-m-d', strtotime($request->fecha_hasta));
+        // usar fecha desde y fecha hasta
+        $fecha_desde = date('Y-m-d', strtotime($request->fecha));
+        $fecha_hasta = date('Y-m-d', strtotime($request->fecha_hasta));
         $nombre_paciente = $request->nombres;
-        //dd($request->all());
-        //dd($fecha_desde);
-        $group_productos = array();
-        $id_empresa      = $request->session()->get('id_empresa');
+        // dd($request->all());
+        // dd($fecha_desde);
+        $group_productos = [];
+        $id_empresa = $request->session()->get('id_empresa');
         if (is_null($id_empresa)) {
             $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
         $detalles = Ct_Detalle_Venta_Omni::whereBetween('fecha_procedimiento', [$fecha_desde, $fecha_hasta])->join('ct_factura_omni as ctx', 'ctx.id', 'ct_detalle_venta_omni.id_omni')->where('ctx.tipo_factura', 2)->where('ctx.id_empresa', $id_empresa);
         $detalles = $detalles->get()->toArray();
-        //dd($detalles);
-        $group_productos = $this->group_by("id_ct_productos", $detalles);
-        $vistaurl        = "contable.ventas.pdf_usos_equipos";
-        $view            = \View::make($vistaurl, compact('detalles', 'omni', 'group_productos', 'fecha_desde'))->render();
-        $pdf             = \App::make('dompdf.wrapper');
+        // dd($detalles);
+        $group_productos = $this->group_by('id_ct_productos', $detalles);
+        $vistaurl = 'contable.ventas.pdf_usos_equipos';
+        $view = \View::make($vistaurl, compact('detalles', 'omni', 'group_productos', 'fecha_desde'))->render();
+        $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('usos-' . '.pdf');
+        return $pdf->stream('usos-'.'.pdf');
     }
+
     public function getReportUsesExcel(Request $request)
     {
         $fecha_desde = $request->fecha;
-        $id_empresa  = $request->session()->get('id_empresa');
+        $id_empresa = $request->session()->get('id_empresa');
         if (is_null($id_empresa)) {
             $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
         $fecha_hasta = $request->fecha_hasta;
-        $detalles    = Ct_Detalle_Venta_Omni::whereBetween('fecha_procedimiento', [$fecha_desde, $fecha_hasta])->join('ct_factura_omni as ctx', 'ctx.id', 'ct_detalle_venta_omni.id_omni')->where('ctx.tipo_factura', 2)->where('ctx.id_empresa', $id_empresa);
+        $detalles = Ct_Detalle_Venta_Omni::whereBetween('fecha_procedimiento', [$fecha_desde, $fecha_hasta])->join('ct_factura_omni as ctx', 'ctx.id', 'ct_detalle_venta_omni.id_omni')->where('ctx.tipo_factura', 2)->where('ctx.id_empresa', $id_empresa);
 
         $detalles = $detalles->get()->toArray();
 
-        $group_productos = $this->group_by("id_ct_productos", $detalles);
-        $empresa         = Empresa::where('prioridad', '1')->get();
-        $omni            = array();
-        Excel::create('Informe usos ' . $fecha_desde . ' a ' . $fecha_hasta, function ($excel) use ($detalles, $group_productos, $empresa, $omni, $fecha_hasta, $fecha_desde) {
-            $excel->sheet('Informe usos', function ($sheet) use ($detalles, $empresa, $group_productos, $omni, $fecha_desde, $fecha_hasta) {
+        $group_productos = $this->group_by('id_ct_productos', $detalles);
+        $empresa = Empresa::where('prioridad', '1')->get();
+        $omni = [];
+        Excel::create('Informe usos '.$fecha_desde.' a '.$fecha_hasta, function ($excel) use ($group_productos, $empresa) {
+            $excel->sheet('Informe usos', function ($sheet) use ($empresa, $group_productos) {
                 if ($empresa->logo != null) {
                     $sheet->mergeCells('A1:H1');
                     $objDrawing = new PHPExcel_Worksheet_Drawing;
-                    $objDrawing->setPath(base_path() . '/storage/app/logo/' . $empresa->logo);
+                    $objDrawing->setPath(base_path().'/storage/app/logo/'.$empresa->logo);
                     $objDrawing->setCoordinates('A1');
                     $objDrawing->setHeight(70);
                     $objDrawing->setWorksheet($sheet);
@@ -10267,24 +10473,24 @@ class VentasController extends Controller
                 $i = 6;
 
                 foreach ($group_productos as $key => $values) {
-                    //dd($values);
+                    // dd($values);
                     $countValues = count($values);
-                    $conter      = 0;
+                    $conter = 0;
                     if ($conter <= $countValues) {
-                        $mes = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"][date('m', strtotime($values[$conter]['fecha_procedimiento'])) - 1];
-                        //only u can change this method similar downside code beacuse only show in a one case
+                        $mes = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'][date('m', strtotime($values[$conter]['fecha_procedimiento'])) - 1];
+                        // only u can change this method similar downside code beacuse only show in a one case
 
                         $contador = 1;
                         foreach ($values as $value) {
                             $verified = Ct_Factura_Omni::find($value['id_omni']);
                             if ($verified->tipo_factura == 2) {
                                 if ($contador == 1) {
-                                    $sheet->cell('D' . $i, function ($cell) use ($mes) {
+                                    $sheet->cell('D'.$i, function ($cell) use ($mes) {
                                         // manipulate the cel
                                         // $this->setSangria($cont, $cell);
                                         $cell->setFontWeight('bold');
                                         $cell->setFontSize(16);
-                                        $cell->setFontColor("#FF4F29");
+                                        $cell->setFontColor('#FF4F29');
                                         $cell->setValue($mes);
                                         $cell->setValignment('center');
 
@@ -10292,12 +10498,12 @@ class VentasController extends Controller
                                     });
                                     $i++;
                                     $nombre = Ct_productos::where('codigo', $key)->first();
-                                    $sheet->cell('D' . $i, function ($cell) use ($nombre) {
+                                    $sheet->cell('D'.$i, function ($cell) use ($nombre) {
                                         // manipulate the cel
                                         // $this->setSangria($cont, $cell);
                                         $cell->setFontWeight('bold');
                                         $cell->setFontSize(16);
-                                        $cell->setFontColor("#FF4F29");
+                                        $cell->setFontColor('#FF4F29');
                                         $cell->setValue($nombre->nombre);
                                         $cell->setValignment('center');
 
@@ -10306,7 +10512,7 @@ class VentasController extends Controller
                                     $i++;
                                 }
                                 $paciente = Paciente::find($value['id_paciente']);
-                                $sheet->cell('A' . $i, function ($cell) use ($contador) {
+                                $sheet->cell('A'.$i, function ($cell) use ($contador) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
@@ -10316,17 +10522,17 @@ class VentasController extends Controller
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
                                 });
-                                $sheet->cell('B' . $i, function ($cell) {
+                                $sheet->cell('B'.$i, function ($cell) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
                                     $cell->setFontSize(16);
-                                    $cell->setValue("");
+                                    $cell->setValue('');
                                     $cell->setValignment('center');
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
                                 });
-                                $sheet->cell('C' . $i, function ($cell) use ($value) {
+                                $sheet->cell('C'.$i, function ($cell) use ($value) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
@@ -10336,17 +10542,17 @@ class VentasController extends Controller
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
                                 });
-                                $sheet->cell('D' . $i, function ($cell) use ($paciente) {
+                                $sheet->cell('D'.$i, function ($cell) use ($paciente) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
                                     $cell->setFontSize(16);
-                                    $cell->setValue($paciente->nombre1 . ' ' . $paciente->nombre2 . ' ' . $paciente->apellido1 . ' ' . $paciente->apellido2);
+                                    $cell->setValue($paciente->nombre1.' '.$paciente->nombre2.' '.$paciente->apellido1.' '.$paciente->apellido2);
                                     $cell->setValignment('center');
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
                                 });
-                                $sheet->cell('E' . $i, function ($cell) use ($paciente) {
+                                $sheet->cell('E'.$i, function ($cell) use ($paciente) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
@@ -10356,7 +10562,7 @@ class VentasController extends Controller
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
                                 });
-                                $sheet->cell('F' . $i, function ($cell) use ($value) {
+                                $sheet->cell('F'.$i, function ($cell) use ($value) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
@@ -10366,12 +10572,12 @@ class VentasController extends Controller
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
                                 });
-                                $sheet->cell('G' . $i, function ($cell) {
+                                $sheet->cell('G'.$i, function ($cell) {
                                     // manipulate the cel
                                     // $this->setSangria($cont, $cell);
 
                                     $cell->setFontSize(16);
-                                    $cell->setValue("");
+                                    $cell->setValue('');
                                     $cell->setValignment('center');
                                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                                     //   $cell->setBorder('', '', 'thin','');
@@ -10386,193 +10592,194 @@ class VentasController extends Controller
             });
         })->export('xlsx');
     }
+
     public function getHonorarios(Request $request)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        $ip_cliente      = $_SERVER["REMOTE_ADDR"];
-        $idusuario       = Auth::user()->id;
-        $fecha_as        = Date('Y-m-d H:i:s');
-        $id_empresa      = $request->session()->get('id_empresa');
-        $llevaOrden      = false;
-        $validate        = $request['validate'];
-        $cod_sucurs      = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
-        $cod_caj         = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
-        $proced          = $request['procedimiento'];
-        $nfactura        = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-        $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
-        $text            = 'Fact #' . ':' . $num_comprobante . '-' . $proced;
-        $msj             = "no    o";
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = date('Y-m-d H:i:s');
+        $id_empresa = $request->session()->get('id_empresa');
+        $llevaOrden = false;
+        $validate = $request['validate'];
+        $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
+        $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+        $proced = $request['procedimiento'];
+        $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
+        $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced;
+        $msj = 'no    o';
 
         $id_paciente = $request['identificacion_paciente'];
         if (is_null($request['identificacion_paciente'])) {
             $id_paciente = '9999999999';
         }
-        //fix contranstrain
+        // fix contranstrain
         $pacis = Paciente::find($id_paciente);
         if (is_null($pacis)) {
             $id_paciente = '9999999999';
         }
         DB::beginTransaction();
-        $msj = "no    o";
+        $msj = 'no    o';
         try {
             $input_cabecera = [
-                'fecha_asiento'   => $fecha_as,
-                'fact_numero'     => $nfactura,
-                'id_empresa'      => $id_empresa,
-                'observacion'     => $text,
-                'valor'           => $request['total1'],
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
+                'fecha_asiento' => $fecha_as,
+                'fact_numero' => $nfactura,
+                'id_empresa' => $id_empresa,
+                'observacion' => $text,
+                'valor' => $request['total1'],
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
             ];
             $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera);
-            $factura_venta       = [
-                'sucursal'            => $cod_sucurs->codigo_sucursal,
-                'punto_emision'       => $cod_caj->codigo_caja,
-                'numero'              => $nfactura,
-                'nro_comprobante'     => $num_comprobante,
-                'id_asiento'          => $id_asiento_cabecera,
-                'id_empresa'          => $id_empresa,
-                'tipo'                => $request['tipo'],
-                'fecha'               => $request['fecha_asiento'],
-                'divisas'             => $request['divisas'],
-                'nombre_cliente'      => $request['nombre_cliente'],
-                'tipo_consulta'       => $request['tipo_consulta'],
-                'id_cliente'          => $request['identificacion_cliente'],
-                'direccion_cliente'   => $request['direccion_cliente'],
-                'ruc_id_cliente'      => $request['identificacion_cliente'],
-                'telefono_cliente'    => $request['telefono_cliente'],
-                'email_cliente'       => $request['mail_cliente'],
-                'orden_venta'         => $request['orden_venta'],
-                'nro_autorizacion'    => $request['numero_autorizacion'],
-                'id_paciente'         => $id_paciente,
-                'nombres_paciente'    => $request['nombre_paciente'],
+            $factura_venta = [
+                'sucursal' => $cod_sucurs->codigo_sucursal,
+                'punto_emision' => $cod_caj->codigo_caja,
+                'numero' => $nfactura,
+                'nro_comprobante' => $num_comprobante,
+                'id_asiento' => $id_asiento_cabecera,
+                'id_empresa' => $id_empresa,
+                'tipo' => $request['tipo'],
+                'fecha' => $request['fecha_asiento'],
+                'divisas' => $request['divisas'],
+                'nombre_cliente' => $request['nombre_cliente'],
+                'tipo_consulta' => $request['tipo_consulta'],
+                'id_cliente' => $request['identificacion_cliente'],
+                'direccion_cliente' => $request['direccion_cliente'],
+                'ruc_id_cliente' => $request['identificacion_cliente'],
+                'telefono_cliente' => $request['telefono_cliente'],
+                'email_cliente' => $request['mail_cliente'],
+                'orden_venta' => $request['orden_venta'],
+                'nro_autorizacion' => $request['numero_autorizacion'],
+                'id_paciente' => $id_paciente,
+                'nombres_paciente' => $request['nombre_paciente'],
                 'id_hc_procedimiento' => $request['mov_paciente'],
-                'seguro_paciente'     => $request['id_seguro'],
-                'procedimientos'      => $request['procedimiento'],
+                'seguro_paciente' => $request['id_seguro'],
+                'procedimientos' => $request['procedimiento'],
                 'fecha_procedimiento' => $request['fecha_proced'],
-                'copago'              => $request['totalc'],
-                'id_recaudador'       => $request['cedula_recaudador'],
-                'subtotal_0'          => $request['subtotal_01'],
-                'subtotal_12'         => $request['subtotal_121'],
-                'descuento'           => $request['descuento1'],
-                'base_imponible'      => $request['subtotal_121'],
-                'impuesto'            => $request['tarifa_iva1'],
-                'total_final'         => $request['total1'],
-                'ip_creacion'         => "OMNI",
-                'ip_modificacion'     => $ip_cliente,
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
+                'copago' => $request['totalc'],
+                'id_recaudador' => $request['cedula_recaudador'],
+                'subtotal_0' => $request['subtotal_01'],
+                'subtotal_12' => $request['subtotal_121'],
+                'descuento' => $request['descuento1'],
+                'base_imponible' => $request['subtotal_121'],
+                'impuesto' => $request['tarifa_iva1'],
+                'total_final' => $request['total1'],
+                'ip_creacion' => 'OMNI',
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
 
-            $id_venta       = Ct_ventas::insertGetId($factura_venta); //activo
-            $arr_total      = [];
-            $total_iva      = 0;
+            $id_venta = Ct_ventas::insertGetId($factura_venta); // activo
+            $arr_total = [];
+            $total_iva = 0;
             $total_impuesto = 0;
-            $total_0        = 0;
-            $arr_id_hc      = [];
-            $arr_activos    = [];
-            $cont           = 0;
-            $arr_obs        = [];
-            if (!empty($request->input("veractivo"))) {
-                for ($i = 0; $i < count($request->input("veractivo")); $i++) {
-                    if ($request->input("veractivo")[$i] == 1) {
-                        $ar = $request->input("hc_procedimiento")[$i];
+            $total_0 = 0;
+            $arr_id_hc = [];
+            $arr_activos = [];
+            $cont = 0;
+            $arr_obs = [];
+            if (! empty($request->input('veractivo'))) {
+                for ($i = 0; $i < count($request->input('veractivo')); $i++) {
+                    if ($request->input('veractivo')[$i] == 1) {
+                        $ar = $request->input('hc_procedimiento')[$i];
                         array_push($arr_activos, $ar);
                         $aobs = [
-                            'procedimiento' => $request->input("hc_procedimiento")[$i],
-                            'obs'           => $request->input("nom_paciente")[$i] . " - " . $request->input("obs_paciente")[$i],
+                            'procedimiento' => $request->input('hc_procedimiento')[$i],
+                            'obs' => $request->input('nom_paciente')[$i].' - '.$request->input('obs_paciente')[$i],
                         ];
                         array_push($arr_obs, $aobs);
                     }
                 }
             }
 
-            $observacion = "";
-            if (!empty($request->input("nombre"))) {
-                for ($i = 0; $i < count($request->input("nombre")); $i++) {
-                    if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
-                        $paciente = "";
-                        if (isset($request->input("paciente")[$i])) {
-                            $paciente = $request->input("paciente")[$i];
+            $observacion = '';
+            if (! empty($request->input('nombre'))) {
+                for ($i = 0; $i < count($request->input('nombre')); $i++) {
+                    if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
+                        $paciente = '';
+                        if (isset($request->input('paciente')[$i])) {
+                            $paciente = $request->input('paciente')[$i];
                         }
-                        $precio_neto = "";
-                        if (isset($request->input("precioneto")[$i])) {
-                            $precio_neto = $request->input("precioneto")[$i];
+                        $precio_neto = '';
+                        if (isset($request->input('precioneto')[$i])) {
+                            $precio_neto = $request->input('precioneto')[$i];
                         }
-                        $nombre = "";
-                        if (isset($request->input("nombre")[$i])) {
-                            $nombre = $request->input("nombre")[$i];
+                        $nombre = '';
+                        if (isset($request->input('nombre')[$i])) {
+                            $nombre = $request->input('nombre')[$i];
                         }
                         $cantidad = 0;
-                        if (isset($request->input("cantidad")[$i])) {
-                            $cantidad = $request->input("cantidad")[$i];
+                        if (isset($request->input('cantidad')[$i])) {
+                            $cantidad = $request->input('cantidad')[$i];
                         }
-                        $codigo = "";
-                        if (isset($request->input("codigo")[$i])) {
-                            $codigo = $request->input("codigo")[$i];
+                        $codigo = '';
+                        if (isset($request->input('codigo')[$i])) {
+                            $codigo = $request->input('codigo')[$i];
                         }
-                        $nombre_procedimiento = "";
-                        if (isset($request->input("id_principal")[$i])) {
-                            $nombre_procedimiento = $request->input("id_principal")[$i];
+                        $nombre_procedimiento = '';
+                        if (isset($request->input('id_principal')[$i])) {
+                            $nombre_procedimiento = $request->input('id_principal')[$i];
                         }
-                        $fecha_procedimiento = "";
-                        if (isset($request->input("fecha_procedimiento")[$i])) {
-                            $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                        $fecha_procedimiento = '';
+                        if (isset($request->input('fecha_procedimiento')[$i])) {
+                            $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                         }
                         $precio = 0;
-                        if (isset($request->input("precio")[$i])) {
-                            $precio = $request->input("precio")[$i];
+                        if (isset($request->input('precio')[$i])) {
+                            $precio = $request->input('precio')[$i];
                         }
-                        $paciente = "";
-                        if (isset($request->input("paciente")[$i])) {
-                            $paciente = $request->input("paciente")[$i];
+                        $paciente = '';
+                        if (isset($request->input('paciente')[$i])) {
+                            $paciente = $request->input('paciente')[$i];
                         }
-                        $iva = "";
-                        if (isset($request->input("iva")[$i])) {
-                            $iva = $request->input("iva")[$i];
+                        $iva = '';
+                        if (isset($request->input('iva')[$i])) {
+                            $iva = $request->input('iva')[$i];
                         }
-                        $descuento = "";
-                        if (isset($request->input("desc")[$i])) {
-                            $descuento = $request->input("desc")[$i];
+                        $descuento = '';
+                        if (isset($request->input('desc')[$i])) {
+                            $descuento = $request->input('desc')[$i];
                         }
-                        $descrip_prod = "";
-                        if (isset($request->input("descrip_prod")[$i])) {
-                            $descrip_prod = $request->input("descrip_prod")[$i];
+                        $descrip_prod = '';
+                        if (isset($request->input('descrip_prod')[$i])) {
+                            $descrip_prod = $request->input('descrip_prod')[$i];
                         }
-                        $copago = "";
-                        if (isset($request->input("copago")[$i])) {
-                            $copago = $request->input("copago")[$i];
+                        $copago = '';
+                        if (isset($request->input('copago')[$i])) {
+                            $copago = $request->input('copago')[$i];
                         }
-                        $id_hc_proc = "";
-                        if (isset($request->input("id_hc_proc")[$i])) {
-                            $id_hc_proc = $request->input("id_hc_proc")[$i];
+                        $id_hc_proc = '';
+                        if (isset($request->input('id_hc_proc')[$i])) {
+                            $id_hc_proc = $request->input('id_hc_proc')[$i];
                         }
-                        $id_agenda = "";
-                        if (isset($request->input("id_agenda")[$i])) {
-                            $id_agenda = $request->input("id_agenda")[$i];
+                        $id_agenda = '';
+                        if (isset($request->input('id_agenda')[$i])) {
+                            $id_agenda = $request->input('id_agenda')[$i];
                         }
-                        $hc_procedimiento = "";
-                        if (isset($request->input("hc_procedimiento")[$i])) {
-                            $hc_procedimiento = $request->input("hc_procedimiento")[$i];
+                        $hc_procedimiento = '';
+                        if (isset($request->input('hc_procedimiento')[$i])) {
+                            $hc_procedimiento = $request->input('hc_procedimiento')[$i];
                         }
                         $precioneto = $cantidad * $precio;
-                        $arr        = [
-                            'nombre'     => $nombre,
-                            'cantidad'   => $cantidad,
-                            'codigo'     => $codigo,
-                            'precio'     => $precio,
-                            'descpor'    => "0.12",
-                            'copago'     => $copago,
-                            'descuento'  => $descuento,
+                        $arr = [
+                            'nombre' => $nombre,
+                            'cantidad' => $cantidad,
+                            'codigo' => $codigo,
+                            'precio' => $precio,
+                            'descpor' => '0.12',
+                            'copago' => $copago,
+                            'descuento' => $descuento,
                             'precioneto' => $precio_neto,
-                            'detalle'    => $descrip_prod,
-                            'iva'        => $iva,
+                            'detalle' => $descrip_prod,
+                            'iva' => $iva,
                             'id_hc_proc' => $hc_procedimiento,
-                            'obs_pac'    => $observacion,
+                            'obs_pac' => $observacion,
                         ];
 
                         array_push($arr_total, $arr);
@@ -10584,10 +10791,10 @@ class VentasController extends Controller
 
             foreach ($arr_total as $valor) {
                 if ($valor['copago'] > 0) {
-                    //registra orden de venta
+                    // registra orden de venta
                     $llevaOrden = true;
                 }
-                //dd($valor);
+                // dd($valor);
 
             }
 
@@ -10595,21 +10802,21 @@ class VentasController extends Controller
 
             if ($val_tol > 0) {
                 $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => $request['total1'],
-                    'haber'               => '0',
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => $request['total1'],
+                    'haber' => '0',
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
@@ -10617,80 +10824,80 @@ class VentasController extends Controller
             //    2.01.07.01.01 iva sobre ventas
             if ($request['tarifa_iva1'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('2.01.07.01.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['tarifa_iva1'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['tarifa_iva1'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
             // 4.1.01.02    Ventas Mercaderia Tarifa 12%
             if ($request['subtotal_121'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('2.01.07.01.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
 
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_121'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_121'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
 
             // 4.1.01.01    Ventas Mercaderia Tarifa 0%
             if ($request['subtotal_01'] > 0) {
-                $id_plan_confg  = LogConfig::busqueda('4.1.01.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
+                $id_plan_confg = LogConfig::busqueda('4.1.01.01');
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_01'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_01'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
 
-            //****REGISTRO FORMAS DE PAGO*** --activo falta****
+            // ****REGISTRO FORMAS DE PAGO*** --activo falta****
             $arr_p = [];
-            if (!empty($request->input("id_tip_pago"))) {
-                for ($i = 0; $i < count($request->input("id_tip_pago")); $i++) {
-                    if ($request->input("valor")[$i] != "" || $request->input("valor_base")[$i] != null) {
+            if (! empty($request->input('id_tip_pago'))) {
+                for ($i = 0; $i < count($request->input('id_tip_pago')); $i++) {
+                    if ($request->input('valor')[$i] != '' || $request->input('valor_base')[$i] != null) {
                         $arr_pagos = [
-                            'id_tip_pago'    => $request->input("id_tip_pago")[$i],
-                            'fecha_pago'     => $request->input("fecha_pago")[$i],
-                            'numero_pago'    => $request->input("numero_pago")[$i],
-                            'id_banco_pago'  => $request->input("id_banco_pago")[$i],
-                            'id_cuenta_pago' => $request->input("id_cuenta_pago")[$i],
-                            'giradoa'        => $request->input("giradoa")[$i],
-                            'valor'          => $request->input("valor")[$i],
-                            'valor_base'     => $request->input("valor_base")[$i],
+                            'id_tip_pago' => $request->input('id_tip_pago')[$i],
+                            'fecha_pago' => $request->input('fecha_pago')[$i],
+                            'numero_pago' => $request->input('numero_pago')[$i],
+                            'id_banco_pago' => $request->input('id_banco_pago')[$i],
+                            'id_cuenta_pago' => $request->input('id_cuenta_pago')[$i],
+                            'giradoa' => $request->input('giradoa')[$i],
+                            'valor' => $request->input('valor')[$i],
+                            'valor_base' => $request->input('valor_base')[$i],
                         ];
                         array_push($arr_p, $arr_pagos);
                     }
@@ -10699,107 +10906,107 @@ class VentasController extends Controller
 
             foreach ($arr_p as $valor) {
                 Ct_Forma_Pago::create([
-                    'id_ct_ventas'    => $id_venta,
-                    'tipo'            => $valor['id_tip_pago'], //$request['id_tip_pago'.$i],
-                    'fecha'           => $valor['fecha_pago'], //$request['fecha'.$i],
-                    'numero'          => $valor['numero_pago'], //$request['numero'.$i],
-                    'banco'           => $valor['id_banco_pago'], //$request['id_banco'.$i],
-                    'cuenta'          => $valor['id_cuenta_pago'], //$request['id_cuenta'.$i],
-                    'giradoa'         => $valor['giradoa'], //$request['id_cuenta'.$i],
-                    'valor'           => $valor['valor'], //$request['valor'.$i],
-                    'valor_base'      => $valor['valor_base'], //$request['valor_base'.$i],
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
-                    'ip_creacion'     => $ip_cliente,
+                    'id_ct_ventas' => $id_venta,
+                    'tipo' => $valor['id_tip_pago'], // $request['id_tip_pago'.$i],
+                    'fecha' => $valor['fecha_pago'], // $request['fecha'.$i],
+                    'numero' => $valor['numero_pago'], // $request['numero'.$i],
+                    'banco' => $valor['id_banco_pago'], // $request['id_banco'.$i],
+                    'cuenta' => $valor['id_cuenta_pago'], // $request['id_cuenta'.$i],
+                    'giradoa' => $valor['giradoa'], // $request['id_cuenta'.$i],
+                    'valor' => $valor['valor'], // $request['valor'.$i],
+                    'valor_base' => $valor['valor_base'], // $request['valor_base'.$i],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
                 ]);
             }
 
-            //agregar comprobantes de ingreso
+            // agregar comprobantes de ingreso
             $this->crearComprobante($nfactura, $request, $arr_p, $id_venta);
             $arr_agendas = [];
             if ($request->tipo_factura == 3) {
                 if ($llevaOrden) {
-                    //dd("a");
+                    // dd("a");
                     $orden_id = $this->ordenVentaConglomerada($id_venta, $request);
-                    //dd($orden_id);
+                    // dd($orden_id);
                     $id_ct_ventas = [
 
                         'id_ct_venta' => $id_venta,
 
                     ];
 
-                    Ct_ven_orden::where('id', $orden_id)->update($id_ct_ventas);
+                    Ct_Ven_Orden::where('id', $orden_id)->update($id_ct_ventas);
                 } else {
                     $orden_id = 0;
                 }
                 $arr_agendas = [];
-                if (!empty($request->input("hc_procedimiento"))) {
-                    for ($i = 0; $i < count($request->input("hc_procedimiento")); $i++) {
-                        if ($request->input("hc_procedimiento")[$i] != "" || $request->input("paciente")[$i] != null) {
-                            $paciente = "";
-                            if (isset($request->input("paciente")[$i])) {
-                                $paciente = $request->input("paciente")[$i];
+                if (! empty($request->input('hc_procedimiento'))) {
+                    for ($i = 0; $i < count($request->input('hc_procedimiento')); $i++) {
+                        if ($request->input('hc_procedimiento')[$i] != '' || $request->input('paciente')[$i] != null) {
+                            $paciente = '';
+                            if (isset($request->input('paciente')[$i])) {
+                                $paciente = $request->input('paciente')[$i];
                             }
-                            $precio_neto = "";
-                            if (isset($request->input("precioneto")[$i])) {
-                                $precio_neto = $request->input("precioneto")[$i];
+                            $precio_neto = '';
+                            if (isset($request->input('precioneto')[$i])) {
+                                $precio_neto = $request->input('precioneto')[$i];
                             }
-                            $nombre = "";
-                            if (isset($request->input("nombre")[$i])) {
-                                $nombre = $request->input("nombre")[$i];
+                            $nombre = '';
+                            if (isset($request->input('nombre')[$i])) {
+                                $nombre = $request->input('nombre')[$i];
                             }
                             $cantidad = 0;
-                            if (isset($request->input("cantidad")[$i])) {
-                                $cantidad = $request->input("cantidad")[$i];
+                            if (isset($request->input('cantidad')[$i])) {
+                                $cantidad = $request->input('cantidad')[$i];
                             }
-                            $codigo = "";
-                            if (isset($request->input("codigo")[$i])) {
-                                $codigo = $request->input("codigo")[$i];
+                            $codigo = '';
+                            if (isset($request->input('codigo')[$i])) {
+                                $codigo = $request->input('codigo')[$i];
                             }
-                            $nombre_procedimiento = "";
-                            if (isset($request->input("id_principal")[$i])) {
-                                $nombre_procedimiento = $request->input("id_principal")[$i];
+                            $nombre_procedimiento = '';
+                            if (isset($request->input('id_principal')[$i])) {
+                                $nombre_procedimiento = $request->input('id_principal')[$i];
                             }
-                            $fecha_procedimiento = "";
-                            if (isset($request->input("fecha_procedimiento")[$i])) {
-                                $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                            $fecha_procedimiento = '';
+                            if (isset($request->input('fecha_procedimiento')[$i])) {
+                                $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                             }
                             $precio = 0;
-                            if (isset($request->input("precio")[$i])) {
-                                $precio = $request->input("precio")[$i];
+                            if (isset($request->input('precio')[$i])) {
+                                $precio = $request->input('precio')[$i];
                             }
-                            $paciente = "";
-                            if (isset($request->input("paciente")[$i])) {
-                                $paciente = $request->input("paciente")[$i];
+                            $paciente = '';
+                            if (isset($request->input('paciente')[$i])) {
+                                $paciente = $request->input('paciente')[$i];
                             }
-                            $iva = "";
-                            if (isset($request->input("iva")[$i])) {
-                                $iva = $request->input("iva")[$i];
+                            $iva = '';
+                            if (isset($request->input('iva')[$i])) {
+                                $iva = $request->input('iva')[$i];
                             }
-                            $descuento = "";
-                            if (isset($request->input("desc")[$i])) {
-                                $descuento = $request->input("desc")[$i];
+                            $descuento = '';
+                            if (isset($request->input('desc')[$i])) {
+                                $descuento = $request->input('desc')[$i];
                             }
-                            $descrip_prod = "";
-                            if (isset($request->input("descrip_prod")[$i])) {
-                                $descrip_prod = $request->input("descrip_prod")[$i];
+                            $descrip_prod = '';
+                            if (isset($request->input('descrip_prod')[$i])) {
+                                $descrip_prod = $request->input('descrip_prod')[$i];
                             }
-                            $id_hc_proc = "";
-                            if (isset($request->input("id_hc_proc")[$i])) {
-                                $id_hc_proc = $request->input("id_hc_proc")[$i];
+                            $id_hc_proc = '';
+                            if (isset($request->input('id_hc_proc')[$i])) {
+                                $id_hc_proc = $request->input('id_hc_proc')[$i];
                             }
-                            $id_agenda = "";
-                            if (isset($request->input("id_agenda")[$i])) {
-                                $id_agenda = $request->input("id_agenda")[$i];
+                            $id_agenda = '';
+                            if (isset($request->input('id_agenda')[$i])) {
+                                $id_agenda = $request->input('id_agenda')[$i];
                             }
-                            $hc_procedimiento = "";
-                            if (isset($request->input("hc_procedimiento")[$i])) {
-                                $hc_procedimiento = $request->input("hc_procedimiento")[$i];
+                            $hc_procedimiento = '';
+                            if (isset($request->input('hc_procedimiento')[$i])) {
+                                $hc_procedimiento = $request->input('hc_procedimiento')[$i];
                             }
                             $copago = 0;
-                            if (isset($request->input("copago")[$i])) {
-                                $copago = $request->input("copago")[$i];
+                            if (isset($request->input('copago')[$i])) {
+                                $copago = $request->input('copago')[$i];
                             }
                             $arr_ags = ['id_agenda' => $id_agenda, 'id_paciente' => $paciente, 'producto' => $codigo, 'descripcion' => $descrip_prod, 'cantidad' => $cantidad, 'precio' => $precio, 'check_iva' => $iva, 'hc_procedimiento' => $hc_procedimiento, 'nombre_principal' => $nombre_procedimiento, 'fecha_procedimiento' => $fecha_procedimiento, 'nombre' => $nombre, 'copago' => $copago];
                             array_push($arr_agendas, $arr_ags);
@@ -10808,265 +11015,269 @@ class VentasController extends Controller
                 }
                 foreach ($arr_agendas as $agenda) {
                     $id_omni = Ct_Factura_Omni::insertGetId([
-                        'id_ct_ventas'    => $id_venta,
-                        'id_agenda'       => $agenda["id_agenda"],
-                        'id_paciente'     => $agenda["id_paciente"],
-                        'tipo_factura'    => $request['tipo_factura'],
-                        'fecha'           => $agenda['fecha_procedimiento'],
-                        'estado'          => "1",
-                        'id_empresa'      => $id_empresa,
-                        'id_usuariocrea'  => $idusuario,
-                        'id_usuariomod'   => $idusuario,
-                        'ip_creacion'     => $ip_cliente,
+                        'id_ct_ventas' => $id_venta,
+                        'id_agenda' => $agenda['id_agenda'],
+                        'id_paciente' => $agenda['id_paciente'],
+                        'tipo_factura' => $request['tipo_factura'],
+                        'fecha' => $agenda['fecha_procedimiento'],
+                        'estado' => '1',
+                        'id_empresa' => $id_empresa,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $ip_cliente,
                         'ip_modificacion' => $ip_cliente,
                     ]);
                     $precio_neto = $agenda['cantidad'] * ($agenda['precio']);
                     Ct_Detalle_Venta_Omni::create([
-                        'id_ct_ventas'         => $id_venta,
-                        'id_ct_productos'      => $agenda['producto'],
-                        'nombre'               => $agenda['producto'],
-                        'id_omni'              => $id_omni,
-                        'cantidad'             => $agenda['cantidad'],
-                        'fecha_procedimiento'  => $agenda['fecha_procedimiento'],
-                        'id_agenda'            => $agenda['id_agenda'],
-                        'nombre_principal'     => $agenda['nombre_principal'],
-                        'id_hc_procedimiento'  => $agenda['hc_procedimiento'],
-                        'precio'               => $agenda['precio'],
+                        'id_ct_ventas' => $id_venta,
+                        'id_ct_productos' => $agenda['producto'],
+                        'nombre' => $agenda['producto'],
+                        'id_omni' => $id_omni,
+                        'cantidad' => $agenda['cantidad'],
+                        'fecha_procedimiento' => $agenda['fecha_procedimiento'],
+                        'id_agenda' => $agenda['id_agenda'],
+                        'nombre_principal' => $agenda['nombre_principal'],
+                        'id_hc_procedimiento' => $agenda['hc_procedimiento'],
+                        'precio' => $agenda['precio'],
                         'descuento_porcentaje' => $request['iva_real'],
-                        'extendido'            => $precio_neto,
-                        'id_paciente'          => $agenda['id_paciente'],
-                        'detalle'              => $agenda['descripcion'],
-                        'check_iva'            => $agenda['check_iva'],
-                        'ip_creacion'          => $ip_cliente,
-                        'ip_modificacion'      => $ip_cliente,
-                        'id_usuariocrea'       => $idusuario,
-                        'id_usuariomod'        => $idusuario,
+                        'extendido' => $precio_neto,
+                        'id_paciente' => $agenda['id_paciente'],
+                        'detalle' => $agenda['descripcion'],
+                        'check_iva' => $agenda['check_iva'],
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
                     ]);
                     $detalle = [
-                        'id_ct_ventas'         => $id_venta,
-                        'id_ct_productos'      => $agenda['producto'],
-                        'nombre'               => $agenda['producto'],
-                        'cantidad'             => $agenda['cantidad'],
-                        'precio'               => $agenda['precio'],
-                        'descuento_porcentaje' => "0.12",
-                        'descuento'            => "0",
-                        'estado'               => '1',
-                        'extendido'            => $precio_neto,
-                        'detalle'              => $agenda['descripcion'],
-                        'copago'               => $agenda['copago'],
-                        'check_iva'            => $agenda['check_iva'],
-                        'ip_creacion'          => $ip_cliente,
-                        'ip_modificacion'      => $ip_cliente,
-                        'id_usuariocrea'       => $idusuario,
-                        'id_usuariomod'        => $idusuario,
+                        'id_ct_ventas' => $id_venta,
+                        'id_ct_productos' => $agenda['producto'],
+                        'nombre' => $agenda['producto'],
+                        'cantidad' => $agenda['cantidad'],
+                        'precio' => $agenda['precio'],
+                        'descuento_porcentaje' => '0.12',
+                        'descuento' => '0',
+                        'estado' => '1',
+                        'extendido' => $precio_neto,
+                        'detalle' => $agenda['descripcion'],
+                        'copago' => $agenda['copago'],
+                        'check_iva' => $agenda['check_iva'],
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
 
                     ];
                     Ct_detalle_venta::create($detalle);
                 }
-                $msj = "";
+                $msj = '';
             } else {
             }
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
+
             return $e->getMessage();
         }
 
-        return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'prd_val' => $request->input("prd_val"), 'request' => $request, 'llevaOrden' => $llevaOrden, 'arr_agendas' => $arr_agendas, 'kardex' => $msj];
+        return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'prd_val' => $request->input('prd_val'), 'request' => $request, 'llevaOrden' => $llevaOrden, 'arr_agendas' => $arr_agendas, 'kardex' => $msj];
 
         return $request;
     }
+
     public function ordenVentaConglomerada($id_v, Request $request)
     {
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = Date('Y-m-d H:i:s');
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = date('Y-m-d H:i:s');
         $id_empresa = $request->session()->get('id_empresa');
 
-        $c_sucursal      = 0;
-        $c_caja          = 0;
+        $c_sucursal = 0;
+        $c_caja = 0;
         $num_comprobante = 0;
-        $nfactura        = 0;
-        $proced          = $request['procedimiento'];
-        $pac             = "";
-        if ($request['nombre_paciente'] != "") {
-            $pac = " | " . $request['nombre_paciente'];
+        $nfactura = 0;
+        $proced = $request['procedimiento'];
+        $pac = '';
+        if ($request['nombre_paciente'] != '') {
+            $pac = ' | '.$request['nombre_paciente'];
         }
-        $text = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+        $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
 
         $id_asiento_cabecera = 0;
-        //GUARDAdo TABLA CT_VENTA.arr_agendas
+        // GUARDAdo TABLA CT_VENTA.arr_agendas
         $arr_agendas = [];
-        if (!empty($request->input("hc_procedimiento"))) {
-            for ($i = 0; $i < count($request->input("hc_procedimiento")); $i++) {
-                if ($request->input("hc_procedimiento")[$i] != "" || $request->input("paciente")[$i] != null) {
-                    $paciente = "";
-                    if (isset($request->input("paciente")[$i])) {
-                        $paciente = $request->input("paciente")[$i];
+        if (! empty($request->input('hc_procedimiento'))) {
+            for ($i = 0; $i < count($request->input('hc_procedimiento')); $i++) {
+                if ($request->input('hc_procedimiento')[$i] != '' || $request->input('paciente')[$i] != null) {
+                    $paciente = '';
+                    if (isset($request->input('paciente')[$i])) {
+                        $paciente = $request->input('paciente')[$i];
                     }
-                    $precio_neto = "";
-                    if (isset($request->input("precioneto")[$i])) {
-                        $precio_neto = $request->input("precioneto")[$i];
+                    $precio_neto = '';
+                    if (isset($request->input('precioneto')[$i])) {
+                        $precio_neto = $request->input('precioneto')[$i];
                     }
                     $copago = 0;
-                    if (isset($request->input("copago")[$i])) {
-                        $copago = $request->input("copago")[$i];
+                    if (isset($request->input('copago')[$i])) {
+                        $copago = $request->input('copago')[$i];
                     }
 
-                    $nombre = "";
-                    if (isset($request->input("nombre")[$i])) {
-                        $nombre = $request->input("nombre")[$i];
+                    $nombre = '';
+                    if (isset($request->input('nombre')[$i])) {
+                        $nombre = $request->input('nombre')[$i];
                     }
                     $cantidad = 0;
-                    if (isset($request->input("cantidad")[$i])) {
-                        $cantidad = $request->input("cantidad")[$i];
+                    if (isset($request->input('cantidad')[$i])) {
+                        $cantidad = $request->input('cantidad')[$i];
                     }
-                    $codigo = "";
-                    if (isset($request->input("codigo")[$i])) {
-                        $codigo = $request->input("codigo")[$i];
+                    $codigo = '';
+                    if (isset($request->input('codigo')[$i])) {
+                        $codigo = $request->input('codigo')[$i];
                     }
-                    $nombre_procedimiento = "";
-                    if (isset($request->input("id_principal")[$i])) {
-                        $nombre_procedimiento = $request->input("id_principal")[$i];
+                    $nombre_procedimiento = '';
+                    if (isset($request->input('id_principal')[$i])) {
+                        $nombre_procedimiento = $request->input('id_principal')[$i];
                     }
-                    $fecha_procedimiento = "";
-                    if (isset($request->input("fecha_procedimiento")[$i])) {
-                        $fecha_procedimiento = $request->input("fecha_procedimiento")[$i];
+                    $fecha_procedimiento = '';
+                    if (isset($request->input('fecha_procedimiento')[$i])) {
+                        $fecha_procedimiento = $request->input('fecha_procedimiento')[$i];
                     }
                     $precio = 0;
-                    if (isset($request->input("precio")[$i])) {
-                        $precio = $request->input("precio")[$i];
+                    if (isset($request->input('precio')[$i])) {
+                        $precio = $request->input('precio')[$i];
                     }
-                    $paciente = "";
-                    if (isset($request->input("paciente")[$i])) {
-                        $paciente = $request->input("paciente")[$i];
+                    $paciente = '';
+                    if (isset($request->input('paciente')[$i])) {
+                        $paciente = $request->input('paciente')[$i];
                     }
-                    $iva = "";
-                    if (isset($request->input("iva")[$i])) {
-                        $iva = $request->input("iva")[$i];
+                    $iva = '';
+                    if (isset($request->input('iva')[$i])) {
+                        $iva = $request->input('iva')[$i];
                     }
-                    $descuento = "";
-                    if (isset($request->input("desc")[$i])) {
-                        $descuento = $request->input("desc")[$i];
+                    $descuento = '';
+                    if (isset($request->input('desc')[$i])) {
+                        $descuento = $request->input('desc')[$i];
                     }
-                    $descrip_prod = "";
-                    if (isset($request->input("descrip_prod")[$i])) {
-                        $descrip_prod = $request->input("descrip_prod")[$i];
+                    $descrip_prod = '';
+                    if (isset($request->input('descrip_prod')[$i])) {
+                        $descrip_prod = $request->input('descrip_prod')[$i];
                     }
-                    $id_hc_proc = "";
-                    if (isset($request->input("id_hc_proc")[$i])) {
-                        $id_hc_proc = $request->input("id_hc_proc")[$i];
+                    $id_hc_proc = '';
+                    if (isset($request->input('id_hc_proc')[$i])) {
+                        $id_hc_proc = $request->input('id_hc_proc')[$i];
                     }
-                    $id_agenda = "";
-                    if (isset($request->input("id_agenda")[$i])) {
-                        $id_agenda = $request->input("id_agenda")[$i];
+                    $id_agenda = '';
+                    if (isset($request->input('id_agenda')[$i])) {
+                        $id_agenda = $request->input('id_agenda')[$i];
                     }
-                    $hc_procedimiento = "";
-                    if (isset($request->input("hc_procedimiento")[$i])) {
-                        $hc_procedimiento = $request->input("hc_procedimiento")[$i];
+                    $hc_procedimiento = '';
+                    if (isset($request->input('hc_procedimiento')[$i])) {
+                        $hc_procedimiento = $request->input('hc_procedimiento')[$i];
                     }
                     $arr_ags = ['id_agenda' => $id_agenda, 'id_paciente' => $paciente, 'producto' => $codigo, 'copago' => $copago, 'descripcion' => $descrip_prod, 'cantidad' => $cantidad, 'precio' => $precio, 'check_iva' => $iva, 'hc_procedimiento' => $hc_procedimiento, 'nombre_principal' => $nombre_procedimiento, 'fecha_procedimiento' => $fecha_procedimiento, 'nombre' => $nombre];
                     array_push($arr_agendas, $arr_ags);
                 }
             }
         }
-        $agrupproducto = $this->group_by("id_paciente", $arr_agendas);
+        $agrupproducto = $this->group_by('id_paciente', $arr_agendas);
         foreach ($agrupproducto as $key => $value) {
 
-            if (!is_null($value)) {
-                $contador            = 0;
-                $paciente            = Paciente::find($key);
+            if (! is_null($value)) {
+                $contador = 0;
+                $paciente = Paciente::find($key);
                 $fecha_procedimiento = $request['fecha_asiento'];
                 if (isset($value[$contador])) {
                     $fecha_procedimiento = $value[$contador]['fecha_procedimiento'];
                 }
                 $factura_venta = [
-                    'sucursal'            => $c_sucursal,
-                    'punto_emision'       => $c_caja,
-                    'numero'              => $nfactura,
-                    'nro_comprobante'     => $num_comprobante,
-                    'id_asiento'          => $id_asiento_cabecera,
-                    'id_empresa'          => $id_empresa,
-                    'tipo'                => $request['tipo'],
-                    'fecha'               => $request['fecha_asiento'],
-                    'divisas'             => $request['divisas'],
-                    'nombre_cliente'      => $request['nombre_cliente'],
-                    'tipo_consulta'       => $request['tipo_consulta'],
-                    'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-                    'direccion_cliente'   => $request['direccion_cliente'],
-                    'ruc_id_cliente'      => $request['identificacion_cliente'],
-                    'telefono_cliente'    => $request['telefono_cliente'],
-                    'email_cliente'       => $request['mail_cliente'],
-                    'orden_venta'         => $request['orden_venta'],
-                    'estado_pago'         => '0',
-                    'honorarios'          => '1',
-                    'id_paciente'         => $key,
-                    'nombres_paciente'    => $paciente->nombre1 . ' ' . $paciente->apellido1,
+                    'sucursal' => $c_sucursal,
+                    'punto_emision' => $c_caja,
+                    'numero' => $nfactura,
+                    'nro_comprobante' => $num_comprobante,
+                    'id_asiento' => $id_asiento_cabecera,
+                    'id_empresa' => $id_empresa,
+                    'tipo' => $request['tipo'],
+                    'fecha' => $request['fecha_asiento'],
+                    'divisas' => $request['divisas'],
+                    'nombre_cliente' => $request['nombre_cliente'],
+                    'tipo_consulta' => $request['tipo_consulta'],
+                    'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+                    'direccion_cliente' => $request['direccion_cliente'],
+                    'ruc_id_cliente' => $request['identificacion_cliente'],
+                    'telefono_cliente' => $request['telefono_cliente'],
+                    'email_cliente' => $request['mail_cliente'],
+                    'orden_venta' => $request['orden_venta'],
+                    'estado_pago' => '0',
+                    'honorarios' => '1',
+                    'id_paciente' => $key,
+                    'nombres_paciente' => $paciente->nombre1.' '.$paciente->apellido1,
                     'id_hc_procedimiento' => $request['mov_paciente'],
-                    'seguro_paciente'     => $paciente->id_seguro,
-                    'procedimientos'      => $request['procedimiento'],
+                    'seguro_paciente' => $paciente->id_seguro,
+                    'procedimientos' => $request['procedimiento'],
                     'fecha_procedimiento' => $fecha_procedimiento,
-                    'copago'              => "0",
-                    'id_recaudador'       => $request['cedula_recaudador'],
-                    'ci_vendedor'         => $request['cedula_vendedor'],
-                    'vendedor'            => $request['vendedor'],
-                    //'nota'                          => $request['nota'],
-                    'subtotal_0'          => "0",
-                    'subtotal_12'         => "0",
-                    //'subtotal'                      => $request['subtotal1'],
-                    'descuento'           => "0",
-                    'base_imponible'      => "0",
-                    'impuesto'            => "0",
+                    'copago' => '0',
+                    'id_recaudador' => $request['cedula_recaudador'],
+                    'ci_vendedor' => $request['cedula_vendedor'],
+                    'vendedor' => $request['vendedor'],
+                    // 'nota'                          => $request['nota'],
+                    'subtotal_0' => '0',
+                    'subtotal_12' => '0',
+                    // 'subtotal'                      => $request['subtotal1'],
+                    'descuento' => '0',
+                    'base_imponible' => '0',
+                    'impuesto' => '0',
                     // 'transporte'                    => $request['transporte'],
-                    'total_final'         => "0",
-                    'valor_contable'      => "0",
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'id_ct_venta'         => $id_v,
+                    'total_final' => '0',
+                    'valor_contable' => '0',
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'id_ct_venta' => $id_v,
                 ];
 
                 // return $factura_venta;
-                $id_venta = Ct_ven_orden::insertGetId($factura_venta);
+                $id_venta = Ct_Ven_Orden::insertGetId($factura_venta);
                 foreach ($value as $x) {
                     $detalle = [
                         'id_ct_ven_orden' => $id_venta,
                         'id_ct_productos' => $x['producto'],
-                        'nombre'          => $x['descripcion'],
-                        'cantidad'        => $x['cantidad'],
-                        'precio'          => $x['copago'],
-                        'extendido'       => $x['precio'],
-                        'detalle'         => $x['descripcion'],
-                        'check_iva'       => $x['check_iva'],
-                        'ip_creacion'     => $ip_cliente,
+                        'nombre' => $x['descripcion'],
+                        'cantidad' => $x['cantidad'],
+                        'precio' => $x['copago'],
+                        'extendido' => $x['precio'],
+                        'detalle' => $x['descripcion'],
+                        'check_iva' => $x['check_iva'],
+                        'ip_creacion' => $ip_cliente,
                         'ip_modificacion' => $ip_cliente,
-                        'id_usuariocrea'  => $idusuario,
-                        'id_usuariomod'   => $idusuario,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
                     ];
 
-                    Ct_ven_orden_detalle::create($detalle);
+                    Ct_Ven_Orden_Detalle::create($detalle);
                 }
             }
         }
+
         return ['id' => $id_venta];
     }
+
     public function infome_labs(Request $request)
     {
 
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
         $fecha_desde = $request['fecha_desde'];
-        $gastos      = $request['esfac_contable'];
-        $variable    = 0;
-        $variable2   = 0;
-        $totales     = 0;
-        $subtotal12  = 0;
-        $subtotal0   = 0;
-        $subtotal    = 0;
-        $descuento   = 0;
-        $impuesto    = 0;
+        $gastos = $request['esfac_contable'];
+        $variable = 0;
+        $variable2 = 0;
+        $totales = 0;
+        $subtotal12 = 0;
+        $subtotal0 = 0;
+        $subtotal = 0;
+        $descuento = 0;
+        $impuesto = 0;
         if ($gastos == null) {
             $gastos = 0;
         }
@@ -11079,15 +11290,15 @@ class VentasController extends Controller
         }
 
         $fecha_hasta = $request['fecha_hasta'];
-        $proveedor   = $request['id_cliente'];
-        $concepto    = $request['concepto'];
-        $secuencia   = $request['secuencia'];
-        $deudas      = [];
-        $deudas2     = [];
+        $proveedor = $request['id_cliente'];
+        $concepto = $request['concepto'];
+        $secuencia = $request['secuencia'];
+        $deudas = [];
+        $deudas2 = [];
         $proveedores = Ct_Clientes::where('estado', '<>', '0')->get();
-        if (!is_null($fecha_hasta)) {
+        if (! is_null($fecha_hasta)) {
             $deudas = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $tipo, 0, $secuencia);
-            //dd($deudas);
+            // dd($deudas);
             $deudas2 = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable2, $tipo, 0, $secuencia);
             foreach ($deudas2 as $value) {
                 if ($value != null) {
@@ -11102,45 +11313,49 @@ class VentasController extends Controller
                 }
             }
         }
+
         return view('contable/ventas/informe_labs', ['informe' => $deudas, 'secuencia' => $secuencia, 'empresa' => $empresa, 'totales' => $totales, 'subtotal0' => $subtotal0, 'subtotal' => $subtotal, 'subtotal12' => $subtotal12, 'impuesto' => $impuesto, 'proveedores' => $proveedores, 'descuento' => $descuento, 'fecha_hasta' => $fecha_hasta, 'fecha_desde' => $fecha_desde, 'id_proveedor' => $proveedor, 'tipo' => $tipo]);
     }
+
     public function pdf_omni($id, Request $request)
     {
-        //dd("a");
-        //dd($request->all());
-        //$detalles = json_decode($request['arrayPreview']);
-        $ventas   = Ct_ventas::find($id);
+        // dd("a");
+        // dd($request->all());
+        // $detalles = json_decode($request['arrayPreview']);
+        $ventas = Ct_ventas::find($id);
         $detalles = Ct_Detalle_Venta_Omni::where('id_ct_ventas', $id)->get();
-        //dd($ventas->descuento);
-        $vistaurl = "contable.ventas.pdf_omni";
-        $valid    = 1;
-        $view     = \View::make($vistaurl, compact('detalles', 'ventas'))->render();
+        // dd($ventas->descuento);
+        $vistaurl = 'contable.ventas.pdf_omni';
+        $valid = 1;
+        $view = \View::make($vistaurl, compact('detalles', 'ventas'))->render();
 
-        //return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
+        // return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('Factura de Venta -' . $id . '.pdf');
+        return $pdf->stream('Factura de Venta -'.$id.'.pdf');
     }
+
     public function pdf_conglomerada($id, Request $request) {}
+
     public function informe_nca(Request $request)
-    {       //5000 id_venta revisar OJOOOOOOO
+    {       // 5000 id_venta revisar OJOOOOOOO
         $sin = $request['sin'];
-        $id_empresa    = $request->session()->get('id_empresa');
-        $empresa       = Empresa::where('id', $id_empresa)->first();
-        $fecha_desde   = $request['fecha_desde'];
-        $gastos        = $request['esfac_contable'];
-        $variable      = 0;
-        $variable2     = 0;
-        $totales       = 0;
-        $subtotal12    = 0;
-        $subtotal0     = 0;
-        $subtotal      = 0;
-        $descuento     = 0;
-        $impuesto      = 0;
-        $n_credito     = 0;
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
+        $fecha_desde = $request['fecha_desde'];
+        $gastos = $request['esfac_contable'];
+        $variable = 0;
+        $variable2 = 0;
+        $totales = 0;
+        $subtotal12 = 0;
+        $subtotal0 = 0;
+        $subtotal = 0;
+        $descuento = 0;
+        $impuesto = 0;
+        $n_credito = 0;
         $final_credito = 0;
         if ($gastos == null) {
             $gastos = 0;
@@ -11154,12 +11369,12 @@ class VentasController extends Controller
         }
         $proveedores = [];
         $fecha_hasta = $request['fecha_hasta'];
-        $proveedor   = $request['id_cliente'];
-        $concepto    = $request['concepto'];
-        $secuencia   = $request['secuencia'];
-        $deudas      = [];
-        $deudas2     = [];
-        if (!is_null($fecha_hasta)) {
+        $proveedor = $request['id_cliente'];
+        $concepto = $request['concepto'];
+        $secuencia = $request['secuencia'];
+        $deudas = [];
+        $deudas2 = [];
+        if (! is_null($fecha_hasta)) {
             $deudas = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $tipo, 0, $secuencia, $request['estado'], '', '', '', '', '', $sin);
             $deudas2 = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable2, $tipo, 0, $secuencia);
             $proveedores = Ct_Clientes::where('estado', '<>', '0')
@@ -11178,31 +11393,33 @@ class VentasController extends Controller
                 }
             }
         }
+
         return view('contable/ventas/informe_ventas_nca', ['informe' => $deudas, 'secuencia' => $secuencia, 'empresa' => $empresa, 'totales' => $totales, 'subtotal0' => $subtotal0, 'subtotal' => $subtotal, 'subtotal12' => $subtotal12, 'impuesto' => $impuesto, 'proveedores' => $proveedores, 'descuento' => $descuento, 'fecha_hasta' => $fecha_hasta, 'fecha_desde' => $fecha_desde, 'id_proveedor' => $proveedor, 'tipo' => $tipo, 'request' => $request]);
     }
+
     public function excel_ventas_nca(Request $request)
     {
-        //dd("Ingreso");
-        $id_empresa  = $request->session()->get('id_empresa');
+        // dd("Ingreso");
+        $id_empresa = $request->session()->get('id_empresa');
         $fecha_desde = $request['fecha_desde'];
-        $proveedor   = $request['id_cliente'];
+        $proveedor = $request['id_cliente'];
         $fecha_hasta = $request['fecha_hasta'];
-        $concepto    = $request['secuencia'];
-        $gastos      = $request['tipo'];
-        $variable    = 0;
-        $fech        = 0;
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $concepto = $request['secuencia'];
+        $gastos = $request['tipo'];
+        $variable = 0;
+        $fech = 0;
+        $empresa = Empresa::where('id', $id_empresa)->first();
         // $nota_credito= DB::table('ct_detalle_credito_clientes')->where('id_factura',$id)->first();
         $consulta = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $gastos, 0, $concepto);
-        //dd($consulta);
-        Excel::create('Informe Factura de Ventas Netas ' . $fecha_desde . '-al-' . $fecha_hasta, function ($excel) use ($empresa, $consulta, $gastos, $fecha_hasta, $fecha_desde) {
+        // dd($consulta);
+        Excel::create('Informe Factura de Ventas Netas '.$fecha_desde.'-al-'.$fecha_hasta, function ($excel) use ($empresa, $consulta, $gastos, $fecha_hasta, $fecha_desde) {
             $excel->sheet('Informe Factura de Ventas Netas', function ($sheet) use ($empresa, $fecha_desde, $fecha_hasta, $consulta, $gastos) {
                 if ($empresa->logo != null && $empresa->logo != '(N/A)') {
-                    if (file_exists(base_path() . '/storage/app/logo/' . $empresa->logo)) {
+                    if (file_exists(base_path().'/storage/app/logo/'.$empresa->logo)) {
                         $fech = 1;
                         $sheet->mergeCells('A1:H1');
                         $objDrawing = new PHPExcel_Worksheet_Drawing;
-                        $objDrawing->setPath(base_path() . '/storage/app/logo/' . $empresa->logo);
+                        $objDrawing->setPath(base_path().'/storage/app/logo/'.$empresa->logo);
                         $objDrawing->setCoordinates('A1');
                         $objDrawing->setHeight(70);
                         $objDrawing->setWorksheet($sheet);
@@ -11211,7 +11428,7 @@ class VentasController extends Controller
                 $sheet->mergeCells('C2:U2');
                 $sheet->cell('C2', function ($cell) use ($empresa) {
                     // manipulate the cel
-                    $cell->setValue($empresa->nombrecomercial . ' ' . $empresa->id);
+                    $cell->setValue($empresa->nombrecomercial.' '.$empresa->id);
                     $cell->setFontWeight('bold');
                     $cell->setFontSize('15');
                     $cell->setAlignment('center');
@@ -11221,7 +11438,7 @@ class VentasController extends Controller
                 $sheet->mergeCells('C3:U3');
                 $sheet->cell('C3', function ($cell) {
                     // manipulate the cel
-                    $cell->setValue("INFORME FACTURA DE VENTAS NETAS ");
+                    $cell->setValue('INFORME FACTURA DE VENTAS NETAS ');
                     $cell->setFontWeight('bold');
                     $cell->setFontSize('15');
                     $cell->setFontColor('#FFFFFF');
@@ -11232,9 +11449,9 @@ class VentasController extends Controller
                 $sheet->cell('A4', function ($cell) use ($fecha_desde, $fecha_hasta) {
                     // manipulate the cel
                     if ($fecha_desde != null) {
-                        $cell->setValue("Desde " . date("d-m-Y", strtotime($fecha_desde)) . " Hasta " . date("d-m-Y", strtotime($fecha_hasta)));
+                        $cell->setValue('Desde '.date('d-m-Y', strtotime($fecha_desde)).' Hasta '.date('d-m-Y', strtotime($fecha_hasta)));
                     } else {
-                        $cell->setValue(" Al - " . date("d-m-Y", strtotime($fecha_hasta)));
+                        $cell->setValue(' Al - '.date('d-m-Y', strtotime($fecha_hasta)));
                     }
                     $cell->setFontWeight('bold');
                     $cell->setFontSize('12');
@@ -11242,7 +11459,7 @@ class VentasController extends Controller
                     $cell->setFontColor('#FFFFFF');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                //$sheet->mergeCells('A4:A5');
+                // $sheet->mergeCells('A4:A5');
                 $sheet->cell('A5', function ($cell) {
                     // manipulate the cel
                     $cell->setValue('FECHA');
@@ -11366,7 +11583,7 @@ class VentasController extends Controller
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
                 // DETALLES
-                $sheet->setColumnFormat(array(
+                $sheet->setColumnFormat([
                     'H' => '0.00',
                     'I' => '0.00',
                     'J' => '0.00',
@@ -11377,7 +11594,7 @@ class VentasController extends Controller
                     'O' => '0.00',
                     'P' => '0.00',
 
-                ));
+                ]);
                 $i = $this->setDetalleInforme_nca($consulta, $sheet, 6, $gastos);
                 // $i = $this->setDetalles($pasivos, $sheet, $i);
                 // $i = $this->setDetalles($patrimonio, $sheet, $i, $totpyg);
@@ -11407,57 +11624,58 @@ class VentasController extends Controller
                     $cells->setFontSize('12');
                 });
             });
-            $excel->getActiveSheet()->getColumnDimension("A")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("B")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("C")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("D")->setWidth(23)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("E")->setWidth(23)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("F")->setWidth(23)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("G")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("H")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("I")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("J")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("K")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("L")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("M")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("N")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("O")->setWidth(17)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("P")->setWidth(18)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("Q")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("R")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("S")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("T")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("U")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("V")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("W")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("X")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("Y")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("Z")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AA")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AB")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AC")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AD")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AE")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AF")->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('A')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('B')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('C')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('D')->setWidth(23)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('E')->setWidth(23)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('F')->setWidth(23)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('G')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('H')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('I')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('J')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('K')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('L')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('M')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('N')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('O')->setWidth(17)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('P')->setWidth(18)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('Q')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('R')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('S')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('T')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('U')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('V')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('W')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('X')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('Y')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('Z')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AA')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AB')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AC')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AD')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AE')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AF')->setWidth(16)->setAutosize(false);
         })->export('xlsx');
     }
+
     public function setDetalleInforme_nca($consulta, $sheet, $i, $variable)
     {
-        $x                  = 0;
-        $valor              = 0;
-        $resta              = 0;
-        $totales            = 0;
-        $subtotal12         = 0;
-        $subtotal0          = 0;
-        $subtotal           = 0;
-        $descuento          = 0;
-        $impuesto           = 0;
-        $finalsub           = 0;
+        $x = 0;
+        $valor = 0;
+        $resta = 0;
+        $totales = 0;
+        $subtotal12 = 0;
+        $subtotal0 = 0;
+        $subtotal = 0;
+        $descuento = 0;
+        $impuesto = 0;
+        $finalsub = 0;
         $valor_nota_credito = 0;
-        $final_con_credito  = 0;
-        $n_credito          = 0;
-        $ventaBruta         = 0;
-        $final_credito      = 0;
+        $final_con_credito = 0;
+        $n_credito = 0;
+        $ventaBruta = 0;
+        $final_credito = 0;
 
         foreach ($consulta as $value) {
             $nota_credito = Ct_Nota_Credito_Clientes::where('id_factura', $value->id)
@@ -11466,7 +11684,7 @@ class VentasController extends Controller
             $valor_nota_credito = 0;
 
             if ($value != null) {
-                //$nota_credito = DB::table('ct_detalle_credito_clientes')->where('id_factura', $value->id)->first();
+                // $nota_credito = DB::table('ct_detalle_credito_clientes')->where('id_factura', $value->id)->first();
                 if ($value->estado != 0) {
                     if ($value->electronica == 1) {
                         $subtotal += $value->subtotal_0 + $value->subtotal_12 - $value->descuento;
@@ -11482,13 +11700,13 @@ class VentasController extends Controller
                     $finalsub = $value->subtotal_12 + $value->subtotal_0;
                     $subtotalf = $value->subtotal_12 + $value->subtotal_0 - $value->descuento;
                     $ventaBruta = $subtotalf + $value->impuesto;
-                    //$ventaBruta = $value->total_final;
+                    // $ventaBruta = $value->total_final;
 
-                    if (!is_null($nota_credito)) {
+                    if (! is_null($nota_credito)) {
                         $valor_nota_credito = $nota_credito->total_credito;
-                        //$final_con_credito = (($value->subtotal_0 + $value->subtotal_12) - $value->descuento) - $valor_nota_credito;
-                        $final_con_credito = $ventaBruta - $valor_nota_credito; //$value->total_final
-                        //$n_credito += $valor_nota_credito;
+                        // $final_con_credito = (($value->subtotal_0 + $value->subtotal_12) - $value->descuento) - $valor_nota_credito;
+                        $final_con_credito = $ventaBruta - $valor_nota_credito; // $value->total_final
+                        // $n_credito += $valor_nota_credito;
                         $n_credito += $valor_nota_credito;
                         $final_credito += $final_con_credito;
                     } else {
@@ -11505,13 +11723,13 @@ class VentasController extends Controller
                     //     $final_con_credito = $value->total_final; // si no tiene el valor la nca va a ser el final de la factura
                     //     $final_credito += $value->total_final; // suma final
                     // }
-                    $totales += $value->subtotal_0 + $value->subtotal_12 + $value->impuesto - $value->descuento;;
+                    $totales += $value->subtotal_0 + $value->subtotal_12 + $value->impuesto - $value->descuento;
                 } else {
                     $final_con_credito = 0;
                 }
-                $sheet->cell('A' . $i, function ($cell) use ($value) {
+                $sheet->cell('A'.$i, function ($cell) use ($value) {
                     // manipulate the cel
-                    $cell->setValue(date("d-m-Y", strtotime($value->fecha)));
+                    $cell->setValue(date('d-m-Y', strtotime($value->fecha)));
                     $cell->setFontWeight('bold');
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
@@ -11520,7 +11738,7 @@ class VentasController extends Controller
                     // $this->setSangria($cont, $cell);
                 });
 
-                $sheet->cell('B' . $i, function ($cell) use ($value) {
+                $sheet->cell('B'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     $cell->setValue($value->nro_comprobante);
                     if ($value->estado == 0) {
@@ -11529,18 +11747,18 @@ class VentasController extends Controller
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                     // $this->setSangria($cont, $cell,1);
                 });
-                $sheet->cell('C' . $i, function ($cell) use ($value) {
+                $sheet->cell('C'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
-                    $cell->setValue(' ' . $value->id_cliente);
+                    $cell->setValue(' '.$value->id_cliente);
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                //$sheet->mergeCells('G'.$i.':H'.$i);
-                $sheet->cell('D' . $i, function ($cell) use ($value) {
+                // $sheet->mergeCells('G'.$i.':H'.$i);
+                $sheet->cell('D'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->cliente != null) {
@@ -11552,18 +11770,18 @@ class VentasController extends Controller
 
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('E' . $i, function ($cell) use ($value) {
+                $sheet->cell('E'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
-                    if ($value->paciente != null && $value->id_paciente != "9999999999") {
-                        $cell->setValue($value->paciente->apellido1 . ' ' . $value->paciente->apellido2 . ' ' . $value->paciente->nombre1 . ' ' . $value->paciente->nombre2);
+                    if ($value->paciente != null && $value->id_paciente != '9999999999') {
+                        $cell->setValue($value->paciente->apellido1.' '.$value->paciente->apellido2.' '.$value->paciente->nombre1.' '.$value->paciente->nombre2);
                     }
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('F' . $i, function ($cell) use ($value) {
+                $sheet->cell('F'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($value->tipo);
@@ -11572,7 +11790,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('G' . $i, function ($cell) use ($value) {
+                $sheet->cell('G'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($value->nombre);
@@ -11581,23 +11799,23 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->mergeCells('H' . $i . ':I' . $i);
-                $sheet->cell('H' . $i, function ($cell) use ($value) {
+                $sheet->mergeCells('H'.$i.':I'.$i);
+                $sheet->cell('H'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValignment('left');
-                    $cell->setValue($value->concepto . "# Asiento " . $value->id_asiento);
+                    $cell->setValue($value->concepto.'# Asiento '.$value->id_asiento);
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('J' . $i, function ($cell) use ($value) {
+                $sheet->cell('J'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $vendedor = User::find($value->ci_vendedor);
-                    if (!is_null($vendedor)) {
-                        $cell->setValue($vendedor->nombre1 . ' ' . $vendedor->apellido1);
+                    if (! is_null($vendedor)) {
+                        $cell->setValue($vendedor->nombre1.' '.$vendedor->apellido1);
                     } else {
                         $cell->setValue($value->vendedor);
                     }
@@ -11607,7 +11825,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('K' . $i, function ($cell) use ($value) {
+                $sheet->cell('K'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($value->subtotal_12);
@@ -11618,7 +11836,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('L' . $i, function ($cell) use ($value) {
+                $sheet->cell('L'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -11629,7 +11847,7 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('M' . $i, function ($cell) use ($value) {
+                $sheet->cell('M'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -11640,7 +11858,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('N' . $i, function ($cell) use ($finalsub, $value) {
+                $sheet->cell('N'.$i, function ($cell) use ($finalsub, $value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -11651,7 +11869,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('O' . $i, function ($cell) use ($value) {
+                $sheet->cell('O'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -11662,7 +11880,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('P' . $i, function ($cell) use ($value, $ventaBruta) {
+                $sheet->cell('P'.$i, function ($cell) use ($value, $ventaBruta) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($ventaBruta);
@@ -11678,7 +11896,7 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('Q' . $i, function ($cell) use ($value, $valor_nota_credito) {
+                $sheet->cell('Q'.$i, function ($cell) use ($value, $valor_nota_credito) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     /*if ($value->electronica == 1) {
@@ -11709,7 +11927,7 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('R' . $i, function ($cell) use ($value, $final_con_credito) {
+                $sheet->cell('R'.$i, function ($cell) use ($value, $final_con_credito) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($final_con_credito);
@@ -11725,12 +11943,12 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('S' . $i, function ($cell) use ($value, $nota_credito) {
+                $sheet->cell('S'.$i, function ($cell) use ($value, $nota_credito) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->estado == 0) {
                         $cell->setValue('ANULADA');
-                    } elseif (!is_null($nota_credito)) {
+                    } elseif (! is_null($nota_credito)) {
 
                         $cell->setValue('NCA');
                     } else {
@@ -11743,22 +11961,22 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('T' . $i, function ($cell) use ($value) {
+                $sheet->cell('T'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
-                    $cell->setValue($value->usuario->nombre1 . " " . $value->usuario->apellido1);
+                    $cell->setValue($value->usuario->nombre1.' '.$value->usuario->apellido1);
                     $cell->setValignment('center');
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('U' . $i, function ($cell) use ($value) {
+                $sheet->cell('U'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->estado == 0) {
-                        $cell->setValue($value->usuario->nombre1 . " " . $value->usuario->apellido1);
+                        $cell->setValue($value->usuario->nombre1.' '.$value->usuario->apellido1);
                     }
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
@@ -11779,15 +11997,15 @@ class VentasController extends Controller
                 $ventaBruta = $subtotalf + $value->impuesto;
             }
         }
-        $sheet->cell('G' . $i, function ($cell) {
+        $sheet->cell('G'.$i, function ($cell) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
-            $cell->setValue("TOTAL :");
+            $cell->setValue('TOTAL :');
             $cell->setValignment('center');
             $cell->setFontWeight('bold');
         });
-        $sheet->cell('K' . $i, function ($cell) use ($subtotal12) {
+        $sheet->cell('K'.$i, function ($cell) use ($subtotal12) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11796,7 +12014,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('L' . $i, function ($cell) use ($subtotal0) {
+        $sheet->cell('L'.$i, function ($cell) use ($subtotal0) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11805,7 +12023,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('M' . $i, function ($cell) use ($descuento) {
+        $sheet->cell('M'.$i, function ($cell) use ($descuento) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11814,7 +12032,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('N' . $i, function ($cell) use ($subtotal) {
+        $sheet->cell('N'.$i, function ($cell) use ($subtotal) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11823,7 +12041,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('O' . $i, function ($cell) use ($impuesto) {
+        $sheet->cell('O'.$i, function ($cell) use ($impuesto) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11832,7 +12050,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('P' . $i, function ($cell) use ($totales) {
+        $sheet->cell('P'.$i, function ($cell) use ($totales) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11841,7 +12059,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('Q' . $i, function ($cell) use ($n_credito) {
+        $sheet->cell('Q'.$i, function ($cell) use ($n_credito) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -11850,7 +12068,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('R' . $i, function ($cell) use ($final_credito) {
+        $sheet->cell('R'.$i, function ($cell) use ($final_credito) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
             $cell->setValue($final_credito);
@@ -11861,6 +12079,7 @@ class VentasController extends Controller
 
         return $i;
     }
+
     public function estadistico(Request $request)
     {
         $id_empresa = $request['id_empresa'];
@@ -11868,8 +12087,8 @@ class VentasController extends Controller
             $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
         $anio = $request['anio'];
-        //dd($request->all());
-        $mes      = $request['mes'];
+        // dd($request->all());
+        $mes = $request['mes'];
         $fechaini = $request['fechaini'];
         $fechafin = $request['fechafin'];
         if (is_null($anio)) {
@@ -11878,15 +12097,15 @@ class VentasController extends Controller
         if (is_null($mes)) {
             $mes = date('m');
         }
-        //0  es publico
-        //1  es privado
-        $array_agrupado = array();
+        // 0  es publico
+        // 1  es privado
+        $array_agrupado = [];
         for ($i = 1; $i < 13; $i++) {
-            $mes = '0' . $i;
+            $mes = '0'.$i;
             if (strlen($i) < 1) {
                 $mes = $i;
             }
-            $ventas_mes        = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')
+            $ventas_mes = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')
                 ->where('ct_ventas.id_empresa', $id_empresa)
                 ->whereMonth('ct_ventas.fecha', $mes)
                 ->whereYear('ct_ventas.fecha', $anio)
@@ -11894,27 +12113,27 @@ class VentasController extends Controller
                 ->select(DB::raw('SUM(ct_ventas.total_final) as total_final'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ct_ventas.total_final ELSE 0 END) as publico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ct_ventas.total_final ELSE 0 END) as privado'), DB::raw('COUNT(CASE WHEN s.tipo=0 THEN 0 ELSE null END) as publicosc'), DB::raw('COUNT(CASE WHEN s.tipo <> 0 THEN 0 ELSE null END) as privadosc'))->get();
             $estructure['mes'] = $mes;
             foreach ($ventas_mes as $value) {
-                $estructure['privado']   = $value->privado;
-                $estructure['publico']   = $value->publico;
-                $estructure['cpublico']  = $value->cpublico;
-                $estructure['cprivado']  = $value->cprivado;
+                $estructure['privado'] = $value->privado;
+                $estructure['publico'] = $value->publico;
+                $estructure['cpublico'] = $value->cpublico;
+                $estructure['cprivado'] = $value->cprivado;
                 $estructure['privadosc'] = $value->privadosc;
                 $estructure['publicosc'] = $value->publicosc;
                 array_push($array_agrupado, $estructure);
             }
         }
-        $array_agrupado_anio = array();
-        $anios               = [$request->anio];
-        $aniosf              = 0;
+        $array_agrupado_anio = [];
+        $anios = [$request->anio];
+        $aniosf = 0;
         foreach ($anios as $key => $z) {
-            //dd($z);
+            // dd($z);
             $ventas_anio = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')->join('ct_detalle_comprobante_ingreso as ingreso', 'ingreso.id_factura', 'ct_ventas.id')->where('ct_ventas.id_empresa', $id_empresa)->whereYear('ct_ventas.fecha', $z)->where('ct_ventas.estado', '<>', '0')->select(DB::raw('SUM(ct_ventas.total_final) as total_final'), DB::raw('SUM(ingreso.total) as ingresado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ingreso.total ELSE 0 END) as cpublico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ingreso.total ELSE 0 END) as cprivado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ct_ventas.total_final ELSE 0 END) as publico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ct_ventas.total_final ELSE 0 END) as privado'), DB::raw('COUNT(CASE WHEN s.tipo=0 THEN 0 ELSE null END) as publicosc'), DB::raw('COUNT(CASE WHEN s.tipo <> 0 THEN 0 ELSE null END) as privadosc'))->get();
             foreach ($ventas_anio as $s) {
-                $estructure['anio']      = $aniosf;
-                $estructure['privado']   = $s->privado;
-                $estructure['publico']   = $s->publico;
-                $estructure['cpublico']  = $s->cpublico;
-                $estructure['cprivado']  = $s->cprivado;
+                $estructure['anio'] = $aniosf;
+                $estructure['privado'] = $s->privado;
+                $estructure['publico'] = $s->publico;
+                $estructure['cpublico'] = $s->cpublico;
+                $estructure['cprivado'] = $s->cprivado;
                 $estructure['privadosc'] = $s->privadosc;
                 $estructure['publicosc'] = $s->publicosc;
                 array_push($array_agrupado_anio, $estructure);
@@ -11924,25 +12143,28 @@ class VentasController extends Controller
         $empresa = Empresa::all();
 
         return view('contable/ventas/estadisticos', ['array_agrupado' => $array_agrupado, 'array_agrupado_anio' => $array_agrupado_anio, 'fechaini' => $fechaini, 'fechafin' => $fechafin, 'empresas' => $empresa, 'id_empresa' => $id_empresa, 'request' => $request]);
-        //dd($array_agrupado_anio,$array_agrupado);p
+        // dd($array_agrupado_anio,$array_agrupado);p
     }
+
     public function estadisticoshc4(Request $request)
     {
-        $empresa    = Empresa::all();
+        $empresa = Empresa::all();
         $id_empresa = $request['id_empresa'];
         if (is_null($id_empresa)) {
             $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
+
         return view('contable/ventas/estadisticohc4', ['empresas' => $empresa, 'id_empresa' => $id_empresa]);
     }
+
     public function graphics(Request $request)
     {
         $id_empresa = $request['id_empresa'];
         if (is_null($id_empresa)) {
             $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
-        $anio     = $request['anio'];
-        $mes      = $request['mes'];
+        $anio = $request['anio'];
+        $mes = $request['mes'];
         $fechaini = $request['fechaini'];
         $fechafin = $request['fechafin'];
         if (is_null($anio)) {
@@ -11951,78 +12173,80 @@ class VentasController extends Controller
         if (is_null($mes)) {
             $mes = date('m');
         }
-        $array_agrupado = array();
+        $array_agrupado = [];
         for ($i = 1; $i < 13; $i++) {
-            $mes = '0' . $i;
+            $mes = '0'.$i;
             if (strlen($i) < 1) {
                 $mes = $i;
             }
-            $ventas_mes        = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')->join('ct_detalle_comprobante_ingreso as ingreso', 'ingreso.id_factura', 'ct_ventas.id')->where('ct_ventas.id_empresa', $id_empresa)->whereMonth('ct_ventas.fecha', $mes)->whereYear('ct_ventas.fecha', date('Y'))->where('ct_ventas.estado', '<>', '0')->select(DB::raw('SUM(ct_ventas.total_final) as total_final'), DB::raw('SUM(ingreso.total) as ingresado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ingreso.total ELSE 0 END) as cpublico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ingreso.total ELSE 0 END) as cprivado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ct_ventas.total_final ELSE 0 END) as publico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ct_ventas.total_final ELSE 0 END) as privado'), DB::raw('COUNT(CASE WHEN s.tipo=0 THEN 0 ELSE null END) as publicosc'), DB::raw('COUNT(CASE WHEN s.tipo <> 0 THEN 0 ELSE null END) as privadosc'))->get();
+            $ventas_mes = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')->join('ct_detalle_comprobante_ingreso as ingreso', 'ingreso.id_factura', 'ct_ventas.id')->where('ct_ventas.id_empresa', $id_empresa)->whereMonth('ct_ventas.fecha', $mes)->whereYear('ct_ventas.fecha', date('Y'))->where('ct_ventas.estado', '<>', '0')->select(DB::raw('SUM(ct_ventas.total_final) as total_final'), DB::raw('SUM(ingreso.total) as ingresado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ingreso.total ELSE 0 END) as cpublico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ingreso.total ELSE 0 END) as cprivado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ct_ventas.total_final ELSE 0 END) as publico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ct_ventas.total_final ELSE 0 END) as privado'), DB::raw('COUNT(CASE WHEN s.tipo=0 THEN 0 ELSE null END) as publicosc'), DB::raw('COUNT(CASE WHEN s.tipo <> 0 THEN 0 ELSE null END) as privadosc'))->get();
             $estructure['mes'] = $mes;
             foreach ($ventas_mes as $value) {
-                $estructure['privado']   = $value->privado;
-                $estructure['publico']   = $value->publico;
-                $estructure['cpublico']  = $value->cpublico;
-                $estructure['cprivado']  = $value->cprivado;
+                $estructure['privado'] = $value->privado;
+                $estructure['publico'] = $value->publico;
+                $estructure['cpublico'] = $value->cpublico;
+                $estructure['cprivado'] = $value->cprivado;
                 $estructure['privadosc'] = $value->privadosc;
                 $estructure['publicosc'] = $value->publicosc;
                 array_push($array_agrupado, $estructure);
             }
         }
-        $array_agrupado_anio = array();
-        $anios               = ['2021'];
-        $aniosf              = 0;
+        $array_agrupado_anio = [];
+        $anios = ['2021'];
+        $aniosf = 0;
         foreach ($anios as $key => $z) {
-            //dd($z);
+            // dd($z);
             $ventas_anio = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')->join('ct_detalle_comprobante_ingreso as ingreso', 'ingreso.id_factura', 'ct_ventas.id')->where('ct_ventas.id_empresa', $id_empresa)->where('ct_ventas.estado', '<>', '0')->whereYear('ct_ventas.fecha', $z)->select(DB::raw('SUM(ct_ventas.total_final) as total_final'), DB::raw('SUM(ingreso.total) as ingresado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ingreso.total ELSE 0 END) as cpublico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ingreso.total ELSE 0 END) as cprivado'), DB::raw('SUM(CASE WHEN s.tipo=0 THEN ct_ventas.total_final ELSE 0 END) as publico'), DB::raw('SUM( CASE WHEN s.tipo <> 0 THEN ct_ventas.total_final ELSE 0 END) as privado'), DB::raw('COUNT(CASE WHEN s.tipo=0 THEN 0 ELSE null END) as publicosc'), DB::raw('COUNT(CASE WHEN s.tipo <> 0 THEN 0 ELSE null END) as privadosc'))->get();
             foreach ($ventas_anio as $s) {
-                $estructure['anio']      = $aniosf;
-                $estructure['privado']   = $s->privado;
-                $estructure['publico']   = $s->publico;
-                $estructure['cpublico']  = $s->cpublico;
-                $estructure['cprivado']  = $s->cprivado;
+                $estructure['anio'] = $aniosf;
+                $estructure['privado'] = $s->privado;
+                $estructure['publico'] = $s->publico;
+                $estructure['cpublico'] = $s->cpublico;
+                $estructure['cprivado'] = $s->cprivado;
                 $estructure['privadosc'] = $s->privadosc;
                 $estructure['publicosc'] = $s->publicosc;
                 array_push($array_agrupado_anio, $estructure);
             }
             $aniosf++;
         }
+
         return view('contable/ventas/graphics', ['array_agrupado' => $array_agrupado, 'array_agrupado_anio' => $array_agrupado_anio, 'fechaini' => $fechaini, 'fechafin' => $fechafin]);
     }
+
     public function informe_ordenes_pendientes(Request $request)
     {
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
         $fecha_desde = $request['fecha_desde'];
         $fecha_hasta = $request['fecha_hasta'];
-        $seguro      = $request['id_seguro'];
+        $seguro = $request['id_seguro'];
 
-        $seguros     = Seguro::all();
+        $seguros = Seguro::all();
         if ($fecha_desde == null) {
-            $fecha_desde = date("Y-m-d");
+            $fecha_desde = date('Y-m-d');
         }
         if ($fecha_hasta == null) {
-            $fecha_hasta = date("Y-m-d");
+            $fecha_hasta = date('Y-m-d');
         }
         $ordenes = '[]';
 
         $ordenes = Ct_Ven_Orden::where('estado', '!=', '0')->where('id_empresa', $id_empresa)
             ->where('estado_pago', '=', '0')
             ->where('tipo', '=', 'VEN-OV')
-            ->wherebetween('fecha', [$fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59'])
+            ->wherebetween('fecha', [$fecha_desde.' 00:00:00', $fecha_hasta.' 23:59:59'])
             ->where('valor_contable', '!=', 0);
 
-        if (!is_null($seguro)) {
-            $ordenes  = $ordenes->where('seguro_paciente', $seguro);
+        if (! is_null($seguro)) {
+            $ordenes = $ordenes->where('seguro_paciente', $seguro);
         }
-        $ordenes  = $ordenes->orderBy('id', 'desc')->get();
-
+        $ordenes = $ordenes->orderBy('id', 'desc')->get();
 
         return view('contable/ventas/informe_ordenes_pendientes', ['informe' => $ordenes, 'id_empresa' => $id_empresa, 'empresa' => $empresa, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'seguros' => $seguros]);
     }
+
     public function guardar_comision(Request $request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $id_usuario = Auth::user()->id;
         $id_empresa = $request->session()->get('id_empresa');
         $id_plantilla = $request['id_plantilla'];
@@ -12044,17 +12268,17 @@ class VentasController extends Controller
         DB::beginTransaction();
         try {
             $comision_cabecera = [
-                'id_plantilla'    => $id_plantilla,
-                'fecha_inicio'    => $fecha_desde,
-                'fecha_fin'       => $fecha_hasta,
-                'estado'          => '1',
-                'id_empresa'      => $id_empresa,
-                'total'           => $total_final,
-                'porcentaje'      => $porcentaje,
-                'total_comision'  => $total_comision,
-                'id_usuariocrea'  => $id_usuario,
-                'id_usuariomod'   => $id_usuario,
-                'ip_creacion'     => $ip_cliente,
+                'id_plantilla' => $id_plantilla,
+                'fecha_inicio' => $fecha_desde,
+                'fecha_fin' => $fecha_hasta,
+                'estado' => '1',
+                'id_empresa' => $id_empresa,
+                'total' => $total_final,
+                'porcentaje' => $porcentaje,
+                'total_comision' => $total_comision,
+                'id_usuariocrea' => $id_usuario,
+                'id_usuariomod' => $id_usuario,
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
             ];
 
@@ -12062,64 +12286,68 @@ class VentasController extends Controller
 
             foreach ($check_liq as $value) {
                 $detalle_ventas = Ct_detalle_venta::where('estado', 1)->where('id', $value)->first();
-                if (!is_null($detalle_ventas)) {
+                if (! is_null($detalle_ventas)) {
                     $ventas = Ct_ventas::where('estado', 1)->where('id_empresa', $id_empresa)->where('id', $detalle_ventas->id_ct_ventas)->first();
                 }
                 Ct_Comision_Detalle::create([
                     'id_comision_cabecera' => $ct_comision_cabecera,
-                    'id_detalle_venta'     => $detalle_ventas->id,
-                    'codigo_producto'      => $detalle_ventas->id_ct_productos,
-                    'id_paciente'          => $ventas->id_paciente,
-                    'nro_comprobante'      => $ventas->nro_comprobante,
-                    'fecha_procedimiento'  => $ventas->fecha_procedimiento,
-                    'seguro'               => $ventas->seguro_paciente,
-                    'valor_total'          => $detalle_ventas->extendido,
-                    'estado'               => '1',
-                    'id_usuariocrea'       => $id_usuario,
-                    'id_usuariomod'        => $id_usuario,
-                    'ip_creacion'          => $ip_cliente,
-                    'ip_modificacion'      => $ip_cliente,
+                    'id_detalle_venta' => $detalle_ventas->id,
+                    'codigo_producto' => $detalle_ventas->id_ct_productos,
+                    'id_paciente' => $ventas->id_paciente,
+                    'nro_comprobante' => $ventas->nro_comprobante,
+                    'fecha_procedimiento' => $ventas->fecha_procedimiento,
+                    'seguro' => $ventas->seguro_paciente,
+                    'valor_total' => $detalle_ventas->extendido,
+                    'estado' => '1',
+                    'id_usuariocrea' => $id_usuario,
+                    'id_usuariomod' => $id_usuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
 
             DB::commit();
+
             return ['respuesta' => 'success', 'msj' => 'Guardado Exitosamente', 'titulos' => 'Exito'];
         } catch (Exception $e) {
             DB::rollBack();
+
             return ['respuesta' => 'error', 'msj' => $e->getMessage(), 'titulos' => 'Error'];
         }
     }
+
     public function buscar_precio($id, Request $request)
     {
 
         $valor_total = 0;
 
-        $orden_venta = Ct_Detalle_Venta::find($id);
+        $orden_venta = Ct_detalle_venta::find($id);
 
         $valor_total = $orden_venta->extendido;
 
         return ['valor_total' => $valor_total];
     }
+
     public function informe_liquidaciones_comisiones(Request $request)
     {
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
         $fecha_desde = $request['fecha_desde'];
         $fecha_hasta = $request['fecha_hasta'];
-        $productos_buscados   = $request['productos'];
+        $productos_buscados = $request['productos'];
         $id_seguro = $request['id_seguro'];
         $id_plantilla = $request['id_plantilla'];
         $seguros = Seguro::where('inactivo', '1')->Orderby('nombre', 'asc')->get();
 
-        if (!is_null($id_plantilla)) {
+        if (! is_null($id_plantilla)) {
             if ($id_plantilla == '1') {
                 $productos_buscados = ['COLO-PENTAX', 'EDA-PENTAX'];
                 $todos = Ct_productos::where('id_empresa', $id_empresa)->where('estado_tabla', 1)->whereIn('codigo', ['COLO-PENTAX', 'EDA-PENTAX'])->get();
             } elseif ($id_plantilla == '2') {
                 $productos_buscados = [];
-                $productos_det_venta = Ct_Detalle_Venta::distinct()->where('estado', '1')->wherebetween('created_at', [$fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59'])->get(['id_ct_productos']);
-                //dd($productos_det_venta);
-                if (!is_null($productos_det_venta)) {
+                $productos_det_venta = Ct_detalle_venta::distinct()->where('estado', '1')->wherebetween('created_at', [$fecha_desde.' 00:00:00', $fecha_hasta.' 23:59:59'])->get(['id_ct_productos']);
+                // dd($productos_det_venta);
+                if (! is_null($productos_det_venta)) {
                     $todos = Ct_productos::where('id_empresa', $id_empresa)->where('estado_tabla', 1)->whereNotIn('codigo', ['COLO-PENTAX', 'EDA-PENTAX']);
                     $todos = $todos->where(function ($jq1) use ($productos_det_venta) {
                         foreach ($productos_det_venta as $prod_buscados) {
@@ -12129,7 +12357,7 @@ class VentasController extends Controller
                 }
 
                 $todos = $todos->get();
-                if (!is_null($todos)) {
+                if (! is_null($todos)) {
                     $i = 0;
                     foreach ($todos as $value) {
                         $productos_buscados[$i] = $value->codigo;
@@ -12137,7 +12365,7 @@ class VentasController extends Controller
                     }
                 }
             }
-        } elseif (!is_null($productos_buscados)) {
+        } elseif (! is_null($productos_buscados)) {
             $todos = Ct_productos::where('id_empresa', $id_empresa)->where('estado_tabla', 1);
             $todos = $todos->where(function ($jq1) use ($productos_buscados) {
                 foreach ($productos_buscados as $prod_buscados) {
@@ -12159,18 +12387,18 @@ class VentasController extends Controller
         }
 
         if ($fecha_desde == null) {
-            $fecha_desde = date("Y-m-d");
+            $fecha_desde = date('Y-m-d');
         }
         if ($fecha_hasta == null) {
-            $fecha_hasta = date("Y-m-d");
+            $fecha_hasta = date('Y-m-d');
         }
 
         $ventas = '[]';
-        $ventas = Ct_Ventas::where('estado', '!=', '0')->where('id_empresa', $id_empresa)
+        $ventas = Ct_ventas::where('estado', '!=', '0')->where('id_empresa', $id_empresa)
             ->where('tipo', '=', 'VEN-FA')
-            ->wherebetween('fecha_procedimiento', [$fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59']);
+            ->wherebetween('fecha_procedimiento', [$fecha_desde.' 00:00:00', $fecha_hasta.' 23:59:59']);
 
-        if (!is_null($id_seguro)) {
+        if (! is_null($id_seguro)) {
             $ventas = $ventas->where(function ($jq2) use ($id_seguro) {
                 foreach ($id_seguro as $seguros_todos) {
                     $jq2 = $jq2->orwhere('seguro_paciente', $seguros_todos);
@@ -12178,25 +12406,26 @@ class VentasController extends Controller
             });
         }
 
-        $ventas  = $ventas->orderBy('fecha_procedimiento', 'desc')->get();
+        $ventas = $ventas->orderBy('fecha_procedimiento', 'desc')->get();
 
         $comision_cabecera = Ct_Comision_Cabecera::where('estado', '1')->where('id_empresa', $id_empresa)->orderby('id', 'desc')->get();
 
         return view('contable/ventas/informe_liquidaciones_comisiones', ['ventas' => $ventas, 'id_empresa' => $id_empresa, 'seguros' => $seguros, 'id_seguro' => $id_seguro, 'empresa' => $empresa, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'productos_todos' => $todos, 'productos_buscados' => $productos_buscados, 'id_plantilla' => $id_plantilla, 'comision_cabecera' => $comision_cabecera]);
     }
+
     public function reporte_cardiologia(Request $request)
     {
-        //dd("hola");
+        // dd("hola");
         config(['data' => []]);
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
         $fecha_desde = $request['fecha_desde'];
         $fecha_hasta = $request['fecha_hasta'];
         if ($fecha_desde == null) {
-            $fecha_desde = date("Y-m-d");
+            $fecha_desde = date('Y-m-d');
         }
         if ($fecha_hasta == null) {
-            $fecha_hasta = date("Y-m-d");
+            $fecha_hasta = date('Y-m-d');
         }
         $cardiologias = Hc_Evolucion::join('historiaclinica as h', 'h.hcid', 'hc_evolucion.hcid')
             ->leftjoin('hc_procedimientos as hcpro', 'hcpro.id_hc', 'h.hcid')
@@ -12206,25 +12435,27 @@ class VentasController extends Controller
             ->leftjoin('users as us', 'us.id', 'hcpro.id_doctor_examinador')
             ->where('a.espid', '8')
             ->where('a.estado', '1')
-            ->where('a.fechaini', '>=',  $fecha_desde . ' 00:00:00')->where('a.fechafin', '<=', $fecha_hasta . ' 23:59:59')
+            ->where('a.fechaini', '>=', $fecha_desde.' 00:00:00')->where('a.fechafin', '<=', $fecha_hasta.' 23:59:59')
             ->select('h.id_agenda', 'a.fechaini', 'h.id_paciente', 'pa.fecha_nacimiento', 'us.id as cedula_dr', 'us.nombre1', 'us.apellido1', 'us.apellido2', 's.nombre as seguro', 'a.estado_cita', 'hc_evolucion.motivo', 'hc_evolucion.cuadro_clinico')
             ->orderBy('a.fechaini', 'desc')->paginate(10);
-        //dd($cardiologias);
+        // dd($cardiologias);
         $data['controlador'] = $this->controlador;
         config(['data' => $data]);
+
         return view('contable/ventas/reporte_cardiologia', ['empresa' => $empresa, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'cardiologias' => $cardiologias]);
     }
+
     public function excel_reporte_cardiologia(Request $request)
     {
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
         $fecha_desde = $request['desdeFecha'];
         $fecha_hasta = $request['hastaFecha'];
         if (is_null($fecha_desde)) {
-            $fecha_desde = date("Y-m-d");
+            $fecha_desde = date('Y-m-d');
         }
         if (is_null($fecha_hasta)) {
-            $fecha_hasta = date("Y-m-d");
+            $fecha_hasta = date('Y-m-d');
         }
         $cardiologias = Hc_Evolucion::join('historiaclinica as h', 'h.hcid', 'hc_evolucion.hcid')
             ->leftjoin('hc_procedimientos as hcpro', 'hcpro.id_hc', 'h.hcid')
@@ -12233,14 +12464,14 @@ class VentasController extends Controller
             ->join('seguros as s', 's.id', 'h.id_seguro')
             ->leftjoin('users as us', 'us.id', 'hcpro.id_doctor_examinador')
             ->where('a.espid', '8')->where('a.estado', '1')
-            ->where('a.fechaini', '>=',  $fecha_desde . ' 00:00:00')
-            ->where('a.fechafin', '<=', $fecha_hasta . ' 23:59:59')
+            ->where('a.fechaini', '>=', $fecha_desde.' 00:00:00')
+            ->where('a.fechafin', '<=', $fecha_hasta.' 23:59:59')
             ->select('h.id_agenda', 'a.fechaini', 'h.id_paciente', 'pa.nombre1 as nombre1paciente', 'pa.apellido1 as apellidopaciente', 'pa.apellido2 as apellidopaciente2', 'pa.fecha_nacimiento', 'us.id as cedula_dr', 'us.nombre1', 'us.apellido1', 'us.apellido2', 's.nombre as seguro', 'a.estado_cita', 'hc_evolucion.motivo', 'hc_evolucion.cuadro_clinico')
             ->orderBy('a.fechaini', 'desc')->get();
-        //Titulos excel
-        $titulos = array("No. Agenda", "Fecha", "Cedula", "Paciente", "Fecha de Nacimiento", "Doctor", "Estado cita", "Motivo", "Seguro", "Cuadro Clinico");
-        //Posiciones en el excel
-        $posicion = array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W");
+        // Titulos excel
+        $titulos = ['No. Agenda', 'Fecha', 'Cedula', 'Paciente', 'Fecha de Nacimiento', 'Doctor', 'Estado cita', 'Motivo', 'Seguro', 'Cuadro Clinico'];
+        // Posiciones en el excel
+        $posicion = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W'];
         Excel::create('REPORTE DE CARGIOLOGIA', function ($excel) use ($titulos, $posicion, $cardiologias) {
             $excel->sheet('REPORTE DE CARDIOLOGIA', function ($sheet) use ($titulos, $posicion, $cardiologias) {
                 $sheet->mergeCells('A1:J1');
@@ -12254,7 +12485,7 @@ class VentasController extends Controller
                 });
                 $comienzo = 2;
                 for ($i = 0; $i < count($titulos); $i++) {
-                    $sheet->cell('' . $posicion[$i] . '' . $comienzo, function ($cell) use ($titulos, $i) {
+                    $sheet->cell(''.$posicion[$i].''.$comienzo, function ($cell) use ($titulos, $i) {
                         $cell->setValue($titulos[$i]);
                         $cell->setFontWeight('bold');
                         $cell->setBackground('#92CFEF');
@@ -12265,13 +12496,13 @@ class VentasController extends Controller
                 $comienzo++;
                 /*****FIN DE TITULOS DEL EXCEL***********/
                 foreach ($cardiologias as $soporte) {
-                    $datos_excel = array();
-                    $est_cita = ["0" => "POR CONFIRMAR", "1" => "CONFIRMADA", "2" => "REAGENDADO", "3" => "SUSPENDIDO", "4" => "ADMISIONADO"];
+                    $datos_excel = [];
+                    $est_cita = ['0' => 'POR CONFIRMAR', '1' => 'CONFIRMADA', '2' => 'REAGENDADO', '3' => 'SUSPENDIDO', '4' => 'ADMISIONADO'];
                     $texto = strip_tags($soporte->cuadro_clinico);
-                    $new = str_replace(array('&ntilde;', '&Ntilde;', '&aacute;', '&eacute;', '&iacute;', "&oacute;", "&uacute;", '&Aacute;', '&Eacute;', '&Iacute;', "&Oacute;", "&Uacute;", "&nbsp;"), array("ñ", "Ñ", "á", "é", "í", "ó", "ú", "Á", "É", "Í", "Ó", "Ú", " "), $texto);
-                    array_push($datos_excel, $soporte->id_agenda, $soporte->fechaini, $soporte->id_paciente, $soporte->nombre1paciente . ' ' . $soporte->apellidopaciente . ' ' . $soporte->apellidopaciente2, $soporte->fecha_nacimiento, "{$soporte->nombre1} {$soporte->apellido1} {$soporte->apellido2}", $est_cita["{$soporte->estado_cita}"], $soporte->motivo, $soporte->seguro, $new);
+                    $new = str_replace(['&ntilde;', '&Ntilde;', '&aacute;', '&eacute;', '&iacute;', '&oacute;', '&uacute;', '&Aacute;', '&Eacute;', '&Iacute;', '&Oacute;', '&Uacute;', '&nbsp;'], ['ñ', 'Ñ', 'á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', ' '], $texto);
+                    array_push($datos_excel, $soporte->id_agenda, $soporte->fechaini, $soporte->id_paciente, $soporte->nombre1paciente.' '.$soporte->apellidopaciente.' '.$soporte->apellidopaciente2, $soporte->fecha_nacimiento, "{$soporte->nombre1} {$soporte->apellido1} {$soporte->apellido2}", $est_cita["{$soporte->estado_cita}"], $soporte->motivo, $soporte->seguro, $new);
                     for ($i = 0; $i < count($datos_excel); $i++) {
-                        $sheet->cell('' . $posicion[$i] . '' . $comienzo, function ($cell) use ($datos_excel, $i) {
+                        $sheet->cell(''.$posicion[$i].''.$comienzo, function ($cell) use ($datos_excel, $i) {
                             $cell->setValue($datos_excel[$i]);
                             $cell->setBorder('thin', 'thin', 'thin', 'thin');
                             $cell->setAlignment('center');
@@ -12280,38 +12511,40 @@ class VentasController extends Controller
                     $comienzo++;
                 }
             });
-            $excel->getActiveSheet()->getColumnDimension("H")->setWidth(50)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('H')->setWidth(50)->setAutosize(false);
         })->export('xlsx');
     }
+
     public function pdf_liquidacion_comision($id, Request $request)
     {
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
 
         $cabecera = Ct_Comision_Cabecera::where('id', $id)->where('estado', 1)->where('id_empresa', $id_empresa)->first();
-        if (!is_null($cabecera)) {
+        if (! is_null($cabecera)) {
             $detalle = Ct_Comision_Detalle::where('id_comision_cabecera', $id)->where('estado', 1)->get();
         }
 
-        $vistaurl = "contable.ventas.pdf_liquidacion_comisiones";
-        $view     = \View::make($vistaurl, compact('cabecera', 'detalle', 'empresa'))->render();
-        $pdf      = \App::make('dompdf.wrapper');
+        $vistaurl = 'contable.ventas.pdf_liquidacion_comisiones';
+        $view = \View::make($vistaurl, compact('cabecera', 'detalle', 'empresa'))->render();
+        $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'landscape');
 
-        return $pdf->stream('Liquidacion de comisiones' . '.pdf');
+        return $pdf->stream('Liquidacion de comisiones'.'.pdf');
     }
+
     public function eliminar_liquidacion_comision($id)
     {
         $id_usuario = Auth::user()->id;
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $cabecera_comision = Ct_Comision_Cabecera::find($id);
 
         $arreglo = [
-            'estado'            => 0,
-            'id_usuariomod'     => $id_usuario,
-            'ip_modificacion'   => $ip_cliente,
+            'estado' => 0,
+            'id_usuariomod' => $id_usuario,
+            'ip_modificacion' => $ip_cliente,
         ];
 
         $cabecera_comision->update($arreglo);
@@ -12325,22 +12558,23 @@ class VentasController extends Controller
             $value->save();
         }
     }
+
     public function informe_ventas(Request $request)
     {
-        $id_empresa  = $request->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
-        $sucursales  = Ct_caja::where('id_empresa', $id_empresa)->get();
+        $id_empresa = $request->session()->get('id_empresa');
+        $empresa = Empresa::where('id', $id_empresa)->first();
+        $sucursales = Ct_Caja::where('id_empresa', $id_empresa)->get();
         $fecha_desde = $request['fecha_desde'];
-        $gastos      = $request['esfac_contable'];
-        $variable    = 0;
-        $variable2   = 0;
-        $totales     = 0;
-        $subtotal12  = 0;
-        $subtotal0   = 0;
-        $subtotal    = 0;
-        $descuento   = 0;
+        $gastos = $request['esfac_contable'];
+        $variable = 0;
+        $variable2 = 0;
+        $totales = 0;
+        $subtotal12 = 0;
+        $subtotal0 = 0;
+        $subtotal = 0;
+        $descuento = 0;
         $totaldetotal = 0;
-        $impuesto    = 0;
+        $impuesto = 0;
         if ($gastos == null) {
             $gastos = 0;
         }
@@ -12351,16 +12585,16 @@ class VentasController extends Controller
         if ($request['excelF'] == 1) {
             $this->excel_ventas($request);
         }
-        $activo      = $request->activo;
+        $activo = $request->activo;
         $fecha_hasta = $request['fecha_hasta'];
-        $proveedor   = $request['id_cliente'];
-        $concepto    = $request['concepto'];
-        $secuencia   = $request['secuencia'];
-        $sucursal   = $request['sucursal'];
-        $id_seguro   = $request['id_seguro'];
-        $id_tipo   = $request['id_tipo'];
-        $deudas      = [];
-        $deudas2     = [];
+        $proveedor = $request['id_cliente'];
+        $concepto = $request['concepto'];
+        $secuencia = $request['secuencia'];
+        $sucursal = $request['sucursal'];
+        $id_seguro = $request['id_seguro'];
+        $id_tipo = $request['id_tipo'];
+        $deudas = [];
+        $deudas2 = [];
         $proveedores = Ct_Clientes::where('estado', '<>', '0')->get();
         $seguros = Seguro::where('seguros.inactivo', '1')
             ->where('promo_seguro', '<>', 1)
@@ -12368,10 +12602,10 @@ class VentasController extends Controller
         $tipos_seguros = SeguroTipos::where('estado', '>', '1')->get();
         // dd($seguro);
 
-        if (!is_null($fecha_hasta)) {
+        if (! is_null($fecha_hasta)) {
             $deudas = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $tipo, 0, $secuencia, $activo, $sucursal, $seguros, $tipos_seguros, $id_seguro, $id_tipo);
             if (Auth::user()->id == '0953905999') {
-                //dd($deudas);
+                // dd($deudas);
             }
         }
         if (count($deudas) > 0) {
@@ -12380,21 +12614,20 @@ class VentasController extends Controller
             } else {
                 $activo = 0;
             }
-            $totales    = $deudas->where('estado', $activo)->sum('total_final');
+            $totales = $deudas->where('estado', $activo)->sum('total_final');
             $subtotal12 = $deudas->where('estado', $activo)->sum('subtotal_12');
-            //$subtotal = $deudas->where('estado', $activo)->sum('subtotal');
+            // $subtotal = $deudas->where('estado', $activo)->sum('subtotal');
             $subtotal0 = $deudas->where('estado', $activo)->sum('subtotal_0');
             $descuento = $deudas->where('estado', $activo)->sum('descuento');
-            $impuesto  = $deudas->where('estado', $activo)->sum('impuesto');
+            $impuesto = $deudas->where('estado', $activo)->sum('impuesto');
 
-            if (Auth::user()->id == "0957258056") {
-                //dd($descuento);
+            if (Auth::user()->id == '0957258056') {
+                // dd($descuento);
             }
-            //*******************ELECTRONICA*********************//
-            //$sumElectronica =  $deudas->where('estado', $activo)->sum('subtotal_0');
+            // *******************ELECTRONICA*********************//
+            // $sumElectronica =  $deudas->where('estado', $activo)->sum('subtotal_0');
             $descuentoElectronica = $deudas->where('estado', $activo)->where('electronica', 1)->sum('descuento');
-            //*******************NO ELECTRONICA*********************//
-
+            // *******************NO ELECTRONICA*********************//
 
             // if($activo == 2){
             //     $totales = $deudas->sum('total_final');
@@ -12413,24 +12646,24 @@ class VentasController extends Controller
             // }
             //  dd($sumElectronica);
             $subtotal = $subtotal0 + $subtotal12;
-            $totales  = $subtotal  + $impuesto - $descuento;
+            $totales = $subtotal + $impuesto - $descuento;
             // dd($descuentoElectronica);
-            //$totales = $totales + $descuentoElectronica;
+            // $totales = $totales + $descuentoElectronica;
 
-            if (Auth::user()->id == "0957258056") {
-                //dd($totales);
+            if (Auth::user()->id == '0957258056') {
+                // dd($totales);
             }
         }
 
-
         return view('contable/ventas/informe', ['informe' => $deudas, 'secuencia' => $secuencia, 'sucursales' => $sucursales, 'empresa' => $empresa, 'totales' => $totales, 'subtotal0' => $subtotal0, 'subtotal' => $subtotal, 'subtotal12' => $subtotal12, 'impuesto' => $impuesto, 'proveedores' => $proveedores, 'activo' => $activo, 'descuento' => $descuento, 'fecha_hasta' => $fecha_hasta, 'fecha_desde' => $fecha_desde, 'id_proveedor' => $proveedor, 'tipo' => $tipo, 'sucursal' => $sucursal, 'seguros' => $seguros, 'seguros' => $seguros, 'tipos_seguros' => $tipos_seguros, 'request' => $request, 'seguro_sel' => $id_seguro, 'tipo_seguro_sel' => $id_tipo]);
     }
-    public function informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $referencia, $r, $secuencia, $activo = "", $sucursal = null, $seguros = null, $tipos_seguros = null, $id_seguro = '', $id_tipo = '', $sin = '')
+
+    public function informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $referencia, $r, $secuencia, $activo = '', $sucursal = null, $seguros = null, $tipos_seguros = null, $id_seguro = '', $id_tipo = '', $sin = '')
     {
         try {
-            $deudas    = null;
+            $deudas = null;
             $condicion = ['VEN-FA', 'VENFA-CO'];
-            $deudas    = Ct_ventas::select(
+            $deudas = Ct_ventas::select(
                 'ct_ventas.*',
                 'seg.id as seguro_id',
                 'seg.nombre',
@@ -12447,8 +12680,9 @@ class VentasController extends Controller
                 'seg.id_seguro_tipos'
             )
                 ->where(function ($q) use ($sin) {
-                    if ($sin != '')
+                    if ($sin != '') {
                         $q->where('ct_ventas.id_cliente', '!=', $sin);
+                    }
                 })
 
                 ->whereIn('ct_ventas.tipo', $condicion)
@@ -12458,7 +12692,7 @@ class VentasController extends Controller
             // ->where('promo_seguro', '<>', 1)
             // ->orderBy('nombre', 'asc')->first();
             // $tipos_seguros = SeguroTipos::where('estado', '>', '1')->first();
-            if ($activo != null or $activo != "") {
+            if ($activo != null or $activo != '') {
                 if ($activo == 2) {
                     $activo = 0;
                 }
@@ -12480,25 +12714,25 @@ class VentasController extends Controller
                 )->whereIn('ct_ventas.tipo', $condicion)->where('ct_ventas.estado', $activo)
                     ->leftjoin('seguros as seg', 'seg.id', 'ct_ventas.seguro_paciente')
                     ->where('ct_ventas.id_empresa', $id_empresa);
-                //dd('aqui');
+                // dd('aqui');
             }
-            if (!is_null($fecha_desde)) {
-                $deudas = $deudas->whereBetween('ct_ventas.fecha', [$fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59']);
+            if (! is_null($fecha_desde)) {
+                $deudas = $deudas->whereBetween('ct_ventas.fecha', [$fecha_desde.' 00:00:00', $fecha_hasta.' 23:59:59']);
             } else {
                 $deudas = $deudas->where('ct_ventas.fecha', '<=', $fecha_hasta);
             }
-            if (!is_null($secuencia)) {
-                $deudas = $deudas->where('ct_ventas.nro_comprobante', 'like', '%' . $secuencia . '%');
+            if (! is_null($secuencia)) {
+                $deudas = $deudas->where('ct_ventas.nro_comprobante', 'like', '%'.$secuencia.'%');
             }
-            if (!is_null($proveedor)) {
+            if (! is_null($proveedor)) {
                 $deudas = $deudas->where('ct_ventas.id_cliente', $proveedor);
             }
-            if (!is_null($sucursal) && $sucursal != "") {
-                $deudas = $deudas->where('ct_ventas.nro_comprobante', 'like', $sucursal . '%');
+            if (! is_null($sucursal) && $sucursal != '') {
+                $deudas = $deudas->where('ct_ventas.nro_comprobante', 'like', $sucursal.'%');
             }
             if ($id_tipo != '' && $id_seguro != '') {
                 $deudas = $deudas->where('ct_ventas.seguro_paciente', $id_seguro);
-                //$deudas = $deudas->where('seg.id_seguro_tipos', $id_tipo);
+                // $deudas = $deudas->where('seg.id_seguro_tipos', $id_tipo);
             } elseif ($id_tipo != '') {
                 $deudas = $deudas->where('seg.id_seguro_tipos', $id_tipo);
             }
@@ -12507,38 +12741,40 @@ class VentasController extends Controller
             } else {
                 $deudas = $deudas->orderBy('ct_ventas.fecha', 'ASC')->get();
             }
+
             return $deudas;
         } catch (Exception $e) {
             $arrayError = [
                 'error' => $e->getMessage(),
-                'linea' => $e->getLine()
+                'linea' => $e->getLine(),
             ];
             echo '<pre>';
             print_r($arrayError);
             exit;
         }
     }
+
     public function excel_ventas(Request $request)
     {
-        //dd("Ingreso");
-        $id_empresa  = $request->session()->get('id_empresa');
+        // dd("Ingreso");
+        $id_empresa = $request->session()->get('id_empresa');
         $fecha_desde = $request['fecha_desde'];
-        $proveedor   = $request['id_cliente'];
+        $proveedor = $request['id_cliente'];
         $fecha_hasta = $request['fecha_hasta'];
-        $concepto    = $request['secuencia'];
-        $gastos      = $request['tipo'];
-        $variable    = 0;
-        $fech        = 0;
-        $empresa     = Empresa::where('id', $id_empresa)->first();
-        $consulta    = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $gastos, 0, $concepto);
-        //dd($consulta);
-        Excel::create('Informe Factura de Ventas ' . $fecha_desde . '-al-' . $fecha_hasta, function ($excel) use ($empresa, $consulta, $gastos, $fecha_hasta, $fecha_desde) {
+        $concepto = $request['secuencia'];
+        $gastos = $request['tipo'];
+        $variable = 0;
+        $fech = 0;
+        $empresa = Empresa::where('id', $id_empresa)->first();
+        $consulta = $this->informe_final($proveedor, $fecha_desde, $fecha_hasta, $id_empresa, $variable, $gastos, 0, $concepto);
+        // dd($consulta);
+        Excel::create('Informe Factura de Ventas '.$fecha_desde.'-al-'.$fecha_hasta, function ($excel) use ($empresa, $consulta, $gastos, $fecha_hasta, $fecha_desde) {
             $excel->sheet('Informe Factura de Ventas', function ($sheet) use ($empresa, $fecha_desde, $fecha_hasta, $consulta, $gastos) {
                 if ($empresa->logo != null && $empresa->logo != '(N/A)') {
                     $fech = 1;
                     $sheet->mergeCells('A1:H1');
                     $objDrawing = new PHPExcel_Worksheet_Drawing;
-                    $objDrawing->setPath(base_path() . '/storage/app/logo/' . $empresa->logo);
+                    $objDrawing->setPath(base_path().'/storage/app/logo/'.$empresa->logo);
                     $objDrawing->setCoordinates('A1');
                     $objDrawing->setHeight(70);
                     $objDrawing->setWorksheet($sheet);
@@ -12546,7 +12782,7 @@ class VentasController extends Controller
                 $sheet->mergeCells('C2:Q2');
                 $sheet->cell('C2', function ($cell) use ($empresa) {
                     // manipulate the cel
-                    $cell->setValue($empresa->nombrecomercial . ' ' . $empresa->id);
+                    $cell->setValue($empresa->nombrecomercial.' '.$empresa->id);
                     $cell->setFontWeight('bold');
                     $cell->setFontSize('15');
                     $cell->setAlignment('center');
@@ -12556,7 +12792,7 @@ class VentasController extends Controller
                 $sheet->mergeCells('C3:Q3');
                 $sheet->cell('C3', function ($cell) {
                     // manipulate the cel
-                    $cell->setValue("INFORME FACTURA DE VENTAS ");
+                    $cell->setValue('INFORME FACTURA DE VENTAS ');
                     $cell->setFontWeight('bold');
                     $cell->setFontSize('15');
                     $cell->setFontColor('#FFFFFF');
@@ -12567,9 +12803,9 @@ class VentasController extends Controller
                 $sheet->cell('A4', function ($cell) use ($fecha_desde, $fecha_hasta) {
                     // manipulate the cel
                     if ($fecha_desde != null) {
-                        $cell->setValue("Desde " . date("d-m-Y", strtotime($fecha_desde)) . " Hasta " . date("d-m-Y", strtotime($fecha_hasta)));
+                        $cell->setValue('Desde '.date('d-m-Y', strtotime($fecha_desde)).' Hasta '.date('d-m-Y', strtotime($fecha_hasta)));
                     } else {
-                        $cell->setValue(" Al - " . date("d-m-Y", strtotime($fecha_hasta)));
+                        $cell->setValue(' Al - '.date('d-m-Y', strtotime($fecha_hasta)));
                     }
                     $cell->setFontWeight('bold');
                     $cell->setFontSize('12');
@@ -12577,7 +12813,7 @@ class VentasController extends Controller
                     $cell->setFontColor('#FFFFFF');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                //$sheet->mergeCells('A4:A5');
+                // $sheet->mergeCells('A4:A5');
                 $sheet->cell('A5', function ($cell) {
                     // manipulate the cel
                     $cell->setValue('FECHA');
@@ -12619,7 +12855,7 @@ class VentasController extends Controller
                     // manipulate the cel
                     $cell->setValue('TIPO');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });;
+                });
                 $sheet->cell('H5', function ($cell) {
                     // manipulate the cel
                     $cell->setValue('DETALLE');
@@ -12684,7 +12920,7 @@ class VentasController extends Controller
 
                 // DETALLES
 
-                $sheet->setColumnFormat(array(
+                $sheet->setColumnFormat([
                     'H' => '0.00',
                     'I' => '0.00',
                     'J' => '0.00',
@@ -12694,7 +12930,7 @@ class VentasController extends Controller
                     'N' => '0.00',
                     'O' => '0.00',
 
-                ));
+                ]);
                 $i = $this->setDetalleInforme($consulta, $sheet, 6, $gastos);
                 // $i = $this->setDetalles($pasivos, $sheet, $i);
                 // $i = $this->setDetalles($patrimonio, $sheet, $i, $totpyg);
@@ -12724,52 +12960,53 @@ class VentasController extends Controller
                     $cells->setFontSize('12');
                 });
             });
-            $excel->getActiveSheet()->getColumnDimension("A")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("B")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("C")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("D")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("E")->setWidth(23)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("F")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("G")->setWidth(24)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("H")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("I")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("J")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("K")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("L")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("M")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("N")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("O")->setWidth(17)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("P")->setWidth(18)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("Q")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("R")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("S")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("T")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("U")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("V")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("W")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("X")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("Y")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("Z")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AA")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AB")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AC")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AD")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AE")->setWidth(16)->setAutosize(false);
-            $excel->getActiveSheet()->getColumnDimension("AF")->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('A')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('B')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('C')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('D')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('E')->setWidth(23)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('F')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('G')->setWidth(24)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('H')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('I')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('J')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('K')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('L')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('M')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('N')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('O')->setWidth(17)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('P')->setWidth(18)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('Q')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('R')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('S')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('T')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('U')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('V')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('W')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('X')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('Y')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('Z')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AA')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AB')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AC')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AD')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AE')->setWidth(16)->setAutosize(false);
+            $excel->getActiveSheet()->getColumnDimension('AF')->setWidth(16)->setAutosize(false);
         })->export('xlsx');
     }
+
     public function setDetalleInforme($consulta, $sheet, $i, $variable)
     {
-        $x          = 0;
-        $valor      = 0;
-        $resta      = 0;
-        $totales    = 0;
+        $x = 0;
+        $valor = 0;
+        $resta = 0;
+        $totales = 0;
         $subtotal12 = 0;
-        $subtotal0  = 0;
-        $subtotal   = 0;
-        $descuento  = 0;
-        $impuesto   = 0;
-        $finalsub   = 0;
+        $subtotal0 = 0;
+        $subtotal = 0;
+        $descuento = 0;
+        $impuesto = 0;
+        $finalsub = 0;
         foreach ($consulta as $value) {
             if ($value != null) {
                 if ($value->estado != 0) {
@@ -12789,9 +13026,9 @@ class VentasController extends Controller
                     $totales += $value->total_final;
                 }
 
-                $sheet->cell('A' . $i, function ($cell) use ($value) {
+                $sheet->cell('A'.$i, function ($cell) use ($value) {
                     // manipulate the cel
-                    $cell->setValue(date("d-m-Y", strtotime($value->fecha)));
+                    $cell->setValue(date('d-m-Y', strtotime($value->fecha)));
                     $cell->setFontWeight('bold');
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
@@ -12801,7 +13038,7 @@ class VentasController extends Controller
                     // $this->setSangria($cont, $cell);
                 });
 
-                $sheet->cell('B' . $i, function ($cell) use ($value) {
+                $sheet->cell('B'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     $cell->setValue($value->nro_comprobante);
                     if ($value->estado == 0) {
@@ -12810,7 +13047,7 @@ class VentasController extends Controller
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                     // $this->setSangria($cont, $cell,1);
                 });
-                $sheet->cell('C' . $i, function ($cell) use ($value) {
+                $sheet->cell('C'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -12820,18 +13057,18 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('D' . $i, function ($cell) use ($value) {
+                $sheet->cell('D'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
-                    $cell->setValue(' ' . $value->id_cliente);
+                    $cell->setValue(' '.$value->id_cliente);
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                //$sheet->mergeCells('G'.$i.':H'.$i);
-                $sheet->cell('E' . $i, function ($cell) use ($value) {
+                // $sheet->mergeCells('G'.$i.':H'.$i);
+                $sheet->cell('E'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->cliente != null) {
@@ -12843,18 +13080,18 @@ class VentasController extends Controller
 
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('F' . $i, function ($cell) use ($value) {
+                $sheet->cell('F'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
-                    if ($value->paciente != null && $value->id_paciente != "9999999999") {
-                        $cell->setValue($value->paciente->apellido1 . ' ' . $value->paciente->apellido2 . ' ' . $value->paciente->nombre1 . ' ' . $value->paciente->nombre2);
+                    if ($value->paciente != null && $value->id_paciente != '9999999999') {
+                        $cell->setValue($value->paciente->apellido1.' '.$value->paciente->apellido2.' '.$value->paciente->nombre1.' '.$value->paciente->nombre2);
                     }
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('G' . $i, function ($cell) use ($value) {
+                $sheet->cell('G'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($value->tipo);
@@ -12864,18 +13101,18 @@ class VentasController extends Controller
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
 
-                $sheet->cell('H' . $i, function ($cell) use ($value) {
+                $sheet->cell('H'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValignment('left');
-                    $cell->setValue($value->concepto . "# Asiento " . $value->id_asiento);
+                    $cell->setValue($value->concepto.'# Asiento '.$value->id_asiento);
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
 
-                $sheet->cell('I' . $i, function ($cell) use ($value) {
+                $sheet->cell('I'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     $cell->setValue($value->subtotal_12);
@@ -12886,7 +13123,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('J' . $i, function ($cell) use ($value) {
+                $sheet->cell('J'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -12897,7 +13134,7 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('K' . $i, function ($cell) use ($finalsub, $value) {
+                $sheet->cell('K'.$i, function ($cell) use ($finalsub, $value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -12908,7 +13145,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('L' . $i, function ($cell) use ($value) {
+                $sheet->cell('L'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -12919,7 +13156,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('M' . $i, function ($cell) use ($value) {
+                $sheet->cell('M'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
@@ -12930,7 +13167,7 @@ class VentasController extends Controller
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('N' . $i, function ($cell) use ($value) {
+                $sheet->cell('N'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->electronica == 1) {
@@ -12948,7 +13185,7 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('O' . $i, function ($cell) use ($value) {
+                $sheet->cell('O'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->estado == 0) {
@@ -12962,22 +13199,22 @@ class VentasController extends Controller
                     $cell->setValignment('center');
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('P' . $i, function ($cell) use ($value) {
+                $sheet->cell('P'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
 
-                    $cell->setValue($value->usuario->nombre1 . " " . $value->usuario->apellido1);
+                    $cell->setValue($value->usuario->nombre1.' '.$value->usuario->apellido1);
                     $cell->setValignment('center');
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
                     }
                     $cell->setBorder('thin', 'thin', 'thin', 'thin');
                 });
-                $sheet->cell('Q' . $i, function ($cell) use ($value) {
+                $sheet->cell('Q'.$i, function ($cell) use ($value) {
                     // manipulate the cel
                     // $this->setSangria($cont, $cell);
                     if ($value->estado == 0) {
-                        $cell->setValue($value->usuariomod->nombre1 . " " . $value->usuariomod->apellido1);
+                        $cell->setValue($value->usuariomod->nombre1.' '.$value->usuariomod->apellido1);
                     }
                     if ($value->estado == 0) {
                         $cell->setBackground('#E64725');
@@ -12988,15 +13225,15 @@ class VentasController extends Controller
                 $i++;
             }
         }
-        $sheet->cell('F' . $i, function ($cell) {
+        $sheet->cell('F'.$i, function ($cell) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
-            $cell->setValue("TOTAL :");
+            $cell->setValue('TOTAL :');
             $cell->setValignment('center');
             $cell->setFontWeight('bold');
         });
-        $sheet->cell('I' . $i, function ($cell) use ($subtotal12) {
+        $sheet->cell('I'.$i, function ($cell) use ($subtotal12) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -13005,7 +13242,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('J' . $i, function ($cell) use ($subtotal0) {
+        $sheet->cell('J'.$i, function ($cell) use ($subtotal0) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -13014,7 +13251,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('K' . $i, function ($cell) use ($subtotal) {
+        $sheet->cell('K'.$i, function ($cell) use ($subtotal) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -13023,7 +13260,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('L' . $i, function ($cell) use ($descuento) {
+        $sheet->cell('L'.$i, function ($cell) use ($descuento) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -13032,7 +13269,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('M' . $i, function ($cell) use ($impuesto) {
+        $sheet->cell('M'.$i, function ($cell) use ($impuesto) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -13041,7 +13278,7 @@ class VentasController extends Controller
             $cell->setFontWeight('bold');
             $cell->setBorder('thin', 'thin', 'thin', 'thin');
         });
-        $sheet->cell('N' . $i, function ($cell) use ($totales) {
+        $sheet->cell('N'.$i, function ($cell) use ($totales) {
             // manipulate the cel
             // $this->setSangria($cont, $cell);
 
@@ -13053,51 +13290,53 @@ class VentasController extends Controller
 
         return $i;
     }
-    public function imprimirPlanillaDetalle($id, $id_hc_procedimiento) //id_procedimiento//
+
+    public function imprimirPlanillaDetalle($id, $id_hc_procedimiento) // id_procedimiento//
     {
-        $planilla   = array();
-        $fact_venta = array();
-        $orden      = array();
-        $detalles   = array();
-        $hcp        = hc_procedimientos::find($id);
-        $hc         = $hcp->historia;
-        $agenda     = $hc->agenda;
-        $paciente   = $agenda->paciente;
-        $empresa    = Empresa::find($agenda->id_empresa);
-        $planilla   = Planilla::where('id_hc_procedimiento', $id_hc_procedimiento)
+        $planilla = [];
+        $fact_venta = [];
+        $orden = [];
+        $detalles = [];
+        $hcp = hc_procedimientos::find($id);
+        $hc = $hcp->historia;
+        $agenda = $hc->agenda;
+        $paciente = $agenda->paciente;
+        $empresa = Empresa::find($agenda->id_empresa);
+        $planilla = Planilla::where('id_hc_procedimiento', $id_hc_procedimiento)
             ->where('estado', '!=', 0)
             ->where('aprobado', '!=', 0)
             ->orderBy('id', 'desc')
             ->first();
         // dd($planilla);
-        if (!isset($planilla->id)) {
+        if (! isset($planilla->id)) {
             $detalles = '[]';
         } else {
             $detalles = $planilla->detalles_validos;
         }
 
-        $vistaurl = "contable.ventas.pdf_detalle_planilla";
-        $view     = \View::make($vistaurl, compact('fact_venta', 'hc', 'hcp', 'detalles', 'orden', 'empresa', 'paciente'))->render();
+        $vistaurl = 'contable.ventas.pdf_detalle_planilla';
+        $view = \View::make($vistaurl, compact('fact_venta', 'hc', 'hcp', 'detalles', 'orden', 'empresa', 'paciente'))->render();
 
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('resultado-' . $id . '.pdf');
+        return $pdf->stream('resultado-'.$id.'.pdf');
     }
-    //LZ
-    //Modal Planillas Agenda
+
+    // LZ
+    // Modal Planillas Agenda
     public function obtenerPlanillasAgenda($id)
     {
         $id_usuario = Auth::user()->id;
-        $hcp        = hc_procedimientos::find($id);
-        $hc         = $hcp->historia;
-        $agenda     = $hc->agenda;
-        $paciente   = $agenda->paciente;
-        $orden      = array();
+        $hcp = hc_procedimientos::find($id);
+        $hc = $hcp->historia;
+        $agenda = $hc->agenda;
+        $paciente = $agenda->paciente;
+        $orden = [];
 
-        //HONORARIOS MEDICOS Y ANASTESIOLOGICOS 18/FEB/2022 VICTOR
+        // HONORARIOS MEDICOS Y ANASTESIOLOGICOS 18/FEB/2022 VICTOR
         /*$seguro = $hc->seguro;
         if( $hcp->id_seguro != null ){
         $seguro = $hcp->seguro;
@@ -13125,24 +13364,25 @@ class VentasController extends Controller
         }
         }*/
 
-        //dd($seguro,$convenio);
+        // dd($seguro,$convenio);
         //
         return view('contable/ventas/modal_detalle_planillas', ['id' => $id, 'paciente' => $paciente, 'orden' => $orden, 'hc' => $hc, 'id_usuario' => $id_usuario, 'agenda' => $agenda]);
     }
+
     public function create_recibo(Request $request)
     {
-        $divisas         = Ct_Divisas::where('estado', '1')->get();
-        $clientes        = Ct_Clientes::where('estado', '1')->get();
-        $tipo_pago       = Ct_Tipo_Pago::where('estado', '1')->get();
-        $lista_banco     = Ct_Bancos::where('estado', '1')->get();
-        $seguros         = Seguro::all();
+        $divisas = Ct_Divisas::where('estado', '1')->get();
+        $clientes = Ct_Clientes::where('estado', '1')->get();
+        $tipo_pago = Ct_Tipo_Pago::where('estado', '1')->get();
+        $lista_banco = Ct_Bancos::where('estado', '1')->get();
+        $seguros = Seguro::all();
         $user_recaudador = User::where('id_tipo_usuario', 18)
             ->where('estado', 1)->get();
         $user_vendedor = User::where('id_tipo_usuario', 17)
             ->where('estado', 1)->get();
-        $bodega     = bodega::where('estado', '1')->get();
+        $bodega = Bodega::where('estado', '1')->get();
         $id_empresa = $request->session()->get('id_empresa');
-        $empresa    = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
+        $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
         $sucursales = Ct_Sucursales::where('estado', 1)
             ->where('id_empresa', $id_empresa)
             ->get();
@@ -13150,25 +13390,29 @@ class VentasController extends Controller
             ->join('ct_caja as ct_c', 'ct_c.id_sucursal', 'ct_s.id')
             ->where('ct_c.estado', 1)
             ->get();
-        $cuentas      = Plan_Cuentas::where('estado', '2')->get();
+        $cuentas = Plan_Cuentas::where('estado', '2')->get();
         $tipo_tarjeta = Ct_Tipo_Tarjeta::all();
         $productos = Ct_productos::where('estado_tabla', '1')->get();
-        //$iva = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
+
+        // $iva = Ct_Configuraciones::where('id_plan', '4.1.01.02')->where('estado', '1')->first();
         return view('contable/ventas/create_recibo', ['porIva' => $this->porIva, 'divisas' => $divisas, 'clientes' => $clientes, 'tipo_pago' => $tipo_pago, 'lista_banco' => $lista_banco, 'seguros' => $seguros, 'user_recaudador' => $user_recaudador, 'user_vendedor' => $user_vendedor, 'bodega' => $bodega, 'empresa' => $empresa, 'sucursales' => $sucursales, 'punto' => $punto, 'cuentas' => $cuentas, 'productos' => $productos, 't_factura' => '1', 'tipo_tarjeta' => $tipo_tarjeta]);
     }
+
     public function htmlrecibo(Request $request)
     {
-        $id         = $request->id;
+        $id = $request->id;
         $id_empresa = $request->session()->get('id_empresa');
-        $empresa    = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
-        $recibo     = Ct_Orden_Venta::find($id);
-        $productos  = Ct_productos::where('estado_tabla', '1')->get();
+        $empresa = Empresa::where('id', $id_empresa)->where('estado', 1)->first();
+        $recibo = Ct_Orden_Venta::find($id);
+        $productos = Ct_productos::where('estado_tabla', '1')->get();
+
         return view('contable/ventas/detalles', ['id' => $id, 'recibo' => $recibo, 'productos' => $productos, 'empresa' => $empresa]);
     }
+
     public function index_recibo(Request $request)
     {
         $id_empresa = $request->session()->get('id_empresa');
-        $ventas     = Ct_ventas::where('tipo', 'VEN-R')->where('id_empresa', $id_empresa);
+        $ventas = Ct_ventas::where('tipo', 'VEN-R')->where('id_empresa', $id_empresa);
         if ($request->id != null) {
             $ventas = $ventas->where('id', $request->id);
         } else {
@@ -13179,46 +13423,48 @@ class VentasController extends Controller
                 $ventas = $ventas->where('fecha', $request->fecha);
             }
             if ($request->nombre_cliente != null) {
-                $ventas = $ventas->where('nombre_cliente', 'LIKE', '%' . $request->nombre_cliente . '%');
+                $ventas = $ventas->where('nombre_cliente', 'LIKE', '%'.$request->nombre_cliente.'%');
             }
             if ($request->nombre_paciente != null) {
-                $ventas = $ventas->where('nombres_paciente', 'LIKE', '%' . $request->nombre_paciente . '%');
+                $ventas = $ventas->where('nombres_paciente', 'LIKE', '%'.$request->nombre_paciente.'%');
             }
         }
         $empresa = Empresa::find($id_empresa);
-        $ventas  = $ventas->orderBy('fecha', 'DESC')->paginate(20);
+        $ventas = $ventas->orderBy('fecha', 'DESC')->paginate(20);
+
         return view('contable.ventas.index_recibo', ['ventas' => $ventas, 'request' => $request, 'empresa' => $empresa]);
     }
+
     public function store_recibo(Request $request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $fecha_as   = $request->fecha_asiento;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $fecha_as = $request->fecha_asiento;
         DB::beginTransaction();
-        //dd($request->all());
+        // dd($request->all());
         $id_empresa = $request->session()->get('id_empresa');
-        $msj        = "no    o";
-        $numero     = $request['numero'];
-        $cliente    = Ct_Clientes::where('identificacion', '=', $request['identificacion_cliente'])->count();
+        $msj = 'no    o';
+        $numero = $request['numero'];
+        $cliente = Ct_Clientes::where('identificacion', '=', $request['identificacion_cliente'])->count();
         try {
             if ($cliente == 0) {
                 // cliente
                 Ct_Clientes::create([
-                    'nombre'                  => strtoupper($request['nombre_cliente']),
-                    'tipo'                    => '5',
-                    'identificacion'          => $request['identificacion_cliente'],
-                    'clase'                   => '1',
-                    'nombre_representante'    => $request['nombre_cliente'],
-                    'cedula_representante'    => $request['identificacion_cliente'],
-                    'ciudad_representante'    => $request['ciudad_cliente'],
+                    'nombre' => strtoupper($request['nombre_cliente']),
+                    'tipo' => '5',
+                    'identificacion' => $request['identificacion_cliente'],
+                    'clase' => '1',
+                    'nombre_representante' => $request['nombre_cliente'],
+                    'cedula_representante' => $request['identificacion_cliente'],
+                    'ciudad_representante' => $request['ciudad_cliente'],
                     'direccion_representante' => $request['direccion_cliente'],
                     'telefono1_representante' => $request['telefono_cliente'],
-                    'email_representante'     => $request['mail_cliente'],
-                    'estado'                  => '1',
-                    'id_usuariocrea'          => $idusuario,
-                    'id_usuariomod'           => $idusuario,
-                    'ip_creacion'             => $ip_cliente,
-                    'ip_modificacion'         => $ip_cliente,
+                    'email_representante' => $request['mail_cliente'],
+                    'estado' => '1',
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
@@ -13227,180 +13473,180 @@ class VentasController extends Controller
                 $cod_sucurs = Ct_Sucursales::where('estado', '1')->where('id', $request['sucursal'])->first();
 
                 $c_sucursal = $cod_sucurs->codigo_sucursal;
-                $cod_caj    = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
-                $c_caja     = $cod_caj->codigo_caja;
-                $proced     = $request['procedimiento'];
+                $cod_caj = Ct_Caja::where('estado', '1')->where('id', $request['punto_emision'])->first();
+                $c_caja = $cod_caj->codigo_caja;
+                $proced = $request['procedimiento'];
                 // echo($numero);
 
-                if (!is_null($numero)) {
-                    $num_comprobante      = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $numero;
+                if (! is_null($numero)) {
+                    $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$numero;
                     $verifica_num_factura = Ct_ventas::where('id_empresa', $id_empresa)
                         ->where('nro_comprobante', $num_comprobante)
                         ->where('tipo', '<>', 'VEN-FACT')
                         ->where('estado', '!=', '0')->first();
-                    if (!is_null($verifica_num_factura)) {
-                        return ["respuesta" => "existe", 'mensaje' => "Ya existe un número de factura"];
+                    if (! is_null($verifica_num_factura)) {
+                        return ['respuesta' => 'existe', 'mensaje' => 'Ya existe un número de factura'];
                     } else {
                         $nfactura = $numero;
                     }
                 } else {
-                    $nfactura        = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
-                    $num_comprobante = $cod_sucurs->codigo_sucursal . '-' . $cod_caj->codigo_caja . '-' . $nfactura;
+                    $nfactura = $this->obtener_numero_factura($id_empresa, $cod_sucurs->codigo_sucursal, $cod_caj->codigo_caja);
+                    $num_comprobante = $cod_sucurs->codigo_sucursal.'-'.$cod_caj->codigo_caja.'-'.$nfactura;
                 }
             } else {
-                $c_sucursal      = 0;
-                $c_caja          = 0;
+                $c_sucursal = 0;
+                $c_caja = 0;
                 $num_comprobante = 0;
-                $nfactura        = 0;
-                $proced          = $request['procedimiento'];
+                $nfactura = 0;
+                $proced = $request['procedimiento'];
             }
-            $pac = "";
-            if ($request['nombre_paciente'] != "") {
-                $pac = " | " . $request['nombre_paciente'];
+            $pac = '';
+            if ($request['nombre_paciente'] != '') {
+                $pac = ' | '.$request['nombre_paciente'];
             }
-            $text        = 'Fact #' . ':' . $num_comprobante . '-' . $proced . $pac;
+            $text = 'Fact #'.':'.$num_comprobante.'-'.$proced.$pac;
             $id_paciente = $request['identificacion_paciente'];
-            $patient     = Paciente::find($id_paciente);
-            $pc          = "9999999999";
+            $patient = Paciente::find($id_paciente);
+            $pc = '9999999999';
             if (is_null($patient)) {
-                $pc = "9999999999";
+                $pc = '9999999999';
             } else {
                 $pc = $patient->id;
             }
             $input_cabecera = [
-                'punto_emision'       => $cod_caj->codigo_caja,
-                'numero'              => $nfactura,
-                'fecha_asiento'   => $fecha_as,
-                'fact_numero'     => $nfactura,
-                'id_empresa'      => $id_empresa,
-                'observacion'     => $text,
-                'valor'           => $request['total1'],
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
+                'punto_emision' => $cod_caj->codigo_caja,
+                'numero' => $nfactura,
+                'fecha_asiento' => $fecha_as,
+                'fact_numero' => $nfactura,
+                'id_empresa' => $id_empresa,
+                'observacion' => $text,
+                'valor' => $request['total1'],
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
             ];
-            $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera); //activo
-            //$id_asiento_cabecera = 0;
-            //GUARDAdo TABLA CT_VENTA.
+            $id_asiento_cabecera = Ct_Asientos_Cabecera::insertGetId($input_cabecera); // activo
+            // $id_asiento_cabecera = 0;
+            // GUARDAdo TABLA CT_VENTA.
             $factura_venta = [
-                'sucursal'            => $cod_sucurs->codigo_sucursal,
-                'punto_emision'       => $cod_caj->codigo_caja,
-                'numero'              => $nfactura,
-                'nro_comprobante'     => $num_comprobante,
-                'id_asiento'          => $id_asiento_cabecera,
-                'id_empresa'          => $id_empresa,
-                'tipo'                => $request['tipo'],
-                'fecha'               => $request['fecha_asiento'],
-                'divisas'             => $request['divisas'],
-                'nombre_cliente'      => $request['nombre_cliente'],
-                'tipo_consulta'       => $request['tipo_consulta'],
-                'id_cliente'          => $request['identificacion_cliente'], //nombre_cliente
-                'direccion_cliente'   => $request['direccion_cliente'],
-                'ruc_id_cliente'      => $request['identificacion_cliente'],
-                'telefono_cliente'    => $request['telefono_cliente'],
-                'email_cliente'       => $request['mail_cliente'],
-                'orden_venta'         => $request['orden_venta'],
-                'nro_autorizacion'    => $request['numero_autorizacion'],
-                'id_paciente'         => $request['identificacion_paciente'],
-                'nombres_paciente'    => $request['pacienteinfo'],
+                'sucursal' => $cod_sucurs->codigo_sucursal,
+                'punto_emision' => $cod_caj->codigo_caja,
+                'numero' => $nfactura,
+                'nro_comprobante' => $num_comprobante,
+                'id_asiento' => $id_asiento_cabecera,
+                'id_empresa' => $id_empresa,
+                'tipo' => $request['tipo'],
+                'fecha' => $request['fecha_asiento'],
+                'divisas' => $request['divisas'],
+                'nombre_cliente' => $request['nombre_cliente'],
+                'tipo_consulta' => $request['tipo_consulta'],
+                'id_cliente' => $request['identificacion_cliente'], // nombre_cliente
+                'direccion_cliente' => $request['direccion_cliente'],
+                'ruc_id_cliente' => $request['identificacion_cliente'],
+                'telefono_cliente' => $request['telefono_cliente'],
+                'email_cliente' => $request['mail_cliente'],
+                'orden_venta' => $request['orden_venta'],
+                'nro_autorizacion' => $request['numero_autorizacion'],
+                'id_paciente' => $request['identificacion_paciente'],
+                'nombres_paciente' => $request['pacienteinfo'],
                 'id_hc_procedimiento' => $request['mov_paciente'],
-                'seguro_paciente'     => $request['segurosinfo'],
-                'procedimientos'      => $request['procedimientoinfo'],
+                'seguro_paciente' => $request['segurosinfo'],
+                'procedimientos' => $request['procedimientoinfo'],
                 'fecha_procedimiento' => $request['fecha_proced'],
-                'copago'              => $request['totalc'],
-                'id_recaudador'       => $request['cedula_recaudador'],
-                'subtotal_0'          => $request['subtotal_01'],
-                'subtotal_12'         => $request['subtotal_121'],
-                'descuento'           => $request['descuento1'],
-                'base_imponible'      => $request['subtotal_121'],
-                'valor_contable'      => $request['total1'],
-                'impuesto'            => $request['tarifa_iva1'],
-                'total_final'         => $request['total1'],
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
+                'copago' => $request['totalc'],
+                'id_recaudador' => $request['cedula_recaudador'],
+                'subtotal_0' => $request['subtotal_01'],
+                'subtotal_12' => $request['subtotal_121'],
+                'descuento' => $request['descuento1'],
+                'base_imponible' => $request['subtotal_121'],
+                'valor_contable' => $request['total1'],
+                'impuesto' => $request['tarifa_iva1'],
+                'total_final' => $request['total1'],
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
 
-            $id_venta       = Ct_ventas::insertGetId($factura_venta); //activo
-            $arr_total      = [];
-            $total_iva      = 0;
+            $id_venta = Ct_ventas::insertGetId($factura_venta); // activo
+            $arr_total = [];
+            $total_iva = 0;
             $total_impuesto = 0;
-            $total_0        = 0;
-            $arr_id_hc      = [];
-            $arr_activos    = [];
-            $cont           = 0;
-            $arr_obs        = [];
+            $total_0 = 0;
+            $arr_id_hc = [];
+            $arr_activos = [];
+            $cont = 0;
+            $arr_obs = [];
 
-            $observacion = "";
-            //dd(count($request->input("recibo")));
-            for ($p = 0; $p < count($request->input("recibo")); $p++) {
+            $observacion = '';
+            // dd(count($request->input("recibo")));
+            for ($p = 0; $p < count($request->input('recibo')); $p++) {
                 Ct_Ventas_Recibo_Cobro::create([
-                    'id_venta'        => $id_venta,
-                    'id_recibo'       => $request->input("recibo")[$p],
-                    'id_empresa'      => $id_empresa,
-                    'ip_creacion'     => $ip_cliente,
+                    'id_venta' => $id_venta,
+                    'id_recibo' => $request->input('recibo')[$p],
+                    'id_empresa' => $id_empresa,
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ]);
             }
-            if (!empty($request->input("nombre"))) {
-                for ($i = 0; $i < count($request->input("nombre")); $i++) {
-                    if ($request->input("nombre")[$i] != "" || $request->input("nombre")[$i] != null) {
+            if (! empty($request->input('nombre'))) {
+                for ($i = 0; $i < count($request->input('nombre')); $i++) {
+                    if ($request->input('nombre')[$i] != '' || $request->input('nombre')[$i] != null) {
 
-                        $precio_neto = "";
-                        if (isset($request->input("precioneto")[$i])) {
-                            $precio_neto = $request->input("precioneto")[$i];
+                        $precio_neto = '';
+                        if (isset($request->input('precioneto')[$i])) {
+                            $precio_neto = $request->input('precioneto')[$i];
                         }
-                        $nombre = "";
-                        if (isset($request->input("nombre")[$i])) {
-                            $nombre = $request->input("nombre")[$i];
+                        $nombre = '';
+                        if (isset($request->input('nombre')[$i])) {
+                            $nombre = $request->input('nombre')[$i];
                         }
                         $cantidad = 0;
-                        if (isset($request->input("cantidad")[$i])) {
-                            $cantidad = $request->input("cantidad")[$i];
+                        if (isset($request->input('cantidad')[$i])) {
+                            $cantidad = $request->input('cantidad')[$i];
                         }
-                        $codigo = "";
-                        if (isset($request->input("codigo")[$i])) {
-                            $codigo = $request->input("codigo")[$i];
+                        $codigo = '';
+                        if (isset($request->input('codigo')[$i])) {
+                            $codigo = $request->input('codigo')[$i];
                         }
 
                         $precio = 0;
-                        if (isset($request->input("precio")[$i])) {
-                            $precio = $request->input("precio")[$i];
+                        if (isset($request->input('precio')[$i])) {
+                            $precio = $request->input('precio')[$i];
                         }
 
-                        $iva = "";
-                        if (isset($request->input("iva")[$i])) {
-                            $iva = $request->input("iva")[$i];
+                        $iva = '';
+                        if (isset($request->input('iva')[$i])) {
+                            $iva = $request->input('iva')[$i];
                         }
-                        $descuento = "";
-                        if (isset($request->input("desc")[$i])) {
-                            $descuento = $request->input("desc")[$i];
+                        $descuento = '';
+                        if (isset($request->input('desc')[$i])) {
+                            $descuento = $request->input('desc')[$i];
                         }
-                        $descrip_prod = "";
-                        if (isset($request->input("descrip_prod")[$i])) {
-                            $descrip_prod = $request->input("descrip_prod")[$i];
+                        $descrip_prod = '';
+                        if (isset($request->input('descrip_prod')[$i])) {
+                            $descrip_prod = $request->input('descrip_prod')[$i];
                         }
-                        $pdesc = "";
-                        if (isset($request->input("descpor")[$i])) {
-                            $pdesc = $request->input("descpor")[$i];
+                        $pdesc = '';
+                        if (isset($request->input('descpor')[$i])) {
+                            $pdesc = $request->input('descpor')[$i];
                         }
-                        //$precioneto = $cantidad * $precio;
+                        // $precioneto = $cantidad * $precio;
                         $arr = [
-                            'nombre'     => $nombre,
-                            'cantidad'   => $cantidad,
-                            'codigo'     => $codigo,
-                            'precio'     => $precio,
-                            'descpor'    => $pdesc,
-                            'copago'     => "",
-                            'descuento'  => $descuento,
+                            'nombre' => $nombre,
+                            'cantidad' => $cantidad,
+                            'codigo' => $codigo,
+                            'precio' => $precio,
+                            'descpor' => $pdesc,
+                            'copago' => '',
+                            'descuento' => $descuento,
                             'precioneto' => $precio_neto,
-                            'detalle'    => $descrip_prod,
-                            'iva'        => $iva,
-                            'obs_pac'    => $observacion,
+                            'detalle' => $descrip_prod,
+                            'iva' => $iva,
+                            'obs_pac' => $observacion,
                         ];
                         array_push($arr_total, $arr);
                     }
@@ -13408,47 +13654,47 @@ class VentasController extends Controller
             }
             foreach ($arr_total as $valor) {
                 $detalle = [
-                    'id_ct_ventas'         => $id_venta,
-                    'id_ct_productos'      => $valor['codigo'],
-                    'nombre'               => $valor['nombre'],
-                    'cantidad'             => $valor['cantidad'],
-                    'precio'               => $valor['precio'],
+                    'id_ct_ventas' => $id_venta,
+                    'id_ct_productos' => $valor['codigo'],
+                    'nombre' => $valor['nombre'],
+                    'cantidad' => $valor['cantidad'],
+                    'precio' => $valor['precio'],
                     'descuento_porcentaje' => $valor['descpor'],
-                    'descuento'            => $valor['descuento'],
-                    'extendido'            => $valor['precioneto'],
-                    'detalle'              => $valor['detalle'],
-                    'copago'               => $valor['copago'],
-                    'check_iva'            => $valor['iva'],
-                    'codigo'               => $valor['obs_pac'],
-                    'ip_creacion'          => $ip_cliente,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariocrea'       => $idusuario,
-                    'id_usuariomod'        => $idusuario,
+                    'descuento' => $valor['descuento'],
+                    'extendido' => $valor['precioneto'],
+                    'detalle' => $valor['detalle'],
+                    'copago' => $valor['copago'],
+                    'check_iva' => $valor['iva'],
+                    'codigo' => $valor['obs_pac'],
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
 
                 ];
 
-                Ct_detalle_venta::create($detalle); //activo
+                Ct_detalle_venta::create($detalle); // activo
             }
             $val_tol = $request['total1'];
 
             if ($val_tol > 0) {
                 $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '1.01.02.05.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    //'id_plan_cuenta'      => '1.01.02.05.01',
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => $request['total1'],
-                    'haber'               => '0',
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    // 'id_plan_cuenta'      => '1.01.02.05.01',
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => $request['total1'],
+                    'haber' => '0',
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
@@ -13456,43 +13702,43 @@ class VentasController extends Controller
             //    2.01.07.01.01 iva sobre ventas
             if ($request['tarifa_iva1'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('1.01.02.05.01');
-                //$plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '2.01.07.01.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['tarifa_iva1'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['tarifa_iva1'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
             // 4.1.01.02    Ventas Mercaderia Tarifa 12%
             if ($request['subtotal_121'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('4.1.01.02');
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.02')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
 
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    //'id_plan_cuenta'      => '4.1.01.02',
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_121'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    // 'id_plan_cuenta'      => '4.1.01.02',
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_121'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
 
                 ]);
             }
@@ -13501,38 +13747,38 @@ class VentasController extends Controller
             if ($request['subtotal_01'] > 0) {
                 $id_plan_confg = LogConfig::busqueda('4.1.01.01');
 
-                //$plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
+                // $plan_cuentas = Plan_Cuentas::where('id', '4.1.01.01')->first();
                 $plan_cuentas = Plan_Cuentas::where('id', $id_plan_confg)->first();
 
                 Ct_Asientos_Detalle::create([
                     'id_asiento_cabecera' => $id_asiento_cabecera,
-                    //'id_plan_cuenta'      => '4.1.01.01',
-                    'id_plan_cuenta'      => $plan_cuentas->id,
-                    'descripcion'         => $plan_cuentas->nombre,
-                    'fecha'               => $fecha_as,
-                    'debe'                => '0',
-                    'haber'               => $request['subtotal_01'],
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
+                    // 'id_plan_cuenta'      => '4.1.01.01',
+                    'id_plan_cuenta' => $plan_cuentas->id,
+                    'descripcion' => $plan_cuentas->nombre,
+                    'fecha' => $fecha_as,
+                    'debe' => '0',
+                    'haber' => $request['subtotal_01'],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
                 ]);
             }
 
-            //****REGISTRO FORMAS DE PAGO*** --activo falta****
+            // ****REGISTRO FORMAS DE PAGO*** --activo falta****
             $arr_p = [];
-            if (!empty($request->input("id_tip_pago"))) {
-                for ($i = 0; $i < count($request->input("id_tip_pago")); $i++) {
-                    if ($request->input("valor")[$i] != "" || $request->input("valor_base")[$i] != null) {
+            if (! empty($request->input('id_tip_pago'))) {
+                for ($i = 0; $i < count($request->input('id_tip_pago')); $i++) {
+                    if ($request->input('valor')[$i] != '' || $request->input('valor_base')[$i] != null) {
                         $arr_pagos = [
-                            'id_tip_pago'    => $request->input("id_tip_pago")[$i],
-                            'fecha_pago'     => $request->input("fecha_pago")[$i],
-                            'numero_pago'    => $request->input("numero_pago")[$i],
-                            'id_banco_pago'  => $request->input("id_banco_pago")[$i],
-                            'id_cuenta_pago' => $request->input("id_cuenta_pago")[$i],
-                            'giradoa'        => $request->input("giradoa")[$i],
-                            'valor'          => $request->input("valor")[$i],
-                            'valor_base'     => $request->input("valor_base")[$i],
+                            'id_tip_pago' => $request->input('id_tip_pago')[$i],
+                            'fecha_pago' => $request->input('fecha_pago')[$i],
+                            'numero_pago' => $request->input('numero_pago')[$i],
+                            'id_banco_pago' => $request->input('id_banco_pago')[$i],
+                            'id_cuenta_pago' => $request->input('id_cuenta_pago')[$i],
+                            'giradoa' => $request->input('giradoa')[$i],
+                            'valor' => $request->input('valor')[$i],
+                            'valor_base' => $request->input('valor_base')[$i],
                         ];
                         array_push($arr_p, $arr_pagos);
                     }
@@ -13541,62 +13787,68 @@ class VentasController extends Controller
 
             foreach ($arr_p as $valor) {
                 Ct_Forma_Pago::create([
-                    'id_ct_ventas'    => $id_venta,
-                    'tipo'            => $valor['id_tip_pago'], //$request['id_tip_pago'.$i],
-                    'fecha'           => $valor['fecha_pago'], //$request['fecha'.$i],
-                    'numero'          => $valor['numero_pago'], //$request['numero'.$i],
-                    'banco'           => $valor['id_banco_pago'], //$request['id_banco'.$i],
-                    'cuenta'          => $valor['id_cuenta_pago'], //$request['id_cuenta'.$i],
-                    'giradoa'         => $valor['giradoa'], //$request['id_cuenta'.$i],
-                    'valor'           => $valor['valor'], //$request['valor'.$i],
-                    'valor_base'      => $valor['valor_base'], //$request['valor_base'.$i],
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
-                    'ip_creacion'     => $ip_cliente,
+                    'id_ct_ventas' => $id_venta,
+                    'tipo' => $valor['id_tip_pago'], // $request['id_tip_pago'.$i],
+                    'fecha' => $valor['fecha_pago'], // $request['fecha'.$i],
+                    'numero' => $valor['numero_pago'], // $request['numero'.$i],
+                    'banco' => $valor['id_banco_pago'], // $request['id_banco'.$i],
+                    'cuenta' => $valor['id_cuenta_pago'], // $request['id_cuenta'.$i],
+                    'giradoa' => $valor['giradoa'], // $request['id_cuenta'.$i],
+                    'valor' => $valor['valor'], // $request['valor'.$i],
+                    'valor_base' => $valor['valor_base'], // $request['valor_base'.$i],
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                     'ip_modificacion' => $ip_cliente,
                 ]);
             }
 
-            //agregar comprobantes de ingreso
+            // agregar comprobantes de ingreso
             $this->crearComprobante($nfactura, $request, $arr_p, $id_venta);
-            $arr_agendas  = [];
-            $data['id']   = $id_venta;
+            $arr_agendas = [];
+            $data['id'] = $id_venta;
             $data['tipo'] = 'VEN-R';
-            $msj          = Ct_Kardex::generar_kardex($data);
+            $msj = Ct_Kardex::generar_kardex($data);
             DB::commit();
-            return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'prd_val' => $request->input("prd_val"), 'request' => $request, 'arr_agendas' => $arr_agendas, 'kardex' => $msj, "respuesta" => "exito", 'mensaje' => "Guardado exitosamente"];
-        } catch (\Exception $e) {
+
+            return ['idasiento' => $id_asiento_cabecera, 'idventa' => $id_venta, 'prd_val' => $request->input('prd_val'), 'request' => $request, 'arr_agendas' => $arr_agendas, 'kardex' => $msj, 'respuesta' => 'exito', 'mensaje' => 'Guardado exitosamente'];
+        } catch (Exception $e) {
 
             DB::rollBack();
+
             return $e->getMessage();
         }
     }
+
     public function pdf_ieced($id)
     {
-        $ventas   = Ct_ventas::findorfail($id);
-        $vistaurl = "contable.ventas.pdf_ieced";
-        $view     = \View::make($vistaurl, compact('ventas'))->render();
+        $ventas = Ct_ventas::findorfail($id);
+        $vistaurl = 'contable.ventas.pdf_ieced';
+        $view = \View::make($vistaurl, compact('ventas'))->render();
 
-        //return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
+        // return view('contable.ventas.pdf_comprobante_tributario',compact('fact_venta','emp','recaud','cliente','pacient','deta_vent','ct_for_pag','ct_val_ret'));
         $pdf = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->stream('resultado-' . $id . '.pdf');
+        return $pdf->stream('resultado-'.$id.'.pdf');
     }
+
     public function visualizador_pdf($id, Request $request)
     {
-        $ventas  = Ct_ventas::find($id);
+        $ventas = Ct_ventas::find($id);
         $empresa = Empresa::find($ventas->id_empresa);
+
         return view('contable.ventas.html_visualizador', ['ventas' => $ventas, 'empresa' => $empresa]);
     }
+
     public function envio_correo($id, Request $request)
     {
-        $rol     = Ct_ventas::find($id);
+        $rol = Ct_ventas::find($id);
         $usuario = $rol->cliente;
-        $correo  = $rol->cliente->email_representante;
-        $mes     = "";
+        $correo = $rol->cliente->email_representante;
+        $mes = '';
         $roldate = date('m', strtotime($rol->fecha));
         if ($roldate == 1) {
             $mes = 'Enero';
@@ -13625,8 +13877,8 @@ class VentasController extends Controller
         }
         $rol_2 = $this->pdf_ieced($id);
 
-        $asunto = "Comprobante " . $rol->fecha;
-        $titulo = "Comprobante  " . $rol->fecha . '.pdf';
+        $asunto = 'Comprobante '.$rol->fecha;
+        $titulo = 'Comprobante  '.$rol->fecha.'.pdf';
         Mail::send('mails.clientes', ['cliente' => $usuario], function ($msj) use ($correo, $asunto, $rol_2, $titulo) {
             $msj->subject($asunto);
             $msj->from('rol@mdconsgroup.com', 'Sistema de Comprobantes SIAAM');
@@ -13635,22 +13887,25 @@ class VentasController extends Controller
                 'mime' => 'application/pdf',
             ]);
         });
+
         return 'ok';
     }
+
     public function guardarCiudad(Request $request)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         $value = [
-            'ciudad_representante'      => $request->ciudad,
-            'direccion_representante'   => $request->direccion,
-            'id_usuariomod'             => $idusuario,
-            'ip_modificacion'           => $ip_cliente,
+            'ciudad_representante' => $request->ciudad,
+            'direccion_representante' => $request->direccion,
+            'id_usuariomod' => $idusuario,
+            'ip_modificacion' => $ip_cliente,
         ];
         Ct_Clientes::where('identificacion', $request->cedula)->update($value);
 
-        return "ok";
+        return 'ok';
     }
+
     public function asignar_egreso($id_venta)
     {
 
@@ -13661,7 +13916,7 @@ class VentasController extends Controller
             ->whereNull('venta_kardex.id_cab_moviento')
             ->select('inv_cab_movimientos.*')
             ->get();
-        //dd($egresos);
+        // dd($egresos);
 
         // SELECT icm.*
         // FROM inv_cab_movimientos icm
@@ -13671,6 +13926,7 @@ class VentasController extends Controller
 
         return view('contable.ventas.asignar_egreso', ['id_venta' => $id_venta, 'egresos' => $egresos]);
     }
+
     public function guardar_asignar_egreso(Request $request)
     {
         // dd($request->all());
@@ -13680,30 +13936,34 @@ class VentasController extends Controller
             // $venta = Ct_ventas::find($id_venta);
             $venta_kardex = Venta_Kardex::where('id_venta', $id_venta)->first();
 
-            if (!is_null($venta_kardex)) {
+            if (! is_null($venta_kardex)) {
                 DB::rollBack();
+
                 return ['status' => 'error', 'msj' => 'Esta venta ya fue asignada a un egreso'];
             }
 
             for ($i = 0; $i < count($request['id_egreso']); $i++) {
                 $arr = [
-                    'id_venta'           => $id_venta,
-                    'id_cab_moviento'    => $request['id_egreso'][$i],
-                    'id_usuariocrea'     => Auth::user()->id,
-                    'id_usuariomod'      => Auth::user()->id,
-                    'ip_modificacion'    => $_SERVER["REMOTE_ADDR"],
-                    'ip_creacion'        => $_SERVER["REMOTE_ADDR"],
+                    'id_venta' => $id_venta,
+                    'id_cab_moviento' => $request['id_egreso'][$i],
+                    'id_usuariocrea' => Auth::user()->id,
+                    'id_usuariomod' => Auth::user()->id,
+                    'ip_modificacion' => $_SERVER['REMOTE_ADDR'],
+                    'ip_creacion' => $_SERVER['REMOTE_ADDR'],
 
                 ];
                 Venta_Kardex::insert($arr);
             }
             DB::commit();
+
             return ['status' => 'success', 'msj' => 'Guardado correctamente'];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
+
             return ['status' => 'error', 'msj' => $e->getMessage()];
         }
     }
+
     public function graphics2(Request $request)
     {
         $id_empresa = $request['id_empresa'];
@@ -13711,8 +13971,8 @@ class VentasController extends Controller
             $id_empresa = Empresa::where('prioridad', '1')->first()->id;
         }
         $anio = $request['anio'];
-        //dd($request->all());
-        $mes      = $request['mes'];
+        // dd($request->all());
+        $mes = $request['mes'];
         $fechaini = $request['fechaini'];
         $fechafin = $request['fechafin'];
         if (is_null($anio)) {
@@ -13721,13 +13981,13 @@ class VentasController extends Controller
         if (is_null($mes)) {
             $mes = date('m');
         }
-        //0  es publico
-        //1  es privado
-        $array_agrupado = array();
+        // 0  es publico
+        // 1  es privado
+        $array_agrupado = [];
         for ($i = 1; $i < 13; $i++) {
             $mes = $i;
             if ($i < 10) {
-                $mes = '0' . $i;
+                $mes = '0'.$i;
             }
 
             $empresas_relacionadas = Ct_Empresa_Relacionada::where('estado', 1)->get();
@@ -13772,29 +14032,26 @@ class VentasController extends Controller
                 DB::raw('SUM(ct_ventas.impuesto) as impuesto')
             )->get();
 
-
-
             $estructure['mes'] = $mes;
             $total0 = [
-                "subtotal0" => 0,
-                "subtotal12" => 0,
-                "descuento" => 0,
-                "impuesto"  => 0,
-                "cantidad"  => 0
+                'subtotal0' => 0,
+                'subtotal12' => 0,
+                'descuento' => 0,
+                'impuesto' => 0,
+                'cantidad' => 0,
             ];
-            $estructure['privado']   = $total0;
-            $estructure['publico']   = $total0;
-            $estructure['particular']   = $total0;
+            $estructure['privado'] = $total0;
+            $estructure['publico'] = $total0;
+            $estructure['particular'] = $total0;
             $estructure['particular_relacionado'] = $total0;
-
 
             foreach ($ventas_mes as $value) {
                 $total = [
-                    "subtotal0" => is_null($value->subtotal0) ? 0 : $value->subtotal0,
-                    "subtotal12" => is_null($value->subtotal12) ? 0 : $value->subtotal12,
-                    "descuento" => is_null($value->descuento) ? 0 : $value->descuento,
-                    "impuesto"  => is_null($value->impuesto) ? 0 : $value->impuesto,
-                    "cantidad"  => is_null($value->cantidadf) ? 0 : $value->cantidadf
+                    'subtotal0' => is_null($value->subtotal0) ? 0 : $value->subtotal0,
+                    'subtotal12' => is_null($value->subtotal12) ? 0 : $value->subtotal12,
+                    'descuento' => is_null($value->descuento) ? 0 : $value->descuento,
+                    'impuesto' => is_null($value->impuesto) ? 0 : $value->impuesto,
+                    'cantidad' => is_null($value->cantidadf) ? 0 : $value->cantidadf,
                 ];
                 if ($value->tipo == 0) {
                     $estructure['publico'] = $total;
@@ -13809,33 +14066,32 @@ class VentasController extends Controller
 
             foreach ($venta_clienter as $vr) {
                 $total = [
-                    "subtotal0" => is_null($vr->subtotal0) ? 0 : $vr->subtotal0,
-                    "subtotal12" => is_null($vr->subtotal12) ? 0 : $vr->subtotal12,
-                    "descuento" => is_null($vr->descuento) ? 0 : $vr->descuento,
-                    "impuesto"  => is_null($vr->impuesto) ? 0 : $vr->impuesto,
-                    "cantidad"  => is_null($vr->cantidadf) ? 0 : $vr->cantidadf
+                    'subtotal0' => is_null($vr->subtotal0) ? 0 : $vr->subtotal0,
+                    'subtotal12' => is_null($vr->subtotal12) ? 0 : $vr->subtotal12,
+                    'descuento' => is_null($vr->descuento) ? 0 : $vr->descuento,
+                    'impuesto' => is_null($vr->impuesto) ? 0 : $vr->impuesto,
+                    'cantidad' => is_null($vr->cantidadf) ? 0 : $vr->cantidadf,
                 ];
 
-                if (!isset($data["particular"])) {
-                    $data["particular"] = $vr;
+                if (! isset($data['particular'])) {
+                    $data['particular'] = $vr;
                 }
 
-                if (!isset($data["particular_sin_seguro"])) {
-                    $data["particular_sin_seguro"] = $vr;
+                if (! isset($data['particular_sin_seguro'])) {
+                    $data['particular_sin_seguro'] = $vr;
                 }
 
-                if (!isset($data["particular_relacionado"])) {
-                    $data["particular_relacionado"] = $vr;
+                if (! isset($data['particular_relacionado'])) {
+                    $data['particular_relacionado'] = $vr;
                 }
 
-                if (!isset($data["privado"])) {
-                    $data["privado"] = $vr;
+                if (! isset($data['privado'])) {
+                    $data['privado'] = $vr;
                 }
 
-                if (!isset($data["publico"])) {
-                    $data["publico"] = $vr;
+                if (! isset($data['publico'])) {
+                    $data['publico'] = $vr;
                 }
-
 
                 $estructure['particular_relacionado'] = $total;
 
@@ -13843,13 +14099,13 @@ class VentasController extends Controller
             }
         }
 
-        //dd($array_agrupado);
+        // dd($array_agrupado);
 
-        $array_agrupado_anio = array();
-        $anios               = [$request->anio];
-        $aniosf              = 0;
+        $array_agrupado_anio = [];
+        $anios = [$request->anio];
+        $aniosf = 0;
         foreach ($anios as $key => $z) {
-            //dd($z);
+            // dd($z);
             $ventas_anio = Ct_ventas::join('seguros as s', 's.id', 'ct_ventas.seguro_paciente')
 
                 ->join('ct_detalle_comprobante_ingreso as ingreso', 'ingreso.id_factura', 'ct_ventas.id')
@@ -13868,11 +14124,11 @@ class VentasController extends Controller
                 )->get();
 
             foreach ($ventas_anio as $s) {
-                $estructure['anio']      = $aniosf;
-                $estructure['privado']   = $s->privado;
-                $estructure['publico']   = $s->publico;
-                $estructure['cpublico']  = $s->cpublico;
-                $estructure['cprivado']  = $s->cprivado;
+                $estructure['anio'] = $aniosf;
+                $estructure['privado'] = $s->privado;
+                $estructure['publico'] = $s->publico;
+                $estructure['cpublico'] = $s->cpublico;
+                $estructure['cprivado'] = $s->cprivado;
                 $estructure['privadosc'] = $s->privadosc;
                 $estructure['publicosc'] = $s->publicosc;
                 array_push($array_agrupado_anio, $estructure);
@@ -13883,6 +14139,7 @@ class VentasController extends Controller
 
         return view('contable/ventas/graphics2', ['array_agrupado' => $array_agrupado, 'array_agrupado_anio' => $array_agrupado_anio, 'fechaini' => $fechaini, 'fechafin' => $fechafin, 'empresas' => $empresa, 'id_empresa' => $id_empresa, 'request' => $request]);
     }
+
     public function indexFcVendedor(Request $request)
     {
         $fecha_desde = $request->fecha_desde;
@@ -13900,26 +14157,28 @@ class VentasController extends Controller
         }
         $rolUser = Auth::user()->id_tipo_usuario;
         $idUser = Auth::user()->id;
-        $ventas = Ct_ventas::where('id_empresa', Session::get('id_empresa'))->where('estado', 1)->where('tipo', "VEN-FA")->whereNotNull('ci_vendedor');
-        if (!is_null($fecha_desde)) {
+        $ventas = Ct_ventas::where('id_empresa', Session::get('id_empresa'))->where('estado', 1)->where('tipo', 'VEN-FA')->whereNotNull('ci_vendedor');
+        if (! is_null($fecha_desde)) {
             $ventas = $ventas->whereBetween('fecha', [$fecha_desde, $fecha_hasta]);
         } else {
             $ventas = $ventas->where('fecha', '<=', $fecha_hasta);
         }
         if ($rolUser == 17) {
-            $ventas =  $ventas->where('ci_vendedor', $idUser);
+            $ventas = $ventas->where('ci_vendedor', $idUser);
         } else {
             if ($vendedor != null) {
-                $ventas =  $ventas->where('ci_vendedor', $vendedor);
+                $ventas = $ventas->where('ci_vendedor', $vendedor);
             }
         }
         $ventas = $ventas->get();
+
         return view('contable.ventas.reporte.index_fc_vendedor', ['nombreV' => $nombreV, 'ventas' => $ventas, 'fecha_desde' => $fecha_desde, 'fecha_hasta' => $fecha_hasta, 'vendedor' => $vendedor, 'rolUser' => $rolUser]);
     }
+
     public function indexFcVendedor_pdf(Request $request)
     {
         $id_empresa = session()->get('id_empresa');
-        $empresa    = Empresa::where('id', $id_empresa)->where('estado', '1')->first();
+        $empresa = Empresa::where('id', $id_empresa)->where('estado', '1')->first();
         $fecha_desde = $request->fecha_desde;
         $fecha_hasta = $request->fecha_hasta;
         if (is_null($fecha_desde)) {
@@ -13935,26 +14194,27 @@ class VentasController extends Controller
         }
         $rolUser = Auth::user()->id_tipo_usuario;
         $idUser = Auth::user()->id;
-        $ventas = Ct_ventas::where('id_empresa', Session::get('id_empresa'))->where('estado', 1)->where('tipo', "VEN-FA")->whereNotNull('ci_vendedor');
-        if (!is_null($fecha_desde)) {
+        $ventas = Ct_ventas::where('id_empresa', Session::get('id_empresa'))->where('estado', 1)->where('tipo', 'VEN-FA')->whereNotNull('ci_vendedor');
+        if (! is_null($fecha_desde)) {
             $ventas = $ventas->whereBetween('fecha', [$fecha_desde, $fecha_hasta]);
         } else {
             $ventas = $ventas->where('fecha', '<=', $fecha_hasta);
         }
         if ($rolUser == 17) {
-            $ventas =  $ventas->where('ci_vendedor', $idUser);
+            $ventas = $ventas->where('ci_vendedor', $idUser);
         } else {
             if ($vendedor != null) {
-                $ventas =  $ventas->where('ci_vendedor', $vendedor);
+                $ventas = $ventas->where('ci_vendedor', $vendedor);
             }
         }
         $ventas = $ventas->get();
-        //dd($ventas);
+        // dd($ventas);
         $view = \View::make('contable.ventas.reporte.index_fc_vendedor_pdf', compact('ventas', 'fecha_desde', 'fecha_hasta', 'empresa'))->render();
-        $pdf  = \App::make('dompdf.wrapper');
+        $pdf = \App::make('dompdf.wrapper');
         $pdf->setPaper('A4');
-        //$pdf->setPaper('A4', 'landscape');
+        // $pdf->setPaper('A4', 'landscape');
         $pdf->loadHTML($view);
+
         return $pdf->stream('contable.ventas.reporte.index_fc_vendedor_pdf');
     }
 
@@ -13974,6 +14234,7 @@ class VentasController extends Controller
             ->select('ct_ventas.*')
             ->orderBy('ct_ventas.fecha', 'desc')
             ->paginate(20);
+
         return view('contable.ventas.ventas_sin_egreso', compact('ventas_sin_egreso', 'empresa'));
     }
 
@@ -14008,7 +14269,7 @@ class VentasController extends Controller
             $asignaciones = 0;
             $asignaciones_exactas = 0;
             $asignaciones_fallback = 0;
-            $ip_cliente = $_SERVER["REMOTE_ADDR"];
+            $ip_cliente = $_SERVER['REMOTE_ADDR'];
             $idusuario = Auth::user()->id;
             foreach ($ventas_sin_egreso as $venta) {
                 $ventaClave = $this->normalizarDocumento($venta->nro_comprobante ?: $venta->numero);
@@ -14018,13 +14279,13 @@ class VentasController extends Controller
                         return $this->normalizarDocumento($egreso->num_doc_cont) === $ventaClave;
                     });
                 }
-                if (!$egreso_asignar) {
+                if (! $egreso_asignar) {
                     $egreso_asignar = $egresos_disponibles->where('fecha', '>=', $venta->fecha)->first();
                 }
-                if (!$egreso_asignar) {
+                if (! $egreso_asignar) {
                     $egreso_asignar = $egresos_disponibles->first();
                 }
-                if (!$egreso_asignar) {
+                if (! $egreso_asignar) {
                     // Crear nuevo egreso para la venta
                     $egreso_asignar = $this->crearEgresoParaVenta($venta, $id_empresa, $idusuario, $ip_cliente);
                 }
@@ -14056,12 +14317,14 @@ class VentasController extends Controller
             if ($asignaciones_fallback > 0) {
                 $mensaje .= " {$asignaciones_fallback} asignaciones por fecha cuando no se encontró egreso exacto.";
             }
+
             return response()->json([
                 'status' => 'success',
-                'msj' => trim($mensaje)
+                'msj' => trim($mensaje),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json(['status' => 'error', 'msj' => $e->getMessage()]);
         }
     }
@@ -14084,7 +14347,7 @@ class VentasController extends Controller
         $transaccion = InvTransaccionesBodegas::where('id_documento_bodega', $documento->id)
             ->where('id_bodega', $id_bodega)
             ->first();
-        if (!$transaccion) {
+        if (! $transaccion) {
             return null;
         }
         // Crear cabecera
@@ -14092,8 +14355,8 @@ class VentasController extends Controller
         $cab_mov_inv->id_documento_bodega = $documento->id;
         $cab_mov_inv->id_transaccion_bodega = $transaccion->id;
         $cab_mov_inv->id_bodega_origen = $id_bodega;
-        $cab_mov_inv->numero_documento = str_pad($secuencia, 9, "0", STR_PAD_LEFT);
-        $cab_mov_inv->observacion = "EGRESO POR VENTA AUTOMATICA" . $venta->nro_comprobante;
+        $cab_mov_inv->numero_documento = str_pad($secuencia, 9, '0', STR_PAD_LEFT);
+        $cab_mov_inv->observacion = 'EGRESO POR VENTA AUTOMATICA'.$venta->nro_comprobante;
         $cab_mov_inv->fecha = $venta->fecha;
         $cab_mov_inv->num_doc_cont = $venta->nro_comprobante;
         $cab_mov_inv->id_empresa = $id_empresa;
@@ -14107,20 +14370,30 @@ class VentasController extends Controller
         foreach ($detalles_venta as $detalle) {
             // Verificar si es producto
             $producto = Ct_productos::where('codigo', $detalle->id_ct_productos)->first();
-            if (!$producto) continue;
+            if (! $producto) {
+                continue;
+            }
             $insumo = Ct_productos_insumos::where('id_producto', $producto->id)->first();
-            if (!$insumo) continue;
+            if (! $insumo) {
+                continue;
+            }
             $prod = Producto::find($insumo->id_insumo);
-            if (!$prod) continue;
+            if (! $prod) {
+                continue;
+            }
             // Buscar inventario
             $inventario = InvInventario::where('id_producto', $prod->id)->where('id_bodega', $id_bodega)->first();
-            if (!$inventario) continue;
+            if (! $inventario) {
+                continue;
+            }
             // Buscar serie disponible
             $serie = InvInventarioSerie::where('id_inv_inventario', $inventario->id)
                 ->where('cantidad_usos_kardex', '>', 0)
                 ->orderBy('fecha_vence', 'asc')
                 ->first();
-            if (!$serie) continue;
+            if (! $serie) {
+                continue;
+            }
             // Calcular cantidad a egresar (asumir 1 por ahora, o detalle->cantidad)
             $cantidad = $detalle->cantidad; // Asumir que cantidad es la cantidad vendida
             $cant_uso = 1; // Asumir
@@ -14154,6 +14427,7 @@ class VentasController extends Controller
         InvKardex::setKardex($cab_mov_inv->id);
         // Asiento
         InvContableCab::setAsientoContablePedido($cab_mov_inv->id);
+
         return $cab_mov_inv;
     }
 }

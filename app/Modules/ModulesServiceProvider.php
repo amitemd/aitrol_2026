@@ -4,9 +4,13 @@ namespace App\Modules;
 
 use App\Modules\AccountingFinance\Application\Contracts\JournalEntryLineReadRepository;
 use App\Modules\AccountingFinance\Infrastructure\Persistence\LaravelJournalEntryLineReadRepository;
+use App\Modules\Billing\Application\Contracts\SalesInvoiceDirectoryRepository;
 use App\Modules\Billing\Application\Contracts\SalesInvoiceReadRepository;
+use App\Modules\Billing\Infrastructure\Persistence\LaravelSalesInvoiceDirectoryRepository;
 use App\Modules\Billing\Infrastructure\Persistence\LaravelSalesInvoiceReadRepository;
+use App\Modules\ClinicalCare\Application\Contracts\PatientDirectoryRepository;
 use App\Modules\ClinicalCare\Application\Contracts\PatientSearchRepository;
+use App\Modules\ClinicalCare\Infrastructure\Persistence\LaravelPatientDirectoryRepository;
 use App\Modules\ClinicalCare\Infrastructure\Persistence\LaravelPatientSearchRepository;
 use App\Modules\Diagnostics\Application\Contracts\DiagnosisCatalogRepository;
 use App\Modules\Diagnostics\Infrastructure\Persistence\LaravelDiagnosisCatalogRepository;
@@ -43,6 +47,11 @@ final class ModulesServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            SalesInvoiceDirectoryRepository::class,
+            LaravelSalesInvoiceDirectoryRepository::class,
+        );
+
+        $this->app->bind(
             CompanyAccessRepository::class,
             LaravelCompanyAccessRepository::class,
         );
@@ -50,6 +59,11 @@ final class ModulesServiceProvider extends ServiceProvider
         $this->app->bind(
             PatientSearchRepository::class,
             LaravelPatientSearchRepository::class,
+        );
+
+        $this->app->bind(
+            PatientDirectoryRepository::class,
+            LaravelPatientDirectoryRepository::class,
         );
 
         $this->app->bind(

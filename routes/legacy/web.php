@@ -112,6 +112,9 @@ Route::post('seguro/subseguro/editar/modificacion', 'SeguroController@subsegurou
 
 // rutas de paciente
 Route::match(['GET', 'POST'], 'paciente/search', 'PacienteController@search')->name('paciente.search');
+// Las rutas literales deben declararse antes del recurso para no ser capturadas por paciente/{paciente}.
+Route::match(['get', 'post'], 'paciente/nombre/', 'PacienteController@nombre')->name('paciente.nombre');
+Route::match(['get', 'post'], 'paciente/nombre2/', 'PacienteController@nombre2')->name('paciente.nombre2');
 Route::resource('paciente', 'PacienteController');
 Route::post('paciente/subir_imagen_usuario', 'PacienteController@subir_imagen_usuario')->name('paciente.subir_imagen_usuario');
 Route::match(['PUT', 'PATCH'], 'paciente/{id}/0', 'PacienteController@updatefamiliar')->name('paciente.updatefamiliar');
@@ -119,8 +122,6 @@ Route::match(['PUT', 'PATCH'], 'paciente/{id}/0', 'PacienteController@updatefami
 Route::get('agenda/pacientepornombre/{id_doc}/{fecha}/{sala}', 'PacienteController@buscaxnombre')->name('paciente.buscaxnombre');
 Route::post('agenda/buscarpaciente', 'PacienteController@search2')->name('paciente.search2');
 Route::match(['get', 'post'], 'paciente/historia_clinica/{id_paciente}', 'PacienteController@historiaclinica')->name('paciente.historia');
-Route::match(['get', 'post'], 'paciente/nombre/', 'PacienteController@nombre')->name('paciente.nombre');
-Route::match(['get', 'post'], 'paciente/nombre2/', 'PacienteController@nombre2')->name('paciente.nombre2');
 Route::match(['get', 'post'], 'agenda/paciente/pornombre', 'PacienteController@pacientexnombre')->name('paciente.pacientexnombre'); // paciente por nombre 04/04/2018
 
 // rutas para la agenda

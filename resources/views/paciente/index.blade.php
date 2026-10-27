@@ -60,7 +60,7 @@
          {{ csrf_field() }}
          @component('layouts.search', ['title' => 'Buscar'])
         @component('layouts.two-cols-search-row', ['items' => ['Cédula', 'Apellidos', 'Nombres', 'Correo'],
-        'oldVals' => [isset($searchingVals) ? $searchingVals['id'] : '', isset($searchingVals) ? $searchingVals['apellido1'] : '', isset($searchingVals) ? $searchingVals['nombre1'] : '', isset($searchingVals) ? $searchingVals['correo'] : '' ]])
+        'oldVals' => [$searchingVals['patient_id'] ?? '', $searchingVals['last_names'] ?? '', $searchingVals['first_names'] ?? '', $searchingVals['email'] ?? '' ]])
 
           @endcomponent
         @endcomponent
@@ -86,69 +86,65 @@
             <tbody>
             @foreach ($paciente as $value)
                 <tr >
-                  <td>{{ $value->id}}</td>
-                  <td>{{$value->nombre1}} @if($value->nombre2!='(N/A)'){{$value->nombre2}}@endif {{$value->apellido1}} @if($value->apellido2!='(N/A)'){{$value->apellido2}}@endif</td>
-                  <td>{{ $value->telefono1.' / '.$value->telefono2.' /'.$value->telefono3 }}</td>
-                  <td>{{ substr($value->created_at,0,10) }}</td>
-                  @php
-                    $usuario_crea = Sis_medico\User::where('id', $value->id_usuariocrea)->first();
-                    $usuario = Sis_medico\User::where('id', $value->id)->first();
-                  @endphp
-                  <td>@if(!is_null($usuario_crea)){{ $usuario_crea->nombre1 }} {{ $usuario_crea->apellido1 }} @endif</td>
-                  <td>@if(!is_null($usuario)) {{ $usuario->email }} @endif</td>
+                  <td>{{ $value->patientId }}</td>
+                  <td>{{ $value->fullName() }}</td>
+                  <td>{{ $value->phones() }}</td>
+                  <td>{{ $value->registeredDate() }}</td>
+                  <td>{{ $value->createdBy() }}</td>
+                  <td>{{ $value->email }}</td>
                   <td>
                     <div class="btn-group">
-                      <a type="button" class="btn btn-warning btn-xs" href="{{ route('paciente.edit', ['id' => $value->id]) }}">Editar Paciente</a>
+                      <a type="button" class="btn btn-warning btn-xs" href="{{ route('paciente.edit', ['id' => $value->patientId]) }}">Editar Paciente</a>
                       <div class="btn-group">
                         <button type="button" class="btn btn-warning dropdown-toggle btn-xs" data-toggle="dropdown">
                           <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu warning">
-                          <li><a href="{{ route('ingreso.biopsias2', ['id_paciente' => $value->id]) }}">Ingreso de Biopsias</a></li>
-                          <li><a href="{{ route('paciente.historial_agenda', ['id_paciente' => $value->id]) }}">Documentos de Agenda</a></li>
-                          <li><a href="{{ route('paciente.cobro_hc', ['id_paciente' => $value->id]) }}">Pagos por Historia Clinica</a></li>
+                          <li><a href="{{ route('ingreso.biopsias2', ['id_paciente' => $value->patientId]) }}">Ingreso de Biopsias</a></li>
+                          <li><a href="{{ route('paciente.historial_agenda', ['id_paciente' => $value->patientId]) }}">Documentos de Agenda</a></li>
+                          <li><a href="{{ route('paciente.cobro_hc', ['id_paciente' => $value->patientId]) }}">Pagos por Historia Clinica</a></li>
                         </ul>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div class="btn-group">
-                      <a type="button" class="btn btn-success btn-xs" href="{{ route('paciente.historia', ['id' => $value->id]) }}" target="_blank">Historia Clínica</a>
+                      <a type="button" class="btn btn-success btn-xs" href="{{ route('paciente.historia', ['id' => $value->patientId]) }}" target="_blank">Historia Clínica</a>
                       <div class="btn-group">
                         <button type="button" class="btn btn-success dropdown-toggle btn-xs" data-toggle="dropdown">
                           <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu success">
-                          <li><a href="{{ route('paciente.historial_recetas', ['id' => $value->id])}}">Ingreso/Ver Recetas</a></li>
-                          <li><a href="{{ route('paciente.historial_estudios', ['id_paciente' => $value->id]) }}">Ver Estudios</a></li>
-                          <li><a href="{{ route('paciente.historial_imagenes', ['id_paciente' => $value->id]) }}">Ver Imágenes</a></li>
-                          <li><a href="{{ route('paciente.historial_documentos', ['id_paciente' => $value->id]) }}">Ver Documentos/Anexos</a></li>
+                          <li><a href="{{ route('paciente.historial_recetas', ['id' => $value->patientId])}}">Ingreso/Ver Recetas</a></li>
+                          <li><a href="{{ route('paciente.historial_estudios', ['id_paciente' => $value->patientId]) }}">Ver Estudios</a></li>
+                          <li><a href="{{ route('paciente.historial_imagenes', ['id_paciente' => $value->patientId]) }}">Ver Imágenes</a></li>
+                          <li><a href="{{ route('paciente.historial_documentos', ['id_paciente' => $value->patientId]) }}">Ver Documentos/Anexos</a></li>
                         </ul>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div class="btn-group">
-                      <a type="button" class="btn btn-info btn-xs" href="{{ route('paciente.historial_ordenes', ['id' => $value->id])}}">Procedimientos</a>
+                      <a type="button" class="btn btn-info btn-xs" href="{{ route('paciente.historial_ordenes', ['id' => $value->patientId])}}">Procedimientos</a>
                       <div class="btn-group">
                         <button type="button" class="btn btn-info dropdown-toggle btn-xs" data-toggle="dropdown">
                           <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu xinfo">
-                          <li><a href="{{ route('paciente.historial_orden_biopsias', ['id' => $value->id])}}">Biopsias</a></li>
+                          <li><a href="{{ route('paciente.historial_orden_biopsias', ['id' => $value->patientId])}}">Biopsias</a></li>
                         </ul>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div class="btn-group">
-                      <a type="button" class="btn bg-navy btn-xs" href="{{ route('paciente.historial_orden_lab', ['id' => $value->id])}}">HUMANLABS</a>
+                      <a type="button" class="btn bg-navy btn-xs" href="{{ route('paciente.historial_orden_lab', ['id' => $value->patientId])}}">HUMANLABS</a>
                       <div class="btn-group">
                         <button type="button" class="btn bg-navy dropdown-toggle btn-xs" data-toggle="dropdown">
                           <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu navy">
-                          <li><a href="{{ route('laboratorio.externo', ['id_paciente' => $value->id]) }}">Externos</a></li>
+                          <li><a href="{{ route('laboratorio.externo', ['id_paciente' => $value->patientId]) }}">Externos</a></li>
                         </ul>
                       </div>
                     </div>
@@ -165,7 +161,7 @@
         </div>
         <div class="col-sm-7">
           <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
-              {{ $paciente->appends(Request::only(['id', 'apellidos', 'nombres', 'correo']))->links()}}
+              {{ $paciente->links()}}
           </div>
         </div>
       </div>
