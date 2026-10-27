@@ -2,6 +2,7 @@
 
 namespace Sis_medico\Http\Controllers\contable;
 
+use App\Modules\Billing\Application\Queries\FindSalesInvoiceForCompany;
 use DateTime;
 use Excel;
 use Exception;
@@ -7645,19 +7646,15 @@ class VentasController extends Controller
             ->get();
     }
 
-    public function editar($id, Request $request)
+    public function editar($id, Request $request, FindSalesInvoiceForCompany $findSalesInvoice)
     {
         if ($this->rol()) {
             return response()->view('errors.404');
         }
 
         $id_empresa = $request->session()->get('id_empresa');
-        $ventas = DB::table('ct_ventas as ct_v')
-            ->leftjoin('ct_clientes as ct_c', 'ct_c.identificacion', 'ct_v.id_cliente')
-            ->where('ct_v.id', $id)
-            ->where('ct_v.id_empresa', $id_empresa)
-            ->select('ct_v.*')
-            ->first();
+        $salesInvoice = $findSalesInvoice->handle((int) $id, (string) $id_empresa);
+        $ventas = $salesInvoice?->toLegacyRecord();
 
         if ($ventas === null) {
             abort(404);
