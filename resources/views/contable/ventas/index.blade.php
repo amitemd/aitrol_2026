@@ -8,10 +8,6 @@
   <?php
 
   use Illuminate\Support\Facades\Auth;
-  use Sis_medico\Ct_Clientes;
-  use Sis_medico\Ct_ventas;
-  use Sis_medico\De_Empresa;
-  use Sis_medico\Http\Controllers\ApiFacturacionController;
 
   if (Auth::user()->id == "0957258056") {
   ?>* {
@@ -38,67 +34,6 @@
   ?>
 </style>
 <!-- Ventana modal editar -->
-<?php
-$deempresa = De_Empresa::getDatos(session('id_empresa'));
-/*if (Auth::user()->id == '0921605895') {
-  echo '<pre>';
-  print_r($deempresa);
-  exit;
-}*/
-$ventas = Ct_ventas::where('estado', '<', 2)
-  ->where('id_empresa', session('id_empresa'))
-  ->where('tipo', 'VEN-FA')
-  ->where('electronica', 1)
-  ->where('punto_emision', '!=', 100)
-  ->where('estado_electronica', '<>', 3)
-  ->where('estado', '<>', 0)
-  ->whereYear('fecha', '>', 2021)
-  ->orderby('id', 'desc')
-  ->paginate(10);
-/*if (Auth::user()->id == '0921605895') {
-    echo '<pre>';
-    print_r($ventas);
-    exit;
-  }*/
-if (count($ventas) > 0) {
-  foreach ($ventas as $value) {
-    if ($value->punto_emision != 100) {
-      $cliente = Ct_Clientes::where('identificacion', $value->id_cliente)->first();
-      $seguro = Sis_medico\Seguro::find($value->seguro_paciente);
-      $fecha1 = new DateTime($value->created_at); //fecha inicial
-      $fecha2 = new DateTime(date('Y-m-d H:i:s')); //fecha de cierre
-      $intervalo = $fecha1->diff($fecha2);
-      $minutos = $intervalo->format('%i');
-      $horas = $intervalo->format('%h');
-      $tiempo = $minutos + ($horas * 60);
-      if ($tiempo > 5) {
-        $data['empresa']     = $empresa->id;
-        $data['comprobante'] = $value->nro_comprobante;
-        $data['tipo'] = 'comprobante';
-        try {
-          $envio = ApiFacturacionController::estado_comprobante($data);
-        } catch (Exception $e) {
-        }
-        $estado = 0;
-        $documento = Ct_ventas::find($value->id);
-        if (isset($envio->details)) {
-          if ($envio->details->log[0]->proceso == 'Notificación' || $envio->details->log[0]->mensaje == 'Autorizado') {
-            $estado = 3;
-            $documento->nro_autorizacion =  $envio->details->autorizacion;
-          } elseif ($envio->details->log[0]->mensaje == "Documento recibido") {
-            $estado = 2;
-          } elseif ($envio->details->log[0]->proceso == "Firma") {
-            $estado = 1;
-          } else {
-          }
-        }
-        $documento->estado_electronica =  $estado;
-        $documento->update();
-      }
-    }
-  }
-}
-?>
 <link rel="stylesheet" href="{{ asset('/css/bootstrap-datetimepicker.css') }}">
 <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css')}}">
 <input type="hidden" id="deempresa" name="deempresa" />
@@ -154,27 +89,26 @@ if (count($ventas) > 0) {
     </div>
     <!-- /.box-header -->
     <div class="box-body dobra aitrol-filter-panel">
-      <form method="POST" id="reporte_master" action="{{ route('ventas_search') }}">
-        {{ csrf_field() }}
-        <input type="hidden" id="page" name="page" value="{{ config('data.page') }}" />
+      <form method="GET" id="reporte_master" action="{{ route('ventas_search') }}">
+        <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}" />
         <div class="row">
         <div class="form-group col-md-1 col-xs-2">
           <label class="texto" for="numero">{{trans('wfact_venta.Id')}}</label>
         </div>
         <div class="form-group col-md-3 col-xs-10 container-4">
-          <input class="form-control" type="text" id="id" name="id" value="@if(isset($searchingVals)){{$searchingVals['id']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_id')}}" />
+          <input class="form-control" type="text" id="id" name="id" value="{{ request('id') }}" placeholder="{{trans('wfact_venta.Ingrese_id')}}" />
         </div>
         <div class="form-group col-md-1 col-xs-2">
           <label class="texto" for="numero">{{trans('wfact_venta.Numero')}}</label>
         </div>
         <div class="form-group col-md-3 col-xs-10 container-4">
-          <input class="form-control" type="text" id="numero" name="numero" value="@if(isset($searchingVals)){{$searchingVals['nro_comprobante']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_numero')}}" />
+          <input class="form-control" type="text" id="numero" name="numero" value="{{ request('numero') }}" placeholder="{{trans('wfact_venta.Ingrese_numero')}}" />
         </div>
         <div class="form-group col-md-1 col-xs-2">
           <label class="texto" for="asiento">{{trans('wfact_venta.Asiento')}}</label>
         </div>
         <div class="form-group col-md-3 col-xs-10 container-4">
-          <input class="form-control" type="text" id="id_asiento" name="id_asiento" value="@if(isset($searchingVals)){{$searchingVals['id_asiento']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_asiento')}}" />
+          <input class="form-control" type="text" id="id_asiento" name="id_asiento" value="{{ request('id_asiento') }}" placeholder="{{trans('wfact_venta.Ingrese_asiento')}}" />
         </div>
         </div>
         <div class="row">
@@ -186,20 +120,20 @@ if (count($ventas) > 0) {
             <div class="input-group-addon">
               <i class="fa fa-calendar"></i>
             </div>
-            <input type="date" name="fecha" class="form-control fecha" id="fecha" value="@if(isset($searchingVals)){{$searchingVals['fecha']}}@endif">
+            <input type="date" name="fecha" class="form-control fecha" id="fecha" value="{{ request('fecha') }}">
           </div>
         </div>
         <div class="form-group col-md-1 col-xs-2">
           <label class="texto" for="cliente">{{trans('wfact_venta.Cliente')}}</label>
         </div>
         <div class="form-group col-md-3 col-xs-10 container-4">
-          <input class="form-control" type="text" id="nombre_cliente" name="nombre_cliente" value="@if(isset($searchingVals)){{$searchingVals['nombre_cliente']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_cliente')}}" />
+          <input class="form-control" type="text" id="nombre_cliente" name="nombre_cliente" value="{{ request('nombre_cliente') }}" placeholder="{{trans('wfact_venta.Ingrese_cliente')}}" />
         </div>
         <div class="form-group col-md-1 col-xs-2">
           <label class="texto" for="paciente">{{trans('wfact_venta.Paciente')}}</label>
         </div>
         <div class="form-group col-md-3 col-xs-10 container-4">
-          <input class="form-control" type="text" id="nombres_paciente" name="nombres_paciente" value="@if(isset($searchingVals)){{$searchingVals['nombres_paciente']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_paciente')}}" />
+          <input class="form-control" type="text" id="nombres_paciente" name="nombres_paciente" value="{{ request('nombres_paciente') }}" placeholder="{{trans('wfact_venta.Ingrese_paciente')}}" />
         </div>
         </div>
         <div class="aitrol-filter-actions">
@@ -224,7 +158,11 @@ if (count($ventas) > 0) {
                 <table id="tablaVentas" class="table table-hover aitrol-table" role="grid" aria-describedby="example2_info" width="100%"
                   data-aitrol-datatable
                   data-paging="false"
-                  data-searching="true"
+                  data-searching="false"
+                  data-server-search="true"
+                  data-server-search-url="{{ route('venta_index') }}"
+                  data-server-search-value="{{ request('q') }}"
+                  data-server-per-page="{{ $dato->perPage() }}"
                   data-info="false"
                   data-order-column="0"
                   data-order-direction="desc"
@@ -260,7 +198,6 @@ if (count($ventas) > 0) {
                       return trim($initial . ' ' . $lastName);
                     };
                     foreach ($dato as $row) {
-                      $venta_kardex = \Sis_medico\Venta_Kardex::where('id_venta', $row->id)->first();
                       $tabla .= '<tr><td style="color:#4CA5D5;">' . $row->id . '</td><td><a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '"> ' . $row->id_asiento . '</a></td>';
                       $variable = [];
                       $tipo = 'Factura';
@@ -346,7 +283,7 @@ if (count($ventas) > 0) {
                       $tabla .= '</span>';
                       $tabla .= '</td>';
                       if ($empresa->inventario == 1 && $empresa->egreso_kardex == 1) {
-                        if (!is_null($venta_kardex)) {
+                        if ((bool) $row->tiene_venta_kardex) {
                           $tabla .= '<td></td>';
                         } else {
                           $tabla .= '<td> <a href="' . asset('/') . 'contable/ventas/asignar/egreso/' . $row->id . '" class="btn btn-danger btn-xs" type="button"> Pendiente Asignar Egreso </a> </td>';
@@ -397,19 +334,62 @@ if (count($ventas) > 0) {
                 </table>
               </div>
             </div>
-            <div class="row aitrol-table-summary">
-              <div class="col-sm-5">
-                <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
-                  Mostrando {{ 1 + ($dato->currentPage() - 1) * $dato->perPage() }} /
-                  {{ count($dato) + ($dato->currentPage() - 1) * $dato->perPage() }} de
-                  {{ $dato->total() }} registros
-                </div>
+            @php
+              $currentPage = $dato->currentPage();
+              $lastPage = $dato->lastPage();
+              $firstVisiblePage = max(1, $currentPage - 2);
+              $lastVisiblePage = min($lastPage, $currentPage + 2);
+            @endphp
+            <div class="aitrol-table-summary">
+              <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
+                Mostrando <strong>{{ $dato->firstItem() ?? 0 }}–{{ $dato->lastItem() ?? 0 }}</strong>
+                de <strong>{{ number_format($dato->total(), 0, ',', '.') }}</strong> registros
               </div>
-              <div class="col-sm-7">
-                <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
-                  {{ $dato->appends(Request::all())->links() }}
-                </div>
-              </div>
+              @if ($dato->hasPages())
+                <nav class="aitrol-server-pagination" aria-label="Paginación de facturas">
+                  @if ($dato->onFirstPage())
+                    <span class="aitrol-server-pagination__button is-disabled" aria-disabled="true" title="Página anterior">
+                      <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                    </span>
+                  @else
+                    <a class="aitrol-server-pagination__button" href="{{ $dato->previousPageUrl() }}" rel="prev" title="Página anterior">
+                      <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                    </a>
+                  @endif
+
+                  @if ($firstVisiblePage > 1)
+                    <a class="aitrol-server-pagination__button" href="{{ $dato->url(1) }}">1</a>
+                    @if ($firstVisiblePage > 2)
+                      <span class="aitrol-server-pagination__ellipsis" aria-hidden="true">…</span>
+                    @endif
+                  @endif
+
+                  @for ($page = $firstVisiblePage; $page <= $lastVisiblePage; $page++)
+                    @if ($page === $currentPage)
+                      <span class="aitrol-server-pagination__button is-active" aria-current="page">{{ $page }}</span>
+                    @else
+                      <a class="aitrol-server-pagination__button" href="{{ $dato->url($page) }}">{{ $page }}</a>
+                    @endif
+                  @endfor
+
+                  @if ($lastVisiblePage < $lastPage)
+                    @if ($lastVisiblePage < $lastPage - 1)
+                      <span class="aitrol-server-pagination__ellipsis" aria-hidden="true">…</span>
+                    @endif
+                    <a class="aitrol-server-pagination__button" href="{{ $dato->url($lastPage) }}">{{ $lastPage }}</a>
+                  @endif
+
+                  @if ($dato->hasMorePages())
+                    <a class="aitrol-server-pagination__button" href="{{ $dato->nextPageUrl() }}" rel="next" title="Página siguiente">
+                      <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    </a>
+                  @else
+                    <span class="aitrol-server-pagination__button is-disabled" aria-disabled="true" title="Página siguiente">
+                      <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    </span>
+                  @endif
+                </nav>
+              @endif
             </div>
           </div>
         </div>

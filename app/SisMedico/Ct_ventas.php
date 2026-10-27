@@ -4,7 +4,10 @@ namespace Sis_medico;
 
 use Excel;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class Ct_ventas extends Model
@@ -303,47 +306,64 @@ class Ct_ventas extends Model
     {
         return $this->hasMany('Sis_medico\Ct_Nota_Debito_Cliente', 'id_factura');
     }
-    public static function getBusqueda($req)
+    public static function getListadoVentas(Request $request): LengthAwarePaginator
     {
+        $query = self::consultaListadoVentas((string) $request->session()->get('id_empresa'));
+        self::aplicarBusquedaGlobal($query, self::terminoBusqueda($request));
 
-        $id_empresa  = $req->session()->get('id_empresa');
-        $empresa     = Empresa::where('id', $id_empresa)->first();
+        return $query
+            ->orderByDesc('ct_ventas.id')
+            ->paginate(self::registrosPorPagina($request))
+            ->withQueryString();
+    }
+
+    public static function getBusqueda(Request $request): LengthAwarePaginator
+    {
+        $idEmpresa = (string) $request->session()->get('id_empresa');
         $constraints = [
-            'ct_ventas.id'               => $req['id'],
-            'nro_comprobante'  => $req['numero'],
-            'id_asiento'       => $req['id_asiento'],
-            'fecha'            => $req['fecha'],
-            'nombre_cliente'   => $req['nombre_cliente'],
-            'nombres_paciente' => $req['nombres_paciente'],
-            'omni'             => $req['omni'],
+            'ct_ventas.id' => $request->input('id'),
+            'ct_ventas.nro_comprobante' => $request->input('numero'),
+            'ct_ventas.id_asiento' => $request->input('id_asiento'),
+            'ct_ventas.fecha' => $request->input('fecha'),
+            'ct_ventas.nombre_cliente' => $request->input('nombre_cliente'),
+            'ct_ventas.nombres_paciente' => $request->input('nombres_paciente'),
         ];
 
+        $query = self::consultaListadoVentas($idEmpresa);
 
-        $query = Ct_ventas::query();
+        foreach ($constraints as $field => $constraint) {
+            $value = trim((string) $constraint);
 
-        $fields = array_keys($constraints);
-
-        $index = 0;
-
-        foreach ($constraints as $constraint) {
-            if ($constraint != null) {
-
-                $query = $query->where($fields[$index], 'like', '%' . $constraint . '%');
-                if ($fields[$index] == "ct_ventas.id" || $fields[$index] == "id_asiento") {
-                    $query = $query->where($fields[$index], $constraint);
-                } else {
-                    $query = $query->where($fields[$index], 'like', '%' . $constraint . '%');
-                }
+            if ($value === '') {
+                continue;
             }
-            $index++;
+
+            if (in_array($field, ['ct_ventas.id', 'ct_ventas.id_asiento'], true)) {
+                $query->where($field, $value);
+
+                continue;
+            }
+
+            $query->where($field, 'like', '%'.$value.'%');
         }
-        return $query->leftjoin('seguros as se', 'ct_ventas.seguro_paciente', '=', 'se.id')
+
+        self::aplicarBusquedaGlobal($query, self::terminoBusqueda($request));
+
+        return $query
+            ->orderByDesc('ct_ventas.id')
+            ->paginate(self::registrosPorPagina($request))
+            ->withQueryString();
+    }
+
+    private static function consultaListadoVentas(string $idEmpresa): Builder
+    {
+        return self::query()
+            ->leftjoin('seguros as se', 'ct_ventas.seguro_paciente', '=', 'se.id')
             ->join('users as uc', 'ct_ventas.id_usuariocrea', '=', 'uc.id')
             ->join('users as um', 'ct_ventas.id_usuariomod', '=', 'um.id')
             ->where('ct_ventas.estado', '<', '2')
-            ->where('ct_ventas.tipo', "VEN-FA")
-            ->where('id_empresa', $id_empresa)
-            ->orderby('ct_ventas.id', 'desc')
+            ->where('ct_ventas.tipo', 'VEN-FA')
+            ->where('ct_ventas.id_empresa', $idEmpresa)
             ->select(
                 'ct_ventas.rutapdf',
                 'ct_ventas.electronica',
@@ -374,8 +394,54 @@ class Ct_ventas extends Model
                 'um.apellido2 as apellidomod2',
                 'se.nombre',
                 'ct_ventas.emisor',
-                DB::raw('ROUND((COALESCE(ct_ventas.subtotal_0, 0) + COALESCE(ct_ventas.subtotal_12, 0)) - COALESCE(ct_ventas.descuento, 0), 2) AS valor_sin_iva')
-            )->paginate(10);
+                DB::raw('ROUND((COALESCE(ct_ventas.subtotal_0, 0) + COALESCE(ct_ventas.subtotal_12, 0)) - COALESCE(ct_ventas.descuento, 0), 2) AS valor_sin_iva'),
+                DB::raw('EXISTS (SELECT 1 FROM venta_kardex WHERE venta_kardex.id_venta = ct_ventas.id) AS tiene_venta_kardex')
+            );
+    }
+
+    private static function aplicarBusquedaGlobal(Builder $query, string $searchTerm): void
+    {
+        if ($searchTerm === '') {
+            return;
+        }
+
+        $like = '%'.$searchTerm.'%';
+
+        $query->where(function (Builder $searchQuery) use ($like, $searchTerm): void {
+            $searchQuery
+                ->where('ct_ventas.nro_comprobante', 'like', $like)
+                ->orWhere('ct_ventas.fecha', 'like', $like)
+                ->orWhere('ct_ventas.nombre_cliente', 'like', $like)
+                ->orWhere('ct_ventas.nombres_paciente', 'like', $like)
+                ->orWhere('ct_ventas.procedimientos', 'like', $like)
+                ->orWhere('se.nombre', 'like', $like)
+                ->orWhereRaw("CONCAT_WS(' ', uc.nombre1, uc.apellido1) LIKE ?", [$like])
+                ->orWhereRaw("CONCAT_WS(' ', um.nombre1, um.apellido1) LIKE ?", [$like]);
+
+            if (ctype_digit($searchTerm)) {
+                $searchQuery
+                    ->orWhere('ct_ventas.id', (int) $searchTerm)
+                    ->orWhere('ct_ventas.id_asiento', (int) $searchTerm);
+            }
+        });
+    }
+
+    private static function registrosPorPagina(Request $request): int
+    {
+        $perPage = $request->integer('per_page', 25);
+
+        return in_array($perPage, [10, 25, 50], true) ? $perPage : 25;
+    }
+
+    private static function terminoBusqueda(Request $request): string
+    {
+        $searchTerm = $request->query('q');
+
+        if (! is_string($searchTerm) && ! is_numeric($searchTerm)) {
+            return '';
+        }
+
+        return mb_substr(trim((string) $searchTerm), 0, 100);
     }
     public static function getCorteaFecha($r)
     {

@@ -115,6 +115,7 @@ use Sis_medico\LogReciboDeCobro;
 use Sis_medico\Venta_Kardex;
 use Sis_medico\SeguroTipos;
 use Sis_medico\Utilidades;
+use function Illuminate\Support\defer;
 
 class VentasController extends Controller
 {
@@ -194,6 +195,8 @@ class VentasController extends Controller
     /******************************/
     public function index(Request $request)
     {
+        $this->validateSalesListingRequest($request);
+
         if ($this->rol()) {
             return response()->view('errors.404');
         }
@@ -203,45 +206,9 @@ class VentasController extends Controller
         $permitidos = ParametersConglomerada::pdf_permitidos($id_empresa);
         //echo '<pre>';print_r($request->opcion);exit;
         if ($request->opcion == '') {
-            $dato = Ct_ventas::join("users as uc", "uc.id", "ct_ventas.id_usuariocrea")
-                ->join("users as um", "um.id", "ct_ventas.id_usuariomod")
-                ->leftjoin("seguros as se", "se.id", "ct_ventas.seguro_paciente")
-                ->where("ct_ventas.estado", "<", 2)
-                ->where("ct_ventas.id_empresa", $id_empresa)
-                ->where("ct_ventas.tipo", "VEN-FA")
-                ->select(
-                    'ct_ventas.rutapdf',
-                    'ct_ventas.electronica',
-                    'ct_ventas.id',
-                    'ct_ventas.orden_venta',
-                    'ct_ventas.ip_creacion',
-                    'ct_ventas.nro_comprobante',
-                    'ct_ventas.id_asiento',
-                    'ct_ventas.created_at',
-                    'ct_ventas.fecha',
-                    'ct_ventas.estado',
-                    'ct_ventas.nombre_cliente',
-                    'ct_ventas.nombres_paciente',
-                    'ct_ventas.seguro_paciente',
-                    'ct_ventas.procedimientos',
-                    'ct_ventas.fecha_procedimiento',
-                    'ct_ventas.estado_electronica',
-                    'ct_ventas.doc_electronico',
-                    'ct_ventas.nro_autorizacion',
-                    'ct_ventas.id_empresa',
-                    'uc.nombre1',
-                    'uc.nombre2',
-                    'uc.apellido1',
-                    'uc.apellido2',
-                    'um.nombre1 as nombremod1',
-                    'um.nombre2 as nombremod2',
-                    'um.apellido1 as apellidomod1',
-                    'um.apellido2 as apellidomod2',
-                    'se.nombre',
-                    DB::raw('ROUND((COALESCE(ct_ventas.subtotal_0, 0) + COALESCE(ct_ventas.subtotal_12, 0)) - COALESCE(ct_ventas.descuento, 0), 2) AS valor_sin_iva'),
-                    'ct_ventas.emisor'
-                )->orderBy("ct_ventas.id", "desc")
-                ->paginate(10);
+            $dato = Ct_ventas::getListadoVentas($request);
+            $this->deferElectronicInvoiceStatusRefresh($id_empresa);
+
             return view('contable/ventas/index', ['empresa' => $empresa, 'dato' => $dato, 'permitidos' => $permitidos, "usuario_actual" => $usuario_actual]);
         } elseif ($request->opcion == 'logFactura') {
             $datoFact = DB::table('de_log_facturacion')
@@ -7558,13 +7525,92 @@ class VentasController extends Controller
     }
     public function search(Request $request)
     {
+        $this->validateSalesListingRequest($request, true);
+
         $usuario_actual    = Auth::user()->id;
         $id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::find($id_empresa);
         $permitidos = ParametersConglomerada::pdf_permitidos($id_empresa);
         $dato = Ct_ventas::getBusqueda($request);
+        $this->deferElectronicInvoiceStatusRefresh($id_empresa);
+
         return view('contable/ventas/index', ['empresa' => $empresa, 'dato' => $dato, 'permitidos' => $permitidos, "usuario_actual" => $usuario_actual]);
     }
+
+    private function deferElectronicInvoiceStatusRefresh(int|string $idEmpresa): void
+    {
+        defer(function () use ($idEmpresa): void {
+            $pendingInvoices = Ct_ventas::query()
+                ->where('estado', 1)
+                ->where('id_empresa', $idEmpresa)
+                ->where('tipo', 'VEN-FA')
+                ->where('electronica', 1)
+                ->where('punto_emision', '!=', 100)
+                ->where('estado_electronica', '<>', 3)
+                ->whereYear('fecha', '>', 2021)
+                ->where('created_at', '<=', now()->subMinutes(5))
+                ->orderByDesc('id')
+                ->limit(10)
+                ->get(['id', 'nro_comprobante']);
+
+            foreach ($pendingInvoices as $invoice) {
+                try {
+                    $response = ApiFacturacionController::estado_comprobante([
+                        'empresa' => $idEmpresa,
+                        'comprobante' => $invoice->nro_comprobante,
+                        'tipo' => 'comprobante',
+                    ]);
+                } catch (\Throwable) {
+                    continue;
+                }
+
+                $process = data_get($response, 'details.log.0.proceso');
+                $message = data_get($response, 'details.log.0.mensaje');
+
+                if ($process === null && $message === null) {
+                    continue;
+                }
+
+                $electronicStatus = match (true) {
+                    $process === 'Notificación', $message === 'Autorizado' => 3,
+                    $message === 'Documento recibido' => 2,
+                    $process === 'Firma' => 1,
+                    default => 0,
+                };
+
+                $attributes = ['estado_electronica' => $electronicStatus];
+                $authorization = data_get($response, 'details.autorizacion');
+
+                if ($electronicStatus === 3 && is_scalar($authorization)) {
+                    $attributes['nro_autorizacion'] = (string) $authorization;
+                }
+
+                Ct_ventas::whereKey($invoice->id)->update($attributes);
+            }
+        }, 'ventas.refresh-electronic-status.'.$idEmpresa);
+    }
+
+    private function validateSalesListingRequest(Request $request, bool $includeAdvancedFilters = false): void
+    {
+        $rules = [
+            'q' => ['nullable', 'string', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'in:10,25,50'],
+        ];
+
+        if ($includeAdvancedFilters) {
+            $rules += [
+                'id' => ['nullable', 'string', 'max:30'],
+                'numero' => ['nullable', 'string', 'max:50'],
+                'id_asiento' => ['nullable', 'string', 'max:30'],
+                'fecha' => ['nullable', 'date_format:Y-m-d'],
+                'nombre_cliente' => ['nullable', 'string', 'max:150'],
+                'nombres_paciente' => ['nullable', 'string', 'max:150'],
+            ];
+        }
+
+        $request->validate($rules);
+    }
+
     private function doSearchingQuery($constraints, $id_empresa)
     {
         $query = Ct_ventas::query();

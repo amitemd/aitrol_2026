@@ -74,6 +74,86 @@ const readBoolean = (value, fallback) => {
     return value !== 'false';
 };
 
+const createServerSearch = (table) => {
+    const form = document.createElement('form');
+    const fieldId = `${table.id || 'aitrol-table'}-server-search`;
+    const action = table.dataset.serverSearchUrl || window.location.pathname;
+    const currentSearch = table.dataset.serverSearchValue || '';
+    const currentPerPage = table.dataset.serverPerPage || '25';
+
+    form.action = action;
+    form.className = 'aitrol-server-search';
+    form.method = 'get';
+    form.setAttribute('role', 'search');
+
+    const pageSizeLabel = document.createElement('label');
+    pageSizeLabel.className = 'aitrol-server-search__page-size';
+    pageSizeLabel.innerHTML = '<span>Mostrar</span>';
+
+    const pageSize = document.createElement('select');
+    pageSize.className = 'aitrol-server-search__select';
+    pageSize.name = 'per_page';
+    pageSize.setAttribute('aria-label', 'Registros por página');
+
+    ['10', '25', '50'].forEach((value) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        option.selected = value === currentPerPage;
+        pageSize.append(option);
+    });
+
+    pageSizeLabel.append(pageSize);
+    pageSizeLabel.append(document.createTextNode(' registros'));
+
+    const searchGroup = document.createElement('div');
+    searchGroup.className = 'aitrol-server-search__group';
+
+    const searchLabel = document.createElement('label');
+    searchLabel.className = 'sr-only';
+    searchLabel.htmlFor = fieldId;
+    searchLabel.textContent = 'Buscar en todos los registros';
+
+    const searchIcon = document.createElement('i');
+    searchIcon.className = 'fa fa-search aitrol-server-search__icon';
+    searchIcon.setAttribute('aria-hidden', 'true');
+
+    const searchInput = document.createElement('input');
+    searchInput.autocomplete = 'off';
+    searchInput.className = 'aitrol-server-search__input';
+    searchInput.id = fieldId;
+    searchInput.maxLength = 100;
+    searchInput.name = 'q';
+    searchInput.placeholder = 'Buscar en todos los registros';
+    searchInput.type = 'search';
+    searchInput.value = currentSearch;
+
+    const submitButton = document.createElement('button');
+    submitButton.className = 'aitrol-server-search__button';
+    submitButton.innerHTML = '<i class="fa fa-search" aria-hidden="true"></i><span class="sr-only">Buscar</span>';
+    submitButton.title = 'Buscar en todos los registros';
+    submitButton.type = 'submit';
+
+    searchGroup.append(searchLabel, searchIcon, searchInput, submitButton);
+    form.append(pageSizeLabel, searchGroup);
+
+    if (currentSearch !== '') {
+        const clearUrl = new URL(action, window.location.origin);
+        clearUrl.searchParams.set('per_page', currentPerPage);
+
+        const clearLink = document.createElement('a');
+        clearLink.className = 'aitrol-server-search__clear';
+        clearLink.href = clearUrl.toString();
+        clearLink.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Limpiar búsqueda</span>';
+        clearLink.title = 'Limpiar búsqueda';
+        form.append(clearLink);
+    }
+
+    pageSize.addEventListener('change', () => form.submit());
+
+    return form;
+};
+
 const initializeDataTable = (table) => {
     if (table.dataset.aitrolDataTableReady === 'true') {
         return;
@@ -81,6 +161,7 @@ const initializeDataTable = (table) => {
 
     const paging = readBoolean(table.dataset.paging, true);
     const searching = readBoolean(table.dataset.searching, true);
+    const serverSearch = readBoolean(table.dataset.serverSearch, false);
     const info = readBoolean(table.dataset.info, true);
     const exportName = table.dataset.exportName;
     const orderColumn = Number.parseInt(table.dataset.orderColumn ?? '', 10);
@@ -155,7 +236,7 @@ const initializeDataTable = (table) => {
         searching,
         layout: {
             topStart: buttons.length > 0 ? { buttons } : null,
-            topEnd: searching ? 'search' : null,
+            topEnd: serverSearch ? () => createServerSearch(table) : (searching ? 'search' : null),
             bottomStart: info ? 'info' : null,
             bottomEnd: paging ? 'paging' : null,
         },
