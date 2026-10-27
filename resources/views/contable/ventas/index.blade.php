@@ -5,11 +5,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
 <style>
-  .dropdown-menu a {
-    display: block;
-    border-radius: 2;
-  }
-
   <?php
 
   use Illuminate\Support\Facades\Auth;
@@ -40,10 +35,7 @@
   <?php
   }
 
-  ?>.button:hover {
-    background-color: red;
-    color: white !important;
-  }
+  ?>
 </style>
 <!-- Ventana modal editar -->
 <?php
@@ -150,24 +142,13 @@ if (count($ventas) > 0) {
 
 <!-- Main content -->
 <section class="content aitrol-page aitrol-sales-page">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb aitrol-breadcrumb">
-      <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Contable')}}</a></li>
-      <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Ventas')}}</a></li>
-      <li class="breadcrumb-item active">{{trans('wfact_venta.Registro de Factura de Ventas')}}</li>
-    </ol>
-  </nav>
+  <div class="aitrol-sales-toolbar">
+    <a href="{{ route('ventas_crear') }}" class="aitrol-primary-action aitrol-primary-action--subtle">
+      <i class="fa fa-plus" aria-hidden="true"></i>
+      <span>{{trans('wfact_venta.Nueva Factura')}}</span>
+    </a>
+  </div>
   <div class="box aitrol-card">
-    <div class="box-header header_new aitrol-card__header">
-      <div>
-        <span class="aitrol-card__eyebrow">Cuentas y finanzas</span>
-        <h3 class="box-title">{{trans('wfact_venta.Facturas de Venta')}}</h3>
-        <p class="aitrol-card__subtitle">Consulte, filtre y administre las facturas emitidas por la empresa activa.</p>
-      </div>
-      <a href="{{ route('ventas_crear') }}" class="aitrol-primary-action">
-        <i class="fa fa-plus" aria-hidden="true"></i>{{trans('wfact_venta.Nueva Factura')}}
-      </a>
-    </div>
     <div class="aitrol-section-heading">
       <span>{{trans('wfact_venta.BUSCADOR FACTURA DE VENTA')}}</span>
     </div>
@@ -271,18 +252,26 @@ if (count($ventas) > 0) {
                   <tbody>
                     <?php
                     $tabla = '';
+                    $abbreviateUserName = static function (mixed $firstName, mixed $lastName): string {
+                      $firstName = trim((string) $firstName);
+                      $lastName = mb_convert_case(trim((string) $lastName), MB_CASE_TITLE, 'UTF-8');
+                      $initial = $firstName !== '' ? mb_strtoupper(mb_substr($firstName, 0, 1, 'UTF-8'), 'UTF-8') . '.' : '';
+
+                      return trim($initial . ' ' . $lastName);
+                    };
                     foreach ($dato as $row) {
                       $venta_kardex = \Sis_medico\Venta_Kardex::where('id_venta', $row->id)->first();
                       $tabla .= '<tr><td style="color:#4CA5D5;">' . $row->id . '</td><td><a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '"> ' . $row->id_asiento . '</a></td>';
                       $variable = [];
                       $tipo = 'Factura';
+                      $actionMenuId = 'venta-actions-' . $row->id;
                       if ($row->nro_comprobante !== null) {
                         $variable = explode('-', $row->nro_comprobante);
                       }
                       //if (in_array('100', $variable)) {
                       if ($row->emisor == 'MD' || in_array('100', $variable)) {
-                        $tabla .= '<td><div class="dropdown"><button style="color: black;" class="btn btn-gray btn-xs" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i> <i class="fa fa-caret-down"></i></button>';
-                        $tabla .= '<div style="width: auto;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        $tabla .= '<td><div class="dropdown aitrol-action-menu"><button class="btn btn-xs aitrol-action-menu__trigger" type="button" id="' . $actionMenuId . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Abrir acciones de la factura ' . $row->id . '"><i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down" aria-hidden="true"></i></button>';
+                        $tabla .= '<div class="dropdown-menu aitrol-action-menu__panel" aria-labelledby="' . $actionMenuId . '">';
                         if ($row->orden_venta != null) {
                           /* Revisar la modal */
                           $tabla .= '<a target="_blank" href="' . route('pdf_comprobante_detalle.paquete', ['id' => $row->id]) . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> <i class="fa fa-list"></i> Detalle orden</a>';
@@ -296,15 +285,15 @@ if (count($ventas) > 0) {
                         $tabla .= '<a href="' . asset('/') . 'contable/ventas/descargarnotaentrega?id=' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-sign-out"></i> Nota entrega</a>';
                         $tabla .= '<a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-eye"></i> Visualizar</a><a  target="_blank" href="' . asset('/') . 'v3/ventas/descargarComprobanteVenta?id=' . $row->id . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-file-pdf-o"></i> Comprobante de venta</a>';
                         if ($row->estado == 0) {
-                          $tabla .= '<a href="#" class="btn-xs dropdown-item" style="text-align: left; color: red; padding: 5px 0px 5px 15px;" ><i class="fa fa-minus"></i> Anulado</a>';
+                          $tabla .= '<a href="#" class="btn-xs dropdown-item aitrol-action-menu__item--danger" style="text-align: left; color: red; padding: 5px 0px 5px 15px;" ><i class="fa fa-minus"></i> Anulado</a>';
                         } else {
-                          $tabla .= '<a onclick="anular(' . $row->id . ')" class="btn btn-xs button" style="text-align: left; color: red; padding: 5px 0px 5px 15px;"><i class="fa fa-trash" ></i> Anular</a>';
+                          $tabla .= '<a onclick="anular(' . $row->id . ')" class="btn btn-xs button aitrol-action-menu__item--danger" style="text-align: left; color: red; padding: 5px 0px 5px 15px;"><i class="fa fa-trash" ></i> Anular</a>';
                         }
                         $tabla .= '</div>';
                         $tabla .= '</td>';
                       } else {
-                        $tabla .= '<td><div class="dropdown"><button style="color: black;" class="btn btn-gray btn-xs" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i> <i class="fa fa-caret-down"></i></button>';
-                        $tabla .= '<div style="width: auto;" class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+                        $tabla .= '<td><div class="dropdown aitrol-action-menu"><button class="btn btn-xs aitrol-action-menu__trigger" type="button" id="' . $actionMenuId . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Abrir acciones de la factura ' . $row->id . '"><i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down" aria-hidden="true"></i></button>';
+                        $tabla .= '<div class="dropdown-menu aitrol-action-menu__panel" aria-labelledby="' . $actionMenuId . '">';
                         if ($row->rutapdf != '') {
                           $tabla .= '<a target="_blank" href="' . route('pdf.visualizar', ['id' => $row->id])  . '" class="btn btn-xs" style="text-align: left; color: black; padding: 5px 0px 5px 15px;"> Archivo</a>';
                         }
@@ -327,9 +316,9 @@ if (count($ventas) > 0) {
                         }
                         $tabla .= '<a href="' . asset('/') . 'contable/ventas/editar/' . $row->id . '" class="btn btn-xs " style="text-align: left; color: black; padding: 5px 0px 5px 15px;"><i class="fa fa-eye"></i>Visualizar</a>';
                         if ($row->estado == 1) {
-                          $tabla .= '<a onclick="anular(' . $row->id . ')" class="btn btn-xs button" style="text-align: left; color: red; padding: 5px 0px 5px 15px;"><i class="fa fa-trash" ></i> Anular</a>';
+                          $tabla .= '<a onclick="anular(' . $row->id . ')" class="btn btn-xs button aitrol-action-menu__item--danger" style="text-align: left; color: red; padding: 5px 0px 5px 15px;"><i class="fa fa-trash" ></i> Anular</a>';
                         } else {
-                          $tabla .= '<a href="#" class="btn-xs dropdown-item" style="text-align: left; color: red; padding: 5px 0px 5px 15px;" ><i class="fa fa-minus"></i> Anulado</a>';
+                          $tabla .= '<a href="#" class="btn-xs dropdown-item aitrol-action-menu__item--danger" style="text-align: left; color: red; padding: 5px 0px 5px 15px;" ><i class="fa fa-minus"></i> Anulado</a>';
                         }
                         $tabla .= '</div>';
                         $tabla .= '</td>';
@@ -352,9 +341,8 @@ if (count($ventas) > 0) {
                         $sriStatusIcon = $isSriAuthorized ? 'fa-check-circle' : 'fa-clock-o';
                         $sriStatusLabel = $isSriAuthorized ? 'Autorizado' : 'Sin autorizar';
                       }
-                      $tabla .= '<span class="aitrol-sri-status ' . $sriStatusClass . '" title="Estado SRI: ' . $sriStatusLabel . '">';
+                      $tabla .= '<span class="aitrol-sri-status ' . $sriStatusClass . '" title="Estado SRI: ' . $sriStatusLabel . '" aria-label="Estado SRI: ' . $sriStatusLabel . '">';
                       $tabla .= '<i class="fa ' . $sriStatusIcon . '" aria-hidden="true"></i>';
-                      $tabla .= '<span>' . $sriStatusLabel . '</span>';
                       $tabla .= '</span>';
                       $tabla .= '</td>';
                       if ($empresa->inventario == 1 && $empresa->egreso_kardex == 1) {
@@ -391,11 +379,11 @@ if (count($ventas) > 0) {
                       $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $fechapro . '</a>';
                       $tabla .= '</td>';
                       $tabla .= '<td>';
-                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombre1 . ' ' . $row->apellido1 . '</a>';
+                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . e($abbreviateUserName($row->nombre1, $row->apellido1)) . '</a>';
                       $tabla .= '</td>';
                       $tabla .= '<td>';
                       if ($row->estado == 0) {
-                        $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nombremod1 . ' ' . $row->apellidomod1 . '</a>';
+                        $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . e($abbreviateUserName($row->nombremod1, $row->apellidomod1)) . '</a>';
                       } else {
                         $tabla .= '';
                       }
