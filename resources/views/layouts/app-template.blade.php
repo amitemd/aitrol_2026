@@ -198,9 +198,8 @@ document.onmousedown=click
     <!-- /.content-wrapper -->
     <!-- Footer -->
     <input type="hidden" id="asset_" value="<?=asset('/');?>"/>
-	</div>
-</div>
     @include('layouts.footer')
+	</div>
 
     <!-- ./wrapper -->
     <!-- REQUIRED JS SCRIPTS -->

@@ -4,14 +4,9 @@
 $porcentajeIva = $porIva->iva * 100;
 $valorIva = $porIva->iva;
 ?>
-<style type="text/css">
-    .wrap {
-        width: 100%;
-    }
-</style>
-
 <link rel="stylesheet" href="{{ asset('/css/icheck/all.css')}}">
 <link rel="stylesheet" href="{{ asset('/css/bootstrap-datetimepicker.css')}}">
+<link rel="stylesheet" href="{{ asset('/css/aitrol-invoice-detail.css') }}?v={{ filemtime(public_path('css/aitrol-invoice-detail.css')) }}">
 
 <script type="text/javascript">
     function check(e) {
@@ -45,7 +40,7 @@ $valorIva = $porIva->iva;
     </div>
 </div>
 <link rel="stylesheet" href="{{ asset('/css/bootstrap-datetimepicker.css')}}">
-<section class="content">
+<section class="content aitrol-invoice-detail">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="#">Contable</a></li>
@@ -54,33 +49,38 @@ $valorIva = $porIva->iva;
             <li class="breadcrumb-item active" aria-current="page">Detalle</li>
         </ol>
     </nav>
-    <div class="box">
-        <div class="box-header header_new">
-            <div class="col-md-5">
-                <h3 class="box-title">Factura de Venta</h3>
+    <div class="box aitrol-invoice-detail__toolbar-card">
+        <div class="box-header aitrol-invoice-detail__toolbar">
+            <div class="aitrol-invoice-detail__heading">
+                <span class="aitrol-invoice-detail__heading-icon" aria-hidden="true">
+                    <i class="fa fa-file-text-o"></i>
+                </span>
+                <div>
+                    <span class="aitrol-invoice-detail__eyebrow">Comprobante de venta</span>
+                    <h1 class="box-title">Factura {{ $ventas->sucursal }}-{{ $ventas->punto_emision }}-{{ $ventas->numero }}</h1>
+                    <p>Revise la información general, los productos, valores y formas de pago.</p>
+                </div>
             </div>
-            <a class="btn btn-success btn-gray " data-remote="{{ route('compras.modal_estado',[$ventas->id_asiento])}}" class="btn btn-info btn-sm" data-toggle="modal" data-target="#visualizar_estado">
-                <i class="glyphicon glyphicon-eye-open" aria-hidden="true"></i>&nbsp;&nbsp;Visualizar Asiento diaro
-            </a>
-            <a class="btn btn-success btn-gray " style="margin-left: 3px;" href="{{route('librodiario.edit',['id'=>$ventas->id_asiento])}}" target="_blank">
-                <i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;&nbsp;Editar Asiento diario
-            </a>
-
-            <div class="col-md-1 text-right">
-                <a class="btn btn-default btn-gray" data-remote="{{ route('modalsubir_ventas',['id'=> $ventas->id])}}" data-toggle="modal" data-target="#modalpdf"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Subir</a>
-            </div>
-
-            <div class="col-md-2 text-right">
-                <button onclick="goBack()" class="btn btn-default btn-gray">
-                    <i class="glyphicon glyphicon-arrow-left" aria-hidden="true"></i>&nbsp;&nbsp;Regresar
+            <div class="aitrol-invoice-detail__actions">
+                <button type="button" onclick="goBack()" class="btn aitrol-invoice-action aitrol-invoice-action--subtle">
+                    <i class="fa fa-arrow-left" aria-hidden="true"></i><span>Regresar</span>
                 </button>
+                <a class="btn aitrol-invoice-action" data-remote="{{ route('modalsubir_ventas',['id'=> $ventas->id])}}" data-toggle="modal" data-target="#modalpdf">
+                    <i class="fa fa-file-pdf-o" aria-hidden="true"></i><span>Subir PDF</span>
+                </a>
+                <a class="btn aitrol-invoice-action" data-remote="{{ route('compras.modal_estado',[$ventas->id_asiento])}}" data-toggle="modal" data-target="#visualizar_estado">
+                    <i class="fa fa-eye" aria-hidden="true"></i><span>Ver asiento</span>
+                </a>
+                <a class="btn aitrol-invoice-action aitrol-invoice-action--primary" href="{{route('librodiario.edit',['id'=>$ventas->id_asiento])}}" target="_blank" rel="noopener">
+                    <i class="fa fa-pencil" aria-hidden="true"></i><span>Editar asiento</span>
+                </a>
             </div>
         </div>
     </div>
     <input type="hidden" value="{{$ventas->id}}" id="idventa">
-    <div class="box-body dobra">
-        <div class="header row">
-            <form action="{{route('ventas_update',['id'=>$ventas->id])}}" method="post" id="forms">
+    <div class="box-body dobra aitrol-invoice-detail__body">
+        <div class="header row aitrol-invoice-detail__fields">
+            <form action="{{route('ventas_update',['id'=>$ventas->id])}}" method="post" id="forms" class="aitrol-invoice-detail__form">
                 {{ csrf_field() }}
                 <div class="form-group col-xs-6  col-md-2  px-1">
                     <div class="col-md-12 px-0">

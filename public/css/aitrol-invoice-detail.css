@@ -1,0 +1,401 @@
+.aitrol-invoice-detail {
+    --invoice-blue: #087fad;
+    --invoice-blue-dark: #075d86;
+    --invoice-border: #dce6ef;
+    --invoice-muted: #64748b;
+    --invoice-surface: #f8fafc;
+    padding: 18px 28px 32px;
+}
+
+.aitrol-invoice-detail .breadcrumb {
+    background: transparent;
+    color: var(--invoice-muted);
+    font-size: 12px;
+    margin: 0 0 14px;
+    padding: 0;
+}
+
+.aitrol-invoice-detail .breadcrumb > li + li::before {
+    color: #b3c0cc;
+}
+
+.aitrol-invoice-detail .breadcrumb a {
+    color: #277fac;
+}
+
+.aitrol-invoice-detail__toolbar-card,
+.aitrol-invoice-detail__body {
+    background: #fff;
+    border: 1px solid var(--invoice-border);
+    border-radius: 13px;
+    box-shadow: 0 8px 24px rgb(15 50 82 / 7%);
+}
+
+.aitrol-invoice-detail__toolbar-card {
+    margin-bottom: 16px;
+}
+
+.aitrol-invoice-detail__toolbar {
+    align-items: center;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    padding: 18px 20px !important;
+}
+
+.aitrol-invoice-detail__heading {
+    align-items: center;
+    display: flex;
+    gap: 13px;
+    min-width: 260px;
+}
+
+.aitrol-invoice-detail__heading-icon {
+    align-items: center;
+    background: #eaf7fc;
+    border: 1px solid #c8eaf6;
+    border-radius: 10px;
+    color: var(--invoice-blue);
+    display: flex;
+    flex: 0 0 44px;
+    font-size: 19px;
+    height: 44px;
+    justify-content: center;
+}
+
+.aitrol-invoice-detail__eyebrow {
+    color: var(--invoice-blue);
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+}
+
+.aitrol-invoice-detail__heading .box-title {
+    color: #172033;
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.aitrol-invoice-detail__heading p {
+    color: var(--invoice-muted);
+    font-size: 11px;
+    line-height: 1.5;
+    margin: 4px 0 0;
+}
+
+.aitrol-invoice-detail__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.aitrol-invoice-detail .aitrol-invoice-action {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #cbd9e5;
+    border-radius: 8px;
+    color: #334155;
+    display: inline-flex;
+    font-size: 11px;
+    font-weight: 600;
+    gap: 7px;
+    min-height: 36px;
+    padding: 8px 12px;
+    transition: border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.aitrol-invoice-detail .aitrol-invoice-action:hover,
+.aitrol-invoice-detail .aitrol-invoice-action:focus {
+    border-color: #74bbd7;
+    box-shadow: 0 5px 13px rgb(8 127 173 / 12%);
+    color: var(--invoice-blue-dark);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.aitrol-invoice-detail .aitrol-invoice-action--subtle {
+    background: var(--invoice-surface);
+}
+
+.aitrol-invoice-detail .aitrol-invoice-action--primary {
+    background: var(--invoice-blue);
+    border-color: var(--invoice-blue);
+    color: #fff;
+}
+
+.aitrol-invoice-detail .aitrol-invoice-action--primary:hover,
+.aitrol-invoice-detail .aitrol-invoice-action--primary:focus {
+    background: var(--invoice-blue-dark);
+    border-color: var(--invoice-blue-dark);
+    color: #fff;
+}
+
+.aitrol-invoice-detail__body {
+    overflow: visible;
+    padding: 20px !important;
+}
+
+.aitrol-invoice-detail__fields {
+    margin: 0;
+}
+
+.aitrol-invoice-detail .dobra > .aitrol-invoice-detail__fields {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aitrol-invoice-detail__form::after,
+.aitrol-invoice-detail__fields::after {
+    clear: both;
+    content: "";
+    display: table;
+}
+
+.aitrol-invoice-detail .form-group {
+    margin-bottom: 14px;
+}
+
+.aitrol-invoice-detail .label_header {
+    background: transparent !important;
+    color: #526176 !important;
+    display: block;
+    font-size: 9px !important;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    margin: 0;
+    min-height: 0;
+    padding: 0 0 6px !important;
+    text-align: left !important;
+    text-transform: uppercase;
+}
+
+.aitrol-invoice-detail .form-control,
+.aitrol-invoice-detail .select2-container .select2-selection {
+    background-color: #fff;
+    border: 1px solid #d4e0ea;
+    border-radius: 7px;
+    box-shadow: none;
+    color: #26374a;
+    font-size: 11px;
+    min-height: 36px;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.aitrol-invoice-detail textarea.form-control {
+    min-height: 72px;
+    resize: vertical;
+}
+
+.aitrol-invoice-detail .form-control:focus {
+    border-color: #63b6d4;
+    box-shadow: 0 0 0 3px rgb(8 127 173 / 10%);
+}
+
+.aitrol-invoice-detail .form-control[disabled],
+.aitrol-invoice-detail .form-control[readonly],
+.aitrol-invoice-detail select[disabled] {
+    background-color: #f4f7fa;
+    color: #42526b;
+    cursor: default;
+    opacity: 1;
+}
+
+.aitrol-invoice-detail .form-group.col-xs-12 {
+    background: var(--invoice-surface);
+    border: 1px solid #e4ebf1;
+    border-radius: 9px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.aitrol-invoice-detail .table-responsive {
+    border: 1px solid var(--invoice-border);
+    border-radius: 10px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    width: 100%;
+}
+
+.aitrol-invoice-detail .table {
+    border: 0;
+    margin: 0;
+    min-width: 940px;
+}
+
+.aitrol-invoice-detail .table > thead > tr > th {
+    background: #f2f6f9 !important;
+    border-color: #dfe7ee !important;
+    color: #415269;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+    padding: 11px 10px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.aitrol-invoice-detail .table > tbody > tr > td {
+    background: #fff;
+    border-color: #e8eef3;
+    color: #334155;
+    font-size: 11px;
+    padding: 11px 10px;
+    vertical-align: middle;
+}
+
+.aitrol-invoice-detail .table > tbody > tr:hover > td {
+    background: #f8fcfe;
+}
+
+.aitrol-invoice-detail .table .detalle_producto {
+    color: #738196;
+    display: block;
+    font-size: 10px;
+    line-height: 1.45;
+    margin-top: 3px;
+}
+
+.aitrol-invoice-detail .table > tfoot > tr > td {
+    background: #fff;
+    border: 0;
+    color: #42526b;
+    font-size: 11px;
+    padding: 6px 10px;
+}
+
+.aitrol-invoice-detail .table > tfoot > tr > td[colspan="2"] {
+    background: #f8fafc;
+    border-left: 1px solid #e3eaf0;
+    font-weight: 500;
+}
+
+.aitrol-invoice-detail .table > tfoot > tr > td:last-of-type {
+    background: #f8fafc;
+    border-right: 1px solid #e3eaf0;
+    color: #172033;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.aitrol-invoice-detail .table > tfoot > tr:last-child > td[colspan="2"],
+.aitrol-invoice-detail .table > tfoot > tr:last-child > td:last-of-type {
+    background: #eaf7fc;
+    border-bottom: 1px solid #cce8f3;
+    border-top: 1px solid #cce8f3;
+    color: var(--invoice-blue-dark);
+    font-size: 13px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.aitrol-invoice-detail .head-title,
+.aitrol-invoice-detail .cabecera {
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+.aitrol-invoice-detail .head-title {
+    background: transparent;
+    border-top: 1px solid var(--invoice-border);
+    margin: 4px 0 0;
+    padding-top: 18px;
+}
+
+.aitrol-invoice-detail .cabecera {
+    background: transparent !important;
+    padding: 0 0 10px !important;
+}
+
+.aitrol-invoice-detail .cabecera .color_texto {
+    color: #172033 !important;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.aitrol-invoice-detail #example1 {
+    min-width: 720px;
+}
+
+.aitrol-invoice-detail .panel {
+    border-color: var(--invoice-border);
+    border-radius: 10px;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.aitrol-invoice-detail .panel-heading {
+    background: #f8fafc;
+    border-color: var(--invoice-border);
+    color: #26374a;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+@media (max-width: 1199px) {
+    .aitrol-invoice-detail__toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .aitrol-invoice-detail__actions {
+        justify-content: flex-start;
+        width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .aitrol-invoice-detail {
+        padding: 14px 12px 24px !important;
+    }
+
+    .aitrol-invoice-detail__toolbar,
+    .aitrol-invoice-detail__body {
+        padding: 14px !important;
+    }
+
+    .aitrol-invoice-detail__heading {
+        align-items: flex-start;
+        min-width: 0;
+    }
+
+    .aitrol-invoice-detail__heading .box-title {
+        font-size: 16px;
+    }
+
+    .aitrol-invoice-detail__heading p {
+        display: none;
+    }
+
+    .aitrol-invoice-detail__actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .aitrol-invoice-detail .aitrol-invoice-action {
+        justify-content: center;
+        margin: 0;
+        width: 100%;
+    }
+
+    .aitrol-invoice-detail .form-group.col-xs-12 > [class*="col-md-"] {
+        margin-bottom: 7px;
+    }
+
+    .aitrol-invoice-detail .main-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

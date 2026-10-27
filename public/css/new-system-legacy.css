@@ -635,6 +635,7 @@ body {
 
 .aitrol-shell .wrapper {
     background: #eef3f8;
+    min-height: 100vh;
 }
 
 .aitrol-shell .main-header {
@@ -876,7 +877,7 @@ body {
 
 .aitrol-shell .content-wrapper {
     background: #eef3f8;
-    min-height: calc(100vh - 64px) !important;
+    min-height: calc(100vh - 120px) !important;
 }
 
 .aitrol-shell .content-header {
@@ -1018,9 +1019,24 @@ body {
 }
 
 .aitrol-shell .main-footer {
+    align-items: center;
+    background: #fff;
     border-top: 1px solid #dfe7ee;
+    box-sizing: border-box;
     color: #5d6b7f;
+    display: flex;
+    justify-content: space-between;
+    min-height: 56px;
     padding: 17px 24px;
+}
+
+.aitrol-shell .main-footer strong {
+    color: #42526b;
+    font-weight: 600;
+}
+
+.aitrol-shell .aitrol-footer__copyright {
+    display: inline-block;
 }
 
 .aitrol-welcome {

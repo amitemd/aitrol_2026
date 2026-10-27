@@ -231,7 +231,9 @@
         </div>
 
         <footer class="main-footer">
-            <strong>Copyright &copy; {{ date('Y') }} AITROL.</strong> Todos los derechos reservados.
+            <span class="aitrol-footer__copyright">
+                <strong>Copyright &copy; {{ date('Y') }} AITROL.</strong> Todos los derechos reservados.
+            </span>
             <span class="pull-right hidden-xs">Laravel 13</span>
         </footer>
     </div>

@@ -1,10 +1,9 @@
   <!-- Main Footer -->
   <footer class="main-footer">
-    <!-- To the right -->
-    <div class="pull-right hidden-xs">
-    </div>
-    <!-- Default to the left -->
-    <strong>Copyright &copy; {{ date('Y') }}<a href="#"></a>.</strong> Todos los derechos reservados.
+    <span class="aitrol-footer__copyright">
+      <strong>Copyright &copy; {{ date('Y') }} AITROL.</strong> Todos los derechos reservados.
+    </span>
+    <span class="pull-right hidden-xs">Laravel 13</span>
   </footer>
 
   <?php
