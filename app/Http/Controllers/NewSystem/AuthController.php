@@ -28,7 +28,7 @@ class AuthController extends Controller
         $limiters = $this->loginLimiters($request, $email);
 
         if ($blockedLimiter = $this->blockedLimiter($limiters)) {
-            $this->rememberLockout($request, $blockedLimiter);
+            $this->rememberLockout($request, $blockedLimiter, $email);
 
             throw ValidationException::withMessages([
                 'email' => $this->lockoutMessage($blockedLimiter),
@@ -51,7 +51,7 @@ class AuthController extends Controller
             $blockedLimiter = $this->blockedLimiter($limiters);
 
             if ($blockedLimiter !== null) {
-                $this->rememberLockout($request, $blockedLimiter);
+                $this->rememberLockout($request, $blockedLimiter, $email);
             }
 
             throw ValidationException::withMessages([
@@ -63,7 +63,10 @@ class AuthController extends Controller
 
         RateLimiter::clear($limiters['pair']['key']);
         RateLimiter::clear($limiters['account']['key']);
-        $request->session()->forget('new_system.login_locked_until');
+        $request->session()->forget([
+            'new_system.login_locked_until',
+            'new_system.login_locked_email_hash',
+        ]);
         $request->session()->regenerate();
         $request->session()->regenerateToken();
 
@@ -141,13 +144,17 @@ class AuthController extends Controller
     /**
      * @param  array{key: string, max: int, decay: int, attempts?: int}  $limiter
      */
-    private function rememberLockout(Request $request, array $limiter): void
+    private function rememberLockout(Request $request, array $limiter, string $email): void
     {
         $retryAfter = max(1, RateLimiter::availableIn($limiter['key']));
 
-        $request->session()->put(
+        $request->session()->flash(
             'new_system.login_locked_until',
             now()->addSeconds($retryAfter)->getTimestamp(),
+        );
+        $request->session()->flash(
+            'new_system.login_locked_email_hash',
+            hash('sha256', $email),
         );
     }
 

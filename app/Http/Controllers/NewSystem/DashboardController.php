@@ -7,6 +7,7 @@ use App\Services\NewSystem\CompanyAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Sis_medico\Empresa;
 use Sis_medico\User;
 
@@ -18,10 +19,17 @@ class DashboardController extends Controller
 
         if (! $user instanceof User) {
             $lockedUntil = (int) $request->session()->get('new_system.login_locked_until', 0);
-            $loginLocked = $lockedUntil > now()->getTimestamp();
+            $lockedEmailHash = (string) $request->session()->get('new_system.login_locked_email_hash', '');
+            $submittedEmail = Str::lower(trim((string) $request->old('email')));
+            $loginLocked = $submittedEmail !== ''
+                && $lockedUntil > now()->getTimestamp()
+                && hash_equals($lockedEmailHash, hash('sha256', $submittedEmail));
 
-            if (! $loginLocked && $lockedUntil !== 0) {
-                $request->session()->forget('new_system.login_locked_until');
+            if (! $loginLocked) {
+                $request->session()->forget([
+                    'new_system.login_locked_until',
+                    'new_system.login_locked_email_hash',
+                ]);
             }
 
             return view('new-system.auth.login', [

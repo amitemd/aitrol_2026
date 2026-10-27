@@ -858,6 +858,17 @@ body {
     color: #fff !important;
 }
 
+.aitrol-shell .sidebar-menu li.has-current-route > a {
+    color: #eaf8ff !important;
+}
+
+.aitrol-shell .sidebar-menu li.current-menu-item > a {
+    background: rgb(36 185 230 / 13%) !important;
+    box-shadow: inset 3px 0 0 #24b9e6;
+    color: #fff !important;
+    font-weight: 600;
+}
+
 .aitrol-shell .content-wrapper,
 .aitrol-shell .main-footer {
     margin-left: 320px !important;

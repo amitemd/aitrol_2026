@@ -246,7 +246,7 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
               </span>
             </a>
             <ul class="treeview-menu">
-              <li class="container-clip">
+              <li class="container-clip" data-route-prefixes="/orden/ingresada/formato012|/orden_012|/formato012|/formato_053|/hc4/formato012">
                 <button style="background: transparent; border: none;">
                   <i onclick="anclarTarget(this, `{{ route('orden_ingresada_formato012') }}`, '{{trans('tsidebar.atencionalpaciente')}}', '{{trans('tsidebar.ordenes_Ingresadas')}}')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
                 </button>
