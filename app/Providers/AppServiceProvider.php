@@ -31,14 +31,24 @@ class AppServiceProvider extends ServiceProvider
             fn (User $user): bool => (int) $user->id_tipo_usuario === 1,
         );
 
-        RateLimiter::for('new-system-password-reset', function (Request $request): Limit {
+        RateLimiter::for('new-system-password-reset', function (Request $request): array {
             $email = Str::lower($request->string('email')->trim()->toString());
+            $accountHash = hash('sha256', $email);
+            $ipHash = hash('sha256', (string) $request->ip());
+            $response = fn (Request $request, array $headers): RedirectResponse => back()
+                ->withErrors(['email' => 'Demasiadas solicitudes. Inténtalo nuevamente en cinco minutos.'])
+                ->withHeaders($headers);
 
-            return Limit::perMinutes(5, 3)
-                ->by(Str::transliterate($email.'|'.$request->ip()))
-                ->response(fn (Request $request, array $headers): RedirectResponse => back()
-                    ->withErrors(['email' => 'Demasiadas solicitudes. Inténtalo nuevamente en cinco minutos.'])
-                    ->withHeaders($headers));
+            return [
+                Limit::perMinutes(
+                    (int) config('auth.password_reset_security.pair_decay_minutes', 5),
+                    (int) config('auth.password_reset_security.pair_max_attempts', 3),
+                )->by("password-reset:pair:{$accountHash}:{$ipHash}")->response($response),
+                Limit::perMinutes(
+                    (int) config('auth.password_reset_security.ip_decay_minutes', 5),
+                    (int) config('auth.password_reset_security.ip_max_attempts', 20),
+                )->by("password-reset:ip:{$ipHash}")->response($response),
+            ];
         });
     }
 }

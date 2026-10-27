@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
@@ -48,9 +50,14 @@ class PasswordResetController extends Controller
     public function reset(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'token' => ['required', 'string'],
+            'token' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:191'],
-            'password' => ['required', 'confirmed', PasswordRule::min(8)],
+            'password' => [
+                'required',
+                'confirmed',
+                'max:255',
+                PasswordRule::min(12)->letters()->mixedCase()->numbers()->symbols(),
+            ],
         ]);
         $credentials['email'] = Str::lower(trim($credentials['email']));
         $credentials['estado'] = 1;
@@ -63,6 +70,8 @@ class PasswordResetController extends Controller
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
+
+                $this->revokeDatabaseSessions($user);
 
                 event(new PasswordReset($user));
             },
@@ -77,9 +86,27 @@ class PasswordResetController extends Controller
         return back()
             ->withInput($request->only('email'))
             ->withErrors([
-                'email' => $status === Password::InvalidUser
-                    ? 'No se encontró una cuenta activa con ese correo electrónico.'
-                    : 'El enlace de recuperación no es válido o ya expiró.',
+                'email' => 'El enlace de recuperación no es válido o ya expiró.',
             ]);
+    }
+
+    private function revokeDatabaseSessions(User $user): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        $connection = config('session.connection');
+        $table = (string) config('session.table', 'sessions');
+        $schema = Schema::connection($connection);
+
+        if (! $schema->hasTable($table)) {
+            return;
+        }
+
+        DB::connection($connection)
+            ->table($table)
+            ->where('user_id', (string) $user->getAuthIdentifier())
+            ->delete();
     }
 }

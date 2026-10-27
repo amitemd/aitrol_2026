@@ -3,6 +3,7 @@
 use App\Console\Commands\CreateAdministrator;
 use App\Console\Commands\CustomCommand;
 use App\Console\Commands\DeployApplication;
+use App\Http\Middleware\SecureAuthenticationResponse;
 use App\Http\Middleware\ShareNewSystemContext;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -57,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ? route('new-system.dashboard')
                 : route('login'),
         );
+        $middleware->redirectUsersTo(fn (): string => route('new-system.dashboard'));
 
         $middleware->validateCsrfTokens(except: [
             'maquina/hemograma/prueba',
@@ -67,6 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cors' => Cors::class,
             'general' => General::class,
             'new.context' => ShareNewSystemContext::class,
+            'secure.auth.response' => SecureAuthenticationResponse::class,
             'operacion.v3' => OperacionMonitoreo::class,
         ]);
     })

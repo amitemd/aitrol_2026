@@ -67,6 +67,120 @@ class NewSystemAuthenticationTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_login_is_blocked_when_an_account_is_attacked_from_multiple_addresses(): void
+    {
+        $this->createAuthenticationRecords();
+        $this->travelTo('2026-10-27 08:00:00');
+
+        foreach (range(1, 10) as $attempt) {
+            $this->withServerVariables(['REMOTE_ADDR' => "192.0.2.{$attempt}"])
+                ->post(route('new-system.login.store'), [
+                    'email' => 'admin@example.com',
+                    'password' => 'incorrect-password-'.$attempt,
+                ]);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.10'])
+            ->post(route('new-system.login.store'), [
+                'email' => 'admin@example.com',
+                'password' => 'password',
+            ])->assertSessionHasErrors([
+                'email' => 'El acceso está temporalmente bloqueado por seguridad. Inténtalo nuevamente más tarde.',
+            ]);
+        $this->assertGuest();
+    }
+
+    public function test_authenticated_user_cannot_replace_their_identity_through_the_login_endpoint(): void
+    {
+        $authenticatedUser = $this->createAuthenticationRecords();
+        DB::table('users')->insert([
+            'id' => 'second-user',
+            'nombre1' => 'Segundo',
+            'apellido1' => 'Usuario',
+            'email' => 'second@example.com',
+            'password' => bcrypt('password'),
+            'remember_token' => null,
+            'id_tipo_usuario' => 1,
+            'estado' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($authenticatedUser)
+            ->post(route('new-system.login.store'), [
+                'email' => 'second@example.com',
+                'password' => 'password',
+            ])
+            ->assertRedirect(route('new-system.dashboard'));
+
+        $this->assertAuthenticatedAs($authenticatedUser);
+    }
+
+    public function test_login_rejects_an_excessively_large_password_before_hashing_it(): void
+    {
+        $this->createAuthenticationRecords();
+
+        $this->post(route('new-system.login.store'), [
+            'email' => 'admin@example.com',
+            'password' => str_repeat('a', 256),
+        ])->assertSessionHasErrors([
+            'password' => 'La contraseña no puede superar los 255 caracteres.',
+        ]);
+
+        $this->assertGuest();
+    }
+
+    public function test_authentication_pages_send_browser_security_headers_and_disable_caching(): void
+    {
+        $response = $this->get(route('new-system.dashboard'));
+
+        $response
+            ->assertOk()
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('X-Frame-Options', 'DENY')
+            ->assertHeader('Referrer-Policy', 'no-referrer')
+            ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+            ->assertHeader('Cross-Origin-Opener-Policy', 'same-origin')
+            ->assertHeader('Cross-Origin-Resource-Policy', 'same-origin')
+            ->assertHeader('X-Permitted-Cross-Domain-Policies', 'none');
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $contentSecurityPolicy = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString("frame-ancestors 'none'", $contentSecurityPolicy);
+        $this->assertMatchesRegularExpression("/script-src 'self' 'nonce-[A-Za-z0-9+\/=]+';/", $contentSecurityPolicy);
+        $this->assertMatchesRegularExpression('/<script nonce="[A-Za-z0-9+\/=]+">/', $response->getContent());
+    }
+
+    public function test_https_authentication_pages_enable_strict_transport_security(): void
+    {
+        $this->get('https://localhost:8000/')
+            ->assertOk()
+            ->assertHeader('Strict-Transport-Security', 'max-age=31536000');
+    }
+
+    public function test_login_is_limited_per_address_across_different_accounts(): void
+    {
+        $this->createAuthenticationRecords();
+        config()->set('auth.login_security.ip_max_attempts', 3);
+
+        foreach (range(1, 3) as $attempt) {
+            $this->post(route('new-system.login.store'), [
+                'email' => "unknown-{$attempt}@example.com",
+                'password' => 'incorrect-password',
+            ]);
+        }
+
+        $this->post(route('new-system.login.store'), [
+            'email' => 'admin@example.com',
+            'password' => 'password',
+        ])->assertSessionHasErrors([
+            'email' => 'El acceso está temporalmente bloqueado por seguridad. Inténtalo nuevamente más tarde.',
+        ]);
+        $this->assertGuest();
+    }
+
     public function test_remember_me_creates_a_persistent_login_cookie(): void
     {
         $user = $this->createAuthenticationRecords();
@@ -178,28 +292,141 @@ class NewSystemAuthenticationTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_password_recovery_is_limited_per_address_across_different_emails(): void
+    {
+        $this->createAuthenticationRecords();
+        config()->set('auth.password_reset_security.ip_max_attempts', 3);
+        Notification::fake();
+
+        foreach (range(1, 3) as $attempt) {
+            $this
+                ->from(route('new-system.password.request'))
+                ->post(route('new-system.password.email'), [
+                    'email' => "unknown-{$attempt}@example.com",
+                ])
+                ->assertSessionHas('status');
+        }
+
+        $this
+            ->from(route('new-system.password.request'))
+            ->post(route('new-system.password.email'), [
+                'email' => 'another-unknown@example.com',
+            ])
+            ->assertSessionHasErrors([
+                'email' => 'Demasiadas solicitudes. Inténtalo nuevamente en cinco minutos.',
+            ]);
+        Notification::assertNothingSent();
+    }
+
     public function test_password_can_be_reset_with_a_valid_token(): void
     {
         $user = $this->createAuthenticationRecords();
         Event::fake([PasswordReset::class]);
         $token = Password::broker()->createToken($user);
+        $newPassword = 'New-Secure-Password-2026!';
 
         $response = $this->post(route('new-system.password.update'), [
             'email' => 'admin@example.com',
-            'password' => 'new-secure-password',
-            'password_confirmation' => 'new-secure-password',
+            'password' => $newPassword,
+            'password_confirmation' => $newPassword,
             'token' => $token,
         ]);
 
         $response
             ->assertRedirectToRoute('new-system.dashboard')
             ->assertSessionHas('status', 'Tu contraseña fue actualizada. Ya puedes iniciar sesión.');
-        $this->assertTrue(Hash::check('new-secure-password', (string) $user->fresh()?->password));
+        $this->assertTrue(Hash::check($newPassword, (string) $user->fresh()?->password));
         $this->assertNotNull($user->fresh()?->getRememberToken());
         Event::assertDispatched(
             PasswordReset::class,
             fn (PasswordReset $event): bool => $event->user->is($user),
         );
+    }
+
+    public function test_password_reset_requires_a_strong_password(): void
+    {
+        $user = $this->createAuthenticationRecords();
+        $token = Password::broker()->createToken($user);
+
+        $this->post(route('new-system.password.update'), [
+            'email' => 'admin@example.com',
+            'password' => 'simplepassword',
+            'password_confirmation' => 'simplepassword',
+            'token' => $token,
+        ])->assertSessionHasErrors('password');
+
+        $this->assertTrue(Hash::check('password', (string) $user->fresh()?->password));
+    }
+
+    public function test_invalid_password_reset_does_not_reveal_whether_the_account_exists(): void
+    {
+        $this->createAuthenticationRecords();
+
+        $response = $this->post(route('new-system.password.update'), [
+            'email' => 'unknown@example.com',
+            'password' => 'New-Secure-Password-2026!',
+            'password_confirmation' => 'New-Secure-Password-2026!',
+            'token' => 'invalid-token',
+        ]);
+
+        $response->assertSessionHasErrors([
+            'email' => 'El enlace de recuperación no es válido o ya expiró.',
+        ]);
+    }
+
+    public function test_password_reset_link_expires_after_thirty_minutes(): void
+    {
+        $user = $this->createAuthenticationRecords();
+        $this->travelTo('2026-10-27 08:00:00');
+        $token = Password::broker()->createToken($user);
+        $this->travel(31)->minutes();
+
+        $this->post(route('new-system.password.update'), [
+            'email' => 'admin@example.com',
+            'password' => 'New-Secure-Password-2026!',
+            'password_confirmation' => 'New-Secure-Password-2026!',
+            'token' => $token,
+        ])->assertSessionHasErrors([
+            'email' => 'El enlace de recuperación no es válido o ya expiró.',
+        ]);
+
+        $this->assertTrue(Hash::check('password', (string) $user->fresh()?->password));
+    }
+
+    public function test_password_reset_revokes_existing_database_sessions(): void
+    {
+        $user = $this->createAuthenticationRecords();
+        Schema::dropIfExists('sessions');
+        Schema::create('sessions', function (Blueprint $table): void {
+            $table->string('id')->primary();
+            $table->string('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+        DB::table('sessions')->insert([
+            'id' => 'existing-authenticated-session',
+            'user_id' => $user->getAuthIdentifier(),
+            'ip_address' => '192.0.2.10',
+            'user_agent' => 'Test browser',
+            'payload' => base64_encode(serialize([])),
+            'last_activity' => now()->getTimestamp(),
+        ]);
+        config()->set('session.driver', 'database');
+        $token = Password::broker()->createToken($user);
+        $newPassword = 'New-Secure-Password-2026!';
+
+        $this->post(route('new-system.password.update'), [
+            'email' => 'admin@example.com',
+            'password' => $newPassword,
+            'password_confirmation' => $newPassword,
+            'token' => $token,
+        ])->assertRedirectToRoute('new-system.dashboard');
+
+        $this->assertDatabaseMissing('sessions', [
+            'id' => 'existing-authenticated-session',
+        ]);
     }
 
     private function createAuthenticationRecords(): User

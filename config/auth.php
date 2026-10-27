@@ -101,8 +101,8 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
-            'throttle' => 60,
+            'expire' => (int) env('AUTH_PASSWORD_RESET_EXPIRE_MINUTES', 30),
+            'throttle' => (int) env('AUTH_PASSWORD_RESET_THROTTLE_SECONDS', 60),
         ],
     ],
 
@@ -118,5 +118,22 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    'login_security' => [
+        'pair_max_attempts' => (int) env('AUTH_LOGIN_PAIR_MAX_ATTEMPTS', 5),
+        'pair_decay_seconds' => (int) env('AUTH_LOGIN_PAIR_DECAY_SECONDS', 300),
+        'account_max_attempts' => (int) env('AUTH_LOGIN_ACCOUNT_MAX_ATTEMPTS', 10),
+        'account_decay_seconds' => (int) env('AUTH_LOGIN_ACCOUNT_DECAY_SECONDS', 900),
+        'ip_max_attempts' => (int) env('AUTH_LOGIN_IP_MAX_ATTEMPTS', 50),
+        'ip_decay_seconds' => (int) env('AUTH_LOGIN_IP_DECAY_SECONDS', 300),
+        'remember_duration_minutes' => (int) env('AUTH_REMEMBER_DURATION_MINUTES', 43200),
+    ],
+
+    'password_reset_security' => [
+        'pair_max_attempts' => (int) env('AUTH_PASSWORD_RESET_PAIR_MAX_ATTEMPTS', 3),
+        'pair_decay_minutes' => (int) env('AUTH_PASSWORD_RESET_PAIR_DECAY_MINUTES', 5),
+        'ip_max_attempts' => (int) env('AUTH_PASSWORD_RESET_IP_MAX_ATTEMPTS', 20),
+        'ip_decay_minutes' => (int) env('AUTH_PASSWORD_RESET_IP_DECAY_MINUTES', 5),
+    ],
 
 ];

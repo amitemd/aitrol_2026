@@ -115,7 +115,7 @@
         </div>
     </main>
 
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         (function () {
             var slides = [
                 {

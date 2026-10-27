@@ -14,43 +14,51 @@ use Sis_medico\User;
 
 class AuthController extends Controller
 {
-    private const MAX_LOGIN_ATTEMPTS = 5;
-
-    private const LOGIN_LOCKOUT_SECONDS = 300;
-
     public function login(Request $request, CompanyAccess $companyAccess): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email', 'max:191'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'max:255'],
             'remember' => ['nullable', 'boolean'],
+        ], [
+            'password.max' => 'La contraseña no puede superar los 255 caracteres.',
         ]);
 
         $email = Str::lower(trim($credentials['email']));
-        $throttleKey = $this->throttleKey($request, $email);
+        $limiters = $this->loginLimiters($request, $email);
 
-        if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
+        if ($blockedLimiter = $this->blockedLimiter($limiters)) {
             throw ValidationException::withMessages([
-                'email' => $this->lockoutMessage($throttleKey),
+                'email' => $this->lockoutMessage($blockedLimiter),
             ]);
         }
+
+        Auth::guard()->setRememberDuration(
+            (int) config('auth.login_security.remember_duration_minutes', 43200),
+        );
 
         if (! Auth::attempt([
             'email' => $email,
             'password' => $credentials['password'],
             'estado' => 1,
         ], (bool) ($credentials['remember'] ?? false))) {
-            $attempts = RateLimiter::hit($throttleKey, self::LOGIN_LOCKOUT_SECONDS);
+            foreach ($limiters as $name => $limiter) {
+                $limiters[$name]['attempts'] = RateLimiter::hit($limiter['key'], $limiter['decay']);
+            }
+
+            $blockedLimiter = $this->blockedLimiter($limiters);
 
             throw ValidationException::withMessages([
-                'email' => $attempts >= self::MAX_LOGIN_ATTEMPTS
-                    ? $this->lockoutMessage($throttleKey)
+                'email' => $blockedLimiter !== null
+                    ? $this->lockoutMessage($blockedLimiter)
                     : 'Las credenciales proporcionadas no son válidas o el usuario está inactivo.',
             ]);
         }
 
-        RateLimiter::clear($throttleKey);
+        RateLimiter::clear($limiters['pair']['key']);
+        RateLimiter::clear($limiters['account']['key']);
         $request->session()->regenerate();
+        $request->session()->regenerateToken();
 
         /** @var User $user */
         $user = $request->user();
@@ -66,16 +74,61 @@ class AuthController extends Controller
         return redirect()->route('new-system.dashboard');
     }
 
-    private function throttleKey(Request $request, string $email): string
+    /**
+     * @return array<string, array{key: string, max: int, decay: int, attempts?: int}>
+     */
+    private function loginLimiters(Request $request, string $email): array
     {
-        return 'new-system-login:'.Str::transliterate($email.'|'.$request->ip());
+        $accountHash = hash('sha256', $email);
+        $ipHash = hash('sha256', (string) $request->ip());
+
+        return [
+            'pair' => [
+                'key' => "new-system-login:pair:{$accountHash}:{$ipHash}",
+                'max' => (int) config('auth.login_security.pair_max_attempts', 5),
+                'decay' => (int) config('auth.login_security.pair_decay_seconds', 300),
+            ],
+            'account' => [
+                'key' => "new-system-login:account:{$accountHash}",
+                'max' => (int) config('auth.login_security.account_max_attempts', 10),
+                'decay' => (int) config('auth.login_security.account_decay_seconds', 900),
+            ],
+            'ip' => [
+                'key' => "new-system-login:ip:{$ipHash}",
+                'max' => (int) config('auth.login_security.ip_max_attempts', 50),
+                'decay' => (int) config('auth.login_security.ip_decay_seconds', 300),
+            ],
+        ];
     }
 
-    private function lockoutMessage(string $throttleKey): string
+    /**
+     * @param  array<string, array{key: string, max: int, decay: int, attempts?: int}>  $limiters
+     * @return array{key: string, max: int, decay: int, attempts?: int}|null
+     */
+    private function blockedLimiter(array $limiters): ?array
     {
-        $minutes = max(1, (int) ceil(RateLimiter::availableIn($throttleKey) / 60));
+        foreach ($limiters as $limiter) {
+            if (($limiter['attempts'] ?? 0) >= $limiter['max']
+                || RateLimiter::tooManyAttempts($limiter['key'], $limiter['max'])) {
+                return $limiter;
+            }
+        }
 
-        return "Has alcanzado el máximo de intentos. Inténtalo nuevamente en {$minutes} minuto(s).";
+        return null;
+    }
+
+    /**
+     * @param  array{key: string, max: int, decay: int, attempts?: int}  $limiter
+     */
+    private function lockoutMessage(array $limiter): string
+    {
+        if (str_contains($limiter['key'], ':pair:')) {
+            $minutes = max(1, (int) ceil(RateLimiter::availableIn($limiter['key']) / 60));
+
+            return "Has alcanzado el máximo de intentos. Inténtalo nuevamente en {$minutes} minuto(s).";
+        }
+
+        return 'El acceso está temporalmente bloqueado por seguridad. Inténtalo nuevamente más tarde.';
     }
 
     public function logout(Request $request): RedirectResponse
