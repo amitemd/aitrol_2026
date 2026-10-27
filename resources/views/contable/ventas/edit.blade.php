@@ -52,14 +52,7 @@ $valorIva = $porIva->iva;
     <div class="box aitrol-invoice-detail__toolbar-card">
         <div class="box-header aitrol-invoice-detail__toolbar">
             <div class="aitrol-invoice-detail__heading">
-                <span class="aitrol-invoice-detail__heading-icon" aria-hidden="true">
-                    <i class="fa fa-file-text-o"></i>
-                </span>
-                <div>
-                    <span class="aitrol-invoice-detail__eyebrow">Comprobante de venta</span>
-                    <h1 class="box-title">Factura {{ $ventas->sucursal }}-{{ $ventas->punto_emision }}-{{ $ventas->numero }}</h1>
-                    <p>Revise la información general, los productos, valores y formas de pago.</p>
-                </div>
+                <h1 class="box-title">Factura {{ $ventas->sucursal }}-{{ $ventas->punto_emision }}-{{ $ventas->numero }}</h1>
             </div>
             <div class="aitrol-invoice-detail__actions">
                 <button type="button" onclick="goBack()" class="btn aitrol-invoice-action aitrol-invoice-action--subtle">

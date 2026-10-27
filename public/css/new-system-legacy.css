@@ -881,6 +881,7 @@ body {
     background: #eef3f8;
     flex: 1 0 auto;
     min-height: 0 !important;
+    padding-bottom: 72px;
 }
 
 .aitrol-shell .content-header {
@@ -1028,10 +1029,16 @@ body {
     box-sizing: border-box;
     color: #5d6b7f;
     display: flex;
+    bottom: 0;
+    left: 320px;
+    margin-left: 0 !important;
+    position: fixed;
+    right: 0;
     justify-content: space-between;
     min-height: 56px;
     padding: 17px 24px;
     flex: 0 0 auto;
+    z-index: 820;
 }
 
 .aitrol-shell .main-footer strong {
@@ -1121,9 +1128,13 @@ body {
         transform: translate(-270px, 0) !important;
     }
 
-    .aitrol-shell.sidebar-collapse .content-wrapper,
-    .aitrol-shell.sidebar-collapse .main-footer {
+    .aitrol-shell.sidebar-collapse .content-wrapper {
         margin-left: 50px !important;
+    }
+
+    .aitrol-shell.sidebar-collapse .main-footer {
+        left: 50px;
+        margin-left: 0 !important;
     }
 
     .aitrol-shell.sidebar-collapse .main-header .logo {
@@ -1168,8 +1179,12 @@ body {
         width: 280px !important;
     }
 
-    .aitrol-shell .content-wrapper,
+    .aitrol-shell .content-wrapper {
+        margin-left: 0 !important;
+    }
+
     .aitrol-shell .main-footer {
+        left: 0;
         margin-left: 0 !important;
     }
 
