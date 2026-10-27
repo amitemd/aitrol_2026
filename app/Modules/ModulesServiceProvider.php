@@ -2,6 +2,8 @@
 
 namespace App\Modules;
 
+use App\Modules\AccountingFinance\Application\Contracts\JournalEntryLineReadRepository;
+use App\Modules\AccountingFinance\Infrastructure\Persistence\LaravelJournalEntryLineReadRepository;
 use App\Modules\Billing\Application\Contracts\SalesInvoiceReadRepository;
 use App\Modules\Billing\Infrastructure\Persistence\LaravelSalesInvoiceReadRepository;
 use App\Modules\ClinicalCare\Application\Contracts\PatientSearchRepository;
@@ -10,8 +12,12 @@ use App\Modules\Diagnostics\Application\Contracts\DiagnosisCatalogRepository;
 use App\Modules\Diagnostics\Infrastructure\Persistence\LaravelDiagnosisCatalogRepository;
 use App\Modules\Hospitalization\Application\Contracts\HospitalizedPatientRepository;
 use App\Modules\Hospitalization\Infrastructure\Persistence\LaravelHospitalizedPatientRepository;
+use App\Modules\HumanResources\Application\Contracts\EmployeeDirectoryRepository;
+use App\Modules\HumanResources\Infrastructure\Persistence\LaravelEmployeeDirectoryRepository;
 use App\Modules\Institutional\Application\Contracts\CompanyAccessRepository;
 use App\Modules\Institutional\Infrastructure\Persistence\LaravelCompanyAccessRepository;
+use App\Modules\InventoryOperations\Application\Contracts\InventoryStockReadRepository;
+use App\Modules\InventoryOperations\Infrastructure\Persistence\LaravelInventoryStockReadRepository;
 use App\Modules\Shared\Application\ContextMap;
 use App\Modules\SupportIntegrations\Application\Contracts\AuditTrailRepository;
 use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
@@ -54,6 +60,21 @@ final class ModulesServiceProvider extends ServiceProvider
         $this->app->bind(
             HospitalizedPatientRepository::class,
             LaravelHospitalizedPatientRepository::class,
+        );
+
+        $this->app->bind(
+            InventoryStockReadRepository::class,
+            LaravelInventoryStockReadRepository::class,
+        );
+
+        $this->app->bind(
+            JournalEntryLineReadRepository::class,
+            LaravelJournalEntryLineReadRepository::class,
+        );
+
+        $this->app->bind(
+            EmployeeDirectoryRepository::class,
+            LaravelEmployeeDirectoryRepository::class,
         );
 
         $this->app->bind(

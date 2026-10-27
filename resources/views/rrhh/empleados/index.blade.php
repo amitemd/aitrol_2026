@@ -9,7 +9,7 @@
           <h3 class="box-title">Lista de empleados</h3>
         </div>
         <div class="col-sm-4">
-          <a class="btn btn-primary" href="{{ route('empleados.create')}}"><span class="glyphicon glyphicon-user"></span>  Agregar Empleado</a>
+          <a class="btn btn-primary" href="{{ route('rrhh.empleados.create')}}"><span class="glyphicon glyphicon-user"></span>  Agregar Empleado</a>
         </div>
     </div>
   </div>
@@ -19,11 +19,11 @@
         <div class="col-sm-6"></div>
         <div class="col-sm-6"></div>
       </div>
-      <form method="POST" action="">
+      <form method="POST" action="{{ route('rrhh.empleados.search') }}">
          {{ csrf_field() }}
          @component('layouts.search', ['title' => 'Buscar'])
           @component('layouts.two-cols-search-row', ['items' => ['Cédula', 'Apellidos', 'Nombres'], 
-          'oldVals' => [isset($searchingVals) ? $searchingVals['id'] : '', isset($searchingVals) ? $searchingVals['apellido1'] : '', isset($searchingVals) ? $searchingVals['nombre1'] : '' ]])
+          'oldVals' => [$searchingVals['employee_id'] ?? '', $searchingVals['last_names'] ?? '', $searchingVals['first_names'] ?? '' ]])
 
           @endcomponent
         @endcomponent
@@ -43,19 +43,19 @@
             <tbody>
             @foreach ($empleados as $value)
                 <tr role="row">
-                  <td >{{ $value->id}}</td>
-                  <td >{{$value->nombre1}} @if($value->nombre2!='(N/A)'){{$value->nombre2}}@endif {{$value->apellido1}} @if($value->apellido2!='(N/A)'){{$value->apellido2}}@endif</td>
-                  <td >{{ $value->telefono1.' / '.$value->telefono2 }}</td>
+                  <td>{{ $value->employeeId }}</td>
+                  <td>{{ $value->fullName() }}</td>
+                  <td>{{ $value->phones() }}</td>
                   <td>  
                       <div class="form-group col-md-6">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <a href="{{ route('empleados.edit', ['id' => $value->id]) }}" class="btn btn-block btn-warning btn-xs">
+                        <a href="{{ route('rrhh.empleados.edit', ['empleado' => $value->employeeId]) }}" class="btn btn-block btn-warning btn-xs">
                         <span class="fa fa-fw fa-pencil"></span> Actualizar
                         </a>  
                       </div>  
                       <div class="form-group col-md-6">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <a href="{{ route('empleados.documentos', ['id' => $value->id]) }}" class="btn btn-block btn-warning btn-xs"><span class="fa fa-fw fa-paperclip"></span> Documentos</a>  
+                        <a href="{{ route('empleados.documentos', ['id' => $value->employeeId]) }}" class="btn btn-block btn-warning btn-xs"><span class="fa fa-fw fa-paperclip"></span> Documentos</a>
                       </div>
                   </td>
               </tr>
@@ -70,7 +70,7 @@
         </div>
         <div class="col-sm-7">
           <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
-            {{ $empleados->appends(Request::only(['id', 'apellidos', 'nombres']))->links()}}
+            {{ $empleados->links()}}
           </div>
         </div>
       </div>

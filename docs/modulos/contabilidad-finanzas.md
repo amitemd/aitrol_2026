@@ -2,7 +2,7 @@
 
 ## Estado
 
-Mapeado. Los asientos, balances y procesos financieros siguen en el legado.
+En migración. La lectura de líneas para editar asientos ya atraviesa un caso de uso y un adaptador modular; los demás procesos financieros continúan en el legado.
 
 ## Uso
 
@@ -21,10 +21,21 @@ Será propietario del libro contable. Facturación y otros contextos solicitará
 
 Planeación financiera consumirá proyecciones y saldos mediante modelos de lectura, sin depender de controladores contables.
 
+## Operación migrada: líneas de un asiento
+
+La edición conserva la ruta, autorización, empresa activa y vista heredadas, pero obtiene sus líneas mediante `ListJournalEntryLinesForEditing` y `JournalEntryLineReadRepository`. El adaptador consulta las tablas actuales `ct_asientos_detalle` y `plan_cuentas_empresa`.
+
+Las líneas se resumen por cuenta con `SUM` para debe y haber. Todos los campos no agregados forman parte del `GROUP BY`, por lo que la operación funciona con `ONLY_FULL_GROUP_BY` sin debilitar la configuración de MySQL. El nombre de la cuenta se entrega en el mismo resultado y evita consultas adicionales desde la vista.
+
+### Riesgo y reversión
+
+Esta etapa es exclusivamente de lectura. No crea tablas, no altera asientos y no cambia el flujo de actualización heredado. Puede revertirse restaurando la consulta del controlador y los campos anteriores de la vista.
+
 ## Soporte
 
 - Verificar cabecera, detalles, empresa, período y balance entre debe y haber.
 - No desactivar `ONLY_FULL_GROUP_BY`; corregir las consultas incompatibles.
+- Si los totales no coinciden, comparar las líneas originales por `id_asiento_cabecera`, empresa e `id_plan_cuenta` antes de editar.
 - Antes de cambiar una cuenta o asiento, revisar cierres y documentos de origen.
 
 ## Criterio de migración

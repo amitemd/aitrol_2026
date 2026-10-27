@@ -115,19 +115,19 @@
                                             <td> <select style="width: 90%;" class="form-control select2_cuentas" name="id_plan_cuenta[]" required>
                                                     <option value=""> Seleccione...</option>
                                                     @foreach($cuentas as $x)
-                                                    <option @if($value->id_plan_cuenta == $x->id_plan || ($value->id_plan_cuenta) == $x->plan )
+                                                    <option @if($value->accountPlanId == $x->id_plan || $value->accountPlanId == $x->plan )
                                                         selected="selected"
                                                         @endif
                                                         value="{{$x->id_plan}}"> {{$x->plan}} | {{$x->nombre}}</option>
                                                     @endforeach
-                                                </select> <input type="hidden" name="id_asiento[]" value="{{$value->id}}"> </td>
-                                            <td> <input style="width: 90%;" class="form-control input-sm" type="text" name="cuenta_nombre[]" value="{{$value->cuenta->nombre}}" required></td>
+                                                </select> <input type="hidden" name="id_asiento[]" value="{{$value->sourceLineId}}"> </td>
+                                            <td> <input style="width: 90%;" class="form-control input-sm" type="text" name="cuenta_nombre[]" value="{{$value->accountName}}" required></td>
 
 
-                                            <td> <input style="width: 95%;" class="form-control input-sm" type="text" name="descripcion[]" value="{{$value->descripcion}}" required></td>
-                                            <td id="de{{$contador}}"> <input class="form-control input-sm debe" style="width: 95%;" type="text" name="debe[]" id="debe{{$contador}}" value="{{$value->debe}}" onchange="sumatotales(); debe({{$contador}});" required> </td>
-                                            <td id="h{{$contador}}"> <input class="form-control input-sm haber" style="width: 95%;" type="text" name="haber[]" id="haber{{$contador}}" value="{{$value->haber}}" onchange="sumatotales(); haber({{$contador}});" required> </td>
-                                            <input type="hidden" name="totales[]" id="totales{{$contador}}" value="@if(($value->debe)!=0) {{$value->debe}} @elseif(($value->haber)!=0) {{$value->haber}} @else 0 @endif">
+                                            <td> <input style="width: 95%;" class="form-control input-sm" type="text" name="descripcion[]" value="{{$value->description}}" required></td>
+                                            <td id="de{{$contador}}"> <input class="form-control input-sm debe" style="width: 95%;" type="text" name="debe[]" id="debe{{$contador}}" value="{{$value->debit}}" onchange="sumatotales(); debe({{$contador}});" required> </td>
+                                            <td id="h{{$contador}}"> <input class="form-control input-sm haber" style="width: 95%;" type="text" name="haber[]" id="haber{{$contador}}" value="{{$value->credit}}" onchange="sumatotales(); haber({{$contador}});" required> </td>
+                                            <input type="hidden" name="totales[]" id="totales{{$contador}}" value="@if($value->debit != 0) {{$value->debit}} @elseif($value->credit != 0) {{$value->credit}} @else 0 @endif">
 
                                             <td id="el{{$contador}}">
                                                 <button type="button" onclick="eliminardet({{$contador}})" class="btn btn-danger btn-gray" ><i class="fa fa-trash"></i></button>

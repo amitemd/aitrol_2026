@@ -8,10 +8,10 @@ Esta carpeta documenta los contextos funcionales definidos en `config/modular_ar
 - [Pacientes y atención clínica](atencion-clinica.md) — en migración.
 - [Diagnóstico](diagnostico.md) — en migración.
 - [Hospitalización](hospitalizacion.md) — en migración.
-- [Inventario y operaciones](inventario-operaciones.md) — mapeado.
+- [Inventario y operaciones](inventario-operaciones.md) — en migración.
 - [Facturación de ventas](facturacion-ventas.md) — en migración.
-- [Contabilidad y finanzas](contabilidad-finanzas.md) — mapeado.
-- [Talento humano](talento-humano.md) — mapeado.
+- [Contabilidad y finanzas](contabilidad-finanzas.md) — en migración.
+- [Talento humano](talento-humano.md) — en migración.
 - [Soporte e integraciones](soporte-integraciones.md) — en migración; logs, diagnóstico y auditoría disponibles.
 
 Todos los contextos utilizan la conexión predeterminada y la estructura actual de la base. La documentación debe actualizarse junto con cada operación migrada.

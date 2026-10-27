@@ -74,7 +74,10 @@
                 >
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <span class="inline-flex rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[0.68rem] font-semibold tracking-wider text-cyan-300 uppercase">{{ $module['category'] }}</span>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[0.68rem] font-semibold tracking-wider text-cyan-300 uppercase">{{ $module['category'] }}</span>
+                                <span class="inline-flex rounded-full border border-blue-300/20 bg-blue-400/10 px-2.5 py-1 text-[0.68rem] font-semibold tracking-wider text-blue-200 uppercase">{{ $module['context'] }}</span>
+                            </div>
                             <h2 class="mt-4 text-xl font-semibold tracking-tight text-white group-hover:text-cyan-200">{{ $module['name'] }}</h2>
                         </div>
                         <div class="rounded-2xl border border-white/10 bg-slate-950/60 px-3 py-2 text-center">
@@ -93,9 +96,9 @@
 
                     <div class="mt-6 flex items-center justify-between border-t border-white/10 pt-4 text-xs">
                         <code class="max-w-[72%] truncate text-slate-500" title="{{ $module['source'] }}">{{ $module['source'] }}</code>
-                        <span class="inline-flex items-center gap-1.5 font-medium text-emerald-300">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                            Integrado
+                        <span class="inline-flex items-center gap-1.5 font-medium {{ $module['migration_status'] === 'in_progress' ? 'text-amber-300' : 'text-slate-400' }}">
+                            <span class="h-1.5 w-1.5 rounded-full {{ $module['migration_status'] === 'in_progress' ? 'bg-amber-400' : 'bg-slate-500' }}"></span>
+                            {{ $module['migration_status'] === 'in_progress' ? 'Contexto en migración' : 'Mapeado' }}
                         </span>
                     </div>
                 </article>

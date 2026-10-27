@@ -204,54 +204,34 @@
               </thead>
               
               <tbody>
-            @php $marca = ""; @endphp 
                 @if(!is_null($inventario) || count($inventario)>0)
                 @php $acum_costo = 0;
                 $acum_existencia =0;
-                $acum_existencia_uso =0;
                 $acum_total =0;
                 $acum_existencia_min = 0;
 
                 @endphp
                   @foreach ($inventario as $value)
-                  @php 
-                         $det_movi = $value->det_mov;
-                        $nombre_proveedor = "N/A";
-                        if(isset($det_movi->pedido)){
-                          if(isset($det_movi->pedido->proveedor)){
-                              $nombre_proveedor = $det_movi->pedido->proveedor->nombrecomercial;
-                          }
-                        }      
-                         @endphp  
-                    @if(isset($value->producto))
-                      @if(isset($value->producto->marca))
-                        @if(!is_null($value->producto->marca->nombre))
-                          @php $marca = $value->producto->marca->nombre; @endphp    
-                        
-                        @endif
-                      @endif
-                    @endif
-                      @php $total = (($value->existencia) * ($value->costo_promedio)); @endphp
+                      @php $total = $value->quantity * $value->averageCost; @endphp
                       <tr>
                         <td class="td_der">{{ $value->id}}</td>
-                        <td>@if(isset($value->producto)) {{ $value->producto->codigo}} @endif</td>
-                        <td> {{ $marca }} </td>
-                        <td>@if(isset($value->producto))  {{ $value->producto->nombre}} @endif</td>
-                        <td> {{ $value->descripcion}} @if($value->bodega) {{ $value->bodega->nombre }} @endif </td>
+                        <td>{{ $value->productCode }}</td>
+                        <td>{{ $value->brandName }}</td>
+                        <td>{{ $value->productName }}</td>
+                        <td>{{ $value->warehouseName }}</td>
                                          
-                        <td class="td_der">{{ $value->existencia}}</td>
+                        <td class="td_der">{{ $value->quantity }}</td>
                         <!--td class="td_der">{{ $value->existencia_uso }}</td-->
-                        <td class="td_der">{{ $value->existencia_min }}</td>
+                        <td class="td_der">{{ $value->minimumQuantity }}</td>
                         @if(Auth::user()->id_tipo_usuario == 1)
-                        <td class="td_der"> {{ number_format($value->costo_promedio,4) }} </td>
-                        <td class="td_der"> {{ number_format(($value->existencia)*($value->costo_promedio),4) }} </td>
+                        <td class="td_der"> {{ number_format($value->averageCost,4) }} </td>
+                        <td class="td_der"> {{ number_format($total,4) }} </td>
                         @endif
                       </tr>       
                  
                   @php 
-                   $acum_existencia += $value->existencia;
-                   $acum_existencia_uso += $value->existencia_uso;
-                   $acum_existencia_min += $value->existencia_min;
+                   $acum_existencia += $value->quantity;
+                   $acum_existencia_min += $value->minimumQuantity;
                    $acum_total += $total;
                   
                   @endphp

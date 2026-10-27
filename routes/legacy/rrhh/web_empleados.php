@@ -11,6 +11,8 @@
 |
  */
 
+Route::post('empleados/buscar', 'rrhh\EmpleadosController@search')->name('rrhh.empleados.search');
+
 Route::resource('empleados', 'rrhh\EmpleadosController')->names([
     'index' => 'rrhh.empleados.index',
     'create' => 'rrhh.empleados.create',

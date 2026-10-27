@@ -2,39 +2,25 @@
 
 namespace Sis_medico\Http\Controllers\rrhh;
 
-use Sis_medico\Http\Controllers\Controller;
+use App\Modules\HumanResources\Application\Data\EmployeeDirectoryFilters;
+use App\Modules\HumanResources\Application\Queries\ListEmployees;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Response;   
-use Storage;
-use Illuminate\Support\Facades\Validator;
-use Sis_medico\Seguro;
-use Sis_medico\Subseguro;
+use Illuminate\Support\Facades\Auth;
+use Response;
+use Sis_medico\Archivo_historico;
+use Sis_medico\Empleado;
+use Sis_medico\Empleado_documento;
+use Sis_medico\Http\Controllers\Controller;
 use Sis_medico\Paciente;
 use Sis_medico\Pais;
 use Sis_medico\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Sis_medico\Log_usuario;
-use Sis_medico\Historiaclinica;
-use Sis_medico\Archivo_historico;
-use Sis_medico\Agenda;
-use Sis_medico\Log_agenda;
-use Sis_medico\Pentax;
-use Sis_medico\PentaxProc;
-use Sis_medico\AgendaProcedimiento;
-use Sis_medico\Procedimiento;
-use Sis_medico\Pentax_log;
-use Sis_medico\Sala;
-use Sis_medico\Empresa;
-use Sis_medico\Empleado;
-use Sis_medico\Empleado_documento;
-
-
+use Storage;
 
 class EmpleadosController extends Controller
 {
-     /**
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -42,36 +28,49 @@ class EmpleadosController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-    } 
+    }
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    private function rol(){
+    private function rol(): ?RedirectResponse
+    {
 
-        $rolUsuario = Auth::user()->id_tipo_usuario;      
-        if(in_array($rolUsuario, array(1, 8)) == false){
-          return redirect()->intended('/');
+        $rolUsuario = Auth::user()->id_tipo_usuario;
+        if (in_array($rolUsuario, [1, 8]) == false) {
+            return redirect()->intended('/');
         }
 
-    } 
+        return null;
+    }
 
-    public function index()
+    public function index(Request $request, ListEmployees $listEmployees): View|RedirectResponse
     {
-        $this->rol();
-        $empleados = DB::table('empleado')->where('estado','!=','0')
-        ->paginate(30);
+        if ($redirect = $this->rol()) {
+            return $redirect;
+        }
 
-        return view('rrhh/empleados/index', ['empleados' => $empleados]);
+        $searchingVals = (array) $request->session()->get('rrhh.employee_filters', []);
+        $empleados = $listEmployees->handle(
+            EmployeeDirectoryFilters::fromArray($searchingVals),
+            $request->integer('page', 1),
+        );
+
+        return view('rrhh/empleados/index', [
+            'empleados' => $empleados,
+            'searchingVals' => $searchingVals,
+        ]);
     }
 
     public function documentos($id)
     {
-        $this->rol();
+        if ($redirect = $this->rol()) {
+            return $redirect;
+        }
         $empleado = Empleado::find($id);
-        $documentos = Empleado_documento::where('id_empleado',$id)->get();
+        $documentos = Empleado_documento::where('id_empleado', $id)->get();
 
         return view('rrhh/empleados/documentos', ['empleado' => $empleado, 'documentos' => $documentos]);
     }
@@ -83,15 +82,20 @@ class EmpleadosController extends Controller
      */
     public function create()
     {
-        $this->rol();
+        if ($redirect = $this->rol()) {
+            return $redirect;
+        }
 
         $paises = Pais::all();
-        return view('rrhh/empleados/create',['paises' => $paises] );
+
+        return view('rrhh/empleados/create', ['paises' => $paises]);
     }
 
     public function edit($id)
     {
-        $this->rol();
+        if ($redirect = $this->rol()) {
+            return $redirect;
+        }
         $empleado = Empleado::find($id);
 
         if ($empleado == null || count($empleado) == 0) {
@@ -100,68 +104,49 @@ class EmpleadosController extends Controller
 
         $usuario = User::find($id);
         $paises = Pais::all();
-        return view('rrhh/empleados/edit',['empleado' => $empleado, 'paises' => $paises, 'usuario' => $usuario ] );
+
+        return view('rrhh/empleados/edit', ['empleado' => $empleado, 'paises' => $paises, 'usuario' => $usuario]);
     }
 
-     public function search(Request $request) 
+    public function search(Request $request): RedirectResponse
     {
-        
-        $constraints = [
-            'id' => $request['id'],
-            'apellido1' => $request['apellidos'],
-            'nombre1' => $request['nombres'],
-            
-            ];
-
-            $constraints2 = [
-            'apellido2' => $request['apellidos'],
-            'nombre2' => $request['nombres'],   
-            ];
-       $paciente = $this->doSearchingQuery($constraints, $constraints2);
-    
-      return view('paciente/index', ['paciente' => $paciente, 'searchingVals' => $constraints]);
-    }
-
-    private function doSearchingQuery($constraints, $constraints2) {
-        $query = Paciente::query();
-        $fields = array_keys($constraints);
-        $fields2 = array_keys($constraints2);
-        $index = 0;
-        $index2 = 0;
-        foreach ($constraints as $constraint) {
-            if ($constraint != null) {
-                $query = $query->where( $fields[$index], 'like', '%'.$constraint.'%');
-            }
-
-            $index++;
+        if ($redirect = $this->rol()) {
+            return $redirect;
         }
-        foreach ($constraints2 as $constraint2) {
-            if ($constraint2 != null) {
-                $query = $query->orwhere( $fields2[$index2], 'like', '%'.$constraint2.'%');
-            }
 
-            $index2++;
-        }
-        return $query->where('id','!=','9999999999')->paginate(10);
+        $validated = $request->validate([
+            'id' => ['nullable', 'string', 'max:20'],
+            'nombres' => ['nullable', 'string', 'max:120'],
+            'apellidos' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $request->session()->put('rrhh.employee_filters', [
+            'employee_id' => $validated['id'] ?? null,
+            'first_names' => $validated['nombres'] ?? null,
+            'last_names' => $validated['apellidos'] ?? null,
+        ]);
+
+        return redirect()->route('rrhh.empleados.index');
     }
-
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        
-        $ip_cliente= $_SERVER["REMOTE_ADDR"];
+        if ($redirect = $this->rol()) {
+            return $redirect;
+        }
+
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
-        
+
         $empleado = Empleado::findOrFail($id);
-        $usuario=User::find($id);
+        $usuario = User::find($id);
 
         $this->ValidateEmpleadoA($request);
 
@@ -188,7 +173,7 @@ class EmpleadosController extends Controller
             'telefono3' => $request['telefono3'],
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario,
-            ];
+        ];
 
         $inputus_a = [
             'id' => $request['id'],
@@ -205,76 +190,67 @@ class EmpleadosController extends Controller
             'fecha_nacimiento' => $request['fecha_nacimiento'],
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario,
-            ];    
-
+        ];
 
         $empleado->update($input);
-        
-        $usuario->update($inputus_a);    
 
+        $usuario->update($inputus_a);
 
         return redirect('/empleados');
-        
+
     }
 
     public function valida_archivo(Request $request)
     {
 
-        $reglas = ['archivo' => 'mimes:pdf|max:1000',];
+        $reglas = ['archivo' => 'mimes:pdf|max:1000'];
         $mensajes = [
 
             'archivo.required' => 'Agrega un archivo.',
             'archivo.mimes' => 'El archivo a seleccionar debe ser *.pdf.',
-            'archivo.max' =>'El peso del archivo no puede ser mayor a :max KB.', ];
+            'archivo.max' => 'El peso del archivo no puede ser mayor a :max KB.', ];
 
-        $this->validate($request, $reglas, $mensajes);     
+        $this->validate($request, $reglas, $mensajes);
 
-    }    
-        
+    }
+
     public function subir_archivo_validacion(Request $request, $id_historia, $id_archivo)
     {
-        $id=$request['id'];
-            
-        
-        $nombre_original=$request['archivo']->getClientOriginalName();
-        
-        $extension=$request['archivo']->getClientOriginalExtension();
-               
-        
+        $id = $request['id'];
 
-        
-        $nuevo_nombre="hc_".$id."_VRF_".$id_historia."_".$id_archivo.".".$extension;
-       
-        $r1=Storage::disk('hc')->put($nuevo_nombre,  \File::get($request['archivo']));
-            
-        if ($r1){
-               
-            $ip_cliente= $_SERVER["REMOTE_ADDR"];
+        $nombre_original = $request['archivo']->getClientOriginalName();
+
+        $extension = $request['archivo']->getClientOriginalExtension();
+
+        $nuevo_nombre = 'hc_'.$id.'_VRF_'.$id_historia.'_'.$id_archivo.'.'.$extension;
+
+        $r1 = Storage::disk('hc')->put($nuevo_nombre, \File::get($request['archivo']));
+
+        if ($r1) {
+
+            $ip_cliente = $_SERVER['REMOTE_ADDR'];
             $idusuario = Auth::user()->id;
             date_default_timezone_set('America/Guayaquil');
 
-            $archivo_historico=Archivo_historico::find($id_archivo);
-            
-            $archivo_historico->archivo=$nuevo_nombre;
-            $archivo_historico->ip_modificacion=$ip_cliente;
-            $archivo_historico->id_usuariomod=$idusuario;
-            $r2=$archivo_historico->save();
+            $archivo_historico = Archivo_historico::find($id_archivo);
 
+            $archivo_historico->archivo = $nuevo_nombre;
+            $archivo_historico->ip_modificacion = $ip_cliente;
+            $archivo_historico->id_usuariomod = $idusuario;
+            $r2 = $archivo_historico->save();
 
-            }    
-            
-            
+        }
+
     }
-           
 
-
-    public function load($name) {
-         $path = storage_path().'/app/hc/'.$name;
+    public function load($name)
+    {
+        $path = storage_path().'/app/hc/'.$name;
         if (file_exists($path)) {
 
             return Response::make(file_get_contents($path), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="'.$name.'"'
+                'Content-Disposition' => 'inline; filename="'.$name.'"',
             ]);
         }
     }
@@ -285,66 +261,59 @@ class EmpleadosController extends Controller
     }
 
     public function busca_principal($id_paciente, $id_usuario, $historia)
-    {   
-            $paciente = Paciente::find($id_paciente);
-            if($id_usuario!='0'){
-                $user_aso = User::find($id_usuario);    
-            }else{
-                $user_aso = User::find($paciente->id_usuario);
-            }
-            
-                
-                
-        return view('admisiones.principal',['paciente' => $paciente, 'user_aso' => $user_aso, 'historia' => $historia]);   
-        
-    }
-
-    
-    public function buscar_usuario($id_usuario)
-    {   
-
-        $user_aso = User::find($id_usuario);
-        if(!is_null($user_aso)){
-            return $user_aso;    
-        }else{
-            return "null";
+    {
+        $paciente = Paciente::find($id_paciente);
+        if ($id_usuario != '0') {
+            $user_aso = User::find($id_usuario);
+        } else {
+            $user_aso = User::find($paciente->id_usuario);
         }
 
+        return view('admisiones.principal', ['paciente' => $paciente, 'user_aso' => $user_aso, 'historia' => $historia]);
 
-           
-        
     }
-    
+
+    public function buscar_usuario($id_usuario)
+    {
+
+        $user_aso = User::find($id_usuario);
+        if (! is_null($user_aso)) {
+            return $user_aso;
+        } else {
+            return 'null';
+        }
+
+    }
 
     private function ValidateEmpleado(Request $request)
     {
-        
+
         $mensajes = [
             'id.unique' => 'Empleado ya se encuentra registrado.',
             'id.required' => 'Agrega la cédula.',
-            'id.max' =>'La cédula no puede ser mayor a :max caracteres.',
+            'id.max' => 'La cédula no puede ser mayor a :max caracteres.',
             'nombre1.required' => 'Agrega el primer nombre.',
-            'nombre1.max' =>'El primer nombre no puede ser mayor a :max caracteres.',
+            'nombre1.max' => 'El primer nombre no puede ser mayor a :max caracteres.',
             'nombre2.required' => 'Agrega el segundo nombre.',
-            'nombre2.max' =>'El segundo nombre no puede ser mayor a :max caracteres.',
+            'nombre2.max' => 'El segundo nombre no puede ser mayor a :max caracteres.',
             'apellido1.required' => 'Agrega el primer apellido.',
-            'apellido1.max' =>'El primer apellido no puede ser mayor a :max caracteres.',
+            'apellido1.max' => 'El primer apellido no puede ser mayor a :max caracteres.',
             'apellido2.required' => 'Agrega el segundo apellido.',
-            'apellido2.max' =>'El segundo apellido no puede ser mayor a :max caracteres.',
+            'apellido2.max' => 'El segundo apellido no puede ser mayor a :max caracteres.',
             'id_pais.required' => 'Selecciona el pais.',
             'id_pais.exists' => 'Pais Seleccionado no existe.',
             'lugar_nacimiento.required' => 'Ingresa el lugar de nacimiento.',
-            'lugar_nacimiento.max' =>'El lugar de nacimiento no pueden ser mayor a :max caracteres.',
+            'lugar_nacimiento.max' => 'El lugar de nacimiento no pueden ser mayor a :max caracteres.',
             'telefono1.required' => 'Agrega el teléfono del domicilio',
-            'telefono1.max' =>'El teléfono del domicilio no puede ser mayor a 10 caracteres.',
-            'telefono1.numeric' =>'El teléfono del domicilio debe ser numérico.',
+            'telefono1.max' => 'El teléfono del domicilio no puede ser mayor a 10 caracteres.',
+            'telefono1.numeric' => 'El teléfono del domicilio debe ser numérico.',
             'telefono2.required' => 'Agrega el teléfono celular.',
-            'telefono2.max' =>'El teléfono celular no puede ser mayor a 10 caracteres.',
-            'telefono2.numeric' =>'El teléfono celular debe ser numérico.',
+            'telefono2.max' => 'El teléfono celular no puede ser mayor a 10 caracteres.',
+            'telefono2.numeric' => 'El teléfono celular debe ser numérico.',
             'direccion.required' => 'Agrega la direccion.',
-            'direccion.max' =>'La direccion no puede ser mayor a :max caracteres.',
-            'fecha_nacimiento.required' =>'Agrega la fecha de nacimiento.',
-            'fecha_nacimiento.date' =>'La fecha de nacimiento tiene formato incorrecto.',
+            'direccion.max' => 'La direccion no puede ser mayor a :max caracteres.',
+            'fecha_nacimiento.required' => 'Agrega la fecha de nacimiento.',
+            'fecha_nacimiento.date' => 'La fecha de nacimiento tiene formato incorrecto.',
             'estadocivil.required' => 'Selecciona el estado civil.',
             'estadocivil.in' => 'Selecciona el estado civil correcto.',
             'licencia.required' => 'Selecciona si tiene licencia.',
@@ -352,22 +321,22 @@ class EmpleadosController extends Controller
             'auto.required' => 'Selecciona si tiene auto.',
             'auto.in' => 'Selecciona si tiene auto.',
             'visa_trabajo.required' => 'Agrega la visa de trabajo.',
-            'visa_trabajo.max' =>'La visa de trabajo no puede ser mayor a :max caracteres.',
+            'visa_trabajo.max' => 'La visa de trabajo no puede ser mayor a :max caracteres.',
             'contacto.required' => 'Agrega contacto.',
-            'contacto.max' =>'El contacto no puede ser mayor a :max caracteres.',
+            'contacto.max' => 'El contacto no puede ser mayor a :max caracteres.',
             'parentesco.required' => 'Selecciona el Parentesco.',
             'telefono3.required' => 'Agrega el teléfono',
-            'telefono3.max' =>'El teléfono no puede ser mayor a 10 caracteres.',
-            'telefono3.numeric' =>'El teléfono debe ser numérico.',
-            
-        ]; 
- 
+            'telefono3.max' => 'El teléfono no puede ser mayor a 10 caracteres.',
+            'telefono3.numeric' => 'El teléfono debe ser numérico.',
+
+        ];
+
         $constraints = [
             'id' => 'required|max:10|unique:empleado,id',
             'nombre1' => 'required|max:60',
             'nombre2' => 'max:60',
             'apellido1' => 'required|max:60',
-            'apellido2' => 'max:60', 
+            'apellido2' => 'max:60',
             'id_pais' => 'required|exists:pais,id',
             'lugar_nacimiento' => 'required|max:255',
             'direccion' => 'required|max:255',
@@ -381,41 +350,41 @@ class EmpleadosController extends Controller
             'contacto' => 'required|max:255',
             'parentesco' => 'required',
             'telefono3' => 'required|max:30',
-        ]; 
+        ];
 
-
-        $this->validate($request, $constraints, $mensajes);    
+        $this->validate($request, $constraints, $mensajes);
 
     }
+
     private function ValidateEmpleadoA(Request $request)
     {
-        
+
         $mensajes = [
             'id.unique' => 'Empleado ya se encuentra registrado.',
             'id.required' => 'Agrega la cédula.',
-            'id.max' =>'La cédula no puede ser mayor a :max caracteres.',
+            'id.max' => 'La cédula no puede ser mayor a :max caracteres.',
             'nombre1.required' => 'Agrega el primer nombre.',
-            'nombre1.max' =>'El primer nombre no puede ser mayor a :max caracteres.',
+            'nombre1.max' => 'El primer nombre no puede ser mayor a :max caracteres.',
             'nombre2.required' => 'Agrega el segundo nombre.',
-            'nombre2.max' =>'El segundo nombre no puede ser mayor a :max caracteres.',
+            'nombre2.max' => 'El segundo nombre no puede ser mayor a :max caracteres.',
             'apellido1.required' => 'Agrega el primer apellido.',
-            'apellido1.max' =>'El primer apellido no puede ser mayor a :max caracteres.',
+            'apellido1.max' => 'El primer apellido no puede ser mayor a :max caracteres.',
             'apellido2.required' => 'Agrega el segundo apellido.',
-            'apellido2.max' =>'El segundo apellido no puede ser mayor a :max caracteres.',
+            'apellido2.max' => 'El segundo apellido no puede ser mayor a :max caracteres.',
             'id_pais.required' => 'Selecciona el pais.',
             'id_pais.exists' => 'Pais Seleccionado no existe.',
             'lugar_nacimiento.required' => 'Ingresa el lugar de nacimiento.',
-            'lugar_nacimiento.max' =>'El lugar de nacimiento no pueden ser mayor a :max caracteres.',
+            'lugar_nacimiento.max' => 'El lugar de nacimiento no pueden ser mayor a :max caracteres.',
             'telefono1.required' => 'Agrega el teléfono del domicilio',
-            'telefono1.max' =>'El teléfono del domicilio no puede ser mayor a 10 caracteres.',
-            'telefono1.numeric' =>'El teléfono del domicilio debe ser numérico.',
+            'telefono1.max' => 'El teléfono del domicilio no puede ser mayor a 10 caracteres.',
+            'telefono1.numeric' => 'El teléfono del domicilio debe ser numérico.',
             'telefono2.required' => 'Agrega el teléfono celular.',
-            'telefono2.max' =>'El teléfono celular no puede ser mayor a 10 caracteres.',
-            'telefono2.numeric' =>'El teléfono celular debe ser numérico.',
+            'telefono2.max' => 'El teléfono celular no puede ser mayor a 10 caracteres.',
+            'telefono2.numeric' => 'El teléfono celular debe ser numérico.',
             'direccion.required' => 'Agrega la direccion.',
-            'direccion.max' =>'La direccion no puede ser mayor a :max caracteres.',
-            'fecha_nacimiento.required' =>'Agrega la fecha de nacimiento.',
-            'fecha_nacimiento.date' =>'La fecha de nacimiento tiene formato incorrecto.',
+            'direccion.max' => 'La direccion no puede ser mayor a :max caracteres.',
+            'fecha_nacimiento.required' => 'Agrega la fecha de nacimiento.',
+            'fecha_nacimiento.date' => 'La fecha de nacimiento tiene formato incorrecto.',
             'estadocivil.required' => 'Selecciona el estado civil.',
             'estadocivil.in' => 'Selecciona el estado civil correcto.',
             'licencia.required' => 'Selecciona si tiene licencia.',
@@ -423,22 +392,22 @@ class EmpleadosController extends Controller
             'auto.required' => 'Selecciona si tiene auto.',
             'auto.in' => 'Selecciona si tiene auto.',
             'visa_trabajo.required' => 'Agrega la visa de trabajo.',
-            'visa_trabajo.max' =>'La visa de trabajo no puede ser mayor a :max caracteres.',
+            'visa_trabajo.max' => 'La visa de trabajo no puede ser mayor a :max caracteres.',
             'contacto.required' => 'Agrega contacto.',
-            'contacto.max' =>'El contacto no puede ser mayor a :max caracteres.',
+            'contacto.max' => 'El contacto no puede ser mayor a :max caracteres.',
             'parentesco.required' => 'Selecciona el Parentesco.',
             'telefono3.required' => 'Agrega el teléfono',
-            'telefono3.max' =>'El teléfono no puede ser mayor a 10 caracteres.',
-            'telefono3.numeric' =>'El teléfono debe ser numérico.',
-            
-        ]; 
- 
+            'telefono3.max' => 'El teléfono no puede ser mayor a 10 caracteres.',
+            'telefono3.numeric' => 'El teléfono debe ser numérico.',
+
+        ];
+
         $constraints = [
             'id' => 'required|max:10|unique:empleado,id,'.$request['id'],
             'nombre1' => 'required|max:60',
             'nombre2' => 'max:60',
             'apellido1' => 'required|max:60',
-            'apellido2' => 'max:60', 
+            'apellido2' => 'max:60',
             'id_pais' => 'required|exists:pais,id',
             'lugar_nacimiento' => 'required|max:255',
             'direccion' => 'required|max:255',
@@ -452,66 +421,69 @@ class EmpleadosController extends Controller
             'contacto' => 'required|max:255',
             'parentesco' => 'required',
             'telefono3' => 'required|max:30',
-        ]; 
+        ];
 
-
-        $this->validate($request, $constraints, $mensajes);    
+        $this->validate($request, $constraints, $mensajes);
 
     }
 
-    private function ValidaUsuarioCrear(Request $request){
+    private function ValidaUsuarioCrear(Request $request)
+    {
         $mensajes2 = [
             'id.required' => 'Agregar la cédula',
             'id.unique' => 'Cédula ya existe',
             'email.unique' => 'El Email ya se encuentra registrado.',
             'email.required' => 'Agrega el Email.',
-            'email.max' =>'El Email no puede ser mayor a :max caracteres.',
-            'email.email' =>'El Email tiene error en el formato.',
+            'email.max' => 'El Email no puede ser mayor a :max caracteres.',
+            'email.email' => 'El Email tiene error en el formato.',
         ];
 
         $constraints2 = [
             'id' => 'required|unique:users,id',
             'email' => 'required|email|max:191|unique:users,email',
-        ]; 
+        ];
 
-        $this->validate($request, $constraints2, $mensajes2);   
+        $this->validate($request, $constraints2, $mensajes2);
     }
 
-    private function ValidaUsuarioActualizar(Request $request){
+    private function ValidaUsuarioActualizar(Request $request)
+    {
         $mensajes2 = [
             'id.required' => 'Agregar la cédula',
             'id.unique' => 'Cédula ya existe',
             'email.unique' => 'El Email ya se encuentra registrado.',
             'email.required' => 'Agrega el Email.',
-            'email.max' =>'El Email no puede ser mayor a :max caracteres.',
-            'email.email' =>'El Email tiene error en el formato.',
+            'email.max' => 'El Email no puede ser mayor a :max caracteres.',
+            'email.email' => 'El Email tiene error en el formato.',
         ];
 
         $constraints2 = [
-            
-            'email' => 'required|email|max:191|unique:users,email,'.$request['id'],
-        ]; 
 
-        $this->validate($request, $constraints2, $mensajes2);   
+            'email' => 'required|email|max:191|unique:users,email,'.$request['id'],
+        ];
+
+        $this->validate($request, $constraints2, $mensajes2);
     }
 
-
     public function store(Request $request)
-    {   
-        
-        $ip_cliente= $_SERVER["REMOTE_ADDR"];
+    {
+        if ($redirect = $this->rol()) {
+            return $redirect;
+        }
+
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
         $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
 
-        $usuario=User::find($request['id']);
+        $usuario = User::find($request['id']);
 
-        $this->ValidateEmpleado($request);    
-        
-        if(!is_null($usuario)){
-            
+        $this->ValidateEmpleado($request);
+
+        if (! is_null($usuario)) {
+
             $this->ValidaUsuarioCrear($request);
 
-        }else{
+        } else {
 
             $this->ValidaUsuarioActualizar($request);
         }
@@ -540,7 +512,7 @@ class EmpleadosController extends Controller
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario,
             'id_usuariocrea' => $idusuario,
-            ];
+        ];
 
         $inputus_c = [
             'id' => $request['id'],
@@ -564,7 +536,7 @@ class EmpleadosController extends Controller
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario,
             'id_usuariocrea' => $idusuario,
-            ];
+        ];
 
         $inputus_a = [
             'id' => $request['id'],
@@ -581,13 +553,13 @@ class EmpleadosController extends Controller
             'fecha_nacimiento' => $request['fecha_nacimiento'],
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario,
-            ]; 
+        ];
 
-        if(!is_null($usuario)){
-            
+        if (! is_null($usuario)) {
+
             $usuario->update($inputus_a);
 
-        }else{
+        } else {
 
             User::create($inputus_c);
         }
@@ -595,8 +567,6 @@ class EmpleadosController extends Controller
         Empleado::create($input);
 
         return redirect('/empleados');
-        
+
     }
-
-
 }

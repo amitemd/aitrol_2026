@@ -60,7 +60,7 @@ return [
         ],
         'inventory-operations' => [
             'name' => 'Inventario y operaciones',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional'],
             'legacy_modules' => [
                 'Insumos e inventario',
@@ -82,7 +82,7 @@ return [
         ],
         'accounting-finance' => [
             'name' => 'Contabilidad y finanzas',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional', 'billing'],
             'legacy_modules' => [
                 'Contabilidad',
@@ -93,7 +93,7 @@ return [
         ],
         'human-resources' => [
             'name' => 'Talento humano',
-            'status' => 'mapped',
+            'status' => 'in_progress',
             'depends_on' => ['institutional', 'accounting-finance'],
             'legacy_modules' => [
                 'Recursos humanos',
