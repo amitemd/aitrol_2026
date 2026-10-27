@@ -1,0 +1,106 @@
+.aitrol-sales-page .dt-container {
+    color: #334155;
+    font-size: 13px;
+}
+
+.aitrol-sales-page .dt-layout-row {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin: 0 0 14px;
+}
+
+.aitrol-sales-page .dt-layout-row:last-child {
+    margin: 16px 0 0;
+}
+
+.aitrol-sales-page .dt-layout-cell {
+    padding: 0;
+}
+
+.aitrol-sales-page .dt-search label,
+.aitrol-sales-page .dt-length label {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.aitrol-sales-page .dt-input {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #0f172a;
+    min-height: 38px;
+    padding: 8px 11px;
+}
+
+.aitrol-sales-page .dt-input:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgb(2 132 199 / 12%);
+    outline: none;
+}
+
+.aitrol-sales-page div.dt-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.aitrol-sales-page div.dt-buttons > .dt-button.aitrol-export-button {
+    align-items: center;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    color: #047857;
+    display: inline-flex;
+    font-weight: 600;
+    gap: 7px;
+    margin: 0;
+    padding: 9px 13px;
+}
+
+.aitrol-sales-page div.dt-buttons > .dt-button.aitrol-export-button:hover,
+.aitrol-sales-page div.dt-buttons > .dt-button.aitrol-export-button:focus {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    color: #065f46;
+}
+
+.aitrol-sales-page table.dataTable > thead > tr > th {
+    padding-right: 28px;
+}
+
+.aitrol-sales-page table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before {
+    background: #0284c7;
+    border: 0;
+    box-shadow: none;
+    line-height: 16px;
+}
+
+.aitrol-sales-page table.dataTable > tbody > tr.child ul.dtr-details {
+    width: 100%;
+}
+
+.aitrol-sales-page table.dataTable > tbody > tr.child span.dtr-title {
+    color: #475569;
+    min-width: 150px;
+}
+
+@media (max-width: 767px) {
+    .aitrol-sales-page .dt-layout-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .aitrol-sales-page .dt-layout-cell,
+    .aitrol-sales-page .dt-search,
+    .aitrol-sales-page .dt-input,
+    .aitrol-sales-page div.dt-buttons,
+    .aitrol-sales-page div.dt-buttons > .dt-button.aitrol-export-button {
+        width: 100%;
+    }
+
+    .aitrol-sales-page div.dt-buttons > .dt-button.aitrol-export-button {
+        justify-content: center;
+    }
+}

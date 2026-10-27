@@ -41,11 +41,13 @@ tbody>tr:hover{
               <div class="col-md-2 ">
                 <a type="button" class="btn btn-primary btn-sm" href="{{ route('tecnicas.create',['agenda' => $agenda]) }}" ><span class="glyphicon glyphicon-plus"> Crear</span></a>
               </div>
-              <div class="col-md-2" style="padding-left: 0px;padding-right: 0px;">
-                <a type="button" href="{{route('agenda.detalle', ['agenda' => $agenda ])}}" class="btn btn-success btn-sm">
-                    <span class="glyphicon glyphicon-arrow-left"> Historia Clínica</span>
-                </a>
-              </div>
+              @if($agenda !== 'administracion')
+                <div class="col-md-2" style="padding-left: 0px;padding-right: 0px;">
+                  <a type="button" href="{{route('agenda.detalle', ['id' => $agenda])}}" class="btn btn-success btn-sm">
+                      <span class="glyphicon glyphicon-arrow-left"> Historia Clínica</span>
+                  </a>
+                </div>
+              @endif
             </div>
           </div>
         </div>

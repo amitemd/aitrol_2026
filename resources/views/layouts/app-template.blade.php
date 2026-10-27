@@ -47,6 +47,7 @@
     <link href="{{ asset("/bower_components/AdminLTE/dist/css/skins/_all-skins.min.css")}}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}" rel="stylesheet">
     <link href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/aitrol-tables.css') }}?v={{ filemtime(public_path('css/aitrol-tables.css')) }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('/css/dropzone.css')}}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -208,7 +209,6 @@ document.onmousedown=click
     <!-- Bootstrap 3.3.2 JS -->
 
     <script src="{{ asset('/js/bootstrap.min.js') }}" type="text/javascript"></script>
-    <script  src="{{ asset ("/bower_components/AdminLTE/plugins/datatables/jquery.dataTables.min.js") }}" type="text/javascript" ></script>
   <?php
     if (config('data.table') == null) {
       ?>
@@ -216,7 +216,6 @@ document.onmousedown=click
       <?php
     }
     ?>
-    <script  src="{{ asset ("/bower_components/AdminLTE/plugins/datatables/dataTables.bootstrap.min.js") }}" type="text/javascript" ></script>
     <script  src="{{ asset ("/bower_components/AdminLTE/plugins/slimScroll/jquery.slimscroll.min.js") }}" type="text/javascript" ></script>
     <script  src="{{ asset ("/bower_components/AdminLTE/plugins/fastclick/fastclick.js") }}" type="text/javascript" ></script>
     <script  src="{{ asset ("/bower_components/AdminLTE/plugins/input-mask/jquery.inputmask.js") }}" type="text/javascript" ></script>

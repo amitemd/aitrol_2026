@@ -265,9 +265,9 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
             <ul class="treeview-menu">
               <li class="container-clip">
                 <button style="background: transparent; border: none;">
-                  <i onclick="anclarTarget(this, `{{ url('adelantado ') }}`, '{{trans('tsidebar.controldocumental')}}', '{{trans('tsidebar.modulopacientesadelantados')}}')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
+                  <i onclick="anclarTarget(this, `{{ url('adelantado') }}`, '{{trans('tsidebar.controldocumental')}}', '{{trans('tsidebar.modulopacientesadelantados')}}')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
                 </button>
-                <a href="{{ url('adelantado ') }}">{{trans('tsidebar.adelantados')}}</a>
+                <a href="{{ url('adelantado') }}">{{trans('tsidebar.adelantados')}}</a>
               </li>
             </ul>
           </li>
@@ -292,9 +292,9 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
           @if(in_array($rolUsuario, array(1, 3, 4, 5, 10, 11, 12, 7, 15, 20, 22)) == true)
           <li class="container-clip">
             <button style="background: transparent; border: none;">
-              <i onclick="anclarTarget(this, `{{ url('consultam ') }}`, `{{trans('tsidebar.atencionalpaciente')}}`, `{{trans('tsidebar.consultas_procedimientos')}}`)" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
+              <i onclick="anclarTarget(this, `{{ url('consultam') }}`, `{{trans('tsidebar.atencionalpaciente')}}`, `{{trans('tsidebar.consultas_procedimientos')}}`)" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
             </button>
-            <a href="{{ url('consultam ') }}"><i class="fa fa-calendar-minus-o"></i> <span>{{trans('tsidebar.consultas_procedimientos')}}</span></a>
+            <a href="{{ url('consultam') }}"><i class="fa fa-calendar-minus-o"></i> <span>{{trans('tsidebar.consultas_procedimientos')}}</span></a>
           </li>
           @endif
           @if(in_array($rolUsuario, array(1, 4, 5, 11, 20)) == true)
@@ -3490,7 +3490,7 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
           <ul class="treeview-menu">
             <li class="container-clip">
               <button style="background: transparent; border: none;">
-                <i onclick="anclarTarget(this, `{{ url('especialidad ') }}`, 'Administracion de Sistema', 'Especialidades')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
+                <i onclick="anclarTarget(this, `{{ url('especialidad') }}`, 'Administracion de Sistema', 'Especialidades')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
               </button>
               <a href="{{ url('especialidad') }}"><i class="fa fa-fw fa-briefcase"></i> <span>{{trans('tsidebar.especialidades')}}</span></a>
             </li>

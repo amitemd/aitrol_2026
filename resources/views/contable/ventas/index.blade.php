@@ -1,5 +1,6 @@
 @extends('contable.ventas.base')
 @section('action-content')
+@vite('resources/js/aitrol-datatables.js')
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
@@ -148,32 +149,30 @@ if (count($ventas) > 0) {
 
 
 <!-- Main content -->
-<section class="content">
+<section class="content aitrol-page aitrol-sales-page">
   <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
+    <ol class="breadcrumb aitrol-breadcrumb">
       <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Contable')}}</a></li>
       <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Ventas')}}</a></li>
       <li class="breadcrumb-item active">{{trans('wfact_venta.Registro de Factura de Ventas')}}</li>
     </ol>
   </nav>
-  <div class="box">
-    <div class="box-header header_new">
-      <div class="col-md-9">
-        <h3 class="box-title">{{trans('wfact_venta.Facturas de Venta')}} </h3>
+  <div class="box aitrol-card">
+    <div class="box-header header_new aitrol-card__header">
+      <div>
+        <span class="aitrol-card__eyebrow">Cuentas y finanzas</span>
+        <h3 class="box-title">{{trans('wfact_venta.Facturas de Venta')}}</h3>
+        <p class="aitrol-card__subtitle">Consulte, filtre y administre las facturas emitidas por la empresa activa.</p>
       </div>
-      <div class="col-md-1 text-right">
-        <button onclick="location.href='<?= route('ventas_crear'); ?>'" class="btn btn-success btn-gray">
-          <i aria-hidden="true"></i>{{trans('wfact_venta.Nueva Factura')}}
-        </button>
-      </div>
+      <a href="{{ route('ventas_crear') }}" class="aitrol-primary-action">
+        <i class="fa fa-plus" aria-hidden="true"></i>{{trans('wfact_venta.Nueva Factura')}}
+      </a>
     </div>
-    <div class="row head-title">
-      <div class="col-md-12 cabecera">
-        <label class="color_texto" for="title">{{trans('wfact_venta.BUSCADOR FACTURA DE VENTA')}}</label>
-      </div>
+    <div class="aitrol-section-heading">
+      <span>{{trans('wfact_venta.BUSCADOR FACTURA DE VENTA')}}</span>
     </div>
     <!-- /.box-header -->
-    <div class="box-body dobra">
+    <div class="box-body dobra aitrol-filter-panel">
       <form method="POST" id="reporte_master" action="{{ route('ventas_search') }}">
         {{ csrf_field() }}
         <input type="hidden" id="page" name="page" value="{{ config('data.page') }}" />
@@ -222,28 +221,33 @@ if (count($ventas) > 0) {
           <input class="form-control" type="text" id="nombres_paciente" name="nombres_paciente" value="@if(isset($searchingVals)){{$searchingVals['nombres_paciente']}}@endif" placeholder="{{trans('wfact_venta.Ingrese_paciente')}}" />
         </div>
         </div>
-        <div class="col-md-2 col-xs-2 col-xs-10 container-4">
-            <button type="submit" id="" class="btn btn-primary">
+        <div class="aitrol-filter-actions">
+            <button type="submit" class="btn btn-primary">
             <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
             {{ trans('contableM.buscar') }}
           </button>
         </div>
       </form>
     </div>
-    <div class="row head-title">
-      <div class="col-md-12 cabecera">
-        <label class="color_texto">{{trans('wfact_venta.Ventas')}}</label>
-      </div>
+    <div class="aitrol-section-heading">
+      <span>{{trans('wfact_venta.Ventas')}}</span>
     </div>
-    <div class="box-body dobra">
+    <div class="box-body dobra aitrol-table-panel">
       <div class="form-group col-md-12">
         <div class="form-row">
           <div id="resultados">
           </div>
           <div id="example2_wrapper">
             <div class="row">
-              <div class="table-responsive col-md-12">
-                <table id="tablaVentas" class="table table-hover" role="grid" aria-describedby="example2_info" width="100%">
+              <div class="table-responsive aitrol-table-scroll col-md-12">
+                <table id="tablaVentas" class="table table-hover aitrol-table" role="grid" aria-describedby="example2_info" width="100%"
+                  data-aitrol-datatable
+                  data-paging="false"
+                  data-searching="false"
+                  data-info="false"
+                  data-order-column="0"
+                  data-order-direction="desc"
+                  data-export-name="Estado de documentos electrónicos">
                   <thead>
                     <tr>
                       <th>ID</th>
@@ -401,7 +405,7 @@ if (count($ventas) > 0) {
                 </table>
               </div>
             </div>
-            <div class="row">
+            <div class="row aitrol-table-summary">
               <div class="col-sm-5">
                 <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
                   Mostrando {{ 1 + ($dato->currentPage() - 1) * $dato->perPage() }} /
@@ -421,31 +425,7 @@ if (count($ventas) > 0) {
     </div>
   </div>
 </section>
-<script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
 <script>
-  $(document).ready(function() {
-    $('#tablaVentas').DataTable({
-      info: false,
-      searching: false,
-      bPaginate: false,
-      responsive: true,
-      order: [
-        [0, 'desc']
-      ],
-      dom: 'lBrtip',
-      search: true,
-      buttons: [{
-        extend: 'excelHtml5',
-        footer: true,
-        title: 'Estado de documentos electrónicos'
-      }],
-    });
-  });
-
   function verErrorXml(num) {
     $.ajax({
       url: "{{ route('sri_electronico/errorGeneral') }}",

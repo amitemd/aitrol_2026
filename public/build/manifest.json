@@ -36,6 +36,15 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/js/aitrol-datatables.js": {
+    "file": "assets/aitrol-datatables-CN9cUssk.js",
+    "name": "aitrol-datatables",
+    "src": "resources/js/aitrol-datatables.js",
+    "isEntry": true,
+    "css": [
+      "assets/aitrol-datatables-C4bsdpoj.css"
+    ]
+  },
   "resources/js/app.js": {
     "file": "assets/app-C5xRmrEA.js",
     "name": "app",
