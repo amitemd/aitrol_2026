@@ -27,6 +27,9 @@ class ExampleTest extends TestCase
             ->assertSee('Gestiona toda tu organización')
             ->assertSee('Contabilidad y finanzas conectadas')
             ->assertSee('Gestión médica integral')
+            ->assertSee('erp-administracion.png?v=', false)
+            ->assertSee('erp-contabilidad.png?v=', false)
+            ->assertSee('erp-medicina.png?v=', false)
             ->assertSee('action="'.route('new-system.login.store').'"', false)
             ->assertDontSee('Laravel 13');
 

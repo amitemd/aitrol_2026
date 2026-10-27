@@ -132,19 +132,19 @@
                     description: 'Mantén la continuidad de cada módulo desde una plataforma confiable y centralizada.'
                 },
                 {
-                    image: @json(asset('images/login/erp-administracion.png')),
+                    image: @json(asset('images/login/erp-administracion.png').'?v='.filemtime(public_path('images/login/erp-administracion.png'))),
                     alt: 'Panel integral de administración empresarial',
                     title: 'Gestiona toda tu organización',
                     description: 'Centraliza empresas, usuarios, procesos y operaciones para tomar decisiones con información confiable.'
                 },
                 {
-                    image: @json(asset('images/login/erp-contabilidad.png')),
+                    image: @json(asset('images/login/erp-contabilidad.png').'?v='.filemtime(public_path('images/login/erp-contabilidad.png'))),
                     alt: 'Panel de contabilidad y control financiero',
                     title: 'Contabilidad y finanzas conectadas',
                     description: 'Controla presupuestos, cuentas, pagos y resultados financieros desde un entorno integrado.'
                 },
                 {
-                    image: @json(asset('images/login/erp-medicina.png')),
+                    image: @json(asset('images/login/erp-medicina.png').'?v='.filemtime(public_path('images/login/erp-medicina.png'))),
                     alt: 'Panel de gestión médica y hospitalaria',
                     title: 'Gestión médica integral',
                     description: 'Coordina pacientes, citas, atención clínica, laboratorio, farmacia e inventario médico.'
