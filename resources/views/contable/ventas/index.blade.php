@@ -335,23 +335,27 @@ if (count($ventas) > 0) {
                         $tabla .= '</td>';
                       }
                       $tabla .= '<td>';
-                      if($row->estado == '0'){
-                        $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoplomo.png" style="width:15px;" title="Anulado"></a>';
+                      if ($row->estado == '0') {
+                        $sriStatusClass = 'aitrol-sri-status--annulled';
+                        $sriStatusIcon = 'fa-times-circle';
+                        $sriStatusLabel = 'Anulado';
                       } else {
                         if (in_array('100', $variable)) {
-                          if ($row->doc_electronico == 5) {
-                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoverde.png" style="width:20px;" title="Autorizado"></a>';
-                          } else {
-                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoplomo.png" style="width:15px;" title="Sin Autorizar"></a>';
-                          }
+                          $isSriAuthorized = $row->doc_electronico == 5;
                         } else {
-                          if ($row->estado_electronica == 3) {
-                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoverde.png" style="width:20px;" title="Autorizado"></a>';
-                          } else {
-                            $tabla .= '<a href="#"><img src="' . asset('/') . 'img/puntoplomo.png" style="width:15px;" title="Sin Autorizar"></a>';
-                          }
+                          $isSriAuthorized = $row->estado_electronica == 3;
                         }
+
+                        $sriStatusClass = $isSriAuthorized
+                          ? 'aitrol-sri-status--authorized'
+                          : 'aitrol-sri-status--pending';
+                        $sriStatusIcon = $isSriAuthorized ? 'fa-check-circle' : 'fa-clock-o';
+                        $sriStatusLabel = $isSriAuthorized ? 'Autorizado' : 'Sin autorizar';
                       }
+                      $tabla .= '<span class="aitrol-sri-status ' . $sriStatusClass . '" title="Estado SRI: ' . $sriStatusLabel . '">';
+                      $tabla .= '<i class="fa ' . $sriStatusIcon . '" aria-hidden="true"></i>';
+                      $tabla .= '<span>' . $sriStatusLabel . '</span>';
+                      $tabla .= '</span>';
                       $tabla .= '</td>';
                       if ($empresa->inventario == 1 && $empresa->egreso_kardex == 1) {
                         if (!is_null($venta_kardex)) {

@@ -272,6 +272,43 @@
     font-weight: 500;
 }
 
+.aitrol-shell .aitrol-sri-status {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 10px;
+    font-weight: 700;
+    gap: 6px;
+    justify-content: center;
+    letter-spacing: 0.025em;
+    min-width: 104px;
+    padding: 6px 10px;
+    white-space: nowrap;
+}
+
+.aitrol-shell .aitrol-sri-status > i {
+    font-size: 13px;
+}
+
+.aitrol-shell .aitrol-sri-status--authorized {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+}
+
+.aitrol-shell .aitrol-sri-status--pending {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #b45309;
+}
+
+.aitrol-shell .aitrol-sri-status--annulled {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
 .aitrol-shell .dataTables_wrapper .dataTables_filter,
 .aitrol-shell .dataTables_wrapper .dataTables_length,
 .aitrol-shell .dataTables_wrapper .dataTables_info,
