@@ -20,8 +20,19 @@ class ExampleTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Sign In')
-            ->assertSee('Ingresa tus credenciales para acceder a tu cuenta.');
+            ->assertSee('Iniciar sesión')
+            ->assertSee('Acceso seguro')
+            ->assertSee('Ingresa tus credenciales para acceder a tu cuenta.')
+            ->assertSee('Acceso exclusivo para usuarios autorizados')
+            ->assertSee('Gestiona toda tu organización')
+            ->assertSee('Contabilidad y finanzas conectadas')
+            ->assertSee('Gestión médica integral')
+            ->assertSee('action="'.route('new-system.login.store').'"', false)
+            ->assertDontSee('Laravel 13');
+
+        $this->assertFileExists(public_path('images/login/erp-administracion.png'));
+        $this->assertFileExists(public_path('images/login/erp-contabilidad.png'));
+        $this->assertFileExists(public_path('images/login/erp-medicina.png'));
     }
 
     public function test_the_root_url_shows_the_new_system_dashboard_for_authenticated_users(): void
