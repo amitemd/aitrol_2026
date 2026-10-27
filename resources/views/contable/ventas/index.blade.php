@@ -256,7 +256,7 @@ if (count($ventas) > 0) {
                       <th>{{trans('wfact_venta.estadosri')}}</th>
                       @if($empresa->inventario == 1 && $empresa->egreso_kardex == 1) <th>Egreso</th> @endif
                       <th>{{trans('wfact_venta.Comprobante')}}</th>
-                      <th>{{trans('wfact_venta.Tipo')}}</th>
+                      <th class="text-right">Valor sin IVA</th>
                       <th>{{trans('wfact_venta.Fecha')}}</th>
                       <th>{{trans('wfact_venta.Cliente')}}</th>
                       <th>{{trans('wfact_venta.Paciente')}}</th>
@@ -367,8 +367,8 @@ if (count($ventas) > 0) {
                       $tabla .= '<td>';
                       $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->nro_comprobante . '</a>';
                       $tabla .= '</td>';
-                      $tabla .= '<td>';
-                      $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->tipo . '</a>';
+                      $tabla .= '<td class="text-right" data-order="' . $row->valor_sin_iva . '">';
+                      $tabla .= '<a class="aitrol-money-value" href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">$ ' . number_format((float) $row->valor_sin_iva, 2, '.', ',') . '</a>';
                       $tabla .= '</td>';
                       $tabla .= '<td>';
                       $tabla .= '<a href="' . asset('/') . 'contable/ventas/editarCabeceraFactura?id=' . $row->id . '">' . $row->fecha . '</a>';

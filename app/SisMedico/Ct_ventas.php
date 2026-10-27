@@ -351,7 +351,6 @@ class Ct_ventas extends Model
                 'ct_ventas.orden_venta',
                 'ct_ventas.ip_creacion',
                 'ct_ventas.nro_comprobante',
-                'ct_ventas.tipo',
                 'ct_ventas.id_asiento',
                 'ct_ventas.created_at',
                 'ct_ventas.fecha',
@@ -373,7 +372,9 @@ class Ct_ventas extends Model
                 'um.nombre2 as nombremod2',
                 'um.apellido1 as apellidomod1',
                 'um.apellido2 as apellidomod2',
-                'se.nombre'
+                'se.nombre',
+                'ct_ventas.emisor',
+                DB::raw('ROUND((COALESCE(ct_ventas.subtotal_0, 0) + COALESCE(ct_ventas.subtotal_12, 0)) - COALESCE(ct_ventas.descuento, 0), 2) AS valor_sin_iva')
             )->paginate(10);
     }
     public static function getCorteaFecha($r)

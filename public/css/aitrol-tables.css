@@ -309,6 +309,13 @@
     color: #b91c1c;
 }
 
+.aitrol-shell .aitrol-money-value {
+    color: #0f766e;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .aitrol-shell .dataTables_wrapper .dataTables_filter,
 .aitrol-shell .dataTables_wrapper .dataTables_length,
 .aitrol-shell .dataTables_wrapper .dataTables_info,
