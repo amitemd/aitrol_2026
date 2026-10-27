@@ -39,6 +39,15 @@ class PasswordResetController extends Controller
         );
     }
 
+    public function legacyRecoveryDisabled(): RedirectResponse
+    {
+        return redirect()
+            ->route('new-system.password.request')
+            ->withErrors([
+                'email' => 'Por seguridad, utiliza el correo registrado para recuperar tu contraseña.',
+            ]);
+    }
+
     public function resetForm(Request $request, string $token): View
     {
         return view('new-system.auth.reset-password', [

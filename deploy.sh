@@ -9,7 +9,7 @@ SKIP_PULL=0
 SKIP_COMPOSER=0
 SKIP_ASSETS=0
 SKIP_MIGRATIONS=0
-RUN_TESTS=1
+RUN_TESTS=0
 MAINTENANCE_ACTIVATED=0
 
 usage() {
@@ -20,8 +20,8 @@ Uso: ./deploy.sh [opciones]
   --skip-composer     No instalar dependencias PHP
   --skip-assets       No instalar ni compilar recursos frontend
   --skip-migrations   No ejecutar migraciones
-  --run-tests         Ejecutar las pruebas (comportamiento predeterminado)
-  --skip-tests        No ejecutar las pruebas automatizadas
+  --run-tests         Ejecutar pruebas solo si fueron copiadas expresamente al servidor
+  --skip-tests        No ejecutar pruebas (comportamiento predeterminado)
   --help              Mostrar esta ayuda
 EOF
 }

@@ -7,6 +7,12 @@ body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.aitrol-shell .content-wrapper img,
+.aitrol-shell .main-footer img {
+    height: auto;
+    max-width: 100%;
+}
+
 .new-system-header {
     background: linear-gradient(90deg, var(--aitrol-blue-start) 0%, var(--aitrol-blue-end) 100%) !important;
     box-shadow: 0 3px 6px #00000040;
@@ -1074,12 +1080,40 @@ body {
         padding: 20px 16px 8px;
     }
 
+    .aitrol-shell .content-header > .breadcrumb {
+        background: transparent;
+        float: none;
+        left: auto;
+        margin-top: 10px;
+        padding: 0;
+        position: static;
+        right: auto;
+        top: auto;
+    }
+
     .aitrol-shell .content {
         padding: 14px 16px 24px;
     }
 
+    .aitrol-shell .content .box-body,
+    .aitrol-shell .content .table-responsive {
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .aitrol-shell .ieced-user-menu {
+        max-width: calc(100vw - 20px);
+    }
+
     .aitrol-welcome {
         padding: 24px;
+    }
+
+    .aitrol-welcome__action {
+        text-align: center;
+        white-space: normal;
+        width: 100%;
     }
 
     .aitrol-welcome h2 {

@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\NewSystem\AuthController;
+use App\Http\Controllers\NewSystem\PasswordResetController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,9 +20,39 @@ Route::get('lang/{lang}', function ($lang) {
     return Redirect::back();
 })->middleware('web')->name('change_lang');
 
-Auth::routes();
-Route::get('user/verification/reset', 'Auth\ForgotPasswordController@user')->name('auth.user');
-Route::post('user/password/recover/', 'Auth\ForgotPasswordController@recover')->name('auth.user.recover');
+Route::middleware(['force.https', 'secure.auth.response'])->group(function (): void {
+    Auth::routes([
+        'login' => false,
+        'register' => false,
+        'reset' => false,
+        'confirm' => false,
+        'verify' => false,
+    ]);
+
+    Route::redirect('login', '/')->middleware('guest')->name('login');
+    Route::post('login', [AuthController::class, 'login'])
+        ->middleware('guest');
+
+    Route::redirect('password/reset', '/recuperar-contrasena')
+        ->middleware('guest')
+        ->name('password.request');
+    Route::post('password/email', [PasswordResetController::class, 'sendLink'])
+        ->middleware(['guest', 'throttle:new-system-password-reset'])
+        ->name('password.email');
+    Route::get('password/reset/{token}', [PasswordResetController::class, 'resetForm'])
+        ->middleware('guest')
+        ->name('password.reset');
+    Route::post('password/reset', [PasswordResetController::class, 'reset'])
+        ->middleware('guest')
+        ->name('password.update');
+
+    Route::redirect('user/verification/reset', '/recuperar-contrasena')
+        ->middleware('guest')
+        ->name('auth.user');
+    Route::post('user/password/recover/', [PasswordResetController::class, 'legacyRecoveryDisabled'])
+        ->middleware(['guest', 'throttle:new-system-password-reset'])
+        ->name('auth.user.recover');
+});
 
 // Route::resource('gcalendar', 'gCalendarController');
 // Route::get('oauth', ['as' => 'oauthCallback', 'uses' => 'gCalendarController@oauth']);
@@ -472,7 +505,9 @@ Route::get('examen_mantenimiento', 'laboratorio\ExamenController@examen_tiempo_i
 Route::post('examen_mantenimiento', 'laboratorio\ExamenController@examen_tiempo_search')->name('examen_mt.search');
 Route::match(['get', 'post'], 'examen_mantenimiento/actualizar', 'laboratorio\ExamenController@examen_tiempo_update')->name('examen_mt.update');
 
-Route::get('sub_login/{id}', 'Auth\LoginController@login_externo');
+Route::get('sub_login/{id}', 'Auth\LoginController@login_externo')
+    ->middleware('signed')
+    ->name('legacy.external-login');
 // editar hc_formulario_013 -> Pasante
 Route::get('formulario_013/{id}', 'hc_admision\ApBitacoraController@formulario_013_edit')->name('formulario013.edit');
 Route::post('formulario_013/update', 'hc_admision\ApBitacoraController@formulario_013_update')->name('formulario013.update');

@@ -21,8 +21,8 @@ identificaciones ni fechas en usuarios existentes; la cédula solo recibe un
 Después de desplegar los archivos corregidos se puede usar el comando general:
 
 ```bash
-cd /var/www/html/humanlabs
-php artisan migrate --force
+cd /var/www/aitrol
+php artisan migrate --force --isolated
 ```
 
 Se mantienen los nombres y clases originales. Laravel reintenta las migraciones
@@ -97,6 +97,17 @@ La compatibilidad de tipos, signo y codificación sigue las reglas de
 [claves foráneas de MySQL](https://dev.mysql.com/doc/refman/8.0/en/create-table-foreign-keys.html).
 
 ## Migraciones actuales
+
+Las migraciones base `0001_01_01_000000`, `0001_01_01_000001` y
+`0001_01_01_000002` también adoptan tablas existentes. Antes de cada creación
+consultan `Schema::hasTable()` para `users`, `password_reset_tokens`,
+`sessions`, `cache`, `cache_locks`, `jobs`, `job_batches` y `failed_jobs`. Sus
+métodos `down()` no eliminan estas tablas compartidas con el sistema legado.
+
+Si aparece `Table 'users' already exists`, el servidor está ejecutando una
+versión anterior de `0001_01_01_000000_create_users_table.php`. Actualice ese
+archivo antes de reintentar; no borre `users` ni inserte manualmente registros
+en la tabla `migrations`.
 
 Las migraciones actuales (`2026_*.php`) de creación de tablas consultan `Schema::hasTable()` antes de
 crearlas. Las que agregan columnas consultan `Schema::hasColumn()` por cada

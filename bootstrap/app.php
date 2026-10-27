@@ -3,6 +3,7 @@
 use App\Console\Commands\CreateAdministrator;
 use App\Console\Commands\CustomCommand;
 use App\Console\Commands\DeployApplication;
+use App\Http\Middleware\EnforceHttps;
 use App\Http\Middleware\SecureAuthenticationResponse;
 use App\Http\Middleware\ShareNewSystemContext;
 use Illuminate\Console\Scheduling\Schedule;
@@ -52,6 +53,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('custom:command')->weekdays()->dailyAt('13:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustHosts();
+
         $middleware->appendToGroup('web', SetLang::class);
         $middleware->redirectGuestsTo(
             fn (Request $request): string => str_starts_with((string) $request->route()?->getName(), 'new-system.')
@@ -67,6 +70,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'cors' => Cors::class,
+            'force.https' => EnforceHttps::class,
             'general' => General::class,
             'new.context' => ShareNewSystemContext::class,
             'secure.auth.response' => SecureAuthenticationResponse::class,

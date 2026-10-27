@@ -10,14 +10,14 @@ use App\Http\Controllers\NewSystem\UserController as NewSystemUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', NewSystemDashboardController::class)
-    ->middleware(['new.context', 'secure.auth.response'])
+    ->middleware(['force.https', 'new.context', 'secure.auth.response'])
     ->name('new-system.dashboard');
 
 Route::post('/acceder', [NewSystemAuthController::class, 'login'])
-    ->middleware(['guest', 'secure.auth.response'])
+    ->middleware(['force.https', 'guest', 'secure.auth.response'])
     ->name('new-system.login.store');
 
-Route::middleware(['guest', 'secure.auth.response'])->group(function (): void {
+Route::middleware(['force.https', 'guest', 'secure.auth.response'])->group(function (): void {
     Route::get('/recuperar-contrasena', [NewSystemPasswordResetController::class, 'requestForm'])
         ->name('new-system.password.request');
     Route::post('/recuperar-contrasena', [NewSystemPasswordResetController::class, 'sendLink'])
