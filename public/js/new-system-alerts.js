@@ -49,6 +49,8 @@
             icon: 'warning',
             title: labels.confirmation,
             showCancelButton: true,
+            allowOutsideClick: false,
+            returnFocus: true,
             focusCancel: true,
             reverseButtons: true,
             confirmButtonText: labels.confirm,

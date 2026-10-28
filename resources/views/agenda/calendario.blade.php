@@ -71,7 +71,7 @@
             }
 </style>
 
-<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.1.0/fullcalendar.min.css' />
+<link rel="stylesheet" href="{{ asset('/js/calendario/fullcalendar.min.css') }}">
 <link rel="stylesheet" href="{{ asset("/css/bootstrap-datetimepicker.css")}}">
 <section class="content" >
 
@@ -157,8 +157,8 @@
 
 <script src="{{ asset ("/plugins/datetimepicker/bootstrap-material-datetimepicker.js") }}"></script>
 <script src="{{ asset ('/js/calendario/moment.min.js') }}"></script>
-<script src="{{ asset ("/plugins/fullcalendar/fullcalendar.js") }}"></script>
-<script src="{{ asset ("/plugins/fullcalendar/es.js") }}"></script>
+<script src="{{ asset('/plugins/fullcalendar/fullcalendar.min.js') }}"></script>
+<script src="{{ asset('/plugins/fullcalendar/es.js') }}"></script>
 <script src="{{ asset ("/plugins/colorpicker/bootstrap-colorpicker.js") }}"></script>
 <script src="{{ asset ("/js/paciente.js") }}"></script>
 <script src="{{ asset ("/js/bootstrap-datetimepicker.js") }}"></script>
@@ -199,9 +199,8 @@
         // page is now ready, initialize the calendar...
         $('#calendar').fullCalendar({
             // put your options and callbacks here
-            lang: 'es',
+            locale: 'es',
             allDaySlot: false,
-            locate: 'es',
             @if($fecha != '0')
                 <?php
                     date_default_timezone_set('Europe/London');
@@ -450,10 +449,13 @@
                     if(dato == 0)
                     {
                         if(view.type=='month'){
-                            var confirmar = confirm(`{{trans('agenda.soloAgendarReuniones')}}`);
-                            if(confirmar){
-                                location.href = "{{url('agenda/reunion/nuevo')}}/{{$id}}/"+start+"/0";
-                            }
+                            window.AitrolAlerts.confirm({
+                                text: `{{ trans('agenda.soloAgendarReuniones') }}`,
+                            }).then(function (result) {
+                                if (result.isConfirmed) {
+                                    location.href = "{{ url('agenda/reunion/nuevo') }}/{{ $id }}/"+start+"/0";
+                                }
+                            });
 
                         }else{
                             alert(`{{trans('agenda.agendaFueraHorarioDisponibleDoctor')}}`);
@@ -498,10 +500,6 @@
             $('.classreunion').find("a").attr("data-toggle","modal");
             $('.classreunion').find("a").attr("data-target","#favoritesModal");
         };
-        $('.fc-prev-button').click(function() {
-            alert('entra antes');
-            console.log("holi emily");
-        });
         $('.fc-agendaWeek-button').click(function() {
             var semana = $('#semana').val();
             var fecha = $('#fecha').val();

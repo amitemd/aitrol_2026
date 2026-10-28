@@ -31,6 +31,7 @@
     $cspNonce = request()->attributes->get('csp_nonce');
 @endphp
 
+<link rel="stylesheet" href="{{ asset('css/new-system-alerts.css') }}?v={{ filemtime(public_path('css/new-system-alerts.css')) }}">
 <script @if ($cspNonce) nonce="{{ $cspNonce }}" @endif>
     window.AitrolAlertConfiguration = {{ Js::from($alertConfiguration) }};
 </script>
