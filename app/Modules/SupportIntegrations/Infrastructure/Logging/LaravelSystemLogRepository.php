@@ -382,6 +382,19 @@ final class LaravelSystemLogRepository implements SystemLogRepository
 
                 $context = $this->structuredContext($entry['message']);
                 $duration = $this->durationFromMessage($entry['message']);
+                $correlatedLogs = $relatedEntries
+                    ->sortBy(fn (array $related): float => $this->timestampMilliseconds($related['date']) ?? 0.0)
+                    ->take(50)
+                    ->map(fn (array $related): array => [
+                        'id' => $related['id'],
+                        'date' => $related['date'],
+                        'timestamp_ms' => $this->timestampMilliseconds($related['date']),
+                        'level' => $related['level'],
+                        'message' => Str::limit(Str::of($related['message'])->squish()->toString(), 500, '…'),
+                        'details' => Str::limit(Str::of($related['details'])->squish()->toString(), 1000, '…'),
+                    ])
+                    ->values()
+                    ->all();
                 $abnormalLogs = $relatedEntries
                     ->filter(fn (array $related): bool => in_array($related['level'], $abnormalLevels, true))
                     ->map(fn (array $related): array => [
@@ -422,6 +435,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
                     'subprocesses' => $subprocesses,
                     'subprocess_duration_ms' => round((float) collect($subprocesses)->sum('duration_ms'), 3),
                     'related_log_count' => $relatedEntries->count(),
+                    'correlated_logs' => $correlatedLogs,
                     'abnormal_logs' => $abnormalLogs,
                     'trace_depth' => (int) $relatedEntries->max(
                         fn (array $related): int => count($this->traceFrames($related['details'])),

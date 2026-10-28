@@ -290,7 +290,7 @@
                         </section>
 
                         <section class="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                            <div class="flex items-center justify-between gap-2"><h4 class="text-xs font-black text-slate-950">Eventos fuera de lo normal</h4><span data-flame-inspector-log-count class="rounded-full bg-rose-50 px-2 py-1 text-[10px] font-black text-rose-700">0</span></div>
+                            <div class="flex items-center justify-between gap-2"><h4 class="text-xs font-black text-slate-950">Logs correlacionados</h4><span data-flame-inspector-log-count class="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-700">0</span></div>
                             <div data-flame-inspector-logs class="mt-3 grid gap-2 text-[11px]"></div>
                         </section>
                     </aside>
@@ -302,10 +302,12 @@
                         <p data-flame-detail-meta class="mt-1 break-words leading-5 text-slate-500">Seleccione Cronología o Pilas para explorar eventos individuales.</p>
                     </div>
                     <div data-flame-legend class="hidden flex-wrap items-center justify-between gap-4 text-slate-500 sm:justify-end">
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 border border-dashed border-blue-500 bg-blue-50"></i>Cadena auditada, sin tiempo individual</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-blue-200 to-blue-700"></i>Tiempo aún no desglosado</span>
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500"></i>Normal</span>
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500"></i>Lento o advertencia</span>
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-400 to-red-600"></i>Error</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-cyan-600"></i>INFO / NOTICE</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-violet-600"></i>DEBUG</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-amber-500"></i>WARNING</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-red-600"></i>ERROR / CRITICAL</span>
                         <span data-flame-x-axis class="font-semibold text-slate-700">Eje X · fecha y hora · Eje Y · duración (ms)</span>
                     </div>
                 </footer>
