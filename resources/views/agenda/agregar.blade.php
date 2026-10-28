@@ -94,9 +94,11 @@
                     <div class="form-group col-md-3">
                         <a class="btn btn-primary" href="{{ route('paciente.buscaxnombre', ['id_doc' => $id, 'fecha' => $unix, 'sala' => '0'])}}" ><span class="glyphicon glyphicon-search"></span>  @lang('agenda.pacienteporNombre')</a>
                     </div>
-                     <!--div class="form-group col-md-3">
-                        <a  class="btn btn-primary" href="{{ route('iess_consultorio.crear_consulta', ['id_doc' => $id, 'fecha' => $unix])}}"><span class="glyphicon glyphicon-plus-sign"></span> IESS @lang('agenda.consultorio')</a>
-                    </div-->
+                    {{--
+                    <div class="form-group col-md-3">
+                        <a class="btn btn-primary" href="{{ route('iess_consultorio.crear_consulta', ['id' => $id, 'unix' => $unix]) }}"><span class="glyphicon glyphicon-plus-sign"></span> IESS @lang('agenda.consultorio')</a>
+                    </div>
+                    --}}
                     @if($paciente != Array())
                     <!--div class="form-group col-md-3">
                         <a  data-toggle="modal" data-target="#verificacion">

@@ -125,6 +125,7 @@ const initializeLogFlameGraph = () => {
     const orientationButton = modal.querySelector('[data-flame-orientation]');
     const resetButton = modal.querySelector('[data-flame-reset]');
     const closeButton = modal.querySelector('[data-flame-close]');
+    const showErrorsButton = modal.querySelector('[data-flame-show-errors]');
     const totalCaption = modal.querySelector('[data-flame-total-caption]');
     const totalLabel = modal.querySelector('[data-flame-total]');
     const unitLabel = modal.querySelector('[data-flame-unit]');
@@ -655,6 +656,20 @@ const initializeLogFlameGraph = () => {
             stage.scrollTop = 0;
             render();
         });
+    });
+    showErrorsButton?.addEventListener('click', () => {
+        const errorProfile = data.profiles.find((profile) => profile.key === 'errors');
+
+        if (!errorProfile) {
+            return;
+        }
+
+        state.mode = 'stack';
+        state.profileKey = errorProfile.key;
+        state.zoomId = null;
+        profileSelect.value = errorProfile.key;
+        stage.scrollTop = 0;
+        render();
     });
     orientationButton.addEventListener('click', () => {
         state.orientation = state.orientation === 'flame' ? 'icicle' : 'flame';

@@ -200,6 +200,25 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             );
         }
 
+        $errorStacks = collect($foldedStacks)
+            ->filter(fn (array $stack): bool => in_array(
+                $stack['level'],
+                ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'],
+                true,
+            ))
+            ->all();
+
+        if ($errorStacks !== []) {
+            $profiles[] = $this->buildFlameProfile(
+                key: 'errors',
+                label: 'Errores y excepciones',
+                unit: 'eventos',
+                foldedStacks: $errorStacks,
+                weightKey: 'samples',
+                maximumStacks: $maximumStacks,
+            );
+        }
+
         $timeline = $this->buildProcessTimeline($entries);
 
         return new SystemLogFlameGraph(
@@ -215,7 +234,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
 
     /**
      * @param  list<array<string, mixed>>  $processes
-     * @return array{measured_processes: int, unmeasured_processes: int, total_duration_ms: float, average_duration_ms: float, p95_duration_ms: float, maximum_duration_ms: float, primary_bottleneck: ?array<string, mixed>, route_bottlenecks: list<array<string, mixed>>, slowest_processes: list<array<string, mixed>>}
+     * @return array{measured_processes: int, unmeasured_processes: int, error_processes: int, total_duration_ms: float, average_duration_ms: float, p95_duration_ms: float, maximum_duration_ms: float, primary_bottleneck: ?array<string, mixed>, route_bottlenecks: list<array<string, mixed>>, slowest_processes: list<array<string, mixed>>, error_hotspots: list<array<string, mixed>>}
      */
     private function buildPerformanceAnalysis(array $processes): array
     {
@@ -272,10 +291,33 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             ])
             ->values()
             ->all();
+        $errorLevels = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'];
+        $errorProcesses = $processCollection
+            ->filter(fn (array $process): bool => in_array($process['level'], $errorLevels, true));
+        $errorHotspots = $errorProcesses
+            ->groupBy(fn (array $process): string => $process['level'].'|'.$process['label'])
+            ->map(function (Collection $matchingProcesses): array {
+                $latestProcess = $matchingProcesses->sortByDesc('timestamp_ms')->first();
+
+                return [
+                    'label' => $latestProcess['label'],
+                    'level' => $latestProcess['level'],
+                    'occurrences' => $matchingProcesses->count(),
+                    'latest_at' => $latestProcess['date'],
+                    'route' => $matchingProcesses->pluck('route')->filter()->first(),
+                    'controller' => $matchingProcesses->pluck('controller')->filter()->first(),
+                    'maximum_trace_depth' => (int) $matchingProcesses->max('trace_depth'),
+                ];
+            })
+            ->sortByDesc('occurrences')
+            ->take(8)
+            ->values()
+            ->all();
 
         return [
             'measured_processes' => $measuredProcesses->count(),
             'unmeasured_processes' => $processCollection->count() - $measuredProcesses->count(),
+            'error_processes' => $errorProcesses->count(),
             'total_duration_ms' => round($totalDuration, 2),
             'average_duration_ms' => $measuredProcesses->isNotEmpty()
                 ? round($totalDuration / $measuredProcesses->count(), 2)
@@ -285,6 +327,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             'primary_bottleneck' => $routeBottlenecks[0] ?? null,
             'route_bottlenecks' => $routeBottlenecks,
             'slowest_processes' => $slowestProcesses,
+            'error_hotspots' => $errorHotspots,
         ];
     }
 

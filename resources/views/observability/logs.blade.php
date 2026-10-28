@@ -200,6 +200,44 @@
                             </section>
                         </div>
 
+                        @if ($performance['error_hotspots'] !== [])
+                            <section class="overflow-hidden rounded-3xl border border-rose-200 bg-white shadow-sm">
+                                <div class="flex flex-col gap-3 border-b border-rose-100 bg-rose-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                                    <div>
+                                        <p class="text-[11px] font-black tracking-[0.16em] text-rose-700 uppercase">Errores prioritarios</p>
+                                        <h3 class="mt-1 text-lg font-black text-rose-950">Excepciones que requieren revisión</h3>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="w-fit rounded-full bg-rose-700 px-3 py-1.5 text-xs font-black text-white">{{ number_format($performance['error_processes']) }} eventos críticos</span>
+                                        <button type="button" data-flame-show-errors class="rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 shadow-sm outline-none hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500">Analizar en Pilas →</button>
+                                    </div>
+                                </div>
+                                <div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
+                                    @foreach ($performance['error_hotspots'] as $index => $error)
+                                        <article class="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-rose-100 text-xs font-black text-rose-700">#{{ $index + 1 }}</span>
+                                                <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black tracking-wide text-rose-700 shadow-sm">{{ $error['occurrences'] }} {{ $error['occurrences'] === 1 ? 'vez' : 'veces' }}</span>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="break-words text-sm font-black leading-5 text-slate-950">{{ $error['label'] }}</p>
+                                                @if ($error['route'])
+                                                    <p class="mt-2 break-all font-mono text-[11px] text-blue-700">{{ $error['route'] }}</p>
+                                                @endif
+                                                @if ($error['controller'])
+                                                    <p class="mt-1 break-all font-mono text-[10px] text-slate-500">{{ $error['controller'] }}</p>
+                                                @endif
+                                            </div>
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-200 pt-3 text-[10px] text-slate-500">
+                                                <span>Último: {{ $error['latest_at'] }}</span>
+                                                <span>Traza: {{ $error['maximum_trace_depth'] }} niveles</span>
+                                            </div>
+                                        </article>
+                                    @endforeach
+                                </div>
+                            </section>
+                        @endif
+
                         <aside class="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-950"><strong>Cómo interpretar el resultado:</strong> el tiempo acumulado descubre rutas que consumen recursos repetidamente; el P95 detecta lentitud que afecta a la mayoría de usuarios; y el máximo permite investigar casos aislados. Esto analiza tiempo de pared registrado en los logs, no CPU ni memoria del sistema operativo.</aside>
                     </div>
                 </section>
