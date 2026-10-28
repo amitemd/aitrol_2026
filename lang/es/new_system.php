@@ -27,6 +27,8 @@ return [
         'edit' => 'Editar',
         'cancel' => 'Cancelar',
         'toggle_navigation' => 'Mostrar u ocultar navegación',
+        'online' => 'En línea',
+        'hospital' => 'Hospital',
     ],
     'language' => [
         'change' => 'Cambiar idioma',

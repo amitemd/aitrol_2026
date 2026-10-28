@@ -10,6 +10,8 @@ return [
         'profile' => 'Profile', 'sign_out' => 'Sign out', 'all_rights_reserved' => 'All rights reserved.',
         'select' => 'Select...', 'active' => 'Active', 'inactive' => 'Inactive', 'edit' => 'Edit', 'cancel' => 'Cancel',
         'toggle_navigation' => 'Show or hide navigation',
+        'online' => 'Online',
+        'hospital' => 'Hospital',
     ],
     'language' => ['change' => 'Change language', 'spanish' => 'Spanish', 'english' => 'English', 'portuguese' => 'Portuguese'],
     'dashboard' => [

@@ -10,6 +10,8 @@ return [
         'profile' => 'Perfil', 'sign_out' => 'Sair', 'all_rights_reserved' => 'Todos os direitos reservados.',
         'select' => 'Selecione...', 'active' => 'Ativo', 'inactive' => 'Inativo', 'edit' => 'Editar', 'cancel' => 'Cancelar',
         'toggle_navigation' => 'Mostrar ou ocultar navegação',
+        'online' => 'Online',
+        'hospital' => 'Hospital',
     ],
     'language' => ['change' => 'Alterar idioma', 'spanish' => 'Espanhol', 'english' => 'Inglês', 'portuguese' => 'Português'],
     'dashboard' => [

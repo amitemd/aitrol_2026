@@ -133,7 +133,7 @@
                     </div>
                     <div class="pull-left info">
                         <p>{{ $userName }}</p>
-                        <a href="#"><i class="fa fa-circle text-success"></i> @lang('tsidebar.online')</a>
+                        <a href="#"><i class="fa fa-circle text-success"></i> {{ __('new_system.common.online') }}</a>
                     </div>
                 </div>
 
@@ -184,7 +184,7 @@
                             <li><a href="{{ url('agenda') }}"><i class="fa fa-calendar"></i> @lang('tsidebar.agenda')</a></li>
                             <li><a href="{{ url('consultam') }}"><i class="fa fa-calendar-minus-o"></i> @lang('tsidebar.consultas_procedimientos')</a></li>
                             <li><a href="{{ url('paciente') }}"><i class="fa fa-users"></i> @lang('tsidebar.pacientes')</a></li>
-                            <li><a href="{{ url('hospital') }}"><i class="fa fa-hospital-o"></i> @lang('tsidebar.Hospital')</a></li>
+                            <li><a href="{{ url('hospital') }}"><i class="fa fa-hospital-o"></i> {{ __('new_system.common.hospital') }}</a></li>
                         </ul>
                     </li>
                     <li class="treeview" data-menu-entry>
