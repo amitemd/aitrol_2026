@@ -163,6 +163,18 @@
 <script src="{{ asset ("/js/paciente.js") }}"></script>
 <script src="{{ asset ("/js/bootstrap-datetimepicker.js") }}"></script>
 <script type="text/javascript">
+    const newAgendaUrlTemplate = {{ Js::from(route('agenda.nuevo2', [
+        'id' => $id,
+        'fecha' => '__agenda_timestamp__',
+        'i' => '__patient_id__',
+    ])) }};
+
+    function buildNewAgendaUrl(timestamp, patientId) {
+        return newAgendaUrlTemplate
+            .replace('__agenda_timestamp__', String(timestamp))
+            .replace('__patient_id__', String(patientId));
+    }
+
     $(function () { 
         $('#fecha').datetimepicker({
             format: 'YYYY/MM/DD',
@@ -186,7 +198,7 @@
 <script>
     function nueva_consulta(){
         var tiempo = Date.now() - 5000 * 60 * 60;
-        window.location.href = "{{route('agenda.nuevo', ['id'=> $id])}}/"+tiempo+"/0";
+        window.location.assign(buildNewAgendaUrl(tiempo, '0'));
     }
 
 
@@ -417,7 +429,7 @@
 
                     ('agenda.nuevo', ['id' => $id]) }}/"+start+"/0");*/
                 var check = $.fullCalendar.formatDate(start,'YYYYMMDD HH:mm');
-                var today = '{{date("Ymd H:m")}}';
+                var today = '{{date("Ymd H:i")}}';
                 console.log(view.type);
                 if(check <= today)
                 {
@@ -425,13 +437,14 @@
                 }
                 else
                 {
-                    var dia =  $.fullCalendar.formatDate(start,'ddd');
+                    var selectedWeekday = start.isoWeekday();
                     var hora = $.fullCalendar.formatDate(start,'HH:mm:ss');
                     var dato = 0;
+                    var newAgendaUrl = null;
                     @foreach($horario as $value)
-                        if(dia == '<?php echo $value->dia; ?>'){
-                            if(hora >= '<?php echo $value->hora_ini; ?>' && hora < '<?php echo $value->hora_fin; ?>'){
-                                location.href = "{{route('agenda.nuevo', ['id' => $id]) }}/"+start+"/0";
+                        if(selectedWeekday === Number({{ Js::from((int) $value->ndia) }})){
+                            if(hora >= {{ Js::from($value->hora_ini) }} && hora < {{ Js::from($value->hora_fin) }}){
+                                newAgendaUrl = buildNewAgendaUrl(start.valueOf(), '0');
                                 dato = 1;
                             }
                         }
@@ -442,10 +455,17 @@
 
                     @foreach($extra as $key=>$value)
                         if(inicial2 >= '<?php echo $value->inicio; ?>' && inicial2 < '<?php echo $value->fin; ?>'){
-                                location.href = "{{route('agenda.nuevo', ['id' => $id]) }}/"+start+"/0";
+                                newAgendaUrl = buildNewAgendaUrl(start.valueOf(), '0');
                                 dato = 1;
                             }
                     @endforeach
+
+                    if(newAgendaUrl !== null){
+                        window.location.assign(newAgendaUrl);
+
+                        return;
+                    }
+
                     if(dato == 0)
                     {
                         if(view.type=='month'){
