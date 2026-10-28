@@ -91,9 +91,9 @@
 
                     <div class="flex flex-wrap items-center gap-2">
                         <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
-                            <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm">Diagnóstico</button>
-                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-white">Cronología</button>
-                            <button type="button" data-flame-mode-option="stack" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-white">Pilas</button>
+                            <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Diagnóstico</button>
+                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Cronología</button>
+                            <button type="button" data-flame-mode-option="stack" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Pilas</button>
                         </nav>
                         <label data-flame-profile-wrapper class="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">
                             Métrica
@@ -103,7 +103,7 @@
                                 @endforeach
                             </select>
                         </label>
-                        <label data-flame-search-wrapper class="hidden min-w-52 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 sm:flex-none">
+                        <label data-flame-search-wrapper class="hidden min-w-64 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 sm:w-72 sm:flex-none">
                             <span aria-hidden="true">⌕</span>
                             <input data-flame-search type="search" placeholder="Buscar proceso o función" class="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400">
                         </label>
@@ -117,7 +117,7 @@
             <div class="grid min-h-0 flex-1 grid-rows-[auto_1fr_auto]">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 bg-blue-50 px-4 py-2 text-xs text-slate-600 sm:px-6">
                     <div class="flex flex-wrap gap-x-5 gap-y-1">
-                        <span><strong class="text-blue-900" data-flame-total>{{ number_format($performance['total_duration_ms'], 2) }}</strong> <span data-flame-unit>ms medidos</span></span>
+                        <span><span data-flame-total-caption>Tiempo medido</span>: <strong class="text-blue-900" data-flame-total>{{ number_format($performance['total_duration_ms'], 2) }}</strong> <span data-flame-unit>ms</span></span>
                         <span><span data-flame-count-label>Solicitudes medidas</span>: <strong class="text-blue-900" data-flame-depth>{{ $performance['measured_processes'] }}</strong></span>
                         <span data-flame-match-wrapper class="hidden">Coincidencias: <strong class="text-amber-700" data-flame-matches>0</strong></span>
                     </div>
@@ -204,8 +204,8 @@
                     </div>
                 </section>
 
-                <section data-flame-chart class="hidden min-h-0 grid-cols-[34px_minmax(0,1fr)] bg-white">
-                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eje Y · número de procesos</div>
+                <section data-flame-chart class="hidden min-h-0 grid-cols-[28px_minmax(0,1fr)] bg-white">
+                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eventos</div>
                     <div data-flame-stage class="relative min-h-0 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
                         <svg data-flame-svg class="block w-full select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
                         <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-500">No hay datos para esta métrica.</div>

@@ -82,6 +82,29 @@ const formatValue = (value, unit) => {
     return new Intl.NumberFormat('es-EC', { maximumFractionDigits: maximumDecimals }).format(value);
 };
 
+const formatElapsedTime = (milliseconds) => {
+    const totalMilliseconds = Math.max(0, Number(milliseconds) || 0);
+
+    if (totalMilliseconds < 1000) {
+        return `${formatValue(totalMilliseconds, 'ms')} ms`;
+    }
+
+    const totalSeconds = Math.floor(totalMilliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours} h ${minutes} min`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes} min ${seconds} s`;
+    }
+
+    return `${seconds} s`;
+};
+
 const initializeLogFlameGraph = () => {
     const modal = document.querySelector('#log-flame-graph-modal');
     const openButton = document.querySelector('[data-flame-open]');
@@ -102,6 +125,7 @@ const initializeLogFlameGraph = () => {
     const orientationButton = modal.querySelector('[data-flame-orientation]');
     const resetButton = modal.querySelector('[data-flame-reset]');
     const closeButton = modal.querySelector('[data-flame-close]');
+    const totalCaption = modal.querySelector('[data-flame-total-caption]');
     const totalLabel = modal.querySelector('[data-flame-total]');
     const unitLabel = modal.querySelector('[data-flame-unit]');
     const depthLabel = modal.querySelector('[data-flame-depth]');
@@ -140,7 +164,7 @@ const initializeLogFlameGraph = () => {
         profileWrapper.classList.toggle('flex', isStack);
         orientationButton.classList.toggle('hidden', !isStack);
         resetButton.classList.toggle('hidden', !isStack);
-        matchWrapper.classList.toggle('hidden', isDiagnosis);
+        matchWrapper.classList.toggle('hidden', isDiagnosis || state.search === '');
         legend.classList.toggle('hidden', isDiagnosis);
         legend.classList.toggle('flex', !isDiagnosis);
 
@@ -181,6 +205,8 @@ const initializeLogFlameGraph = () => {
     };
 
     const renderStack = () => {
+        updateModeLayout();
+
         const profile = activeProfile();
         const rootResult = state.zoomId ? findNode(profile.root, state.zoomId) : null;
         const zoomRoot = rootResult?.node ?? profile.root;
@@ -312,13 +338,14 @@ const initializeLogFlameGraph = () => {
         });
 
         totalLabel.textContent = formatValue(profile.total, profile.unit);
+        totalCaption.textContent = 'Peso total';
         unitLabel.textContent = profile.unit;
         depthLabel.textContent = String(relativeDepth + 1);
         countLabel.textContent = 'Profundidad';
         matchLabel.textContent = String(matches);
         breadcrumb.textContent = zoomPath.map((node) => node.label).join(' › ');
         orientationButton.textContent = state.orientation === 'flame' ? 'Orientación: raíz abajo' : 'Orientación: raíz arriba';
-        yAxisLabel.textContent = 'Eje Y · profundidad de pila';
+        yAxisLabel.textContent = 'Profundidad';
         xAxisLabel.textContent = 'Eje X · proporción del perfil';
         updateModeLayout();
         showNodeDetails(zoomRoot, profile);
@@ -331,13 +358,15 @@ const initializeLogFlameGraph = () => {
     };
 
     const renderTimeline = () => {
+        updateModeLayout();
+
         const timeline = data.timeline ?? {};
         const processes = Array.isArray(timeline.processes) ? timeline.processes : [];
         const chartWidth = Math.max(360, stage.clientWidth - 16);
         const labelWidth = Math.min(380, Math.max(180, chartWidth * 0.34));
         const plotWidth = chartWidth - labelWidth;
         const rowHeight = 46;
-        const topAxisHeight = 34;
+        const topAxisHeight = 48;
         const chartHeight = Math.max(120, topAxisHeight + (processes.length * rowHeight) + 8);
         const span = Math.max(1, Number(timeline.span_ms) || 1);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
@@ -386,15 +415,24 @@ const initializeLogFlameGraph = () => {
             });
             const tick = createSvgElement('text', {
                 x,
-                y: 18,
-                fill: '#475569',
-                'font-size': 10,
-                'font-weight': 700,
+                y: 16,
+                fill: '#0f172a',
+                'font-size': 11,
+                'font-weight': 800,
+                'text-anchor': anchor,
+            });
+            const exactTick = createSvgElement('text', {
+                x,
+                y: 32,
+                fill: '#64748b',
+                'font-size': 8,
+                'font-weight': 650,
                 'text-anchor': anchor,
             });
 
-            tick.textContent = `${formatValue(tickValue, 'ms')} ms`;
-            svg.append(gridLine, tick);
+            tick.textContent = percentage === 0 ? 'Inicio' : `+${formatElapsedTime(tickValue)}`;
+            exactTick.textContent = `${formatValue(tickValue, 'ms')} ms`;
+            svg.append(gridLine, tick, exactTick);
         });
 
         processes.forEach((process, index) => {
@@ -521,15 +559,16 @@ const initializeLogFlameGraph = () => {
             matches += matchesSearch ? 1 : 0;
         });
 
-        totalLabel.textContent = formatValue(span, 'ms');
-        unitLabel.textContent = 'ms';
+        totalLabel.textContent = formatElapsedTime(span);
+        totalCaption.textContent = 'Ventana analizada';
+        unitLabel.textContent = 'de ventana';
         depthLabel.textContent = String(processes.length);
-        countLabel.textContent = 'Procesos';
+        countLabel.textContent = 'Eventos';
         matchLabel.textContent = String(matches);
         breadcrumb.textContent = timeline.start_at && timeline.end_at
             ? `${timeline.start_at} → ${timeline.end_at}`
             : 'Sin marcas de tiempo disponibles';
-        yAxisLabel.textContent = 'Eje Y · número de procesos';
+        yAxisLabel.textContent = 'Eventos';
         xAxisLabel.textContent = 'Eje X · tiempo transcurrido (ms)';
         updateModeLayout();
         detailLabel.textContent = processes.length > 0
@@ -546,7 +585,8 @@ const initializeLogFlameGraph = () => {
         const bottleneck = analysis.primary_bottleneck;
 
         totalLabel.textContent = formatValue(Number(analysis.total_duration_ms) || 0, 'ms');
-        unitLabel.textContent = 'ms medidos';
+        totalCaption.textContent = 'Tiempo medido';
+        unitLabel.textContent = 'ms';
         depthLabel.textContent = String(Number(analysis.measured_processes) || 0);
         countLabel.textContent = 'Solicitudes medidas';
         breadcrumb.textContent = 'Análisis basado exclusivamente en tiempos registrados';
