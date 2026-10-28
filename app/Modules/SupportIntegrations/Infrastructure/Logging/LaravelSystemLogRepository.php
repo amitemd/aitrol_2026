@@ -3,6 +3,7 @@
 namespace App\Modules\SupportIntegrations\Infrastructure\Logging;
 
 use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
+use App\Modules\SupportIntegrations\Application\Data\SystemLogActivityMap;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogFilters;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogPage;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -37,6 +38,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
                 fileSize: 0,
                 scannedBytes: 0,
                 truncated: false,
+                activityMap: SystemLogActivityMap::empty(),
             );
         }
 
@@ -65,6 +67,8 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             })
             ->values();
 
+        $activityMap = $this->buildActivityMap($filteredEntries);
+
         $maximumEntries = max(100, (int) config('observability.log_max_entries', 10000));
 
         if ($filteredEntries->count() > $maximumEntries) {
@@ -79,7 +83,75 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             fileSize: $fileSize,
             scannedBytes: strlen($content),
             truncated: $fileSize > strlen($content),
+            activityMap: $activityMap,
         );
+    }
+
+    /** @param Collection<int, array{id: string, date: string, environment: string, level: string, message: string, details: string}> $entries */
+    private function buildActivityMap(Collection $entries): SystemLogActivityMap
+    {
+        $total = $entries->count();
+
+        if ($total === 0) {
+            return SystemLogActivityMap::empty();
+        }
+
+        $levelCounts = $entries->countBy('level');
+        $levels = collect(self::LEVELS)
+            ->map(function (string $level) use ($levelCounts, $total): array {
+                $count = (int) $levelCounts->get($level, 0);
+
+                return [
+                    'level' => $level,
+                    'count' => $count,
+                    'percentage' => round(($count / $total) * 100, 1),
+                ];
+            })
+            ->filter(fn (array $level): bool => $level['count'] > 0)
+            ->values()
+            ->all();
+
+        $groupedFamilies = $entries->groupBy(function (array $entry): string {
+            return $entry['level'].'|'.$this->familyLabel($entry['message']);
+        });
+        $maximumFamilies = min(32, max(6, (int) config('observability.log_activity_families', 18)));
+        $families = $groupedFamilies
+            ->map(function (Collection $familyEntries, string $key) use ($total): array {
+                $sample = $familyEntries->first();
+                $count = $familyEntries->count();
+                $label = Str::after($key, '|');
+
+                return [
+                    'id' => sha1($key),
+                    'label' => $label,
+                    'level' => (string) $sample['level'],
+                    'count' => $count,
+                    'percentage' => round(($count / $total) * 100, 1),
+                    'latest_at' => (string) $sample['date'],
+                ];
+            })
+            ->sortByDesc('count')
+            ->take($maximumFamilies)
+            ->values();
+
+        return new SystemLogActivityMap(
+            total: $total,
+            levels: $levels,
+            families: $families->all(),
+            hiddenFamilyCount: max(0, $groupedFamilies->count() - $families->count()),
+        );
+    }
+
+    private function familyLabel(string $message): string
+    {
+        $label = Str::of($message)
+            ->replaceMatches('/https?:\/\/[^\s]+/iu', '[URL]')
+            ->replaceMatches('/\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/iu', '{id}')
+            ->replaceMatches('/\b\d+(?:\.\d+)?\b/u', '{n}')
+            ->squish()
+            ->toString();
+
+        return Str::limit($label !== '' ? $label : 'Evento sin mensaje', 110, '…');
     }
 
     /** @return list<array{name: string, size: int, modified_at: string}> */

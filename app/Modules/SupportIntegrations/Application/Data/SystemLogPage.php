@@ -19,5 +19,6 @@ final readonly class SystemLogPage
         public int $fileSize,
         public int $scannedBytes,
         public bool $truncated,
+        public SystemLogActivityMap $activityMap,
     ) {}
 }

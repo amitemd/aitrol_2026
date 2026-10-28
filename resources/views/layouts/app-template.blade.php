@@ -37,7 +37,7 @@
     <!-- Bootstrap time Picker -->
     <link href="{{ asset("/plugins/timepicker/bootstrap-timepicker.min.css")}}" rel="stylesheet" type="text/css" />
     <link href="{{ asset("/plugins/datetimepicker/bootstrap-material-datetimepicker.css")}}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset ("/plugins/sweet_alert/sweetalert.css") }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('/plugins/sweet_alert/sweetalert.css') }}?v={{ filemtime(public_path('plugins/sweet_alert/sweetalert.css')) }}" rel="stylesheet" type="text/css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Theme style -->
     <link href="{{ asset("/bower_components/AdminLTE/dist/css/AdminLTE.min.css")}}" rel="stylesheet" type="text/css" />

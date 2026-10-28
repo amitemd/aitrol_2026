@@ -180,12 +180,12 @@
             format: 'YYYY/MM/DD',
             
             @if($fecha == '0')
-                defaultDate: '{{date("Y/m/d")}}'
+                defaultDate: '{{date("Y-m-d")}}'
             @else
                 <?php
                         date_default_timezone_set('Europe/London');
                         $fecha  = substr($fecha, 0, 10);
-                        $fecha2 = date('Y/m/d', $fecha);
+                        $fecha2 = date('Y-m-d', $fecha);
                 ?>
                 defaultDate: '{{$fecha2}}'
             @endif
@@ -428,7 +428,7 @@
                 /*window.location.replace("{{route
 
                     ('agenda.nuevo', ['id' => $id]) }}/"+start+"/0");*/
-                var check = $.fullCalendar.formatDate(start,'YYYYMMDD HH:mm');
+                var check = start.format('YYYYMMDD HH:mm');
                 var today = '{{date("Ymd H:i")}}';
                 console.log(view.type);
                 if(check <= today)
@@ -438,7 +438,7 @@
                 else
                 {
                     var selectedWeekday = start.isoWeekday();
-                    var hora = $.fullCalendar.formatDate(start,'HH:mm:ss');
+                    var hora = start.format('HH:mm:ss');
                     var dato = 0;
                     var newAgendaUrl = null;
                     @foreach($horario as $value)
@@ -451,7 +451,7 @@
 
                     @endforeach
 
-                    var inicial2=  $.fullCalendar.formatDate(start,'YYYY-MM-DD HH:mm:ss');
+                    var inicial2 = start.format('YYYY-MM-DD HH:mm:ss');
 
                     @foreach($extra as $key=>$value)
                         if(inicial2 >= '<?php echo $value->inicio; ?>' && inicial2 < '<?php echo $value->fin; ?>'){
