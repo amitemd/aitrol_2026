@@ -66,7 +66,7 @@ Route::post('user-management/subir_imagen_usuario', 'UserManagementController@su
 Route::post('user-management/actualizar/paciente/', 'UserManagementController@update_paciente_publico')->name('user-management.update_paciente');
 Route::match(['get', 'post'], 'user-management/search', 'UserManagementController@search')->name('user-management.search');
 Route::resource('user-management', 'UserManagementController');
-Route::get('user-management/editarreunion/{index}', 'UserManagementController@maxsearch')->name('doctor.max');
+Route::get('user-management/editarreunion/{id}', 'UserManagementController@maxsearch')->name('doctor.max');
 Route::post('user-management/{doctor}', 'UserManagementController@max')->name('user-management.max');
 Route::post('doctor/horario/{id}', 'UserManagementController@creahorario')->name('user-management.creahorario');
 Route::post('doctor/horario/actualiza/{id}', 'UserManagementController@editahorario')->name('user-management.editahorario');
