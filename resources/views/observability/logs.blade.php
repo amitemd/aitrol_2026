@@ -26,94 +26,124 @@
         @endforeach
     </section>
 
-    @php($activityColors = ['EMERGENCY' => 'border-red-300 bg-red-700 text-white', 'ALERT' => 'border-red-300 bg-red-600 text-white', 'CRITICAL' => 'border-rose-300 bg-rose-600 text-white', 'ERROR' => 'border-orange-300 bg-orange-500 text-white', 'WARNING' => 'border-amber-200 bg-amber-400 text-slate-950', 'NOTICE' => 'border-sky-300 bg-sky-500 text-white', 'INFO' => 'border-emerald-300 bg-emerald-500 text-white', 'DEBUG' => 'border-violet-300 bg-violet-500 text-white'])
+    @php($flameGraph = $result->activityMap->flameGraph)
     <section class="fallback-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="activity-map-title">
-        <div class="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+        <div class="grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.25fr_0.75fr] xl:items-center">
             <div>
-                <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Visualización basada en logs</p>
-                <h2 id="activity-map-title" class="mt-1 text-xl font-black text-slate-950">Mapa de actividad</h2>
-                <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-500">Representa la frecuencia de los eventos que coinciden con los filtros. Los bloques más anchos aparecen más veces en el archivo; no representan consumo de CPU.</p>
+                <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Perfil jerárquico basado en logs</p>
+                <h2 id="activity-map-title" class="mt-1 text-2xl font-black text-slate-950">Flame Graph de actividad</h2>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">El ancho representa frecuencia relativa o duración registrada; la altura representa profundidad de la traza. Las ramas se ordenan alfabéticamente para agrupar caminos equivalentes.</p>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                    <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
+                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · ancho</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->samples) }} muestras</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">Más ancho significa mayor presencia en los logs.</p>
+                    </div>
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · profundidad</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->maximumDepth) }} niveles</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">De la raíz hasta el frame o ruta final.</p>
+                    </div>
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                        <span class="text-[11px] font-black tracking-wide text-amber-700 uppercase">Trazas reales</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->tracedSamples) }}</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">{{ number_format($flameGraph->derivedSamples) }} rutas fueron derivadas del contexto del log.</p>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3">
-                <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-sm font-black text-cyan-300">Σ</span>
-                <span><strong class="block text-lg leading-none text-slate-950">{{ number_format($result->activityMap->total) }}</strong><small class="text-xs text-slate-500">eventos visualizados</small></span>
+
+            <div class="rounded-3xl bg-slate-950 p-5 text-white shadow-xl">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-bold tracking-[0.16em] text-orange-300 uppercase">Visualizador interactivo</span>
+                        <h3 class="mt-1 text-xl font-black">Analice cada pila</h3>
+                    </div>
+                    <span class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-amber-300 to-rose-500 text-xl text-slate-950">♨</span>
+                </div>
+                <p class="mt-3 text-sm leading-6 text-slate-300">Busque funciones, amplíe una rama y alterne entre flame graph e icicle graph en pantalla completa.</p>
+                <button
+                    type="button"
+                    data-flame-open
+                    class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-400 to-rose-500 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                    @disabled($flameGraph->profiles === [])
+                >
+                    <span aria-hidden="true">▰</span>
+                    Abrir Flame Graph
+                </button>
+                <p class="mt-3 text-[11px] leading-5 text-slate-400">La duración corresponde a tiempo de pared registrado en el log, no a muestras directas de CPU.</p>
             </div>
         </div>
+    </section>
 
-        @if ($result->activityMap->total > 0)
-            <div class="bg-slate-950 p-4 sm:p-6">
-                <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-                    <span>Menor frecuencia</span>
-                    <span class="font-semibold text-slate-200">Ancho proporcional a la cantidad de eventos</span>
-                    <span>Mayor frecuencia</span>
+    <dialog id="log-flame-graph-modal" class="fixed inset-0 z-50 m-0 h-dvh max-h-none w-screen max-w-none bg-slate-950 p-0 text-white backdrop:bg-slate-950/90">
+        <div class="flex h-dvh min-h-0 flex-col bg-slate-950">
+            <header class="shrink-0 border-b border-white/10 bg-slate-950/95 px-4 py-3 backdrop-blur sm:px-6">
+                <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-300 to-rose-500 font-black text-slate-950">FG</span>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-bold tracking-[0.17em] text-orange-300 uppercase">{{ $result->selectedFile }}</p>
+                            <h2 class="truncate text-lg font-black sm:text-xl">Flame Graph de logs</h2>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-300">
+                            Métrica
+                            <select data-flame-profile class="bg-transparent font-semibold text-white outline-none">
+                                @foreach ($flameGraph->profiles as $profile)
+                                    <option value="{{ $profile['key'] }}" class="bg-slate-900">{{ $profile['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="flex min-w-52 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-300 sm:flex-none">
+                            <span aria-hidden="true">⌕</span>
+                            <input data-flame-search type="search" placeholder="Buscar frame o función" class="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500">
+                        </label>
+                        <button type="button" data-flame-orientation class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Vista: llama</button>
+                        <button type="button" data-flame-reset class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Restablecer zoom</button>
+                        <button type="button" data-flame-close class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl font-black text-slate-950 hover:bg-slate-200" aria-label="Cerrar visualizador">×</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="grid min-h-0 flex-1 grid-rows-[auto_1fr_auto]">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-900 px-4 py-2 text-xs text-slate-400 sm:px-6">
+                    <div class="flex flex-wrap gap-x-5 gap-y-1">
+                        <span><strong class="text-white" data-flame-total>0</strong> <span data-flame-unit>muestras</span></span>
+                        <span>Profundidad: <strong class="text-white" data-flame-depth>{{ $flameGraph->maximumDepth }}</strong></span>
+                        <span>Coincidencias: <strong class="text-amber-300" data-flame-matches>0</strong></span>
+                    </div>
+                    <p data-flame-breadcrumb class="min-w-0 truncate font-mono text-[11px] text-cyan-300">AITROL</p>
                 </div>
 
-                <div class="overflow-x-auto pb-2" role="img" aria-label="Mapa de frecuencia de los eventos registrados en el log">
-                    <div class="grid min-w-[880px] gap-2">
-                        <div class="grid grid-cols-[110px_1fr] items-stretch gap-2">
-                            <div class="flex items-center rounded-xl border border-slate-700 bg-slate-900 px-3 text-[11px] font-bold tracking-wide text-slate-400 uppercase">Familias</div>
-                            <div class="flex min-h-24 gap-1.5">
-                                @foreach ($result->activityMap->families as $family)
-                                    <article
-                                        class="group relative flex min-w-32 basis-0 flex-col justify-between overflow-hidden rounded-xl border p-3 shadow-lg transition-transform hover:-translate-y-0.5 {{ $activityColors[$family['level']] ?? 'border-slate-500 bg-slate-600 text-white' }}"
-                                        style="flex-grow: {{ max(1, $family['count']) }}"
-                                        title="{{ $family['label'] }} · {{ $family['count'] }} eventos · último {{ $family['latest_at'] }}"
-                                    >
-                                        <div class="flex items-start justify-between gap-2">
-                                            <span class="text-[10px] font-black tracking-wide opacity-80">{{ $family['level'] }}</span>
-                                            <span class="rounded-full bg-black/20 px-2 py-0.5 text-[10px] font-black">{{ number_format($family['count']) }}</span>
-                                        </div>
-                                        <p class="mt-3 line-clamp-3 text-xs leading-4 font-bold">{{ $family['label'] }}</p>
-                                        <div class="mt-3 flex items-center justify-between gap-2 text-[10px] font-semibold opacity-80">
-                                            <span>{{ number_format($family['percentage'], 1) }}%</span>
-                                            <time>{{ $family['latest_at'] }}</time>
-                                        </div>
-                                    </article>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-[110px_1fr] items-stretch gap-2">
-                            <div class="flex items-center rounded-xl border border-slate-700 bg-slate-900 px-3 text-[11px] font-bold tracking-wide text-slate-400 uppercase">Severidad</div>
-                            <div class="flex min-h-16 gap-1.5">
-                                @foreach ($result->activityMap->levels as $level)
-                                    <div
-                                        class="flex min-w-28 basis-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 {{ $activityColors[$level['level']] ?? 'border-slate-500 bg-slate-600 text-white' }}"
-                                        style="flex-grow: {{ max(1, $level['count']) }}"
-                                        title="{{ $level['level'] }}: {{ $level['count'] }} eventos"
-                                    >
-                                        <strong class="text-xs">{{ $level['level'] }}</strong>
-                                        <span class="text-xs font-black">{{ number_format($level['percentage'], 1) }}%</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-[110px_1fr] items-stretch gap-2">
-                            <div class="flex items-center rounded-xl border border-slate-700 bg-slate-900 px-3 text-[11px] font-bold tracking-wide text-slate-400 uppercase">Fuente</div>
-                            <div class="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-cyan-400/40 bg-gradient-to-r from-cyan-500/30 to-blue-500/20 px-4 text-cyan-50">
-                                <div class="min-w-0">
-                                    <strong class="block truncate text-sm">{{ $result->selectedFile }}</strong>
-                                    <span class="text-xs text-cyan-100/70">{{ number_format($result->scannedBytes / 1024, 1) }} KB analizados</span>
-                                </div>
-                                <span class="rounded-full bg-cyan-300 px-3 py-1 text-xs font-black text-slate-950">{{ number_format($result->activityMap->total) }} eventos</span>
-                            </div>
-                        </div>
+                <div class="grid min-h-0 grid-cols-[42px_1fr] bg-[#17130f]">
+                    <div class="flex items-center justify-center border-r border-white/10 bg-slate-950 text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eje Y · profundidad de pila</div>
+                    <div data-flame-stage class="relative min-h-0 overflow-auto p-3 sm:p-5">
+                        <svg data-flame-svg class="block min-w-[960px] select-none" role="img" aria-label="Flame graph jerárquico construido desde los logs"></svg>
+                        <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-400">No hay datos para esta métrica.</div>
                     </div>
                 </div>
 
-                @if ($result->activityMap->hiddenFamilyCount > 0)
-                    <p class="mt-3 text-right text-xs text-slate-400">Se muestran las familias más frecuentes; {{ number_format($result->activityMap->hiddenFamilyCount) }} agrupaciones menores permanecen disponibles en el listado.</p>
-                @endif
+                <footer class="grid shrink-0 gap-3 border-t border-white/10 bg-slate-950 px-4 py-3 text-xs sm:grid-cols-[1fr_auto] sm:items-center sm:px-6">
+                    <div class="min-w-0">
+                        <strong data-flame-detail-label class="block truncate text-sm text-white">Seleccione un bloque para ver su detalle</strong>
+                        <p data-flame-detail-meta class="mt-1 truncate text-slate-400">El borde superior expuesto representa trabajo propio sin hijos registrados.</p>
+                    </div>
+                    <div class="flex items-center justify-between gap-4 text-slate-400 sm:justify-end">
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-orange-400"></i>Traza real</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-cyan-400"></i>Ruta derivada</span>
+                        <span class="font-semibold text-slate-300">Eje X · proporción del perfil</span>
+                    </div>
+                </footer>
             </div>
-        @else
-            <div class="p-8 text-center">
-                <div class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-xl text-slate-400">⌁</div>
-                <h3 class="mt-3 font-bold text-slate-800">Sin actividad para representar</h3>
-                <p class="mt-1 text-sm text-slate-500">Cambie los filtros o seleccione otro archivo de log.</p>
-            </div>
-        @endif
-    </section>
+        </div>
+    </dialog>
+
+    <script>
+        window.AitrolLogFlameGraph = {{ Js::from($flameGraph) }};
+    </script>
 
     <section class="fallback-card rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div class="mb-5 flex flex-col gap-1">

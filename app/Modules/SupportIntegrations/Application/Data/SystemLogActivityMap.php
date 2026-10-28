@@ -13,10 +13,11 @@ final readonly class SystemLogActivityMap
         public array $levels,
         public array $families,
         public int $hiddenFamilyCount,
+        public SystemLogFlameGraph $flameGraph,
     ) {}
 
     public static function empty(): self
     {
-        return new self(0, [], [], 0);
+        return new self(0, [], [], 0, SystemLogFlameGraph::empty());
     }
 }

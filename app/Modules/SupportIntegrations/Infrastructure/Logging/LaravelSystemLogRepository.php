@@ -5,6 +5,7 @@ namespace App\Modules\SupportIntegrations\Infrastructure\Logging;
 use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogActivityMap;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogFilters;
+use App\Modules\SupportIntegrations\Application\Data\SystemLogFlameGraph;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogPage;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -139,7 +140,286 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             levels: $levels,
             families: $families->all(),
             hiddenFamilyCount: max(0, $groupedFamilies->count() - $families->count()),
+            flameGraph: $this->buildFlameGraph($entries),
         );
+    }
+
+    /** @param Collection<int, array{id: string, date: string, environment: string, level: string, message: string, details: string}> $entries */
+    private function buildFlameGraph(Collection $entries): SystemLogFlameGraph
+    {
+        if ($entries->isEmpty()) {
+            return SystemLogFlameGraph::empty();
+        }
+
+        $foldedStacks = [];
+        $tracedSamples = 0;
+        $maximumDepth = 0;
+
+        foreach ($entries as $entry) {
+            [$frames, $hasTrace] = $this->stackFrames($entry);
+            $key = implode("\x1F", $frames);
+            $duration = $this->durationFromMessage($entry['message']);
+
+            if (! isset($foldedStacks[$key])) {
+                $foldedStacks[$key] = [
+                    'frames' => $frames,
+                    'level' => $entry['level'],
+                    'source' => $hasTrace ? 'trace' : 'derived',
+                    'samples' => 0.0,
+                    'duration' => 0.0,
+                ];
+            }
+
+            $foldedStacks[$key]['samples']++;
+            $foldedStacks[$key]['duration'] += $duration ?? 0.0;
+            $tracedSamples += $hasTrace ? 1 : 0;
+            $maximumDepth = max($maximumDepth, count($frames));
+        }
+
+        $maximumStacks = min(500, max(24, (int) config('observability.log_flame_max_stacks', 240)));
+        $profiles = [
+            $this->buildFlameProfile(
+                key: 'samples',
+                label: 'Frecuencia de eventos',
+                unit: 'muestras',
+                foldedStacks: $foldedStacks,
+                weightKey: 'samples',
+                maximumStacks: $maximumStacks,
+            ),
+        ];
+
+        if (collect($foldedStacks)->sum('duration') > 0) {
+            $profiles[] = $this->buildFlameProfile(
+                key: 'duration',
+                label: 'Duración HTTP registrada',
+                unit: 'ms',
+                foldedStacks: $foldedStacks,
+                weightKey: 'duration',
+                maximumStacks: $maximumStacks,
+            );
+        }
+
+        return new SystemLogFlameGraph(
+            samples: $entries->count(),
+            tracedSamples: $tracedSamples,
+            derivedSamples: $entries->count() - $tracedSamples,
+            maximumDepth: $maximumDepth,
+            profiles: $profiles,
+        );
+    }
+
+    /**
+     * @param  array<string, array{frames: list<string>, level: string, source: string, samples: float, duration: float}>  $foldedStacks
+     * @return array{key: string, label: string, unit: string, total: float, root: array<string, mixed>}
+     */
+    private function buildFlameProfile(
+        string $key,
+        string $label,
+        string $unit,
+        array $foldedStacks,
+        string $weightKey,
+        int $maximumStacks,
+    ): array {
+        $stacks = collect($foldedStacks)
+            ->filter(fn (array $stack): bool => $stack[$weightKey] > 0)
+            ->sortByDesc($weightKey);
+        $visibleStacks = $stacks->take($maximumStacks)->values();
+        $hiddenStacks = $stacks->slice($maximumStacks);
+
+        if ($hiddenStacks->isNotEmpty()) {
+            $visibleStacks->push([
+                'frames' => ['AITROL', 'Otras rutas agrupadas'],
+                'level' => 'INFO',
+                'source' => 'derived',
+                'samples' => (float) $hiddenStacks->sum('samples'),
+                'duration' => (float) $hiddenStacks->sum('duration'),
+            ]);
+        }
+
+        $root = $this->newFlameNode('AITROL', 'ROOT', 'mixed');
+
+        foreach ($visibleStacks as $stack) {
+            $weight = (float) $stack[$weightKey];
+            $root['value'] += $weight;
+            $node = &$root;
+
+            foreach (array_slice($stack['frames'], 1) as $frame) {
+                $frameKey = sha1($frame);
+
+                if (! isset($node['children'][$frameKey])) {
+                    $node['children'][$frameKey] = $this->newFlameNode($frame, $stack['level'], $stack['source']);
+                }
+
+                $node = &$node['children'][$frameKey];
+                $node['value'] += $weight;
+                $node['level'] = $this->mostSevereLevel($node['level'], $stack['level']);
+                $node['source'] = $node['source'] === $stack['source'] ? $node['source'] : 'mixed';
+            }
+
+            $node['self_value'] += $weight;
+            unset($node);
+        }
+
+        $total = (float) $root['value'];
+
+        return [
+            'key' => $key,
+            'label' => $label,
+            'unit' => $unit,
+            'total' => round($total, 2),
+            'root' => $this->finalizeFlameNode($root, $total, 'root', 0),
+        ];
+    }
+
+    /** @return array{label: string, level: string, source: string, value: float, self_value: float, children: array<string, mixed>} */
+    private function newFlameNode(string $label, string $level, string $source): array
+    {
+        return [
+            'label' => $label,
+            'level' => $level,
+            'source' => $source,
+            'value' => 0.0,
+            'self_value' => 0.0,
+            'children' => [],
+        ];
+    }
+
+    /**
+     * @param  array{label: string, level: string, source: string, value: float, self_value: float, children: array<string, mixed>}  $node
+     * @return array{id: string, label: string, level: string, source: string, value: float, self_value: float, percentage: float, depth: int, children: list<array<string, mixed>>}
+     */
+    private function finalizeFlameNode(array $node, float $total, string $path, int $depth): array
+    {
+        $children = collect($node['children'])
+            ->sortBy(fn (array $child): string => Str::lower($child['label']))
+            ->values()
+            ->map(fn (array $child): array => $this->finalizeFlameNode(
+                $child,
+                $total,
+                $path.'|'.$child['label'],
+                $depth + 1,
+            ))
+            ->all();
+
+        return [
+            'id' => sha1($path),
+            'label' => $node['label'],
+            'level' => $node['level'],
+            'source' => $node['source'],
+            'value' => round($node['value'], 2),
+            'self_value' => round($node['self_value'], 2),
+            'percentage' => $total > 0 ? round(($node['value'] / $total) * 100, 2) : 0.0,
+            'depth' => $depth,
+            'children' => $children,
+        ];
+    }
+
+    /**
+     * @param  array{id: string, date: string, environment: string, level: string, message: string, details: string}  $entry
+     * @return array{0: list<string>, 1: bool}
+     */
+    private function stackFrames(array $entry): array
+    {
+        $traceFrames = $this->traceFrames($entry['details']);
+        $maximumDepth = min(64, max(8, (int) config('observability.log_flame_max_depth', 32)));
+
+        if ($traceFrames !== []) {
+            $orderedFrames = array_reverse($traceFrames);
+            $orderedFrames = array_slice($orderedFrames, -($maximumDepth - 1));
+
+            return [array_merge(['AITROL'], $orderedFrames), true];
+        }
+
+        $context = $this->structuredContext($entry['message']);
+        $frames = ['AITROL', $entry['environment'] !== '' ? $entry['environment'] : 'entorno desconocido'];
+
+        if (isset($context['method'])) {
+            $frames[] = 'HTTP '.strtoupper((string) $context['method']);
+            $frames[] = (string) ($context['route'] ?? $context['path'] ?? 'ruta sin nombre');
+
+            if (isset($context['controller']) && $context['controller'] !== null) {
+                $frames[] = (string) $context['controller'];
+            }
+        } else {
+            $frames[] = $entry['level'];
+            $frames[] = $this->familyLabel($entry['message']);
+        }
+
+        return [array_slice($frames, 0, $maximumDepth), false];
+    }
+
+    /** @return list<string> */
+    private function traceFrames(string $details): array
+    {
+        $frames = [];
+
+        foreach (preg_split('/\R/u', $details) ?: [] as $line) {
+            if (preg_match('/^\s*#\d+\s+(.+)$/u', $line, $match) === 1) {
+                $frames[] = $this->normalizeTraceFrame($match[1]);
+
+                continue;
+            }
+
+            if (preg_match('/^\s*at\s+(.+)$/u', $line, $match) === 1) {
+                $frames[] = $this->normalizeTraceFrame($match[1]);
+            }
+        }
+
+        return array_values(array_filter($frames));
+    }
+
+    private function normalizeTraceFrame(string $frame): string
+    {
+        $normalized = Str::of($this->redact($frame))->replace('\\', '/')->squish()->toString();
+
+        if (preg_match('/^.*?\(\d+\):\s*(.+)$/u', $normalized, $match) === 1) {
+            $normalized = $match[1];
+        }
+
+        return Str::limit($normalized !== '' ? $normalized : 'frame desconocido', 160, '…');
+    }
+
+    /** @return array<string, mixed> */
+    private function structuredContext(string $message): array
+    {
+        $start = strpos($message, '{');
+
+        if ($start === false) {
+            return [];
+        }
+
+        $context = json_decode(substr($message, $start), true);
+
+        return is_array($context) ? $context : [];
+    }
+
+    private function durationFromMessage(string $message): ?float
+    {
+        $duration = $this->structuredContext($message)['duration_ms'] ?? null;
+
+        if (! is_numeric($duration)) {
+            return null;
+        }
+
+        $value = (float) $duration;
+
+        return is_finite($value) && $value > 0 ? min($value, 86_400_000.0) : null;
+    }
+
+    private function mostSevereLevel(string $current, string $candidate): string
+    {
+        $currentRank = array_search($current, self::LEVELS, true);
+        $candidateRank = array_search($candidate, self::LEVELS, true);
+
+        if ($currentRank === false) {
+            return $candidate;
+        }
+
+        if ($candidateRank === false) {
+            return $current;
+        }
+
+        return $candidateRank < $currentRank ? $candidate : $current;
     }
 
     private function familyLabel(string $message): string

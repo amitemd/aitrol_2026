@@ -1,3 +1,5 @@
+import './observability-flame-graph';
+
 const normalize = (value) => value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
