@@ -29,6 +29,82 @@
         return path === '' ? '/' : path.toLocaleLowerCase('es');
     }
 
+    var semanticIconRules = [
+        { terms: ['auditoria'], icon: 'fa-shield' },
+        { terms: ['log', 'diagnostico'], icon: 'fa-stethoscope' },
+        { terms: ['despliegue'], icon: 'fa-rocket' },
+        { terms: ['agenda', 'cita', 'calendario'], icon: 'fa-calendar' },
+        { terms: ['laboratorio', 'biopsia', 'examen', 'muestra'], icon: 'fa-flask' },
+        { terms: ['hospital', 'hospitalizado'], icon: 'fa-hospital-o' },
+        { terms: ['paciente'], icon: 'fa-user' },
+        { terms: ['empresa', 'sucursal', 'compania'], icon: 'fa-building' },
+        { terms: ['usuario', 'empleado', 'nomina', 'payroll', 'rol de pago'], icon: 'fa-users' },
+        { terms: ['amortizacion', 'prestamo', 'credito'], icon: 'fa-credit-card' },
+        { terms: ['banco', 'caja', 'efectivo', 'cash'], icon: 'fa-money' },
+        { terms: ['contabilidad', 'accounting', 'asiento', 'libro', 'plan de cuenta', 'balance'], icon: 'fa-book' },
+        { terms: ['acreedor', 'proveedor'], icon: 'fa-user-plus' },
+        { terms: ['cliente', 'customer'], icon: 'fa-address-card-o' },
+        { terms: ['compra', 'pedido', 'purchasing'], icon: 'fa-shopping-cart' },
+        { terms: ['importacion', 'import'], icon: 'fa-ship' },
+        { terms: ['venta', 'factura', 'proforma', 'comision', 'liquidacion'], icon: 'fa-file-text-o' },
+        { terms: ['inventario', 'inventory', 'kardex', 'producto', 'bodega', 'stock', 'existencia'], icon: 'fa-cubes' },
+        { terms: ['activo fijo', 'activos fijos', 'fixed asset', 'depreciacion'], icon: 'fa-industry' },
+        { terms: ['impuesto', 'retencion', 'sri', 'ats'], icon: 'fa-percent' },
+        { terms: ['flujo', 'estadistica', 'reporte', 'report', 'indicador', 'proyeccion'], icon: 'fa-line-chart' },
+        { terms: ['configuracion', 'mantenimiento', 'maintenance'], icon: 'fa-cogs' },
+        { terms: ['declaracion', 'documento', 'formulario', 'archivo'], icon: 'fa-file-text' },
+        { terms: ['remision', 'transporte', 'transportista'], icon: 'fa-truck' },
+        { terms: ['cierre'], icon: 'fa-lock' },
+        { terms: ['encuesta', 'pregunta', 'listado'], icon: 'fa-list-alt' },
+        { terms: ['seguro'], icon: 'fa-shield' },
+        { terms: ['procedimiento', 'medico', 'medical'], icon: 'fa-user-md' },
+        { terms: ['recepcion', 'ingreso'], icon: 'fa-inbox' },
+        { terms: ['supervision', 'control', 'ver', 'visualizar'], icon: 'fa-eye' },
+        { terms: ['plantilla'], icon: 'fa-copy' },
+        { terms: ['anticipo', 'decimo', 'vacacion', 'honorario'], icon: 'fa-money' }
+    ];
+
+    function hasLeadingMenuIcon(link) {
+        return Array.prototype.slice.call(link.querySelectorAll('i.fa, span.glyphicon')).some(function (icon) {
+            return !icon.classList.contains('pull-right')
+                && !icon.classList.contains('fa-angle-left')
+                && !icon.classList.contains('fa-angle-right')
+                && !icon.classList.contains('fa-caret-down');
+        });
+    }
+
+    function semanticIconClass(link) {
+        var searchableValue = normalizeText(
+            link.textContent + ' ' + (link.getAttribute('href') || '')
+        );
+        var matchingRule = semanticIconRules.find(function (rule) {
+            return rule.terms.some(function (term) {
+                var escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                    .replace(/\s+/g, '\\s+');
+                var termPattern = new RegExp(
+                    '(^|[^a-z0-9])' + escapedTerm + '(?:s|es)?(?=$|[^a-z0-9])'
+                );
+
+                return termPattern.test(searchableValue);
+            });
+        });
+
+        return matchingRule ? matchingRule.icon : 'fa-circle-o';
+    }
+
+    function ensureSemanticMenuIcons(menu) {
+        Array.prototype.slice.call(menu.querySelectorAll('a')).forEach(function (link) {
+            if (hasLeadingMenuIcon(link)) {
+                return;
+            }
+
+            var icon = document.createElement('i');
+            icon.className = 'fa ' + semanticIconClass(link) + ' menu-icon-inferred';
+            icon.setAttribute('aria-hidden', 'true');
+            link.insertBefore(icon, link.firstChild);
+        });
+    }
+
     function pathMatches(currentPath, targetPath) {
         return targetPath !== '/'
             && (currentPath === targetPath || currentPath.indexOf(targetPath + '/') === 0);
@@ -262,6 +338,7 @@
         var search = document.getElementById('new-system-menu-search');
         var searchStatus = search ? createSearchStatus(search) : null;
 
+        ensureSemanticMenuIcons(menu);
         activateCurrentRoute(menu);
         updateTreeAccessibility(menu);
 
