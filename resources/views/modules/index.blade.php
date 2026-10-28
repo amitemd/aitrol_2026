@@ -115,5 +115,6 @@
             <p>Inventario generado sobre el código fuente heredado</p>
         </footer>
     </main>
+    @include('new-system.partials.alerts')
 </body>
 </html>

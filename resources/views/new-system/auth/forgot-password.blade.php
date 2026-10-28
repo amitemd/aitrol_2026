@@ -47,20 +47,6 @@
                         <p>{{ __('new_system.auth.forgot_description') }}</p>
                     </div>
 
-                    @if (session('status'))
-                        <div class="alert alert-success new-system-login-alert" role="status">
-                            <i class="fa fa-check-circle" aria-hidden="true"></i>
-                            <span>{{ session('status') }}</span>
-                        </div>
-                    @endif
-
-                    @if ($errors->any())
-                        <div class="alert alert-danger new-system-login-alert" role="alert">
-                            <i class="fa fa-warning" aria-hidden="true"></i>
-                            <span>{{ $errors->first() }}</span>
-                        </div>
-                    @endif
-
                     <form method="POST" action="{{ route('new-system.password.email') }}" class="new-system-login-form-fields">
                         @csrf
                         <div class="form-group {{ $errors->has('email') ? 'has-error' : '' }}">
@@ -85,5 +71,6 @@
             </section>
         </div>
     </main>
+    @include('new-system.partials.alerts')
 </body>
 </html>

@@ -19,6 +19,11 @@ return [
         'search_result_many' => ':count options found.',
     ],
     'language' => ['change' => 'Change language', 'spanish' => 'Spanish', 'english' => 'English', 'portuguese' => 'Portuguese'],
+    'alerts' => [
+        'success' => 'Operation completed', 'error' => 'The operation could not be completed', 'warning' => 'Attention',
+        'information' => 'Information', 'review_information' => 'Review the information entered',
+        'confirmation' => 'Confirm the operation', 'confirm' => 'Accept', 'cancel' => 'Cancel',
+    ],
     'dashboard' => [
         'platform' => 'AITROL platform', 'welcome' => 'Welcome, :name',
         'description' => 'Keep working at :company with the complete system navigation. Modules retain their permissions, routes and operation while we modernize them one by one.',

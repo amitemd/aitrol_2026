@@ -302,6 +302,10 @@ document.onmousedown=click
   $('.colorpicker').colorpicker();
 
 </script>
+  @include('new-system.partials.alerts', [
+      'includeValidationErrors' => false,
+      'loadLibrary' => false,
+  ])
   </body>
 
 </html>

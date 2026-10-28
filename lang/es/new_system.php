@@ -41,6 +41,16 @@ return [
         'english' => 'Inglés',
         'portuguese' => 'Portugués',
     ],
+    'alerts' => [
+        'success' => 'Operación completada',
+        'error' => 'No se pudo completar la operación',
+        'warning' => 'Atención',
+        'information' => 'Información',
+        'review_information' => 'Revise la información ingresada',
+        'confirmation' => 'Confirme la operación',
+        'confirm' => 'Aceptar',
+        'cancel' => 'Cancelar',
+    ],
     'dashboard' => [
         'platform' => 'Plataforma AITROL',
         'welcome' => 'Bienvenido, :name',

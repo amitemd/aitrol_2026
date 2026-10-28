@@ -230,13 +230,6 @@
             </section>
 
             <section class="content">
-                @if (session('status'))
-                    <div class="alert alert-success alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        <i class="icon fa fa-check"></i> {{ session('status') }}
-                    </div>
-                @endif
-
                 {{ $slot }}
             </section>
         </div>
@@ -253,5 +246,6 @@
     <script src="{{ asset('js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/new-system-navigation.js') }}?v={{ filemtime(public_path('js/new-system-navigation.js')) }}"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
+    @include('new-system.partials.alerts')
 </body>
 </html>

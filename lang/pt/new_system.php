@@ -19,6 +19,11 @@ return [
         'search_result_many' => ':count opções encontradas.',
     ],
     'language' => ['change' => 'Alterar idioma', 'spanish' => 'Espanhol', 'english' => 'Inglês', 'portuguese' => 'Português'],
+    'alerts' => [
+        'success' => 'Operação concluída', 'error' => 'Não foi possível concluir a operação', 'warning' => 'Atenção',
+        'information' => 'Informação', 'review_information' => 'Revise as informações inseridas',
+        'confirmation' => 'Confirme a operação', 'confirm' => 'Aceitar', 'cancel' => 'Cancelar',
+    ],
     'dashboard' => [
         'platform' => 'Plataforma AITROL', 'welcome' => 'Bem-vindo, :name',
         'description' => 'Continue trabalhando na :company com a navegação completa do sistema. Os módulos mantêm permissões, rotas e operação enquanto são modernizados.',

@@ -47,13 +47,6 @@
                         <p>{{ __('new_system.auth.create_password_description') }}</p>
                     </div>
 
-                    @if ($errors->any())
-                        <div class="alert alert-danger new-system-login-alert" role="alert">
-                            <i class="fa fa-warning" aria-hidden="true"></i>
-                            <span>{{ $errors->first() }}</span>
-                        </div>
-                    @endif
-
                     <form method="POST" action="{{ route('new-system.password.update') }}" class="new-system-login-form-fields">
                         @csrf
                         <input type="hidden" name="token" value="{{ $token }}">
@@ -96,5 +89,6 @@
             </section>
         </div>
     </main>
+    @include('new-system.partials.alerts')
 </body>
 </html>

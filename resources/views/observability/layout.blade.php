@@ -35,14 +35,8 @@
     </header>
 
     <main class="mx-auto flex max-w-[1480px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        @if ($errors->any())
-            <section class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">
-                <p class="font-bold">Revise los filtros enviados.</p>
-                <ul class="mt-2 list-disc space-y-1 pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-            </section>
-        @endif
-
         @yield('content')
     </main>
+    @include('new-system.partials.alerts')
 </body>
 </html>

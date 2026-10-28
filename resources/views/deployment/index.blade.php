@@ -66,17 +66,6 @@
             </div>
         </section>
 
-        @if ($errors->any())
-            <section class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">
-                <p class="font-semibold">No se ejecutó la operación.</p>
-                <ul class="mt-2 list-disc space-y-1 pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </section>
-        @endif
-
         @php($result = session('deployment_result'))
         @if ($result)
             <section @class([
@@ -257,7 +246,14 @@
                             <p class="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">{{ $status['git']['error'] }}</p>
                         @endif
 
-                        <form method="POST" action="{{ route('deployment.execute') }}" class="mt-5 flex flex-col gap-3" onsubmit="return window.confirm('¿Confirma que desea ejecutar esta operación?');">
+                        <form
+                            method="POST"
+                            action="{{ route('deployment.execute') }}"
+                            class="mt-5 flex flex-col gap-3"
+                            data-swal-confirm="Esta acción ejecutará: {{ $operation['label'] }}. Revise la información antes de continuar."
+                            data-swal-title="Confirmar operación protegida"
+                            data-swal-confirm-button="Sí, ejecutar"
+                        >
                             @csrf
                             <input type="hidden" name="operation" value="{{ $operationKey }}">
 
@@ -281,5 +277,9 @@
             </div>
         </section>
     </main>
+    @include('new-system.partials.alerts', [
+        'success' => $result && $result['successful'] ? $result['title'].': operación completada.' : null,
+        'error' => $result && ! $result['successful'] ? $result['title'].': la operación terminó con errores.' : null,
+    ])
 </body>
 </html>
