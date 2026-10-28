@@ -12,6 +12,11 @@ return [
         'toggle_navigation' => 'Mostrar ou ocultar navegação',
         'online' => 'Online',
         'hospital' => 'Hospital',
+        'photo_of' => 'Foto de :name',
+        'hello' => 'Olá, :name',
+        'search_menu' => 'Pesquisar no menu',
+        'search_result_one' => ':count opção encontrada.',
+        'search_result_many' => ':count opções encontradas.',
     ],
     'language' => ['change' => 'Alterar idioma', 'spanish' => 'Espanhol', 'english' => 'Inglês', 'portuguese' => 'Português'],
     'dashboard' => [

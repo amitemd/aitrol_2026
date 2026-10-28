@@ -148,7 +148,7 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
     <div class="user-panel">
       <div class="pull-left image">
         @if($avatarUrl)
-          <img src="{{ $avatarUrl }}" class="img-circle" alt="Foto de {{ $nombreUsuario }}">
+          <img src="{{ $avatarUrl }}" class="img-circle" alt="{{ __('new_system.common.photo_of', ['name' => $nombreUsuario]) }}">
         @else
           <span class="new-system-avatar new-system-avatar-sidebar" aria-hidden="true">{{ $inicialesUsuario }}</span>
         @endif
@@ -163,9 +163,17 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
     @if($newSystemNavigation ?? false)
       <form class="sidebar-form" onsubmit="return false;">
         <div class="input-group">
-          <input type="search" id="new-system-menu-search" class="form-control" placeholder="Buscar módulo u opción..." autocomplete="off">
+          <input
+            type="search"
+            id="new-system-menu-search"
+            class="form-control"
+            placeholder="{{ __('new_system.common.search_shortcuts') }}"
+            autocomplete="off"
+            data-result-one="{{ __('new_system.common.search_result_one') }}"
+            data-result-many="{{ __('new_system.common.search_result_many') }}"
+          >
           <span class="input-group-btn">
-            <button type="button" class="btn btn-flat" aria-label="Buscar en el menú"><i class="fa fa-search"></i></button>
+            <button type="button" class="btn btn-flat" aria-label="{{ __('new_system.common.search_menu') }}"><i class="fa fa-search"></i></button>
           </span>
         </div>
       </form>
@@ -186,19 +194,19 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
     <!-- Sidebar Menu -->
     <ul class="sidebar-menu">
       @if($newSystemNavigation ?? false)
-      <li class="header">PLATAFORMA LARAVEL 13</li>
+      <li class="header">{{ mb_strtoupper(__('new_system.dashboard.platform')) }}</li>
       <li class="{{ request()->routeIs('new-system.dashboard') ? 'active' : '' }}">
-        <a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> <span>Inicio</span></a>
+        <a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> <span>{{ __('new_system.common.home') }}</span></a>
       </li>
       <li class="{{ request()->routeIs('new-system.companies.*') ? 'active' : '' }}">
-        <a href="{{ route('new-system.companies.index') }}"><i class="fa fa-building"></i> <span>Empresas</span></a>
+        <a href="{{ route('new-system.companies.index') }}"><i class="fa fa-building"></i> <span>{{ __('new_system.common.companies') }}</span></a>
       </li>
       @can('manage-new-system-users')
       <li class="{{ request()->routeIs('new-system.users.*') ? 'active' : '' }}">
-        <a href="{{ route('new-system.users.index') }}"><i class="fa fa-users"></i> <span>Usuarios</span></a>
+        <a href="{{ route('new-system.users.index') }}"><i class="fa fa-users"></i> <span>{{ __('new_system.common.users') }}</span></a>
       </li>
       @endcan
-      <li class="header">OPERACIÓN DEL SISTEMA</li>
+      <li class="header">{{ mb_strtoupper(__('new_system.common.system_modules')) }}</li>
       @endif
       <!-- Optionally, you can add icons to the links -->
       <!--<li class="active"><a href="/"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>-->
@@ -223,19 +231,19 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
       <li class="@if(request()->routeIs('deployment.*')) active @endif">
         <a href="{{ route('deployment.index') }}">
           <i class="fa fa-cogs"></i>
-          <span>Despliegue del sistema</span>
+          <span>{{ __('new_system.common.deployment') }}</span>
         </a>
       </li>
       <li class="@if(request()->routeIs('observability.logs.*')) active @endif">
         <a href="{{ route('observability.logs.index') }}">
           <i class="fa fa-stethoscope"></i>
-          <span>Logs y diagnóstico</span>
+          <span>{{ __('new_system.common.logs') }}</span>
         </a>
       </li>
       <li class="@if(request()->routeIs('observability.audit.*')) active @endif">
         <a href="{{ route('observability.audit.index') }}">
           <i class="fa fa-shield"></i>
-          <span>Auditoría del sistema</span>
+          <span>{{ __('new_system.common.audit') }}</span>
         </a>
       </li>
       @endif

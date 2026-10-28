@@ -371,9 +371,12 @@
                 filterList(menu, term);
 
                 var visibleItems = menu.querySelectorAll('li:not(.header):not([hidden])').length;
-                searchStatus.textContent = visibleItems === 1
-                    ? '1 opción encontrada.'
-                    : visibleItems + ' opciones encontradas.';
+                var resultTemplate = visibleItems === 1
+                    ? search.getAttribute('data-result-one')
+                    : search.getAttribute('data-result-many');
+
+                searchStatus.textContent = String(resultTemplate || ':count')
+                    .replace(':count', visibleItems);
             }
 
             updateTreeAccessibility(menu);

@@ -75,7 +75,7 @@
                         <li class="dropdown user user-menu ieced-user-dropdown">
                             <a href="#" class="dropdown-toggle ieced-user-trigger" data-toggle="dropdown">
                                 @if ($avatarUrl)
-                                    <img src="{{ $avatarUrl }}" class="user-image" alt="Foto de {{ $userName }}">
+                                    <img src="{{ $avatarUrl }}" class="user-image" alt="{{ __('new_system.common.photo_of', ['name' => $userName]) }}">
                                 @else
                                     <span class="new-system-avatar new-system-avatar-small" aria-hidden="true">{{ $userInitials }}</span>
                                 @endif
@@ -84,11 +84,11 @@
                             <ul class="dropdown-menu ieced-user-menu">
                                 <li class="user-header ieced-user-card">
                                     @if ($avatarUrl)
-                                        <img src="{{ $avatarUrl }}" class="img-circle ieced-user-avatar" alt="Foto de {{ $userName }}">
+                                        <img src="{{ $avatarUrl }}" class="img-circle ieced-user-avatar" alt="{{ __('new_system.common.photo_of', ['name' => $userName]) }}">
                                     @else
                                         <span class="new-system-avatar new-system-avatar-menu" aria-hidden="true">{{ $userInitials }}</span>
                                     @endif
-                                    <p class="ieced-user-name">Hola, {{ $userName }}</p>
+                                    <p class="ieced-user-name">{{ __('new_system.common.hello', ['name' => $userName]) }}</p>
                                     <span class="ieced-user-status"><i class="fa fa-circle" aria-hidden="true"></i> {{ __('new_system.common.active_account') }}</span>
                                     <small class="ieced-user-email">{{ $user->email }}</small>
                                 </li>
@@ -126,7 +126,7 @@
                 <div class="user-panel">
                     <div class="pull-left image">
                         @if ($avatarUrl)
-                            <img src="{{ $avatarUrl }}" class="img-circle" alt="Foto de {{ $userName }}">
+                            <img src="{{ $avatarUrl }}" class="img-circle" alt="{{ __('new_system.common.photo_of', ['name' => $userName]) }}">
                         @else
                             <span class="new-system-avatar new-system-avatar-sidebar" aria-hidden="true">{{ $userInitials }}</span>
                         @endif

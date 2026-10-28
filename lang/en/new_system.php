@@ -12,6 +12,11 @@ return [
         'toggle_navigation' => 'Show or hide navigation',
         'online' => 'Online',
         'hospital' => 'Hospital',
+        'photo_of' => 'Photo of :name',
+        'hello' => 'Hello, :name',
+        'search_menu' => 'Search the menu',
+        'search_result_one' => ':count option found.',
+        'search_result_many' => ':count options found.',
     ],
     'language' => ['change' => 'Change language', 'spanish' => 'Spanish', 'english' => 'English', 'portuguese' => 'Portuguese'],
     'dashboard' => [

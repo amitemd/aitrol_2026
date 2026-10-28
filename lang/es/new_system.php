@@ -29,6 +29,11 @@ return [
         'toggle_navigation' => 'Mostrar u ocultar navegación',
         'online' => 'En línea',
         'hospital' => 'Hospital',
+        'photo_of' => 'Foto de :name',
+        'hello' => 'Hola, :name',
+        'search_menu' => 'Buscar en el menú',
+        'search_result_one' => ':count opción encontrada.',
+        'search_result_many' => ':count opciones encontradas.',
     ],
     'language' => [
         'change' => 'Cambiar idioma',
