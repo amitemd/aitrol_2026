@@ -9,5 +9,7 @@ final readonly class SystemLogFilters
         public ?string $file = null,
         public array $levels = [],
         public ?string $search = null,
+        public ?string $dateFrom = null,
+        public ?string $dateTo = null,
     ) {}
 }

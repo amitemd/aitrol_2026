@@ -49,13 +49,25 @@ final class LaravelSystemLogRepository implements SystemLogRepository
         $maximumBytes = max(1024 * 1024, (int) config('observability.log_max_scan_bytes', 16 * 1024 * 1024));
         $content = $this->readTail($path, $maximumBytes);
         $entries = $this->parse($content);
+        $entriesInDateRange = $entries
+            ->when($filters->dateFrom !== null, function (Collection $items) use ($filters): Collection {
+                return $items->filter(
+                    fn (array $entry): bool => $this->entryDate($entry) >= $filters->dateFrom,
+                );
+            })
+            ->when($filters->dateTo !== null, function (Collection $items) use ($filters): Collection {
+                return $items->filter(
+                    fn (array $entry): bool => $this->entryDate($entry) <= $filters->dateTo,
+                );
+            })
+            ->values();
         $levelCounts = array_fill_keys(self::LEVELS, 0);
 
-        foreach ($entries as $entry) {
+        foreach ($entriesInDateRange as $entry) {
             $levelCounts[$entry['level']] = ($levelCounts[$entry['level']] ?? 0) + 1;
         }
 
-        $filteredEntries = $entries
+        $filteredEntries = $entriesInDateRange
             ->when($filters->levels !== [], fn (Collection $items): Collection => $items->whereIn('level', $filters->levels))
             ->when($filters->search !== null, function (Collection $items) use ($filters): Collection {
                 $term = Str::lower($filters->search);
@@ -1067,6 +1079,12 @@ final class LaravelSystemLogRepository implements SystemLogRepository
         ];
 
         return preg_replace(array_keys($patterns), array_values($patterns), $value) ?? $value;
+    }
+
+    /** @param array{date: string} $entry */
+    private function entryDate(array $entry): string
+    {
+        return substr($entry['date'], 0, 10);
     }
 
     /** @param Collection<int, array<string, mixed>> $entries */

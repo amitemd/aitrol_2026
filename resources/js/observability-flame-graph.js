@@ -178,7 +178,7 @@ const initializeLogFlameGraph = () => {
         zoomId: null,
         search: '',
         timelinePage: null,
-        timelinePageSize: 10,
+        timelinePageSize: 25,
     };
 
     const activeProfile = () => data.profiles.find((profile) => profile.key === state.profileKey) ?? data.profiles[0];
@@ -924,11 +924,11 @@ const initializeLogFlameGraph = () => {
         const filteredProcesses = searchTerm === ''
             ? allProcesses
             : allProcesses.filter((process) => searchableProcess(process).includes(searchTerm));
-        const pageSize = Math.max(5, Math.min(20, Number(state.timelinePageSize) || 10));
+        const pageSize = Math.max(10, Math.min(100, Number(state.timelinePageSize) || 25));
         const totalPages = Math.max(1, Math.ceil(filteredProcesses.length / pageSize));
 
         if (state.timelinePage === null) {
-            state.timelinePage = totalPages - 1;
+            state.timelinePage = 0;
         }
 
         state.timelinePage = Math.max(0, Math.min(totalPages - 1, state.timelinePage));
@@ -936,7 +936,10 @@ const initializeLogFlameGraph = () => {
         const pageStart = state.timelinePage * pageSize;
         const processes = filteredProcesses.slice(pageStart, pageStart + pageSize);
 
-        timelinePageLabel.textContent = `${state.timelinePage + 1} / ${totalPages}`;
+        const visibleFrom = filteredProcesses.length === 0 ? 0 : pageStart + 1;
+        const visibleTo = Math.min(pageStart + processes.length, filteredProcesses.length);
+
+        timelinePageLabel.textContent = `${visibleFrom}–${visibleTo} de ${filteredProcesses.length}`;
         timelinePrevious.disabled = state.timelinePage === 0;
         timelineNext.disabled = state.timelinePage >= totalPages - 1;
         const actionSlot = plotWidth / Math.max(1, processes.length);
@@ -1504,7 +1507,7 @@ const initializeLogFlameGraph = () => {
         render();
     });
     timelinePageSize.addEventListener('change', () => {
-        state.timelinePageSize = Number(timelinePageSize.value) || 10;
+        state.timelinePageSize = Number(timelinePageSize.value) || 25;
         state.timelinePage = null;
         render();
     });

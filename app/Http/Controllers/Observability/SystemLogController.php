@@ -26,10 +26,13 @@ final class SystemLogController extends Controller
     public function index(Request $request, BuildSystemObservabilityReport $query): View
     {
         $stored = (array) $request->session()->get('observability.logs.filters', []);
+        $today = now(config('app.timezone'))->toDateString();
         $filters = new SystemLogFilters(
             file: $this->nullableString($stored['file'] ?? null),
             levels: array_values(array_intersect(self::LEVELS, (array) ($stored['levels'] ?? []))),
             search: $this->nullableString($stored['search'] ?? null),
+            dateFrom: $this->nullableString($stored['date_from'] ?? $today),
+            dateTo: $this->nullableString($stored['date_to'] ?? $today),
         );
         $perPage = $this->perPage($stored['per_page'] ?? config('observability.per_page', 25));
         $page = max(1, $request->integer('log_page', 1));
@@ -52,6 +55,8 @@ final class SystemLogController extends Controller
             'levels' => ['nullable', 'array', 'max:8'],
             'levels.*' => ['string', Rule::in(self::LEVELS)],
             'search' => ['nullable', 'string', 'max:200'],
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
             'per_page' => ['required', 'integer', Rule::in([10, 25, 50, 100])],
         ]);
 
@@ -59,6 +64,8 @@ final class SystemLogController extends Controller
             'file' => $this->nullableString($validated['file'] ?? null),
             'levels' => array_values(array_unique($validated['levels'] ?? [])),
             'search' => $this->nullableString($validated['search'] ?? null),
+            'date_from' => $this->nullableString($validated['date_from'] ?? null),
+            'date_to' => $this->nullableString($validated['date_to'] ?? null),
             'per_page' => (int) $validated['per_page'],
         ]);
 

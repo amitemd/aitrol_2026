@@ -90,6 +90,24 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
+                        <form method="POST" action="{{ route('observability.logs.filter') }}" class="flex flex-wrap items-end gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5" aria-label="Filtrar procesos por fecha">
+                            @csrf
+                            <input type="hidden" name="file" value="{{ $result->selectedFile }}">
+                            @foreach ($filters->levels as $level)
+                                <input type="hidden" name="levels[]" value="{{ $level }}">
+                            @endforeach
+                            <input type="hidden" name="search" value="{{ $filters->search }}">
+                            <input type="hidden" name="per_page" value="{{ $perPage }}">
+                            <label class="grid gap-0.5 px-1 text-[9px] font-black tracking-wide text-slate-500 uppercase">
+                                Desde
+                                <input type="date" name="date_from" value="{{ $filters->dateFrom }}" class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                            </label>
+                            <label class="grid gap-0.5 px-1 text-[9px] font-black tracking-wide text-slate-500 uppercase">
+                                Hasta
+                                <input type="date" name="date_to" value="{{ $filters->dateTo }}" class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                            </label>
+                            <button class="rounded-lg bg-cyan-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-cyan-700">Aplicar</button>
+                        </form>
                         <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
                             <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Diagnóstico</button>
                             <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Procesos y auditoría</button>
@@ -111,13 +129,14 @@
                             <label class="flex items-center gap-1 px-2">
                                 Mostrar
                                 <select data-flame-timeline-page-size class="bg-transparent font-black text-slate-900 outline-none" aria-label="Procesos por página">
-                                    <option value="5">5</option>
-                                    <option value="10" selected>10</option>
-                                    <option value="20">20</option>
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
                                 </select>
                             </label>
                             <button type="button" data-flame-timeline-previous class="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-base hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Procesos anteriores">‹</button>
-                            <span data-flame-timeline-page class="min-w-20 px-2 text-center text-[11px] font-black text-slate-800">1 / 1</span>
+                            <span data-flame-timeline-page class="min-w-24 px-2 text-center text-[11px] font-black text-slate-800" aria-live="polite">0 de 0</span>
                             <button type="button" data-flame-timeline-next class="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-base hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Procesos siguientes">›</button>
                         </div>
                         <button type="button" data-flame-orientation class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Orientación: raíz abajo</button>
@@ -338,7 +357,7 @@
             <h2 class="text-lg font-bold">Filtros de diagnóstico</h2>
             <p class="text-sm text-slate-500">Los filtros se guardan en la sesión; no exponen datos en la URL.</p>
         </div>
-        <form method="POST" action="{{ route('observability.logs.filter') }}" class="grid gap-4 xl:grid-cols-[1.1fr_2fr_1.4fr_auto] xl:items-end">
+        <form method="POST" action="{{ route('observability.logs.filter') }}" class="grid gap-4 xl:grid-cols-[1fr_1.7fr_1.25fr_1.2fr_auto] xl:items-end">
             @csrf
             <label class="grid gap-1.5 text-sm font-semibold">Archivo
                 <select name="file" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal">
@@ -365,9 +384,20 @@
                     <select name="per_page" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal">@foreach ([10, 25, 50, 100] as $size)<option value="{{ $size }}" @selected($perPage === $size)>{{ $size }}</option>@endforeach</select>
                 </label>
             </div>
+            <fieldset>
+                <legend class="mb-1.5 text-sm font-semibold">Fecha de los eventos</legend>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500">Desde
+                        <input type="date" name="date_from" value="{{ $filters->dateFrom }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal text-slate-900">
+                    </label>
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500">Hasta
+                        <input type="date" name="date_to" value="{{ $filters->dateTo }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal text-slate-900">
+                    </label>
+                </div>
+            </fieldset>
             <button class="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-cyan-700">Aplicar filtros</button>
         </form>
-        <form method="POST" action="{{ route('observability.logs.reset') }}" class="mt-3">@csrf<button class="text-sm font-semibold text-slate-500 hover:text-slate-900">Limpiar filtros</button></form>
+        <form method="POST" action="{{ route('observability.logs.reset') }}" class="mt-3">@csrf<button class="text-sm font-semibold text-slate-500 hover:text-slate-900">Restablecer al día actual</button></form>
     </section>
 
     @if ($result->truncated)
