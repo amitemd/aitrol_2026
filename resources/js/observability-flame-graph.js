@@ -126,6 +126,9 @@ const initializeLogFlameGraph = () => {
     const resetButton = modal.querySelector('[data-flame-reset]');
     const closeButton = modal.querySelector('[data-flame-close]');
     const showErrorsButton = modal.querySelector('[data-flame-show-errors]');
+    const jumpModeButtons = [...modal.querySelectorAll('[data-flame-jump-mode]')];
+    const contextTitle = modal.querySelector('[data-flame-context-title]');
+    const contextDescription = modal.querySelector('[data-flame-context-description]');
     const totalCaption = modal.querySelector('[data-flame-total-caption]');
     const totalLabel = modal.querySelector('[data-flame-total]');
     const unitLabel = modal.querySelector('[data-flame-unit]');
@@ -181,9 +184,24 @@ const initializeLogFlameGraph = () => {
 
         if (isTimeline) {
             searchInput.placeholder = 'Buscar proceso, ruta o controlador';
+            contextTitle.textContent = 'Cronología de solicitudes';
+            contextDescription.textContent = 'La posición indica cuándo ocurrió cada evento y el ancho representa su duración registrada en milisegundos.';
         } else if (isStack) {
             searchInput.placeholder = 'Buscar función o frame';
+            contextTitle.textContent = 'Pila jerárquica de ejecución';
+            contextDescription.textContent = 'El ancho representa el peso relativo y la altura muestra la profundidad de llamadas. Seleccione un bloque para ampliar su rama.';
+        } else {
+            contextTitle.textContent = 'Diagnóstico priorizado';
+            contextDescription.textContent = 'Empiece por la ruta con mayor tiempo acumulado y compare su P95 con el máximo observado.';
         }
+
+        jumpModeButtons.forEach((button) => {
+            const isCurrentMode = button.dataset.flameJumpMode === state.mode;
+
+            button.disabled = isCurrentMode;
+            button.classList.toggle('opacity-50', isCurrentMode);
+            button.classList.toggle('cursor-default', isCurrentMode);
+        });
     };
 
     const showNodeDetails = (node, profile) => {
@@ -652,6 +670,14 @@ const initializeLogFlameGraph = () => {
     modeButtons.forEach((button) => {
         button.addEventListener('click', () => {
             state.mode = button.dataset.flameModeOption;
+            state.zoomId = null;
+            stage.scrollTop = 0;
+            render();
+        });
+    });
+    jumpModeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            state.mode = button.dataset.flameJumpMode;
             state.zoomId = null;
             stage.scrollTop = 0;
             render();

@@ -124,6 +124,20 @@
                     <p data-flame-breadcrumb class="min-w-0 truncate font-mono text-[11px] text-cyan-800">Análisis basado exclusivamente en tiempos registrados</p>
                 </div>
 
+                <div class="flex shrink-0 flex-col gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex min-w-0 items-start gap-3">
+                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-blue-100 text-sm font-black text-blue-700" aria-hidden="true">i</span>
+                        <div class="min-w-0">
+                            <p data-flame-context-title class="text-xs font-black text-slate-900">Diagnóstico priorizado</p>
+                            <p data-flame-context-description class="mt-0.5 text-[11px] leading-5 text-slate-500">Empiece por la ruta con mayor tiempo acumulado y compare su P95 con el máximo observado.</p>
+                        </div>
+                    </div>
+                    <div class="flex shrink-0 flex-wrap gap-2">
+                        <button type="button" data-flame-jump-mode="timeline" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 shadow-sm outline-none hover:border-blue-300 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">Ver cronología</button>
+                        <button type="button" data-flame-jump-mode="stack" class="rounded-xl bg-blue-700 px-3 py-2 text-[11px] font-black text-white shadow-sm outline-none hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500">Explorar pilas</button>
+                    </div>
+                </div>
+
                 <section data-flame-diagnosis class="min-h-0 overflow-y-auto bg-slate-100 px-4 py-5 sm:px-6">
                     <div class="mx-auto grid max-w-7xl gap-5">
                         @if ($performance['primary_bottleneck'])
@@ -213,24 +227,24 @@
                                     </div>
                                 </div>
                                 <div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
-                                    @foreach ($performance['error_hotspots'] as $index => $error)
+                                    @foreach ($performance['error_hotspots'] as $index => $errorHotspot)
                                         <article class="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                             <div class="flex items-start justify-between gap-3">
                                                 <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-rose-100 text-xs font-black text-rose-700">#{{ $index + 1 }}</span>
-                                                <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black tracking-wide text-rose-700 shadow-sm">{{ $error['occurrences'] }} {{ $error['occurrences'] === 1 ? 'vez' : 'veces' }}</span>
+                                                <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black tracking-wide text-rose-700 shadow-sm">{{ $errorHotspot['occurrences'] }} {{ $errorHotspot['occurrences'] === 1 ? 'vez' : 'veces' }}</span>
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="break-words text-sm font-black leading-5 text-slate-950">{{ $error['label'] }}</p>
-                                                @if ($error['route'])
-                                                    <p class="mt-2 break-all font-mono text-[11px] text-blue-700">{{ $error['route'] }}</p>
+                                                <p class="break-words text-sm font-black leading-5 text-slate-950">{{ $errorHotspot['label'] }}</p>
+                                                @if ($errorHotspot['route'])
+                                                    <p class="mt-2 break-all font-mono text-[11px] text-blue-700">{{ $errorHotspot['route'] }}</p>
                                                 @endif
-                                                @if ($error['controller'])
-                                                    <p class="mt-1 break-all font-mono text-[10px] text-slate-500">{{ $error['controller'] }}</p>
+                                                @if ($errorHotspot['controller'])
+                                                    <p class="mt-1 break-all font-mono text-[10px] text-slate-500">{{ $errorHotspot['controller'] }}</p>
                                                 @endif
                                             </div>
                                             <div class="flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-200 pt-3 text-[10px] text-slate-500">
-                                                <span>Último: {{ $error['latest_at'] }}</span>
-                                                <span>Traza: {{ $error['maximum_trace_depth'] }} niveles</span>
+                                                <span>Último: {{ $errorHotspot['latest_at'] }}</span>
+                                                <span>Traza: {{ $errorHotspot['maximum_trace_depth'] }} niveles</span>
                                             </div>
                                         </article>
                                     @endforeach

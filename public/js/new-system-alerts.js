@@ -5,6 +5,53 @@
     var labels = configuration.labels || {};
     var messages = configuration.messages || {};
 
+    function messageToText(message, visited) {
+        if (message === null || typeof message === 'undefined') {
+            return '';
+        }
+
+        if (typeof message === 'string' || typeof message === 'number' || typeof message === 'boolean') {
+            return String(message).trim();
+        }
+
+        if (Array.isArray(message)) {
+            return message
+                .map(function (item) {
+                    return messageToText(item, visited);
+                })
+                .filter(Boolean)
+                .join('\n');
+        }
+
+        if (typeof message !== 'object') {
+            return '';
+        }
+
+        var seen = visited || new WeakSet();
+
+        if (seen.has(message)) {
+            return '';
+        }
+
+        seen.add(message);
+
+        var preferredKeys = ['message', 'error', 'detail', 'description', 'errors'];
+
+        for (var index = 0; index < preferredKeys.length; index += 1) {
+            var key = preferredKeys[index];
+
+            if (Object.prototype.hasOwnProperty.call(message, key)) {
+                var text = messageToText(message[key], seen);
+
+                if (text) {
+                    return text;
+                }
+            }
+        }
+
+        return '';
+    }
+
     function normalizeOptions(options) {
         var normalized = typeof options === 'string' ? { text: options } : (options || {});
 
@@ -34,10 +81,12 @@
     }
 
     function notification(icon, message, title) {
+        var normalizedMessage = messageToText(message);
+
         return fire({
             icon: icon,
             title: title || labels[icon] || labels.information,
-            text: String(message || ''),
+            text: normalizedMessage || labels.information || '',
             showCancelButton: false,
             showDenyButton: false,
             confirmButtonText: labels.confirm
@@ -86,11 +135,13 @@
         var priorities = ['error', 'warning', 'success', 'info'];
 
         priorities.some(function (type) {
-            if (!messages[type]) {
+            var message = messageToText(messages[type]);
+
+            if (!message) {
                 return false;
             }
 
-            notification(type, messages[type], labels[type]);
+            notification(type, message, labels[type]);
 
             return true;
         });

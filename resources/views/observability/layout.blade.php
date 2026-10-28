@@ -37,6 +37,11 @@
     <main class="mx-auto flex max-w-[1480px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         @yield('content')
     </main>
-    @include('new-system.partials.alerts')
+    @include('new-system.partials.alerts', [
+        'success' => null,
+        'error' => null,
+        'warning' => null,
+        'info' => null,
+    ])
 </body>
 </html>
