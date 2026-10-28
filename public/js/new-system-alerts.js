@@ -38,6 +38,8 @@
             icon: icon,
             title: title || labels[icon] || labels.information,
             text: String(message || ''),
+            showCancelButton: false,
+            showDenyButton: false,
             confirmButtonText: labels.confirm
         });
     }
