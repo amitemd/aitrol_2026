@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\NewSystem;
 
 use App\Http\Controllers\Controller;
+use App\Modules\SupportIntegrations\Application\Contracts\RequestExecutionTracer;
 use App\Services\NewSystem\CompanyAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,15 +15,23 @@ use Sis_medico\User;
 
 class AuthController extends Controller
 {
-    public function login(Request $request, CompanyAccess $companyAccess): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email', 'max:191'],
-            'password' => ['required', 'string', 'max:255'],
-            'remember' => ['nullable', 'boolean'],
-        ], [
-            'password.max' => __('new_system.auth.password_too_long'),
-        ]);
+    public function login(
+        Request $request,
+        CompanyAccess $companyAccess,
+        RequestExecutionTracer $executionTracer,
+    ): RedirectResponse {
+        $credentials = $executionTracer->measure(
+            name: 'Validar formulario de inicio de sesión',
+            type: 'Validación',
+            callback: fn (): array => $request->validate([
+                'email' => ['required', 'email', 'max:191'],
+                'password' => ['required', 'string', 'max:255'],
+                'remember' => ['nullable', 'boolean'],
+            ], [
+                'password.max' => __('new_system.auth.password_too_long'),
+            ]),
+            context: ['request' => Request::class],
+        );
 
         $email = Str::lower(trim($credentials['email']));
         $limiters = $this->loginLimiters($request, $email);
@@ -39,11 +48,18 @@ class AuthController extends Controller
             (int) config('auth.login_security.remember_duration_minutes', 43200),
         );
 
-        if (! Auth::attempt([
-            'email' => $email,
-            'password' => $credentials['password'],
-            'estado' => 1,
-        ], (bool) ($credentials['remember'] ?? false))) {
+        $authenticated = $executionTracer->measure(
+            name: 'Autenticar credenciales del usuario',
+            type: 'Modelo',
+            callback: fn (): bool => Auth::attempt([
+                'email' => $email,
+                'password' => $credentials['password'],
+                'estado' => 1,
+            ], (bool) ($credentials['remember'] ?? false)),
+            context: ['model' => User::class],
+        );
+
+        if (! $authenticated) {
             foreach ($limiters as $name => $limiter) {
                 $limiters[$name]['attempts'] = RateLimiter::hit($limiter['key'], $limiter['decay']);
             }
@@ -67,16 +83,31 @@ class AuthController extends Controller
             'new_system.login_locked_until',
             'new_system.login_locked_email_hash',
         ]);
-        $request->session()->regenerate();
-        $request->session()->regenerateToken();
-        $request->session()->put([
-            'lang' => config('localization.default_locale', 'es'),
-            'new_system.locale_explicitly_selected' => false,
-        ]);
+        $executionTracer->measure(
+            name: 'Regenerar sesión autenticada',
+            type: 'Seguridad',
+            callback: function () use ($request): void {
+                $request->session()->regenerate();
+                $request->session()->regenerateToken();
+                $request->session()->put([
+                    'lang' => config('localization.default_locale', 'es'),
+                    'new_system.locale_explicitly_selected' => false,
+                ]);
+            },
+            context: ['session' => 'autenticada'],
+        );
 
         /** @var User $user */
         $user = $request->user();
-        $companies = $companyAccess->accessibleFor($user);
+        $companies = $executionTracer->measure(
+            name: 'Consultar empresas accesibles',
+            type: 'Servicio',
+            callback: fn () => $companyAccess->accessibleFor($user),
+            context: [
+                'service' => CompanyAccess::class,
+                'model' => User::class,
+            ],
+        );
         $defaultCompany = $companies->first();
 
         if ($defaultCompany !== null) {

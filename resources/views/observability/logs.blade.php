@@ -107,6 +107,19 @@
                             <span aria-hidden="true">⌕</span>
                             <input data-flame-search type="search" placeholder="Buscar proceso o función" class="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400">
                         </label>
+                        <div data-flame-timeline-controls class="hidden items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 text-xs font-bold text-slate-600" aria-label="Navegación de procesos">
+                            <label class="flex items-center gap-1 px-2">
+                                Mostrar
+                                <select data-flame-timeline-page-size class="bg-transparent font-black text-slate-900 outline-none" aria-label="Procesos por página">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </label>
+                            <button type="button" data-flame-timeline-previous class="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-base hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Procesos anteriores">‹</button>
+                            <span data-flame-timeline-page class="min-w-20 px-2 text-center text-[11px] font-black text-slate-800">1 / 1</span>
+                            <button type="button" data-flame-timeline-next class="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-base hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Procesos siguientes">›</button>
+                        </div>
                         <button type="button" data-flame-orientation class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Orientación: raíz abajo</button>
                         <button type="button" data-flame-reset class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Restablecer zoom</button>
                         <button type="button" data-flame-close class="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 text-xl font-black text-white hover:bg-slate-700" aria-label="Cerrar visualizador">×</button>

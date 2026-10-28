@@ -132,6 +132,11 @@ const initializeLogFlameGraph = () => {
     const profileWrapper = modal.querySelector('[data-flame-profile-wrapper]');
     const searchInput = modal.querySelector('[data-flame-search]');
     const searchWrapper = modal.querySelector('[data-flame-search-wrapper]');
+    const timelineControls = modal.querySelector('[data-flame-timeline-controls]');
+    const timelinePageSize = modal.querySelector('[data-flame-timeline-page-size]');
+    const timelinePrevious = modal.querySelector('[data-flame-timeline-previous]');
+    const timelineNext = modal.querySelector('[data-flame-timeline-next]');
+    const timelinePageLabel = modal.querySelector('[data-flame-timeline-page]');
     const modeButtons = [...modal.querySelectorAll('[data-flame-mode-option]')];
     const orientationButton = modal.querySelector('[data-flame-orientation]');
     const resetButton = modal.querySelector('[data-flame-reset]');
@@ -172,6 +177,8 @@ const initializeLogFlameGraph = () => {
         orientation: 'flame',
         zoomId: null,
         search: '',
+        timelinePage: null,
+        timelinePageSize: 10,
     };
 
     const activeProfile = () => data.profiles.find((profile) => profile.key === state.profileKey) ?? data.profiles[0];
@@ -186,6 +193,8 @@ const initializeLogFlameGraph = () => {
         chart.classList.toggle('grid', !isDiagnosis);
         searchWrapper.classList.toggle('hidden', isDiagnosis);
         searchWrapper.classList.toggle('flex', !isDiagnosis);
+        timelineControls.classList.toggle('hidden', !isTimeline);
+        timelineControls.classList.toggle('flex', isTimeline);
         profileWrapper.classList.toggle('hidden', !isStack);
         profileWrapper.classList.toggle('flex', isStack);
         orientationButton.classList.toggle('hidden', !isStack);
@@ -205,7 +214,7 @@ const initializeLogFlameGraph = () => {
         });
 
         if (isTimeline) {
-            searchInput.placeholder = 'Buscar ruta, controlador, contrato o repositorio';
+            searchInput.placeholder = 'Buscar login, visita, ruta o componente';
             contextTitle.textContent = 'Flame graph de acciones integrado con Auditoría';
             contextDescription.textContent = 'Cada columna es una acción. Sobre su base se apilan la cadena auditada, los subprocesos medidos y los eventos INFO, NOTICE, WARNING, ERROR y demás niveles correlacionados.';
         } else if (isStack) {
@@ -298,12 +307,24 @@ const initializeLogFlameGraph = () => {
         }
 
         subprocesses
-            .filter((subprocess) => Number(subprocess.depth ?? 1) === 1)
-            .forEach((subprocess) => inspectorArchitecture.append(inspectorItem(
-                `${subprocess.type || 'Subproceso'} · ${formatValue(Number(subprocess.duration_ms) || 0, 'ms')} ms`,
-                `${subprocess.name}${subprocess.measured === false ? ' · tiempo aún no instrumentado internamente' : ' · medición real'}`,
-                subprocess.measured === false ? 'slate' : 'blue',
-            )));
+            .filter((subprocess) => subprocess.type !== 'Acción HTTP')
+            .forEach((subprocess) => {
+                const context = Object.entries(subprocess.context ?? {})
+                    .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join(' · ');
+
+                inspectorArchitecture.append(inspectorItem(
+                    `${subprocess.type || 'Subproceso'} · ${formatValue(Number(subprocess.duration_ms) || 0, 'ms')} ms`,
+                    [
+                        subprocess.name,
+                        `nivel ${Math.max(1, Number(subprocess.depth) - 1)}`,
+                        context,
+                        subprocess.measured === false ? 'tiempo aún no instrumentado internamente' : 'medición real',
+                    ].filter(Boolean).join(' · '),
+                    subprocess.measured === false ? 'slate' : 'blue',
+                ));
+            });
 
         (architecture.components ?? []).forEach((component) => {
             inspectorArchitecture.append(inspectorItem(
@@ -859,9 +880,65 @@ const initializeLogFlameGraph = () => {
         const chartHeight = Math.max(520, stage.clientHeight - 20);
         const margins = { top: 82, right: 12, bottom: 42, left: 54 };
         const plotWidth = Math.max(360, chartWidth - margins.left - margins.right);
-        const maximumVisibleActions = Math.max(2, Math.min(5, Math.floor(plotWidth / 230)));
-        const processes = allProcesses.slice(-maximumVisibleActions);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
+        const searchableProcess = (process) => {
+            const audit = auditByProcess[process.id] ?? { technical: [], activities: [] };
+            const auditEvents = [
+                ...(Array.isArray(audit.technical) ? audit.technical : []),
+                ...(Array.isArray(audit.activities) ? audit.activities : []),
+            ];
+
+            return [
+                process.date,
+                process.label,
+                process.method,
+                process.path,
+                process.route,
+                process.controller,
+                ...(Array.isArray(process.stack_frames)
+                    ? process.stack_frames.flatMap((frame) => [frame.label, frame.detail, frame.type])
+                    : []),
+                ...(Array.isArray(process.subprocesses)
+                    ? process.subprocesses.flatMap((subprocess) => [
+                        subprocess.name,
+                        subprocess.type,
+                        subprocess.context?.model,
+                        subprocess.context?.service,
+                        subprocess.context?.contract,
+                        subprocess.context?.repository,
+                    ])
+                    : []),
+                ...(Array.isArray(process.correlated_logs)
+                    ? process.correlated_logs.flatMap((log) => [log.level, log.message])
+                    : []),
+                ...auditEvents.flatMap((event) => [
+                    event.module,
+                    event.description,
+                    event.controller,
+                    event.model,
+                    event.view,
+                    event.observation,
+                ]),
+            ].filter(Boolean).join(' ').toLocaleLowerCase('es');
+        };
+        const filteredProcesses = searchTerm === ''
+            ? allProcesses
+            : allProcesses.filter((process) => searchableProcess(process).includes(searchTerm));
+        const pageSize = Math.max(5, Math.min(20, Number(state.timelinePageSize) || 10));
+        const totalPages = Math.max(1, Math.ceil(filteredProcesses.length / pageSize));
+
+        if (state.timelinePage === null) {
+            state.timelinePage = totalPages - 1;
+        }
+
+        state.timelinePage = Math.max(0, Math.min(totalPages - 1, state.timelinePage));
+
+        const pageStart = state.timelinePage * pageSize;
+        const processes = filteredProcesses.slice(pageStart, pageStart + pageSize);
+
+        timelinePageLabel.textContent = `${state.timelinePage + 1} / ${totalPages}`;
+        timelinePrevious.disabled = state.timelinePage === 0;
+        timelineNext.disabled = state.timelinePage >= totalPages - 1;
         const actionSlot = plotWidth / Math.max(1, processes.length);
         const actionGap = Math.max(4, Math.min(10, actionSlot * 0.03));
         const actionWidth = Math.max(46, actionSlot - (actionGap * 2));
@@ -1154,7 +1231,7 @@ const initializeLogFlameGraph = () => {
             });
             const availableRouteCharacters = Math.max(8, Math.floor((actionWidth - 43) / 5.6));
 
-            numberLabel.textContent = String(process.process_number || processIndex + 1);
+            numberLabel.textContent = String(process.process_number || pageStart + processIndex + 1);
             routeLabel.textContent = route.length > availableRouteCharacters
                 ? `${route.slice(0, availableRouteCharacters - 1)}…`
                 : route;
@@ -1335,7 +1412,9 @@ const initializeLogFlameGraph = () => {
 
         totalLabel.textContent = String(processes.length);
         totalCaption.textContent = 'Acciones visibles';
-        unitLabel.textContent = allProcesses.length > processes.length ? `de ${allProcesses.length}` : 'acciones';
+        unitLabel.textContent = searchTerm !== ''
+            ? `de ${filteredProcesses.length} coincidencias (${allProcesses.length} acciones)`
+            : (allProcesses.length > processes.length ? `de ${allProcesses.length}` : 'acciones');
         depthLabel.textContent = String(maximumDepth);
         countLabel.textContent = 'Profundidad máxima';
         matchLabel.textContent = String(matches);
@@ -1347,7 +1426,7 @@ const initializeLogFlameGraph = () => {
         detailLabel.textContent = processes.length > 0
             ? 'Seleccione una acción, capa auditada, subproceso o evento de log'
             : 'No hay procesos con fecha válida';
-        detailMeta.textContent = `${allProcesses.length > processes.length ? `Se muestran las ${processes.length} acciones más recientes de ${allProcesses.length}. ` : ''}Los bloques sólidos tienen tiempo medido; las franjas rayadas representan la cadena auditada sin duración individual.`;
+        detailMeta.textContent = `${searchTerm !== '' ? `La búsqueda revisó las ${allProcesses.length} acciones y encontró ${filteredProcesses.length}. ` : `Página ${state.timelinePage + 1} de ${totalPages}; ${allProcesses.length} acciones disponibles. `}Los bloques sólidos tienen tiempo medido; las franjas rayadas representan la cadena auditada sin duración individual.`;
         stage.scrollTop = 0;
 
         if (processes.length > 0) {
@@ -1421,6 +1500,20 @@ const initializeLogFlameGraph = () => {
     });
     searchInput.addEventListener('input', () => {
         state.search = searchInput.value;
+        state.timelinePage = state.search.trim() === '' ? null : 0;
+        render();
+    });
+    timelinePageSize.addEventListener('change', () => {
+        state.timelinePageSize = Number(timelinePageSize.value) || 10;
+        state.timelinePage = null;
+        render();
+    });
+    timelinePrevious.addEventListener('click', () => {
+        state.timelinePage = Math.max(0, Number(state.timelinePage) - 1);
+        render();
+    });
+    timelineNext.addEventListener('click', () => {
+        state.timelinePage = Number(state.timelinePage) + 1;
         render();
     });
     modeButtons.forEach((button) => {
