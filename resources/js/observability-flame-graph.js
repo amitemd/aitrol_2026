@@ -195,8 +195,8 @@ const initializeLogFlameGraph = () => {
 
         if (isTimeline) {
             searchInput.placeholder = 'Buscar ruta, controlador, contrato o repositorio';
-            contextTitle.textContent = 'Flame graph integrado con Auditoría';
-            contextDescription.textContent = 'El ancho muestra tiempo inclusivo acumulado y cada nivel representa la cadena técnica. Seleccione un bloque para correlacionar controlador, servicios, contratos, repositorios, auditoría y logs.';
+            contextTitle.textContent = 'Cronología de procesos integrada con Auditoría';
+            contextDescription.textContent = 'El eje X muestra la fecha y hora; el eje Y, la duración. Cada torre representa un proceso y sus divisiones reflejan la profundidad de su cadena técnica.';
         } else if (isStack) {
             searchInput.placeholder = 'Buscar función o frame';
             contextTitle.textContent = 'Pila jerárquica de ejecución';
@@ -478,228 +478,6 @@ const initializeLogFlameGraph = () => {
         }
     };
 
-    const renderTimeline = () => {
-        updateModeLayout();
-
-        const timeline = data.timeline ?? {};
-        const processes = Array.isArray(timeline.processes) ? timeline.processes : [];
-        const chartWidth = Math.max(360, stage.clientWidth - 16);
-        const labelWidth = Math.min(380, Math.max(180, chartWidth * 0.34));
-        const plotWidth = chartWidth - labelWidth;
-        const rowHeight = 46;
-        const topAxisHeight = 48;
-        const chartHeight = Math.max(120, topAxisHeight + (processes.length * rowHeight) + 8);
-        const span = Math.max(1, Number(timeline.span_ms) || 1);
-        const searchTerm = state.search.trim().toLocaleLowerCase('es');
-        let matches = 0;
-
-        svg.replaceChildren();
-        svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
-        svg.setAttribute('width', '100%');
-        svg.setAttribute('height', chartHeight);
-        emptyState.classList.toggle('hidden', processes.length > 0);
-        emptyState.classList.toggle('grid', processes.length === 0);
-        const definitions = createSvgElement('defs');
-
-        ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG', 'DEFAULT'].forEach((level) => {
-            const [startColor, endColor] = processPalette(level);
-            const gradient = createSvgElement('linearGradient', {
-                id: `process-gradient-${level.toLowerCase()}`,
-                x1: '0%',
-                y1: '0%',
-                x2: '100%',
-                y2: '100%',
-            });
-
-            gradient.append(
-                createSvgElement('stop', { offset: '0%', 'stop-color': startColor }),
-                createSvgElement('stop', { offset: '100%', 'stop-color': endColor }),
-            );
-            definitions.append(gradient);
-        });
-        svg.append(definitions);
-
-        [0, 25, 50, 75, 100].forEach((percentage) => {
-            const x = labelWidth + ((plotWidth * percentage) / 100);
-            const tickValue = (span * percentage) / 100;
-            const anchor = percentage === 0 ? 'start' : percentage === 100 ? 'end' : 'middle';
-            const gridLine = createSvgElement('line', {
-                x1: x,
-                y1: topAxisHeight - 3,
-                x2: x,
-                y2: chartHeight,
-                stroke: '#cbd5e1',
-                'stroke-width': 1,
-                'stroke-dasharray': '3 5',
-                opacity: 0.45,
-            });
-            const tick = createSvgElement('text', {
-                x,
-                y: 16,
-                fill: '#0f172a',
-                'font-size': 11,
-                'font-weight': 800,
-                'text-anchor': anchor,
-            });
-            const exactTick = createSvgElement('text', {
-                x,
-                y: 32,
-                fill: '#64748b',
-                'font-size': 8,
-                'font-weight': 650,
-                'text-anchor': anchor,
-            });
-
-            tick.textContent = percentage === 0 ? 'Inicio' : `+${formatElapsedTime(tickValue)}`;
-            exactTick.textContent = `${formatValue(tickValue, 'ms')} ms`;
-            svg.append(gridLine, tick, exactTick);
-        });
-
-        processes.forEach((process, index) => {
-            const y = topAxisHeight + (index * rowHeight);
-            const offset = Math.max(0, Number(process.offset_ms) || 0);
-            const duration = process.duration_ms === null ? null : Math.max(0, Number(process.duration_ms) || 0);
-            const x = labelWidth + ((offset / span) * plotWidth);
-            const measuredWidth = duration === null ? 0 : (duration / span) * plotWidth;
-            const width = duration === null ? 18 : Math.max(18, measuredWidth);
-            const searchable = [process.label, process.route, process.controller, process.level, process.date]
-                .filter(Boolean)
-                .join(' ')
-                .toLocaleLowerCase('es');
-            const matchesSearch = searchTerm !== '' && searchable.includes(searchTerm);
-            const group = createSvgElement('g', {
-                role: 'button',
-                tabindex: '0',
-                'aria-label': `Proceso ${process.process_number}, ${process.date}, ${process.label}`,
-                class: 'cursor-pointer outline-none',
-            });
-            const rowBackground = createSvgElement('rect', {
-                x: 0,
-                y,
-                width: chartWidth,
-                height: rowHeight,
-                fill: index % 2 === 0 ? '#ffffff' : '#f8fafc',
-            });
-            const processNumber = createSvgElement('text', {
-                x: 10,
-                y: y + 28,
-                fill: '#1d4ed8',
-                'font-size': 10,
-                'font-weight': 800,
-            });
-            const processDate = createSvgElement('text', {
-                x: 58,
-                y: y + 17,
-                fill: '#0891b2',
-                'font-size': 9,
-                'font-weight': 750,
-            });
-            const processLabel = createSvgElement('text', {
-                x: 58,
-                y: y + 34,
-                fill: '#0f172a',
-                'font-size': 10,
-                'font-weight': 700,
-            });
-            const separator = createSvgElement('line', {
-                x1: labelWidth - 10,
-                y1: y + 4,
-                x2: labelWidth - 10,
-                y2: y + rowHeight - 4,
-                stroke: '#cbd5e1',
-                'stroke-width': 1,
-            });
-            const supportedLevels = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG'];
-            const gradientLevel = supportedLevels.includes(process.level) ? process.level : 'DEFAULT';
-            const flame = createSvgElement('path', {
-                d: flamePath(x, y + 5, width, rowHeight - 10),
-                fill: `url(#process-gradient-${gradientLevel.toLowerCase()})`,
-                stroke: matchesSearch ? '#1d4ed8' : '#fff',
-                'stroke-width': matchesSearch ? 3 : 1,
-                opacity: searchTerm !== '' && !matchesSearch ? 0.3 : 1,
-            });
-            const innerFlameWidth = Math.max(7, width * 0.34);
-            const innerFlame = createSvgElement('path', {
-                d: flamePath(
-                    x + Math.max(3, width * 0.33),
-                    y + 16,
-                    innerFlameWidth,
-                    rowHeight - 21,
-                ),
-                fill: '#fff7ed',
-                opacity: searchTerm !== '' && !matchesSearch ? 0.08 : 0.38,
-                'pointer-events': 'none',
-            });
-            const durationLine = createSvgElement('line', {
-                x1: x,
-                y1: y + rowHeight - 4,
-                x2: x + Math.max(1, measuredWidth),
-                y2: y + rowHeight - 4,
-                stroke: '#fef3c7',
-                'stroke-width': 2,
-                opacity: duration === null ? 0 : 0.85,
-                'pointer-events': 'none',
-            });
-            const title = createSvgElement('title');
-            const durationLabel = duration === null ? 'No registrada' : `${formatValue(duration, 'ms')} ms`;
-            const routeLabel = [process.method, process.route].filter(Boolean).join(' ');
-            const fixedLabel = routeLabel || process.label;
-            const maximumFixedCharacters = Math.max(16, Math.floor((labelWidth - 68) / 5.8));
-
-            processNumber.textContent = `#${process.process_number}`;
-            processDate.textContent = process.date;
-            processLabel.textContent = fixedLabel.length > maximumFixedCharacters
-                ? `${fixedLabel.slice(0, maximumFixedCharacters - 1)}…`
-                : fixedLabel;
-            title.textContent = `Proceso #${process.process_number}\nFecha y hora: ${process.date}\nDuración: ${durationLabel}\n${process.label}${routeLabel ? `\nRuta: ${routeLabel}` : ''}${process.controller ? `\nControlador: ${process.controller}` : ''}`;
-            group.append(rowBackground, processNumber, processDate, processLabel, separator, flame, innerFlame, durationLine, title);
-
-            if (width > 80) {
-                const processText = createSvgElement('text', {
-                    x: x + 7,
-                    y: y + 29,
-                    fill: process.level === 'WARNING' ? '#422006' : '#fff',
-                    'font-size': 10,
-                    'font-weight': 700,
-                    'pointer-events': 'none',
-                });
-                const availableCharacters = Math.max(4, Math.floor((width - 14) / 6));
-                const label = routeLabel || process.label;
-
-                processText.textContent = label.length > availableCharacters
-                    ? `${label.slice(0, Math.max(1, availableCharacters - 1))}…`
-                    : label;
-                group.append(processText);
-            }
-
-            group.addEventListener('pointerenter', () => showProcessDetails(process));
-            group.addEventListener('focus', () => showProcessDetails(process));
-            group.addEventListener('click', () => showProcessDetails(process));
-            svg.append(group);
-            matches += matchesSearch ? 1 : 0;
-        });
-
-        totalLabel.textContent = formatElapsedTime(span);
-        totalCaption.textContent = 'Ventana analizada';
-        unitLabel.textContent = 'de ventana';
-        depthLabel.textContent = String(processes.length);
-        countLabel.textContent = 'Eventos';
-        matchLabel.textContent = String(matches);
-        breadcrumb.textContent = timeline.start_at && timeline.end_at
-            ? `${timeline.start_at} → ${timeline.end_at}`
-            : 'Sin marcas de tiempo disponibles';
-        yAxisLabel.textContent = 'Eventos';
-        xAxisLabel.textContent = 'Eje X · tiempo transcurrido (ms)';
-        updateModeLayout();
-        detailLabel.textContent = processes.length > 0
-            ? 'Pase el cursor sobre un proceso para ver su detalle'
-            : 'No hay procesos con fecha válida para representar';
-        detailMeta.textContent = timeline.truncated
-            ? `Se muestran ${processes.length} de ${timeline.total_processes} procesos para mantener una visualización fluida.`
-            : 'Los procesos sin duration_ms se representan como una marca puntual y no como un tiempo inventado.';
-        stage.scrollTop = 0;
-    };
-
     const renderBlockTimeline = () => {
         updateModeLayout();
 
@@ -717,7 +495,7 @@ const initializeLogFlameGraph = () => {
         const maximumDuration = Math.max(1, ...measuredDurations);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
         const barSlot = plotWidth / Math.max(1, processes.length);
-        const barWidth = Math.max(7, Math.min(34, barSlot * 0.72));
+        const barWidth = Math.max(2, Math.min(38, barSlot * 0.78));
         let matches = 0;
 
         svg.replaceChildren();
@@ -755,9 +533,14 @@ const initializeLogFlameGraph = () => {
             svg.append(line, label);
         });
 
-        [0, 0.25, 0.5, 0.75, 1].forEach((ratio) => {
-            const x = margins.left + (plotWidth * ratio);
-            const elapsed = span * ratio;
+        const tickIndexes = [...new Set([0, 0.25, 0.5, 0.75, 1].map(
+            (ratio) => Math.round(Math.max(0, processes.length - 1) * ratio),
+        ))];
+
+        tickIndexes.forEach((processIndex) => {
+            const process = processes[processIndex];
+            const x = margins.left + ((processIndex + 0.5) * barSlot);
+            const [date = '', time = ''] = String(process?.date ?? '').split(/\s+/, 2);
             const line = createSvgElement('line', {
                 x1: x,
                 y1: margins.top,
@@ -766,26 +549,33 @@ const initializeLogFlameGraph = () => {
                 stroke: '#e2e8f0',
                 'stroke-width': 1,
             });
-            const label = createSvgElement('text', {
+            const dateLabel = createSvgElement('text', {
                 x,
-                y: margins.top + plotHeight + 22,
+                y: margins.top + plotHeight + 18,
                 fill: '#475569',
-                'font-size': 10,
-                'font-weight': 700,
-                'text-anchor': ratio === 0 ? 'start' : ratio === 1 ? 'end' : 'middle',
+                'font-size': 9,
+                'font-weight': 800,
+                'text-anchor': processIndex === 0 ? 'start' : processIndex === processes.length - 1 ? 'end' : 'middle',
+            });
+            const timeLabel = createSvgElement('text', {
+                x,
+                y: margins.top + plotHeight + 31,
+                fill: '#0369a1',
+                'font-size': 9,
+                'font-weight': 800,
+                'text-anchor': processIndex === 0 ? 'start' : processIndex === processes.length - 1 ? 'end' : 'middle',
             });
 
-            label.textContent = ratio === 0 ? 'Inicio' : `+${formatElapsedTime(elapsed)}`;
-            svg.append(line, label);
+            dateLabel.textContent = date;
+            timeLabel.textContent = time;
+            svg.append(line, dateLabel, timeLabel);
         });
 
         processes.forEach((process, index) => {
-            const offset = Math.max(0, Number(process.offset_ms) || 0);
             const duration = Number(process.duration_ms);
             const hasDuration = Number.isFinite(duration) && duration > 0;
             const height = hasDuration ? Math.max(5, (duration / maximumDuration) * plotHeight) : 5;
-            const centeredX = margins.left + ((offset / span) * plotWidth);
-            const x = Math.max(margins.left, Math.min(margins.left + plotWidth - barWidth, centeredX - (barWidth / 2)));
+            const x = margins.left + (index * barSlot) + ((barSlot - barWidth) / 2);
             const y = margins.top + plotHeight - height;
             const abnormalLogs = Array.isArray(process.abnormal_logs) ? process.abnormal_logs : [];
             const risk = abnormalLogs.some((log) => ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'].includes(log.level))
@@ -831,14 +621,40 @@ const initializeLogFlameGraph = () => {
             const route = [process.method, process.route].filter(Boolean).join(' ') || process.label;
             const audit = auditByProcess[process.id] ?? { technical: [], activities: [] };
             const auditCount = (audit.technical?.length ?? 0) + (audit.activities?.length ?? 0);
+            const stackFrames = Array.isArray(process.stack_frames) ? process.stack_frames : [];
+            const stackSummary = stackFrames
+                .map((frame) => typeof frame === 'string' ? frame : frame.label)
+                .filter(Boolean)
+                .join(' → ');
 
             gradient.append(
                 createSvgElement('stop', { offset: '0%', 'stop-color': startColor }),
                 createSvgElement('stop', { offset: '100%', 'stop-color': endColor }),
             );
             definitions.append(gradient);
-            title.textContent = `${route}\nFecha y hora: ${process.date}\nDuración: ${hasDuration ? `${formatValue(duration, 'ms')} ms` : 'No registrada'}\nAuditorías: ${auditCount}\nAlertas de log: ${abnormalLogs.length}`;
-            group.append(rectangle, title);
+            title.textContent = `${route}\nFecha y hora: ${process.date}\nDuración: ${hasDuration ? `${formatValue(duration, 'ms')} ms` : 'No registrada'}\nCadena: ${stackSummary || 'Sin pila técnica registrada'}\nAuditorías: ${auditCount}\nAlertas de log: ${abnormalLogs.length}`;
+            group.append(rectangle);
+
+            if (stackFrames.length > 1 && height >= 20 && barWidth >= 5) {
+                const visibleSeparators = Math.min(stackFrames.length - 1, 12);
+
+                for (let separatorIndex = 1; separatorIndex <= visibleSeparators; separatorIndex += 1) {
+                    const separatorY = y + (height * (separatorIndex / (visibleSeparators + 1)));
+
+                    group.append(createSvgElement('line', {
+                        x1: x + 1,
+                        y1: separatorY,
+                        x2: x + barWidth - 1,
+                        y2: separatorY,
+                        stroke: '#ffffff',
+                        'stroke-width': 0.8,
+                        opacity: 0.68,
+                        'pointer-events': 'none',
+                    }));
+                }
+            }
+
+            group.append(title);
 
             const selectProcess = () => showProcessDetails(process);
 
@@ -864,7 +680,7 @@ const initializeLogFlameGraph = () => {
             'text-anchor': 'middle',
         });
 
-        xLabel.textContent = 'Momento de ejecución dentro de la ventana analizada';
+        xLabel.textContent = 'Fecha y hora de ejecución · procesos consecutivos · más reciente a la derecha';
         svg.append(xLabel);
 
         totalLabel.textContent = formatElapsedTime(span);
@@ -876,8 +692,8 @@ const initializeLogFlameGraph = () => {
         breadcrumb.textContent = timeline.start_at && timeline.end_at
             ? `${timeline.start_at} → ${timeline.end_at}`
             : 'Sin marcas de tiempo disponibles';
-        yAxisLabel.textContent = 'Duración (ms)';
-        xAxisLabel.textContent = 'Eje X · momento de ejecución · Eje Y · duración (ms)';
+        yAxisLabel.textContent = 'Tiempo de ejecución (ms)';
+        xAxisLabel.textContent = 'Eje X · fecha y hora de ejecución · Eje Y · duración (ms)';
         detailLabel.textContent = processes.length > 0
             ? 'Seleccione un bloque para unir rendimiento, arquitectura, auditoría y logs'
             : 'No hay procesos con fecha válida para representar';
@@ -886,326 +702,6 @@ const initializeLogFlameGraph = () => {
 
         if (processes.length > 0) {
             const initialProcess = [...processes].sort(
-                (left, right) => Number(right.duration_ms || 0) - Number(left.duration_ms || 0),
-            )[0];
-
-            showProcessDetails(initialProcess);
-        }
-    };
-
-    const renderExecutionFlameGraph = () => {
-        updateModeLayout();
-
-        const timeline = data.timeline ?? {};
-        const processes = Array.isArray(timeline.processes) ? timeline.processes : [];
-        const measuredProcesses = processes.filter((process) => Number(process.duration_ms) > 0);
-        const usesDuration = measuredProcesses.length > 0;
-        const plottedProcesses = usesDuration ? measuredProcesses : processes;
-        const weightFor = (process) => usesDuration ? Number(process.duration_ms) : 1;
-        const severityRank = { EMERGENCY: 8, ALERT: 7, CRITICAL: 6, ERROR: 5, WARNING: 4, NOTICE: 3, INFO: 2, DEBUG: 1 };
-        const root = {
-            label: 'AITROL',
-            detail: 'Aplicación AITROL',
-            type: 'Aplicación',
-            source: 'architecture',
-            level: 'DEBUG',
-            value: 0,
-            selfValue: 0,
-            processIds: new Set(),
-            children: new Map(),
-            earliest: null,
-            latest: null,
-        };
-        const processById = new Map(processes.map((process) => [process.id, process]));
-        const appendProcess = (node, process, weight) => {
-            node.value += weight;
-            node.processIds.add(process.id);
-            node.level = (severityRank[process.level] ?? 0) > (severityRank[node.level] ?? 0)
-                ? process.level
-                : node.level;
-            node.earliest = node.earliest === null || process.timestamp_ms < node.earliest
-                ? process.timestamp_ms
-                : node.earliest;
-            node.latest = node.latest === null || process.timestamp_ms > node.latest
-                ? process.timestamp_ms
-                : node.latest;
-        };
-
-        plottedProcesses.forEach((process) => {
-            const fallbackFrames = [
-                { label: 'AITROL', detail: 'Aplicación AITROL', type: 'Aplicación', source: 'architecture' },
-                { label: [process.method, process.route].filter(Boolean).join(' ') || process.label, detail: process.route || process.label, type: 'Ruta', source: 'architecture' },
-                ...(process.controller ? [{ label: `Controlador · ${process.controller.split('\\').pop()}`, detail: process.controller, type: 'Controlador', source: 'architecture' }] : []),
-            ];
-            const frames = Array.isArray(process.stack_frames) && process.stack_frames.length > 0
-                ? process.stack_frames
-                : fallbackFrames;
-            const weight = Math.max(0.001, weightFor(process));
-            let node = root;
-
-            appendProcess(node, process, weight);
-
-            frames.slice(frames[0]?.label === 'AITROL' ? 1 : 0).forEach((frame) => {
-                const label = typeof frame === 'string' ? frame : frame.label;
-
-                if (!label) {
-                    return;
-                }
-
-                const detail = typeof frame === 'string' ? frame : frame.detail || frame.label;
-                const type = typeof frame === 'string' ? 'Frame' : frame.type || 'Componente';
-                const source = typeof frame === 'string' ? 'trace' : frame.source || 'architecture';
-                const key = `${type}|${label}`;
-
-                if (!node.children.has(key)) {
-                    node.children.set(key, {
-                        label,
-                        detail,
-                        type,
-                        source,
-                        level: 'DEBUG',
-                        value: 0,
-                        selfValue: 0,
-                        processIds: new Set(),
-                        children: new Map(),
-                        earliest: null,
-                        latest: null,
-                    });
-                }
-
-                node = node.children.get(key);
-                appendProcess(node, process, weight);
-            });
-
-            node.selfValue += weight;
-        });
-
-        const orderedChildren = (node) => [...node.children.values()].sort((left, right) => {
-            const labelComparison = left.label.localeCompare(right.label, 'es', { sensitivity: 'base' });
-
-            return labelComparison !== 0 ? labelComparison : right.value - left.value;
-        });
-        const treeDepth = (node, depth = 0) => Math.max(
-            depth,
-            ...orderedChildren(node).map((child) => treeDepth(child, depth + 1)),
-        );
-        const representativeProcess = (node) => [...node.processIds]
-            .map((id) => processById.get(id))
-            .filter(Boolean)
-            .sort((left, right) => {
-                const severityDifference = (severityRank[right.level] ?? 0) - (severityRank[left.level] ?? 0);
-
-                return severityDifference !== 0
-                    ? severityDifference
-                    : Number(right.duration_ms || 0) - Number(left.duration_ms || 0);
-            })[0];
-        const riskFor = (node) => {
-            if (['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'].includes(node.level)) {
-                return 'critical';
-            }
-
-            if (node.level === 'WARNING') {
-                return 'warning';
-            }
-
-            return 'normal';
-        };
-        const fillFor = (node, percentage, depth) => {
-            const risk = riskFor(node);
-
-            if (risk === 'critical') {
-                return depth % 2 === 0 ? '#dc2626' : '#f43f5e';
-            }
-
-            if (risk === 'warning') {
-                return depth % 2 === 0 ? '#f97316' : '#f59e0b';
-            }
-
-            if (percentage >= 35) {
-                return depth % 2 === 0 ? '#f59e0b' : '#fbbf24';
-            }
-
-            if (percentage >= 12) {
-                return depth % 2 === 0 ? '#14b8a6' : '#22c55e';
-            }
-
-            return depth % 2 === 0 ? '#0ea5e9' : '#38bdf8';
-        };
-        const chartWidth = Math.max(520, stage.clientWidth - 16);
-        const chartHeight = Math.max(440, stage.clientHeight - 16);
-        const margins = { top: 38, right: 18, bottom: 46, left: 58 };
-        const plotWidth = Math.max(300, chartWidth - margins.left - margins.right);
-        const plotHeight = Math.max(300, chartHeight - margins.top - margins.bottom);
-        const maximumDepth = treeDepth(root);
-        const rowHeight = Math.max(17, Math.min(34, plotHeight / Math.max(1, maximumDepth + 1)));
-        const visibleDepth = Math.max(0, Math.floor(plotHeight / rowHeight) - 1);
-        const totalWeight = Math.max(0.001, root.value);
-        const searchTerm = state.search.trim().toLocaleLowerCase('es');
-        let matches = 0;
-
-        svg.replaceChildren();
-        svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
-        svg.setAttribute('width', '100%');
-        svg.setAttribute('height', chartHeight);
-        emptyState.classList.toggle('hidden', plottedProcesses.length > 0);
-        emptyState.classList.toggle('grid', plottedProcesses.length === 0);
-
-        [0, 0.25, 0.5, 0.75, 1].forEach((ratio) => {
-            const x = margins.left + (plotWidth * ratio);
-            const value = totalWeight * ratio;
-            const line = createSvgElement('line', {
-                x1: x,
-                y1: margins.top,
-                x2: x,
-                y2: margins.top + plotHeight,
-                stroke: '#dbeafe',
-                'stroke-width': ratio === 0 || ratio === 1 ? 1.4 : 1,
-                'stroke-dasharray': ratio === 0 || ratio === 1 ? '0' : '4 5',
-            });
-            const label = createSvgElement('text', {
-                x,
-                y: chartHeight - 12,
-                fill: '#475569',
-                'font-size': 10,
-                'font-weight': 800,
-                'text-anchor': ratio === 0 ? 'start' : ratio === 1 ? 'end' : 'middle',
-            });
-
-            label.textContent = usesDuration ? `${formatValue(value, 'ms')} ms` : `${formatValue(value, 'muestras')} acciones`;
-            svg.append(line, label);
-        });
-
-        for (let depth = 0; depth <= Math.min(maximumDepth, visibleDepth); depth += 1) {
-            const y = margins.top + plotHeight - ((depth + 0.5) * rowHeight);
-            const label = createSvgElement('text', {
-                x: margins.left - 10,
-                y: y + 3,
-                fill: '#64748b',
-                'font-size': 9,
-                'font-weight': 800,
-                'text-anchor': 'end',
-            });
-
-            label.textContent = String(depth);
-            svg.append(label);
-        }
-
-        const renderNode = (node, x, width, depth) => {
-            if (depth > visibleDepth || width < 0.7) {
-                return;
-            }
-
-            const y = margins.top + plotHeight - ((depth + 1) * rowHeight);
-            const height = Math.max(12, rowHeight - 2);
-            const percentage = (node.value / totalWeight) * 100;
-            const searchable = [node.label, node.detail, node.type]
-                .filter(Boolean)
-                .join(' ')
-                .toLocaleLowerCase('es');
-            const matchesSearch = searchTerm !== '' && searchable.includes(searchTerm);
-            const group = createSvgElement('g', {
-                role: 'button',
-                tabindex: '0',
-                'aria-label': `${node.type}: ${node.label}`,
-                class: 'cursor-pointer outline-none',
-            });
-            const rectangle = createSvgElement('rect', {
-                x: x + 0.5,
-                y,
-                width: Math.max(0.5, width - 1),
-                height,
-                rx: Math.min(4, height / 4),
-                fill: fillFor(node, percentage, depth),
-                stroke: matchesSearch ? '#1d4ed8' : '#ffffff',
-                'stroke-width': matchesSearch ? 3 : 1,
-                opacity: searchTerm !== '' && !matchesSearch ? 0.22 : 0.96,
-            });
-            const title = createSvgElement('title');
-            const representative = representativeProcess(node);
-            const audit = representative ? auditByProcess[representative.id] ?? { technical: [], activities: [] } : { technical: [], activities: [] };
-            const auditCount = (audit.technical?.length ?? 0) + (audit.activities?.length ?? 0);
-            const abnormalCount = representative?.abnormal_logs?.length ?? 0;
-            const timeRange = representative
-                ? `${representative.date}${node.processIds.size > 1 ? ` · ${node.processIds.size} solicitudes agrupadas` : ''}`
-                : 'Sin fecha disponible';
-
-            title.textContent = `${node.type}: ${node.detail}\nPeso inclusivo: ${formatValue(node.value, usesDuration ? 'ms' : 'muestras')} ${usesDuration ? 'ms' : 'acciones'} (${percentage.toFixed(2)}%)\n${timeRange}\nAuditorías: ${auditCount}\nAlertas de log: ${abnormalCount}\nOrigen: ${node.source === 'trace' ? 'traza real' : 'arquitectura inspeccionada'}`;
-            group.append(rectangle, title);
-
-            if (width >= 42) {
-                const text = createSvgElement('text', {
-                    x: x + 6,
-                    y: y + (height / 2) + 3.5,
-                    fill: riskFor(node) === 'warning' && percentage >= 35 ? '#422006' : '#ffffff',
-                    'font-size': Math.max(8, Math.min(10, height * 0.38)),
-                    'font-weight': 800,
-                    'pointer-events': 'none',
-                });
-                const maximumCharacters = Math.max(4, Math.floor((width - 12) / 6.2));
-
-                text.textContent = node.label.length > maximumCharacters
-                    ? `${node.label.slice(0, maximumCharacters - 1)}…`
-                    : node.label;
-                group.append(text);
-            }
-
-            const selectNode = () => {
-                if (representative) {
-                    showProcessDetails(representative);
-                    detailLabel.textContent = `${node.type} · ${node.label}`;
-                    detailMeta.textContent = `${formatValue(node.value, usesDuration ? 'ms' : 'muestras')} ${usesDuration ? 'ms inclusivos' : 'acciones'} · ${percentage.toFixed(2)}% del perfil · ${node.processIds.size} ${node.processIds.size === 1 ? 'solicitud' : 'solicitudes'} · ${node.source === 'trace' ? 'traza real' : 'arquitectura inspeccionada'}`;
-                }
-            };
-
-            group.addEventListener('pointerenter', selectNode);
-            group.addEventListener('focus', selectNode);
-            group.addEventListener('click', selectNode);
-            group.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    selectNode();
-                }
-            });
-            svg.append(group);
-            matches += matchesSearch ? 1 : 0;
-
-            let childX = x;
-
-            orderedChildren(node).forEach((child) => {
-                const childWidth = width * (child.value / node.value);
-
-                renderNode(child, childX, childWidth, depth + 1);
-                childX += childWidth;
-            });
-        };
-
-        if (plottedProcesses.length > 0) {
-            renderNode(root, margins.left, plotWidth, 0);
-        }
-
-        totalLabel.textContent = formatValue(root.value, usesDuration ? 'ms' : 'muestras');
-        totalCaption.textContent = usesDuration ? 'Tiempo inclusivo' : 'Acciones representadas';
-        unitLabel.textContent = usesDuration ? 'ms' : 'acciones';
-        depthLabel.textContent = String(maximumDepth);
-        countLabel.textContent = 'Profundidad máxima';
-        matchLabel.textContent = String(matches);
-        breadcrumb.textContent = timeline.start_at && timeline.end_at
-            ? `${timeline.start_at} → ${timeline.end_at}`
-            : 'Sin marcas de tiempo disponibles';
-        yAxisLabel.textContent = 'Profundidad de la pila';
-        xAxisLabel.textContent = usesDuration
-            ? 'Eje X · tiempo inclusivo acumulado (ms) · Eje Y · profundidad técnica'
-            : 'Eje X · frecuencia de acciones · Eje Y · profundidad técnica';
-        detailLabel.textContent = plottedProcesses.length > 0
-            ? 'Seleccione un bloque para revisar su arquitectura, auditoría y anomalías'
-            : 'No hay procesos con datos suficientes para representar';
-        detailMeta.textContent = usesDuration
-            ? `${measuredProcesses.length} solicitudes medidas. ${processes.length - measuredProcesses.length} sin duración no se mezclan con los milisegundos.`
-            : 'No hay duration_ms; el ancho representa frecuencia y no tiempo.';
-        stage.scrollTop = 0;
-
-        if (plottedProcesses.length > 0) {
-            const initialProcess = [...plottedProcesses].sort(
                 (left, right) => Number(right.duration_ms || 0) - Number(left.duration_ms || 0),
             )[0];
 
@@ -1240,7 +736,7 @@ const initializeLogFlameGraph = () => {
         }
 
         if (state.mode === 'timeline') {
-            renderExecutionFlameGraph();
+            renderBlockTimeline();
 
             return;
         }

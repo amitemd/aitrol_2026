@@ -32,18 +32,18 @@
             <div>
                 <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Observabilidad basada en logs</p>
                 <h2 id="activity-map-title" class="mt-1 text-2xl font-black text-slate-950">Análisis de rendimiento y cuellos de botella</h2>
-                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Identifique las rutas que concentran más tiempo, compare el P95 y revise las solicitudes más lentas. El flame graph combina la pila técnica, la auditoría y los eventos anómalos para profundizar en cada caso.</p>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Identifique cuándo se ejecutó cada proceso, cuánto demoró y qué cadena técnica utilizó. La cronología combina tiempos, auditoría y eventos anómalos para profundizar en cada caso.</p>
 
                 <div class="mt-5 grid gap-3 sm:grid-cols-3">
                     <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
-                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · tiempo inclusivo</span>
+                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · fecha y hora</span>
                         <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->timeline['span_ms'], 1) }} ms</strong>
-                        <p class="mt-1 text-xs leading-5 text-slate-600">El ancho de cada bloque es proporcional al tiempo registrado.</p>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">Ubica cada proceso según el momento real en que se ejecutó.</p>
                     </div>
                     <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · profundidad</span>
-                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->maximumDepth) }} niveles</strong>
-                        <p class="mt-1 text-xs leading-5 text-slate-600">Cada nivel muestra una capa de la cadena de ejecución.</p>
+                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · duración</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->analysis['maximum_duration_ms'], 1) }} ms</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">La altura de cada proceso representa cuánto demoró.</p>
                     </div>
                     <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                         <span class="text-[11px] font-black tracking-wide text-amber-700 uppercase">Trazas reales</span>
@@ -92,7 +92,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
                             <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Diagnóstico</button>
-                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Flame graph y auditoría</button>
+                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Procesos y auditoría</button>
                             <button type="button" data-flame-mode-option="stack" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Pilas</button>
                         </nav>
                         <label data-flame-profile-wrapper class="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">
@@ -133,7 +133,7 @@
                         </div>
                     </div>
                     <div class="flex shrink-0 flex-wrap gap-2">
-                        <button type="button" data-flame-jump-mode="timeline" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 shadow-sm outline-none hover:border-blue-300 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">Abrir flame graph</button>
+                        <button type="button" data-flame-jump-mode="timeline" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 shadow-sm outline-none hover:border-blue-300 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">Abrir cronología</button>
                         <button type="button" data-flame-jump-mode="stack" class="rounded-xl bg-blue-700 px-3 py-2 text-[11px] font-black text-white shadow-sm outline-none hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500">Explorar pilas</button>
                     </div>
                 </div>
@@ -257,7 +257,7 @@
                 </section>
 
                 <section data-flame-chart class="hidden min-h-0 grid-cols-[28px_minmax(0,1fr)] bg-white xl:grid-cols-[28px_minmax(0,1fr)_360px]">
-                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Profundidad de la pila</div>
+                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Tiempo de ejecución (ms)</div>
                     <div data-flame-stage class="relative min-h-0 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
                         <svg data-flame-svg class="block w-full select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
                         <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-500">No hay datos para esta métrica.</div>
@@ -305,7 +305,7 @@
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500"></i>Normal</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500"></i>Lento o advertencia</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-400 to-red-600"></i>Error</span>
-                        <span data-flame-x-axis class="font-semibold text-slate-700">Eje X · tiempo inclusivo acumulado (ms)</span>
+                        <span data-flame-x-axis class="font-semibold text-slate-700">Eje X · fecha y hora · Eje Y · duración (ms)</span>
                     </div>
                 </footer>
             </div>
