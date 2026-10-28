@@ -107,7 +107,9 @@
                                 <input type="date" name="date_to" value="{{ $filters->dateTo }}" data-flame-date-to class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                             </label>
                             <button type="submit" data-flame-date-submit class="rounded-lg bg-cyan-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-60">Aplicar</button>
-                            <span data-flame-date-status class="sr-only" aria-live="polite"></span>
+                            <span data-flame-date-status class="min-w-28 px-1 text-[10px] font-bold text-cyan-700" aria-live="polite">
+                                {{ number_format($flameGraph->timeline['total_processes']) }} procesos creados en el rango
+                            </span>
                         </form>
                         <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
                             <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Diagnóstico</button>

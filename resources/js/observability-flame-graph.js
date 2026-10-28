@@ -883,7 +883,15 @@ const initializeLogFlameGraph = () => {
             .sort((left, right) => Number(left.timestamp_ms) - Number(right.timestamp_ms));
         const chartWidth = Math.max(520, stage.clientWidth - 16);
         const chartHeight = Math.max(520, stage.clientHeight - 20);
-        const margins = { top: 126, right: 12, bottom: 42, left: 54 };
+        const headerTop = 30;
+        const headerHeight = 112;
+        const timelineLabelHeight = 30;
+        const margins = {
+            top: headerTop + headerHeight + timelineLabelHeight + 8,
+            right: 12,
+            bottom: 42,
+            left: 54,
+        };
         const plotWidth = Math.max(360, chartWidth - margins.left - margins.right);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
         const searchableProcess = (process) => {
@@ -1202,9 +1210,9 @@ const initializeLogFlameGraph = () => {
             });
             const header = createSvgElement('rect', {
                 x: groupX,
-                y: 7,
+                y: headerTop,
                 width: actionWidth,
-                height: 106,
+                height: headerHeight,
                 rx: 9,
                 fill: palette.header,
                 stroke: matchesSearch ? '#1d4ed8' : palette.accent,
@@ -1213,13 +1221,13 @@ const initializeLogFlameGraph = () => {
             });
             const numberCircle = createSvgElement('circle', {
                 cx: groupX + (actionWidth / 2),
-                cy: 21,
+                cy: headerTop + 14,
                 r: 9,
                 fill: palette.accent,
             });
             const numberLabel = createSvgElement('text', {
                 x: groupX + (actionWidth / 2),
-                y: 24.5,
+                y: headerTop + 17.5,
                 fill: '#ffffff',
                 'font-size': 9,
                 'font-weight': 900,
@@ -1227,20 +1235,39 @@ const initializeLogFlameGraph = () => {
                 'pointer-events': 'none',
             });
             const routeLabel = createSvgElement('text', {
-                x: groupX + (actionWidth / 2),
-                y: 67,
+                x: groupX + (actionWidth / 2) - 6,
+                y: headerTop + 68,
                 fill: palette.text,
                 'font-size': 8.5,
                 'font-weight': 900,
                 'text-anchor': 'middle',
-                transform: `rotate(-90 ${groupX + (actionWidth / 2)} 67)`,
+                transform: `rotate(-90 ${groupX + (actionWidth / 2) - 6} ${headerTop + 68})`,
                 'pointer-events': 'none',
             });
             const durationLabel = createSvgElement('text', {
-                x: groupX + (actionWidth / 2),
-                y: 104,
+                x: groupX + (actionWidth / 2) + 9,
+                y: headerTop + 68,
                 fill: palette.text,
                 'font-size': 7.8,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+                transform: `rotate(-90 ${groupX + (actionWidth / 2) + 9} ${headerTop + 68})`,
+                'pointer-events': 'none',
+            });
+            const dateAxisLabel = createSvgElement('text', {
+                x: groupX + (actionWidth / 2),
+                y: headerTop + headerHeight + 12,
+                fill: '#64748b',
+                'font-size': 6.8,
+                'font-weight': 800,
+                'text-anchor': 'middle',
+                'pointer-events': 'none',
+            });
+            const timeAxisLabel = createSvgElement('text', {
+                x: groupX + (actionWidth / 2),
+                y: headerTop + headerHeight + 23,
+                fill: '#334155',
+                'font-size': 7.6,
                 'font-weight': 900,
                 'text-anchor': 'middle',
                 'pointer-events': 'none',
@@ -1253,8 +1280,19 @@ const initializeLogFlameGraph = () => {
                 ? `${route.slice(0, availableRouteCharacters - 1)}…`
                 : route;
             durationLabel.textContent = `${formatValue(duration, 'ms')} ms`;
+            dateAxisLabel.textContent = process.date.slice(0, 10);
+            timeAxisLabel.textContent = process.date.slice(11, 19) || process.date;
             headerTitle.textContent = `${route}\n${process.date}\n${formatValue(duration, 'ms')} ms · ${correlatedLogs.length} logs`;
-            headerGroup.append(header, numberCircle, numberLabel, routeLabel, durationLabel, headerTitle);
+            headerGroup.append(
+                header,
+                numberCircle,
+                numberLabel,
+                routeLabel,
+                durationLabel,
+                dateAxisLabel,
+                timeAxisLabel,
+                headerTitle,
+            );
 
             const previewProcess = () => {
                 detailLabel.textContent = `Proceso #${process.process_number || pageStart + processIndex + 1} · ${route}`;
@@ -1277,7 +1315,7 @@ const initializeLogFlameGraph = () => {
             svg.append(
                 createSvgElement('line', {
                     x1: groupX - actionGap,
-                    y1: 7,
+                    y1: headerTop,
                     x2: groupX - actionGap,
                     y2: plotBottom,
                     stroke: palette.accent,
@@ -1421,7 +1459,7 @@ const initializeLogFlameGraph = () => {
         if (processes.length > 0) {
             svg.append(createSvgElement('line', {
                 x1: margins.left + (processes.length * actionSlot),
-                y1: 7,
+                y1: headerTop,
                 x2: margins.left + (processes.length * actionSlot),
                 y2: plotBottom,
                 stroke: '#94a3b8',
@@ -1620,7 +1658,10 @@ const initializeLogFlameGraph = () => {
             });
 
             render();
-            dateStatus.textContent = 'Procesos actualizados sin recargar la página.';
+            const visibleProcesses = Number(payload.flame_graph.timeline?.visible_processes) || 0;
+            const totalProcesses = Number(payload.flame_graph.timeline?.total_processes) || visibleProcesses;
+
+            dateStatus.textContent = `${totalProcesses} ${totalProcesses === 1 ? 'proceso creado' : 'procesos creados'} en el rango`;
         } catch (error) {
             if (error.name === 'AbortError') {
                 return;
