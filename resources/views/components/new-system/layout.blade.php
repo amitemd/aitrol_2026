@@ -17,7 +17,7 @@
 @endphp
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,19 +33,19 @@
 <body class="hold-transition skin-blue sidebar-mini aitrol-shell">
     <div class="wrapper">
         <header class="main-header new-system-header">
-            <a href="{{ route('new-system.dashboard') }}" class="logo" aria-label="Ir al inicio">
+            <a href="{{ route('new-system.dashboard') }}" class="logo" aria-label="{{ __('new_system.common.home') }}">
                 <span class="logo-mini"><b>{{ mb_substr($companyShortName, 0, 1) }}</b>{{ mb_substr($companyShortName, 1, 1) }}</span>
                 <span class="logo-lg">{{ $companyName }}</span>
             </a>
 
             <nav class="navbar navbar-static-top" role="navigation">
                 <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-                    <span class="sr-only">Mostrar u ocultar navegación</span>
+                    <span class="sr-only">{{ __('new_system.common.toggle_navigation') }}</span>
                 </a>
 
                 <a href="{{ route('new-system.dashboard') }}" class="new-system-brand" aria-label="AITROL">
                     <strong>AITROL</strong>
-                    <span>Sistema Médico</span>
+                    <span>{{ __('new_system.common.medical_system') }}</span>
                 </a>
 
                 <div class="navbar-custom-menu">
@@ -54,14 +54,14 @@
                             <li class="dropdown ieced-language-dropdown">
                                 <a href="#" class="dropdown-toggle ieced-language-trigger" data-toggle="dropdown" role="button" aria-expanded="false">
                                     <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
-                                    @lang('main.idioma') <span class="caret"></span>
+                                    {{ __('new_system.language.change') }} <span class="caret"></span>
                                 </a>
                                 <ul class="dropdown-menu ieced-language-menu" role="menu">
-                                    @foreach (['es' => 'Español', 'en' => 'English', 'pt' => 'Português'] as $locale => $language)
+                                    @foreach (['es' => 'spanish', 'en' => 'english', 'pt' => 'portuguese'] as $locale => $languageKey)
                                         <li class="{{ App::getLocale() === $locale ? 'active' : '' }}">
                                             <a href="{{ route('change_lang', ['lang' => $locale]) }}">
                                                 <span class="ieced-language-code">{{ mb_strtoupper($locale) }}</span>
-                                                {{ $language }}
+                                                {{ __('new_system.language.'.$languageKey) }}
                                                 @if (App::getLocale() === $locale)
                                                     <span class="glyphicon glyphicon-ok pull-right" aria-hidden="true"></span>
                                                 @endif
@@ -89,22 +89,22 @@
                                         <span class="new-system-avatar new-system-avatar-menu" aria-hidden="true">{{ $userInitials }}</span>
                                     @endif
                                     <p class="ieced-user-name">Hola, {{ $userName }}</p>
-                                    <span class="ieced-user-status"><i class="fa fa-circle" aria-hidden="true"></i> Cuenta activa</span>
+                                    <span class="ieced-user-status"><i class="fa fa-circle" aria-hidden="true"></i> {{ __('new_system.common.active_account') }}</span>
                                     <small class="ieced-user-email">{{ $user->email }}</small>
                                 </li>
                                 <li class="user-footer ieced-user-footer">
                                     @if (Route::has('gateway_tickets.create') && (int) $user->id_tipo_usuario !== 2)
                                         <a href="{{ route('gateway_tickets.create') }}" class="btn btn-default btn-flat ieced-user-action ieced-user-ticket">
-                                            <span class="fa fa-ticket" aria-hidden="true"></span> Enviar ticket
+                                            <span class="fa fa-ticket" aria-hidden="true"></span> {{ __('new_system.common.send_ticket') }}
                                         </a>
                                     @endif
                                     @if (Route::has('perfil.editar'))
                                         <a href="{{ route('perfil.editar') }}" class="btn btn-default btn-flat ieced-user-action">
-                                            <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Perfil
+                                            <span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{ __('new_system.common.profile') }}
                                         </a>
                                     @endif
                                     <button type="submit" form="new-system-logout" class="btn btn-default btn-flat ieced-user-action ieced-user-signout">
-                                        <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Cerrar sesión
+                                        <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> {{ __('new_system.common.sign_out') }}
                                     </button>
                                 </li>
                             </ul>
@@ -139,44 +139,44 @@
 
                 <form action="{{ route('new-system.dashboard') }}" method="GET" class="sidebar-form" onsubmit="return false;">
                     <div class="input-group">
-                        <input type="search" id="new-system-menu-search" class="form-control" placeholder="Buscador accesos directos...">
+                        <input type="search" id="new-system-menu-search" class="form-control" placeholder="{{ __('new_system.common.search_shortcuts') }}">
                         <span class="input-group-btn">
-                            <button type="button" class="btn btn-flat" aria-label="Buscar"><i class="fa fa-search"></i></button>
+                            <button type="button" class="btn btn-flat" aria-label="{{ __('new_system.common.search') }}"><i class="fa fa-search"></i></button>
                         </span>
                     </div>
                 </form>
 
                 <ul class="sidebar-menu" data-widget="tree">
-                    <li class="header">NAVEGACIÓN</li>
+                    <li class="header">{{ mb_strtoupper(__('new_system.common.navigation')) }}</li>
                     <li class="{{ request()->routeIs('new-system.dashboard') ? 'active' : '' }}" data-menu-entry>
-                        <a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> <span>Inicio</span></a>
+                        <a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> <span>{{ __('new_system.common.home') }}</span></a>
                     </li>
                     <li class="{{ request()->routeIs('new-system.companies.*') ? 'active' : '' }}" data-menu-entry>
-                        <a href="{{ route('new-system.companies.index') }}"><i class="fa fa-building"></i> <span>Empresas</span></a>
+                        <a href="{{ route('new-system.companies.index') }}"><i class="fa fa-building"></i> <span>{{ __('new_system.common.companies') }}</span></a>
                     </li>
                     <li class="{{ request()->routeIs('new-system.operations.*') ? 'active' : '' }}" data-menu-entry>
-                        <a href="{{ route('new-system.operations.index') }}"><i class="fa fa-sitemap"></i> <span>Arquitectura modular</span></a>
+                        <a href="{{ route('new-system.operations.index') }}"><i class="fa fa-sitemap"></i> <span>{{ __('new_system.common.module_architecture') }}</span></a>
                     </li>
                     @can('manage-new-system-users')
                         <li class="{{ request()->routeIs('new-system.users.*') ? 'active' : '' }}" data-menu-entry>
-                            <a href="{{ route('new-system.users.index') }}"><i class="fa fa-users"></i> <span>Usuarios</span></a>
+                            <a href="{{ route('new-system.users.index') }}"><i class="fa fa-users"></i> <span>{{ __('new_system.common.users') }}</span></a>
                         </li>
                         @if (Route::has('deployment.index'))
                             <li class="{{ request()->routeIs('deployment.*') ? 'active' : '' }}" data-menu-entry>
-                                <a href="{{ route('deployment.index') }}"><i class="fa fa-cogs"></i> <span>Despliegue del sistema</span></a>
+                                <a href="{{ route('deployment.index') }}"><i class="fa fa-cogs"></i> <span>{{ __('new_system.common.deployment') }}</span></a>
                             </li>
                         @endif
                         @if (Route::has('observability.logs.index'))
                             <li class="{{ request()->routeIs('observability.logs.*') ? 'active' : '' }}" data-menu-entry>
-                                <a href="{{ route('observability.logs.index') }}"><i class="fa fa-stethoscope"></i> <span>Logs y diagnóstico</span></a>
+                                <a href="{{ route('observability.logs.index') }}"><i class="fa fa-stethoscope"></i> <span>{{ __('new_system.common.logs') }}</span></a>
                             </li>
                             <li class="{{ request()->routeIs('observability.audit.*') ? 'active' : '' }}" data-menu-entry>
-                                <a href="{{ route('observability.audit.index') }}"><i class="fa fa-shield"></i> <span>Auditoría del sistema</span></a>
+                                <a href="{{ route('observability.audit.index') }}"><i class="fa fa-shield"></i> <span>{{ __('new_system.common.audit') }}</span></a>
                             </li>
                         @endif
                     @endcan
 
-                    <li class="header">MÓDULOS DEL SISTEMA</li>
+                    <li class="header">{{ mb_strtoupper(__('new_system.common.system_modules')) }}</li>
                     <li class="treeview" data-menu-entry>
                         <a href="#"><i class="fa fa-medkit"></i> <span>@lang('tsidebar.atencionAlPaciente')</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
                         <ul class="treeview-menu">
@@ -200,7 +200,7 @@
                     </li>
                     <li class="treeview" data-menu-entry>
                         <a href="#"><i class="glyphicon glyphicon-list-alt"></i> <span>@lang('tsidebar.comercial')</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
-                        <ul class="treeview-menu"><li><a href="{{ url('insumos') }}"><i class="fa fa-cubes"></i> Insumos</a></li></ul>
+                        <ul class="treeview-menu"><li><a href="{{ url('insumos') }}"><i class="fa fa-cubes"></i> {{ __('new_system.common.supplies') }}</a></li></ul>
                     </li>
                     <li class="treeview" data-menu-entry>
                         <a href="#"><i class="fa fa-usd"></i> <span>@lang('tsidebar.cuentasyFinanzas')</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
@@ -211,7 +211,7 @@
                         <ul class="treeview-menu"><li><a href="{{ url('procedimientos_dr') }}"><i class="fa fa-desktop"></i> @lang('tsidebar.control')</a></li></ul>
                     </li>
                     <li data-menu-entry>
-                        <a href="{{ url('/dashboard') }}"><i class="fa fa-external-link"></i> <span>Abrir dashboard legado</span></a>
+                        <a href="{{ url('/dashboard') }}"><i class="fa fa-external-link"></i> <span>{{ __('new_system.common.legacy_dashboard') }}</span></a>
                     </li>
                 </ul>
             </section>
@@ -222,7 +222,7 @@
             <section class="content-header">
                 <h1>{{ $title }} <small>{{ $companyName }}</small></h1>
                 <ol class="breadcrumb">
-                    <li><a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> Inicio</a></li>
+                    <li><a href="{{ route('new-system.dashboard') }}"><i class="fa fa-dashboard"></i> {{ __('new_system.common.home') }}</a></li>
                     @if (! request()->routeIs('new-system.dashboard'))
                         <li class="active">{{ $title }}</li>
                     @endif
@@ -243,7 +243,7 @@
 
         <footer class="main-footer">
             <span class="aitrol-footer__copyright">
-                <strong>Copyright &copy; {{ date('Y') }} AITROL.</strong> Todos los derechos reservados.
+                <strong>Copyright &copy; {{ date('Y') }} AITROL.</strong> {{ __('new_system.common.all_rights_reserved') }}
             </span>
             <span class="pull-right hidden-xs">Laravel 13</span>
         </footer>

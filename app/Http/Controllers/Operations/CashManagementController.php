@@ -13,7 +13,7 @@ final class CashManagementController extends Controller
     public function __invoke(): View
     {
         return view('operations.show', [
-            'title' => 'Caja, bancos y cierres',
+            'title' => __('new_system.operations.cash_title'),
             'moduleStatus' => $this->query->handle(),
         ]);
     }

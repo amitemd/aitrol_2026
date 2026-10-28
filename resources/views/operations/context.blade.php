@@ -8,22 +8,22 @@
 
     <div class="ops-workbench">
         <section class="ops-context-hero">
-            <a href="{{ route('new-system.operations.index') }}" class="ops-back"><i class="fa fa-arrow-left"></i> Atlas completo</a>
+            <a href="{{ route('new-system.operations.index') }}" class="ops-back"><i class="fa fa-arrow-left"></i> {{ __('new_system.operations.atlas_back') }}</a>
             <div class="ops-context-hero__body">
                 <div>
-                    <span class="ops-kicker">Contexto delimitado · {{ $context->key }}</span>
+                    <span class="ops-kicker">{{ __('new_system.operations.bounded_context', ['key' => $context->key]) }}</span>
                     <h2>{{ $context->name }}</h2>
-                    <p>Frontera de negocio que reúne {{ count($context->legacyModules) }} módulos del proyecto base sin duplicar sus tablas ni identificadores.</p>
+                    <p>{{ __('new_system.operations.context_description', ['count' => count($context->legacyModules)]) }}</p>
                 </div>
                 <div class="ops-context-score">
                     <strong>{{ number_format($context->routeCount()) }}</strong>
-                    <span>rutas históricas inventariadas</span>
+                    <span>{{ __('new_system.operations.historical_routes') }}</span>
                 </div>
             </div>
             <div class="ops-context-hero__dependencies">
-                <strong>Comunicación permitida</strong>
+                <strong>{{ __('new_system.operations.allowed_communication') }}</strong>
                 @if ($context->dependencies === [])
-                    <span>Núcleo independiente</span>
+                    <span>{{ __('new_system.operations.independent_core') }}</span>
                 @else
                     @foreach ($context->dependencies as $dependency)
                         <span><i class="fa fa-plug"></i> {{ $dependency }}</span>
@@ -35,10 +35,10 @@
         <section class="ops-section">
             <div class="ops-section__heading">
                 <div>
-                    <span class="ops-kicker">Mapa funcional</span>
-                    <h3>Módulos contenidos</h3>
+                    <span class="ops-kicker">{{ __('new_system.operations.functional_map') }}</span>
+                    <h3>{{ __('new_system.operations.contained_modules') }}</h3>
                 </div>
-                <p>Cada bloque conserva sus tablas actuales. La modernización se realiza detrás de puertos y adaptadores, operación por operación.</p>
+                <p>{{ __('new_system.operations.contained_description') }}</p>
             </div>
 
             <div class="ops-domain-grid">
@@ -56,7 +56,7 @@
                             </div>
                             <footer>
                                 <code>{{ $legacyModule->source }}</code>
-                                <strong>{{ number_format($legacyModule->routeCount) }} rutas</strong>
+                                <strong>{{ __('new_system.operations.route_count', ['count' => number_format($legacyModule->routeCount)]) }}</strong>
                             </footer>
                         </div>
                     </article>
@@ -64,16 +64,16 @@
             </div>
         </section>
 
-        <section class="ops-architecture" aria-label="Contrato de transición del contexto">
-            <div><span>01</span><strong>Ruta existente</strong><small>Compatibilidad pública</small></div>
+        <section class="ops-architecture" aria-label="{{ __('new_system.operations.transition_contract') }}">
+            <div><span>01</span><strong>{{ __('new_system.operations.layers.existing_route.title') }}</strong><small>{{ __('new_system.operations.layers.existing_route.description') }}</small></div>
             <i class="fa fa-long-arrow-right"></i>
-            <div><span>02</span><strong>Caso de uso</strong><small>Orquestación nueva</small></div>
+            <div><span>02</span><strong>{{ __('new_system.operations.layers.use_case.title') }}</strong><small>{{ __('new_system.operations.layers.use_case.description') }}</small></div>
             <i class="fa fa-long-arrow-right"></i>
-            <div><span>03</span><strong>Dominio</strong><small>Reglas aisladas</small></div>
+            <div><span>03</span><strong>{{ __('new_system.operations.layers.isolated_domain.title') }}</strong><small>{{ __('new_system.operations.layers.isolated_domain.description') }}</small></div>
             <i class="fa fa-exchange"></i>
-            <div><span>04</span><strong>Puerto</strong><small>Contrato entre capas</small></div>
+            <div><span>04</span><strong>{{ __('new_system.operations.layers.port.title') }}</strong><small>{{ __('new_system.operations.layers.port.description') }}</small></div>
             <i class="fa fa-long-arrow-right"></i>
-            <div><span>05</span><strong>Base actual</strong><small>Sin migrar datos</small></div>
+            <div><span>05</span><strong>{{ __('new_system.operations.layers.current_database.title') }}</strong><small>{{ __('new_system.operations.layers.current_database.description') }}</small></div>
         </section>
     </div>
 </x-new-system.layout>

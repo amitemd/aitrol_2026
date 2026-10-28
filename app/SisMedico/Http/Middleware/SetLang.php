@@ -2,39 +2,31 @@
 
 namespace Sis_medico\Http\Middleware;
 
-use Closure;
-use Session;
 use App;
-use Config;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-class SetLang
+final class SetLang
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        //return $next($request);
-        if (session()->has('lang')) {
-            $lang = session()->get('lang');
-            //dd("exito");
-            //dd("entra");
-        } else {
-            $lang = config('app.locale');
-            if (is_null($lang)) {
-                $lang = substr($request->server('HTTP_ACCEPT_LANGUAGE'), 0, 2);
+        $defaultLocale = (string) config('localization.default_locale', 'es');
+        $supportedLocales = config('localization.supported_locales', ['es']);
 
-                if ($lang != 'es' && $lang != 'en') {
-                    $lang = 'en';
-                }
-            }
+        if ($request->session()->get('new_system.locale_explicitly_selected') !== true) {
+            $request->session()->put('lang', $defaultLocale);
         }
-        //dd($lang);
-        App::setLocale($lang);
+
+        $locale = (string) $request->session()->get('lang', $defaultLocale);
+
+        if (! in_array($locale, $supportedLocales, true)) {
+            $locale = $defaultLocale;
+            $request->session()->put('lang', $locale);
+        }
+
+        App::setLocale($locale);
+
         return $next($request);
     }
 }

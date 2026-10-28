@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NewSystem\AuthController;
 use App\Http\Controllers\NewSystem\PasswordResetController;
 
@@ -14,11 +15,9 @@ use App\Http\Controllers\NewSystem\PasswordResetController;
 |
  */
 
-Route::get('lang/{lang}', function ($lang) {
-    Session::put('lang', $lang);
-
-    return Redirect::back();
-})->middleware('web')->name('change_lang');
+Route::get('lang/{lang}', [LanguageController::class, '__invoke'])
+    ->whereIn('lang', config('localization.supported_locales'))
+    ->name('change_lang');
 
 Route::middleware(['force.https', 'secure.auth.response'])->group(function (): void {
     Auth::routes([

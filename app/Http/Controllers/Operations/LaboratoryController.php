@@ -13,7 +13,7 @@ final class LaboratoryController extends Controller
     public function __invoke(): View
     {
         return view('operations.show', [
-            'title' => 'Laboratorio',
+            'title' => __('new_system.operations.laboratory_title'),
             'moduleStatus' => $this->query->handle(),
         ]);
     }

@@ -40,7 +40,7 @@ class DashboardController extends Controller
         $currentCompany = $companyAccess->currentFor($user);
 
         return view('new-system.dashboard', [
-            'title' => 'Inicio',
+            'title' => __('new_system.common.home'),
             'stats' => [
                 'activeUsers' => User::query()->where('estado', 1)->count(),
                 'companies' => Empresa::query()->where('estado', 1)->count(),

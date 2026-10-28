@@ -55,7 +55,7 @@ class UserController extends Controller
             ->withQueryString();
 
         return view('new-system.users.index', [
-            'title' => 'Usuarios',
+            'title' => __('new_system.users.title'),
             'users' => $users,
             'search' => $search,
         ]);
@@ -64,7 +64,7 @@ class UserController extends Controller
     public function create(): View
     {
         return view('new-system.users.create', [
-            'title' => 'Nuevo usuario',
+            'title' => __('new_system.users.new_title'),
             'roles' => $this->roles(),
             'selectedCompanies' => [],
         ]);
@@ -80,13 +80,13 @@ class UserController extends Controller
 
         return redirect()
             ->route('new-system.users.edit', $user)
-            ->with('status', 'Usuario creado correctamente.');
+            ->with('status', __('new_system.users.created'));
     }
 
     public function edit(User $usuario): View
     {
         return view('new-system.users.edit', [
-            'title' => 'Editar usuario',
+            'title' => __('new_system.users.edit_title'),
             'usuario' => $usuario,
             'roles' => $this->roles(),
             'selectedCompanies' => DB::table('usuario_empresa')
@@ -110,7 +110,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('new-system.users.edit', $usuario)
-            ->with('status', 'Usuario actualizado correctamente.');
+            ->with('status', __('new_system.users.updated'));
     }
 
     /** @return Collection<int, object> */

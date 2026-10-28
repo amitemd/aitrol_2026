@@ -14,7 +14,7 @@ final class ArchitectureContextController extends Controller
     {
         $context = $this->query->handle($contextKey);
 
-        abort_if($context === null, 404, 'El contexto solicitado no existe en el mapa modular.');
+        abort_if($context === null, 404, __('new_system.operations.context_not_found'));
 
         return view('operations.context', [
             'title' => $context->name,

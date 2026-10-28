@@ -6,17 +6,17 @@
 >
     <div class="box box-primary">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-building"></i> Selección de empresa</h3>
+            <h3 class="box-title"><i class="fa fa-building"></i> {{ __('new_system.companies.heading') }}</h3>
         </div>
         <div class="box-body">
-            <p>Elige la empresa con la que vas a trabajar. La selección se conservará en tu sesión y también será utilizada por los módulos heredados compatibles.</p>
+            <p>{{ __('new_system.companies.description') }}</p>
         </div>
     </div>
 
     @if ($newSystemCompanies->isEmpty())
         <div class="callout callout-warning">
-            <h4>No tienes empresas disponibles</h4>
-            <p>Un superadministrador debe asignarte al menos una empresa.</p>
+            <h4>{{ __('new_system.companies.empty_title') }}</h4>
+            <p>{{ __('new_system.companies.empty_description') }}</p>
         </div>
     @else
         <div class="row">
@@ -41,7 +41,7 @@
                                 <input type="hidden" name="company_id" value="{{ $company->id }}">
                                 <button type="submit" class="btn {{ $isCurrent ? 'btn-success' : 'btn-primary' }} btn-flat btn-block" @disabled($isCurrent)>
                                     <i class="fa {{ $isCurrent ? 'fa-check' : 'fa-sign-in' }}"></i>
-                                    {{ $isCurrent ? 'Empresa activa' : 'Trabajar con esta empresa' }}
+                                    {{ $isCurrent ? __('new_system.companies.current') : __('new_system.companies.use') }}
                                 </button>
                             </form>
                         </div>

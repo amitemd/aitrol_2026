@@ -35,7 +35,7 @@ class PasswordResetController extends Controller
 
         return back()->with(
             'status',
-            'Si el correo pertenece a una cuenta activa, recibirás un enlace para restablecer la contraseña.',
+            __('new_system.auth.reset_link_sent'),
         );
     }
 
@@ -44,7 +44,7 @@ class PasswordResetController extends Controller
         return redirect()
             ->route('new-system.password.request')
             ->withErrors([
-                'email' => 'Por seguridad, utiliza el correo registrado para recuperar tu contraseña.',
+                'email' => __('new_system.auth.registered_email_required'),
             ]);
     }
 
@@ -89,13 +89,13 @@ class PasswordResetController extends Controller
         if ($status === Password::PasswordReset) {
             return redirect()
                 ->route('new-system.dashboard')
-                ->with('status', 'Tu contraseña fue actualizada. Ya puedes iniciar sesión.');
+                ->with('status', __('new_system.auth.password_updated'));
         }
 
         return back()
             ->withInput($request->only('email'))
             ->withErrors([
-                'email' => 'El enlace de recuperación no es válido o ya expiró.',
+                'email' => __('new_system.auth.invalid_reset_link'),
             ]);
     }
 

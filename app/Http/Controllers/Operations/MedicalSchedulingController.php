@@ -13,7 +13,7 @@ final class MedicalSchedulingController extends Controller
     public function __invoke(): View
     {
         return view('operations.show', [
-            'title' => 'Parte médica, agenda y preagenda',
+            'title' => __('new_system.operations.medical_title'),
             'moduleStatus' => $this->query->handle(),
         ]);
     }

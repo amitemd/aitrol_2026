@@ -11,18 +11,18 @@
 
     <section class="aitrol-welcome">
         <div class="aitrol-welcome__content">
-            <p class="aitrol-welcome__eyebrow">Plataforma Laravel 13</p>
-            <h2>Bienvenido, {{ $dashboardUserName }}</h2>
-            <p>Continúa trabajando en {{ $dashboardCompanyName }} con la navegación completa del sistema. Los módulos conservan sus permisos, rutas y operación mientras los modernizamos uno por uno.</p>
+            <p class="aitrol-welcome__eyebrow">{{ __('new_system.dashboard.platform') }}</p>
+            <h2>{{ __('new_system.dashboard.welcome', ['name' => $dashboardUserName]) }}</h2>
+            <p>{{ __('new_system.dashboard.description', ['company' => $dashboardCompanyName]) }}</p>
         </div>
-        <a href="#modulos-principales" class="aitrol-welcome__action">Ver accesos principales <i class="fa fa-arrow-down"></i></a>
+        <a href="#modulos-principales" class="aitrol-welcome__action">{{ __('new_system.dashboard.view_main_access') }} <i class="fa fa-arrow-down"></i></a>
     </section>
 
     @if ($newSystemCurrentCompany === null && $newSystemCompanies->count() > 1)
         <div class="alert alert-warning">
-            <h4><i class="icon fa fa-warning"></i> Selecciona la empresa de trabajo</h4>
-            Los datos de cada módulo se filtrarán utilizando la empresa activa.
-            <a href="{{ route('new-system.companies.index') }}" class="btn btn-warning btn-sm pull-right">Seleccionar empresa</a>
+            <h4><i class="icon fa fa-warning"></i> {{ __('new_system.dashboard.select_work_company') }}</h4>
+            {{ __('new_system.dashboard.company_filter_notice') }}
+            <a href="{{ route('new-system.companies.index') }}" class="btn btn-warning btn-sm pull-right">{{ __('new_system.dashboard.select_company') }}</a>
             <div class="clearfix"></div>
         </div>
     @endif
@@ -32,33 +32,33 @@
             <div class="small-box bg-aqua new-system-stat">
                 <div class="inner">
                     <h3>{{ number_format($stats['activeUsers']) }}</h3>
-                    <p>Usuarios activos</p>
+                    <p>{{ __('new_system.dashboard.active_users') }}</p>
                 </div>
                 <div class="icon"><i class="fa fa-users"></i></div>
-                <span class="small-box-footer">Sistema compartido <i class="fa fa-check-circle"></i></span>
+                <span class="small-box-footer">{{ __('new_system.dashboard.shared_system') }} <i class="fa fa-check-circle"></i></span>
             </div>
         </div>
         <div class="col-lg-3 col-xs-6">
             <div class="small-box bg-green new-system-stat">
                 <div class="inner">
                     <h3>{{ number_format($stats['companies']) }}</h3>
-                    <p>Empresas activas</p>
+                    <p>{{ __('new_system.dashboard.active_companies') }}</p>
                 </div>
                 <div class="icon"><i class="fa fa-building"></i></div>
-                <a href="{{ route('new-system.companies.index') }}" class="small-box-footer">Seleccionar empresa <i class="fa fa-arrow-circle-right"></i></a>
+                <a href="{{ route('new-system.companies.index') }}" class="small-box-footer">{{ __('new_system.dashboard.select_company') }} <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
         <div class="col-lg-3 col-xs-6">
             <div class="small-box bg-yellow new-system-stat">
                 <div class="inner">
                     <h3>{{ number_format($stats['companyUsers']) }}</h3>
-                    <p>Usuarios en empresa</p>
+                    <p>{{ __('new_system.dashboard.company_users') }}</p>
                 </div>
                 <div class="icon"><i class="fa fa-user-md"></i></div>
                 @can('manage-new-system-users')
-                    <a href="{{ route('new-system.users.index') }}" class="small-box-footer">Administrar usuarios <i class="fa fa-arrow-circle-right"></i></a>
+                    <a href="{{ route('new-system.users.index') }}" class="small-box-footer">{{ __('new_system.dashboard.manage_users') }} <i class="fa fa-arrow-circle-right"></i></a>
                 @else
-                    <span class="small-box-footer">Empresa seleccionada <i class="fa fa-check-circle"></i></span>
+                    <span class="small-box-footer">{{ __('new_system.dashboard.selected_company') }} <i class="fa fa-check-circle"></i></span>
                 @endcan
             </div>
         </div>
@@ -66,10 +66,10 @@
             <div class="small-box bg-red new-system-stat">
                 <div class="inner">
                     <h3>{{ number_format($stats['legacyRoutes']) }}</h3>
-                    <p>Rutas integradas</p>
+                    <p>{{ __('new_system.dashboard.integrated_routes') }}</p>
                 </div>
                 <div class="icon"><i class="fa fa-exchange"></i></div>
-                <span class="small-box-footer">Disponibles en el menú lateral <i class="fa fa-check-circle"></i></span>
+                <span class="small-box-footer">{{ __('new_system.dashboard.sidebar_available') }} <i class="fa fa-check-circle"></i></span>
             </div>
         </div>
     </div>
@@ -77,44 +77,44 @@
     <div class="row" id="modulos-principales">
         <div class="col-md-4">
             <div class="box box-info new-system-module-box">
-                <div class="box-header with-border"><h3 class="box-title">Empresas</h3></div>
+                <div class="box-header with-border"><h3 class="box-title">{{ __('new_system.common.companies') }}</h3></div>
                 <div class="box-body">
-                    <p>Selecciona el contexto de trabajo que comparten la plataforma nueva y el sistema legado.</p>
+                    <p>{{ __('new_system.dashboard.companies_description') }}</p>
                     <span class="icon"><i class="fa fa-building"></i></span>
                 </div>
-                <div class="box-footer"><a href="{{ route('new-system.companies.index') }}" class="btn btn-info btn-flat">Abrir módulo</a></div>
+                <div class="box-footer"><a href="{{ route('new-system.companies.index') }}" class="btn btn-info btn-flat">{{ __('new_system.dashboard.open_module') }}</a></div>
             </div>
         </div>
         @can('manage-new-system-users')
             <div class="col-md-4">
                 <div class="box box-success new-system-module-box">
-                    <div class="box-header with-border"><h3 class="box-title">Usuarios</h3></div>
+                    <div class="box-header with-border"><h3 class="box-title">{{ __('new_system.common.users') }}</h3></div>
                     <div class="box-body">
-                        <p>Administra accesos, roles, estado y empresas asignadas con la misma información histórica.</p>
+                        <p>{{ __('new_system.dashboard.users_description') }}</p>
                         <span class="icon"><i class="fa fa-users"></i></span>
                     </div>
-                    <div class="box-footer"><a href="{{ route('new-system.users.index') }}" class="btn btn-success btn-flat">Abrir módulo</a></div>
+                    <div class="box-footer"><a href="{{ route('new-system.users.index') }}" class="btn btn-success btn-flat">{{ __('new_system.dashboard.open_module') }}</a></div>
                 </div>
             </div>
         @endcan
         <div class="col-md-4">
             <div class="box box-warning new-system-module-box">
-                <div class="box-header with-border"><h3 class="box-title">Operación completa</h3></div>
+                <div class="box-header with-border"><h3 class="box-title">{{ __('new_system.dashboard.complete_operation') }}</h3></div>
                 <div class="box-body">
-                    <p>Todos los accesos autorizados del sistema original están disponibles en el menú lateral.</p>
+                    <p>{{ __('new_system.dashboard.complete_operation_description') }}</p>
                     <span class="icon"><i class="fa fa-external-link"></i></span>
                 </div>
-                <div class="box-footer"><span class="text-muted"><i class="fa fa-bars"></i> Selecciona una opción en el menú lateral</span></div>
+                <div class="box-footer"><span class="text-muted"><i class="fa fa-bars"></i> {{ __('new_system.dashboard.select_sidebar_option') }}</span></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="box box-primary new-system-module-box">
-                <div class="box-header with-border"><h3 class="box-title">Arquitectura modular</h3></div>
+                <div class="box-header with-border"><h3 class="box-title">{{ __('new_system.common.module_architecture') }}</h3></div>
                 <div class="box-body">
-                    <p>Revisa los 34 módulos del legado, sus contextos DDD y prueba los puntos de entrada ya verificados.</p>
+                    <p>{{ __('new_system.dashboard.architecture_description') }}</p>
                     <span class="icon"><i class="fa fa-sitemap"></i></span>
                 </div>
-                <div class="box-footer"><a href="{{ route('new-system.operations.index') }}" class="btn btn-primary btn-flat">Abrir atlas operativo</a></div>
+                <div class="box-footer"><a href="{{ route('new-system.operations.index') }}" class="btn btn-primary btn-flat">{{ __('new_system.dashboard.open_atlas') }}</a></div>
             </div>
         </div>
     </div>

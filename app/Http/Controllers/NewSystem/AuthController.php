@@ -21,7 +21,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'max:255'],
             'remember' => ['nullable', 'boolean'],
         ], [
-            'password.max' => 'La contraseña no puede superar los 255 caracteres.',
+            'password.max' => __('new_system.auth.password_too_long'),
         ]);
 
         $email = Str::lower(trim($credentials['email']));
@@ -57,7 +57,7 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => $blockedLimiter !== null
                     ? $this->lockoutMessage($blockedLimiter)
-                    : 'Las credenciales proporcionadas no son válidas o el usuario está inactivo.',
+                    : __('new_system.auth.invalid_credentials'),
             ]);
         }
 
@@ -69,6 +69,10 @@ class AuthController extends Controller
         ]);
         $request->session()->regenerate();
         $request->session()->regenerateToken();
+        $request->session()->put([
+            'lang' => config('localization.default_locale', 'es'),
+            'new_system.locale_explicitly_selected' => false,
+        ]);
 
         /** @var User $user */
         $user = $request->user();
@@ -135,10 +139,10 @@ class AuthController extends Controller
         if (str_contains($limiter['key'], ':pair:')) {
             $minutes = max(1, (int) ceil(RateLimiter::availableIn($limiter['key']) / 60));
 
-            return "Has alcanzado el máximo de intentos. Inténtalo nuevamente en {$minutes} minuto(s).";
+            return __('new_system.auth.max_attempts', ['minutes' => $minutes]);
         }
 
-        return 'El acceso está temporalmente bloqueado por seguridad. Inténtalo nuevamente más tarde.';
+        return __('new_system.auth.blocked_security');
     }
 
     /**

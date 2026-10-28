@@ -13,7 +13,7 @@ final class AdministrationController extends Controller
     public function __invoke(): View
     {
         return view('operations.show', [
-            'title' => 'Administración, empresas y usuarios',
+            'title' => __('new_system.operations.administration_title'),
             'moduleStatus' => $this->query->handle(),
         ]);
     }

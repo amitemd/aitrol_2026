@@ -13,7 +13,7 @@ final class PatientBiopsyController extends Controller
     public function __invoke(): View
     {
         return view('operations.show', [
-            'title' => 'Pacientes y biopsias',
+            'title' => __('new_system.operations.patients_title'),
             'moduleStatus' => $this->query->handle(),
         ]);
     }

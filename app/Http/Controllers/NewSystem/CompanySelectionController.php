@@ -14,7 +14,7 @@ class CompanySelectionController extends Controller
     public function index(): View
     {
         return view('new-system.companies.index', [
-            'title' => 'Seleccionar empresa',
+            'title' => __('new_system.companies.title'),
         ]);
     }
 
@@ -28,12 +28,12 @@ class CompanySelectionController extends Controller
         $user = $request->user();
         $company = $companyAccess->accessibleFor($user)->firstWhere('id', $validated['company_id']);
 
-        abort_if($company === null, 403, 'No tiene acceso a la empresa seleccionada.');
+        abort_if($company === null, 403, __('new_system.companies.access_denied'));
 
         $request->session()->put('id_empresa', $company->id);
 
         return redirect()
             ->route('new-system.dashboard')
-            ->with('status', 'Empresa activa actualizada correctamente.');
+            ->with('status', __('new_system.companies.updated'));
     }
 }

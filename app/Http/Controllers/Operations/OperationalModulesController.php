@@ -36,7 +36,7 @@ final class OperationalModulesController extends Controller
         $contexts = $this->architecture->handle();
 
         return view('operations.index', [
-            'title' => 'Arquitectura modular',
+            'title' => __('new_system.operations.title'),
             'modules' => $modules,
             'contexts' => $contexts,
             'summary' => [
