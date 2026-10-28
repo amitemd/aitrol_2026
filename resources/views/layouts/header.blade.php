@@ -8,7 +8,11 @@ $avatarPath = $imagen !== '' ? public_path('avatars/'.$imagen) : null;
 $avatarUrl = $avatarPath !== null && is_file($avatarPath) ? asset('avatars/'.$imagen) : null;
 $nombreUsuario = trim(implode(' ', array_filter([Auth::user()->nombre1, Auth::user()->apellido1])));
 $inicialesUsuario = mb_strtoupper(mb_substr((string) Auth::user()->nombre1, 0, 1).mb_substr((string) Auth::user()->apellido1, 0, 1));
-$empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
+$empresa = \Sis_medico\Empresa::find(session('id_empresa'))
+  ?? \Sis_medico\Empresa::where('prioridad', '1')->first();
+$companyName = trim((string) ($empresa?->nombrecomercial ?: $empresa?->nombre_corto ?: 'AITROL'));
+$companyShortName = trim((string) ($empresa?->nombre_corto ?: $companyName));
+$companyInitials = mb_strtoupper(mb_substr($companyShortName, 0, 2));
 
 ?>
 
@@ -47,9 +51,9 @@ $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
   <!-- Logo -->
   <a href="{{ route('new-system.dashboard') }}" class="logo">
     <!-- mini logo for sidebar mini 50x50 pixels -->
-    <span class="logo-mini"> @if($empresa->compras == 0) <b>S</b>M @else <b> {{$empresa->nombre_corto}} </b> @endif</span>
+    <span class="logo-mini"><b>{{ $companyInitials }}</b></span>
     <!-- logo for regular state and mobile devices -->
-    <span class="logo-lg">@if($empresa->compras == 0) {{ config('app.name', 'Sistema Médico') }} @else {{$empresa->nombrecomercial}} @endif</span>
+    <span class="logo-lg" title="{{ $companyName }}">{{ $companyName }}</span>
   </a>
 
   <!-- Header Navbar -->

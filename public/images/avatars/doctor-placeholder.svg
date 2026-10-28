@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="380" viewBox="0 0 320 380" role="img" aria-labelledby="title description">
+  <title id="title">Profesional médico</title>
+  <desc id="description">Avatar genérico para profesionales médicos sin fotografía.</desc>
+  <defs>
+    <linearGradient id="background" x1="30" y1="12" x2="292" y2="366" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E9F7FB"/>
+      <stop offset="1" stop-color="#CDE7F1"/>
+    </linearGradient>
+    <linearGradient id="coat" x1="88" y1="218" x2="236" y2="372" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E7F0F5"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="380" rx="28" fill="url(#background)"/>
+  <circle cx="160" cy="126" r="64" fill="#A9C8D5"/>
+  <path d="M97 126c0-42 27-74 63-74s63 32 63 74c-9-13-22-26-39-34-20 24-51 35-83 35l-4-1Z" fill="#426B7E"/>
+  <path d="M119 124c6 12 18 20 41 20 22 0 35-8 41-20v28c0 26-18 49-41 49-24 0-41-23-41-49v-28Z" fill="#F2C9AD"/>
+  <path d="M139 198h42l8 31-29 29-29-29 8-31Z" fill="#E8B99A"/>
+  <path d="M64 380v-73c0-60 43-96 96-96s96 36 96 96v73H64Z" fill="url(#coat)"/>
+  <path d="m129 213 31 45-27 24-22-57 18-12Zm62 0-31 45 27 24 22-57-18-12Z" fill="#FFFFFF"/>
+  <path d="M160 258v122" stroke="#B8CCD6" stroke-width="4"/>
+  <path d="M111 225c-18 35-22 71-8 105" fill="none" stroke="#2D6F8C" stroke-width="7" stroke-linecap="round"/>
+  <path d="M209 225c18 35 22 71 8 105" fill="none" stroke="#2D6F8C" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="101" cy="334" r="14" fill="#FFFFFF" stroke="#2D6F8C" stroke-width="7"/>
+  <circle cx="219" cy="334" r="14" fill="#FFFFFF" stroke="#2D6F8C" stroke-width="7"/>
+  <circle cx="252" cy="54" r="31" fill="#087FA9"/>
+  <path d="M247 37h10v12h12v10h-12v12h-10V59h-12V49h12V37Z" fill="#FFFFFF"/>
+</svg>

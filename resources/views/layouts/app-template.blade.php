@@ -6,13 +6,15 @@
 <html>
   <head>
     @php
-      $empresa = \Sis_medico\Empresa::where('prioridad', '1')->first();
+      $empresa = \Sis_medico\Empresa::find(session('id_empresa'))
+        ?? \Sis_medico\Empresa::where('prioridad', '1')->first();
+      $companyName = trim((string) ($empresa?->nombrecomercial ?: $empresa?->nombre_corto ?: 'AITROL'));
     @endphp
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <!--  <title>SM | Sistema Medico</title> -->
     <title>
-      @if($empresa->compras == 0) Aitrol @else  {{$empresa->nombrecomercial}} @endif
+      {{ $companyName }}
     </title>
 
     <!-- Tell the browser to be responsive to screen width -->
