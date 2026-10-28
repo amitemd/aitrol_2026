@@ -302,6 +302,7 @@
                         <p data-flame-detail-meta class="mt-1 break-words leading-5 text-slate-500">Seleccione Cronología o Pilas para explorar eventos individuales.</p>
                     </div>
                     <div data-flame-legend class="hidden flex-wrap items-center justify-between gap-4 text-slate-500 sm:justify-end">
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-blue-200 to-blue-700"></i>Tiempo aún no desglosado</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500"></i>Normal</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500"></i>Lento o advertencia</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-400 to-red-600"></i>Error</span>

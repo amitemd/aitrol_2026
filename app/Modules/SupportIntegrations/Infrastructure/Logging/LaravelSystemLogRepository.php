@@ -398,6 +398,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
                     'DEBUG',
                 );
                 $stack = $this->processStackFrames($entry, $relatedEntries, $context);
+                $subprocesses = $this->processSubprocesses($context, $duration);
 
                 return [
                     'id' => $entry['id'],
@@ -418,6 +419,8 @@ final class LaravelSystemLogRepository implements SystemLogRepository
                     'architecture' => is_array($context['architecture'] ?? null) ? $context['architecture'] : [],
                     'stack_source' => $stack['source'],
                     'stack_frames' => $stack['frames'],
+                    'subprocesses' => $subprocesses,
+                    'subprocess_duration_ms' => round((float) collect($subprocesses)->sum('duration_ms'), 3),
                     'related_log_count' => $relatedEntries->count(),
                     'abnormal_logs' => $abnormalLogs,
                     'trace_depth' => (int) $relatedEntries->max(
@@ -465,6 +468,69 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             'truncated' => $totalProcesses > count($numberedProcesses),
             'processes' => $numberedProcesses,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     * @return list<array{id: string, parent_id: ?string, name: string, type: string, duration_ms: float, offset_ms: float, depth: int, context: array<string, mixed>, measured: bool}>
+     */
+    private function processSubprocesses(array $context, ?float $requestDuration): array
+    {
+        if ($requestDuration === null) {
+            return [];
+        }
+
+        $spans = collect(is_array($context['spans'] ?? null) ? $context['spans'] : [])
+            ->filter(function (mixed $span): bool {
+                return is_array($span)
+                    && is_numeric($span['duration_ms'] ?? null)
+                    && (float) $span['duration_ms'] >= 0;
+            })
+            ->take(max(10, (int) config('observability.request_trace_max_spans', 250)))
+            ->map(function (array $span): array {
+                $duration = min(86_400_000.0, max(0.0, (float) $span['duration_ms']));
+                $offset = is_numeric($span['offset_ms'] ?? null)
+                    ? min(86_400_000.0, max(0.0, (float) $span['offset_ms']))
+                    : 0.0;
+
+                return [
+                    'id' => is_string($span['id'] ?? null) ? $span['id'] : sha1(serialize($span)),
+                    'parent_id' => is_string($span['parent_id'] ?? null) ? $span['parent_id'] : null,
+                    'name' => Str::limit((string) ($span['name'] ?? 'Subproceso medido'), 160, '…'),
+                    'type' => Str::limit((string) ($span['type'] ?? 'Subproceso'), 40, '…'),
+                    'duration_ms' => round($duration, 3),
+                    'offset_ms' => round($offset, 3),
+                    'depth' => max(1, min(64, (int) ($span['depth'] ?? 1))),
+                    'context' => is_array($span['context'] ?? null) ? $span['context'] : [],
+                    'measured' => true,
+                ];
+            })
+            ->sortBy([
+                ['offset_ms', 'asc'],
+                ['depth', 'asc'],
+            ])
+            ->values();
+
+        $topLevelDuration = (float) $spans
+            ->where('depth', 1)
+            ->sum('duration_ms');
+        $unclassifiedDuration = max(0.0, $requestDuration - min($requestDuration, $topLevelDuration));
+
+        if ($unclassifiedDuration >= 0.001 || $spans->isEmpty()) {
+            $spans->push([
+                'id' => 'unclassified-'.sha1((string) ($context['correlation_id'] ?? $requestDuration)),
+                'parent_id' => null,
+                'name' => 'Aplicación sin desglose interno',
+                'type' => 'Aplicación',
+                'duration_ms' => round($spans->isEmpty() ? $requestDuration : $unclassifiedDuration, 3),
+                'offset_ms' => 0.0,
+                'depth' => 1,
+                'context' => [],
+                'measured' => false,
+            ]);
+        }
+
+        return $spans->values()->all();
     }
 
     /**

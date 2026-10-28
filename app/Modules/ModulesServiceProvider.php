@@ -29,11 +29,15 @@ use App\Modules\Shared\Infrastructure\Configuration\LaravelArchitectureCatalog;
 use App\Modules\Shared\Infrastructure\Routing\LaravelRouteReadinessGateway;
 use App\Modules\SupportIntegrations\Application\Contracts\AuditTrailRepository;
 use App\Modules\SupportIntegrations\Application\Contracts\RequestArchitectureInspector;
+use App\Modules\SupportIntegrations\Application\Contracts\RequestExecutionTracer;
 use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
 use App\Modules\SupportIntegrations\Infrastructure\Architecture\ReflectionRequestArchitectureInspector;
 use App\Modules\SupportIntegrations\Infrastructure\Logging\LaravelSystemLogRepository;
+use App\Modules\SupportIntegrations\Infrastructure\Observability\InMemoryRequestExecutionTracer;
 use App\Modules\SupportIntegrations\Infrastructure\Persistence\LaravelAuditTrailRepository;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 final class ModulesServiceProvider extends ServiceProvider
@@ -114,5 +118,37 @@ final class ModulesServiceProvider extends ServiceProvider
             RequestArchitectureInspector::class,
             ReflectionRequestArchitectureInspector::class,
         );
+
+        $this->app->singleton(
+            RequestExecutionTracer::class,
+            InMemoryRequestExecutionTracer::class,
+        );
+    }
+
+    public function boot(RequestExecutionTracer $executionTracer): void
+    {
+        DB::listen(function (QueryExecuted $query) use ($executionTracer): void {
+            $executionTracer->record(
+                name: $this->queryLabel($query->sql),
+                type: 'Base de datos',
+                durationMilliseconds: (float) ($query->time ?? 0.0),
+                context: [
+                    'connection' => $query->connectionName,
+                    'operation' => $this->queryOperation($query->sql),
+                ],
+            );
+        });
+    }
+
+    private function queryLabel(string $sql): string
+    {
+        return 'SQL · '.$this->queryOperation($sql);
+    }
+
+    private function queryOperation(string $sql): string
+    {
+        $operation = strtoupper((string) strtok(ltrim($sql), " \t\n\r"));
+
+        return $operation !== '' ? $operation : 'CONSULTA';
     }
 }

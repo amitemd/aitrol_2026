@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Modules\SupportIntegrations\Application\Contracts\RequestArchitectureInspector;
+use App\Modules\SupportIntegrations\Application\Contracts\RequestExecutionTracer;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -13,13 +14,17 @@ use Throwable;
 
 final readonly class AuditHttpRequest
 {
-    public function __construct(private RequestArchitectureInspector $architecture) {}
+    public function __construct(
+        private RequestArchitectureInspector $architecture,
+        private RequestExecutionTracer $executionTracer,
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         $startedAt = hrtime(true);
         $correlationId = (string) Str::uuid();
         $architecture = $this->architecture->inspect($request->route()?->getActionName());
+        $this->executionTracer->start($startedAt);
 
         Context::add([
             'correlation_id' => $correlationId,
@@ -43,6 +48,7 @@ final readonly class AuditHttpRequest
                 $architecture,
                 $response->getStatusCode(),
                 round((hrtime(true) - $startedAt) / 1_000_000, 2),
+                $this->executionTracer->spans(),
             );
 
             return $response;
@@ -53,17 +59,20 @@ final readonly class AuditHttpRequest
                 $architecture,
                 500,
                 round((hrtime(true) - $startedAt) / 1_000_000, 2),
+                $this->executionTracer->spans(),
                 $exception::class,
             );
 
             throw $exception;
         } finally {
+            $this->executionTracer->stop();
             Context::forget(['correlation_id', 'request_trace']);
         }
     }
 
     /**
      * @param  array{controller: ?string, method: ?string, components: list<array{type: string, name: string, implementation: ?string}>}  $architecture
+     * @param  list<array<string, mixed>>  $spans
      */
     private function record(
         Request $request,
@@ -71,6 +80,7 @@ final readonly class AuditHttpRequest
         array $architecture,
         int $status,
         float $duration,
+        array $spans,
         ?string $exception = null,
     ): void {
         $context = [
@@ -85,6 +95,7 @@ final readonly class AuditHttpRequest
                 ?? $request->session()->get('id_empresa'),
             'ip' => $request->ip(),
             'duration_ms' => $duration,
+            'spans' => $spans,
             'architecture' => $architecture,
             'exception' => $exception,
         ];

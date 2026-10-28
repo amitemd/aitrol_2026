@@ -53,6 +53,29 @@ const flamePath = (x, y, width, height) => {
     ].join(' ');
 };
 
+const subprocessColor = (subprocess, requestDuration) => {
+    if (subprocess.measured === false) {
+        return ['#dbeafe', '#60a5fa', '#1d4ed8'];
+    }
+
+    const duration = Number(subprocess.duration_ms) || 0;
+    const ratio = requestDuration > 0 ? duration / requestDuration : 0;
+
+    if (ratio >= 0.5 || duration >= 1000) {
+        return ['#fecaca', '#fb7185', '#dc2626'];
+    }
+
+    if (ratio >= 0.25 || duration >= 500) {
+        return ['#fed7aa', '#fb923c', '#ea580c'];
+    }
+
+    if (ratio >= 0.1 || duration >= 100) {
+        return ['#fef3c7', '#facc15', '#ca8a04'];
+    }
+
+    return ['#bbf7d0', '#4ade80', '#15803d'];
+};
+
 const findNode = (node, id, path = []) => {
     const nextPath = [...path, node];
 
@@ -172,8 +195,8 @@ const initializeLogFlameGraph = () => {
 
         if (isTimeline) {
             searchInput.placeholder = 'Buscar ruta, controlador, contrato o repositorio';
-            contextTitle.textContent = 'Cronología de procesos integrada con Auditoría';
-            contextDescription.textContent = 'El eje X muestra la fecha y hora; el eje Y, la duración. Cada torre representa un proceso y sus divisiones reflejan la profundidad de su cadena técnica.';
+            contextTitle.textContent = 'Flame timeline de procesos integrado con Auditoría';
+            contextDescription.textContent = 'Cada base es una solicitud fechada y su altura representa el tiempo total. Los subprocesos medidos se apilan encima y suman la duración de su proceso principal.';
         } else if (isStack) {
             searchInput.placeholder = 'Buscar función o frame';
             contextTitle.textContent = 'Pila jerárquica de ejecución';
@@ -243,6 +266,7 @@ const initializeLogFlameGraph = () => {
         const technicalEvents = Array.isArray(audit.technical) ? audit.technical : [];
         const activities = Array.isArray(audit.activities) ? audit.activities : [];
         const abnormalLogs = Array.isArray(process.abnormal_logs) ? process.abnormal_logs : [];
+        const subprocesses = Array.isArray(process.subprocesses) ? process.subprocesses : [];
 
         detailLabel.textContent = `Proceso #${process.process_number} · ${process.label}`;
         detailMeta.textContent = `${process.date} · ${duration} · ${process.level} · ${process.environment}${technicalContext ? ` · ${technicalContext}` : ''}`;
@@ -260,6 +284,14 @@ const initializeLogFlameGraph = () => {
         if (controller) {
             inspectorArchitecture.append(inspectorItem('Controlador / método', `${controller}${architecture.method ? `@${architecture.method}` : ''}`, 'blue'));
         }
+
+        subprocesses
+            .filter((subprocess) => Number(subprocess.depth ?? 1) === 1)
+            .forEach((subprocess) => inspectorArchitecture.append(inspectorItem(
+                `${subprocess.type || 'Subproceso'} · ${formatValue(Number(subprocess.duration_ms) || 0, 'ms')} ms`,
+                `${subprocess.name}${subprocess.measured === false ? ' · tiempo aún no instrumentado internamente' : ' · medición real'}`,
+                subprocess.measured === false ? 'slate' : 'blue',
+            )));
 
         (architecture.components ?? []).forEach((component) => {
             inspectorArchitecture.append(inspectorItem(
@@ -463,10 +495,10 @@ const initializeLogFlameGraph = () => {
             .sort((left, right) => Number(left.timestamp_ms || 0) - Number(right.timestamp_ms || 0));
         const chartWidth = Math.max(360, stage.clientWidth - 16);
         const chartHeight = Math.max(380, stage.clientHeight - 20);
-        const margins = { top: 28, right: 22, bottom: 58, left: 72 };
+        const margins = { top: 30, right: 20, bottom: 76, left: 78 };
         const plotWidth = Math.max(200, chartWidth - margins.left - margins.right);
         const plotHeight = Math.max(220, chartHeight - margins.top - margins.bottom);
-        const maximumVisibleProcesses = Math.max(12, Math.floor(plotWidth / 18));
+        const maximumVisibleProcesses = Math.max(4, Math.min(18, Math.floor(plotWidth / 82)));
         const processes = allProcesses.slice(-maximumVisibleProcesses);
         const measuredDurations = processes
             .map((process) => Number(process.duration_ms))
@@ -474,7 +506,9 @@ const initializeLogFlameGraph = () => {
         const maximumDuration = Math.max(1, ...measuredDurations);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
         const barSlot = plotWidth / Math.max(1, processes.length);
-        const barWidth = Math.max(8, Math.min(46, barSlot * 0.84));
+        const barWidth = Math.max(44, Math.min(132, barSlot * 0.88));
+        const rootHeight = 28;
+        const stackHeight = Math.max(140, plotHeight - rootHeight - 6);
         let matches = 0;
 
         svg.replaceChildren();
@@ -488,7 +522,7 @@ const initializeLogFlameGraph = () => {
         svg.append(definitions);
 
         [0, 0.25, 0.5, 0.75, 1].forEach((ratio) => {
-            const y = margins.top + plotHeight - (plotHeight * ratio);
+            const y = margins.top + stackHeight - (stackHeight * ratio);
             const value = maximumDuration * ratio;
             const line = createSvgElement('line', {
                 x1: margins.left,
@@ -524,13 +558,13 @@ const initializeLogFlameGraph = () => {
                 x1: x,
                 y1: margins.top,
                 x2: x,
-                y2: margins.top + plotHeight,
+                y2: margins.top + stackHeight + rootHeight,
                 stroke: '#e2e8f0',
                 'stroke-width': 1,
             });
             const dateLabel = createSvgElement('text', {
                 x,
-                y: margins.top + plotHeight + 18,
+                y: margins.top + stackHeight + rootHeight + 20,
                 fill: '#475569',
                 'font-size': 9,
                 'font-weight': 800,
@@ -538,7 +572,7 @@ const initializeLogFlameGraph = () => {
             });
             const timeLabel = createSvgElement('text', {
                 x,
-                y: margins.top + plotHeight + 31,
+                y: margins.top + stackHeight + rootHeight + 34,
                 fill: '#0369a1',
                 'font-size': 9,
                 'font-weight': 800,
@@ -553,108 +587,200 @@ const initializeLogFlameGraph = () => {
         processes.forEach((process, index) => {
             const duration = Number(process.duration_ms);
             const hasDuration = Number.isFinite(duration) && duration > 0;
-            const height = hasDuration ? Math.max(5, (duration / maximumDuration) * plotHeight) : 5;
             const x = margins.left + (index * barSlot) + ((barSlot - barWidth) / 2);
-            const y = margins.top + plotHeight - height;
             const abnormalLogs = Array.isArray(process.abnormal_logs) ? process.abnormal_logs : [];
             const risk = abnormalLogs.some((log) => ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'].includes(log.level))
                 ? 'critical'
                 : abnormalLogs.length > 0 || process.risk === 'warning' ? 'warning' : process.risk ?? 'normal';
-            const colors = {
-                critical: ['#ef4444', '#be123c'],
-                warning: ['#fbbf24', '#f97316'],
-                normal: ['#22c55e', '#0891b2'],
-            };
-            const [startColor, endColor] = colors[risk] ?? colors.normal;
-            const searchable = [process.label, process.route, process.controller, process.level, process.date]
+            const subprocesses = (Array.isArray(process.subprocesses) ? process.subprocesses : [])
+                .filter((subprocess) => Number(subprocess.depth ?? 1) === 1)
+                .filter((subprocess) => Number(subprocess.duration_ms) > 0)
+                .sort((left, right) => Number(left.offset_ms || 0) - Number(right.offset_ms || 0));
+            const summarizedSubprocesses = subprocesses.length > 10
+                ? [
+                    ...subprocesses.slice(0, 9),
+                    {
+                        id: `other-${process.id}`,
+                        name: `Otras ${subprocesses.length - 9} operaciones medidas`,
+                        type: 'Agrupado',
+                        duration_ms: subprocesses.slice(9).reduce(
+                            (total, subprocess) => total + (Number(subprocess.duration_ms) || 0),
+                            0,
+                        ),
+                        measured: true,
+                        depth: 1,
+                    },
+                ]
+                : subprocesses;
+            const effectiveSubprocesses = summarizedSubprocesses.length > 0 ? summarizedSubprocesses : [{
+                id: `process-${process.id}`,
+                name: 'Proceso sin desglose interno',
+                type: 'Aplicación',
+                duration_ms: hasDuration ? duration : 0,
+                measured: false,
+                depth: 1,
+            }];
+            const searchable = [
+                process.label,
+                process.route,
+                process.controller,
+                process.level,
+                process.date,
+                ...effectiveSubprocesses.flatMap((subprocess) => [subprocess.name, subprocess.type]),
+            ]
                 .filter(Boolean)
                 .join(' ')
                 .toLocaleLowerCase('es');
             const matchesSearch = searchTerm !== '' && searchable.includes(searchTerm);
-            const gradientId = `timeline-block-${index}`;
-            const gradient = createSvgElement('linearGradient', {
-                id: gradientId,
-                x1: '0%',
-                y1: '0%',
-                x2: '0%',
-                y2: '100%',
-            });
             const group = createSvgElement('g', {
                 role: 'button',
                 tabindex: '0',
                 'aria-label': `Proceso ${process.process_number}, ${process.date}, ${process.label}`,
                 class: 'cursor-pointer outline-none',
             });
-            const shape = flamePath(x, y, barWidth, height);
-            const clipId = `timeline-flame-clip-${index}`;
-            const clipPath = createSvgElement('clipPath', { id: clipId });
-            const flame = createSvgElement('path', {
-                d: shape,
-                fill: `url(#${gradientId})`,
-                stroke: matchesSearch ? '#1d4ed8' : '#ffffff',
-                'stroke-width': matchesSearch ? 3 : 1.5,
-                opacity: searchTerm !== '' && !matchesSearch ? 0.2 : 0.95,
-            });
             const title = createSvgElement('title');
             const route = [process.method, process.route].filter(Boolean).join(' ') || process.label;
             const audit = auditByProcess[process.id] ?? { technical: [], activities: [] };
             const auditCount = (audit.technical?.length ?? 0) + (audit.activities?.length ?? 0);
+            const processHeight = hasDuration ? Math.max(24, (duration / maximumDuration) * stackHeight) : 8;
+            const stackBottom = margins.top + stackHeight;
+            const rootY = stackBottom;
+            const rootColors = {
+                critical: ['#991b1b', '#e11d48'],
+                warning: ['#b45309', '#f59e0b'],
+                normal: ['#075985', '#0284c7'],
+            };
+            const [rootStart, rootEnd] = rootColors[risk] ?? rootColors.normal;
+            const rootGradientId = `timeline-root-${index}`;
+            const rootGradient = createSvgElement('linearGradient', {
+                id: rootGradientId,
+                x1: '0%',
+                y1: '0%',
+                x2: '100%',
+                y2: '0%',
+            });
+
+            rootGradient.append(
+                createSvgElement('stop', { offset: '0%', 'stop-color': rootStart }),
+                createSvgElement('stop', { offset: '100%', 'stop-color': rootEnd }),
+            );
+            definitions.append(rootGradient);
+
+            const root = createSvgElement('rect', {
+                x,
+                y: rootY,
+                width: barWidth,
+                height: rootHeight,
+                rx: 5,
+                fill: `url(#${rootGradientId})`,
+                stroke: matchesSearch ? '#1d4ed8' : '#ffffff',
+                'stroke-width': matchesSearch ? 3 : 1.5,
+                opacity: searchTerm !== '' && !matchesSearch ? 0.22 : 1,
+            });
+            const rootText = createSvgElement('text', {
+                x: x + (barWidth / 2),
+                y: rootY + 11,
+                fill: '#ffffff',
+                'font-size': 8.5,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+                'pointer-events': 'none',
+            });
+            const rootDuration = createSvgElement('text', {
+                x: x + (barWidth / 2),
+                y: rootY + 22,
+                fill: '#e0f2fe',
+                'font-size': 8,
+                'font-weight': 800,
+                'text-anchor': 'middle',
+                'pointer-events': 'none',
+            });
+            const rootCharacters = Math.max(7, Math.floor(barWidth / 6.2));
+            const rootLabel = String(process.route || process.label || 'Proceso');
+
+            rootText.textContent = rootLabel.length > rootCharacters
+                ? `${rootLabel.slice(0, rootCharacters - 1)}…`
+                : rootLabel;
+            rootDuration.textContent = hasDuration ? `${formatValue(duration, 'ms')} ms` : 'sin tiempo';
+            group.append(root, rootText, rootDuration);
+
+            let accumulatedHeight = 0;
+
+            effectiveSubprocesses.forEach((subprocess, subprocessIndex) => {
+                const subprocessDuration = Math.max(0, Number(subprocess.duration_ms) || 0);
+                const segmentHeight = hasDuration
+                    ? (subprocessDuration / duration) * processHeight
+                    : 1;
+                const remainingHeight = Math.max(0, processHeight - accumulatedHeight);
+                const height = Math.min(Math.max(0.75, segmentHeight), remainingHeight);
+
+                if (height <= 0) {
+                    return;
+                }
+                const widthReduction = Math.min(barWidth * 0.34, subprocessIndex * Math.max(1.5, barWidth * 0.035));
+                const segmentWidth = Math.max(12, barWidth - widthReduction);
+                const segmentX = x + ((barWidth - segmentWidth) / 2);
+                const segmentY = stackBottom - accumulatedHeight - height;
+                const [lightColor, middleColor, darkColor] = subprocessColor(subprocess, duration);
+                const gradientId = `timeline-process-${index}-${subprocessIndex}`;
+                const gradient = createSvgElement('linearGradient', {
+                    id: gradientId,
+                    x1: '0%',
+                    y1: '0%',
+                    x2: '100%',
+                    y2: '0%',
+                });
+                const segment = createSvgElement('rect', {
+                    x: segmentX,
+                    y: segmentY,
+                    width: segmentWidth,
+                    height,
+                    rx: Math.min(5, height / 3),
+                    fill: `url(#${gradientId})`,
+                    stroke: '#ffffff',
+                    'stroke-width': 1.2,
+                    opacity: searchTerm !== '' && !matchesSearch ? 0.18 : 0.96,
+                });
+                const segmentTitle = createSvgElement('title');
+
+                gradient.append(
+                    createSvgElement('stop', { offset: '0%', 'stop-color': lightColor }),
+                    createSvgElement('stop', { offset: '52%', 'stop-color': middleColor }),
+                    createSvgElement('stop', { offset: '100%', 'stop-color': darkColor }),
+                );
+                definitions.append(gradient);
+                segmentTitle.textContent = `${subprocess.type || 'Subproceso'} · ${subprocess.name}\nDuración: ${formatValue(subprocessDuration, 'ms')} ms\nProceso: ${route}\nFecha y hora: ${process.date}\nMedición: ${subprocess.measured === false ? 'tiempo restante no desglosado' : 'medición real'}`;
+                segment.append(segmentTitle);
+                group.append(segment);
+
+                if (height >= 18 && segmentWidth >= 58) {
+                    const label = createSvgElement('text', {
+                        x: segmentX + 5,
+                        y: segmentY + Math.min(14, height - 4),
+                        fill: subprocess.measured === false ? '#172554' : '#172033',
+                        'font-size': 8.5,
+                        'font-weight': 900,
+                        'pointer-events': 'none',
+                    });
+                    const availableCharacters = Math.max(6, Math.floor((segmentWidth - 10) / 5.2));
+                    const labelText = `${subprocess.name} · ${formatValue(subprocessDuration, 'ms')} ms`;
+
+                    label.textContent = labelText.length > availableCharacters
+                        ? `${labelText.slice(0, availableCharacters - 1)}…`
+                        : labelText;
+                    group.append(label);
+                }
+
+                accumulatedHeight += height;
+            });
+
             const stackFrames = Array.isArray(process.stack_frames) ? process.stack_frames : [];
             const stackSummary = stackFrames
                 .map((frame) => typeof frame === 'string' ? frame : frame.label)
                 .filter(Boolean)
                 .join(' → ');
 
-            gradient.append(
-                createSvgElement('stop', { offset: '0%', 'stop-color': startColor }),
-                createSvgElement('stop', { offset: '100%', 'stop-color': endColor }),
-            );
-            clipPath.append(createSvgElement('path', { d: shape }));
-            definitions.append(gradient, clipPath);
-            title.textContent = `${route}\nFecha y hora: ${process.date}\nDuración: ${hasDuration ? `${formatValue(duration, 'ms')} ms` : 'No registrada'}\nCadena: ${stackSummary || 'Sin pila técnica registrada'}\nAuditorías: ${auditCount}\nAlertas de log: ${abnormalLogs.length}`;
-            group.append(flame);
-
-            if (stackFrames.length > 1 && height >= 20 && barWidth >= 5) {
-                const visibleSeparators = Math.min(stackFrames.length - 1, 12);
-
-                for (let separatorIndex = 1; separatorIndex <= visibleSeparators; separatorIndex += 1) {
-                    const separatorY = y + (height * (separatorIndex / (visibleSeparators + 1)));
-
-                    group.append(createSvgElement('line', {
-                        x1: x + 1,
-                        y1: separatorY,
-                        x2: x + barWidth - 1,
-                        y2: separatorY,
-                        stroke: '#ffffff',
-                        'stroke-width': 0.8,
-                        opacity: 0.68,
-                        'pointer-events': 'none',
-                        'clip-path': `url(#${clipId})`,
-                    }));
-                }
-            }
-
-            if (barWidth >= 26 && height >= 72) {
-                const shortRoute = String(process.route || process.label || 'Proceso');
-                const maximumCharacters = Math.max(5, Math.floor((height - 24) / 7));
-                const processLabel = createSvgElement('text', {
-                    x: x + (barWidth / 2),
-                    y: y + height - 9,
-                    fill: '#ffffff',
-                    'font-size': 9,
-                    'font-weight': 900,
-                    'text-anchor': 'start',
-                    transform: `rotate(-90 ${x + (barWidth / 2)} ${y + height - 9})`,
-                    'pointer-events': 'none',
-                    'clip-path': `url(#${clipId})`,
-                });
-
-                processLabel.textContent = shortRoute.length > maximumCharacters
-                    ? `${shortRoute.slice(0, maximumCharacters - 1)}…`
-                    : shortRoute;
-                group.append(processLabel);
-            }
-
+            title.textContent = `${route}\nFecha y hora: ${process.date}\nDuración total: ${hasDuration ? `${formatValue(duration, 'ms')} ms` : 'No registrada'}\nSubprocesos medidos: ${effectiveSubprocesses.length}\nCadena técnica: ${stackSummary || 'Sin cadena registrada'}\nAuditorías: ${auditCount}\nAlertas de log: ${abnormalLogs.length}`;
             group.append(title);
 
             const selectProcess = () => showProcessDetails(process);
@@ -681,7 +807,7 @@ const initializeLogFlameGraph = () => {
             'text-anchor': 'middle',
         });
 
-        xLabel.textContent = 'Fecha y hora de ejecución · procesos consecutivos · más reciente a la derecha';
+        xLabel.textContent = 'Fecha y hora de ejecución · cada grupo es un proceso · más reciente a la derecha';
         svg.append(xLabel);
 
         totalLabel.textContent = String(processes.length);
@@ -693,12 +819,12 @@ const initializeLogFlameGraph = () => {
         breadcrumb.textContent = processes.length > 0
             ? `${processes[0].date} → ${processes[processes.length - 1].date}`
             : 'Sin marcas de tiempo disponibles';
-        yAxisLabel.textContent = 'Tiempo de ejecución (ms)';
-        xAxisLabel.textContent = 'Eje X · fecha y hora de ejecución · Eje Y · duración (ms)';
+        yAxisLabel.textContent = 'Tiempo total y subprocesos apilados (ms)';
+        xAxisLabel.textContent = 'Eje X · fecha y hora · Eje Y · duración acumulada (ms)';
         detailLabel.textContent = processes.length > 0
-            ? 'Seleccione una llama para unir rendimiento, arquitectura, auditoría y logs'
+            ? 'Seleccione un proceso para unir tiempos reales, arquitectura, auditoría y logs'
             : 'No hay procesos con fecha válida para representar';
-        detailMeta.textContent = `${allProcesses.length > processes.length ? `Se muestran los ${processes.length} procesos más recientes de ${allProcesses.length}. ` : ''}Verde: normal · amarillo: advertencia o lentitud · rojo: error o duración crítica.`;
+        detailMeta.textContent = `${allProcesses.length > processes.length ? `Se muestran los ${processes.length} procesos más recientes de ${allProcesses.length}. ` : ''}Cada base contiene el total; los bloques superiores suman ese tiempo. Azul: no desglosado · verde: rápido · amarillo: moderado · rojo: lento.`;
         stage.scrollTop = 0;
 
         if (processes.length > 0) {
