@@ -97,7 +97,8 @@ const initializeLogFlameGraph = () => {
     const profileSelect = modal.querySelector('[data-flame-profile]');
     const profileWrapper = modal.querySelector('[data-flame-profile-wrapper]');
     const searchInput = modal.querySelector('[data-flame-search]');
-    const modeButton = modal.querySelector('[data-flame-mode]');
+    const searchWrapper = modal.querySelector('[data-flame-search-wrapper]');
+    const modeButtons = [...modal.querySelectorAll('[data-flame-mode-option]')];
     const orientationButton = modal.querySelector('[data-flame-orientation]');
     const resetButton = modal.querySelector('[data-flame-reset]');
     const closeButton = modal.querySelector('[data-flame-close]');
@@ -105,21 +106,60 @@ const initializeLogFlameGraph = () => {
     const unitLabel = modal.querySelector('[data-flame-unit]');
     const depthLabel = modal.querySelector('[data-flame-depth]');
     const countLabel = modal.querySelector('[data-flame-count-label]');
+    const matchWrapper = modal.querySelector('[data-flame-match-wrapper]');
     const matchLabel = modal.querySelector('[data-flame-matches]');
     const breadcrumb = modal.querySelector('[data-flame-breadcrumb]');
     const yAxisLabel = modal.querySelector('[data-flame-y-axis]');
     const xAxisLabel = modal.querySelector('[data-flame-x-axis]');
     const detailLabel = modal.querySelector('[data-flame-detail-label]');
     const detailMeta = modal.querySelector('[data-flame-detail-meta]');
+    const diagnosis = modal.querySelector('[data-flame-diagnosis]');
+    const chart = modal.querySelector('[data-flame-chart]');
+    const legend = modal.querySelector('[data-flame-legend]');
     const state = {
         profileKey: data.profiles[0].key,
-        mode: 'timeline',
+        mode: 'diagnosis',
         orientation: 'flame',
         zoomId: null,
         search: '',
     };
 
     const activeProfile = () => data.profiles.find((profile) => profile.key === state.profileKey) ?? data.profiles[0];
+
+    const updateModeLayout = () => {
+        const isDiagnosis = state.mode === 'diagnosis';
+        const isTimeline = state.mode === 'timeline';
+        const isStack = state.mode === 'stack';
+
+        diagnosis.classList.toggle('hidden', !isDiagnosis);
+        chart.classList.toggle('hidden', isDiagnosis);
+        chart.classList.toggle('grid', !isDiagnosis);
+        searchWrapper.classList.toggle('hidden', isDiagnosis);
+        searchWrapper.classList.toggle('flex', !isDiagnosis);
+        profileWrapper.classList.toggle('hidden', !isStack);
+        profileWrapper.classList.toggle('flex', isStack);
+        orientationButton.classList.toggle('hidden', !isStack);
+        resetButton.classList.toggle('hidden', !isStack);
+        matchWrapper.classList.toggle('hidden', isDiagnosis);
+        legend.classList.toggle('hidden', isDiagnosis);
+        legend.classList.toggle('flex', !isDiagnosis);
+
+        modeButtons.forEach((button) => {
+            const isActive = button.dataset.flameModeOption === state.mode;
+
+            button.classList.toggle('bg-blue-700', isActive);
+            button.classList.toggle('text-white', isActive);
+            button.classList.toggle('shadow-sm', isActive);
+            button.classList.toggle('text-slate-600', !isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+
+        if (isTimeline) {
+            searchInput.placeholder = 'Buscar proceso, ruta o controlador';
+        } else if (isStack) {
+            searchInput.placeholder = 'Buscar función o frame';
+        }
+    };
 
     const showNodeDetails = (node, profile) => {
         const ownPercentage = node.value > 0 ? (node.self_value / node.value) * 100 : 0;
@@ -145,7 +185,7 @@ const initializeLogFlameGraph = () => {
         const rootResult = state.zoomId ? findNode(profile.root, state.zoomId) : null;
         const zoomRoot = rootResult?.node ?? profile.root;
         const zoomPath = rootResult?.path ?? [profile.root];
-        const chartWidth = Math.max(1180, stage.clientWidth - 40);
+        const chartWidth = Math.max(360, stage.clientWidth - 16);
         const relativeDepth = maximumRelativeDepth(zoomRoot);
         const chartHeight = ((relativeDepth + 1) * FRAME_HEIGHT) + AXIS_HEIGHT;
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
@@ -166,7 +206,7 @@ const initializeLogFlameGraph = () => {
         collectFrames(zoomRoot, 0, chartWidth, 0);
         svg.replaceChildren();
         svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
-        svg.setAttribute('width', chartWidth);
+        svg.setAttribute('width', '100%');
         svg.setAttribute('height', chartHeight);
         emptyState.classList.toggle('hidden', frames.length > 0);
         emptyState.classList.toggle('grid', frames.length === 0);
@@ -195,7 +235,7 @@ const initializeLogFlameGraph = () => {
                 height: FRAME_HEIGHT - 2,
                 rx: 3,
                 fill: frameColor(node),
-                stroke: matchesSearch ? '#fde047' : '#17130f',
+                stroke: matchesSearch ? '#1d4ed8' : '#fff',
                 'stroke-width': matchesSearch ? 3 : 1,
                 opacity: searchTerm !== '' && !matchesSearch ? 0.38 : 1,
             });
@@ -262,7 +302,7 @@ const initializeLogFlameGraph = () => {
             const marker = createSvgElement('text', {
                 x,
                 y,
-                fill: '#94a3b8',
+                fill: '#475569',
                 'font-size': 10,
                 'text-anchor': anchor,
             });
@@ -277,13 +317,10 @@ const initializeLogFlameGraph = () => {
         countLabel.textContent = 'Profundidad';
         matchLabel.textContent = String(matches);
         breadcrumb.textContent = zoomPath.map((node) => node.label).join(' › ');
-        modeButton.textContent = 'Vista: pilas';
-        profileWrapper.classList.remove('hidden');
-        profileWrapper.classList.add('flex');
-        orientationButton.classList.remove('hidden');
         orientationButton.textContent = state.orientation === 'flame' ? 'Orientación: raíz abajo' : 'Orientación: raíz arriba';
         yAxisLabel.textContent = 'Eje Y · profundidad de pila';
         xAxisLabel.textContent = 'Eje X · proporción del perfil';
+        updateModeLayout();
         showNodeDetails(zoomRoot, profile);
 
         if (state.orientation === 'flame' && state.zoomId === null) {
@@ -296,8 +333,8 @@ const initializeLogFlameGraph = () => {
     const renderTimeline = () => {
         const timeline = data.timeline ?? {};
         const processes = Array.isArray(timeline.processes) ? timeline.processes : [];
-        const chartWidth = Math.max(1180, stage.clientWidth - 40);
-        const labelWidth = 380;
+        const chartWidth = Math.max(360, stage.clientWidth - 16);
+        const labelWidth = Math.min(380, Math.max(180, chartWidth * 0.34));
         const plotWidth = chartWidth - labelWidth;
         const rowHeight = 46;
         const topAxisHeight = 34;
@@ -308,7 +345,7 @@ const initializeLogFlameGraph = () => {
 
         svg.replaceChildren();
         svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
-        svg.setAttribute('width', chartWidth);
+        svg.setAttribute('width', '100%');
         svg.setAttribute('height', chartHeight);
         emptyState.classList.toggle('hidden', processes.length > 0);
         emptyState.classList.toggle('grid', processes.length === 0);
@@ -342,7 +379,7 @@ const initializeLogFlameGraph = () => {
                 y1: topAxisHeight - 3,
                 x2: x,
                 y2: chartHeight,
-                stroke: '#475569',
+                stroke: '#cbd5e1',
                 'stroke-width': 1,
                 'stroke-dasharray': '3 5',
                 opacity: 0.45,
@@ -350,7 +387,7 @@ const initializeLogFlameGraph = () => {
             const tick = createSvgElement('text', {
                 x,
                 y: 18,
-                fill: '#cbd5e1',
+                fill: '#475569',
                 'font-size': 10,
                 'font-weight': 700,
                 'text-anchor': anchor,
@@ -383,26 +420,26 @@ const initializeLogFlameGraph = () => {
                 y,
                 width: chartWidth,
                 height: rowHeight,
-                fill: index % 2 === 0 ? '#1c1917' : '#17130f',
+                fill: index % 2 === 0 ? '#ffffff' : '#f8fafc',
             });
             const processNumber = createSvgElement('text', {
                 x: 10,
                 y: y + 28,
-                fill: '#fbbf24',
+                fill: '#1d4ed8',
                 'font-size': 10,
                 'font-weight': 800,
             });
             const processDate = createSvgElement('text', {
                 x: 58,
                 y: y + 17,
-                fill: '#67e8f9',
+                fill: '#0891b2',
                 'font-size': 9,
                 'font-weight': 750,
             });
             const processLabel = createSvgElement('text', {
                 x: 58,
                 y: y + 34,
-                fill: '#f8fafc',
+                fill: '#0f172a',
                 'font-size': 10,
                 'font-weight': 700,
             });
@@ -411,7 +448,7 @@ const initializeLogFlameGraph = () => {
                 y1: y + 4,
                 x2: labelWidth - 10,
                 y2: y + rowHeight - 4,
-                stroke: '#475569',
+                stroke: '#cbd5e1',
                 'stroke-width': 1,
             });
             const supportedLevels = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG'];
@@ -419,7 +456,7 @@ const initializeLogFlameGraph = () => {
             const flame = createSvgElement('path', {
                 d: flamePath(x, y + 5, width, rowHeight - 10),
                 fill: `url(#process-gradient-${gradientLevel.toLowerCase()})`,
-                stroke: matchesSearch ? '#fef08a' : '#fed7aa',
+                stroke: matchesSearch ? '#1d4ed8' : '#fff',
                 'stroke-width': matchesSearch ? 3 : 1,
                 opacity: searchTerm !== '' && !matchesSearch ? 0.3 : 1,
             });
@@ -449,7 +486,7 @@ const initializeLogFlameGraph = () => {
             const durationLabel = duration === null ? 'No registrada' : `${formatValue(duration, 'ms')} ms`;
             const routeLabel = [process.method, process.route].filter(Boolean).join(' ');
             const fixedLabel = routeLabel || process.label;
-            const maximumFixedCharacters = 55;
+            const maximumFixedCharacters = Math.max(16, Math.floor((labelWidth - 68) / 5.8));
 
             processNumber.textContent = `#${process.process_number}`;
             processDate.textContent = process.date;
@@ -492,12 +529,9 @@ const initializeLogFlameGraph = () => {
         breadcrumb.textContent = timeline.start_at && timeline.end_at
             ? `${timeline.start_at} → ${timeline.end_at}`
             : 'Sin marcas de tiempo disponibles';
-        modeButton.textContent = 'Vista: procesos';
-        profileWrapper.classList.add('hidden');
-        profileWrapper.classList.remove('flex');
-        orientationButton.classList.add('hidden');
         yAxisLabel.textContent = 'Eje Y · número de procesos';
         xAxisLabel.textContent = 'Eje X · tiempo transcurrido (ms)';
+        updateModeLayout();
         detailLabel.textContent = processes.length > 0
             ? 'Pase el cursor sobre un proceso para ver su detalle'
             : 'No hay procesos con fecha válida para representar';
@@ -507,7 +541,31 @@ const initializeLogFlameGraph = () => {
         stage.scrollTop = 0;
     };
 
+    const renderDiagnosis = () => {
+        const analysis = data.analysis ?? {};
+        const bottleneck = analysis.primary_bottleneck;
+
+        totalLabel.textContent = formatValue(Number(analysis.total_duration_ms) || 0, 'ms');
+        unitLabel.textContent = 'ms medidos';
+        depthLabel.textContent = String(Number(analysis.measured_processes) || 0);
+        countLabel.textContent = 'Solicitudes medidas';
+        breadcrumb.textContent = 'Análisis basado exclusivamente en tiempos registrados';
+        detailLabel.textContent = bottleneck
+            ? `Principal candidato: ${bottleneck.route}`
+            : 'No hay duraciones suficientes para detectar un cuello de botella';
+        detailMeta.textContent = bottleneck
+            ? `${formatValue(bottleneck.total_duration_ms, 'ms')} ms acumulados · ${formatValue(bottleneck.contribution_percentage, '%')}% del tiempo medido · máximo ${formatValue(bottleneck.maximum_duration_ms, 'ms')} ms`
+            : 'Los eventos sin duration_ms permanecen disponibles en Cronología y Pilas.';
+        updateModeLayout();
+    };
+
     const render = () => {
+        if (state.mode === 'diagnosis') {
+            renderDiagnosis();
+
+            return;
+        }
+
         if (state.mode === 'timeline') {
             renderTimeline();
 
@@ -550,10 +608,13 @@ const initializeLogFlameGraph = () => {
         state.search = searchInput.value;
         render();
     });
-    modeButton.addEventListener('click', () => {
-        state.mode = state.mode === 'timeline' ? 'stack' : 'timeline';
-        state.zoomId = null;
-        render();
+    modeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            state.mode = button.dataset.flameModeOption;
+            state.zoomId = null;
+            stage.scrollTop = 0;
+            render();
+        });
     });
     orientationButton.addEventListener('click', () => {
         state.orientation = state.orientation === 'flame' ? 'icicle' : 'flame';

@@ -8,5 +8,7 @@ return [
     'log_flame_max_depth' => (int) env('OBSERVABILITY_LOG_FLAME_MAX_DEPTH', 32),
     'log_flame_max_stacks' => (int) env('OBSERVABILITY_LOG_FLAME_MAX_STACKS', 240),
     'log_flame_max_processes' => (int) env('OBSERVABILITY_LOG_FLAME_MAX_PROCESSES', 500),
+    'slow_request_warning_ms' => (float) env('OBSERVABILITY_SLOW_REQUEST_WARNING_MS', 500),
+    'slow_request_critical_ms' => (float) env('OBSERVABILITY_SLOW_REQUEST_CRITICAL_MS', 1000),
     'per_page' => (int) env('OBSERVABILITY_PER_PAGE', 25),
 ];

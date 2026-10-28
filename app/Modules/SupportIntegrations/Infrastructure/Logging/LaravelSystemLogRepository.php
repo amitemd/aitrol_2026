@@ -200,14 +200,111 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             );
         }
 
+        $timeline = $this->buildProcessTimeline($entries);
+
         return new SystemLogFlameGraph(
             samples: $entries->count(),
             tracedSamples: $tracedSamples,
             derivedSamples: $entries->count() - $tracedSamples,
             maximumDepth: $maximumDepth,
             profiles: $profiles,
-            timeline: $this->buildProcessTimeline($entries),
+            timeline: $timeline,
+            analysis: $this->buildPerformanceAnalysis($timeline['processes']),
         );
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $processes
+     * @return array{measured_processes: int, unmeasured_processes: int, total_duration_ms: float, average_duration_ms: float, p95_duration_ms: float, maximum_duration_ms: float, primary_bottleneck: ?array<string, mixed>, route_bottlenecks: list<array<string, mixed>>, slowest_processes: list<array<string, mixed>>}
+     */
+    private function buildPerformanceAnalysis(array $processes): array
+    {
+        $processCollection = collect($processes);
+        $measuredProcesses = $processCollection
+            ->filter(fn (array $process): bool => $process['duration_ms'] !== null)
+            ->values();
+        $durations = $measuredProcesses
+            ->pluck('duration_ms')
+            ->map(fn (mixed $duration): float => (float) $duration)
+            ->sort()
+            ->values();
+        $totalDuration = (float) $durations->sum();
+        $p95Index = max(0, (int) ceil($durations->count() * 0.95) - 1);
+        $routeBottlenecks = $measuredProcesses
+            ->groupBy(function (array $process): string {
+                $route = $process['route'] ?: $process['label'];
+                $method = $process['method'] ? $process['method'].' ' : '';
+
+                return $method.$route;
+            })
+            ->map(function (Collection $routeProcesses, string $route) use ($totalDuration): array {
+                $routeDurations = $routeProcesses
+                    ->pluck('duration_ms')
+                    ->map(fn (mixed $duration): float => (float) $duration)
+                    ->sort()
+                    ->values();
+                $routeTotal = (float) $routeDurations->sum();
+                $routeP95Index = max(0, (int) ceil($routeDurations->count() * 0.95) - 1);
+                $maximumDuration = (float) $routeDurations->max();
+
+                return [
+                    'route' => $route,
+                    'controller' => $routeProcesses->pluck('controller')->filter()->first(),
+                    'requests' => $routeProcesses->count(),
+                    'total_duration_ms' => round($routeTotal, 2),
+                    'average_duration_ms' => round($routeTotal / $routeProcesses->count(), 2),
+                    'p95_duration_ms' => round((float) $routeDurations->get($routeP95Index, 0.0), 2),
+                    'maximum_duration_ms' => round($maximumDuration, 2),
+                    'contribution_percentage' => $totalDuration > 0 ? round(($routeTotal / $totalDuration) * 100, 2) : 0.0,
+                    'risk' => $this->performanceRisk($maximumDuration),
+                ];
+            })
+            ->sortByDesc('total_duration_ms')
+            ->take(10)
+            ->values()
+            ->all();
+        $slowestProcesses = $measuredProcesses
+            ->sortByDesc('duration_ms')
+            ->take(10)
+            ->map(fn (array $process): array => [
+                ...$process,
+                'risk' => $this->performanceRisk((float) $process['duration_ms']),
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'measured_processes' => $measuredProcesses->count(),
+            'unmeasured_processes' => $processCollection->count() - $measuredProcesses->count(),
+            'total_duration_ms' => round($totalDuration, 2),
+            'average_duration_ms' => $measuredProcesses->isNotEmpty()
+                ? round($totalDuration / $measuredProcesses->count(), 2)
+                : 0.0,
+            'p95_duration_ms' => round((float) $durations->get($p95Index, 0.0), 2),
+            'maximum_duration_ms' => round((float) $durations->max(), 2),
+            'primary_bottleneck' => $routeBottlenecks[0] ?? null,
+            'route_bottlenecks' => $routeBottlenecks,
+            'slowest_processes' => $slowestProcesses,
+        ];
+    }
+
+    private function performanceRisk(float $duration): string
+    {
+        $criticalThreshold = max(1.0, (float) config('observability.slow_request_critical_ms', 1000));
+        $warningThreshold = min(
+            $criticalThreshold,
+            max(1.0, (float) config('observability.slow_request_warning_ms', 500)),
+        );
+
+        if ($duration >= $criticalThreshold) {
+            return 'critical';
+        }
+
+        if ($duration >= $warningThreshold) {
+            return 'warning';
+        }
+
+        return 'normal';
     }
 
     /**

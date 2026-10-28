@@ -30,9 +30,9 @@
     <section class="fallback-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="activity-map-title">
         <div class="grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.25fr_0.75fr] xl:items-center">
             <div>
-                <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Perfil jerárquico basado en logs</p>
-                <h2 id="activity-map-title" class="mt-1 text-2xl font-black text-slate-950">Flame Graph de actividad</h2>
-                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">La vista principal coloca el tiempo transcurrido en milisegundos sobre el eje X y cada proceso registrado sobre el eje Y. También puede cambiar a la vista jerárquica de pilas.</p>
+                <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Observabilidad basada en logs</p>
+                <h2 id="activity-map-title" class="mt-1 text-2xl font-black text-slate-950">Análisis de rendimiento y cuellos de botella</h2>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Identifique las rutas que concentran más tiempo, compare el P95 y revise las solicitudes más lentas. La cronología y las pilas quedan disponibles para profundizar en cada caso.</p>
 
                 <div class="mt-5 grid gap-3 sm:grid-cols-3">
                     <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
@@ -56,12 +56,12 @@
             <div class="rounded-3xl bg-slate-950 p-5 text-white shadow-xl">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <span class="text-xs font-bold tracking-[0.16em] text-orange-300 uppercase">Visualizador interactivo</span>
-                        <h3 class="mt-1 text-xl font-black">Analice cada pila</h3>
+                        <span class="text-xs font-bold tracking-[0.16em] text-orange-300 uppercase">Diagnóstico interactivo</span>
+                        <h3 class="mt-1 text-xl font-black">Encuentre primero lo más lento</h3>
                     </div>
                     <span class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-amber-300 to-rose-500 text-xl text-slate-950">♨</span>
                 </div>
-                <p class="mt-3 text-sm leading-6 text-slate-300">Busque funciones, amplíe una rama y cambie entre la cronología de procesos y la vista jerárquica con la raíz arriba o abajo.</p>
+                <p class="mt-3 text-sm leading-6 text-slate-300">Abra un resumen priorizado y, cuando necesite más evidencia, cambie a la cronología o siga la cadena jerárquica de llamadas.</p>
                 <button
                     type="button"
                     data-flame-open
@@ -69,73 +69,158 @@
                     @disabled($flameGraph->profiles === [])
                 >
                     <span aria-hidden="true">▰</span>
-                    Abrir Flame Graph
+                    Abrir diagnóstico
                 </button>
                 <p class="mt-3 text-[11px] leading-5 text-slate-400">La duración corresponde a tiempo de pared registrado en el log, no a muestras directas de CPU.</p>
             </div>
         </div>
     </section>
 
-    <dialog id="log-flame-graph-modal" class="fixed inset-0 z-50 m-0 h-dvh max-h-none w-screen max-w-none bg-slate-950 p-0 text-white backdrop:bg-slate-950/90">
-        <div class="flex h-dvh min-h-0 flex-col bg-slate-950">
-            <header class="shrink-0 border-b border-white/10 bg-slate-950/95 px-4 py-3 backdrop-blur sm:px-6">
+    @php($performance = $flameGraph->analysis)
+    <dialog id="log-flame-graph-modal" class="fixed inset-0 z-50 m-0 h-dvh max-h-none w-screen max-w-none bg-slate-100 p-0 text-slate-900 backdrop:bg-slate-950/70">
+        <div class="flex h-dvh min-h-0 flex-col bg-slate-100">
+            <header class="shrink-0 border-b border-slate-200 bg-white px-4 py-3 shadow-sm sm:px-6">
                 <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                     <div class="flex min-w-0 items-center gap-3">
-                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-300 to-rose-500 font-black text-slate-950">FG</span>
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-700 font-black text-white shadow-lg shadow-blue-200">AR</span>
                         <div class="min-w-0">
-                            <p class="truncate text-[11px] font-bold tracking-[0.17em] text-orange-300 uppercase">{{ $result->selectedFile }}</p>
-                            <h2 class="truncate text-lg font-black sm:text-xl">Flame Graph de logs</h2>
+                            <p class="truncate text-[11px] font-bold tracking-[0.17em] text-cyan-700 uppercase">{{ $result->selectedFile }}</p>
+                            <h2 class="truncate text-lg font-black text-slate-950 sm:text-xl">Diagnóstico de rendimiento</h2>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" data-flame-mode class="rounded-xl bg-orange-400 px-3 py-2 text-xs font-black text-slate-950 hover:bg-orange-300">Vista: procesos</button>
-                        <label data-flame-profile-wrapper class="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-300">
+                        <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
+                            <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm">Diagnóstico</button>
+                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-white">Cronología</button>
+                            <button type="button" data-flame-mode-option="stack" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-white">Pilas</button>
+                        </nav>
+                        <label data-flame-profile-wrapper class="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">
                             Métrica
-                            <select data-flame-profile class="bg-transparent font-semibold text-white outline-none">
+                            <select data-flame-profile class="bg-transparent font-semibold text-slate-900 outline-none">
                                 @foreach ($flameGraph->profiles as $profile)
-                                    <option value="{{ $profile['key'] }}" class="bg-slate-900">{{ $profile['label'] }}</option>
+                                    <option value="{{ $profile['key'] }}">{{ $profile['label'] }}</option>
                                 @endforeach
                             </select>
                         </label>
-                        <label class="flex min-w-52 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-300 sm:flex-none">
+                        <label data-flame-search-wrapper class="hidden min-w-52 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 sm:flex-none">
                             <span aria-hidden="true">⌕</span>
-                            <input data-flame-search type="search" placeholder="Buscar frame o función" class="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500">
+                            <input data-flame-search type="search" placeholder="Buscar proceso o función" class="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400">
                         </label>
-                        <button type="button" data-flame-orientation class="hidden rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Orientación: llama</button>
-                        <button type="button" data-flame-reset class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Restablecer zoom</button>
-                        <button type="button" data-flame-close class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl font-black text-slate-950 hover:bg-slate-200" aria-label="Cerrar visualizador">×</button>
+                        <button type="button" data-flame-orientation class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Orientación: raíz abajo</button>
+                        <button type="button" data-flame-reset class="hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Restablecer zoom</button>
+                        <button type="button" data-flame-close class="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 text-xl font-black text-white hover:bg-slate-700" aria-label="Cerrar visualizador">×</button>
                     </div>
                 </div>
             </header>
 
             <div class="grid min-h-0 flex-1 grid-rows-[auto_1fr_auto]">
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-900 px-4 py-2 text-xs text-slate-400 sm:px-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 bg-blue-50 px-4 py-2 text-xs text-slate-600 sm:px-6">
                     <div class="flex flex-wrap gap-x-5 gap-y-1">
-                        <span><strong class="text-white" data-flame-total>0</strong> <span data-flame-unit>ms</span></span>
-                        <span><span data-flame-count-label>Procesos</span>: <strong class="text-white" data-flame-depth>{{ $flameGraph->timeline['visible_processes'] }}</strong></span>
-                        <span>Coincidencias: <strong class="text-amber-300" data-flame-matches>0</strong></span>
+                        <span><strong class="text-blue-900" data-flame-total>{{ number_format($performance['total_duration_ms'], 2) }}</strong> <span data-flame-unit>ms medidos</span></span>
+                        <span><span data-flame-count-label>Solicitudes medidas</span>: <strong class="text-blue-900" data-flame-depth>{{ $performance['measured_processes'] }}</strong></span>
+                        <span data-flame-match-wrapper class="hidden">Coincidencias: <strong class="text-amber-700" data-flame-matches>0</strong></span>
                     </div>
-                    <p data-flame-breadcrumb class="min-w-0 truncate font-mono text-[11px] text-cyan-300">AITROL</p>
+                    <p data-flame-breadcrumb class="min-w-0 truncate font-mono text-[11px] text-cyan-800">Análisis basado exclusivamente en tiempos registrados</p>
                 </div>
 
-                <div class="grid min-h-0 grid-cols-[42px_1fr] bg-[#160d0a]">
-                    <div data-flame-y-axis class="flex items-center justify-center border-r border-white/10 bg-slate-950 text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eje Y · número de procesos</div>
-                    <div data-flame-stage class="relative min-h-0 overflow-auto p-3 sm:p-5">
-                        <svg data-flame-svg class="block min-w-[960px] select-none" role="img" aria-label="Cronología de procesos con flamas construida desde los logs"></svg>
-                        <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-400">No hay datos para esta métrica.</div>
-                    </div>
-                </div>
+                <section data-flame-diagnosis class="min-h-0 overflow-y-auto bg-slate-100 px-4 py-5 sm:px-6">
+                    <div class="mx-auto grid max-w-7xl gap-5">
+                        @if ($performance['primary_bottleneck'])
+                            <article class="grid gap-5 overflow-hidden rounded-3xl border border-blue-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="rounded-full bg-rose-100 px-3 py-1 text-[11px] font-black tracking-wide text-rose-700 uppercase">Principal candidato a cuello de botella</span>
+                                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{{ $performance['primary_bottleneck']['requests'] }} solicitudes</span>
+                                    </div>
+                                    <h3 class="mt-3 break-words text-xl font-black text-slate-950 sm:text-2xl">{{ $performance['primary_bottleneck']['route'] }}</h3>
+                                    @if ($performance['primary_bottleneck']['controller'])
+                                        <p class="mt-1 break-all font-mono text-xs text-slate-500">{{ $performance['primary_bottleneck']['controller'] }}</p>
+                                    @endif
+                                    <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600">Esta ruta concentra el <strong class="text-slate-950">{{ number_format($performance['primary_bottleneck']['contribution_percentage'], 1) }}%</strong> del tiempo registrado. Revise primero sus consultas, servicios externos y operaciones repetidas.</p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:min-w-[430px]">
+                                    <div class="rounded-2xl bg-blue-50 p-4"><span class="text-[10px] font-black tracking-wide text-blue-700 uppercase">Acumulado</span><strong class="mt-1 block text-xl text-blue-950">{{ number_format($performance['primary_bottleneck']['total_duration_ms'], 2) }} ms</strong></div>
+                                    <div class="rounded-2xl bg-cyan-50 p-4"><span class="text-[10px] font-black tracking-wide text-cyan-700 uppercase">Promedio</span><strong class="mt-1 block text-xl text-cyan-950">{{ number_format($performance['primary_bottleneck']['average_duration_ms'], 2) }} ms</strong></div>
+                                    <div class="col-span-2 rounded-2xl bg-rose-50 p-4 sm:col-span-1"><span class="text-[10px] font-black tracking-wide text-rose-700 uppercase">Máximo</span><strong class="mt-1 block text-xl text-rose-950">{{ number_format($performance['primary_bottleneck']['maximum_duration_ms'], 2) }} ms</strong></div>
+                                </div>
+                            </article>
+                        @else
+                            <article class="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+                                <h3 class="font-black">Todavía no hay tiempos suficientes para detectar un cuello de botella</h3>
+                                <p class="mt-2 text-sm leading-6">Los eventos deben incluir <code class="rounded bg-white px-1.5 py-0.5">duration_ms</code>. Los errores y eventos sin duración siguen disponibles en la cronología y la vista de pilas.</p>
+                            </article>
+                        @endif
 
-                <footer class="grid max-h-32 shrink-0 gap-3 overflow-auto border-t border-white/10 bg-slate-950 px-4 py-3 text-xs sm:grid-cols-[1fr_auto] sm:items-center sm:px-6">
+                        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><span class="text-[11px] font-black tracking-wide text-slate-500 uppercase">Solicitudes medidas</span><strong class="mt-2 block text-2xl text-slate-950">{{ number_format($performance['measured_processes']) }}</strong><p class="mt-1 text-xs text-slate-500">{{ number_format($performance['unmeasured_processes']) }} eventos sin duración</p></article>
+                            <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><span class="text-[11px] font-black tracking-wide text-slate-500 uppercase">Promedio</span><strong class="mt-2 block text-2xl text-slate-950">{{ number_format($performance['average_duration_ms'], 2) }} ms</strong><p class="mt-1 text-xs text-slate-500">Tiempo medio registrado</p></article>
+                            <article class="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm"><span class="text-[11px] font-black tracking-wide text-amber-700 uppercase">Percentil 95</span><strong class="mt-2 block text-2xl text-amber-950">{{ number_format($performance['p95_duration_ms'], 2) }} ms</strong><p class="mt-1 text-xs text-amber-700">El 95% finaliza antes de este valor</p></article>
+                            <article class="rounded-2xl border border-rose-200 bg-rose-50 p-4 shadow-sm"><span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Solicitud más lenta</span><strong class="mt-2 block text-2xl text-rose-950">{{ number_format($performance['maximum_duration_ms'], 2) }} ms</strong><p class="mt-1 text-xs text-rose-700">Máximo observado en el archivo</p></article>
+                        </div>
+
+                        <div class="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+                            <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                                <div class="flex flex-wrap items-end justify-between gap-2">
+                                    <div><p class="text-[11px] font-black tracking-[0.16em] text-blue-700 uppercase">Impacto acumulado</p><h3 class="mt-1 text-lg font-black text-slate-950">Rutas que consumen más tiempo</h3></div>
+                                    <span class="text-xs text-slate-500">Ordenadas por tiempo total</span>
+                                </div>
+                                <div class="mt-5 grid gap-4">
+                                    @forelse ($performance['route_bottlenecks'] as $index => $route)
+                                        <article class="grid gap-2">
+                                            <div class="flex min-w-0 items-center justify-between gap-3 text-xs">
+                                                <span class="min-w-0 break-words font-bold text-slate-800"><b class="mr-2 text-blue-700">#{{ $index + 1 }}</b>{{ $route['route'] }}</span>
+                                                <strong class="shrink-0 text-slate-950">{{ number_format($route['total_duration_ms'], 2) }} ms</strong>
+                                            </div>
+                                            <div class="h-3 overflow-hidden rounded-full bg-slate-100" title="{{ number_format($route['contribution_percentage'], 2) }}% del tiempo medido">
+                                                <div class="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700" style="width: {{ max(2, min(100, $route['contribution_percentage'])) }}%"></div>
+                                            </div>
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500"><span>{{ $route['requests'] }} solicitudes</span><span>Promedio {{ number_format($route['average_duration_ms'], 2) }} ms</span><span>P95 {{ number_format($route['p95_duration_ms'], 2) }} ms</span><span>{{ number_format($route['contribution_percentage'], 1) }}%</span></div>
+                                        </article>
+                                    @empty
+                                        <p class="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">No hay rutas con duración registrada.</p>
+                                    @endforelse
+                                </div>
+                            </section>
+
+                            <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                                <div><p class="text-[11px] font-black tracking-[0.16em] text-rose-700 uppercase">Casos individuales</p><h3 class="mt-1 text-lg font-black text-slate-950">Solicitudes más lentas</h3></div>
+                                <div class="mt-5 grid gap-3">
+                                    @forelse ($performance['slowest_processes'] as $process)
+                                        @php($riskClass = match ($process['risk']) { 'critical' => 'border-rose-200 bg-rose-50 text-rose-800', 'warning' => 'border-amber-200 bg-amber-50 text-amber-800', default => 'border-emerald-200 bg-emerald-50 text-emerald-800' })
+                                        <article class="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border p-3 {{ $riskClass }}">
+                                            <span class="grid h-8 w-8 place-items-center rounded-xl bg-white/80 text-xs font-black">#{{ $process['process_number'] }}</span>
+                                            <div class="min-w-0"><p class="break-words text-xs font-black">{{ collect([$process['method'], $process['route']])->filter()->join(' ') ?: $process['label'] }}</p><p class="mt-0.5 text-[10px] opacity-75">{{ $process['date'] }}</p></div>
+                                            <strong class="text-xs">{{ number_format($process['duration_ms'], 2) }} ms</strong>
+                                        </article>
+                                    @empty
+                                        <p class="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">No hay solicitudes con duración registrada.</p>
+                                    @endforelse
+                                </div>
+                            </section>
+                        </div>
+
+                        <aside class="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-950"><strong>Cómo interpretar el resultado:</strong> el tiempo acumulado descubre rutas que consumen recursos repetidamente; el P95 detecta lentitud que afecta a la mayoría de usuarios; y el máximo permite investigar casos aislados. Esto analiza tiempo de pared registrado en los logs, no CPU ni memoria del sistema operativo.</aside>
+                    </div>
+                </section>
+
+                <section data-flame-chart class="hidden min-h-0 grid-cols-[34px_minmax(0,1fr)] bg-white">
+                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eje Y · número de procesos</div>
+                    <div data-flame-stage class="relative min-h-0 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
+                        <svg data-flame-svg class="block w-full select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
+                        <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-500">No hay datos para esta métrica.</div>
+                    </div>
+                </section>
+
+                <footer class="grid max-h-32 shrink-0 gap-3 overflow-y-auto overflow-x-hidden border-t border-slate-200 bg-white px-4 py-3 text-xs sm:grid-cols-[1fr_auto] sm:items-center sm:px-6">
                     <div class="min-w-0">
-                        <strong data-flame-detail-label class="block break-words text-sm leading-5 text-white">Seleccione un bloque para ver su detalle</strong>
-                        <p data-flame-detail-meta class="mt-1 break-words leading-5 text-slate-400">Pase el cursor sobre un proceso para consultar su fecha, hora y duración.</p>
+                        <strong data-flame-detail-label class="block break-words text-sm leading-5 text-slate-950">Resumen del diagnóstico</strong>
+                        <p data-flame-detail-meta class="mt-1 break-words leading-5 text-slate-500">Seleccione Cronología o Pilas para explorar eventos individuales.</p>
                     </div>
-                    <div class="flex items-center justify-between gap-4 text-slate-400 sm:justify-end">
+                    <div data-flame-legend class="hidden flex-wrap items-center justify-between gap-4 text-slate-500 sm:justify-end">
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-rose-500"></i>Duración medida</span>
                         <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-cyan-300 to-blue-600"></i>Evento sin duración</span>
-                        <span data-flame-x-axis class="font-semibold text-slate-300">Eje X · tiempo transcurrido (ms)</span>
+                        <span data-flame-x-axis class="font-semibold text-slate-700">Eje X · tiempo transcurrido (ms)</span>
                     </div>
                 </footer>
             </div>
