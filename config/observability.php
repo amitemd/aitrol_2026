@@ -7,5 +7,6 @@ return [
     'log_activity_families' => (int) env('OBSERVABILITY_LOG_ACTIVITY_FAMILIES', 18),
     'log_flame_max_depth' => (int) env('OBSERVABILITY_LOG_FLAME_MAX_DEPTH', 32),
     'log_flame_max_stacks' => (int) env('OBSERVABILITY_LOG_FLAME_MAX_STACKS', 240),
+    'log_flame_max_processes' => (int) env('OBSERVABILITY_LOG_FLAME_MAX_PROCESSES', 500),
     'per_page' => (int) env('OBSERVABILITY_PER_PAGE', 25),
 ];

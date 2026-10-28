@@ -32,18 +32,18 @@
             <div>
                 <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Perfil jerárquico basado en logs</p>
                 <h2 id="activity-map-title" class="mt-1 text-2xl font-black text-slate-950">Flame Graph de actividad</h2>
-                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">El ancho representa frecuencia relativa o duración registrada; la altura representa profundidad de la traza. Las ramas se ordenan alfabéticamente para agrupar caminos equivalentes.</p>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">La vista principal coloca el tiempo transcurrido en milisegundos sobre el eje X y cada proceso registrado sobre el eje Y. También puede cambiar a la vista jerárquica de pilas.</p>
 
                 <div class="mt-5 grid gap-3 sm:grid-cols-3">
                     <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
-                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · ancho</span>
-                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->samples) }} muestras</strong>
-                        <p class="mt-1 text-xs leading-5 text-slate-600">Más ancho significa mayor presencia en los logs.</p>
+                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · tiempo</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->timeline['span_ms'], 1) }} ms</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">Tiempo transcurrido dentro de la ventana analizada.</p>
                     </div>
                     <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · profundidad</span>
-                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->maximumDepth) }} niveles</strong>
-                        <p class="mt-1 text-xs leading-5 text-slate-600">De la raíz hasta el frame o ruta final.</p>
+                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · procesos</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->timeline['visible_processes']) }} procesos</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">Una fila independiente por cada evento del log.</p>
                     </div>
                     <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                         <span class="text-[11px] font-black tracking-wide text-amber-700 uppercase">Trazas reales</span>
@@ -61,7 +61,7 @@
                     </div>
                     <span class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-amber-300 to-rose-500 text-xl text-slate-950">♨</span>
                 </div>
-                <p class="mt-3 text-sm leading-6 text-slate-300">Busque funciones, amplíe una rama y alterne entre flame graph e icicle graph en pantalla completa.</p>
+                <p class="mt-3 text-sm leading-6 text-slate-300">Busque funciones, amplíe una rama y cambie entre la cronología de procesos y la vista jerárquica con la raíz arriba o abajo.</p>
                 <button
                     type="button"
                     data-flame-open
@@ -89,7 +89,8 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-300">
+                        <button type="button" data-flame-mode class="rounded-xl bg-orange-400 px-3 py-2 text-xs font-black text-slate-950 hover:bg-orange-300">Vista: procesos</button>
+                        <label data-flame-profile-wrapper class="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-300">
                             Métrica
                             <select data-flame-profile class="bg-transparent font-semibold text-white outline-none">
                                 @foreach ($flameGraph->profiles as $profile)
@@ -101,7 +102,7 @@
                             <span aria-hidden="true">⌕</span>
                             <input data-flame-search type="search" placeholder="Buscar frame o función" class="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500">
                         </label>
-                        <button type="button" data-flame-orientation class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Vista: llama</button>
+                        <button type="button" data-flame-orientation class="hidden rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Orientación: llama</button>
                         <button type="button" data-flame-reset class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/10">Restablecer zoom</button>
                         <button type="button" data-flame-close class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl font-black text-slate-950 hover:bg-slate-200" aria-label="Cerrar visualizador">×</button>
                     </div>
@@ -111,30 +112,30 @@
             <div class="grid min-h-0 flex-1 grid-rows-[auto_1fr_auto]">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-900 px-4 py-2 text-xs text-slate-400 sm:px-6">
                     <div class="flex flex-wrap gap-x-5 gap-y-1">
-                        <span><strong class="text-white" data-flame-total>0</strong> <span data-flame-unit>muestras</span></span>
-                        <span>Profundidad: <strong class="text-white" data-flame-depth>{{ $flameGraph->maximumDepth }}</strong></span>
+                        <span><strong class="text-white" data-flame-total>0</strong> <span data-flame-unit>ms</span></span>
+                        <span><span data-flame-count-label>Procesos</span>: <strong class="text-white" data-flame-depth>{{ $flameGraph->timeline['visible_processes'] }}</strong></span>
                         <span>Coincidencias: <strong class="text-amber-300" data-flame-matches>0</strong></span>
                     </div>
                     <p data-flame-breadcrumb class="min-w-0 truncate font-mono text-[11px] text-cyan-300">AITROL</p>
                 </div>
 
-                <div class="grid min-h-0 grid-cols-[42px_1fr] bg-[#17130f]">
-                    <div class="flex items-center justify-center border-r border-white/10 bg-slate-950 text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eje Y · profundidad de pila</div>
+                <div class="grid min-h-0 grid-cols-[42px_1fr] bg-[#160d0a]">
+                    <div data-flame-y-axis class="flex items-center justify-center border-r border-white/10 bg-slate-950 text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eje Y · número de procesos</div>
                     <div data-flame-stage class="relative min-h-0 overflow-auto p-3 sm:p-5">
-                        <svg data-flame-svg class="block min-w-[960px] select-none" role="img" aria-label="Flame graph jerárquico construido desde los logs"></svg>
+                        <svg data-flame-svg class="block min-w-[960px] select-none" role="img" aria-label="Cronología de procesos con flamas construida desde los logs"></svg>
                         <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-400">No hay datos para esta métrica.</div>
                     </div>
                 </div>
 
-                <footer class="grid shrink-0 gap-3 border-t border-white/10 bg-slate-950 px-4 py-3 text-xs sm:grid-cols-[1fr_auto] sm:items-center sm:px-6">
+                <footer class="grid max-h-32 shrink-0 gap-3 overflow-auto border-t border-white/10 bg-slate-950 px-4 py-3 text-xs sm:grid-cols-[1fr_auto] sm:items-center sm:px-6">
                     <div class="min-w-0">
-                        <strong data-flame-detail-label class="block truncate text-sm text-white">Seleccione un bloque para ver su detalle</strong>
-                        <p data-flame-detail-meta class="mt-1 truncate text-slate-400">El borde superior expuesto representa trabajo propio sin hijos registrados.</p>
+                        <strong data-flame-detail-label class="block break-words text-sm leading-5 text-white">Seleccione un bloque para ver su detalle</strong>
+                        <p data-flame-detail-meta class="mt-1 break-words leading-5 text-slate-400">Pase el cursor sobre un proceso para consultar su fecha, hora y duración.</p>
                     </div>
                     <div class="flex items-center justify-between gap-4 text-slate-400 sm:justify-end">
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-orange-400"></i>Traza real</span>
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-cyan-400"></i>Ruta derivada</span>
-                        <span class="font-semibold text-slate-300">Eje X · proporción del perfil</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-rose-500"></i>Duración medida</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-cyan-300 to-blue-600"></i>Evento sin duración</span>
+                        <span data-flame-x-axis class="font-semibold text-slate-300">Eje X · tiempo transcurrido (ms)</span>
                     </div>
                 </footer>
             </div>

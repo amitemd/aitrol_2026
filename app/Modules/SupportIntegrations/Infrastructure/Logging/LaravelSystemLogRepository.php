@@ -7,6 +7,7 @@ use App\Modules\SupportIntegrations\Application\Data\SystemLogActivityMap;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogFilters;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogFlameGraph;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogPage;
+use DateTimeImmutable;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -205,7 +206,94 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             derivedSamples: $entries->count() - $tracedSamples,
             maximumDepth: $maximumDepth,
             profiles: $profiles,
+            timeline: $this->buildProcessTimeline($entries),
         );
+    }
+
+    /**
+     * @param  Collection<int, array{id: string, date: string, environment: string, level: string, message: string, details: string}>  $entries
+     * @return array{start_at: ?string, end_at: ?string, span_ms: float, total_processes: int, visible_processes: int, truncated: bool, processes: list<array<string, mixed>>}
+     */
+    private function buildProcessTimeline(Collection $entries): array
+    {
+        $maximumProcesses = min(1000, max(50, (int) config('observability.log_flame_max_processes', 500)));
+        $totalProcesses = $entries->count();
+        $processes = $entries
+            ->take($maximumProcesses)
+            ->map(function (array $entry): ?array {
+                $timestamp = $this->timestampMilliseconds($entry['date']);
+
+                if ($timestamp === null) {
+                    return null;
+                }
+
+                $context = $this->structuredContext($entry['message']);
+
+                return [
+                    'id' => $entry['id'],
+                    'date' => $entry['date'],
+                    'timestamp_ms' => $timestamp,
+                    'duration_ms' => $this->durationFromMessage($entry['message']),
+                    'label' => $this->familyLabel($entry['message']),
+                    'level' => $entry['level'],
+                    'environment' => $entry['environment'],
+                    'method' => isset($context['method']) ? strtoupper((string) $context['method']) : null,
+                    'route' => $context['route'] ?? $context['path'] ?? null,
+                    'controller' => $context['controller'] ?? null,
+                    'trace_depth' => count($this->traceFrames($entry['details'])),
+                ];
+            })
+            ->filter()
+            ->sortBy('timestamp_ms')
+            ->values();
+
+        if ($processes->isEmpty()) {
+            return [
+                'start_at' => null,
+                'end_at' => null,
+                'span_ms' => 0.0,
+                'total_processes' => $totalProcesses,
+                'visible_processes' => 0,
+                'truncated' => $totalProcesses > 0,
+                'processes' => [],
+            ];
+        }
+
+        $startTimestamp = (float) $processes->min('timestamp_ms');
+        $endTimestamp = (float) $processes->max(
+            fn (array $process): float => $process['timestamp_ms'] + ($process['duration_ms'] ?? 0.0),
+        );
+        $startAt = (string) $processes->first()['date'];
+        $endAt = (string) $processes->last()['date'];
+        $numberedProcesses = $processes
+            ->values()
+            ->map(fn (array $process, int $index): array => [
+                ...$process,
+                'process_number' => $index + 1,
+                'offset_ms' => round($process['timestamp_ms'] - $startTimestamp, 3),
+            ])
+            ->all();
+
+        return [
+            'start_at' => $startAt,
+            'end_at' => $endAt,
+            'span_ms' => round(max(1.0, $endTimestamp - $startTimestamp), 3),
+            'total_processes' => $totalProcesses,
+            'visible_processes' => count($numberedProcesses),
+            'truncated' => $totalProcesses > count($numberedProcesses),
+            'processes' => $numberedProcesses,
+        ];
+    }
+
+    private function timestampMilliseconds(string $date): ?float
+    {
+        try {
+            $timestamp = new DateTimeImmutable($date);
+        } catch (\Exception) {
+            return null;
+        }
+
+        return ((float) $timestamp->format('U') * 1000) + ((float) $timestamp->format('u') / 1000);
     }
 
     /**
