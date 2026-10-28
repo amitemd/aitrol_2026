@@ -523,7 +523,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
                 'name' => 'Aplicación sin desglose interno',
                 'type' => 'Aplicación',
                 'duration_ms' => round($spans->isEmpty() ? $requestDuration : $unclassifiedDuration, 3),
-                'offset_ms' => 0.0,
+                'offset_ms' => round($spans->isEmpty() ? 0.0 : min($requestDuration, $topLevelDuration), 3),
                 'depth' => 1,
                 'context' => [],
                 'measured' => false,

@@ -41,7 +41,16 @@ final readonly class AuditHttpRequest
         ]);
 
         try {
-            $response = $next($request);
+            $routeName = $request->route()?->getName() ?? $request->path();
+            $response = $this->executionTracer->measure(
+                name: strtoupper($request->method()).' '.$routeName,
+                type: 'Acción HTTP',
+                callback: fn (): Response => $next($request),
+                context: [
+                    'route' => $routeName,
+                    'controller' => $request->route()?->getActionName(),
+                ],
+            );
             $this->record(
                 $request,
                 $correlationId,

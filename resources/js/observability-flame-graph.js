@@ -195,8 +195,8 @@ const initializeLogFlameGraph = () => {
 
         if (isTimeline) {
             searchInput.placeholder = 'Buscar ruta, controlador, contrato o repositorio';
-            contextTitle.textContent = 'Flame timeline de procesos integrado con Auditoría';
-            contextDescription.textContent = 'Cada base es una solicitud fechada y su altura representa el tiempo total. Los subprocesos medidos se apilan encima y suman la duración de su proceso principal.';
+            contextTitle.textContent = 'Flame graph de acciones integrado con Auditoría';
+            contextDescription.textContent = 'Cada franja superior representa una acción HTTP. La raíz AITROL está en la base y las llamadas medidas se apilan por profundidad; el ancho representa su duración.';
         } else if (isStack) {
             searchInput.placeholder = 'Buscar función o frame';
             contextTitle.textContent = 'Pila jerárquica de ejecución';
@@ -836,6 +836,460 @@ const initializeLogFlameGraph = () => {
         }
     };
 
+    const renderActionFlameTimeline = () => {
+        updateModeLayout();
+
+        const timeline = data.timeline ?? {};
+        const allProcesses = (Array.isArray(timeline.processes) ? [...timeline.processes] : [])
+            .filter((process) => Number.isFinite(Number(process.timestamp_ms)))
+            .sort((left, right) => Number(left.timestamp_ms) - Number(right.timestamp_ms));
+        const chartWidth = Math.max(420, stage.clientWidth - 16);
+        const chartHeight = Math.max(440, stage.clientHeight - 20);
+        const margins = { top: 78, right: 12, bottom: 42, left: 56 };
+        const plotWidth = Math.max(300, chartWidth - margins.left - margins.right);
+        const maximumVisibleActions = Math.max(2, Math.min(6, Math.floor(plotWidth / 205)));
+        const processes = allProcesses.slice(-maximumVisibleActions);
+        const searchTerm = state.search.trim().toLocaleLowerCase('es');
+        const actionSlot = plotWidth / Math.max(1, processes.length);
+        const actionGap = Math.max(3, Math.min(8, actionSlot * 0.025));
+        const actionWidth = Math.max(30, actionSlot - (actionGap * 2));
+        const isActionSpan = (subprocess) => subprocess.type === 'Acción HTTP';
+        const hasActionSpan = (process) => (
+            Array.isArray(process.subprocesses)
+            && process.subprocesses.some(isActionSpan)
+        );
+        const subprocessDepth = (process, subprocess) => {
+            const recordedDepth = Math.max(1, Number(subprocess.depth) || 1);
+
+            if (hasActionSpan(process) && subprocess.measured !== false) {
+                return Math.max(2, recordedDepth);
+            }
+
+            return recordedDepth + 1;
+        };
+        const maximumSpanDepth = Math.max(
+            1,
+            ...processes.flatMap((process) => (
+                Array.isArray(process.subprocesses)
+                    ? process.subprocesses
+                        .filter((subprocess) => !isActionSpan(subprocess))
+                        .map((subprocess) => subprocessDepth(process, subprocess))
+                    : [1]
+            )),
+        );
+        const maximumDepth = Math.min(10, maximumSpanDepth);
+        const availableStackHeight = Math.max(220, chartHeight - margins.top - margins.bottom);
+        const frameHeight = Math.max(24, Math.min(39, availableStackHeight / (maximumDepth + 1)));
+        const plotBottom = chartHeight - margins.bottom;
+        const palettes = [
+            { header: '#dbeafe', accent: '#2563eb', text: '#1e3a8a' },
+            { header: '#dcfce7', accent: '#16a34a', text: '#14532d' },
+            { header: '#fef3c7', accent: '#f59e0b', text: '#78350f' },
+            { header: '#f3e8ff', accent: '#7e22ce', text: '#581c87' },
+            { header: '#cffafe', accent: '#0891b2', text: '#164e63' },
+            { header: '#ffe4e6', accent: '#e11d48', text: '#881337' },
+        ];
+        const totalDuration = processes.reduce(
+            (total, process) => total + Math.max(0, Number(process.duration_ms) || 0),
+            0,
+        );
+        let matches = 0;
+
+        svg.replaceChildren();
+        svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', chartHeight);
+        emptyState.classList.toggle('hidden', processes.length > 0);
+        emptyState.classList.toggle('grid', processes.length === 0);
+
+        const definitions = createSvgElement('defs');
+
+        svg.append(definitions);
+
+        for (let depth = 0; depth <= maximumDepth; depth += 1) {
+            const y = plotBottom - ((depth + 0.5) * frameHeight);
+            const guideY = plotBottom - ((depth + 1) * frameHeight);
+            const label = createSvgElement('text', {
+                x: margins.left - 16,
+                y: y + 3,
+                fill: '#334155',
+                'font-size': 10,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+            });
+
+            label.textContent = String(depth);
+            svg.append(
+                createSvgElement('line', {
+                    x1: margins.left,
+                    y1: guideY,
+                    x2: margins.left + plotWidth,
+                    y2: guideY,
+                    stroke: '#dbe4f0',
+                    'stroke-width': 1,
+                    'stroke-dasharray': '3 5',
+                }),
+                label,
+            );
+        }
+
+        const axis = createSvgElement('line', {
+            x1: margins.left - 1,
+            y1: margins.top - 4,
+            x2: margins.left - 1,
+            y2: plotBottom,
+            stroke: '#64748b',
+            'stroke-width': 1.2,
+        });
+        const axisArrow = createSvgElement('path', {
+            d: `M ${margins.left - 5} ${margins.top + 2} L ${margins.left - 1} ${margins.top - 5} L ${margins.left + 3} ${margins.top + 2}`,
+            fill: 'none',
+            stroke: '#64748b',
+            'stroke-width': 1.2,
+        });
+
+        svg.append(axis, axisArrow);
+
+        const globalRoot = createSvgElement('rect', {
+            x: margins.left,
+            y: plotBottom - frameHeight + 2,
+            width: plotWidth,
+            height: frameHeight - 4,
+            rx: 5,
+            fill: '#e2e8f0',
+            stroke: '#475569',
+            'stroke-width': 1.4,
+        });
+        const globalRootLabel = createSvgElement('text', {
+            x: margins.left + (plotWidth / 2),
+            y: plotBottom - (frameHeight / 2) + 4,
+            fill: '#0f172a',
+            'font-size': 11,
+            'font-weight': 900,
+            'text-anchor': 'middle',
+            'pointer-events': 'none',
+        });
+
+        globalRootLabel.textContent = `AITROL · ${processes.length} acciones · ${formatValue(totalDuration, 'ms')} ms acumulados`;
+        svg.append(globalRoot, globalRootLabel);
+
+        const renderFrame = ({ process, subprocess, processIndex, x, width, depth, palette, matchesSearch }) => {
+            if (width < 0.7 || depth > maximumDepth) {
+                return;
+            }
+
+            const duration = Number(subprocess.duration_ms) || 0;
+            const y = plotBottom - ((depth + 1) * frameHeight) + 1;
+            const height = frameHeight - 2;
+            const [lightColor, middleColor, darkColor] = subprocessColor(subprocess, Number(process.duration_ms) || 0);
+            const gradientId = `action-frame-${processIndex}-${String(subprocess.id).replace(/[^a-z0-9_-]/gi, '')}`;
+            const gradient = createSvgElement('linearGradient', {
+                id: gradientId,
+                x1: '0%',
+                y1: '0%',
+                x2: '100%',
+                y2: '0%',
+            });
+            const group = createSvgElement('g', {
+                role: 'button',
+                tabindex: '0',
+                class: 'cursor-pointer outline-none',
+                'aria-label': `${subprocess.type}, ${subprocess.name}, ${duration} milisegundos`,
+            });
+            const rectangle = createSvgElement('rect', {
+                x: x + 0.5,
+                y,
+                width: Math.max(0.5, width - 1),
+                height,
+                rx: 3,
+                fill: `url(#${gradientId})`,
+                stroke: matchesSearch ? '#1d4ed8' : '#ffffff',
+                'stroke-width': matchesSearch ? 2.5 : 1,
+                opacity: searchTerm !== '' && !matchesSearch ? 0.22 : 1,
+            });
+            const accent = createSvgElement('rect', {
+                x: x + 1,
+                y: y + 1,
+                width: Math.min(5, Math.max(2, width * 0.08)),
+                height: Math.max(1, height - 2),
+                rx: 2,
+                fill: palette.accent,
+                'pointer-events': 'none',
+            });
+            const title = createSvgElement('title');
+
+            gradient.append(
+                createSvgElement('stop', { offset: '0%', 'stop-color': lightColor }),
+                createSvgElement('stop', { offset: '58%', 'stop-color': middleColor }),
+                createSvgElement('stop', { offset: '100%', 'stop-color': darkColor }),
+            );
+            definitions.append(gradient);
+            title.textContent = `${subprocess.type || 'Subproceso'} · ${subprocess.name}\nDuración: ${formatValue(duration, 'ms')} ms\nAcción: ${process.method || ''} ${process.route || process.label}\nEjecutado: ${process.date}\nProfundidad: ${depth}`;
+            group.append(rectangle, accent, title);
+
+            if (width >= 58) {
+                const text = createSvgElement('text', {
+                    x: x + 8,
+                    y: y + (height / 2) + 4,
+                    fill: '#172033',
+                    'font-size': width >= 105 ? 9.5 : 8.5,
+                    'font-weight': 900,
+                    'pointer-events': 'none',
+                });
+                const availableCharacters = Math.max(6, Math.floor((width - 14) / 5.4));
+                const textValue = `${subprocess.name} (${formatValue(duration, 'ms')} ms)`;
+
+                text.textContent = textValue.length > availableCharacters
+                    ? `${textValue.slice(0, availableCharacters - 1)}…`
+                    : textValue;
+                group.append(text);
+            }
+
+            const selectFrame = () => {
+                showProcessDetails(process);
+                detailLabel.textContent = `${subprocess.type || 'Subproceso'} · ${subprocess.name}`;
+                detailMeta.textContent = `${process.date} · ${formatValue(duration, 'ms')} ms · profundidad ${depth} · ${process.method || ''} ${process.route || process.label}`;
+            };
+
+            group.addEventListener('pointerenter', selectFrame);
+            group.addEventListener('focus', selectFrame);
+            group.addEventListener('click', selectFrame);
+            group.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    selectFrame();
+                }
+            });
+            svg.append(group);
+        };
+
+        processes.forEach((process, processIndex) => {
+            const palette = palettes[processIndex % palettes.length];
+            const groupX = margins.left + (processIndex * actionSlot) + actionGap;
+            const duration = Math.max(0.001, Number(process.duration_ms) || 0.001);
+            const subprocesses = Array.isArray(process.subprocesses)
+                ? process.subprocesses.filter((subprocess) => !isActionSpan(subprocess))
+                : [];
+            const searchable = [
+                process.date,
+                process.label,
+                process.route,
+                process.controller,
+                ...subprocesses.flatMap((subprocess) => [subprocess.name, subprocess.type]),
+            ].filter(Boolean).join(' ').toLocaleLowerCase('es');
+            const matchesSearch = searchTerm !== '' && searchable.includes(searchTerm);
+            const header = createSvgElement('rect', {
+                x: groupX,
+                y: 8,
+                width: actionWidth,
+                height: 55,
+                rx: 6,
+                fill: palette.header,
+                stroke: matchesSearch ? '#1d4ed8' : '#cbd5e1',
+                'stroke-width': matchesSearch ? 2.5 : 1,
+                opacity: searchTerm !== '' && !matchesSearch ? 0.3 : 1,
+            });
+            const methodIcon = createSvgElement('text', {
+                x: groupX + 15,
+                y: 31,
+                fill: palette.text,
+                'font-size': 17,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+            });
+            const numberCircle = createSvgElement('circle', {
+                cx: groupX + 39,
+                cy: 26,
+                r: 11,
+                fill: palette.accent,
+            });
+            const numberLabel = createSvgElement('text', {
+                x: groupX + 39,
+                y: 30,
+                fill: '#ffffff',
+                'font-size': 10,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+            });
+            const routeLabel = createSvgElement('text', {
+                x: groupX + 56,
+                y: 22,
+                fill: palette.text,
+                'font-size': 10.5,
+                'font-weight': 900,
+            });
+            const dateLabel = createSvgElement('text', {
+                x: groupX + 56,
+                y: 38,
+                fill: palette.text,
+                'font-size': 8.5,
+                'font-weight': 700,
+            });
+            const durationLabel = createSvgElement('text', {
+                x: groupX + 56,
+                y: 52,
+                fill: palette.text,
+                'font-size': 9,
+                'font-weight': 900,
+            });
+            const separator = createSvgElement('line', {
+                x1: groupX - actionGap,
+                y1: 8,
+                x2: groupX - actionGap,
+                y2: plotBottom,
+                stroke: palette.accent,
+                'stroke-width': 1,
+                'stroke-dasharray': '4 4',
+                opacity: 0.65,
+            });
+            const route = [process.method, process.route].filter(Boolean).join(' ') || process.label;
+            const availableRouteCharacters = Math.max(8, Math.floor((actionWidth - 64) / 6));
+
+            methodIcon.textContent = process.method === 'GET'
+                ? '⌕'
+                : process.method === 'POST'
+                    ? '+'
+                    : ['PUT', 'PATCH'].includes(process.method)
+                        ? '✎'
+                        : process.method === 'DELETE'
+                            ? '×'
+                            : '•';
+            numberLabel.textContent = String(process.process_number || processIndex + 1);
+            routeLabel.textContent = route.length > availableRouteCharacters
+                ? `${route.slice(0, availableRouteCharacters - 1)}…`
+                : route;
+            dateLabel.textContent = process.date;
+            durationLabel.textContent = `${formatValue(duration, 'ms')} ms`;
+            svg.append(separator, header, methodIcon, numberCircle, numberLabel, routeLabel, dateLabel, durationLabel);
+
+            const actionY = plotBottom - (2 * frameHeight) + 1;
+            const actionGradientId = `action-root-${processIndex}`;
+            const actionGradient = createSvgElement('linearGradient', {
+                id: actionGradientId,
+                x1: '0%',
+                y1: '0%',
+                x2: '100%',
+                y2: '0%',
+            });
+            const actionGroup = createSvgElement('g', {
+                role: 'button',
+                tabindex: '0',
+                class: 'cursor-pointer outline-none',
+            });
+            const actionRectangle = createSvgElement('rect', {
+                x: groupX + 0.5,
+                y: actionY,
+                width: actionWidth - 1,
+                height: frameHeight - 2,
+                rx: 4,
+                fill: `url(#${actionGradientId})`,
+                stroke: matchesSearch ? '#1d4ed8' : '#ffffff',
+                'stroke-width': matchesSearch ? 2.5 : 1,
+                opacity: searchTerm !== '' && !matchesSearch ? 0.24 : 1,
+            });
+            const actionText = createSvgElement('text', {
+                x: groupX + (actionWidth / 2),
+                y: actionY + (frameHeight / 2) + 4,
+                fill: '#ffffff',
+                'font-size': 10,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+                'pointer-events': 'none',
+            });
+
+            actionGradient.append(
+                createSvgElement('stop', { offset: '0%', 'stop-color': palette.accent }),
+                createSvgElement('stop', { offset: '100%', 'stop-color': palette.text }),
+            );
+            definitions.append(actionGradient);
+            actionText.textContent = route.length > Math.max(8, Math.floor(actionWidth / 6))
+                ? `${route.slice(0, Math.max(7, Math.floor(actionWidth / 6) - 1))}…`
+                : route;
+            actionGroup.append(actionRectangle, actionText);
+            actionGroup.addEventListener('pointerenter', () => showProcessDetails(process));
+            actionGroup.addEventListener('focus', () => showProcessDetails(process));
+            actionGroup.addEventListener('click', () => showProcessDetails(process));
+            svg.append(actionGroup);
+
+            subprocesses.forEach((subprocess) => {
+                const spanDuration = Math.max(0, Number(subprocess.duration_ms) || 0);
+                const spanOffset = Math.max(0, Number(subprocess.offset_ms) || 0);
+                const width = Math.min(actionWidth, Math.max(1, actionWidth * (spanDuration / duration)));
+                const x = Math.min(
+                    groupX + actionWidth - width,
+                    groupX + (actionWidth * (spanOffset / duration)),
+                );
+                const depth = Math.min(maximumDepth, subprocessDepth(process, subprocess));
+                const frameMatches = searchTerm !== '' && [subprocess.name, subprocess.type]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLocaleLowerCase('es')
+                    .includes(searchTerm);
+
+                renderFrame({
+                    process,
+                    subprocess,
+                    processIndex,
+                    x,
+                    width,
+                    depth,
+                    palette,
+                    matchesSearch: frameMatches,
+                });
+                matches += frameMatches ? 1 : 0;
+            });
+
+            matches += matchesSearch ? 1 : 0;
+        });
+
+        if (processes.length > 0) {
+            const finalSeparatorX = margins.left + (processes.length * actionSlot);
+
+            svg.append(createSvgElement('line', {
+                x1: finalSeparatorX,
+                y1: 8,
+                x2: finalSeparatorX,
+                y2: plotBottom,
+                stroke: '#94a3b8',
+                'stroke-width': 1,
+                'stroke-dasharray': '4 4',
+            }));
+        }
+
+        const xLabel = createSvgElement('text', {
+            x: margins.left + (plotWidth / 2),
+            y: plotBottom + 24,
+            fill: '#334155',
+            'font-size': 10.5,
+            'font-weight': 900,
+            'text-anchor': 'middle',
+        });
+
+        xLabel.textContent = 'Acciones ordenadas por fecha y hora · más reciente a la derecha';
+        svg.append(xLabel);
+
+        totalLabel.textContent = String(processes.length);
+        totalCaption.textContent = 'Acciones visibles';
+        unitLabel.textContent = allProcesses.length > processes.length ? `de ${allProcesses.length}` : 'acciones';
+        depthLabel.textContent = String(maximumDepth);
+        countLabel.textContent = 'Profundidad máxima';
+        matchLabel.textContent = String(matches);
+        breadcrumb.textContent = processes.length > 0
+            ? `${processes[0].date} → ${processes[processes.length - 1].date}`
+            : 'Sin acciones medidas para representar';
+        yAxisLabel.textContent = 'Profundidad de llamadas';
+        xAxisLabel.textContent = 'Eje X · acciones cronológicas · Eje Y · profundidad técnica · ancho · duración';
+        detailLabel.textContent = processes.length > 0
+            ? 'Seleccione una acción o subproceso para revisar tiempos, auditoría y logs'
+            : 'No hay procesos con fecha y duración válidas';
+        detailMeta.textContent = `${allProcesses.length > processes.length ? `Se muestran las ${processes.length} acciones más recientes de ${allProcesses.length}. ` : ''}El ancho de cada bloque representa su tiempo dentro de la acción principal.`;
+        stage.scrollTop = 0;
+
+        if (processes.length > 0) {
+            showProcessDetails(processes[processes.length - 1]);
+        }
+    };
+
     const renderDiagnosis = () => {
         const analysis = data.analysis ?? {};
         const bottleneck = analysis.primary_bottleneck;
@@ -863,7 +1317,7 @@ const initializeLogFlameGraph = () => {
         }
 
         if (state.mode === 'timeline') {
-            renderBlockTimeline();
+            renderActionFlameTimeline();
 
             return;
         }
