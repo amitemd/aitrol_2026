@@ -4,6 +4,8 @@
 
 Migración incremental en curso. La búsqueda por nombre y el directorio paginado de pacientes ya utilizan el nuevo contexto; las demás pantallas y operaciones continúan en el legado.
 
+La revisión de paridad del 28 de octubre de 2026 confirmó que las vistas y métodos heredados de pacientes, agenda, preagenda, HC4 y admisión están presentes en el proyecto actual. Se corrigieron los contratos de rutas activos sin cambiar tablas ni identificadores.
+
 ## Uso
 
 Gestiona el ciclo de atención del paciente: turnos, admisión, consulta, historia clínica, enfermería, valoración preanestésica, procedimientos e indicaciones.
@@ -50,6 +52,16 @@ Esta operación es de solo lectura, conserva los identificadores y excluye el re
 - Revisar permisos y relación médico-empresa cuando una opción no sea visible.
 - Si un paciente no aparece en el autocompletado, buscarlo por sus nombres en el mismo orden registrado y confirmar que no sea el registro genérico.
 - Un término vacío o mayor a 100 caracteres se rechaza para evitar consultas amplias o abusivas.
+
+### Accesos verificados
+
+- Pacientes: `paciente.index`, `paciente.search` y `biopsias_paciente.index`.
+- Agenda médica: `agenda.index`, `agenda.search` y `agenda.agenda2`.
+- Agenda de procedimientos: `preagenda.index` y `preagenda.preagenda`.
+- Las reuniones conservan su actualización mediante `agenda.updatereunion`.
+- Las órdenes HC4 funcionales y de imágenes conservan sus formularios y vuelven a tener rutas de guardado registradas.
+
+Las declaraciones `resource` solo publican operaciones realmente implementadas por sus controladores. Esto evita que Laravel anuncie acciones heredadas que siempre terminaban en error al invocarse.
 
 ## Criterio de migración
 

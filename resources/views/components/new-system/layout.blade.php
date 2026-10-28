@@ -154,6 +154,9 @@
                     <li class="{{ request()->routeIs('new-system.companies.*') ? 'active' : '' }}" data-menu-entry>
                         <a href="{{ route('new-system.companies.index') }}"><i class="fa fa-building"></i> <span>Empresas</span></a>
                     </li>
+                    <li class="{{ request()->routeIs('new-system.operations.*') ? 'active' : '' }}" data-menu-entry>
+                        <a href="{{ route('new-system.operations.index') }}"><i class="fa fa-sitemap"></i> <span>Arquitectura modular</span></a>
+                    </li>
                     @can('manage-new-system-users')
                         <li class="{{ request()->routeIs('new-system.users.*') ? 'active' : '' }}" data-menu-entry>
                             <a href="{{ route('new-system.users.index') }}"><i class="fa fa-users"></i> <span>Usuarios</span></a>

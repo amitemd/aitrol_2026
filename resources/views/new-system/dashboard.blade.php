@@ -107,5 +107,15 @@
                 <div class="box-footer"><span class="text-muted"><i class="fa fa-bars"></i> Selecciona una opción en el menú lateral</span></div>
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="box box-primary new-system-module-box">
+                <div class="box-header with-border"><h3 class="box-title">Arquitectura modular</h3></div>
+                <div class="box-body">
+                    <p>Revisa los 34 módulos del legado, sus contextos DDD y prueba los puntos de entrada ya verificados.</p>
+                    <span class="icon"><i class="fa fa-sitemap"></i></span>
+                </div>
+                <div class="box-footer"><a href="{{ route('new-system.operations.index') }}" class="btn btn-primary btn-flat">Abrir atlas operativo</a></div>
+            </div>
+        </div>
     </div>
 </x-new-system.layout>

@@ -12,7 +12,9 @@
  */
 
 Route::match(['get', 'post'], 'examen/search', 'laboratorio\ExamenController@search')->name('examen.search');
-Route::resource('examen', 'laboratorio\ExamenController');
+Route::resource('examen', 'laboratorio\ExamenController')->only([
+    'index', 'create', 'store', 'show', 'edit', 'update',
+]);
 Route::get('examen/parametro/{examen}', 'laboratorio\ExamenController@parametro')->name('examen.parametro');
 Route::get('examen/parametro/{examen}/crear', 'laboratorio\ExamenController@create_parametro')->name('examen.create_parametro');
 Route::post('examen/parametro/store_parametro', 'laboratorio\ExamenController@store_parametro')->name('examen.store_parametro');
@@ -20,14 +22,18 @@ Route::get('examen/parametro/{id}/edit_parametro', 'laboratorio\ExamenController
 Route::post('examen/parametro/update_parametro', 'laboratorio\ExamenController@update_parametro')->name('examen.update_parametro');
 Route::get('examen/consulta/reporte', 'laboratorio\ExamenController@reporte')->name('examen.reporte');
 
-Route::resource('protocolo', 'laboratorio\ProtocoloController');
+Route::resource('protocolo', 'laboratorio\ProtocoloController')->only([
+    'index', 'create', 'store', 'show', 'edit', 'update',
+]);
 Route::get('protocolo/examen/{id}/{pr}', 'laboratorio\ProtocoloController@examen')->name('protocolo.examen');
 Route::get('protocolo/examen/eliminar/{id}/{pr}', 'laboratorio\ProtocoloController@eliminar')->name('protocolo.eliminar');
 Route::get('protocolo/busca/examen/{id}', 'laboratorio\ProtocoloController@buscaexamen')->name('protocolo.buscaexamen');
 Route::get('protocolo/busca/examen/{id}/{ex}', 'laboratorio\ProtocoloController@buscaexamenid')->name('protocolo.buscaexamenid');
 
 Route::match(['get', 'post'], 'orden/search', 'laboratorio\OrdenController@search')->name('orden.search');
-Route::resource('orden', 'laboratorio\OrdenController');
+Route::resource('orden', 'laboratorio\OrdenController')->only([
+    'index', 'create', 'store', 'show', 'edit', 'update',
+]);
 Route::get('orden/seguimiento/{id_orden}', 'laboratorio\OrdenController@seguimiento_listar')->name('orden.seguimiento_listar');
 Route::post('orden/seguimiento/store', 'laboratorio\OrdenController@seguimiento_store')->name('orden.seguimiento_store');
 Route::get('orden/eliminar/{id}', 'laboratorio\OrdenController@eliminar')->name('orden.eliminar');
@@ -67,7 +73,9 @@ Route::get('laboratorio/orden/revisar_convenios/{id}/', 'laboratorio\OrdenContro
 Route::post('orden/convenios/revision/fecha', 'laboratorio\OrdenController@fecha_convenios')->name('orden.fecha_convenios');
 
 Route::match(['get', 'post'], 'exa_agrupadores/search', 'laboratorio\Exa_agrupadorController@search')->name('exa_agrupadores.search');
-Route::resource('exa_agrupadores', 'laboratorio\Exa_agrupadorController');
+Route::resource('exa_agrupadores', 'laboratorio\Exa_agrupadorController')->only([
+    'index', 'create', 'store', 'show', 'edit', 'update',
+]);
 Route::match(['get', 'post'], 'orden/realizar/{id}/{r}', 'laboratorio\OrdenController@realizar')->name('orden.realizar');
 
 Route::get('control_semaforo', 'laboratorio\SemaforoController@index')->name('semaforo.index');
@@ -84,7 +92,9 @@ Route::get('estad_mes/examen/{mes}/{anio}', 'laboratorio\OrdenController@estad_e
 Route::get('estad_mes/examen/{mes}/{anio}/to_excel', 'laboratorio\OrdenController@to_excel')->name('orden.to_excel');
 
 Route::match(['get', 'post'], 'examen_costo/search', 'laboratorio\ExamenCostoController@search')->name('examen_costo.search');
-Route::resource('examen_costo', 'laboratorio\ExamenCostoController');
+Route::resource('examen_costo', 'laboratorio\ExamenCostoController')->only([
+    'index', 'create', 'show', 'edit', 'update',
+]);
 Route::get('examen_costo/consulta/reporte', 'laboratorio\ExamenCostoController@reporte')->name('examen_costo.reporte');
 
 Route::get('genera_costo', 'laboratorio\OrdenController@genera_costo')->name('detalle.genera_costo');

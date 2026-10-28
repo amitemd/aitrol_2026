@@ -21,7 +21,8 @@ Route::post('historiaclinica/protocolo/fotos2/ingresar/', 'hc_admision\Protocolo
 Route::get('historiaclinica/protocolo/imprime/{id}', 'hc_admision\ProtocoloController@imprime')->name('hc_protocolo.imprime');
 
 // rutas para Registro de Biopsias
-Route::resource('biopsias_paciente', 'Paciente_BiopsiaController');
+Route::post('biopsias_paciente/actualizar', 'Paciente_BiopsiaController@guardar_actualizar')->name('ciudad.guardar_actualizar');
+Route::resource('biopsias_paciente', 'Paciente_BiopsiaController')->only(['index', 'create']);
 Route::match(['get', 'post'], 'biopsias_paciente/search', 'BiopsiaPacienteController@search')->name('biopsias_paciente.search');
 
 Route::match(['get', 'post'], 'masterhc', 'hc_admision\ProtocoloController@masterhc')->name('masterhc.masterhc');

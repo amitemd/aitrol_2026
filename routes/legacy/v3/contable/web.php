@@ -17,96 +17,96 @@ Route::group(['middleware' => ['operacion.v3', 'general']], function () {
     /* API interna: requiere sesion v3 y se limita a la empresa activa. */
     Route::get('api/v1/tributario', 'v3\contable\Apis\ApiInicioController@show')
         ->name('v3.api.tributario');
-    /*Documentacion tecnica*/
+    /* Documentacion tecnica */
     Route::get('v3/documentacion', 'v3\contable\DocumentacionController@index')
         ->name('v3.documentacion');
     Route::get('v3/documentacion/{documento}', 'v3\contable\DocumentacionController@detalle')
         ->where('documento', '[a-z0-9_-]+')
         ->name('v3.documentacion.detalle');
 
-    /*Operacion y monitoreo*/
+    /* Operacion y monitoreo */
     Route::get('v3/operacion-monitoreo', 'v3\contable\OperacionMonitoreoController@index')
         ->name('v3.operacion-monitoreo');
     Route::post('v3/operacion-monitoreo/errores/{firma}/corregir', 'v3\contable\OperacionMonitoreoController@marcarErrorCorregido')
         ->where('firma', '[a-f0-9]{40}')
         ->name('v3.operacion-monitoreo.errores.corregir');
 
-    /*Matriz de madurez*/
+    /* Matriz de madurez */
     Route::get('v3/matriz-madurez', 'v3\contable\MatrizMadurezController@index')
         ->name('v3.matriz-madurez');
 
-    /*Admin*/
+    /* Admin */
     Route::get('v3/admin', 'v3\contable\AdminController@index');
     Route::match(['get', 'post'], 'v3/admin/{submodulo}', 'v3\contable\AdminController@index');
 
-    /*Config*/
+    /* Config */
     Route::get('v3/configuraciones', 'v3\contable\ConfiguracionesController@index');
     Route::match(['get', 'post'], 'v3/configuraciones/{submodulo}', 'v3\contable\ConfiguracionesController@index');
 
-    /*Utilidades*/
+    /* Utilidades */
     Route::get('v3/utilidades', 'v3\contable\UtilidadesController@index');
     Route::match(['get', 'post'], 'v3/utilidades/{submodulo}', 'v3\contable\UtilidadesController@index');
     Route::post('v3/utilidades/subirArchivo', 'v3\contable\UtilidadesController@subirArchivo');
     Route::post('v3/utilidades/verArchivo', 'v3\contable\UtilidadesController@verArchivo');
     Route::get('v3/utilidades/descargaArchivo/{filename}', 'v3\contable\UtilidadesController@descargaArchivo');
 
-    /*Contabilidad*/
+    /* Contabilidad */
     Route::get('v3/contabilidad', 'v3\contable\ContabilidadController@index');
     Route::match(['get', 'post'], 'v3/contabilidad/{submodulo}', 'v3\contable\ContabilidadController@index');
 
-    /*Proveedores*/
+    /* Proveedores */
     Route::get('v3/proveedores', 'v3\contable\ProveedoresController@index');
     Route::match(['get', 'post'], 'v3/proveedores/{submodulo}', 'v3\contable\ProveedoresController@index');
 
-    /*Clientes*/
+    /* Clientes */
     Route::get('v3/clientes', 'v3\contable\ClientesController@index');
     Route::match(['get', 'post'], 'v3/clientes/{submodulo}', 'v3\contable\ClientesController@index');
 
-    /*Ventas*/
+    /* Ventas */
     Route::get('v3/ventas', 'v3\contable\VentasController@index');
     Route::match(['get', 'post'], 'v3/ventas/{submodulo}', 'v3\contable\VentasController@index');
     Route::match(['get', 'post'], 'v3/ventas/{submodulo}/{extra}', 'v3\contable\VentasController@index');
 
-    /*Reportes*/
+    /* Reportes */
     Route::get('v3/reportes', 'v3\contable\ReportesController@index');
     Route::match(['get', 'post'], 'v3/reportes/{submodulo}', 'v3\contable\ReportesController@index');
     Route::match(['get', 'post'], 'v3/reportes/{submodulo}/{extra}', 'v3\contable\ReportesController@index');
 
-    /*Compras*/
+    /* Compras */
     Route::get('v3/compras', 'v3\contable\ComprasController@index');
     Route::match(['get', 'post'], 'v3/compras/{submodulo}', 'v3\contable\ComprasController@index');
 
-    /*RecursosHumanos*/
+    /* RecursosHumanos */
     Route::get('v3/recursoshumanos', 'v3\contable\RecursosHumanosController@index');
     Route::match(['get', 'post'], 'v3/recursoshumanos/{submodulo}', 'v3\contable\RecursosHumanosController@index');
 
-    /*CajaBanco*/
-    Route::get('v3/cajabancos', 'v3\contable\CajaBancosController@index');
-    Route::match(['get', 'post'], 'v3/cajabancos/{submodulo}', 'v3\contable\CajaBancosController@index');
-    Route::get('v3/cajabancos/{submodulo}/{id}', 'v3\contable\CajaBancosController@index');
+    /* CajaBanco */
+    Route::get('v3/cajabancos', 'v3\contable\CajaBancosController@index')->name('v3.cash-management.index');
+    Route::match(['get', 'post'], 'v3/cajabancos/{submodulo}', 'v3\contable\CajaBancosController@index')->name('v3.cash-management.module');
+    Route::get('v3/cajabancos/{submodulo}/{id}', 'v3\contable\CajaBancosController@index')->name('v3.cash-management.show');
 
-    /*GuiadeRemision*/
+    /* GuiadeRemision */
     Route::get('v3/guiaderemision', 'v3\contable\GuiadeRemisionController@index');
     Route::match(['get', 'post'], 'v3/guiaderemision/{submodulo}', 'v3\contable\GuiadeRemisionController@index');
 
-    /*ActivosFijos*/
+    /* ActivosFijos */
     Route::get('v3/activosfijos', 'v3\contable\ActivosFijosController@index');
     Route::match(['get', 'post'], 'v3/activosfijos/{submodulo}', 'v3\contable\ActivosFijosController@index');
 
-    /*Inventario*/
+    /* Inventario */
     Route::get('v3/inventario', 'v3\contable\InventarioController@index');
     Route::match(['get', 'post'], 'v3/inventario/{submodulo}', 'v3\contable\InventarioController@index');
 
-    /*EmisionDocumentos*/
+    /* EmisionDocumentos */
     Route::get('v3/opcionesdocumentos', 'v3\contable\OpcionesDocumentosController@index');
     Route::match(['get', 'post'], 'v3/opcionesdocumentos/{submodulo}', 'v3\contable\OpcionesDocumentosController@index');
 
-    /*Tributario*/
+    /* Tributario */
     Route::get('v3/tributario', 'v3\contable\TributarioController@index');
     Route::match(['get', 'post'], 'v3/tributario/{submodulo}', 'v3\contable\TributarioController@index');
     Route::match(['get', 'post'], 'v3/tributario/{submodulo}/{id}', 'v3\contable\TributarioController@index');
 
-    /*Importaciones*/
+    /* Importaciones */
     Route::get('v3/importaciones', 'v3\contable\ImportacionesController@index');
     Route::match(['get', 'post'], 'v3/importaciones/{submodulo}', 'v3\contable\ImportacionesController@index');
 });

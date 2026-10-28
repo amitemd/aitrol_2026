@@ -4,6 +4,8 @@
 
 En migración. La lectura de líneas para editar asientos ya atraviesa un caso de uso y un adaptador modular; los demás procesos financieros continúan en el legado.
 
+La revisión de paridad del 28 de octubre de 2026 incluyó caja, caja y bancos, cierre contable, cierre de caja general, cierre de laboratorio y la entrada V3 de caja chica. Se conservaron los datos y la estructura de la base existente.
+
 ## Uso
 
 Administra plan de cuentas, diarios, asientos, cartera, bancos, balances, activos, depreciaciones, amortizaciones y planeación financiera.
@@ -37,6 +39,17 @@ Esta etapa es exclusivamente de lectura. No crea tablas, no altera asientos y no
 - No desactivar `ONLY_FULL_GROUP_BY`; corregir las consultas incompatibles.
 - Si los totales no coinciden, comparar las líneas originales por `id_asiento_cabecera`, empresa e `id_plan_cuenta` antes de editar.
 - Antes de cambiar una cuenta o asiento, revisar cierres y documentos de origen.
+
+### Accesos verificados
+
+- Puntos de emisión/caja: `caja.index`.
+- Caja y bancos: `caja_banco.index`.
+- Cierre contable mensual: `cierre.mensual.index`.
+- Cierre de caja general: `reporte.index_cierre`.
+- Cierre de caja de laboratorio: `c_caja.index`.
+- Caja chica V3: `/v3/cajabancos/cajachica`.
+
+Las rutas de mantenimiento de caja y cierre mensual solo publican acciones implementadas. No se alteraron saldos, asientos, arqueos, cierres ni configuraciones.
 
 ## Criterio de migración
 

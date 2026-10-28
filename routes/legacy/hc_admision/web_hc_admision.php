@@ -29,7 +29,9 @@ Route::get('control/documentos/admision/sube/archivo/{hcid}/{doc}', 'hc_admision
 Route::get('controldoc/imprime/{ahid}', 'hc_admision\ControlDocController@imprimirpdf')->name('controldoc.imprimirpdf');
 Route::get('controldoc/imprime_datos_paciente/{id_paciente}', 'hc_admision\ControlDocController@imprimirdatos_paciente')->name('controldoc.imprimirdatos_paciente');
 Route::get('controldoc/imprime_resumen/{id}', 'hc_admision\ControlDocController@imprimirpdf_resumen')->name('controldoc.imprimirpdf_resumen');
-Route::resource('controldoc', 'hc_admision\ControlDocController');
+Route::resource('controldoc', 'hc_admision\ControlDocController')->only([
+    'index', 'create', 'store', 'show', 'edit',
+]);
 
 Route::get('controldoc/form_cert/{id}', 'hc_admision\ControlDocController@form_cert')->name('controldoc.form_cert');
 
@@ -50,11 +52,11 @@ Route::get('historia/drogasadministradas/{id_record}', 'hc_admision\HistoriaCont
 Route::get('admisiones/cie_10/{cie}', 'AdmisionController@busca_cie_10')->name('admision.busca_cie_10');
 
 // rutas de tecnicas anestesicas
-Route::resource('tecnicas_anestesicas', 'hc_admision\TecnicasAnestesicasController');
+Route::resource('tecnicas_anestesicas', 'hc_admision\TecnicasAnestesicasController')->only('index');
 
 Route::get('convenios/admision/{seg}/{cita}/{old}', 'AdmisionController@valida_convenio')->name('admision.valida_convenio');
 
-Route::match(['get', 'post'], 'controldoc/search', 'hc_admision\ControlDocController@search')->name('record.anestesiologo');
+Route::match(['get', 'post'], 'controldoc/record/anestesiologo', 'hc_admision\ControlDocController@search')->name('record.anestesiologo');
 
 Route::get('historiaclinica/anestesiologia/{ag}', 'hc_admision\AnestesiologiaController@mostrar')->name('anestesiologia.mostrar');
 

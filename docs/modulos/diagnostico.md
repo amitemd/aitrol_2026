@@ -4,6 +4,8 @@
 
 En migración. El catálogo y la selección de diagnósticos CIE-10 ya atraviesan el contexto modular; laboratorio y procedimientos diagnósticos continúan en el legado.
 
+La revisión de paridad del 28 de octubre de 2026 confirmó la presencia de los controladores y vistas del laboratorio base. Las entradas de recepción, control, resultados, exámenes, protocolos y agenda de laboratorio conservan sus nombres de ruta históricos.
+
 ## Uso
 
 Administra órdenes, muestras, resultados, validaciones, diagnósticos CIE-10, procedimientos endoscópicos y sus evidencias.
@@ -42,6 +44,17 @@ No se requiere una URL nueva: el acceso continúa desde las pantallas clínicas 
 - Para archivos faltantes, validar ruta, permisos y registro relacionado sin reemplazar evidencias originales.
 - Si el autocompletado no devuelve resultados, comprobar el código directamente en `cie_10_3` y `cie_10_4` y revisar que la entrada no supere 100 caracteres.
 - No concatenar texto recibido en SQL; toda nueva consulta de catálogo debe añadirse al contrato y conservar parámetros enlazados.
+
+### Accesos verificados
+
+- Recepción de órdenes: `orden.index`.
+- Control de laboratorio: `orden.index_control`.
+- Ingreso de resultados: `nuevoResultado.realizar_new_lista`.
+- Catálogo de exámenes: `examen.index`.
+- Protocolos: `protocolo.index`.
+- Agenda de laboratorio: `agendalabs.agenda`.
+
+Las rutas de recursos de laboratorio fueron limitadas a las acciones que existen en cada controlador. Las pantallas continúan usando las tablas y datos actuales; no se añadieron migraciones.
 
 ## Pruebas
 

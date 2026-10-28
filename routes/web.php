@@ -9,6 +9,13 @@ use App\Http\Controllers\NewSystem\PasswordResetController as NewSystemPasswordR
 use App\Http\Controllers\NewSystem\UserController as NewSystemUserController;
 use App\Http\Controllers\Observability\SystemAuditController;
 use App\Http\Controllers\Observability\SystemLogController;
+use App\Http\Controllers\Operations\AdministrationController;
+use App\Http\Controllers\Operations\ArchitectureContextController;
+use App\Http\Controllers\Operations\CashManagementController;
+use App\Http\Controllers\Operations\LaboratoryController;
+use App\Http\Controllers\Operations\MedicalSchedulingController;
+use App\Http\Controllers\Operations\OperationalModulesController;
+use App\Http\Controllers\Operations\PatientBiopsyController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', NewSystemDashboardController::class)
@@ -70,4 +77,16 @@ Route::middleware(['auth', 'new.context'])->name('new-system.')->group(function 
         ->names('users')
         ->except(['show', 'destroy'])
         ->middleware('can:manage-new-system-users');
+
+    Route::prefix('modulos-operativos')->name('operations.')->group(function (): void {
+        Route::get('/', OperationalModulesController::class)->name('index');
+        Route::get('/parte-medica', MedicalSchedulingController::class)->name('medical');
+        Route::get('/pacientes-biopsias', PatientBiopsyController::class)->name('patients');
+        Route::get('/laboratorio', LaboratoryController::class)->name('laboratory');
+        Route::get('/administracion', AdministrationController::class)->name('administration');
+        Route::get('/caja-bancos-cierres', CashManagementController::class)->name('cash');
+        Route::get('/contextos/{contextKey}', ArchitectureContextController::class)
+            ->where('contextKey', '[a-z-]+')
+            ->name('contexts.show');
+    });
 });

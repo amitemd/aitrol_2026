@@ -44,6 +44,29 @@ El orden ejecutable se encuentra en `config/modular_architecture.php`:
 
 Los 34 módulos inventariados en `config/modules.php` están asignados exactamente una vez a estos contextos. Una prueba local valida esa cobertura y evita módulos duplicados u olvidados.
 
+## Atlas operativo
+
+La ruta autenticada `/modulos-operativos` materializa el inventario completo mediante un puerto de aplicación y un adaptador de configuración. No consulta ni modifica tablas: utiliza `config/modules.php` y `config/modular_architecture.php` como catálogo técnico y comprueba las rutas registradas en Laravel.
+
+Los primeros puntos de entrada verticales son:
+
+| Área operativa | Ruta nueva | Contextos relacionados |
+| --- | --- | --- |
+| Parte médica, agenda y preagenda | `/modulos-operativos/parte-medica` | Pacientes y atención clínica |
+| Pacientes y biopsias | `/modulos-operativos/pacientes-biopsias` | Pacientes y atención clínica, Diagnóstico |
+| Laboratorio | `/modulos-operativos/laboratorio` | Diagnóstico |
+| Administración, empresas y usuarios | `/modulos-operativos/administracion` | Identidad e institucional |
+| Caja, bancos y cierres | `/modulos-operativos/caja-bancos-cierres` | Contabilidad y finanzas, Facturación |
+
+Cada entrada sigue el flujo `Controlador -> Consulta de aplicación -> Definición de dominio -> Puerto -> Adaptador Laravel`. El botón final abre la ruta heredada correspondiente; por tanto, no se duplican formularios, escrituras ni datos durante esta primera etapa.
+
+El atlas diferencia dos conceptos:
+
+- **Contexto delimitado:** frontera estable de reglas de negocio. Hay nueve y cubren todo el legado.
+- **Área operativa:** agrupación de accesos que el usuario reconoce en su trabajo diario. Puede cruzar más de un contexto sin acoplar sus reglas internas.
+
+La comprobación marca un acceso como listo únicamente cuando el nombre de ruta existe y su controlador o acción es invocable. Esto permite avanzar módulo por módulo sin declarar una migración completa antes de que sea verificable.
+
 ## Estrategia de convivencia
 
 1. Identificar una operación del controlador legado.

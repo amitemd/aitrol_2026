@@ -281,7 +281,9 @@ Route::match(['get', 'post'], '/contable/retencion/buscador', 'contable\Retencio
 Route::match(['get', 'post'], '/contable/retencion/pruebas', 'contable\RetencionesController@autcom_fc')->name('retenciones.autcom_fc');
 
 // MANTENIMIENTO PUNTO DE EMISION
-Route::resource('contable/caja', 'contable\CajaController');
+Route::resource('contable/caja', 'contable\CajaController')->only([
+    'index', 'store', 'update',
+]);
 
 // BALANCE GENERALs
 Route::match(['get', 'post'], 'contable/balance/general', 'contable\BalanceGeneralController@index')->name('balancegeneral.index');

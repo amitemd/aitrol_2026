@@ -4,6 +4,8 @@
 
 Migración incremental en curso. La selección de empresa ya atraviesa el nuevo contexto; usuarios, permisos y demás catálogos continúan en el legado.
 
+La revisión de paridad del 28 de octubre de 2026 confirmó los accesos de administración, empresas y usuarios. El catálogo de empresas mantiene las operaciones implementadas y ya no publica una eliminación inexistente.
+
 ## Uso
 
 Administra el acceso al sistema y los datos maestros que identifican la operación: usuarios, perfiles, empresas, sucursales, médicos, seguros y configuración hospitalaria.
@@ -37,6 +39,14 @@ La implementación usará las tablas actuales mediante repositorios. No se dupli
 - Antes de modificar catálogos maestros, comprobar qué módulos los consumen.
 - Si la empresa activa desaparece del selector, validar `empresa.estado` y la relación en `usuario_empresa`.
 - Si un administrador no ve una empresa, comprobar que la empresa se encuentre activa; el administrador no depende de `usuario_empresa`.
+
+### Accesos verificados
+
+- Catálogo de empresas: `empresa.catalogo.index`.
+- Administración moderna de usuarios: `new-system.users.index`.
+- Administración heredada de usuarios: `user-management.index`.
+
+Ambas administraciones siguen trabajando con las tablas actuales de usuarios, tipos, permisos y relación usuario-empresa.
 
 ## Criterio de migración
 

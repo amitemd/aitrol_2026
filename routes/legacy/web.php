@@ -115,7 +115,9 @@ Route::match(['GET', 'POST'], 'paciente/search', 'PacienteController@search')->n
 // Las rutas literales deben declararse antes del recurso para no ser capturadas por paciente/{paciente}.
 Route::match(['get', 'post'], 'paciente/nombre/', 'PacienteController@nombre')->name('paciente.nombre');
 Route::match(['get', 'post'], 'paciente/nombre2/', 'PacienteController@nombre2')->name('paciente.nombre2');
-Route::resource('paciente', 'PacienteController');
+Route::resource('paciente', 'PacienteController')->only([
+    'index', 'create', 'store', 'show', 'edit', 'update',
+]);
 Route::post('paciente/subir_imagen_usuario', 'PacienteController@subir_imagen_usuario')->name('paciente.subir_imagen_usuario');
 Route::match(['PUT', 'PATCH'], 'paciente/{id}/0', 'PacienteController@updatefamiliar')->name('paciente.updatefamiliar');
 // buscar por nombre
@@ -128,7 +130,9 @@ Route::match(['get', 'post'], 'agenda/paciente/pornombre', 'PacienteController@p
 Route::match(['get', 'post'], 'agenda/search', 'AgendaController@search')->name('agenda.search');
 Route::match(['get', 'post'], 'reporte/agenda_diario', 'AgendaController@reportediario')->name('agenda.reportediario');
 Route::post('reporte/excel', 'AgendaController@excel')->name('agenda.excel');
-Route::resource('agenda', 'AgendaController');
+Route::resource('agenda', 'AgendaController')->only([
+    'index', 'store', 'show',
+]);
 Route::get('agenda/calendario/{index}', 'AgendaController@agenda')->name('agenda.agenda');
 Route::get('agenda/calendario/{index}/{fecha}', 'AgendaController@agenda2')->name('agenda.fecha');
 
@@ -152,6 +156,7 @@ Route::match(['get', 'post'], 'agenda/{agenda}/edit/{doctor}', 'AgendaController
 Route::match(['get', 'post'], 'agenda/edit/pre/{agenda}/{doctor}', 'AgendaController@edit2_pre')->name('agenda.edit2_pre');
 
 Route::post('agenda/reunion/{index}', 'AgendaController@updatereunion2')->name('agenda.updatereunion2');
+Route::post('agenda/reunion/actualizar/{id}', 'AgendaController@updatereunion')->name('agenda.updatereunion');
 Route::post('agenda/{index}/{doctor}', 'AgendaController@update2')->name('agenda.update2');
 Route::get('agenda/horario/doctores/{id}', 'AgendaController@detalle')->name('agenda.detalle');
 
@@ -173,7 +178,7 @@ Route::get('agendar_reunion/{id}/{i}', 'VdoctorController@agendar_reunion')->nam
 // rutas para la empresa
 Route::resource('empresa', 'EmpresaController')->names([
     'index' => 'empresa.catalogo.index',
-]);
+])->only(['index', 'create', 'store', 'show', 'edit', 'update']);
 Route::post('empresa/search', 'EmpresaController@search')->name('empresa.search');
 Route::get('logo/{name}', 'EmpresaController@load');
 Route::post('empresa/subir_logo', 'EmpresaController@subir_logo')->name('empresa.subir_logo');
@@ -266,7 +271,10 @@ Route::get('cortesia/editarcortesia/{id}/{i}', 'CortesiaController@editarcortesi
 Route::get('agendaprocedimiento', 'PreAgendaController@preagenda')->name('preagenda.procedimiento');
 Route::get('agendaprocedimiento/{fecha}', 'PreAgendaController@preagenda2')->name('preagenda.procedimiento2');
 
-Route::resource('preagenda', 'PreAgendaController');
+Route::get('preagenda/calendario/general', 'PreAgendaController@preagenda')->name('preagenda.preagenda');
+Route::resource('preagenda', 'PreAgendaController')->only([
+    'index', 'store', 'show', 'edit', 'update',
+]);
 Route::get('agendaprocedimiento/nuevo/', 'PreAgendaController@nuevo')->name('preagenda.nuevo');
 Route::match(['get', 'post'], 'agenda_procedimiento/pentax_procedimiento', 'PreAgendaController@pentax')->name('preagenda.pentax');
 Route::get('agendaprocedimiento/nuevo/{fecha}/{i}/{sala}', 'PreAgendaController@nuevo')->name('preagenda.nuevo2');

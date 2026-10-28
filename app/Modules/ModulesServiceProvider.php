@@ -23,6 +23,10 @@ use App\Modules\Institutional\Infrastructure\Persistence\LaravelCompanyAccessRep
 use App\Modules\InventoryOperations\Application\Contracts\InventoryStockReadRepository;
 use App\Modules\InventoryOperations\Infrastructure\Persistence\LaravelInventoryStockReadRepository;
 use App\Modules\Shared\Application\ContextMap;
+use App\Modules\Shared\Application\Contracts\ArchitectureCatalog;
+use App\Modules\Shared\Application\Contracts\RouteReadinessGateway;
+use App\Modules\Shared\Infrastructure\Configuration\LaravelArchitectureCatalog;
+use App\Modules\Shared\Infrastructure\Routing\LaravelRouteReadinessGateway;
 use App\Modules\SupportIntegrations\Application\Contracts\AuditTrailRepository;
 use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
 use App\Modules\SupportIntegrations\Infrastructure\Logging\LaravelSystemLogRepository;
@@ -40,6 +44,9 @@ final class ModulesServiceProvider extends ServiceProvider
                 (array) $app['config']->get('modular_architecture', []),
             ),
         );
+
+        $this->app->bind(ArchitectureCatalog::class, LaravelArchitectureCatalog::class);
+        $this->app->bind(RouteReadinessGateway::class, LaravelRouteReadinessGateway::class);
 
         $this->app->bind(
             SalesInvoiceReadRepository::class,
