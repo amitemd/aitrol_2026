@@ -176,6 +176,11 @@ const initializeLogFlameGraph = () => {
     const dateSubmitButton = modal.querySelector('[data-flame-date-submit]');
     const dateStatus = modal.querySelector('[data-flame-date-status]');
     const auditByProcess = window.AitrolAuditByProcess ?? {};
+    const initialTimelinePageSize = dateFromInput?.value
+        && dateToInput?.value
+        && dateFromInput.value !== dateToInput.value
+        ? 'all'
+        : '25';
     const state = {
         profileKey: data.profiles[0].key,
         mode: 'diagnosis',
@@ -183,8 +188,10 @@ const initializeLogFlameGraph = () => {
         zoomId: null,
         search: '',
         timelinePage: null,
-        timelinePageSize: 25,
+        timelinePageSize: initialTimelinePageSize,
     };
+
+    timelinePageSize.value = initialTimelinePageSize;
 
     const activeProfile = () => data.profiles.find((profile) => profile.key === state.profileKey) ?? data.profiles[0];
 
@@ -881,7 +888,7 @@ const initializeLogFlameGraph = () => {
         const allProcesses = (Array.isArray(timeline.processes) ? [...timeline.processes] : [])
             .filter((process) => Number.isFinite(Number(process.timestamp_ms)))
             .sort((left, right) => Number(left.timestamp_ms) - Number(right.timestamp_ms));
-        const chartWidth = Math.max(520, stage.clientWidth - 16);
+        const viewportWidth = Math.max(520, stage.clientWidth - 16);
         const chartHeight = Math.max(520, stage.clientHeight - 20);
         const headerTop = 30;
         const headerHeight = 112;
@@ -892,7 +899,6 @@ const initializeLogFlameGraph = () => {
             bottom: 42,
             left: 54,
         };
-        const plotWidth = Math.max(360, chartWidth - margins.left - margins.right);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
         const searchableProcess = (process) => {
             const audit = auditByProcess[process.id] ?? { technical: [], activities: [] };
@@ -937,7 +943,10 @@ const initializeLogFlameGraph = () => {
         const filteredProcesses = searchTerm === ''
             ? allProcesses
             : allProcesses.filter((process) => searchableProcess(process).includes(searchTerm));
-        const pageSize = Math.max(10, Math.min(100, Number(state.timelinePageSize) || 25));
+        const showAllProcesses = state.timelinePageSize === 'all';
+        const pageSize = showAllProcesses
+            ? Math.max(1, filteredProcesses.length)
+            : Math.max(10, Math.min(100, Number(state.timelinePageSize) || 25));
         const totalPages = Math.max(1, Math.ceil(filteredProcesses.length / pageSize));
 
         if (state.timelinePage === null) {
@@ -951,6 +960,14 @@ const initializeLogFlameGraph = () => {
 
         const visibleFrom = filteredProcesses.length === 0 ? 0 : pageStart + 1;
         const visibleTo = Math.min(pageStart + processes.length, filteredProcesses.length);
+        const minimumActionSlot = 54;
+        const chartWidth = showAllProcesses
+            ? Math.max(
+                viewportWidth,
+                margins.left + margins.right + (processes.length * minimumActionSlot),
+            )
+            : viewportWidth;
+        const plotWidth = Math.max(360, chartWidth - margins.left - margins.right);
 
         timelinePageLabel.textContent = `${visibleFrom}–${visibleTo} de ${filteredProcesses.length}`;
         timelinePrevious.disabled = state.timelinePage === 0;
@@ -1030,7 +1047,7 @@ const initializeLogFlameGraph = () => {
 
         svg.replaceChildren();
         svg.setAttribute('viewBox', `0 0 ${chartWidth} ${chartHeight}`);
-        svg.setAttribute('width', '100%');
+        svg.setAttribute('width', showAllProcesses ? chartWidth : '100%');
         svg.setAttribute('height', chartHeight);
         emptyState.classList.toggle('hidden', processes.length > 0);
         emptyState.classList.toggle('grid', processes.length === 0);
@@ -1637,6 +1654,8 @@ const initializeLogFlameGraph = () => {
             state.profileKey = data.profiles?.[0]?.key ?? null;
             state.zoomId = null;
             state.timelinePage = 0;
+            state.timelinePageSize = 'all';
+            timelinePageSize.value = 'all';
 
             if (Array.isArray(data.profiles) && data.profiles.length > 0) {
                 profileSelect.replaceChildren(...data.profiles.map((profile) => {
@@ -1700,7 +1719,9 @@ const initializeLogFlameGraph = () => {
         render();
     });
     timelinePageSize.addEventListener('change', () => {
-        state.timelinePageSize = Number(timelinePageSize.value) || 25;
+        state.timelinePageSize = timelinePageSize.value === 'all'
+            ? 'all'
+            : Number(timelinePageSize.value) || 25;
         state.timelinePage = null;
         render();
     });

@@ -136,6 +136,7 @@
                                     <option value="25" selected>25</option>
                                     <option value="50">50</option>
                                     <option value="100">100</option>
+                                    <option value="all">Todos</option>
                                 </select>
                             </label>
                             <button type="button" data-flame-timeline-previous class="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-base hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Procesos anteriores">‹</button>
@@ -293,8 +294,8 @@
 
                 <section data-flame-chart class="hidden min-h-0 grid-cols-[28px_minmax(0,1fr)] bg-white xl:grid-cols-[28px_minmax(0,1fr)_360px]">
                     <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Tiempo de ejecución (ms)</div>
-                    <div data-flame-stage class="relative min-h-0 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
-                        <svg data-flame-svg class="block w-full select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
+                    <div data-flame-stage class="relative min-h-0 overflow-auto p-2 sm:p-4">
+                        <svg data-flame-svg class="block max-w-none select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
                         <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-500">No hay datos para esta métrica.</div>
                     </div>
                     <aside data-flame-inspector class="col-span-2 max-h-72 min-h-0 overflow-y-auto border-t border-slate-200 bg-slate-50 p-4 xl:col-span-1 xl:max-h-none xl:border-t-0 xl:border-l">
