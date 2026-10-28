@@ -28,7 +28,9 @@ use App\Modules\Shared\Application\Contracts\RouteReadinessGateway;
 use App\Modules\Shared\Infrastructure\Configuration\LaravelArchitectureCatalog;
 use App\Modules\Shared\Infrastructure\Routing\LaravelRouteReadinessGateway;
 use App\Modules\SupportIntegrations\Application\Contracts\AuditTrailRepository;
+use App\Modules\SupportIntegrations\Application\Contracts\RequestArchitectureInspector;
 use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
+use App\Modules\SupportIntegrations\Infrastructure\Architecture\ReflectionRequestArchitectureInspector;
 use App\Modules\SupportIntegrations\Infrastructure\Logging\LaravelSystemLogRepository;
 use App\Modules\SupportIntegrations\Infrastructure\Persistence\LaravelAuditTrailRepository;
 use Illuminate\Contracts\Foundation\Application;
@@ -106,6 +108,11 @@ final class ModulesServiceProvider extends ServiceProvider
         $this->app->bind(
             AuditTrailRepository::class,
             LaravelAuditTrailRepository::class,
+        );
+
+        $this->app->singleton(
+            RequestArchitectureInspector::class,
+            ReflectionRequestArchitectureInspector::class,
         );
     }
 }

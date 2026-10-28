@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Observability;
 
 use App\Http\Controllers\Controller;
-use App\Modules\SupportIntegrations\Application\Contracts\SystemLogRepository;
 use App\Modules\SupportIntegrations\Application\Data\SystemLogFilters;
+use App\Modules\SupportIntegrations\Application\Queries\BuildSystemObservabilityReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,7 +23,7 @@ final class SystemLogController extends Controller
         'DEBUG',
     ];
 
-    public function index(Request $request, SystemLogRepository $repository): View
+    public function index(Request $request, BuildSystemObservabilityReport $query): View
     {
         $stored = (array) $request->session()->get('observability.logs.filters', []);
         $filters = new SystemLogFilters(
@@ -34,11 +34,14 @@ final class SystemLogController extends Controller
         $perPage = $this->perPage($stored['per_page'] ?? config('observability.per_page', 25));
         $page = max(1, $request->integer('log_page', 1));
 
+        $report = $query->handle($filters, $page, $perPage);
+
         return view('observability.logs', [
             'filters' => $filters,
             'levels' => self::LEVELS,
             'perPage' => $perPage,
-            'result' => $repository->read($filters, $page, $perPage),
+            'result' => $report->logs,
+            'auditByProcess' => $report->auditByProcess,
         ]);
     }
 

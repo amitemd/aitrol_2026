@@ -32,18 +32,18 @@
             <div>
                 <p class="text-xs font-bold tracking-[0.18em] text-cyan-700 uppercase">Observabilidad basada en logs</p>
                 <h2 id="activity-map-title" class="mt-1 text-2xl font-black text-slate-950">Análisis de rendimiento y cuellos de botella</h2>
-                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Identifique las rutas que concentran más tiempo, compare el P95 y revise las solicitudes más lentas. La cronología y las pilas quedan disponibles para profundizar en cada caso.</p>
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Identifique las rutas que concentran más tiempo, compare el P95 y revise las solicitudes más lentas. El flame graph combina la pila técnica, la auditoría y los eventos anómalos para profundizar en cada caso.</p>
 
                 <div class="mt-5 grid gap-3 sm:grid-cols-3">
                     <div class="rounded-2xl border border-orange-200 bg-orange-50 p-4">
-                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · tiempo</span>
+                        <span class="text-[11px] font-black tracking-wide text-orange-700 uppercase">Eje X · tiempo inclusivo</span>
                         <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->timeline['span_ms'], 1) }} ms</strong>
-                        <p class="mt-1 text-xs leading-5 text-slate-600">Tiempo transcurrido dentro de la ventana analizada.</p>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">El ancho de cada bloque es proporcional al tiempo registrado.</p>
                     </div>
                     <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · procesos</span>
-                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->timeline['visible_processes']) }} procesos</strong>
-                        <p class="mt-1 text-xs leading-5 text-slate-600">Una fila independiente por cada evento del log.</p>
+                        <span class="text-[11px] font-black tracking-wide text-rose-700 uppercase">Eje Y · profundidad</span>
+                        <strong class="mt-1 block text-xl text-slate-950">{{ number_format($flameGraph->maximumDepth) }} niveles</strong>
+                        <p class="mt-1 text-xs leading-5 text-slate-600">Cada nivel muestra una capa de la cadena de ejecución.</p>
                     </div>
                     <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                         <span class="text-[11px] font-black tracking-wide text-amber-700 uppercase">Trazas reales</span>
@@ -92,7 +92,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
                             <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Diagnóstico</button>
-                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Cronología</button>
+                            <button type="button" data-flame-mode-option="timeline" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Flame graph y auditoría</button>
                             <button type="button" data-flame-mode-option="stack" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-blue-500">Pilas</button>
                         </nav>
                         <label data-flame-profile-wrapper class="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600">
@@ -133,7 +133,7 @@
                         </div>
                     </div>
                     <div class="flex shrink-0 flex-wrap gap-2">
-                        <button type="button" data-flame-jump-mode="timeline" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 shadow-sm outline-none hover:border-blue-300 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">Ver cronología</button>
+                        <button type="button" data-flame-jump-mode="timeline" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 shadow-sm outline-none hover:border-blue-300 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">Abrir flame graph</button>
                         <button type="button" data-flame-jump-mode="stack" class="rounded-xl bg-blue-700 px-3 py-2 text-[11px] font-black text-white shadow-sm outline-none hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500">Explorar pilas</button>
                     </div>
                 </div>
@@ -218,12 +218,12 @@
                             <section class="overflow-hidden rounded-3xl border border-rose-200 bg-white shadow-sm">
                                 <div class="flex flex-col gap-3 border-b border-rose-100 bg-rose-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                                     <div>
-                                        <p class="text-[11px] font-black tracking-[0.16em] text-rose-700 uppercase">Errores prioritarios</p>
-                                        <h3 class="mt-1 text-lg font-black text-rose-950">Excepciones que requieren revisión</h3>
+                                        <p class="text-[11px] font-black tracking-[0.16em] text-rose-700 uppercase">Alertas prioritarias</p>
+                                        <h3 class="mt-1 text-lg font-black text-rose-950">Errores y advertencias que requieren revisión</h3>
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <span class="w-fit rounded-full bg-rose-700 px-3 py-1.5 text-xs font-black text-white">{{ number_format($performance['error_processes']) }} eventos críticos</span>
-                                        <button type="button" data-flame-show-errors class="rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 shadow-sm outline-none hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500">Analizar en Pilas →</button>
+                                        <span class="w-fit rounded-full bg-rose-700 px-3 py-1.5 text-xs font-black text-white">{{ number_format($performance['error_processes']) }} eventos anómalos</span>
+                                        <button type="button" data-flame-show-errors class="rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-700 shadow-sm outline-none hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500">Analizar alertas en Pilas →</button>
                                     </div>
                                 </div>
                                 <div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
@@ -256,12 +256,44 @@
                     </div>
                 </section>
 
-                <section data-flame-chart class="hidden min-h-0 grid-cols-[28px_minmax(0,1fr)] bg-white">
-                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Eventos</div>
+                <section data-flame-chart class="hidden min-h-0 grid-cols-[28px_minmax(0,1fr)] bg-white xl:grid-cols-[28px_minmax(0,1fr)_360px]">
+                    <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Profundidad de la pila</div>
                     <div data-flame-stage class="relative min-h-0 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
                         <svg data-flame-svg class="block w-full select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
                         <div data-flame-empty class="hidden h-full place-items-center text-center text-sm text-slate-500">No hay datos para esta métrica.</div>
                     </div>
+                    <aside data-flame-inspector class="col-span-2 max-h-72 min-h-0 overflow-y-auto border-t border-slate-200 bg-slate-50 p-4 xl:col-span-1 xl:max-h-none xl:border-t-0 xl:border-l">
+                        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-[10px] font-black tracking-[0.15em] text-blue-700 uppercase">Acción seleccionada</p>
+                                    <h3 data-flame-inspector-title class="mt-1 break-words text-sm font-black text-slate-950">Seleccione un bloque</h3>
+                                </div>
+                                <span data-flame-inspector-risk class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-600">Sin selección</span>
+                            </div>
+                            <dl class="mt-4 grid grid-cols-2 gap-2 text-[11px]">
+                                <div class="rounded-xl bg-slate-50 p-2.5"><dt class="font-bold text-slate-500">Inicio</dt><dd data-flame-inspector-date class="mt-1 font-semibold text-slate-900">—</dd></div>
+                                <div class="rounded-xl bg-slate-50 p-2.5"><dt class="font-bold text-slate-500">Duración</dt><dd data-flame-inspector-duration class="mt-1 font-semibold text-slate-900">—</dd></div>
+                                <div class="col-span-2 rounded-xl bg-slate-50 p-2.5"><dt class="font-bold text-slate-500">Correlación</dt><dd data-flame-inspector-correlation class="mt-1 break-all font-mono text-slate-900">—</dd></div>
+                            </dl>
+                        </div>
+
+                        <section class="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <h4 class="text-xs font-black text-slate-950">Cadena técnica</h4>
+                            <p class="mt-1 text-[10px] leading-4 text-slate-500">Controlador real y dependencias asociadas por inyección.</p>
+                            <div data-flame-inspector-architecture class="mt-3 grid gap-2 text-[11px]"></div>
+                        </section>
+
+                        <section class="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex items-center justify-between gap-2"><h4 class="text-xs font-black text-slate-950">Auditoría correlacionada</h4><span data-flame-inspector-audit-count class="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-700">0</span></div>
+                            <div data-flame-inspector-audit class="mt-3 grid gap-2 text-[11px]"></div>
+                        </section>
+
+                        <section class="mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex items-center justify-between gap-2"><h4 class="text-xs font-black text-slate-950">Eventos fuera de lo normal</h4><span data-flame-inspector-log-count class="rounded-full bg-rose-50 px-2 py-1 text-[10px] font-black text-rose-700">0</span></div>
+                            <div data-flame-inspector-logs class="mt-3 grid gap-2 text-[11px]"></div>
+                        </section>
+                    </aside>
                 </section>
 
                 <footer class="grid max-h-32 shrink-0 gap-3 overflow-y-auto overflow-x-hidden border-t border-slate-200 bg-white px-4 py-3 text-xs sm:grid-cols-[1fr_auto] sm:items-center sm:px-6">
@@ -270,9 +302,10 @@
                         <p data-flame-detail-meta class="mt-1 break-words leading-5 text-slate-500">Seleccione Cronología o Pilas para explorar eventos individuales.</p>
                     </div>
                     <div data-flame-legend class="hidden flex-wrap items-center justify-between gap-4 text-slate-500 sm:justify-end">
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-rose-500"></i>Duración medida</span>
-                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-cyan-300 to-blue-600"></i>Evento sin duración</span>
-                        <span data-flame-x-axis class="font-semibold text-slate-700">Eje X · tiempo transcurrido (ms)</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500"></i>Normal</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-orange-500"></i>Lento o advertencia</span>
+                        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-400 to-red-600"></i>Error</span>
+                        <span data-flame-x-axis class="font-semibold text-slate-700">Eje X · tiempo inclusivo acumulado (ms)</span>
                     </div>
                 </footer>
             </div>
@@ -281,6 +314,7 @@
 
     <script>
         window.AitrolLogFlameGraph = {{ Js::from($flameGraph) }};
+        window.AitrolAuditByProcess = {{ Js::from($auditByProcess) }};
     </script>
 
     <section class="fallback-card rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">

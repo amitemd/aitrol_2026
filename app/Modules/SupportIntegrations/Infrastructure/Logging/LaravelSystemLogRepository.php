@@ -203,7 +203,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
         $errorStacks = collect($foldedStacks)
             ->filter(fn (array $stack): bool => in_array(
                 $stack['level'],
-                ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'],
+                ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING'],
                 true,
             ))
             ->all();
@@ -211,7 +211,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
         if ($errorStacks !== []) {
             $profiles[] = $this->buildFlameProfile(
                 key: 'errors',
-                label: 'Errores y excepciones',
+                label: 'Errores y advertencias',
                 unit: 'eventos',
                 foldedStacks: $errorStacks,
                 weightKey: 'samples',
@@ -291,7 +291,7 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             ])
             ->values()
             ->all();
-        $errorLevels = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'];
+        $errorLevels = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING'];
         $errorProcesses = $processCollection
             ->filter(fn (array $process): bool => in_array($process['level'], $errorLevels, true));
         $errorHotspots = $errorProcesses
@@ -357,10 +357,23 @@ final class LaravelSystemLogRepository implements SystemLogRepository
     private function buildProcessTimeline(Collection $entries): array
     {
         $maximumProcesses = min(1000, max(50, (int) config('observability.log_flame_max_processes', 500)));
-        $totalProcesses = $entries->count();
-        $processes = $entries
+        $abnormalLevels = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING'];
+        $groupedEntries = $entries->groupBy(function (array $entry): string {
+            $correlationId = $this->structuredContext($entry['message'])['correlation_id'] ?? null;
+
+            return is_string($correlationId) && $correlationId !== ''
+                ? 'request:'.$correlationId
+                : 'entry:'.$entry['id'];
+        });
+        $totalProcesses = $groupedEntries->count();
+        $processes = $groupedEntries
             ->take($maximumProcesses)
-            ->map(function (array $entry): ?array {
+            ->map(function (Collection $relatedEntries) use ($abnormalLevels): ?array {
+                $entry = $relatedEntries->first(function (array $candidate): bool {
+                    $context = $this->structuredContext($candidate['message']);
+
+                    return isset($context['method']) && isset($context['duration_ms']);
+                }) ?? $relatedEntries->first();
                 $timestamp = $this->timestampMilliseconds($entry['date']);
 
                 if ($timestamp === null) {
@@ -368,19 +381,48 @@ final class LaravelSystemLogRepository implements SystemLogRepository
                 }
 
                 $context = $this->structuredContext($entry['message']);
+                $duration = $this->durationFromMessage($entry['message']);
+                $abnormalLogs = $relatedEntries
+                    ->filter(fn (array $related): bool => in_array($related['level'], $abnormalLevels, true))
+                    ->map(fn (array $related): array => [
+                        'id' => $related['id'],
+                        'date' => $related['date'],
+                        'level' => $related['level'],
+                        'message' => $related['message'],
+                        'details' => $related['details'],
+                    ])
+                    ->values()
+                    ->all();
+                $level = $relatedEntries->reduce(
+                    fn (string $current, array $related): string => $this->mostSevereLevel($current, $related['level']),
+                    'DEBUG',
+                );
+                $stack = $this->processStackFrames($entry, $relatedEntries, $context);
 
                 return [
                     'id' => $entry['id'],
+                    'correlation_id' => $context['correlation_id'] ?? null,
                     'date' => $entry['date'],
                     'timestamp_ms' => $timestamp,
-                    'duration_ms' => $this->durationFromMessage($entry['message']),
+                    'duration_ms' => $duration,
+                    'risk' => $duration === null ? 'unmeasured' : $this->performanceRisk($duration),
                     'label' => $this->familyLabel($entry['message']),
-                    'level' => $entry['level'],
+                    'level' => $level,
                     'environment' => $entry['environment'],
                     'method' => isset($context['method']) ? strtoupper((string) $context['method']) : null,
                     'route' => $context['route'] ?? $context['path'] ?? null,
                     'controller' => $context['controller'] ?? null,
-                    'trace_depth' => count($this->traceFrames($entry['details'])),
+                    'status' => isset($context['status']) ? (int) $context['status'] : null,
+                    'user_id' => $context['user_id'] ?? null,
+                    'company_id' => $context['company_id'] ?? null,
+                    'architecture' => is_array($context['architecture'] ?? null) ? $context['architecture'] : [],
+                    'stack_source' => $stack['source'],
+                    'stack_frames' => $stack['frames'],
+                    'related_log_count' => $relatedEntries->count(),
+                    'abnormal_logs' => $abnormalLogs,
+                    'trace_depth' => (int) $relatedEntries->max(
+                        fn (array $related): int => count($this->traceFrames($related['details'])),
+                    ),
                 ];
             })
             ->filter()
@@ -423,6 +465,130 @@ final class LaravelSystemLogRepository implements SystemLogRepository
             'truncated' => $totalProcesses > count($numberedProcesses),
             'processes' => $numberedProcesses,
         ];
+    }
+
+    /**
+     * @param  array{id: string, date: string, environment: string, level: string, message: string, details: string}  $entry
+     * @param  Collection<int, array{id: string, date: string, environment: string, level: string, message: string, details: string}>  $relatedEntries
+     * @param  array<string, mixed>  $context
+     * @return array{source: string, frames: list<array{label: string, detail: string, type: string, source: string}>}
+     */
+    private function processStackFrames(array $entry, Collection $relatedEntries, array $context): array
+    {
+        $architecture = is_array($context['architecture'] ?? null) ? $context['architecture'] : [];
+        $method = isset($context['method']) ? strtoupper((string) $context['method']) : null;
+        $route = (string) ($context['route'] ?? $context['path'] ?? $this->familyLabel($entry['message']));
+        $frames = [];
+
+        $this->appendProcessFrame($frames, 'AITROL', 'Aplicación AITROL', 'Aplicación', 'architecture');
+        $this->appendProcessFrame(
+            $frames,
+            $entry['environment'] !== '' ? $entry['environment'] : 'entorno desconocido',
+            $entry['environment'] !== '' ? $entry['environment'] : 'Entorno no identificado',
+            'Entorno',
+            'architecture',
+        );
+
+        if ($method !== null) {
+            $this->appendProcessFrame($frames, 'HTTP '.$method, 'Método HTTP '.$method, 'Solicitud', 'architecture');
+        }
+
+        $this->appendProcessFrame($frames, $route, $route, 'Ruta', 'architecture');
+
+        $controller = $architecture['controller'] ?? $context['controller'] ?? null;
+        $controllerMethod = $architecture['method'] ?? null;
+
+        if (is_string($controller) && $controller !== '') {
+            $controllerDetail = $controller.($controllerMethod ? '@'.$controllerMethod : '');
+            $this->appendProcessFrame(
+                $frames,
+                'Controlador · '.$this->classBasename($controller).($controllerMethod ? '@'.$controllerMethod : ''),
+                $controllerDetail,
+                'Controlador',
+                'architecture',
+            );
+        }
+
+        foreach ($architecture['components'] ?? [] as $component) {
+            if (! is_array($component)) {
+                continue;
+            }
+
+            $name = $component['name'] ?? null;
+            $type = $component['type'] ?? 'Componente';
+            $implementation = $component['implementation'] ?? null;
+
+            if (is_string($name) && $name !== '') {
+                $this->appendProcessFrame(
+                    $frames,
+                    $type.' · '.$this->classBasename($name),
+                    $name,
+                    (string) $type,
+                    'architecture',
+                );
+            }
+
+            if (is_string($implementation) && $implementation !== '' && $implementation !== $name) {
+                $this->appendProcessFrame(
+                    $frames,
+                    'Implementación · '.$this->classBasename($implementation),
+                    $implementation,
+                    'Implementación',
+                    'architecture',
+                );
+            }
+        }
+
+        $traceFrames = $relatedEntries
+            ->map(fn (array $related): array => $this->traceFrames($related['details']))
+            ->sortByDesc(fn (array $trace): int => count($trace))
+            ->first() ?? [];
+        $maximumDepth = min(64, max(8, (int) config('observability.log_flame_max_depth', 32)));
+
+        if ($traceFrames !== []) {
+            $availableTraceDepth = max(1, $maximumDepth - count($frames));
+            $orderedTraceFrames = array_slice(array_reverse($traceFrames), -$availableTraceDepth);
+
+            foreach ($orderedTraceFrames as $traceFrame) {
+                $this->appendProcessFrame($frames, $traceFrame, $traceFrame, 'Traza real', 'trace');
+            }
+        }
+
+        return [
+            'source' => $traceFrames !== [] ? 'trace' : 'architecture',
+            'frames' => array_slice($frames, 0, $maximumDepth),
+        ];
+    }
+
+    /**
+     * @param  list<array{label: string, detail: string, type: string, source: string}>  $frames
+     */
+    private function appendProcessFrame(
+        array &$frames,
+        string $label,
+        string $detail,
+        string $type,
+        string $source,
+    ): void {
+        $safeLabel = Str::limit(Str::of($label)->squish()->toString(), 150, '…');
+
+        if ($safeLabel === '' || (($frames[array_key_last($frames)]['label'] ?? null) === $safeLabel)) {
+            return;
+        }
+
+        $frames[] = [
+            'label' => $safeLabel,
+            'detail' => Str::limit(Str::of($detail)->squish()->toString(), 240, '…'),
+            'type' => $type,
+            'source' => $source,
+        ];
+    }
+
+    private function classBasename(string $class): string
+    {
+        $normalized = str_replace('/', '\\', $class);
+
+        return class_basename(Str::before($normalized, '@'));
     }
 
     private function timestampMilliseconds(string $date): ?float
@@ -610,15 +776,63 @@ final class LaravelSystemLogRepository implements SystemLogRepository
     /** @return array<string, mixed> */
     private function structuredContext(string $message): array
     {
-        $start = strpos($message, '{');
+        $context = [];
+        $depth = 0;
+        $start = null;
+        $inString = false;
+        $escaped = false;
+        $length = strlen($message);
 
-        if ($start === false) {
-            return [];
+        for ($index = 0; $index < $length; $index++) {
+            $character = $message[$index];
+
+            if ($inString) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($character === '\\') {
+                    $escaped = true;
+                } elseif ($character === '"') {
+                    $inString = false;
+                }
+
+                continue;
+            }
+
+            if ($character === '"' && $depth > 0) {
+                $inString = true;
+
+                continue;
+            }
+
+            if ($character === '{') {
+                $start ??= $index;
+                $depth++;
+
+                continue;
+            }
+
+            if ($character !== '}' || $depth === 0) {
+                continue;
+            }
+
+            $depth--;
+
+            if ($depth !== 0 || $start === null) {
+                continue;
+            }
+
+            $decoded = json_decode(substr($message, $start, $index - $start + 1), true);
+
+            if (is_array($decoded)) {
+                $context = [...$context, ...$decoded];
+            }
+
+            $start = null;
         }
 
-        $context = json_decode(substr($message, $start), true);
+        $requestTrace = $context['request_trace'] ?? [];
 
-        return is_array($context) ? $context : [];
+        return is_array($requestTrace) ? [...$requestTrace, ...$context] : $context;
     }
 
     private function durationFromMessage(string $message): ?float
