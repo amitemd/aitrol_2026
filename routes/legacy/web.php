@@ -132,7 +132,7 @@ Route::post('reporte/excel', 'AgendaController@excel')->name('agenda.excel');
 Route::resource('agenda', 'AgendaController')->only([
     'index', 'store', 'show',
 ]);
-Route::get('agenda/calendario/{index}', 'AgendaController@agenda')->name('agenda.agenda');
+Route::get('agenda/calendario/{id}', 'AgendaController@agenda')->name('agenda.agenda');
 Route::get('agenda/calendario/{index}/{fecha}', 'AgendaController@agenda2')->name('agenda.fecha');
 
 // suspendidas
