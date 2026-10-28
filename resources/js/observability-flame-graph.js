@@ -170,6 +170,11 @@ const initializeLogFlameGraph = () => {
     const inspectorAuditCount = modal.querySelector('[data-flame-inspector-audit-count]');
     const inspectorLogs = modal.querySelector('[data-flame-inspector-logs]');
     const inspectorLogCount = modal.querySelector('[data-flame-inspector-log-count]');
+    const dateForm = modal.querySelector('[data-flame-date-form]');
+    const dateFromInput = modal.querySelector('[data-flame-date-from]');
+    const dateToInput = modal.querySelector('[data-flame-date-to]');
+    const dateSubmitButton = modal.querySelector('[data-flame-date-submit]');
+    const dateStatus = modal.querySelector('[data-flame-date-status]');
     const auditByProcess = window.AitrolAuditByProcess ?? {};
     const state = {
         profileKey: data.profiles[0].key,
@@ -878,7 +883,7 @@ const initializeLogFlameGraph = () => {
             .sort((left, right) => Number(left.timestamp_ms) - Number(right.timestamp_ms));
         const chartWidth = Math.max(520, stage.clientWidth - 16);
         const chartHeight = Math.max(520, stage.clientHeight - 20);
-        const margins = { top: 82, right: 12, bottom: 42, left: 54 };
+        const margins = { top: 126, right: 12, bottom: 42, left: 54 };
         const plotWidth = Math.max(360, chartWidth - margins.left - margins.right);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
         const searchableProcess = (process) => {
@@ -947,11 +952,11 @@ const initializeLogFlameGraph = () => {
         const actionWidth = Math.max(46, actionSlot - (actionGap * 2));
         const isActionSpan = (subprocess) => subprocess.type === 'Acción HTTP';
         const palettes = [
-            { header: '#dbeafe', accent: '#2563eb', text: '#1e3a8a' },
-            { header: '#dcfce7', accent: '#16a34a', text: '#14532d' },
-            { header: '#fef3c7', accent: '#f59e0b', text: '#78350f' },
-            { header: '#f3e8ff', accent: '#7e22ce', text: '#581c87' },
-            { header: '#cffafe', accent: '#0891b2', text: '#164e63' },
+            { header: '#eef5ff', accent: '#7aa7e8', text: '#274060' },
+            { header: '#edfbf3', accent: '#74c69d', text: '#285943' },
+            { header: '#fff7df', accent: '#e9b75f', text: '#6e4b16' },
+            { header: '#f6efff', accent: '#b79ae0', text: '#533d73' },
+            { header: '#ebfafa', accent: '#79c7cb', text: '#26565b' },
         ];
         const processGraphs = processes.map((process) => {
             const allStackFrames = Array.isArray(process.stack_frames) ? process.stack_frames : [];
@@ -1152,14 +1157,17 @@ const initializeLogFlameGraph = () => {
                 group.append(text);
             }
 
-            const selectBlock = () => {
-                showProcessDetails(process);
+            const previewBlock = () => {
                 detailLabel.textContent = label;
                 detailMeta.textContent = meta;
             };
+            const selectBlock = () => {
+                showProcessDetails(process);
+                previewBlock();
+            };
 
-            group.addEventListener('pointerenter', selectBlock);
-            group.addEventListener('focus', selectBlock);
+            group.addEventListener('pointerenter', previewBlock);
+            group.addEventListener('focus', previewBlock);
             group.addEventListener('click', selectBlock);
             group.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -1186,60 +1194,86 @@ const initializeLogFlameGraph = () => {
                 ...correlatedLogs.flatMap((log) => [log.level, log.message]),
             ].filter(Boolean).join(' ').toLocaleLowerCase('es');
             const matchesSearch = searchTerm !== '' && searchable.includes(searchTerm);
+            const headerGroup = createSvgElement('g', {
+                role: 'button',
+                tabindex: '0',
+                class: 'cursor-pointer outline-none',
+                'aria-label': `Proceso ${process.process_number || pageStart + processIndex + 1}: ${route}, ${process.date}, ${formatValue(duration, 'ms')} milisegundos`,
+            });
             const header = createSvgElement('rect', {
                 x: groupX,
                 y: 7,
                 width: actionWidth,
-                height: 62,
-                rx: 7,
+                height: 106,
+                rx: 9,
                 fill: palette.header,
-                stroke: matchesSearch ? '#1d4ed8' : '#cbd5e1',
+                stroke: matchesSearch ? '#1d4ed8' : palette.accent,
                 'stroke-width': matchesSearch ? 2.5 : 1,
                 opacity: searchTerm !== '' && !matchesSearch ? 0.3 : 1,
             });
             const numberCircle = createSvgElement('circle', {
-                cx: groupX + 17,
-                cy: 25,
-                r: 11,
+                cx: groupX + (actionWidth / 2),
+                cy: 21,
+                r: 9,
                 fill: palette.accent,
             });
             const numberLabel = createSvgElement('text', {
-                x: groupX + 17,
-                y: 29,
+                x: groupX + (actionWidth / 2),
+                y: 24.5,
                 fill: '#ffffff',
-                'font-size': 10,
-                'font-weight': 900,
-                'text-anchor': 'middle',
-            });
-            const routeLabel = createSvgElement('text', {
-                x: groupX + 34,
-                y: 23,
-                fill: palette.text,
-                'font-size': 10,
-                'font-weight': 900,
-            });
-            const dateLabel = createSvgElement('text', {
-                x: groupX + 10,
-                y: 42,
-                fill: palette.text,
-                'font-size': 8.2,
-                'font-weight': 700,
-            });
-            const durationLabel = createSvgElement('text', {
-                x: groupX + 10,
-                y: 57,
-                fill: palette.text,
                 'font-size': 9,
                 'font-weight': 900,
+                'text-anchor': 'middle',
+                'pointer-events': 'none',
             });
-            const availableRouteCharacters = Math.max(8, Math.floor((actionWidth - 43) / 5.6));
+            const routeLabel = createSvgElement('text', {
+                x: groupX + (actionWidth / 2),
+                y: 67,
+                fill: palette.text,
+                'font-size': 8.5,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+                transform: `rotate(-90 ${groupX + (actionWidth / 2)} 67)`,
+                'pointer-events': 'none',
+            });
+            const durationLabel = createSvgElement('text', {
+                x: groupX + (actionWidth / 2),
+                y: 104,
+                fill: palette.text,
+                'font-size': 7.8,
+                'font-weight': 900,
+                'text-anchor': 'middle',
+                'pointer-events': 'none',
+            });
+            const headerTitle = createSvgElement('title');
+            const availableRouteCharacters = 15;
 
             numberLabel.textContent = String(process.process_number || pageStart + processIndex + 1);
             routeLabel.textContent = route.length > availableRouteCharacters
                 ? `${route.slice(0, availableRouteCharacters - 1)}…`
                 : route;
-            dateLabel.textContent = process.date;
-            durationLabel.textContent = `${formatValue(duration, 'ms')} ms · ${correlatedLogs.length} logs`;
+            durationLabel.textContent = `${formatValue(duration, 'ms')} ms`;
+            headerTitle.textContent = `${route}\n${process.date}\n${formatValue(duration, 'ms')} ms · ${correlatedLogs.length} logs`;
+            headerGroup.append(header, numberCircle, numberLabel, routeLabel, durationLabel, headerTitle);
+
+            const previewProcess = () => {
+                detailLabel.textContent = `Proceso #${process.process_number || pageStart + processIndex + 1} · ${route}`;
+                detailMeta.textContent = `${process.date} · ${formatValue(duration, 'ms')} ms totales · ${correlatedLogs.length} logs correlacionados`;
+            };
+            const selectProcess = () => {
+                showProcessDetails(process);
+                previewProcess();
+            };
+
+            headerGroup.addEventListener('pointerenter', previewProcess);
+            headerGroup.addEventListener('focus', previewProcess);
+            headerGroup.addEventListener('click', selectProcess);
+            headerGroup.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    selectProcess();
+                }
+            });
             svg.append(
                 createSvgElement('line', {
                     x1: groupX - actionGap,
@@ -1251,12 +1285,7 @@ const initializeLogFlameGraph = () => {
                     'stroke-dasharray': '4 4',
                     opacity: 0.6,
                 }),
-                header,
-                numberCircle,
-                numberLabel,
-                routeLabel,
-                dateLabel,
-                durationLabel,
+                headerGroup,
             );
 
             appendInteractiveBlock({
@@ -1493,6 +1522,129 @@ const initializeLogFlameGraph = () => {
         document.body.classList.remove('overflow-hidden');
     };
 
+    const replaceObjectContents = (target, replacement) => {
+        Object.keys(target).forEach((key) => delete target[key]);
+        Object.assign(target, replacement ?? {});
+    };
+    const responseErrorMessage = (payload) => {
+        const validationMessage = Object.values(payload?.errors ?? {})
+            .flat()
+            .find((message) => typeof message === 'string');
+
+        return validationMessage || payload?.message || 'No fue posible actualizar el rango de fechas.';
+    };
+    let dateRefreshTimer;
+    let dateRequestController;
+    const dateSubmitLabel = dateSubmitButton?.textContent || 'Aplicar';
+
+    const refreshDateRange = async (event) => {
+        event?.preventDefault();
+        window.clearTimeout(dateRefreshTimer);
+
+        if (!dateForm) {
+            return;
+        }
+
+        if (dateFromInput?.value && dateToInput?.value && dateFromInput.value > dateToInput.value) {
+            const message = 'La fecha final debe ser igual o posterior a la fecha inicial.';
+
+            dateStatus.textContent = message;
+            detailLabel.textContent = 'Rango de fechas no válido';
+            detailMeta.textContent = message;
+
+            return;
+        }
+
+        dateRequestController?.abort();
+        const requestController = new AbortController();
+
+        dateRequestController = requestController;
+
+        if (dateSubmitButton) {
+            dateSubmitButton.disabled = true;
+            dateSubmitButton.textContent = 'Actualizando…';
+        }
+
+        dateStatus.textContent = 'Actualizando procesos sin recargar la página…';
+
+        try {
+            const response = await fetch(dateForm.action, {
+                method: 'POST',
+                body: new FormData(dateForm),
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                signal: requestController.signal,
+            });
+            const responseBody = await response.text();
+            let payload = {};
+
+            try {
+                payload = responseBody === '' ? {} : JSON.parse(responseBody);
+            } catch {
+                payload = {};
+            }
+
+            if (!response.ok) {
+                throw new Error(responseErrorMessage(payload));
+            }
+
+            if (!payload.flame_graph || !payload.audit_by_process) {
+                throw new Error('El servidor no devolvió un diagnóstico válido para el rango seleccionado.');
+            }
+
+            replaceObjectContents(data, payload.flame_graph);
+            replaceObjectContents(auditByProcess, payload.audit_by_process);
+            state.profileKey = data.profiles?.[0]?.key ?? null;
+            state.zoomId = null;
+            state.timelinePage = 0;
+
+            if (Array.isArray(data.profiles) && data.profiles.length > 0) {
+                profileSelect.replaceChildren(...data.profiles.map((profile) => {
+                    const option = document.createElement('option');
+
+                    option.value = profile.key;
+                    option.textContent = profile.label;
+
+                    return option;
+                }));
+                profileSelect.value = state.profileKey;
+            }
+
+            document.querySelectorAll('input[name="date_from"]').forEach((input) => {
+                input.value = payload.filters?.date_from ?? '';
+            });
+            document.querySelectorAll('input[name="date_to"]').forEach((input) => {
+                input.value = payload.filters?.date_to ?? '';
+            });
+
+            render();
+            dateStatus.textContent = 'Procesos actualizados sin recargar la página.';
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
+
+            const message = error instanceof Error
+                ? error.message
+                : 'No fue posible actualizar el rango de fechas.';
+
+            dateStatus.textContent = message;
+            detailLabel.textContent = 'No se actualizó el diagnóstico';
+            detailMeta.textContent = message;
+        } finally {
+            if (dateSubmitButton && dateRequestController === requestController) {
+                dateSubmitButton.disabled = false;
+                dateSubmitButton.textContent = dateSubmitLabel;
+            }
+        }
+    };
+    const scheduleDateRefresh = () => {
+        window.clearTimeout(dateRefreshTimer);
+        dateRefreshTimer = window.setTimeout(() => dateForm?.requestSubmit(), 250);
+    };
+
     openButton.addEventListener('click', openModal);
     closeButton.addEventListener('click', closeModal);
     modal.addEventListener('close', () => document.body.classList.remove('overflow-hidden'));
@@ -1559,6 +1711,9 @@ const initializeLogFlameGraph = () => {
         stage.scrollTop = 0;
         render();
     });
+    dateForm?.addEventListener('submit', refreshDateRange);
+    dateFromInput?.addEventListener('change', scheduleDateRefresh);
+    dateToInput?.addEventListener('change', scheduleDateRefresh);
 
     let resizeTimer;
     window.addEventListener('resize', () => {

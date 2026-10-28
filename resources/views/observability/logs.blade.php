@@ -90,7 +90,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <form method="POST" action="{{ route('observability.logs.filter') }}" class="flex flex-wrap items-end gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5" aria-label="Filtrar procesos por fecha">
+                        <form method="POST" action="{{ route('observability.logs.filter') }}" data-flame-date-form class="flex flex-wrap items-end gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5" aria-label="Filtrar procesos por fecha">
                             @csrf
                             <input type="hidden" name="file" value="{{ $result->selectedFile }}">
                             @foreach ($filters->levels as $level)
@@ -100,13 +100,14 @@
                             <input type="hidden" name="per_page" value="{{ $perPage }}">
                             <label class="grid gap-0.5 px-1 text-[9px] font-black tracking-wide text-slate-500 uppercase">
                                 Desde
-                                <input type="date" name="date_from" value="{{ $filters->dateFrom }}" class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                                <input type="date" name="date_from" value="{{ $filters->dateFrom }}" data-flame-date-from class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                             </label>
                             <label class="grid gap-0.5 px-1 text-[9px] font-black tracking-wide text-slate-500 uppercase">
                                 Hasta
-                                <input type="date" name="date_to" value="{{ $filters->dateTo }}" class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                                <input type="date" name="date_to" value="{{ $filters->dateTo }}" data-flame-date-to class="w-32 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                             </label>
-                            <button class="rounded-lg bg-cyan-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-cyan-700">Aplicar</button>
+                            <button type="submit" data-flame-date-submit class="rounded-lg bg-cyan-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-60">Aplicar</button>
+                            <span data-flame-date-status class="sr-only" aria-live="polite"></span>
                         </form>
                         <nav class="flex rounded-xl border border-slate-200 bg-slate-100 p-1" aria-label="Vistas de rendimiento">
                             <button type="button" data-flame-mode-option="diagnosis" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Diagnóstico</button>
