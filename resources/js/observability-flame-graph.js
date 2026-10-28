@@ -82,29 +82,6 @@ const formatValue = (value, unit) => {
     return new Intl.NumberFormat('es-EC', { maximumFractionDigits: maximumDecimals }).format(value);
 };
 
-const formatElapsedTime = (milliseconds) => {
-    const totalMilliseconds = Math.max(0, Number(milliseconds) || 0);
-
-    if (totalMilliseconds < 1000) {
-        return `${formatValue(totalMilliseconds, 'ms')} ms`;
-    }
-
-    const totalSeconds = Math.floor(totalMilliseconds / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-        return `${hours} h ${minutes} min`;
-    }
-
-    if (minutes > 0) {
-        return `${minutes} min ${seconds} s`;
-    }
-
-    return `${seconds} s`;
-};
-
 const initializeLogFlameGraph = () => {
     const modal = document.querySelector('#log-flame-graph-modal');
     const openButton = document.querySelector('[data-flame-open]');
@@ -482,20 +459,22 @@ const initializeLogFlameGraph = () => {
         updateModeLayout();
 
         const timeline = data.timeline ?? {};
-        const processes = Array.isArray(timeline.processes) ? timeline.processes : [];
+        const allProcesses = (Array.isArray(timeline.processes) ? [...timeline.processes] : [])
+            .sort((left, right) => Number(left.timestamp_ms || 0) - Number(right.timestamp_ms || 0));
         const chartWidth = Math.max(360, stage.clientWidth - 16);
         const chartHeight = Math.max(380, stage.clientHeight - 20);
         const margins = { top: 28, right: 22, bottom: 58, left: 72 };
         const plotWidth = Math.max(200, chartWidth - margins.left - margins.right);
         const plotHeight = Math.max(220, chartHeight - margins.top - margins.bottom);
-        const span = Math.max(1, Number(timeline.span_ms) || 1);
+        const maximumVisibleProcesses = Math.max(12, Math.floor(plotWidth / 18));
+        const processes = allProcesses.slice(-maximumVisibleProcesses);
         const measuredDurations = processes
             .map((process) => Number(process.duration_ms))
             .filter((duration) => Number.isFinite(duration) && duration > 0);
         const maximumDuration = Math.max(1, ...measuredDurations);
         const searchTerm = state.search.trim().toLocaleLowerCase('es');
         const barSlot = plotWidth / Math.max(1, processes.length);
-        const barWidth = Math.max(2, Math.min(38, barSlot * 0.78));
+        const barWidth = Math.max(8, Math.min(46, barSlot * 0.84));
         let matches = 0;
 
         svg.replaceChildren();
@@ -606,12 +585,11 @@ const initializeLogFlameGraph = () => {
                 'aria-label': `Proceso ${process.process_number}, ${process.date}, ${process.label}`,
                 class: 'cursor-pointer outline-none',
             });
-            const rectangle = createSvgElement('rect', {
-                x,
-                y,
-                width: barWidth,
-                height,
-                rx: Math.min(8, barWidth / 3),
+            const shape = flamePath(x, y, barWidth, height);
+            const clipId = `timeline-flame-clip-${index}`;
+            const clipPath = createSvgElement('clipPath', { id: clipId });
+            const flame = createSvgElement('path', {
+                d: shape,
                 fill: `url(#${gradientId})`,
                 stroke: matchesSearch ? '#1d4ed8' : '#ffffff',
                 'stroke-width': matchesSearch ? 3 : 1.5,
@@ -631,9 +609,10 @@ const initializeLogFlameGraph = () => {
                 createSvgElement('stop', { offset: '0%', 'stop-color': startColor }),
                 createSvgElement('stop', { offset: '100%', 'stop-color': endColor }),
             );
-            definitions.append(gradient);
+            clipPath.append(createSvgElement('path', { d: shape }));
+            definitions.append(gradient, clipPath);
             title.textContent = `${route}\nFecha y hora: ${process.date}\nDuración: ${hasDuration ? `${formatValue(duration, 'ms')} ms` : 'No registrada'}\nCadena: ${stackSummary || 'Sin pila técnica registrada'}\nAuditorías: ${auditCount}\nAlertas de log: ${abnormalLogs.length}`;
-            group.append(rectangle);
+            group.append(flame);
 
             if (stackFrames.length > 1 && height >= 20 && barWidth >= 5) {
                 const visibleSeparators = Math.min(stackFrames.length - 1, 12);
@@ -650,8 +629,30 @@ const initializeLogFlameGraph = () => {
                         'stroke-width': 0.8,
                         opacity: 0.68,
                         'pointer-events': 'none',
+                        'clip-path': `url(#${clipId})`,
                     }));
                 }
+            }
+
+            if (barWidth >= 26 && height >= 72) {
+                const shortRoute = String(process.route || process.label || 'Proceso');
+                const maximumCharacters = Math.max(5, Math.floor((height - 24) / 7));
+                const processLabel = createSvgElement('text', {
+                    x: x + (barWidth / 2),
+                    y: y + height - 9,
+                    fill: '#ffffff',
+                    'font-size': 9,
+                    'font-weight': 900,
+                    'text-anchor': 'start',
+                    transform: `rotate(-90 ${x + (barWidth / 2)} ${y + height - 9})`,
+                    'pointer-events': 'none',
+                    'clip-path': `url(#${clipId})`,
+                });
+
+                processLabel.textContent = shortRoute.length > maximumCharacters
+                    ? `${shortRoute.slice(0, maximumCharacters - 1)}…`
+                    : shortRoute;
+                group.append(processLabel);
             }
 
             group.append(title);
@@ -683,21 +684,21 @@ const initializeLogFlameGraph = () => {
         xLabel.textContent = 'Fecha y hora de ejecución · procesos consecutivos · más reciente a la derecha';
         svg.append(xLabel);
 
-        totalLabel.textContent = formatElapsedTime(span);
-        totalCaption.textContent = 'Ventana analizada';
-        unitLabel.textContent = 'de ventana';
+        totalLabel.textContent = String(processes.length);
+        totalCaption.textContent = 'Procesos visibles';
+        unitLabel.textContent = allProcesses.length > processes.length ? `de ${allProcesses.length}` : 'procesos';
         depthLabel.textContent = String(processes.length);
         countLabel.textContent = 'Acciones';
         matchLabel.textContent = String(matches);
-        breadcrumb.textContent = timeline.start_at && timeline.end_at
-            ? `${timeline.start_at} → ${timeline.end_at}`
+        breadcrumb.textContent = processes.length > 0
+            ? `${processes[0].date} → ${processes[processes.length - 1].date}`
             : 'Sin marcas de tiempo disponibles';
         yAxisLabel.textContent = 'Tiempo de ejecución (ms)';
         xAxisLabel.textContent = 'Eje X · fecha y hora de ejecución · Eje Y · duración (ms)';
         detailLabel.textContent = processes.length > 0
-            ? 'Seleccione un bloque para unir rendimiento, arquitectura, auditoría y logs'
+            ? 'Seleccione una llama para unir rendimiento, arquitectura, auditoría y logs'
             : 'No hay procesos con fecha válida para representar';
-        detailMeta.textContent = 'Verde: normal · amarillo: advertencia o lentitud · rojo: error o duración crítica.';
+        detailMeta.textContent = `${allProcesses.length > processes.length ? `Se muestran los ${processes.length} procesos más recientes de ${allProcesses.length}. ` : ''}Verde: normal · amarillo: advertencia o lentitud · rojo: error o duración crítica.`;
         stage.scrollTop = 0;
 
         if (processes.length > 0) {
