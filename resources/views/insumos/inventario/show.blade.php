@@ -194,7 +194,7 @@
                   <th width="15%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending">{{trans('winsumos.productos')}}</th>
                   <th width="15%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending">{{trans('winsumos.bodegas')}}</th>
                   <th width="10%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending">{{trans('winsumos.existencia')}}</th>
-                  <!--th width="10%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending">{{trans('winsumos.usos')}}</th-->
+                  {{-- <th width="10%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending">{{ trans('winsumos.usos') }}</th> --}}
                   <th width="10%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending"> {{trans('winsumos.StockMinimo')}}  </th>
                   @if(Auth::user()->id_tipo_usuario == 1)
                   <th width="10%" tabindex="0" aria-controls="tbl_compras" rowspan="1" colspan="1" aria-label="Codigo: activate to sort column ascending"> {{trans('winsumos.ValorUnitario')}}  </th>
@@ -221,7 +221,7 @@
                         <td>{{ $value->warehouseName }}</td>
                                          
                         <td class="td_der">{{ $value->quantity }}</td>
-                        <!--td class="td_der">{{ $value->existencia_uso }}</td-->
+                        {{-- <td class="td_der">{{ $value->existencia_uso }}</td> --}}
                         <td class="td_der">{{ $value->minimumQuantity }}</td>
                         @if(Auth::user()->id_tipo_usuario == 1)
                         <td class="td_der"> {{ number_format($value->averageCost,4) }} </td>
@@ -249,7 +249,7 @@
                     <td></td>
 
                     <td class="td_der1"> {{$acum_existencia}} </td>
-                    <!--td class="td_der1">{{$acum_existencia_uso}}</td-->
+                    {{-- <td class="td_der1">{{ $acum_existencia_uso }}</td> --}}
                     <td class="td_der1"> - </td>
                     @php  $acum_costo = $acum_total == 0 ? 0 : ($acum_total / $acum_existencia); 
                     
