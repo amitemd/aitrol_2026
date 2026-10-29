@@ -169,7 +169,7 @@ $rolUsuario = Auth::user()->id_tipo_usuario;
 
             <div class="modal-header">
                 <h3 class="modal-title" id="miModalLabel" style="font-weight: bold;text-align:center">Productos proximos a caducar</h3>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModalReporte()">
                     <span>&times;</span>
                 </button>
             </div>
@@ -247,7 +247,7 @@ $rolUsuario = Auth::user()->id_tipo_usuario;
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModalReporte()">Cerrar</button>
             </div>
 
         </div>
@@ -261,9 +261,34 @@ $rolUsuario = Auth::user()->id_tipo_usuario;
         $('#miModal').modal('show');
     }
 
+    function limpiarBloqueoModalReporte() {
+        const $modal = $('#miModal');
+
+        if ($modal.hasClass('in') || $modal.hasClass('show') || $modal.is(':visible')) {
+            return;
+        }
+
+        $('body').removeClass('modal-open').css('padding-right', '');
+        $('.modal-backdrop').remove();
+    }
+
+    function cerrarModalReporte() {
+        const $modal = $('#miModal');
+
+        if (typeof $modal.modal === 'function') {
+            $modal.modal('hide');
+        } else {
+            $modal.removeClass('in show').hide().attr('aria-hidden', 'true');
+        }
+
+        window.setTimeout(limpiarBloqueoModalReporte, 350);
+    }
+
 
     $(document).ready(function() {
         $(".select2").select2();
+
+        $('#miModal').on('hidden.bs.modal', limpiarBloqueoModalReporte);
 
         const params = new URLSearchParams(window.location.search);
         const fecha = params.get('fecha');
@@ -332,7 +357,6 @@ $rolUsuario = Auth::user()->id_tipo_usuario;
                     });
                     let fecha = fechaR();
                     const $input = $(`.${fecha}`);
-                    $('#miModal').modal('show');
                     // $input[0].scrollIntoView({
                     //     behavior: 'smooth',
                     //     block: 'center',

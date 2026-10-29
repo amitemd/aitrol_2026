@@ -116,6 +116,21 @@ const formatValue = (value, unit) => {
     return new Intl.NumberFormat('es-EC', { maximumFractionDigits: maximumDecimals }).format(value);
 };
 
+const formatCalendarDate = (value) => {
+    const [year, month, day] = String(value).split('-').map(Number);
+
+    if (![year, month, day].every(Number.isFinite)) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('es-EC', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+    }).format(new Date(Date.UTC(year, month - 1, day))).replaceAll('.', '');
+};
+
 const initializeLogFlameGraph = () => {
     const modal = document.querySelector('#log-flame-graph-modal');
     const openButton = document.querySelector('[data-flame-open]');
@@ -137,6 +152,8 @@ const initializeLogFlameGraph = () => {
     const timelinePrevious = modal.querySelector('[data-flame-timeline-previous]');
     const timelineNext = modal.querySelector('[data-flame-timeline-next]');
     const timelinePageLabel = modal.querySelector('[data-flame-timeline-page]');
+    const daySummaryWrapper = modal.querySelector('[data-flame-day-summary-wrapper]');
+    const daySummary = modal.querySelector('[data-flame-day-summary]');
     const modeButtons = [...modal.querySelectorAll('[data-flame-mode-option]')];
     const orientationButton = modal.querySelector('[data-flame-orientation]');
     const resetButton = modal.querySelector('[data-flame-reset]');
@@ -189,6 +206,7 @@ const initializeLogFlameGraph = () => {
         search: '',
         timelinePage: null,
         timelinePageSize: initialTimelinePageSize,
+        timelineScrollDate: null,
     };
 
     timelinePageSize.value = initialTimelinePageSize;
@@ -207,6 +225,8 @@ const initializeLogFlameGraph = () => {
         searchWrapper.classList.toggle('flex', !isDiagnosis);
         timelineControls.classList.toggle('hidden', !isTimeline);
         timelineControls.classList.toggle('flex', isTimeline);
+        daySummaryWrapper.classList.toggle('hidden', !isTimeline);
+        daySummaryWrapper.classList.toggle('flex', isTimeline);
         profileWrapper.classList.toggle('hidden', !isStack);
         profileWrapper.classList.toggle('flex', isStack);
         orientationButton.classList.toggle('hidden', !isStack);
@@ -943,6 +963,56 @@ const initializeLogFlameGraph = () => {
         const filteredProcesses = searchTerm === ''
             ? allProcesses
             : allProcesses.filter((process) => searchableProcess(process).includes(searchTerm));
+        const allDayGroups = [];
+
+        filteredProcesses.forEach((process) => {
+            const date = process.date.slice(0, 10);
+            const currentGroup = allDayGroups.at(-1);
+
+            if (!currentGroup || currentGroup.date !== date) {
+                allDayGroups.push({
+                    date,
+                    count: 1,
+                    duration: Math.max(0, Number(process.duration_ms) || 0),
+                });
+
+                return;
+            }
+
+            currentGroup.count += 1;
+            currentGroup.duration += Math.max(0, Number(process.duration_ms) || 0);
+        });
+
+        daySummary.replaceChildren();
+        allDayGroups.forEach((dayGroup, dayIndex) => {
+            const button = document.createElement('button');
+            const dateLabel = document.createElement('span');
+            const countLabel = document.createElement('span');
+            const tones = [
+                'border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100',
+                'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100',
+                'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100',
+                'border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100',
+            ];
+
+            button.type = 'button';
+            button.className = `flex shrink-0 items-center gap-2 rounded-xl border px-3 py-1.5 text-left shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-blue-500 ${tones[dayIndex % tones.length]}`;
+            button.setAttribute('aria-label', `Ir a ${formatCalendarDate(dayGroup.date)}, ${dayGroup.count} procesos`);
+            dateLabel.className = 'text-[11px] font-black capitalize';
+            dateLabel.textContent = formatCalendarDate(dayGroup.date);
+            countLabel.className = 'rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-black';
+            countLabel.textContent = `${dayGroup.count} ${dayGroup.count === 1 ? 'proceso' : 'procesos'} · ${formatValue(dayGroup.duration, 'ms')} ms`;
+            button.append(dateLabel, countLabel);
+            button.addEventListener('click', () => {
+                state.timelinePageSize = 'all';
+                state.timelinePage = 0;
+                state.timelineScrollDate = dayGroup.date;
+                timelinePageSize.value = 'all';
+                render();
+            });
+            daySummary.append(button);
+        });
+
         const showAllProcesses = state.timelinePageSize === 'all';
         const pageSize = showAllProcesses
             ? Math.max(1, filteredProcesses.length)
@@ -1067,6 +1137,59 @@ const initializeLogFlameGraph = () => {
         );
         definitions.append(auditPattern);
         svg.append(definitions);
+
+        const visibleDayGroups = [];
+
+        processes.forEach((process, processIndex) => {
+            const date = process.date.slice(0, 10);
+            const currentGroup = visibleDayGroups.at(-1);
+
+            if (!currentGroup || currentGroup.date !== date) {
+                visibleDayGroups.push({ date, count: 1, firstIndex: processIndex });
+
+                return;
+            }
+
+            currentGroup.count += 1;
+        });
+
+        visibleDayGroups.forEach((dayGroup, dayIndex) => {
+            const x = margins.left + (dayGroup.firstIndex * actionSlot);
+            const width = dayGroup.count * actionSlot;
+            const backgroundColors = ['#eff6ff', '#ecfdf5', '#fffbeb', '#f5f3ff'];
+            const dayLabel = createSvgElement('text', {
+                x: x + 8,
+                y: 18,
+                fill: '#334155',
+                'font-size': 9.5,
+                'font-weight': 900,
+                'text-transform': 'uppercase',
+            });
+
+            dayLabel.textContent = `${formatCalendarDate(dayGroup.date)} · ${dayGroup.count} ${dayGroup.count === 1 ? 'proceso' : 'procesos'}`;
+            svg.append(
+                createSvgElement('rect', {
+                    x,
+                    y: 2,
+                    width,
+                    height: plotBottom - 2,
+                    rx: 8,
+                    fill: backgroundColors[dayIndex % backgroundColors.length],
+                    opacity: 0.32,
+                }),
+                createSvgElement('line', {
+                    x1: x,
+                    y1: 2,
+                    x2: x,
+                    y2: plotBottom,
+                    stroke: '#64748b',
+                    'stroke-width': 1.4,
+                    'stroke-dasharray': '5 4',
+                    opacity: 0.7,
+                }),
+                dayLabel,
+            );
+        });
 
         for (let depth = 0; depth <= maximumDepth; depth += 1) {
             const centerY = plotBottom - ((depth + 0.5) * frameHeight);
@@ -1517,8 +1640,24 @@ const initializeLogFlameGraph = () => {
         stage.scrollTop = 0;
 
         if (processes.length > 0) {
-            showProcessDetails(processes[processes.length - 1]);
+            const requestedDate = state.timelineScrollDate;
+            const requestedProcessIndex = requestedDate === null
+                ? -1
+                : processes.findIndex((process) => process.date.startsWith(requestedDate));
+            const selectedProcess = requestedProcessIndex >= 0
+                ? processes[requestedProcessIndex]
+                : processes[processes.length - 1];
+
+            showProcessDetails(selectedProcess);
+
+            if (requestedProcessIndex >= 0) {
+                const targetLeft = Math.max(0, margins.left + (requestedProcessIndex * actionSlot) - 24);
+
+                requestAnimationFrame(() => stage.scrollTo({ left: targetLeft, behavior: 'smooth' }));
+            }
         }
+
+        state.timelineScrollDate = null;
     };
 
     const renderDiagnosis = () => {

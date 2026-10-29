@@ -150,8 +150,8 @@
                 </div>
             </header>
 
-            <div class="grid min-h-0 flex-1 grid-rows-[auto_1fr_auto]">
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 bg-blue-50 px-4 py-2 text-xs text-slate-600 sm:px-6">
+            <div class="flex min-h-0 flex-1 flex-col">
+                <div class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-blue-100 bg-blue-50 px-4 py-2 text-xs text-slate-600 sm:px-6">
                     <div class="flex flex-wrap gap-x-5 gap-y-1">
                         <span><span data-flame-total-caption>Tiempo medido</span>: <strong class="text-blue-900" data-flame-total>{{ number_format($performance['total_duration_ms'], 2) }}</strong> <span data-flame-unit>ms</span></span>
                         <span><span data-flame-count-label>Solicitudes medidas</span>: <strong class="text-blue-900" data-flame-depth>{{ $performance['measured_processes'] }}</strong></span>
@@ -174,7 +174,12 @@
                     </div>
                 </div>
 
-                <section data-flame-diagnosis class="min-h-0 overflow-y-auto bg-slate-100 px-4 py-5 sm:px-6">
+                <div data-flame-day-summary-wrapper class="hidden shrink-0 items-center gap-3 overflow-x-auto border-b border-slate-200 bg-slate-50 px-4 py-2 sm:px-6" aria-label="Resumen de procesos por fecha">
+                    <span class="shrink-0 text-[10px] font-black tracking-[0.14em] text-slate-500 uppercase">Ir a fecha</span>
+                    <div data-flame-day-summary class="flex min-w-max items-center gap-2"></div>
+                </div>
+
+                <section data-flame-diagnosis class="min-h-0 flex-1 overflow-y-auto bg-slate-100 px-4 py-5 sm:px-6">
                     <div class="mx-auto grid max-w-7xl gap-5">
                         @if ($performance['primary_bottleneck'])
                             <article class="grid gap-5 overflow-hidden rounded-3xl border border-blue-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr_auto] lg:items-center sm:p-6">
@@ -292,7 +297,7 @@
                     </div>
                 </section>
 
-                <section data-flame-chart class="hidden min-h-0 grid-cols-[28px_minmax(0,1fr)] bg-white xl:grid-cols-[28px_minmax(0,1fr)_360px]">
+                <section data-flame-chart class="hidden min-h-0 flex-1 grid-cols-[28px_minmax(0,1fr)] bg-white xl:grid-cols-[28px_minmax(0,1fr)_360px]">
                     <div data-flame-y-axis class="flex items-center justify-center border-r border-slate-200 bg-slate-50 text-[9px] font-black tracking-[0.16em] text-slate-500 uppercase [writing-mode:vertical-rl]">Tiempo de ejecución (ms)</div>
                     <div data-flame-stage class="relative min-h-0 overflow-auto p-2 sm:p-4">
                         <svg data-flame-svg class="block max-w-none select-none" role="img" aria-label="Cronología y pilas de procesos construidas desde los logs"></svg>
