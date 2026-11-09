@@ -262,7 +262,7 @@
 
         $.ajax({
           type: 'post',
-          url:"{{route('orden_012.actualizar')}}",
+          url:"{{route('hc_admision.orden_012.actualizar')}}",
           headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
 
           datatype: 'json',
