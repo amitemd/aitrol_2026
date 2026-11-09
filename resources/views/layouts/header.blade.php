@@ -151,9 +151,9 @@ $companyInitials = mb_strtoupper(mb_substr($companyShortName, 0, 2));
                 <span class="new-system-avatar new-system-avatar-menu" aria-hidden="true">{{ $inicialesUsuario }}</span>
               @endif
 
-              <p class="ieced-user-name">
-                Hola {{ Auth::user()->nombre1}} {{ Auth::user()->apellido1}}
-              </p>
+              <p class="ieced-user-name">{{ __('new_system.common.hello', ['name' => $nombreUsuario]) }}</p>
+              <span class="ieced-user-status"><i class="fa fa-circle" aria-hidden="true"></i> {{ __('new_system.common.active_account') }}</span>
+              <small class="ieced-user-email">{{ Auth::user()->email }}</small>
             </li>
             <!-- Menu Footer-->
             <li class="user-footer ieced-user-footer">
@@ -162,14 +162,14 @@ $companyInitials = mb_strtoupper(mb_substr($companyShortName, 0, 2));
               @else
                 @if (Auth::user()->id_tipo_usuario != 2)
                   <a href="{{ route('gateway_tickets.create') }}" class="btn btn-default btn-flat ieced-user-action ieced-user-ticket">
-                    <span class="fa fa-ticket" aria-hidden="true"></span> Enviar ticket
+                    <span class="fa fa-ticket" aria-hidden="true"></span> {{ __('new_system.common.send_ticket') }}
                   </a>
                 @endif
                 <a href="{{ route('perfil.editar') }}" class="btn btn-default btn-flat ieced-user-action">
-                  <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Perfil
+                  <span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{ __('new_system.common.profile') }}
                 </a>
                 <a class="btn btn-default btn-flat ieced-user-action ieced-user-signout" href="{{ route('new-system.logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                  <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Cerrar sesión
+                  <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> {{ __('new_system.common.sign_out') }}
                 </a>
               @endif
             </li>
