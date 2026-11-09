@@ -4,6 +4,10 @@
 @php
 $fecha=date('Y-m-d');
 $hora = date('H:i:s');
+$logoPath = public_path('assets/images/logo_certificado_borja.png');
+$logoSrc = is_file($logoPath) && is_readable($logoPath)
+    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
+    : '';
 @endphp
 
 
@@ -25,7 +29,8 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
 <head>
-    <title>HCU_018</title>
+    <meta charset="utf-8">
+    <title>Formulario018</title>
     <style>
         @page {
             margin: 15 0;
@@ -51,12 +56,24 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         /** Define the footer rules **/
         footer {
+            display: table;
             position: fixed;
-            bottom: 0cm;
+            bottom: 30px;
             left: 0cm;
             right: 0cm;
-            height: 2cm;
+            width: 100%;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
         }
+        footer > span { display: table-cell; width: 50%; }
+        footer .document-name { text-align: right; }
+        .page-number:after { content: counter(page); }
 
         table {
             width: 100px;
@@ -198,16 +215,23 @@ $mesNacimiento = $fechaNacimiento->format('m');
 </head>
 
 <body>
+    <footer><span>SNS-MSP / HCU-form.018 / 2021</span><span class="document-name">PRE ANESTÉSICO (<span class="page-number"></span>)</span></footer>
     <header>
 
     </header>
     <main>
 
-        <div class="box-body card" style="text-align: center">
-            @if(!is_null($empresa))
-            <img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:250px;height: 75px">
-            @endif
-        </div>
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    @if($logoSrc !== '')
+                    <img src="{{ $logoSrc }}" alt="Clínica Borja" style="width:750px;height: 80px;">
+                    @endif
+                </td>
+            </tr>
+        </table>
+        <br>
+
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <thead>
                 <tr>
@@ -223,19 +247,19 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td colspan="5" class="bg-green text-center"><b>NÚMERO DE ARCHIVO</b></td>
                 </tr>
                 <tr>
-                    <td class="text-center" style="height: 20; font-size: 12px;">{{$seguro->nombre}}</td>
+                    <td class="text-center" style="height: 20; font-size: 12px;">{{$pre_anestesico->anestesiologia->historia->seguro->nombre}}</td>
                     <td colspan="2" style="font-size: 12px;" class="text-center">{{$pre_anestesico->anestesiologia->historia->agenda->empresa->unicodigo}}</td>
                     <td colspan="2" class="text-center" style="font-size: 12px;">{{$pre_anestesico->anestesiologia->historia->agenda->empresa->nombrecomercial}}</td>
                     <td class="text-center" colspan="4" style="font-size: 12px;">{{$pre_anestesico->anestesiologia->historia->paciente->id}}</td>
                     <td colspan="5"></td>
                 </tr>
-                @php
-                $record = $pre_anestesico->anestesiologia;
-                $firma = null;
-                if($record->id_anestesiologo != null){
-                $firma = Sis_medico\Firma_Usuario::where('id_usuario', $record->id_anestesiologo)->first();
-                }
-
+                @php 
+                    $record = $pre_anestesico->anestesiologia;
+                    $firma = null;
+                    if($record->id_anestesiologo != null){
+                        $firma  = Sis_medico\Firma_Usuario::where('id_usuario', $record->id_anestesiologo)->first();
+                    }
+                     
                 @endphp
                 <tr>
                     <td rowspan="2" colspan="2" class="bg-green text-center" style="height: 44px;"><b>PRIMER APELLIDO</b></td>
@@ -266,83 +290,60 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 </tr>
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
                     <td colspan="14" style="font-size: 14px;" class="bg-purple"><b>B. REGISTRO DE VALORACIÓN PREANESTÉSIA</b></td>
                 </tr>
                 <tr>
-                    <td colspan="10" style="width: 85%; height: 15px;" class="bg-green text-center"><b>DIAGNOSTICOS</b></td>
-                    <td colspan="4" class="bg-green text-center"><b> CIE</b></td>
+                    <td colspan="10" style="width: 85%; height: 35px;" class="text-center"><b>DIAGNOSTICOS</b></td>
+                    <td colspan="4" class="text-center"><b> CIE</b></td>
                 </tr>
+                @foreach ($pre_anestesico->anestesiologia->historia->diagnosticos as $key=>$pre)
                 @php
-                $cie10 = Sis_medico\Aud_Hc_Cie10::where('hc_id_procedimiento', $hc_procedimiento->id)->where('ingreso_egreso', 'INGRESO')->first();
-                @endphp
-                @if(!is_null($cie10))
-                @php
-                $c3 = Sis_medico\Cie_10_3::find($cie10->cie10);
-                $c4 = Sis_medico\Cie_10_4::find($cie10->cie10);
+                $c3 = Sis_medico\Cie_10_3::find($pre->cie10);
+                $c4 = Sis_medico\Cie_10_4::find($pre->cie10);
                 $texto = '';
                 if(!is_null($c3)){
                 $texto = $c3->descripcion;
-                $ciePre = $cie10->cie10;
                 }
                 if(!is_null($c4)){
                 $texto = $c4->descripcion;
-                $ciePre = $cie10->cie10;
                 }
-
                 @endphp
                 <tr>
-                    <td class="text-center" style="width: 1%;">1</td>
+                    <td class="text-center" style="width: 1%;">{{($key) + 1}}</td>
                     <td colspan="9">{{ $texto }}</td>
                     <td colspan="4" class="text-center">
-                        {{ $ciePre }}
+                        {{ $pre->cie10 }}
                     </td>
                 </tr>
-                @endif
-
-                @php
-                if (!is_null($pre_anestesico) && !is_null($pre_anestesico->anestesiologia) && !is_null($pre_anestesico->anestesiologia->hc_procedimientos)) {
-                $adicionales = Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $pre_anestesico->anestesiologia->hc_procedimientos->id)->get();
-                $mas = true;
-                $cirugia = "";
-                if(!is_null($adicionales)){
-                foreach ($adicionales as $value2) {
-                if ($mas == true) {
-                $cirugia = $cirugia . $value2->procedimiento->nombre;
-                $mas = false;
-                } else {
-                $cirugia = $cirugia . ' + ' . $value2->procedimiento->nombre;
-                }
-                }
-                }
-                }
-                @endphp
-
+                @endforeach
                 <tr>
-                    <td colspan="3" style="width: 15%; height: 35px;" class="bg-green text-center"><b>PROCEDIMIENTOS/S PROPUESTO/S</b></td>
-                    <td colspan="11"> @if(!is_null($record)) {{$record->operacion_propuesta}}@endif</td>
+                    <td colspan="3" style="width: 15%; height: 35px;" class="text-center"><b>PROCEDIMIENTOS/S PROPUESTO/S</b></td>
+                    <td colspan="11">{{$texto}}</td>
                 </tr>
 
 
                 <tr>
-                    <td class="bg-green text-center" style="font-size: 7; width: 5%; height: 17px;"><b>ELECTIVA</b></td>
-                    <td class="text-center">@if($pre_anestesico->tipo == 'ELECTIVA') X @else X @endif</td>
-                    <td class="bg-green text-center" style="font-size: 7; width: 5%;" colspan="2"><b>EMERGENCIA</b></td>
+                    <td class="text-center" style="font-size: 7; width: 5%; height: 17px;"><b>ELECTIVA</b></td>
+                    <td class="text-center">@if($pre_anestesico->tipo == 'ELECTIVA') X @endif</td>
+                    <td class="text-center" style="font-size: 7; width: 5%;" colspan="2"><b>EMERGENCIA</b></td>
                     <td class="text-center" style="width: 1;">@if($pre_anestesico->tipo == 'EMERGENCIA') X @endif</td>
-                    <td class="bg-green text-center" style="font-size: 7;"><b>URGENCIA</b></td>
+                    <td class="text-center" style="font-size: 7;"><b>URGENCIA</b></td>
                     <td class="text-center">@if($pre_anestesico->tipo == 'URGENCIA') X @endif</td>
-                    <td class="bg-green text-center" style="font-size: 7; width: 15%;"><b>RIESGO QUIRURGICO</b></td>
-                    <td class="bg-green text-center" style="font-size: 7;"><b>BAJO</b></td>
-                    <td class="text-center" style="font-size: 7; width: 15%;">@if($pre_anestesico->riesgo_quirurgico == 'BAJO') X @else X @endif</td>
-                    <td class="bg-green text-center" style="font-size: 7;"><b>MODERADO</b></td>
+                    <td class="text-center" style="font-size: 7; width: 15%;"><b>RIESGO QUIRURGICO</b></td>
+                    <td class="text-center" style="font-size: 7;"><b>BAJO</b></td>
+                    <td class="text-center" style="font-size: 7; width: 15%;">@if($pre_anestesico->riesgo_quirurgico == 'BAJO') X @endif</td>
+                    <td class="text-center" style="font-size: 7;"><b>MODERADO</b></td>
                     <td class="text-center" style="font-size: 7;">@if($pre_anestesico->riesgo_quirurgico == 'MODERADO') X @endif</td>
-                    <td class="bg-green text-center" style="font-size: 7;"><b>ALTO</b></td>
+                    <td class="text-center" style="font-size: 7;"><b>ALTO</b></td>
                     <td class="text-center" style="font-size: 7;">@if($pre_anestesico->riesgo_quirurgico == 'ALTO') X @endif</td>
                 </tr>
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
@@ -373,39 +374,33 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
                 <tr>
                     <td colspan="2" style="height: 35px;" class="text-center bg-green">ANESTÉSICO</td>
-                    <td colspan="3">&nbsp;&nbsp;  @if($pre_anestesico->anestesico != '') {{$pre_anestesico->anestesico}} @else NO REFIERE   {{$pre_anestesico->anestesico}} @endif</td>
+                    <td colspan="3">&nbsp;&nbsp; {{$pre_anestesico->anestesico}}</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="height: 35px;" class="text-center bg-green">QUIRÚRGICOS</td>
-                    <td colspan="3">&nbsp;&nbsp;  @if($pre_anestesico->quirurgicos != '') {{$pre_anestesico->quirurgicos}} @else NO REFIERE   {{$pre_anestesico->quirurgicos}} @endif</td>
+                    <td colspan="3">&nbsp;&nbsp; {{$pre_anestesico->quirurgicos}}</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="height: 35px;" class="text-center bg-green">ALÉRGICOS</td>
-                    <td colspan="3">&nbsp;&nbsp;  @if($pre_anestesico->alergicos != '') {{$pre_anestesico->alergicos}} @else NO REFIERE   {{$pre_anestesico->alergicos}} @endif</td>
+                    <td colspan="3">&nbsp;&nbsp; {{$pre_anestesico->alergicos}}</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="height: 35px;" class="text-center bg-green">TRANSFUSIONES</td>
-                    <td colspan="3">&nbsp;&nbsp;  @if($pre_anestesico->transfuciones != '') {{$pre_anestesico->transfuciones}} @else NO REFIERE   {{$pre_anestesico->transfuciones}} @endif</td>
+                    <td colspan="3">&nbsp;&nbsp; {{$pre_anestesico->transfuciones}}</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="height: 35px;" class="text-center bg-green">HÁBITOS</td>
-                    <td colspan="3">&nbsp;&nbsp;  @if($pre_anestesico->habitos != '') {{$pre_anestesico->habitos}} @else NO REFIERE   {{$pre_anestesico->habitos}} @endif</td>
+                    <td colspan="3">&nbsp;&nbsp; {{$pre_anestesico->habitos}}</td>
                 </tr>
                 <tr>
                     <td colspan="5" class="bg-green text-center" style="height: 20px;"><b>ANTECEDENTES PATOLÓGICOS FAMILIARES</b></td>
                 </tr>
                 <tr>
-                    <td colspan="5">@if($seguro->id == 5)  @if($pre_anestesico->anestesiologia->historia->paciente->antecedentes_fam != '') {{$pre_anestesico->anestesiologia->historia->paciente->antecedentes_fam}} @else NO REFIERE @endif @else {{$pre_anestesico->anestesiologia->historia->paciente->antecedentes_fam}} @endif</td>
+                    <td colspan="5">{{$pre_anestesico->anestesiologia->historia->paciente->antecedentes_fam}}</td>
                 </tr>
 
             </tbody>
         </table>
-        <div>
-            <footer>
-                <p>@for($count=0; $count<=5;$count++) &nbsp; @endfor <b> SNS-MSP/HCU-form. 018/2021 </b> @for($count=0; $count<=60;$count++) &nbsp; <b> @endfor PREANESTÉSICO (1) </b></p>
-                <footer>
-        </div>
-
         <p class="page-break-before">
 
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
@@ -413,29 +408,28 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>
                     <td colspan="30" style="font-size: 12px;" class="bg-purple"><b>D. EXAMEN FÍSICO</b></td>
                 </tr>
-                @php $csv_record = Sis_medico\hc_anestesiologia_csv::where('id_hc_anestesiologia',$record->id)->first(); @endphp
                 <tr>@php $historia = $pre_anestesico->anestesiologia->historia; @endphp
                     <td style="width: 16%;" class="text-center bg-green">CONTANTES VITALES</td>
                     <td class="text-center bg-green" style="width: 5%;">TA</td>
-                    <td colspan="3" style="width: 8%;">@if(!is_null($csv_record))  {{$csv_record->presion_arterial}} @else {{ $historia->presion }} @endif</td>
+                    <td colspan="3" style="width: 8%;">{{ $historia->presion }}</td>
                     <td class="text-center bg-green" style="width: 5%;">FC</td>
-                    <td colspan="3" style="width: 8%;">@if(!is_null($csv_record))  {{$csv_record->pulso}} @else  {{ $historia->pulso }} @endif</td>
+                    <td colspan="3" style="width: 8%;">{{ $historia->pulso }}</td>
                     <td colspan="2" class="text-center bg-green" style="width: 5%;">FR</td>
-                    <td colspan="3" style="width: 8%;">@if(!is_null($csv_record))  {{$csv_record->respiracion}}  @endif </td>
+                    <td colspan="3" style="width: 8%;"></td>
                     <td class="text-center bg-green">T°</td>
-                    <td colspan="3" style="width: 8%;">@if(!is_null($csv_record))  {{$csv_record->temperatura}} @else {{ $historia->temperatura }}  @endif </td>
+                    <td colspan="3" style="width: 8%;">{{ $historia->temperatura }}</td>
                     <td colspan="3" class="text-center bg-green" style="width: 6%;">SAT02</td>
-                    <td colspan="4" style="width: 5%;">@if(!is_null($csv_record))  {{$csv_record->o2}} @else {{ $historia->o2 }}  @endif </td>
+                    <td colspan="4" style="width: 5%;">{{ $historia->o2 }}</td>
                     <td colspan="3" class="text-center bg-green" style="width: 8%;">GLASGOW</td>
                     <td colspan="2"></td>
                 </tr>
-                @php
-                if($historia->altura > 0){
-                $imc = $historia->peso / ($historia->altura/100 * $historia->altura/100);
-                $imc = round( $imc, 2 );
-                }else{
-                $imc = 0;
-                }
+                @php  
+                    if($historia->altura > 0){
+                        $imc = $historia->peso / ($historia->altura/100 * $historia->altura/100);
+                        $imc = round( $imc, 2  );
+                    }else{
+                        $imc = 0;
+                    }     
                 @endphp
                 <tr>
                     <td class="text-center bg-green">ANTROPOMETRÍA</td>
@@ -456,18 +450,18 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center">&lt;2</td>
                     <td class="text-center">@if($pre_anestesico->apertura_bucal == '<2') X @endif</td>
                     <td style="width: 4%;" class="text-center">2-2,5</td>
-                    <td class="text-center">  @if($pre_anestesico->apertura_bucal == '') X  @elseif ($pre_anestesico->apertura_bucal == '2-2,5') X  @endif</td>
+                    <td class="text-center">@if($pre_anestesico->apertura_bucal == '2-2,5') X @endif</td>
                     <td colspan="2" class="text-center">2.6-3</td>
                     <td class="text-center">@if($pre_anestesico->apertura_bucal == '>3') X @endif</td>
                     <td colspan="2" class="text-center">&gt;3</td>
                     <td colspan="2" class="text-center">&lt;6</td>
                     <td class="text-center">@if($pre_anestesico->distancia_tiromentoneana == '<6') X @endif</td>
                     <td colspan="2" class="text-center">6 - 6.5</td>
-                    <td class="text-center">@if($pre_anestesico->distancia_tiromentoneana == '') X  @elseif($pre_anestesico->distancia_tiromentoneana == '6 - 6.5') X @endif </td>
+                    <td class="text-center">@if($pre_anestesico->distancia_tiromentoneana == '6 - 6.5') X @endif</td>
                     <td style="width: 4%;" class="text-center">&gt;6.5</td>
                     <td colspan="2" class="text-center">@if($pre_anestesico->distancia_tiromentoneana == '>6.5') X @endif</td>
                     <td colspan="2" class="text-center">I</td>
-                    <td class="text-center">@if($pre_anestesico->mallanpati == '') X  @elseif($pre_anestesico->mallanpati == 'I') X @endif</td>
+                    <td class="text-center">@if($pre_anestesico->mallanpati == 'I') X @endif</td>
                     <td class="text-center" colspan="2">II</td>
                     <td class="text-center">@if($pre_anestesico->mallanpati == 'II') X @endif</td>
                     <td class="text-center">III</td>
@@ -486,25 +480,25 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center">&lt;0</td>
                     <td class="text-center">@if($pre_anestesico->protusion_mandibular == '<0') X @endif</td>
                     <td class="text-center">0</td>
-                    <td class="text-center"> @if($pre_anestesico->protusion_mandibular == '') X @elseif($pre_anestesico->protusion_mandibular == '0') X @endif</td>
+                    <td class="text-center">@if($pre_anestesico->protusion_mandibular == '0') X @endif</td>
                     <td colspan="2" class="text-center">&gt;0</td>
                     <td class="text-center">@if($pre_anestesico->protusion_mandibular == '>0') X @endif</td>
                     <td style="width: 4%;" class="text-center">&lt;40</td>
-                    <td class="text-center"> @if($pre_anestesico->perimetro_cervical == '') X @elseif ($pre_anestesico->perimetro_cervical == '<40') X @endif</td>
+                    <td class="text-center">@if($pre_anestesico->perimetro_cervical == '<40') X @endif</td>
                     <td colspan="2" class="text-center">&gt;40</td>
                     <td class="text-center">@if($pre_anestesico->perimetro_cervical == '>40') X @endif</td>
                     <td colspan="2" class="text-center">&lt;35</td>
-                    <td class="text-center"> @if($pre_anestesico->movilidad_cervical == '') X @elseif ($pre_anestesico->movilidad_cervical == '<35') X @endif</td>
+                    <td class="text-center">@if($pre_anestesico->movilidad_cervical == '<35') X @endif</td>
                     <td class="text-center">&gt;35</td>
                     <td colspan="2" class="text-center">@if($pre_anestesico->movilidad_cervical == '>35') X @endif</td>
                     <td colspan="2" class="text-center">SI</td>
                     <td class="text-center">@if($pre_anestesico->intubacion_dificil == 'SI') X @endif</td>
                     <td class="text-center">NO</td>
-                    <td colspan="2" class="text-center"> @if($pre_anestesico->intubacion_dificil == '') X @elseif($pre_anestesico->intubacion_dificil == 'NO') X @endif</td>
+                    <td colspan="2" class="text-center">@if($pre_anestesico->intubacion_dificil == 'NO') X @endif</td>
                     <td class="text-center">SI</td>
                     <td class="text-center">@if($pre_anestesico->patologia == 'SI') X @endif</td>
                     <td colspan="2" class="text-center">NO</td>
-                    <td class="text-center"> @if($pre_anestesico->protusion_mandibular == '') X @elseif($pre_anestesico->patologia == 'NO') X @endif</td>
+                    <td class="text-center">@if($pre_anestesico->patologia == 'NO') X @endif</td>
                 </tr>
                 <tr>
                     <td rowspan="2" colspan="3" class="text-center bg-green" style="height: 30px;">OTROS</td>
@@ -515,182 +509,62 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">TÓRAX</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->torax == '') SIMETRICO  @else {{$pre_anestesico->torax}} @endif</td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->torax}}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">CORAZÓN</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->corazon == '') RS CS RITMICOS  @else {{$pre_anestesico->corazon}} @endif </td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->corazon}}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">PULMONES</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->pulmones == '') CS PS VENTILADOS @else {{$pre_anestesico->pulmones}} @endif</td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->pulmones}}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">ABDÓMEN</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->abdomen == '') BLANDO DEPRESIBLE NO DOLOROSO  @else {{$pre_anestesico->abdomen}} @endif</td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->abdomen}}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">EXTREMIDADES</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->extremidades == '') SIMETRICAS @else {{$pre_anestesico->extremidades}} @endif</td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->extremidades}}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">SISTEMA NERVIOSO CENTRAL</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->sistema_nervisoso == '') ACTIVO REACTIVO @else {{$pre_anestesico->sistema_nervisoso}} @endif</td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->sistema_nervisoso}}</td>
                 </tr>
                 <tr>
                     <td colspan="4" class="bg-green">EQUIVALENTE METABÓLICO (METS)</td>
-                    <td colspan="26">&nbsp; @if($pre_anestesico->equivalente_metabolico == '') NORMAL @else {{$pre_anestesico->equivalente_metabolico}} @endif</td>
+                    <td colspan="26">&nbsp; {{$pre_anestesico->equivalente_metabolico}}</td>
                 </tr>
             </tbody>
         </table>
-        <!--table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
+        <br>
+        <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
                     <td colspan="4" style="font-size: 12px;" class="bg-purple"><b>E. RESULTADOS DE ÉXAMENES DE LABORATORIO, GABINETE E IMAGEN</b></td>
                 </tr>
                 <tr>
-                    <td class="text-center bg-green" colspan="2">EXAMEN</td>
-                    <td class="text-center bg-green">AGRUPADOR</td>
-                    <td class="text-center bg-green">RESULTADO</td>
+                    <td class="text-center bg-green"  colspan="2">EXAMEN</td>
+                    <td class="text-center bg-green" >AGRUPADOR</td>
+                    <td class="text-center bg-green" >RESULTADO</td>
                 </tr>
 
                 @php
                 $contador = 1;
-                
                 @endphp
                 @foreach ($rc_examen as $exa)
-               
+
                 <tr>
                     <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
                     <td style="height: 18px;" class="text-center">{{$exa->nombre}}</td>
-                    <td style="height: 18px;" class="text-center">@if(isset($exa->examen_agrupador)) {{$exa->examen_agrupador->nombre}} @endif</td>
+                    <td style="height: 18px;" class="text-center">@if(isset($exa->examen)) {{$exa->examen->agrupador_018->nombre}} @endif</td>
                     <td> &nbsp; &nbsp;{{ $exa->resultado }}</td>
                 </tr>
                 @endforeach
-
-            </tbody>
-        </table-->
-
-        <p class="bg-purple"><b>E. RESULTADOS DE ÉXAMENES DE LABORATORIO, GABINETE E IMAGEN</b></p>
-
-        @php
-        $isAgrupadosValid = isset($agrupados1) && is_array($agrupados1) && !empty($agrupados1);
-        if ($isAgrupadosValid) {
-        $agrupadores = array_keys($agrupados1);
-        $maxFilas = !empty($agrupados1) ? max(array_map('count', $agrupados1)) : 0;
-        $maxFilas = ($maxFilas / 2) + 1;
-        }
-        $isAgrupados2Valid = isset($agrupados2) && is_array($agrupados2) && !empty($agrupados2);
-        if ($isAgrupados2Valid) {
-        $agrupadores2 = array_keys($agrupados2);
-        $maxFilas2 = !empty($agrupados2) ? max(array_map('count', $agrupados2)) : 0;
-        $maxFilas2 = ($maxFilas2 / 2) + 1;
-        
-        }
-        
-        @endphp
-
-        @if($isAgrupadosValid)
-        <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-            <thead>
-                <tr>
-                    @foreach ($agrupadores as $agrupador)
-                    @if($agrupador == 'HEMATOLOGIA')
-                    <th class="text-center bg-green" colspan="2">{{$agrupador}}</th>
-                    <th class="text-center bg-green" colspan="2">{{$agrupador}}</th>
-                    @else
-                    <th class="text-center bg-green" colspan="2">{{$agrupador}}</th>
-                    @endif
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @for ($i = 0; $i < $maxFilas; $i++)
-                    <tr>
-                    @foreach ($agrupadores as $agrupador)
-                    @if($agrupador == 'HEMATOLOGIA')
-                    @if(isset($agrupados1[$agrupador][2*$i]))
-                    <td class="text-center bg-green">{{$agrupados1[$agrupador][2*$i]['parametro']}}</td>
-                    <td>{{$agrupados1[$agrupador][2*$i]['resultado']}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    @endif
-
-                    @if(isset($agrupados1[$agrupador][2*$i+1]))
-                    <td class="text-center bg-green">{{$agrupados1[$agrupador][2*$i+1]['parametro']}}</td>
-                    <td>{{ $agrupados1[$agrupador][2*$i+1]['resultado']}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    @endif
-                    @else
-                    @if(isset($agrupados1[$agrupador][$i]))
-                    <td class="text-center bg-green">{{$agrupados1[$agrupador][$i]['parametro']}}</td>
-                    <td>{{ $agrupados1[$agrupador][$i]['resultado']}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    @endif
-                    @endif
-                    @endforeach
-                    </tr>
-                    @endfor
+               
             </tbody>
         </table>
-        @endif
-
-        @if($isAgrupados2Valid)
-        <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-            <thead>
-                <tr>
-                    @foreach ($agrupadores2 as $agrupador2)
-                    @if($agrupador2 == 'HEMATOLOGIA')
-                    <th class="text-center bg-green" colspan="2">{{$agrupador2}}</th>
-                    <th class="text-center bg-green" colspan="2">{{$agrupador2}}</th>
-                    @else
-                    <th class="text-center bg-green" colspan="2">{{$agrupador2}}</th>
-                    @endif
-                    @endforeach
-                </tr>
-            </thead>
-            <tbody>
-                @for ($i = 0; $i < $maxFilas2; $i++)
-                    <tr>
-                    @foreach ($agrupadores2 as $agrupador2)
-                    @if($agrupador2 == 'HEMATOLOGIA')
-                    @if(isset($agrupados2[$agrupador2][2*$i]))
-                    <td class="text-center bg-green">{{$agrupados2[$agrupador2][2*$i]['parametro']}}</td>
-                    <td>{{$agrupados2[$agrupador2][2*$i]['resultado']}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    @endif
-
-                    @if(isset($agrupados2[$agrupador2][2*$i+1]))
-                    <td class="text-center bg-green">{{$agrupados2[$agrupador2][2*$i+1]['parametro']}}</td>
-                    <td>{{ $agrupados2[$agrupador2][2*$i+1]['resultado']}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    @endif
-                    @else
-                    @if(isset($agrupados2[$agrupador2][$i]))
-                    <td class="text-center bg-green">{{$agrupados2[$agrupador2][$i]['parametro']}}</td>
-                    <td>{{ $agrupados2[$agrupador2][$i]['resultado']}}</td>
-                    @else
-                    <td></td>
-                    <td></td>
-                    @endif
-                    @endif
-                    @endforeach
-                    </tr>
-                    @endfor
-            </tbody>
-        </table>
-        @endif
-
-
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
@@ -711,20 +585,21 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td style="width: 3%;" class="text-center bg-green">VI</td>
                     <td style="width: 3%;" class="text-center">@if($pre_anestesico->estado_fisico == 'VI') X @endif</td>
                     <td style="width: 18%;" class="bg-green">RIESGO CARDÍACO</td>
-                    <td>&nbsp;  @if($seguro->id == 5) @if($pre_anestesico->riesgo_cardiaco == '') I/V @else {{$pre_anestesico->riesgo_cardiaco}} @endif @else {{$pre_anestesico->riesgo_cardiaco}} @endif </td>
+                    <td>&nbsp; {{$pre_anestesico->riesgo_cardiaco}}</td>
                 </tr>
                 <tr>
                     <td class="bg-green">RIESGO PULMONAR</td>
-                    <td colspan="12">&nbsp;  @if($pre_anestesico->riesgo_pulmonar == '') SIN RIESGO @else {{$pre_anestesico->riesgo_pulmonar}} @endif </td>
+                    <td colspan="12">&nbsp; {{$pre_anestesico->riesgo_pulmonar}}</td>
                     <td class="bg-green">RIESGO TROMBOEMBÓLICO</td>
-                    <td>&nbsp;  @if($pre_anestesico->riesgo_tromboembolico == '') SIN RIESGO @else {{$pre_anestesico->riesgo_tromboembolico}} @endif</td>
+                    <td>&nbsp; {{$pre_anestesico->riesgo_tromboembolico}}</td>
                 </tr>
                 <tr>
                     <td class="bg-green">OTROS</td>
-                    <td colspan="14"> @if($seguro->id == 5) @if($pre_anestesico->otros == '') N/A @else {{$pre_anestesico->otros}} @endif @else {{$pre_anestesico->otros}} @endif</td>
+                    <td colspan="14"></td>
                 </tr>
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
@@ -744,6 +619,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 </tr>
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
@@ -752,57 +628,38 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 @php
                 $contador = 1;
                 @endphp
-                @if(count($indicaciones)==0)
-                        <tr>
-                            <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
-                            <td style="height: 18px;">&nbsp; CONTROL DE SIGNOS VITALES</td>
-                        </tr>
-                        <tr>
-                            <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
-                            <td style="height: 18px;">&nbsp; PREPARACION PARA ENDOSCOPIA PROGRAMADA</td>
-                        </tr>
-                        <tr>
-                            <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
-                            <td style="height: 18px;">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
-                            <td style="height: 18px;">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
-                            <td style="height: 18px;">&nbsp;</td>
-                        </tr>
-                @else
-                    @foreach ($indicaciones as $indicacione)
-                        <tr>
-                            <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
-                            <td style="height: 18px;">&nbsp; {{ $indicacione->indicaciones }}</td>
-                        </tr>
-                    @endforeach
-                @endif
+
+                @foreach ($indicaciones as $indicacione)
+                <tr>
+                    <td class="text-center bg-green" style="width: 1%;">{{ $contador++ }}</td>
+                    <td style="height: 18px;">&nbsp; {{ $indicacione->indicaciones }}</td>
+                </tr>
+                @endforeach
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
                     <td style="font-size: 12px;" class="bg-purple"><b>I. PLAN ANESTÉSICO</b></td>
                 </tr>
                 <tr>
-                    <td style="height: 40px;">&nbsp; @if($seguro->id == 5) @if($pre_anestesico->plan_anestesico == '') ANESTESIA GENERAL @else {{$pre_anestesico->plan_anestesico}} @endif @else {{$pre_anestesico->plan_anestesico}} @endif</td>
+                    <td style="height: 40px;">&nbsp; {{$pre_anestesico->plan_anestesico}}</td>
                 </tr>
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
                     <td style="font-size: 12px;" class="bg-purple"><b>J. OBSERVACIONES</b></td>
                 </tr>
                 <tr>
-                    <td style="height: 40px;">&nbsp; @if($seguro->id == 5) @if($pre_anestesico->observaciones == '') NINGUNA @else {{$pre_anestesico->observaciones}} @endif @else {{$pre_anestesico->observaciones}} @endif</td>
+                    <td style="height: 40px;">&nbsp; {{$pre_anestesico->observaciones}}</td>
                 </tr>
             </tbody>
         </table>
+        <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <tbody>
                 <tr>
@@ -815,14 +672,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center bg-green" style="width: 25%;" colspan="3"><b>PRIMER APELLIDO</b></td>
                     <td class="text-center bg-green" style="width: 25%;"><b>SEGUNDO APELLIDO</b></td>
                 </tr>
-                @php
-                $fecha_new = substr($pre_anestesico->anestesiologia->fecha,0,10);
-                $hora_new = substr($pre_anestesico->anestesiologia->fecha,10);
-                $user_espe = Sis_medico\User_espe::where('usuid',$record->id_anestesiologo)->first();
-                $especialidad = null;
-                if(!is_null($user_espe)){
-                $especialidad = Sis_medico\Especialidad::find($user_espe->espid);
-                }
+                @php 
+                    $fecha_new = substr($pre_anestesico->anestesiologia->fecha,0,10); 
+                    $hora_new  = substr($pre_anestesico->anestesiologia->fecha,10);
                 @endphp
                 <tr>
                     <td class="text-center" style="height: 18px;">{{$fecha_new}}</td>
@@ -839,23 +691,17 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>
                     <td colspan="2" style="font-size: 12px; height: 60px;" class="text-center">@if(!is_null($firma)) {{ $firma->doctor->id }} @endif</td>
                     <td colspan="2">
-                        @if(!is_null($firma))
-                        <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
+                    @if(!is_null($firma))
+                        <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
                     </td>
                     @endif </td>
                     <td colspan="3" class="td-border text-center" style="width:25%; height:60px">
-                        @if(!is_null($firma))
+                    @if(!is_null($firma))    
                         @if(!is_null($firma->doctor)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif @endif<br>
-                        @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
                         @if(!is_null($firma->doctor)) Cedula No. {{$firma->doctor->id}} @endif
-                        @endif
+                    @endif    
                     </td>
 
                 </tr>
             </tbody>
         </table>
-        <div>
-
-            <p>@for($count=0; $count<=5;$count++) &nbsp; @endfor <b> SNS-MSP/HCU-form. 018/2021 </b> @for($count=0; $count<=60;$count++) &nbsp; <b> @endfor PREANESTÉSICO (2) </b></p>
-
-        </div>

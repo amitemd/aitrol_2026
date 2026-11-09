@@ -179,7 +179,7 @@
   $('#confirme').click(function(event){
 
         $.ajax({
-            type: 'get',
+            type: 'post',
             url:'{{route('evolucion.crea_actualiza')}}',
             headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
         
@@ -255,4 +255,3 @@
             })
     }
   </script>
-                           

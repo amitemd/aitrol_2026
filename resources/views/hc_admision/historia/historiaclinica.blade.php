@@ -172,20 +172,6 @@
       </div>
     </div>
 </div>
-<div class="modal fade" id="moxigeno" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content" style="width: 95%;">
-
-      </div>
-    </div>
-</div>
-<div class="modal fade" id="mproductos" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content" style="width: 95%;">
-
-      </div>
-    </div>
-</div>
 
 <div class="modal fade" id="mprotocolo_cpre_eco" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-lg" role="document">
@@ -262,8 +248,8 @@
         <div class="col-md-12" style="padding-right: 6px;">
 
             <div class="box box-primary" style="margin-bottom: 5px;" >
-                <div class="box-header" style="display: flex; gap: 10px;">
-                    <div>
+                <div class="box-header">
+                    <div class="col-md-4">
                         <h3 class="box-title"><a href="javascript:void($('#fili').click());"><b>Filiación</b></a></h3>
                     </div>
 
@@ -284,34 +270,12 @@
                         </a>
                         @endif
                     </div>
-
-                    <div class="col-md-2">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                          <a href="{{route('agenda.edit2', ['id' => $agenda->id, 'doctor' => $agenda->id_doctor1])}}" class="btn btn-success btn-sm" >
-                        <span></span> Datos Agenda
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                          <a href="{{route('paciente.historial_ordenes', ['id' => $agenda->id_paciente])}}" class="btn btn-success btn-sm" >
-                        <span></span> Ordenes de Procedimiento
-                        </a>
-                    </div>
-		    @if($agenda->proc_consul =='0')
-                    <div class="col-md-2">
-                        <a target="_blank" href="{{ route('formato.anamnesis_crear', ['hcid' => $agenda->hcid]) }}">
-                            <button class="btn btn-success btn-sm">ANAMNESIS</button>
-                        </a>
-                    </div>
-
-                    @endif
                     @if($agenda->estado_cita=='4')
                     <div class="col-md-2">
                         <a href="{{route('orden_012.carga_012',['hcid' => $agenda->hcid])}}">
                             <button class="btn btn-success btn-sm">Orden 012</button>
                         </a>
                     </div>
-		    
 
                     <!--div class="col-md-2">
                         <a href="{{route('orden_proc.crear_editar',['hcid' => $agenda->hcid])}}">
@@ -346,7 +310,7 @@
                                 </select>
                             </div>
 
-                            <input id ="id_paciente_clinica" type="hidden" name="id_paciente" value="{{$agenda->id_paciente}}">
+                            <input type="hidden" name="id_paciente" value="{{$agenda->id_paciente}}">
 
                             <div class="col-md-4" style="padding: 1px;">
                                 <label for="sexo" class="control-label">Sexo</label>
@@ -390,14 +354,11 @@
 
                             <div class="col-md-3" style="padding: 1px;">
                                 <label for="id_seguro" class="control-label">Seguro</label>
-                                <?php
-/* <!--select id="id_seguro" name="id_seguro" class="form-control input-sm" onchange="crear_select();guardar();">
+                                <?php /* <!--select id="id_seguro" name="id_seguro" class="form-control input-sm" onchange="crear_select();guardar();">
 @foreach($seguros as $seguro)
 <option @if(is_null($protocolo))@if($agenda->id_seguro==$seguro->id){{'selected '}}@endif @else @if($protocolo->id_seguro==$seguro->id){{'selected '}}@endif @endif value="{{$seguro->id}}">{{$seguro->nombre}}</option>
 @endforeach
-</select--> */
-
-?>
+</select--> */?>
                                 <input class="form-control input-sm" type="text" name="seguro" value=@if(is_null($agenda->hcid))"{{$agenda->snombre}}"@else"{{$agenda->hsnombre}}"@endif readonly>
                             </div>
 
@@ -411,10 +372,7 @@
                                 <label for="observacion" class="control-label">Observación</label>
                                 <input class="form-control input-sm" onchange="guardar();" type="text" name="observacion" value="{{$agenda->observacion}}" autocomplete="off" placeholder="INGRESE OBSERVACIÓN MÉDICA DEL PACIENTE" style="background-color: #ffffb3;">
                             </div>
-                            <div class="col-md-12 has-warning" style="padding: 1px;">
-                                <label for="observacion_admin" class="control-label">Observación Administrativa</label>
-                                <textarea id="observacion_admin" class="form-control input-sm" onblur="guardar_admin();" name="observacion_admin" placeholder="INGRESE OBSERVACIÓN ADMINISTRATIVA DEL PACIENTE" rows="4">@if($paciente_observacion!=null) {{ $paciente_observacion->observacion }} @endif</textarea>
-                            </div>
+
                         </div>
 
                         <div class="col-md-6" style="padding-left: 1px;padding-right: 1px;">
@@ -515,17 +473,17 @@
 
                         </div>
 
-                        <div class="col-md-6" style="padding: 1px;">
+                        <div class="col-md-4" style="padding: 1px;">
                             <label for="cortesia" class="control-label">Antecedentes Patologicos</label>
                             <textarea name="antecedentes_pat" id="antecedentes_pat" style="width: 100%;font-size: 13px;" rows="1" onchange="guardar();">{{$agenda->antecedentes_pat}}</textarea>
                         </div>
 
-                        <div class="col-md-6" style="padding: 1px;">
+                        <div class="col-md-4" style="padding: 1px;">
                             <label for="cortesia" class="control-label">Antecedentes Familiares</label>
                             <textarea name="antecedentes_fam" id="antecedentes_fam" style="width: 100%;font-size: 13px;" rows="1" onchange="guardar();">{{$agenda->antecedentes_fam}}</textarea>
                         </div>
 
-                        <div class="col-md-6" style="padding: 1px;">
+                        <div class="col-md-4" style="padding: 1px;">
                             <label for="cortesia" class="control-label">Antecedentes Quirurgicos</label>
                             <textarea name="antecedentes_quir" id="antecedentes_quir" style="width: 100%;font-size: 13px;" rows="1" onchange="guardar();">{{$agenda->antecedentes_quir}}</textarea>
                         </div>
@@ -540,76 +498,7 @@
         </div>
 
         <div class="col-md-12" style="padding-right: 6px;">
-            <div class="box box-primary collapsed-box" style="margin-bottom: 5px;" >
-                <div class="box-header">
-                    <div class="col-md-4">
-                        <h3 class="box-title"><a href="javascript:void($('#examenes_externos').click());"><b>Documentos de Agenda</b></a></h3>
-                    </div>
 
-                        <!-- tools box -->
-                    <div class="pull-right box-tools">
-                        <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="examenes_externos">
-                            <i class="fa fa-plus"></i></button>
-                    </div>
-                        <!-- /. tools -->
-                </div>
-                <div class="box-body" style="padding: 5px;">
-                    <div class="table-responsive col-md-12">
-                        <table class="table table-bordered  dataTable" >
-                            <tbody style="font-size: 12px;">
-                                @php
-                                    $agenda_archivos_2 = DB::table('agenda as a')
-                                        ->join('agenda_archivo as ah', 'ah.id_agenda', '=', 'a.id')
-                                        ->where('a.id_paciente', $agenda->id_paciente)
-                                        ->select('a.*', 'ah.ruta', 'ah.archivo', 'ah.tipo_documento', 'ah.texto', 'ah.id as ahid')
-                                        ->where('ah.archivo', '<>', null)
-                                        ->orderBy('a.created_at', 'desc')
-                                        ->get();
-                                @endphp
-                                @foreach($agenda_archivos_2 as $imagen)
-                                <div class="col-md-3" style='margin: 10px 0; text-align: center;' >
-                                @php
-                                    $explotar = explode( '.', $imagen->archivo);
-                                    $extension = end($explotar);
-                                @endphp
-                                @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png'))
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('agenda.imagen567', ['id' => $imagen->ahid])}}">
-                                        <img  src="{{asset('hc_agenda')}}/{{$imagen->archivo}}" width="90%" style="max-height: 140px;">
-                                    </a>
-                                    <a type="button" href="{{asset('agenda/paciente/descarga/'.$imagen->archivo)}}" class="btn btn-primary btn-sm" target="_blank"><!-- ruta 0 desde la historia clinica -->
-                                        <span class="glyphicon glyphicon-download-alt"> Descargar</span>
-                                    </a>
-                                @elseif(($extension == 'pdf'))
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('agenda.imagen567', ['id' => $imagen->ahid])}}">
-                                        <img  src="{{asset('imagenes/pdf.png')}}" width="90%" style="max-height: 140px;">
-                                    </a>
-                                    <a type="button" href="{{asset('agenda/paciente/descarga/'.$imagen->archivo)}}" class="btn btn-primary btn-sm" target="_blank"><!-- ruta 0 desde la historia clinica -->
-                                        <span class="glyphicon glyphicon-download-alt"> Descargar</span>
-                                    </a>
-                                @else
-                                    @php
-                                        $variable = explode('/' , asset('/hc_ima/'));
-                                        $d1 = $variable[3];
-                                        // $d2 = $variable[4];
-                                        
-
-                                    @endphp
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('agenda.imagen567', ['id' => $imagen->ahid])}}">
-                                        <img  src="{{asset('imagenes/office.png')}}" width="90%" style="height: 140px;">
-                                    </a>
-                                    <a type="button" href="{{asset('agenda/paciente/descarga/'.$imagen->archivo)}}" class="btn btn-primary btn-sm" target="_blank"><!-- ruta 0 desde la historia clinica -->
-                                        <span class="glyphicon glyphicon-download-alt"> Descargar</span>
-                                    </a>
-                                @endif
-                                </div>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-12" style="padding-right: 6px;">
             <div class="box box-primary collapsed-box" style="margin-bottom: 5px;" >
                 <div class="box-header">
                     <div class="col-md-4">
@@ -651,6 +540,13 @@
                                         <span class="glyphicon glyphicon-download-alt"> Descargar</span>
                                     </a>
                                 @else
+                                    @php
+                                        $variable = explode('/' , asset('/hc_ima/'));
+                                        $d1 = $variable[3];
+                                        $d2 = $variable[4];
+                                        $d3 = $variable[5];
+
+                                    @endphp
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_lab_externo', ['id' => $imagen->id]) }}">
                                         <img  src="{{asset('imagenes/office.png')}}" width="90%" style="height: 140px;">
                                         <span>{{$imagen->nombre_anterior}}</span>
@@ -715,8 +611,8 @@
                                     @php
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
-                                        // $d2 = $variable[4];
-                                        
+                                        $d2 = $variable[4];
+                                        $d3 = $variable[5];
 
                                     @endphp
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_lab_externo', ['id' => $imagen->id]) }}">
@@ -738,14 +634,14 @@
                                     $extension = end($explotar);
                                 @endphp
                                 @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png'))
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_lab_externo', ['id' => $imagen->id]) }}">
+                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
                                         <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="90%" style="max-height: 140px;">
                                     </a>
                                     <a type="button" href="{{asset('hc_ima_nombre')}}/{{$imagen->id}}" class="btn btn-primary btn-sm" target="_blank"><!-- ruta 0 desde la historia clinica -->
                                         <span class="glyphicon glyphicon-download-alt"> Descargar</span>
                                     </a>
                                 @elseif(($extension == 'pdf'))
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_lab_externo', ['id' => $imagen->id]) }}">
+                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
                                         <img  src="{{asset('imagenes/pdf.png')}}" width="90%" style="max-height: 140px;">
                                         <span>{{$imagen->nombre_anterior}}</span>
                                     </a>
@@ -756,11 +652,11 @@
                                     @php
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
-                                        // $d2 = $variable[4];
-                                        
+                                        $d2 = $variable[4];
+                                        $d3 = $variable[5];
 
                                     @endphp
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_lab_externo', ['id' => $imagen->id]) }}">
+                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
                                         <img  src="{{asset('imagenes/office.png')}}" width="90%" style="height: 140px;">
                                         <span>{{$imagen->nombre_anterior}}</span>
                                     </a>
@@ -787,9 +683,13 @@
                             <b><a href="javascript:void($('#evol').click());">Evoluciones</a></b>
                         </h3>
                     </div>
-                    <!--div class="col-md-3" style="padding-left: 0px;">
-                        <a href="{{route('sin_agenda.crear_evolucion',['id' => $agenda->id_paciente, 'ag' => $agenda->id])}}"><button class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-plus"></span> Agregar Visita</button></a>
-                    </div-->
+                    <div class="col-md-3" style="padding-left: 0px;">
+                        <form method="POST" action="{{route('sin_agenda.crear_evolucion',['id' => $agenda->id_paciente, 'ag' => $agenda->id])}}" style="display:inline">
+                            {{ csrf_field() }}
+                            <button type="submit" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-plus"></span> Agregar Visita</button>
+                        </form>
+                    </div>
+
 
                     @if($agenda->proc_consul=='1')
                         @if($evoluciones_proc!=[])
@@ -973,9 +873,33 @@
                     <div class="col-md-12" style="padding: 1px;" id="div2">
 
                         <h4 style="text-align: center;background-color: cyan;"><b>Ingresar Evolución</b></h3>
-                        <div class="col-md-12" style="padding: 1px;background: #e6ffff;">
+                        <div class="col-md-7" style="padding: 1px;background: #e6ffff;">
                             <b>Fecha Visita: </b>@if($dia == '1') Lunes @elseif($dia == '2') Martes @elseif($dia == '3') Miércoles @elseif($dia == '4') Jueves @elseif($dia == '5') Viernes @elseif($dia == '6') Sábado @elseif($dia == '7') Domingo @endif {{substr($agenda->fechaini,8,2)}} de @if($mes == '1') Enero @elseif($mes == '2') Febrero @elseif($mes == '3') Marzo @elseif($mes == '4') Abril @elseif($mes == '5') Mayo @elseif($mes == '6') Junio @elseif($mes == '7') Julio @elseif($mes == '8') Agosto @elseif($mes == '9') Septiembre @elseif($mes == '10') Octubre @elseif($mes == '11') Noviembre @elseif($mes == '12') Diciembre @endif del {{substr($agenda->fechaini,0,4)}} <b>Hora: </b>{{substr($agenda->fechaini,10,10)}}
                         </div>
+                        <div class="col-md-1">
+                        <a target="_blank" href="{{ route('formato.anamnesis_crear', ['hcid' =>  $evolucion->hcid]) }}" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Anamnesis F.002</a>
+                        </div> 
+                        <div class="col-md-1">
+                        <a href="{{route('epicrisis.mostrar',['hcid' => $evolucion->hcid, 'proc' => $evolucion->hc_id_procedimiento])}}">
+                            <button id="nuevo_proc" type="button" class="btn btn-success btn-sm">
+                                <span class="glyphicon glyphicon-file"> Epicrisis F.006</span>
+                            </button>
+                        </a>
+                        </div>
+                        <div class="col-md-1">
+                        <a href="{{route('evolucion.nueva_evolucion',['hcid' => $evolucion->hcid])}}" target="_blank">
+                            <button id="nuevo_proc" type="button" class="btn btn-success btn-sm">
+                                <span class="glyphicon glyphicon-file"> Evolucion F.005</span>
+                            </button>
+                        </a>
+                        </div> 
+                        <div class="col-md-1">
+                        <a href="{{route('hospital.crea_edita_solicitud',['id' => $agenda->id])}}" target="_blank">
+                            <button id="nuevo_proc" type="button" class="btn btn-success btn-sm">
+                                <span class="glyphicon glyphicon-file"> Emergencia F.008</span>
+                            </button>
+                        </a>
+                        </div>    
 
                         @if($agenda->espid=='8')
                             @php
@@ -988,13 +912,7 @@
                                     </button>
                                 </a>
                             @endif
-                    
-                        @if(!is_null($cardiologia))
-                            <a href="{{route('auditoria_cardio.reporte_cardiologia',['id' => $evolucion->id,"agenda"=>$agenda->id])}}" class="btn btn-success btn-sm"> 
-                                <span class="glyphicon glyphicon-file"> @lang('laboratorio.reporte_cardiologia')</span>
-                            </a>
                         @endif
-                    @endif
 
 
                         <form id="frm_evol">
@@ -1286,7 +1204,6 @@
                             $cant_anexo = DB::table('hc_imagenes_protocolo')->where('id_hc_protocolo',$value->id)->where('estado','2')->get()->count();
                             $cant_estud = DB::table('hc_imagenes_protocolo')->where('id_hc_protocolo',$value->id)->where('estado','3')->get()->count();
                             $cant_total = $cant_anexo + $cant_estud;
-                            $vh_procedimiento = \Sis_medico\hc_procedimientos::find($value->id_hc_procedimientos);
 
                             $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_hc_procedimientos)->get();
                             $mas = true;
@@ -1317,7 +1234,7 @@
                                             </td>
                                             <td><b>Hora: </b></td>
                                             <td style="color: blue;"><b>{{substr($value->fechaini,10,10)}}</b></td>
-                                            <td style="color: Cornsilk;">{{$value->id}}@if($vh_procedimiento->estado==0)<span style="color: red"><b>Eliminado</b></span>@endif</td>
+                                            <td style="color: Cornsilk;">{{$value->id}}</td>
 
                                         </tr>
                                         @php
@@ -1371,11 +1288,6 @@
                                             <td>{{$value->d3apellido1}}</td>
                                         </tr>
                                         <tr>
-                                            <td><b>Medico que firma</b></td>
-                                            <td><b>@if(!is_null($procedimiento_222)) @if(!is_null($procedimiento_222->id_doctor_examinador2)) Dr. {{$procedimiento_222->doctor_firma->nombre1}} {{$procedimiento_222->doctor_firma->apellido1}} @else Dr. {{$value->d1nombre1}} {{$value->d1apellido1}}@endif @else Dr. {{$value->d1nombre1}} {{$value->d1apellido1}}@endif</b></td>
-
-                                        </tr>
-                                        <tr>
                                             <td colspan="4"><b>Receta: </b></td>
                                         </tr>
                                         @php
@@ -1422,15 +1334,15 @@
                     <div class="col-md-12" style="padding-left: 0px;">
                         @if($agenda->estado_cita=='4')
 
-                        <!--button id="nuevo_proc" type="button" onclick="Agregar_procedimiento();" class="btn btn-success btn-sm">
+                        <button id="nuevo_proc" type="button" onclick="Agregar_procedimiento();" class="btn btn-success btn-sm">
                             <span class="glyphicon glyphicon-plus"> Agregar Procedimiento</span>
-                        </button-->
+                        </button>
 
                         @if($agenda->estado_cita =='4' && $agenda->proc_consul == '1')
-                        <!--a id="nueva_evolucion" onclick="agregar_evolucion();" class="btn btn-success btn-sm">
+                        <a id="nueva_evolucion" onclick="agregar_evolucion();" class="btn btn-success btn-sm">
                             <i class="fa fa-plus"></i>
                             <span>Agregar Evolucion</span>
-                        </a-->
+                        </a>
                         @endif
 
                         <a href="{{route('epicrisis.mostrar',['hcid' => $protocolo->hcid, 'proc' => $protocolo->id_hc_procedimientos])}}">
@@ -1452,103 +1364,25 @@
                             @php
                                 $rolUsuario = Auth::user()->id_tipo_usuario;
                             @endphp
-                            @if(in_array($rolUsuario, array(1, 11, 5)) == true )
+                            @if(in_array($rolUsuario, array(1, 11)) == true )
                                 <a href="{{ route('evolucion.pr_modal', ['id_protocolo' => $protocolo->id]) }}" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#mprotocolo">
                                     <span class="glyphicon glyphicon-file"> Evolución</span>
                                 </a>
                                 <a href="{{ route('protocolo.pr_modal', ['id_protocolo' => $protocolo->id]) }}" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#mprotocolo">
                                     <span class="glyphicon glyphicon-download-alt"> Protocolo</span>
                                 </a>
-
-                                <a href="{{ route('oxigeno.oxigeno_modal', ['id_protocolo' => $protocolo->id]) }}" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#moxigeno">
-                                    <span class="glyphicon glyphicon-download-alt"> Oxigeno</span>
-                                </a>
-                                <a href="{{ route('descargoProducto.productos_modal', ['id_protocolo' => $protocolo->id]) }}" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#mproductos">
-                                    <span class="glyphicon glyphicon-download-alt"> Productos</span>
-                                </a>
-                                @php $anestesiologia = Sis_medico\Hc_Anestesiologia::where('id_hc_procedimientos', $protocolo->id_hc_procedimientos)->first(); @endphp
-                                @if(!is_null($anestesiologia))
-                                <a href="{{ route('anestesiologia.imprime', ['id' => $protocolo->id_hc_procedimientos]) }}" type="button" class="btn btn-success btn-sm" target="_blank">
-                                    <span class="glyphicon glyphicon-download-alt"> Record Anestesiologico</span>
-                                </a>
-                                @else
-                                <a href="#" type="button" class="btn btn-danger btn-sm" >
-                                    <span class="glyphicon glyphicon-download-alt"> Sin record</span>
-                                </a>
-                                @endif
-
                             @endif
-                            @php 
-                                $hc_egreso = DB::table('hc_egreso')->where('id_hc_procedimientos', $protocolo->id_hc_procedimientos)->first();                                
-                                if(is_null($hc_egreso)){
-                                    $historia = \Sis_medico\Historiaclinica::where('hcid', $protocolo->hcid)->first();
-                                    $procedimiento = $historia->procedimiento()->first();
-                                    if(!is_null($procedimiento->id_doctor_examinador)){
-                                        $id_doctor_egreso = $procedimiento->id_doctor_examinador;
-                                    }elseif(!is_null($historia->id_doctor1)){
-                                        $id_doctor_egreso = $historia->id_doctor1;
-                                    }else{
-                                        $id_doctor_egreso = $agenda->id_doctor1;
-                                    }
-                                    $id_egreso = \Sis_medico\HcEgreso::insertGetId([
-                                        'id_hc_procedimientos'     => $protocolo->id_hc_procedimientos,
-                                        'ta'                       => '110/70',
-                                        'fc'                       => '80',
-                                        'fr'                       => "18",
-                                        'sato2'                    => '98',
-                                        't'                        => '37',
-                                        'condiciones'              => '1',
-                                        'conducido'                => '1',
-                                        'id_doctor_egreso'         => $id_doctor_egreso,
-                                        'ip_creacion'              => $protocolo->ip_creacion,
-                                        'ip_modificacion'          => $protocolo->ip_creacion,
-                                        'id_usuariocrea'           => $protocolo->id_usuariocrea,
-                                        'id_usuariomod'            => $protocolo->id_usuariocrea,
-                                    ]);
-                                    $hc_egreso = \Sis_medico\HcEgreso::find($id_egreso);
-                                  }                                    
-                            @endphp
-                            @if(!is_null($hc_egreso)) 
-                            <a target="_blank" href="{{route('formularioPreparacion.excelPreparacion', ['id'=>$protocolo->id_hc_procedimientos,'id_protocolo' => $protocolo->id])}} " class="btn btn-success btn-sm"><span class="fa fa-file-excel-o"> Formulario Recuperacion</span></a>
-                            @endif
+
                             <a target="_blank" href="{{ route('formato.anamnesis_crear', ['hcid' =>  $protocolo->hcid]) }}" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Anamnesis</a>
-                            <button id="b_cpre_eco" class="btn btn-success btn-sm" onclick="carga_cpre_eco();">@lang('laboratorio.agregar') CPRE+ECO</button>
-                            @php
-                                $hc_egreso = DB::table('hc_egreso')->where('id_hc_procedimientos', $protocolo->id_hc_procedimientos)->first();
-                            @endphp
-                            <!-- cambiar a diferente de null -->
-                            <a href="javascript:void(0);" onclick="sumit_documentos()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-level-up"></span> Documentos</a>
-                            <a target="_blank" href="{{route('formulario013.edit', ['id'=>$protocolo->id_hc_procedimientos])}} " class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true" ></i> Formulario013</a>
+                            <button id="b_cpre_eco" class="btn btn-success btn-sm" onclick="carga_cpre_eco();">Agregar CPRE+ECO</button>
+
+                            <a target="_blank" href="{{route('formulario013.edit', ['id'=>$protocolo->id_hc_procedimientos])}} " class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Solic.Patología 013A</a>
+                            <a target="_blank" href="{{route('pdf_hospital.informe_bioxias_crear', ['id'=>$protocolo->id_hc_procedimientos])}} " class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Infor.Patología 013B</a>
+                            <a target="_blank" href="{{route('hospital.crea_edita_solicitud', [ 'id'=> $agenda->id ])}}" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Emergencia 008</a>
                             <a data-toggle="modal" data-target="#archivos" href="{{route('formulario007.modal_formatos_24', ['id_protocolo' => $protocolo->id]) }}" class="btn btn-success btn-sm">
                                 <span class="glyphicon glyphicon-level-up"></span> Formatos</a>
                             </a>
-			                    <form role="form" method="POST" action="{{route('controldoc.control_doc')}}" style="">
-                                @if(in_array($rolUsuario, array(1, 11)) == true )
-                                
-                                    <input type="hidden" name="hcid" value="{{$agenda->hcid}}">
-                                    <input type="hidden" name="url_doctor" value="{{$agenda->id_doctor1}}">
-                                    <input type="hidden" id="unix2" name="unix" value="">
-                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="protocolo" value="{{$protocolo->id}}">
 
-                                    <button type="submit" id="enviar2" class="btn btn-success btn-sm" style="display: none;" ><span class="glyphicon glyphicon-level-up"></span> Documentos</button>
-                                
-                                @endif
-                                </form>
-                                  
-                            
-                            <!--
-                            @if($hc_proc->id_seguro=='2')
-                            <a id="planilla_iees" type="button" href="{{route('archivo_plano.planilla_hcid',['hcid' => $protocolo->hcid, 'id_seguro' => '2'])}}" class="btn btn-success btn-sm">
-                            <span class="glyphicon glyphicon-file"> Planilla Iees</span>
-                            </a>
-                            @endif
-                            @if($hc_proc->id_seguro=='5')
-                            <a id="planilla_msp" type="button" href="{{route('archivo_plano.planilla_msp',['hcid' => $protocolo->hcid, 'id_seguro' => '5'])}}" class="btn btn-success btn-sm">
-                            <span class="glyphicon glyphicon-file"> Planilla MSP</span>
-                            </a>
-                            @endif
-                            -->
 
                         @endif
 
@@ -1850,7 +1684,7 @@
                                                     $extension = end($explotar);
                                                 @endphp
                                                 @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
-                                                    <a data-toggle="modal" data-target="#foto2" href="{{route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
+                                                    <a data-toggle="modal" data-target="#foto2" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
                                                         <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="90%">
                                                     </a><br>
                                                     <a type="button" href="{{asset('hc_ima_nombre')}}/{{$imagen->id}}" class="btn btn-primary btn-sm" target="_blank"><!-- ruta 0 desde la historia clinica -->
@@ -1874,8 +1708,8 @@
                                                     @php
                                                         $variable = explode('/' , asset('/hc_ima/'));
                                                         $d1 = $variable[3];
-                                                        // $d2 = $variable[4];
-                                                        
+                                                        $d2 = $variable[4];
+                                                        $d3 = $variable[5];
 
                                                     @endphp
                                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -1944,8 +1778,8 @@
                                                     @php
                                                         $variable = explode('/' , asset('/hc_ima/'));
                                                         $d1 = $variable[3];
-                                                        // $d2 = $variable[4];
-                                                        
+                                                        $d2 = $variable[4];
+                                                        $d3 = $variable[5];
 
                                                     @endphp
                                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -1990,7 +1824,7 @@
                                             <tbody style="font-size: 12px;">
                                                 @php $count=0; @endphp
                                                 @foreach($estudios as $imagen)
-
+                                                
                                                 <div class="col-md-6" style='margin: 10px 0;' >
                                                 @php
                                                     $explotar = explode( '.', $imagen->nombre);
@@ -2009,8 +1843,8 @@
                                                     @php
                                                         $variable = explode('/' , asset('/hc_ima/'));
                                                         $d1 = $variable[3];
-                                                        // $d2 = $variable[4];
-                                                        
+                                                        $d2 = $variable[4];
+                                                        $d3 = $variable[5];
 
                                                     @endphp
                                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -2070,8 +1904,8 @@
                                                     @php
                                                         $variable = explode('/' , asset('/hc_ima/'));
                                                         $d1 = $variable[3];
-                                                        // $d2 = $variable[4];
-                                                        
+                                                        $d2 = $variable[4];
+                                                        $d3 = $variable[5];
 
                                                     @endphp
                                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -2119,9 +1953,6 @@
                                                 <div style=" margin-right: 30px;">
                                                     @if($hist_recetas != null)
                                                         @foreach($hist_recetas as $re_hist)
-                                                        @php 
-                                                            $receta = Sis_medico\hc_receta::find($re_hist->id);
-                                                         @endphp
                                                         <div class="box collapsed-box " style="border: 2px solid #3c8dbc; border-radius: 10px; background-color: white; font-size: 13px; font-family: Helvetica; margin-bottom: 10px;margin-top: 0px;">
                                                             <div class="box-header with-border" style=" text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
                                                                 @if(!is_null($re_hist->fechaini))
@@ -2196,31 +2027,17 @@
                                                                                   <div class="col-md-6">
                                                                                     <span><b style="font-family: 'Helvetica general';" class="box-title">Rp</b></span>
                                                                                     <div id="xtrp" style="border: solid 1px;min-height: 200px;border-radius:3px;margin-bottom: 20 px;border: 2px solid #3c8dbc; ">
-                                                                                    @if(!is_null($receta))
-                                                                                        @php $rdetalles = $receta->detalles; @endphp
-                                                                                        @foreach($rdetalles as $detalle)
-                                                                                            @php $genericos = $detalle->medicina->genericos; @endphp                       
-                                                                                            <p>{{$detalle->nombre}} @foreach($genericos as $gen) ( {{$gen->generico->nombre}} ) @endforeach : {{$detalle->cantidad}} {{ $detalle->detalle_cantidad}}</p>                                  
-                                                                                        @endforeach  
                                                                                       @if(!is_null($re_hist->rp))
                                                                                         <p><?php echo $re_hist->rp ?>
                                                                                         </p>
                                                                                       @endif
-                                                                                    @endif    
                                                                                     </div>
                                                                                   </div>
                                                                                   <div class="col-md-6" >
                                                                                     <span><b style="font-family: 'Helvetica general';" class="box-title">Prescripcion</b></span>
                                                                                     <div id="xtprescripcion" style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #3c8dbc;">
-                                                                                    @if(!is_null($receta))
-                                                                                        @php $rdetalles = $receta->detalles; @endphp
-                                                                                        @foreach($rdetalles as $detalle)
-                                                                                            @php $genericos = $detalle->medicina->genericos; @endphp                       
-                                                                                            <p>{{$detalle->nombre}}: {{$detalle->dosis}}</p>                                 
-                                                                                        @endforeach  
                                                                                       @if(!is_null($re_hist->prescripcion))
                                                                                         <p><?php echo $re_hist->prescripcion ?></p>
-                                                                                        @endif
                                                                                       @endif
                                                                                     </div>
                                                                                   </div>
@@ -2306,35 +2123,35 @@
                                                 <div class="row">
                                                     <div class="col-md-3">
                                                         @if(!is_null($biop_hcid->created_at))
-                                                          @php
-                                                            $dia =  Date('N',strtotime($biop_hcid->created_at));
-                                                            $mes =  Date('n',strtotime($biop_hcid->created_at));
+                                                          @php 
+                                                            $dia =  Date('N',strtotime($biop_hcid->created_at)); 
+                                                            $mes =  Date('n',strtotime($biop_hcid->created_at)); 
                                                           @endphp
                                                           <b>
-                                                          <span style="font-family: 'Helvetica'; font-size: 14px" class="box-title" >
-                                                          @if($dia == '1') Lunes
+                                                          <span style="font-family: 'Helvetica'; font-size: 14px" class="box-title" >    
+                                                          @if($dia == '1') Lunes 
                                                             @elseif($dia == '2') Martes
-                                                            @elseif($dia == '3') Miércoles
-                                                            @elseif($dia == '4') Jueves
-                                                            @elseif($dia == '5') Viernes
-                                                            @elseif($dia == '6') Sábado
-                                                            @elseif($dia == '7') Domingo
+                                                            @elseif($dia == '3') Miércoles 
+                                                            @elseif($dia == '4') Jueves 
+                                                            @elseif($dia == '5') Viernes 
+                                                            @elseif($dia == '6') Sábado 
+                                                            @elseif($dia == '7') Domingo 
                                                           @endif
                                                             {{substr($biop_hcid->created_at,8,2)}} de
-                                                          @if($mes == '1') Enero
-                                                             @elseif($mes == '2') Febrero
-                                                             @elseif($mes == '3') Marzo
-                                                             @elseif($mes == '4') Abril
-                                                             @elseif($mes == '5') Mayo
-                                                             @elseif($mes == '6') Junio
-                                                             @elseif($mes == '7') Julio
-                                                             @elseif($mes == '8') Agosto
-                                                             @elseif($mes == '9') Septiembre
-                                                             @elseif($mes == '10') Octubre
-                                                             @elseif($mes == '11') Noviembre
-                                                             @elseif($mes == '12') Diciembre
+                                                          @if($mes == '1') Enero 
+                                                             @elseif($mes == '2') Febrero 
+                                                             @elseif($mes == '3') Marzo 
+                                                             @elseif($mes == '4') Abril 
+                                                             @elseif($mes == '5') Mayo 
+                                                             @elseif($mes == '6') Junio 
+                                                             @elseif($mes == '7') Julio 
+                                                             @elseif($mes == '8') Agosto 
+                                                             @elseif($mes == '9') Septiembre 
+                                                             @elseif($mes == '10') Octubre 
+                                                             @elseif($mes == '11') Noviembre 
+                                                             @elseif($mes == '12') Diciembre 
                                                           @endif
-                                                            del {{substr($biop_hcid->created_at,0,4)}}</span></b>
+                                                            del {{substr($biop_hcid->created_at,0,4)}}</span></b>  
                                                         @endif
                                                     </div>
                                                     <div class="col-md-5">
@@ -2369,20 +2186,20 @@
                                             <div class="col-md-12" style="padding: 1px;">
                                               <div class="row">
                                                 <div class="col-md-12">
-                                                  <label style="font-family: 'Helvetica general';">CUADRO CLINICO:</label>
+                                                  <label style="font-family: 'Helvetica general';">CUADRO CLINICO:</label> 
                                                 </div>
                                                 <div class="col-12" style="padding: 15px;">
-                                                  <?php echo $cuadclinico_diagnostico->cuadro_clinico_bp ?>
+                                                  <?php echo $cuadclinico_diagnostico->cuadro_clinico_bp?>
                                                 </div>
                                               </div>
                                             </div>
                                             <div class="col-md-12" style="padding: 1px;">
                                               <div class="row">
                                                 <div class="col-md-12">
-                                                  <label style="font-family: 'Helvetica general';">DIAGNOSTICO:</label>
+                                                  <label style="font-family: 'Helvetica general';">DIAGNOSTICO:</label> 
                                                 </div>
                                                 <div class="col-12" style="padding: 15px;">
-                                                  <?php echo $cuadclinico_diagnostico->diagnosticos_bp ?>
+                                                  <?php echo $cuadclinico_diagnostico->diagnosticos_bp?>
                                                 </div>
                                               </div>
                                             </div>
@@ -2394,7 +2211,7 @@
                         </div>
                     </div>
                 </div>
-
+               
             </div>
         </div>
 </div>
@@ -2404,7 +2221,7 @@
 <div id="medicina_div"></div>
 
 
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
 <script src="{{asset('plugins/iCheck/icheck.min.js')}}"></script>
 <script type="text/javascript">
     $('input[type="checkbox"].flat-orange').iCheck({
@@ -2431,9 +2248,9 @@
         function agregar_evolucion(){
             var condicion = $('#proc_com').val();
             if(condicion != ""){
-                window.location.href = "{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}";
+                enviarPostClinico("{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}");
             }else{
-                window.location.href = "{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}";
+                enviarPostClinico("{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}");
             }
 
         }
@@ -2624,8 +2441,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
 
           success: function(data){
@@ -2833,6 +2651,8 @@
 
 
     function guardar(){
+
+        //alert("ok");
         $.ajax({
           type: 'post',
           url:"{{route('admision_datos.doctor')}}", //CombinadoController->ingreso
@@ -2864,78 +2684,6 @@
           }
         });
     }
-
-
-
-
-
-
-
-
-
-function alertaPersonalizada(icon, title){
-    Swal.fire({
-      position: `center` ,
-      icon: `${icon}`,
-      title: `${title}` ,
-      showConfirmButton: false,
-      timer: 1500
-    })
-}
-
-
-    function guardar_admin(){
-        let observacion = document.getElementById('observacion_admin').value;
-        let id_paciente = document.getElementById('id_paciente_clinica').value;
-        //console.log(observacion + id_paciente)
-
-
-         $.ajax({
-          type: 'post',
-          url:"{{route('paciente.guardarObservacionAdministrativa')}}", //CombinadoController->ingreso
-          headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-
-          datatype: 'json',
-          data: $("#frm").serialize(),
-          success: function(data){
-            console.log(data);
-          
-          },
-          error: function(data){
-
-         
-
-          }
-        });
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3063,7 +2811,6 @@ function alertaPersonalizada(icon, title){
                 type: 'post',
                 success: function(data){
                     response(data);
-                    console.log(data);
 
                 }
             })
@@ -3079,7 +2826,6 @@ function alertaPersonalizada(icon, title){
             datatype: 'json',
             data: $("#cie10"),
             success: function(data){
-                console.log(data);
                 if(data!='0'){
                     $('#codigo').val(data.id);
 
@@ -3333,10 +3079,23 @@ function alertaPersonalizada(icon, title){
 
     }
 
+    function enviarPostClinico(url){
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        var token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = '_token';
+        token.value = '{{ csrf_token() }}';
+        form.appendChild(token);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function editar_consulta(id,agenda){
         //alert(agenda);
 
-        location.href ="{{url('historialclinico/visitas_ingreso')}}/"+id+"/"+agenda;//visita.crea_actualiza
+        enviarPostClinico("{{url('historialclinico/visitas_ingreso')}}/"+id+"/"+agenda);//visita.crea_actualiza
 
     }
 
@@ -3344,7 +3103,7 @@ function alertaPersonalizada(icon, title){
 
         $('#nuevo_proc').attr('disabled','disabled');
         //alert("ok");
-        location.href ="{{route('estudio.nuevo', ['id' => $agenda->id ])}}";
+        enviarPostClinico("{{route('estudio.nuevo', ['id' => $agenda->id ])}}");
     }
 
     $('#ale_list').select2({
@@ -3467,9 +3226,9 @@ function alertaPersonalizada(icon, title){
         var js_cedula = document.getElementById("id_paciente").value;
         //alert(js_cedula);
         $.ajax({
-          type: 'get',
+          type: 'post',
           url:"{{url('receta_detalle/crear_detalle')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula, //receta.crear_detalle
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
 
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -3581,9 +3340,9 @@ function alertaPersonalizada(icon, title){
 
     function det_delete(id) {
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('receta_detalle/eliminar_detalle')}}/"+{{$hc_receta->id}}+"/"+id,
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
 
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -3660,22 +3419,6 @@ function alertaPersonalizada(icon, title){
         //console.log(this);
 
     });
-    $('#moxigeno').on('hidden.bs.modal', function(){
-        //alert('hola');
-        //console.log(this);
-        $(this).removeData('bs.modal');
-        //$(this).find('.modal-content').empty().html('');
-        //console.log(this);
-
-    });
-    $('#mproductos').on('hidden.bs.modal', function(){
-        //alert('hola');
-        //console.log(this);
-        $(this).removeData('bs.modal');
-        //$(this).find('.modal-content').empty().html('');
-        //console.log(this);
-
-    });
 
     $('#mprotocolo_cpre_eco').on('hidden.bs.modal', function(){
         //alert('hola');
@@ -3695,7 +3438,6 @@ function alertaPersonalizada(icon, title){
 
     $('#eprotocolo').on('hidden.bs.modal', function(){
         $(this).removeData('bs.modal');
-
     });
     $('#formulario013').on('hidden.bs.modal', function(){
         $(this).removeData('bs.modal');
@@ -3730,8 +3472,9 @@ function alertaPersonalizada(icon, title){
             $('input[type="checkbox"].flat-orange').on('ifChecked', function(event){
 
                 $.ajax({
-                  type: 'get',
+                  type: 'post',
                   url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '1']) }}",
+                  data: {'_token': '{{ csrf_token() }}'},
 
 
                   datatype: 'json',
@@ -3751,8 +3494,9 @@ function alertaPersonalizada(icon, title){
             $('input[type="checkbox"].flat-orange').on('ifUnchecked', function(event){
 
                 $.ajax({
-                  type: 'get',
+                  type: 'post',
                   url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '0']) }}",
+                  data: {'_token': '{{ csrf_token() }}'},
 
 
                   datatype: 'json',
@@ -3774,12 +3518,6 @@ function alertaPersonalizada(icon, title){
 
 
     @endif
-
-    function sumit_documentos(){
-
-        $('#enviar2').click();    
-
-    }
 
 </script>
 

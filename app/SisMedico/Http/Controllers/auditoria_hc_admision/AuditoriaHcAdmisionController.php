@@ -80,6 +80,10 @@ class AuditoriaHcAdmisionController extends Controller
 
     public function duplicar_registros($id_agenda){
 
+		if ($this->rol()) {
+			return response()->view('errors.404');
+		}
+
     	//dd("entra");
 
     	$ip_cliente = $_SERVER["REMOTE_ADDR"];
@@ -88,6 +92,8 @@ class AuditoriaHcAdmisionController extends Controller
         $agenda = Agenda::find($id_agenda);
 
         $historia = $agenda->historia_clinica;
+
+		$vtflag = false;
 
 
         if (!is_null($historia)) {
@@ -103,6 +109,8 @@ class AuditoriaHcAdmisionController extends Controller
 	    			$hc_proc_final = Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento->id)->get(); 
 
 	        			if (is_null($aud_procedimientos)) {
+
+							$vtflag = true;
 
 	        				$arr_proc = [
 	        					'id_hc'							=> $procedimiento->id_hc,
@@ -314,30 +322,33 @@ class AuditoriaHcAdmisionController extends Controller
 	        	}
 	        }
 
-	        $hc_cie10 = Hc_Cie10::where('hcid', $historia->hcid)->get();
+			if($vtflag == true){
 
-	        if (!is_null($hc_cie10)) {
-	        	foreach($hc_cie10 as $cie10){
-	        		$aud_cie10 = Aud_Hc_Cie10::where('id_cie10_org',$cie10->id)->first();
+				$hc_cie10 = Hc_Cie10::where('hcid', $historia->hcid)->get();
 
-	        		if (is_null($aud_cie10)) {
-	      				$arr_cie = [
-	      					'hc_id_procedimiento'			=> $cie10->hc_id_procedimiento,
-	      					'hcid'							=> $cie10->hcid,
-	      					'cie10'							=> $cie10->cie10,
-	      					'ingreso_egreso'				=> $cie10->ingreso_egreso,
-	      					'presuntivo_definitivo'			=> $cie10->presuntivo_definitivo,
-	      					'id_usuariocrea'     			=> $idusuario,
-				            'id_usuariomod'     			=> $idusuario,
-				            'ip_creacion'        			=> $ip_cliente,
-				            'ip_modificacion'    			=> $ip_cliente,
-				            'id_cie10_org'					=> $cie10->id,
-	      				];
+				if (!is_null($hc_cie10)) {
+					foreach($hc_cie10 as $cie10){
+						$aud_cie10 = Aud_Hc_Cie10::where('id_cie10_org',$cie10->id)->first();
 
-	      				Aud_Hc_Cie10::create($arr_cie);
-	        		}
-	        	}
-	        }
+						if (is_null($aud_cie10)) {
+							$arr_cie = [
+								'hc_id_procedimiento'			=> $cie10->hc_id_procedimiento,
+								'hcid'							=> $cie10->hcid,
+								'cie10'							=> $cie10->cie10,
+								'ingreso_egreso'				=> $cie10->ingreso_egreso,
+								'presuntivo_definitivo'			=> $cie10->presuntivo_definitivo,
+								'id_usuariocrea'     			=> $idusuario,
+								'id_usuariomod'     			=> $idusuario,
+								'ip_creacion'        			=> $ip_cliente,
+								'ip_modificacion'    			=> $ip_cliente,
+								'id_cie10_org'					=> $cie10->id,
+							];
+
+							Aud_Hc_Cie10::create($arr_cie);
+						}
+					}
+				}
+			}	
 
 	        $hc_cpre_eco = Hc_cpre_eco::where('hcid', $historia->hcid)->first();
 
@@ -361,7 +372,6 @@ class AuditoriaHcAdmisionController extends Controller
 			            'ip_modificacion'    			=> $ip_cliente,
 			            'id_cpre_eco_org'				=> $hc_cpre_eco->id,
 	        	 	];
-
 	        	 	Aud_Hc_Cpre_Eco::create($arr_cpre);
 
 	        	 }
@@ -372,6 +382,11 @@ class AuditoriaHcAdmisionController extends Controller
 
         return ['estado' => "ok", 'id_agenda' => $id_agenda];
     }
+
+	public function duplicar_registros_no_mostrar($id_agenda)
+	{
+		return $this->duplicar_registros($id_agenda);
+	}
    
 
 }

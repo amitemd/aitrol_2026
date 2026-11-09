@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
 	<title> Evolución </title>
     <style>
         table,
@@ -137,11 +138,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 <body>
     <main>
-        <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-			@if(!is_null($procedimiento->empresa))
-				<img style="width:150px;height: 50px" src="{{base_path().'/storage/app/logo/'.$procedimiento->empresa->logo}}" >
-            @endif
-        </div>
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
         <table class="table9">
             <tr>
                 <th bgcolor="#B4A7FD" ; colspan="18" align="left" style="font-size:15px"><b>A. DATOS DEL ESTABLECIMIENTO USUARIO / PACIENTE </b> </th>
@@ -157,7 +160,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </tr>
             <tr>
                 <td colspan="3" height="15">{{$procedimiento->historia->seguro->nombre}}</td>
-                <td colspan="2">{{$procedimiento->empresa->unicodigo}}</td>
+                <td colspan="2">@if(isset($procedimiento->empresa)){{$procedimiento->empresa->unicodigo}}@endif</td>
                 <td colspan="5">@if(isset($procedimiento->empresa)){{$procedimiento->empresa->nombrecomercial}}@endif</td>
                 <td colspan="2">{{$procedimiento->historia->paciente->id}} </td>
                 <td colspan="3"></td>
@@ -184,12 +187,12 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td colspan="3">{{$procedimiento->historia->paciente->apellido2}}</td>
                 <td colspan="3">{{$procedimiento->historia->paciente->nombre1}}</td>
                 <td colspan="3">{{$procedimiento->historia->paciente->nombre2}}</td>
-                <td colspan="1">@if($procedimiento->historia->paciente->sexo == 1) Masculino @else Femenino @endif</td>
+                <td colspan="1">@if($procedimiento->historia->paciente->sexo == 1) Maculino @else Femenino @endif</td>
                 <td colspan="1">{{$edad}}</td>
                 <td colspan="1"></td>
-                <td colspan="1"></td>
-                <td colspan="1"></td>
-                <td colspan="1"></td>
+                <td colspan="1">{{$diaNacimiento}}</td>
+                <td colspan="1">{{$mesNacimiento}}</td>
+                <td colspan="1">{{ date('Y', strtotime($procedimiento->historia->paciente->fecha_nacimiento))}}</td>
             </tr>
 
 

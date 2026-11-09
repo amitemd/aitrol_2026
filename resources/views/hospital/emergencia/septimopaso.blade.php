@@ -3,25 +3,19 @@ date_default_timezone_set('America/Guayaquil');
 $fecha = date("Y-m-d");
 ?>
 
-<div class="card">
-    <div class="card-header bg bg-primary">
-        <div class="col-md-12">
-            <div class="row">
-                <div class="d-flex align-items-center col-md-12">
-                    <h4 class="card-title ml-25 colorbasic">
-                        {{trans('pasos.ExamenFisicoyDiagnostico')}}
-                    </h4>
-                </div>
-            </div>
-        </div>
+@include('hospital.emergencia.partials.clinical-step-styles')
+
+<div class="card clinical-step-card">
+    <div class="card-header clinical-step-primary-header">
+        <h4 class="card-title clinical-step-primary-title">{{trans('pasos.ExamenFisicoyDiagnostico')}}</h4>
     </div>
-    <div class="card-body">
+    <div class="card-body clinical-step-body">
         <form id="form_paso7">
             @php
             $form008 = $solicitud->form008->first();
             @endphp
             <input type="hidden" name="solicitud_id" value="{{$solicitud->id}}">
-            <div class="row" style="padding-top: 10px;">
+            <div class="clinical-exam-grid">
 
                 {{-- <div class="col-md-12">
                     <b> 1. {{trans('pasos.VíaAéreaObstruida')}}</b>
@@ -33,76 +27,76 @@ $fecha = date("Y-m-d");
                     </select>
                 </div> --}}
                 <div class="col-md-12">
-                    <b> 1.{{trans('pasos.PielFaneras')}}</b>
+                    <b>1. {{trans('pasos.PielFaneras')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="piel_faneras" id="piel_faneras" value="{{$form008->piel_faneras}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 2.{{trans('pasos.Cabeza')}}</b>
+                    <b>2. {{trans('pasos.Cabeza')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="cabeza" id="cabeza" value="{{$form008->cabeza}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 3.{{trans('pasos.Ojos')}}</b>
+                    <b>3. {{trans('pasos.Ojos')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="ojos" id="ojos" value="{{$form008->ojos}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 4.{{trans('pasos.Oidos')}}</b>
+                    <b>4. {{trans('pasos.Oidos')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="oidos" id="oidos" value="{{$form008->oidos}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 5.{{trans('pasos.Nariz')}}</b>
+                    <b>5. {{trans('pasos.Nariz')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="nariz" id="nariz" value="{{$form008->nariz}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 6.{{trans('pasos.Boca')}}</b>
+                    <b>6. {{trans('pasos.Boca')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="boca" id="boca" value="{{$form008->boca}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 7.{{trans('pasos.OroFaringe')}}</b>
+                    <b>7. {{trans('pasos.OroFaringe')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="oro_faringe" id="oro_faringe" value="{{$form008->oro_faringe}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 8.{{trans('pasos.Cuello')}}</b>
+                    <b>8. {{trans('pasos.Cuello')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="cuello" id="cuello" value="{{$form008->cuello}}">
                 </div>
                 <div class="col-md-12">
-                    <b> 9.{{trans('pasos.AxilasMamas')}}</b>
+                    <b>9. {{trans('pasos.AxilasMamas')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="axilas_mamas" id="axilas_mamas" value="{{$form008->axilas_mamas}}">
                 </div>
 
                 <div class="col-md-12">
-                    <b> 10.{{trans('pasos.Torax')}}</b>
+                    <b>10. {{trans('pasos.Torax')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="torax" id="torax" value="{{$form008->torax}}">
                 </div>
 
                 <div class="col-md-12">
-                    <b> 11.{{trans('pasos.Abdomen')}}</b>
+                    <b>11. {{trans('pasos.Abdomen')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="abdomen" id="abdomen" value="{{$form008->abdomen}}">
                 </div>
 
                 <div class="col-md-12">
-                    <b> 12.{{trans('pasos.Columna')}}</b>
+                    <b>12. {{trans('pasos.Columna')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="columna" id="columna" value="{{$form008->columna}}">
@@ -116,7 +110,7 @@ $fecha = date("Y-m-d");
                 </div>--}}
 
                 <div class="col-md-12">
-                    <b> 13.{{trans('pasos.InglePerine')}}</b>
+                    <b>13. {{trans('pasos.InglePerine')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="ingle_perine" id="ingle_perine" value="{{$form008->ingle_perine}}">
@@ -130,20 +124,23 @@ $fecha = date("Y-m-d");
                 </div>--}}
 
                 <div class="col-md-12">
-                    <b> 14.{{trans('pasos.MiembrosSuperiores')}}</b>
+                    <b>14. {{trans('pasos.MiembrosSuperiores')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="miembros_superiores" id="miembros_superiores" value="{{$form008->miembros_superiores}}">
                 </div>
 
                 <div class="col-md-12">
-                    <b> 15.{{trans('pasos.MiembrosInferiores')}}</b>
+                    <b>15. {{trans('pasos.MiembrosInferiores')}}</b>
                 </div>
                 <div class="col-md-12">
                     <input class="form-control" type="text" name="miembros_inferiores" id="miembros_inferiores" value="{{$form008->miembros_inferiores}}">
                 </div>
-                <div class="col-md-12" style="text-align: center; margin-top: 10px;">
-                    <button class="btn btn-primary" onclick="guardar_paso7();" type="button"> <i class="fa fa-save"></i> </button>
+                @include('hospital.emergencia.partials.examen-fisico-svg')
+                <div class="col-md-12 clinical-form-actions">
+                    <button class="btn btn-primary clinical-save-button" onclick="guardar_paso7();" type="button">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
                 </div>
             </div>
         </form>
@@ -158,6 +155,50 @@ $fecha = date("Y-m-d");
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 
 <script type="text/javascript">
+    (function initializePhysicalExamBodyMap() {
+        var map = document.querySelector('#form_paso7 .clinical-body-map-svg');
+        var status = document.getElementById('clinical-body-map-status');
+        if (!map) return;
+        var regions = map.querySelectorAll('[data-exam-target]');
+
+        function setActiveRegion(target, shouldFocus) {
+            var input = document.getElementById(target);
+            Array.prototype.forEach.call(regions, function(region) {
+                region.classList.toggle('is-active', region.getAttribute('data-exam-target') === target);
+            });
+            if (!input) return;
+            status.textContent = input.closest('.col-md-12').previousElementSibling.textContent.trim();
+            if (shouldFocus) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function refreshCompletedRegions() {
+            Array.prototype.forEach.call(regions, function(region) {
+                var input = document.getElementById(region.getAttribute('data-exam-target'));
+                region.classList.toggle('has-value', input && input.value.trim() !== '');
+            });
+        }
+
+        Array.prototype.forEach.call(regions, function(region) {
+            var target = region.getAttribute('data-exam-target');
+            var input = document.getElementById(target);
+            region.addEventListener('click', function() { setActiveRegion(target, true); });
+            region.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setActiveRegion(target, true);
+                }
+            });
+            if (input) {
+                input.addEventListener('focus', function() { setActiveRegion(target, false); });
+                input.addEventListener('input', refreshCompletedRegions);
+            }
+        });
+        refreshCompletedRegions();
+    })();
+
     function guardar_paso7() {
 
         $.ajax({
@@ -174,7 +215,7 @@ $fecha = date("Y-m-d");
                 return Swal.fire(`{{trans('proforma.GuardadoCorrectamente')}}`);
             },
             error: function() {
-                alert('error al cargar');
+                alert("{{trans('pasos.ErrorCargar')}}");
             }
         });
 

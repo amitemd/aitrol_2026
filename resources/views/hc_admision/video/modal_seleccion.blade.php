@@ -4,9 +4,9 @@
     }
     .seleccionada_imagen:hover{
       transform:scale(0.9);
-        -ms-transform:scale(0.9); // IE 9 
-        -moz-transform:scale(0.9); // Firefox 
-        -webkit-transform:scale(0.9); // Safari and Chrome 
+        -ms-transform:scale(0.9); // IE 9
+        -moz-transform:scale(0.9); // Firefox
+        -webkit-transform:scale(0.9); // Safari and Chrome
         -o-transform:scale(0.9) ;
         -webkit-filter: grayscale(80%);
         filter: grayscale(80%);
@@ -65,6 +65,12 @@
             <div class="col-md-4 imagen" style="text-align: center;">
                 <a target="_blank" href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => '9' ])}}">
                     <img class="seleccionada_imagen" src="{{asset('formato/9.jpg')}}" width="90%">
+                </a>
+            </div>
+            <div class="col-md-4 imagen" style="text-align: center;">
+                <span>Imagenes RX</span>
+                <a target="_blank" href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => 'rx' ])}}">
+                    <img class="seleccionada_imagen" src="{{asset('formato/rx.jpg')}}" width="90%">
                 </a>
             </div>
         </div>

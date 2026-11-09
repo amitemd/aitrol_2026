@@ -8,10 +8,11 @@
         <thead>
           <tr role="row">
             <th width="15%" >Genérico</th>
-            <th width="15%" >Medicina.</th>
+            <th width="15%" >Medicina</th>
             <th width="25%" >Cantidad</th>
-            <th width="40%" >Dosis.</th>
+            <th width="40%" >Dosis</th>
             <th width="1%" >&nbsp;</th>
+            <th width="25%">Administración en consulta</th>
           </tr>
         </thead>
         <tbody>
@@ -22,7 +23,8 @@
             <td>{{$value->medicina->nombre}}</td>
             <td><textarea onchange="act_detalle({{$value->id}});" id="cantidad{{$value->id}}" name="cantidad{{$value->id}}" style="width: 100%;">{{$value->cantidad}}</textarea></td>
             <td><textarea onchange="act_detalle({{$value->id}});" id="dosis{{$value->id}}" name="dosis{{$value->id}}" style="width: 100%;">{{$value->dosis}}</textarea></td>
-            <td><button onclick="det_delete({{$value->id}})" class="btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button></td>         
+            <td><button onclick="det_delete({{$value->id}})" class="btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button></td>
+            <td>@include('hospital.medication._emar_fields', ['detalle' => $value])</td>
           </tr>
         @endforeach
         </tbody>
@@ -59,7 +61,48 @@
 	    @endforeach    
     }
 
- 
+    function alternarEmar(id) {
+        $('#emar-form-' + id).toggle();
+    }
+
+    function cambiarEstadoEmarClinico(id) {
+        var omitido = $('#emar-estado-' + id).val() === 'OMITTED';
+        $('#emar-omision-grupo-' + id).toggle(omitido);
+        $('#emar-serie-' + id).prop('disabled', omitido);
+    }
+
+    function registrarEmarClinico(id) {
+        var button = $('#emar-guardar-' + id);
+        button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Verificando...');
+        $.ajax({
+            type: 'post',
+            url: "{{route('clinical_medication.store')}}",
+            headers: {'X-CSRF-TOKEN': $('input[name=_token]').first().val()},
+            dataType: 'json',
+            data: {
+                id: id,
+                series: $('#emar-serie-' + id).val(),
+                dose: $('#emar-dosis-' + id).val(),
+                route: $('#emar-via-' + id).val(),
+                scheduled_at: $('#emar-programada-' + id).val(),
+                administered_at: $('#emar-real-' + id).val(),
+                status: $('#emar-estado-' + id).val(),
+                omission_reason: $('#emar-omision-' + id).val(),
+                clinical_result: $('#emar-resultado-' + id).val(),
+                patient_verified: $('#emar-paciente-' + id).is(':checked') ? 1 : 0,
+                medication_verified: $('#emar-medicamento-' + id).is(':checked') ? 1 : 0
+            },
+            success: function(response) {
+                $('#emar-panel-' + id).html('<div class="alert alert-success"><i class="fa fa-check-circle"></i> ' + response.msn + '<br><small>eMAR #' + response.administration_id + '</small></div>');
+            },
+            error: function(xhr) {
+                var response = xhr.responseJSON || {};
+                alert(response.msn || 'No fue posible registrar la administración.');
+                button.prop('disabled', false).html('<i class="fa fa-shield"></i> Confirmar administración');
+            }
+        });
+    }
+
 
 
 

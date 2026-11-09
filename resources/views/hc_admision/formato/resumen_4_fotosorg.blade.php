@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
 
 	<title>Resumen Procedimiento</title>
 	<style type="text/css">
@@ -79,20 +80,19 @@
 
 			@php  $i = 0;   $j = 0;@endphp
 			
-			@if($protocolo->procedimiento->procedimiento_completo != "") 
-				@if($protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen != "")
+			@php $imagenGrupoProcedimiento = optional(optional($protocolo->procedimiento->procedimiento_completo)->grupo_procedimiento)->imagen; @endphp
+			@if(!empty($imagenGrupoProcedimiento))
 					@if($i < 4)
 						@if($j == 0)
 						<tr style="padding: 0;">
 						@endif
-						<td style="margin: 0;padding: 0 4px 0px 0px;"><img style="width: 185px; height: 185px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen}}" hspace=12></td>
+						<td style="margin: 0;padding: 0 4px 0px 0px;"><img style="width: 185px; height: 185px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$imagenGrupoProcedimiento}}" hspace=12></td>
 						@if($j >= 3)
 						</tr>
 						@endif
 						@php $i = $i+1;$j = $j+1; @endphp
 					@endif
-				@endif
-			@endif	
+			@endif
 			@foreach($imagenes as $value)
 				@if($i < 4)
 					@if($j == 0)
@@ -122,14 +122,7 @@
 			</tr>
 		</table>
 		<hr>
-		<!--table width="716px;" class="final">
-			<tr>
-				<td >Hallazgos</td>
-			</tr>
-			<tr>
-				<td style="font-size: 12px !important;"><?php echo $protocolo->hallazgos; ?></td>
-			</tr>
-		</table-->
+		
 		<div style="width: 107%;margin-left: -17px;border: 1px black solid;">
 			<span>Hallazgos</span>
 		</div>

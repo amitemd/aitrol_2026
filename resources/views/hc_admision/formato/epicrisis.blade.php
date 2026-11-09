@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>HCU_006</title>
+    <meta charset="utf-8">
+  <title>EPICRISIS</title>
 
   <style>
     @page { margin: 80px 30px; }
@@ -34,17 +35,17 @@
     .parrafo2 p{
       margin: 0;
     }
-  </style>
+  </style>    
 </head>
 <body>
-
+  
     <div id="header">
 
-    @php
-        $id_empresa = Session::get('id_empresa');
+      @php
         $agenda = Sis_medico\Agenda::find($data->id_agenda);
-        $empresa = Sis_medico\Empresa::find($id_empresa);
-      @endphp
+        $empresa = Sis_medico\Empresa::find($id_empresa); 
+      
+      @endphp        
       <div style="float:left;width: 70%;"><p class=MsoNormal align=center style='text-align:center; padding-top: 2pt; margin-top: 40pt;'><b><span style='font-size:25.0pt;line-height:107%'>EPICRISIS</span></b></p>
       </div>
 
@@ -57,30 +58,30 @@
       </div>
       @endif
 
-      <div style="clear:both;">&nbsp;</div>
-
+      <div style="clear:both;">&nbsp;</div> 
+              
     </div>
 
       @php
         $nom = "";
-         
+
         if(!is_null($firma)){
           $nom = "/storage/app/avatars/$firma->nombre";
         }
       @endphp
 
-
+    
     @if($nom != "")
     <div id="footer">
       <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;text-align:center;line-height:normal'><span style='font-size:6.0pt;mso-bidi-font-size:11.0pt'><o:p><img style='position: absolute;top: -12px;margin-left: 320pt;padding-left: 0px;' width=200 height=75 src="{{base_path().$nom}}" align=center hspace=12></o:p></span>
       </p>
-    </div>
+    </div> 
     @endif
-
-
-
-    <div id="content">
-
+    
+  
+  
+    <div id="content"> 
+      
       <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 style='margin-left:-8.5pt;border-collapse:collapse;border:none'>
          <tr>
           <td width=118 colspan=2 valign=top style='width:105pt;border:solid windowtext 1.0pt;
@@ -119,7 +120,7 @@
           <td width=118 colspan=2 valign=top style='width:88.3pt;border:solid windowtext 1.0pt;
           border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
           <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-          text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{$empresa->nombrecomercial}}  </span></p>
+          text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{$empresa->nombrecomercial}} </span></p>
           </td>
           <td width=96 valign=top style='width:71.7pt;border-top:none;border-left:none;
           border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -212,7 +213,7 @@
           border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
           <br>
           <p class=MsoNormal style='margin-top: 0;margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-          1.2 !important'><span class="parrafo2" style='font-size:10px !important'><?php echo $protocolo->conclusion ?>
+          1.2 !important'><span class="parrafo2" style='font-size:10px !important'>@if(!is_null($protocolo))<?php echo $protocolo->conclusion ?>@endif
             <?php //echo $protocolo->hallazgos ?></span>
           </p>
           </td>
@@ -229,7 +230,7 @@
           <td width=576 colspan=8 valign=top style='width:432.05pt;border:solid windowtext 1.0pt;
           border-top:none;padding:0cm 5.4pt 0cm 5.4pt;'>
           <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-          normal'><span style='font-size:10px !important'><?php echo $protocolo->hallazgos ?> </span></p>
+          normal'><span style='font-size:10px !important'>@if(!is_null($protocolo))<?php echo $protocolo->hallazgos ?>@endif </span></p>
           </td>
          </tr>
          <tr style='height:6.9pt'>
@@ -246,8 +247,8 @@
           normal'><span style='font-size:11px'>{{$tiene_receta}}</span></p>
           </td>
          </tr>
-
-
+         
+         
          <tr height=0>
           <td width=38 style='border:none'></td>
           <td width=80 style='border:none'></td>
@@ -258,10 +259,10 @@
           <td width=71 style='border:none'></td>
           <td width=108 style='border:none'></td>
          </tr>
-      </table>
+      </table>  
 
       <div style="page-break-after:always;"></div>
-
+      
 
       <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=576
        style='width:432.35pt;margin-left:-12.35pt;border-collapse:collapse;border:
@@ -352,7 +353,7 @@
           border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:30pt'>
           <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
           normal'><span style='font-size:11px'>@foreach($cie10_in_def as $value)@if(!is_null($cie10_3->where('id',$value->cie10)->first())){{$cie10_3->where('id',$value->cie10)->first()->descripcion}}@endif @if(!is_null($cie10_4->where('id',$value->cie10)->first())){{$cie10_4->where('id',$value->cie10)->first()->descripcion}}@endif - @endforeach</span></p>
-
+          
           </td>
           <td width=311 colspan=15 valign=top style='width:5pt;border-top:none;
           border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -497,7 +498,7 @@
             </tr>
             <tr>
               <td colspan="12"></td>
-            </tr>
+            </tr>  
             <tr>
               <td><span>&nbsp;</span></td>
               <td rowspan=2><span style='font-size:8.0pt'>ALTA<br>DEFINITIVA</span></td>
@@ -535,7 +536,7 @@
             </tr>
             <tr>
               <td colspan="12"></td>
-            </tr>
+            </tr>  
             <tr>
               <td><span>&nbsp;</span></td>
               <td rowspan=2><span style='font-size:8.0pt'>ALTA<br>TRANSITORIA</span></td>
@@ -624,7 +625,7 @@
         <td width=5 valign=top style='width:25pt;border:solid windowtext 1.0pt;
         border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:6.9pt'>
         <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-        normal'><span style='font-size:10.0pt'>@if(!is_null($epicrisis->fecha_imprime)){{substr($epicrisis->fecha_imprime,0,10)}}@else{{substr($protocolo->created_at,0,10)}}@endif</span></p>
+        normal'><span style='font-size:10.0pt'>@if(!is_null($epicrisis->fecha_imprime)){{substr($epicrisis->fecha_imprime,0,10)}}@else @if(!is_null($protocolo)){{substr($protocolo->created_at,0,10)}}@endif @endif</span></p>
         </td>
         <td width=5 colspan=8 valign=top style='width:5pt;border-top:none;
         border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -694,14 +695,14 @@
        </tr>
       </table>
 
-    </div>
+    </div>  
+          
+      
+        
+    
+  
 
-
-
-
-
-
-
+  
 
 </body>
 </html>

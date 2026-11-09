@@ -33,7 +33,7 @@
                         <form method="post" action="{{ route('formato012.search') }}">
                         {{ csrf_field() }}
                             <div class="form-group col-md-4 col-xs-6" style="padding-left: 0px;padding-right: 0px;">
-                                <label for="fecha" class="col-md-3 control-label">Desde</label>
+                                <label for="fecha" class="col-md-3 control-label">@lang('formato012.from')</label>
                                 <div class="col-md-9">
                                     <div class="input-group date">
                                         <div class="input-group-addon">
@@ -48,7 +48,7 @@
                             </div>
 
                             <div class="form-group col-md-4 col-xs-6" style="padding-left: 0px;padding-right: 0px;">
-                                <label for="fecha_hasta" class="col-md-3 control-label">Hasta</label>
+                                <label for="fecha_hasta" class="col-md-3 control-label">@lang('formato012.to')</label>
                                 <div class="col-md-9">
                                     <div class="input-group date">
                                         <div class="input-group-addon">
@@ -63,10 +63,10 @@
                             </div>                            
 
                             <div class="form-group col-md-4 col-xs-6" style="padding-left: 0px;padding-right: 0px;">
-                                <label for="cedula" class="col-md-3 control-label">Cédula</label>
+                                <label for="cedula" class="col-md-3 control-label">@lang('formato012.identification')</label>
                                 <div class="col-md-9">
                                     <div class="input-group">
-                                    <input value="@if($cedula!=''){{$cedula}}@endif" type="text" class="form-control input-sm" name="cedula" id="cedula" placeholder="Cédula" >
+                                    <input value="@if($cedula!=''){{$cedula}}@endif" type="text" class="form-control input-sm" name="cedula" id="cedula" placeholder="@lang('formato012.identification')" >
                                     <div class="input-group-addon">
                                         <i class="glyphicon glyphicon-remove-circle" onclick="document.getElementById('cedula').value = ''; buscar();"></i>
                                     </div>
@@ -75,10 +75,10 @@
                             </div>
 
                             <div class="form-group col-md-4 col-xs-6" style="padding-left: 0px;padding-right: 0px;">
-                                <label for="nombres" class="col-md-3 control-label">Paciente</label>
+                                <label for="nombres" class="col-md-3 control-label">@lang('formato012.patient')</label>
                                 <div class="col-md-9">
                                     <div class="input-group">
-                                    <input value="@if($nombres!=''){{$nombres}}@endif" type="text" class="form-control input-sm" name="nombres" id="nombres" placeholder="Nombres y Apellidos" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                    <input value="@if($nombres!=''){{$nombres}}@endif" type="text" class="form-control input-sm" name="nombres" id="nombres" placeholder="@lang('formato012.full_name')" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                     <div class="input-group-addon">
                                         <i class="glyphicon glyphicon-remove-circle" onclick="document.getElementById('nombres').value = '';"></i>
                                     </div>
@@ -88,10 +88,10 @@
 
 
                             <div class="form-group col-md-4 col-xs-6" style="padding-left: 0px;padding-right: 0px;">
-                                <label for="id_doctor_firma" class="col-md-3 control-label">Doctor</label>
+                                <label for="id_doctor_firma" class="col-md-3 control-label">@lang('formato012.doctor')</label>
                                 <div class="col-md-9">
                                     <select class="form-control input-sm" name="id_doctor_firma" id="id_doctor_firma">
-                                    <option value="">Seleccione ...</option>
+                                    <option value="">@lang('formato012.select')</option>
                                     @foreach($doctores as $doctor)
                                         <option @if($doctor->id=='1307189140') style="color:red;" @endif @if($doctor->id==$id_doctor1) selected @endif value="{{$doctor->id}}">{{$doctor->apellido1}} {{$doctor->apellido2}} {{$doctor->nombre1}} </option>
                                     @endforeach
@@ -112,13 +112,13 @@
                                 <table id="example2" class="table table-bordered table-hover dataTable" role="grid" aria-describedby="example2_info" style="font-size: 12px;">
                                     <thead>
                                         <tr>
-                                            <th>Fecha creación</th>
-                                            <th>Fecha de Orden</th>
-                                            <th>Cédula</th>
-                                            <th>Paciente</th>
-                                            <th>Empresa</th>
-                                            <th>Doctor</th>
-                                            <th>Acción</th>
+                                            <th>@lang('formato012.created_at')</th>
+                                            <th>@lang('formato012.order_date')</th>
+                                            <th>@lang('formato012.identification')</th>
+                                            <th>@lang('formato012.patient')</th>
+                                            <th>@lang('formato012.company')</th>
+                                            <th>@lang('formato012.doctor')</th>
+                                            <th>@lang('formato012.action')</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -131,8 +131,8 @@
                                             <td>{{ $item->enombre }}</td>
                                             <td>Dr. {{ $item->dnombre1 }} {{ $item->dapellido1 }}</td>
                                             <th>
-                                                <a href="{{ route('orden_012.editar',['id' => $item->id]) }}" class="btn btn-sm btn-primary"><i class="fa fa-pencil-square-o"></i>Editar</a>
-                                                <a href="{{ route('orden_012.imprimir_012_excel',['id' => $item->id])}}" class="btn btn-sm btn-success"><i class="fa fa-download" aria-hidden="true"></i> Descargar</a>
+                                                <a href="{{ route('orden_012.editar',['id' => $item->id]) }}" class="btn btn-sm btn-primary"><i class="fa fa-pencil-square-o"></i>@lang('formato012.edit')</a>
+                                                <a href="{{ route('orden_012.imprimir_012_excel',['id' => $item->id])}}" class="btn btn-sm btn-success"><i class="fa fa-download" aria-hidden="true"></i> @lang('formato012.download')</a>
                                             </th>
                                         </tr>
                                     @endforeach
@@ -142,7 +142,7 @@
                         </div>
 
                         <div class="col-md-5 col-xs-12">
-                            <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">Mostrando  registros</div>
+                            <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">@lang('formato012.showing_records')</div>
                         </div>
 
                         <div class="col-md-7 col-xs-12">
@@ -195,7 +195,22 @@
         'ordering'    : true,
         'info'        : false,
         'autoWidth'   : false,
-        'order'       : [[ 1, "asc" ]]
+        'order'       : [[ 1, "asc" ]],
+        'language'    : {
+            'emptyTable'  : {!! json_encode(trans('formato012.empty_table')) !!},
+            'zeroRecords' : {!! json_encode(trans('formato012.zero_records')) !!},
+            'info'        : {!! json_encode(trans('formato012.table_info')) !!},
+            'infoEmpty'   : {!! json_encode(trans('formato012.table_info_empty')) !!},
+            'infoFiltered': {!! json_encode(trans('formato012.table_info_filtered')) !!},
+            'search'      : {!! json_encode(trans('formato012.search')) !!},
+            'lengthMenu'  : {!! json_encode(trans('formato012.length_menu')) !!},
+            'paginate'    : {
+                'first'   : {!! json_encode(trans('formato012.first')) !!},
+                'last'    : {!! json_encode(trans('formato012.last')) !!},
+                'next'    : {!! json_encode(trans('formato012.next')) !!},
+                'previous': {!! json_encode(trans('formato012.previous')) !!}
+            }
+        }
     });
 
     function buscar(){

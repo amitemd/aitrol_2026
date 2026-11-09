@@ -506,7 +506,7 @@
 		                                            @endphp
 		                                            @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
 		                                                <a data-toggle="modal" data-target="#foto2" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-		                                                    <img style="margin-bottom: 4px;"  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="98%">
+		                                                    <img style="margin-bottom: 4px;"  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="98%">
 		                                                </a><br>
 		                                            @elseif(($extension == 'pdf') || ($extension == 'PDF'))
 		                                                <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
@@ -1101,9 +1101,9 @@
 	function agregar_evolucion(id, id_evolucion){
     	var entra = id;
 		$.ajax({
-			type: "GET",
+			type: "POST",
 			url: "{{route('agregar.procedimiento_evolucion')}}/"+id, 
-			data: "",
+			data: {'_token': '{{ csrf_token() }}'},
 			datatype: "html",
 			success: function(datahtml, entra){
 				anterior  = $("#evolucion_agregar"+id).html();
@@ -1151,8 +1151,9 @@
         document.getElementById("tdiagnostico"+id).deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){

@@ -1,57 +1,60 @@
 <html>
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
-  .bordes{
-    border-radius: 200px;
-    -moz-border-radius: 200px;
-    -webkit-border-radius: 200px;
-    border: 2px solid black;
+.bordes{
+  border-radius: 200px;
+  -moz-border-radius: 200px;
+  -webkit-border-radius: 200px;
+  border: 2px solid black;
+}
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:8.0pt;
+	margin-left:0cm;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+.MsoChpDefault
+	{font-family:"Calibri",sans-serif;}
+.MsoPapDefault
+	{margin-bottom:8.0pt;
+	line-height:107%;}
+@page WordSection1
+	{size:595.3pt 1000pt;
+	margin:0pt 0pt 0pt 0pt;}
+div.WordSection1
+	{size:595.3pt 1000pt;
+	margin:0pt 0pt 0pt 0pt;}
+
+
+
+@page { 
+  size:590pt 845pt;
+  margin-bottom: 0pt;
+  margin-left: 20px;
+
   }
-   /* Font Definitions */
-   @font-face
-    {font-family:"Cambria Math";
-    panose-1:2 4 5 3 5 4 6 3 2 4;}
-  @font-face
-    {font-family:Calibri;
-    panose-1:2 15 5 2 2 2 4 3 2 4;}
-   /* Style Definitions */
-   p.MsoNormal, li.MsoNormal, div.MsoNormal
-    {margin-top:0cm;
-    margin-right:0cm;
-    margin-bottom:8.0pt;
-    margin-left:0cm;
-    line-height:107%;
-    font-size:11.0pt;
-    font-family:"Calibri",sans-serif;}
-  .MsoChpDefault
-    {font-family:"Calibri",sans-serif;}
-  .MsoPapDefault
-    {margin-bottom:8.0pt;
-    line-height:107%;}
-  @page WordSection1
-    {size:595.3pt 1000pt;
-    margin:0pt 0pt 0pt 0pt;}
-  div.WordSection1
-    {size:595.3pt 1000pt;
-    margin:0pt 0pt 0pt 0pt;}
-
-
-
-    @page {
-    size:590pt 845pt;
-    margin-bottom: 0pt;
-    margin-left: 20px;
-
-    }
+ 
 </style>
+
 </head>
 
 <body lang=ES-EC>
 
 <div class=WordSection1 style="margin-left: -8pt; margin-top: -10pt">
+
 <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 align=left
  style='border-collapse:collapse;border:none;margin-left:4.8pt;
  margin-right:4.8pt'>
@@ -59,14 +62,12 @@
   <td colspan=12 style='width:100pt;border:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:27.6pt'>
   @if(!is_null($empresa->logo_form))
-
-    <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
+  <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
   text-align:center;line-height:normal'><span style='position:relative;
   z-index:-1895823360'><span style='left:0px;position:absolute;left:23px;
-  top:-7px;width:127px;height:33px'><img width=127 height=33
-  src="{{base_path().'/storage/app/logo/logo_endoscopynet.png'}}"></span></span>
+  top:-7px;width:127px;height:33px'>@if($historia->id_seguro != '5')<img width=127 height=33
+  src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}">@endif</span></span>
     @else
-
     <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
   text-align:center;line-height:normal'><span style='position:relative;
   z-index:-1895823360'><span style='left:0px;position:absolute;left:23px;
@@ -274,7 +275,7 @@
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:17.7pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-  text-align:center;line-height:normal'><span style='font-size:7pt'>{{$record->operacion_propuesta}}</span></p>
+  text-align:center;line-height:normal'><span style='font-size:5pt'>{{$record->operacion_propuesta}}</span></p>
   </td>
  </tr>
  <tr>
@@ -310,10 +311,10 @@
   <td colspan=4 style='width:135pt;border:solid windowtext 1.0pt;
   border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:18.1pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if($doctor_record != null) {{ $doctor_record->nombre1 }} {{$doctor_record->nombre2}} {{$doctor_record->apellido1}} {{$doctor_record->apellido2}}  @else @if($agenda->paciente_dr=='1') Dr(a). {{$doctor->nombre1}} {{$doctor->nombre2}} {{$doctor->apellido1}} {{$doctor->apellido2}} @else  @endif @endif</span></p>
-  </td> 
+  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if($doctor_record != null) {{ $doctor_record->nombre1 }} {{$doctor_record->nombre2}} {{$doctor_record->apellido1}} {{$doctor_record->apellido2}}  @else @if($agenda->paciente_dr=='1') Dr(a). {{$doctor->nombre1}} {{$doctor->nombre2}} {{$doctor->apellido1}} {{$doctor->apellido2}} @else Dr. CARLOS ROBLES JARA @endif @endif</span></p>
+  </td>
   <td colspan=4 style='width:145pt;border-top:none;border-left:
-  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt; 
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:18.1pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
   text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if(!is_null($doctor_ayudante_record))   @if($doctor_ayudante_record != null) {{ $doctor_ayudante_record->nombre1 }} {{$doctor_ayudante_record->nombre2}} {{$doctor_ayudante_record->apellido1}} {{$doctor_ayudante_record->apellido2}} @else Dr(a). {{$doctor->nombre1}} {{$doctor->nombre2}} {{$doctor->apellido1}} {{$doctor->apellido2}} @endif @endif</span></p>
@@ -322,7 +323,7 @@
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:18.1pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-  text-align:center;line-height:normal'><span style='font-size:7pt'>{{$record->operacion_realizada}}</span></p>
+  text-align:center;line-height:normal'><span style='font-size:5pt'>{{$record->operacion_realizada}}</span></p>
   </td>
  </tr>
  <tr>
@@ -348,19 +349,19 @@
   <td colspan=4 style='width:135pt;border:solid windowtext 1.0pt;
   border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:17.8pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if(!is_null($record->id_anestesiologo)) @if($record->id_anestesiologo == "1203240658") Lcda. @else Dr. @endif  {{$record->anestesiologo->nombre1}} {{$record->anestesiologo->nombre2}} {{$record->anestesiologo->apellido1}} {{$record->anestesiologo->apellido2}}@endif<</span></p>
+  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if(!is_null($record->id_anestesiologo)) @if($record->id_anestesiologo == "1203240658") Lcda. @else Dr. @endif  {{$record->anestesiologo->nombre1}} {{$record->anestesiologo->apellido1}} {{$record->anestesiologo->apellido2}}@endif<</span></p>
   </td>
   <td colspan=4 style='width:145pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:17.8pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if(!is_null($record->id_ayudante)) @if($record->id_ayudante == "1203240658") Lcd(a). @else Dr. @endif {{$record->ayudante->nombre1}} {{$record->ayudante->nombre2}} {{$record->ayudante->apellido1}} {{$record->ayudante->apellido2}}@endif</span></p>
+  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if(!is_null($record->id_ayudante)) @if($record->id_ayudante == "1203240658") Lcd(a). @else Dr. @endif {{$record->ayudante->nombre1}} {{$record->ayudante->apellido1}} {{$record->ayudante->apellido2}}@endif</span></p>
   </td>
   <td  colspan=4 style='width:135pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:17.8pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
-  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if($record->id_instrumentista != "") Enf. {{$record->instrumentista->nombre1}} {{$record->instrumentista->nombre2}} {{$record->instrumentista->apellido1}} {{$record->instrumentista->apellido2}}@endif</span></p>
+  text-align:center;line-height:normal'><span style='font-size:7.0pt'>@if($record->id_instrumentista != "") Enf. {{$record->instrumentista->nombre1}} {{$record->instrumentista->apellido1}} {{$record->instrumentista->apellido2}}@endif</span></p>
   </td>
  </tr>
  <tr style='height:13.65pt'>
@@ -392,18 +393,16 @@
    <img width="757" src="{{base_path().'/public/img_formato/record.png'}}"></span></p>
    @else
   <img src='{{base_path().'/storage/app/hc_ima/'.$record->url_imagen}}' width="757">
-
   @endif
-
 
   </td>
  </tr>
 </table>
 
 
-<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 
  style='margin-left: 4.8pt;border-collapse:collapse;border:none'>
-  <tr>
+ 	<tr>
   <td colspan=20 style='width:465.5pt;border:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
@@ -666,12 +665,11 @@
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:5px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 28) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==28){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
-
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>HIPOTENSION</span></b></p>
   </td>
   <td  style='width:60pt;border:none;border-right:solid windowtext 1.0pt;
@@ -680,11 +678,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:5px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 34) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==34){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>ARRITMIAS</span></b></p>
   </td>
  </tr>
@@ -695,11 +693,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:13px'><img width=14 height=13 <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 1) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==1){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>SISTEM.
   ABIERTO</span></b></p>
   </td>
@@ -709,11 +707,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:13px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
+  foreach($record_tecnicas as $value){ 
     if ($value->id_tecnicas_anestesicas == 18) {
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>ASEPSIA DE PIEL</span></b></p>
   </td>
   <td  colspan=4 valign=top style='width:50pt;border-top:none;
@@ -728,11 +726,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:13px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 29) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==29){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>DEFICIENCIA RESPIRATORIA </span></b></p>
   </td>
   <td  style='width:4.0cm;border:none;border-right:solid windowtext 1.0pt;
@@ -741,11 +739,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:13px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 35) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==35){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>PERFORACIÓN DURAMADRE </span></b></p>
   </td>
  </tr>
@@ -757,11 +755,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:13px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 2) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==2){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>SISTEM. CERRADO</span></b></p>
   </td>
   <td  style='width:50pt;border:none;border-right:solid windowtext 1.0pt;
@@ -782,11 +780,11 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   normal'><span style='position:absolute;z-index:251663360;margin-left:114px;
   margin-top:3px;width:14px;height:13px'><img width=14 height=13
   <?php $contador = 0;
-foreach ($record_tecnicas as $value) {
-    if ($value->id_tecnicas_anestesicas == 30) {
+  foreach($record_tecnicas as $value){ 
+    if($value->id_tecnicas_anestesicas ==30){
         $contador = 1;?> src="{{base_path().'/public/img_formato/cuadx.png'}}" <?php
-}
-}
+     }
+   }
 if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?php }?> ></span><b><span style='font-size:6.0pt'>DEFICIENCIA TÉCNICA</span></b></p>
   </td>
   <td  style='width:4.0cm;border:none;border-right:solid windowtext 1.0pt;
@@ -1375,13 +1373,12 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
   style='font-size:5.0pt'>: @if(!is_null($record->id_guiado))Dr. {{$record->guia->nombre1}} {{$record->guia->apellido1}}@endif</span></b> <b><span
   style='font-size:5.0pt'> HORA: </span></b><b><span style='font-size:5.0pt'>{{substr($record->hora,0,5)}}</span></b></p>
   </td>
-  @php $firma     = Sis_medico\Firma_Usuario::where('id_usuario', $record->id_anestesiologo)->first(); 
-  @endphp
+  @php $firma     = Sis_medico\Firma_Usuario::where('id_usuario', $record->id_anestesiologo)->first(); @endphp
   <td  colspan=2 valign=top style='width:214.8pt;border-top:none;
   border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:15pt;position: relative;'>
   @if(!is_null($firma))
-    <img width=200 height=100 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="position: absolute;top: -130px;left: 90px;width: 110px;" align=center hspace=12><br>
+    <img height=auto src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="position: absolute;top: -130px;left: 90px;width: 110px;" align=center hspace=12><br>
   @endif
   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
   text-align:center;line-height:normal'><b><span style='font-size:9.0pt'>FIRMA
@@ -1403,11 +1400,20 @@ if ($contador == 0) {?> src="{{base_path().'/public/img_formato/cuad.png'}}"<?ph
     &nbsp;
   </div>
 
-<p class=MsoNormal align=center style='text-align:center'><span style='position:relative;
+  @if(!is_null($empresa->logo_form))
+  <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
+  text-align:center;line-height:normal'><span style='position:relative;
   z-index:-1895823360'><span style='left:0px;position:absolute;left:23px;
-  top:-7px;width:127px;height:33px'><img width=127 height=33
-  src="{{base_path().'/storage/app/logo/logo_endoscopynet.png'}}"></span><b><span style='line-height:57%'>VALORACIÓN
-POST-ANESTÉSICA</span></b></p>
+  top:-7px;width:127px;height:33px'>@if($historia->id_seguro != '5')<img width=127 height=33
+  src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}">@endif</span></span>
+   @else
+
+   <p class=MsoNormal align=center style='margin-bottom:0cm;margin-bottom:.0001pt;
+  text-align:center;line-height:normal'><span style='position:relative;
+  z-index:-1895823360'><span style='left:0px;position:absolute;left:23px;
+  top:-7px;width:155px;height:33px;font-size: 9px;'><b>{{$empresa->nombre_form}}</b></span></span>
+   @endif
+   <b>VALORACIÓN POST-ANESTÉSICA</b></p>
 
 <p class=MsoNormal>&nbsp;</p>
 
@@ -1436,7 +1442,7 @@ POST-ANESTÉSICA</span></b></p>
   border-bottom:none;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt;
   height:10.6pt'>
   <p class="MsoNormal" style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal'><b><span  style='font-size:8.0pt;'>PA 20% NIVEL PRE-ANESTÉSICO  &nbsp;
+  normal'><b><span  style='font-size:8.0pt;'>PA 20% NIVEL PRE-ANESTÉSICO       &nbsp;
   </span><span @if($record->sistema_circulatorio ==2) class="bordes" @endif style='font-size:8.0pt;'>2</span></b></p>
   </td>
   <td  style='width:12pt;border:none;border-right:solid windowtext 1.0pt;
@@ -1456,7 +1462,7 @@ POST-ANESTÉSICA</span></b></p>
   border-bottom:none;border-right:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt;
   height:20.9pt'>
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal'><b><span style='font-size:8.0pt'>PA 20 - 49% NIVEL PRE-ANESTÉSICO </span><span @if($record->sistema_circulatorio ==1) class="bordes" @endif style='font-size:8.0pt'>1</span></b></p>
+  normal'><b><span style='font-size:8.0pt'>PA 20 - 49% NIVEL PRE-ANESTÉSICO                    </span><span @if($record->sistema_circulatorio ==1) class="bordes" @endif style='font-size:8.0pt'>1</span></b></p>
   </td>
   <td  style='width:100pt;border:none;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:20.9pt'>
@@ -1466,7 +1472,8 @@ POST-ANESTÉSICA</span></b></p>
   <td  style='width:100pt;border:none;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:20.9pt'>
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal'><b><span style='font-size:8.0pt'>NECESITA O2 SAT &gt; 90% </span><span @if($record->saturacion ==1) class="bordes" @endif style='font-size:8.0pt;'>1</span></b></p>
+  normal'><b><span style='font-size:8.0pt'>NECESITA O2 SAT &gt; 90%
+                          </span><span @if($record->saturacion ==1) class="bordes" @endif style='font-size:8.0pt;'>1</span></b></p>
   </td>
  </tr>
  <tr style='height:24.6pt'>
@@ -1486,7 +1493,7 @@ POST-ANESTÉSICA</span></b></p>
   border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:24.6pt'>
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal'><b><span style='font-size:8.0pt'>SAT O2 &gt; 90% CON O2 </span><span @if($record->saturacion ==0) class="bordes" @endif style='font-size:8.0pt;'>0</span></b></p>
+  normal'><b><span style='font-size:8.0pt'>SAT O2 &gt; 90% CON O2                                              </span><span @if($record->saturacion ==0) class="bordes" @endif style='font-size:8.0pt;'>0</span></b></p>
   </td>
  </tr>
 </table>
@@ -1725,7 +1732,7 @@ POST-ANESTÉSICA</span></b></p>
   <td  style='width:25pt;border-top:none;border-left:none;
   border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 1pt 0cm 1pt;height:20.5pt'>
-
+  
   </td>
  </tr>
  @endforeach
@@ -1733,8 +1740,7 @@ POST-ANESTÉSICA</span></b></p>
 <br>
 <div style="text-align: center;">
   @if(!is_null($firma))
-    
-    <img width=200 height=100 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="width: 110px;" align=center ><br>
+    <img height=auto src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="width: 110px;" align=center hspace=12><br>
   @endif
 </div>
 <p class=MsoNormal>&nbsp;</p>

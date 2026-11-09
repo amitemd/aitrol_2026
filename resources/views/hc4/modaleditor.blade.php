@@ -6,7 +6,7 @@
 <!-- by Anthony chilan -->
 <div class="modal-header">
 
-    <div class="col-md-10"><h3>@lang('contable.editorimagen')</h3></div>
+    <div class="col-md-10"><h3>Editor de Imagen</h3></div>
     <div class="col-md-2">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span>
     </button>
@@ -32,7 +32,7 @@
      
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-default" data-dismiss="modal" >@lang('contable.cerrar')</button>
+  <button type="button" class="btn btn-default" data-dismiss="modal" >Cerrar</button>
 </div>
     <script type="text/javascript" src="{{asset('imageedit/dist/tui-image-editor.js')}}"></script>
     <script type="text/javascript" src="{{asset('imageedit/js/theme/white-theme.js')}}"></script>

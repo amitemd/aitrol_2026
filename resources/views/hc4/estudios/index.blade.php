@@ -161,8 +161,125 @@
     }
 
     .btn_agregar_diag{
-    	color: white;
-    	background-color: green;
+        color: white;
+        background-color: green;
+    }
+
+    .image-bank-record-header {
+        position: relative !important;
+        display: grid !important;
+        grid-template-columns: minmax(300px, .95fr) minmax(420px, 1.45fr) minmax(260px, .8fr);
+        align-items: center;
+        gap: 18px;
+        min-height: 92px;
+        padding: 14px 88px 14px 24px !important;
+        text-align: left !important;
+    }
+
+    .image-bank-record {
+        flex: 0 0 calc(100% - 28px) !important;
+        width: calc(100% - 28px) !important;
+        max-width: calc(100% - 28px) !important;
+        margin-right: 28px !important;
+        padding-right: 0 !important;
+    }
+
+    .image-bank-record > .box {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .image-bank-record-header::before,
+    .image-bank-record-header::after,
+    .image-bank-record-header > .row::before,
+    .image-bank-record-header > .row::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    .image-bank-record-header > .row {
+        display: contents !important;
+    }
+
+    .image-bank-record-header > .row > [class*="col-"] {
+        float: none !important;
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .image-bank-record-header .image-bank-record-date {
+        text-align: left !important;
+        white-space: nowrap;
+    }
+
+    .image-bank-record-header > .row > :nth-child(2) {
+        min-width: 0;
+        line-height: 1.45;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    .image-bank-record-header > .row > :nth-child(3) {
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .image-bank-record-header > .box-tools,
+    #area_trabajo .image-bank-record-header > .box-tools {
+        position: absolute !important;
+        float: none !important;
+        top: 50% !important;
+        right: 18px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 20;
+        display: flex !important;
+        width: 44px !important;
+        max-width: 44px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: translateY(-50%) !important;
+    }
+
+    .image-bank-record-header > .box-tools .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 9px !important;
+    }
+
+    @media (max-width: 1199px) {
+        .image-bank-record-header {
+            grid-template-columns: minmax(220px, .9fr) minmax(260px, 1.35fr) minmax(190px, .75fr);
+            gap: 12px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .image-bank-record-header {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 8px 12px;
+            padding: 14px 72px 14px 14px !important;
+        }
+
+        .image-bank-record-header .image-bank-record-date,
+        .image-bank-record-header > .row > :nth-child(2),
+        .image-bank-record-header > .row > :nth-child(3) {
+            grid-column: 1 / -1;
+            white-space: normal;
+        }
+
+        .image-bank-record-header > .box-tools {
+            width: 42px !important;
+            max-width: 42px !important;
+            right: 14px !important;
+        }
     }
 </style>
 <link rel="stylesheet" href="{{asset('plugins/iCheck/all.css')}}">
@@ -194,29 +311,11 @@
     </div>
 </div>
 <div class="box " style="border: 2px solid #004AC1; background-color: white; ">
-  <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1; ">
-  	<div class="row">
-	  	<div class="col-md-9 col-sm-8 col-12">
-		    <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
-            	<img style="width: 35px; margin-left: 5px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/pendo.png">
-             	<b>IMAGENES </b>
-			</h1>
-		</div>
-
-	</div>
-    @if(!is_null($paciente))
-		<center>
-			    <div class="col-12" style="padding-top: 8px">
-					<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			            <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-			            	{{$paciente->nombre1}} {{$paciente->nombre2}}
-	                    </b>
-					</h1>
-				</div>
-		</center>
-	@endif
-    <!-- /.box-tools -->
-  </div>
+  @include('hc4.partials.module_header', [
+      'moduleTitle' => __('hc4.imagenes-'),
+      'moduleIcon' => asset('/').'hc4/img/iconos/pendo.png',
+      'paciente' => $paciente
+  ])
   <!-- /.box-header -->
   <div class="box-body" style="background-color: #56ABE3;">
   	<div class="col-12">
@@ -303,9 +402,9 @@
 	  				}
 	  				//dd($value);
 	  			@endphp
-		    	<div class="col-12">
+			<div class="col-12 image-bank-record">
 		    		<div class="box collapsed-box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 0px; ">
-						<div class="box-header with-border" style="background-color: white; color: black; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+						<div class="box-header with-border image-bank-record-header" style="background-color: white; color: black; font-family: 'Helvetica general3';border-bottom: #004AC1;">
 							@php
 			  					$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_procedimiento)->get();
 			  					$mas = true;
@@ -323,7 +422,7 @@
 			  						}
 		  					@endphp
 							<div class="row">
-								<div class="col-4">
+								<div class="col-4 image-bank-record-date">
 									@if(!is_null($value->f_operacion))
 				                        @php
 				                        $dia =  Date('N',strtotime($value->f_operacion));
@@ -453,7 +552,7 @@
 
 
 					                                                <a data-toggle="modal" data-target="#foto2" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-					                                                    <img style="margin-bottom: 4px;"  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="98%">
+					                                                    <img style="margin-bottom: 4px;"  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="98%">
 					                                                </a>
 					                                                <input class="flat-green" type="checkbox" name="image[]" value="{{$imagen->id}}" />
 
@@ -471,6 +570,12 @@
 					                                                    </a>
 					                                                <input class="flat-green" type="checkbox" name="image[]" value="{{$imagen->id}}" />
 					                                            @else
+					                                                @php
+					                                                    $variable = explode('/' , asset('/hc_ima/'));
+					                                                    $d1 = $variable[3];
+					                                                    $d2 = $variable[4];
+					                                                    $d3 = $variable[5];
+					                                                 @endphp
 					                                                <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
 					                                                    <img style="margin-bottom: 4px;"   src="{{asset('imagenes/office.png')}}" width="98%">
 					                                                </a>
@@ -503,11 +608,11 @@
 	    	@endforeach
 
 	    	@foreach($procedimientos1 as $value)
-		    	<div class="col-12">
+			<div class="col-12 image-bank-record">
 		    		<div class="box collapsed-box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-						<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+						<div class="box-header with-border image-bank-record-header" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
 					  		<div class="row">
-					  			<div class="col-4">
+<div class="col-4 image-bank-record-date">
 		    						@if(!is_null($value->f_operacion))
 				                        @php
 				                        $dia =  Date('N',strtotime($value->f_operacion));
@@ -633,7 +738,7 @@
 				                                            	$extension == "TIFF" ||
 				                                            	$extension == "TIF" )
 					                                                <a data-toggle="modal" data-target="#foto2" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-					                                                    <img style="margin-bottom: 4px;"  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="98%">
+					                                                    <img style="margin-bottom: 4px;"  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="98%">
 					                                                </a>
 					                                                <input class="flat-green" type="checkbox" name="image[]" value="{{$imagen->id}}" />
 					                                            @elseif(($extension == 'pdf') || ($extension == 'PDF'))
@@ -647,6 +752,12 @@
 					                                                </a>
 					                                                <input class="flat-green" type="checkbox" name="image[]" value="{{$imagen->id}}" />
 					                                            @else
+					                                                @php
+					                                                    $variable = explode('/' , asset('/hc_ima/'));
+					                                                    $d1 = $variable[3];
+					                                                    $d2 = $variable[4];
+					                                                    $d3 = $variable[5];
+					                                                 @endphp
 					                                                <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
 					                                                    <img style="margin-bottom: 4px;"   src="{{asset('imagenes/office.png')}}" width="98%">
 					                                                </a>

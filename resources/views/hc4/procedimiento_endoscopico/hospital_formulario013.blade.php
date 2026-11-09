@@ -4,6 +4,15 @@
         outline: 2px solid #2276d2 !important;
     }
 
+    #tresumen_clinico {
+        width: 100%;
+        min-height: 100px;
+        padding: 8px;
+        border: 1px solid #CED9DA;
+        border-radius: 3px;
+        background-color: #fff;
+    }
+
     .mce-content-body{
 
         background-color: inherit !important;
@@ -141,14 +150,14 @@
                 </div>
             
                 <!--div class="col-md-12" style="text-align: center;">
-                    <a target="_blank" href="{{route('nuevoArchivoPlano.formulario_013', ['id'=>$datos->id_hc_procedimiento])}} " class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true"></i> {{ trans('laboratorio.descargar') }} EXCEL</a>
+                    <a target="_blank" href="{{route('nuevoArchivoPlano.formulario_013', ['id_hc_procedimiento'=>$datos->id_hc_procedimiento])}} " class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true"></i> {{ trans('hc4.descargar') }} EXCEL</a>
                 </div-->
                 <div class="col-md-3" style="text-align: center;">
                     <button  type="button" class="btn btn-success"> Guardar</button>
                 </div>
                 
                 <div class="col-md-3" style="text-align: center;">
-                    <a target="_blank" href="{{route('nuevoArchivoPlano.formulario_013_pdf', ['id'=>$datos->id_hc_procedimiento])}} " class="btn btn-danger"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> {{ trans('laboratorio.descargar') }} PDF</a>
+                    <a target="_blank" href="{{route('nuevoArchivoPlano.formulario_013_pdf', ['id_hc_procedimiento'=>$datos->id_hc_procedimiento])}} " class="btn btn-danger"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> {{ trans('hc4.descargar') }} PDF</a>
                 </div>
                 
             </div>
@@ -162,15 +171,19 @@
 <script src="{{ asset ("/js/tinymce/tinymce.min.js") }}"></script>
 <script text="text/javascript">
     $(document).ready(function() {
+        var editorResumenClinico = tinymce.get('tresumen_clinico');
+        if (editorResumenClinico) {
+            editorResumenClinico.remove();
+        }
+
         return tinymce.init({
             selector: '#tresumen_clinico',
             height: 100,
-            width: 550,
             inline: true,
             menubar: false,
             content_style: ".mce-content-body {font-size:12px;}",
-            plugins: ['image', 'charmap', 'uploadimage'],
-            toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link uploadimage | charmap ',
+            plugins: ['image', 'charmap'],
+            toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | charmap ',
             theme: 'modern',
             relative_urls: false,
             remove_script_host: false,

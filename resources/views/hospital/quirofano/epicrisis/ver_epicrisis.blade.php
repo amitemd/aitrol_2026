@@ -92,14 +92,8 @@
                         del {{substr($epi->created_at,0,4)}}</b>
                     @endif
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <label style='color: red' ; class="colorbasic">No. {{$epi->id}}</label>
-                </div>
-                <div class="col-md-1">
-                    <a id="pdf{{$epi->id}}" class="btn btn-success" href="{{ route('formulario.006',['id' => $epi->id]) }}" target="_blank">
-                        formulario-006
-                    </a>
-                   
                 </div>
                 <div class="col-md-1">
                     <button id="plus{{$epi->id}}" type="button" class="btn btn-primary" onclick="ver_epicrisis('{{$epi->id}}');">
@@ -108,7 +102,6 @@
                     <button id="min{{$epi->id}}" type="button" class="btn btn-primary" onclick="ocultar_epicrisis('{{$epi->id}}');" style="display: none">
                         <i class="fa fa-minus"></i>
                     </button>
-                    
                 </div>
 
             </div>
@@ -132,7 +125,7 @@
         var id_solicitud = $('#id_solicitud').val();
         $.ajax({
             async: true,
-            type: "GET",
+            type: "POST",
             url: "{{url('hospital/quirofano/epicrisis/detalle')}}/" + id,
             data: {
                 'id_solicitud': id_solicitud,
@@ -165,11 +158,11 @@
             async: true,
             type: "GET",
             url: "{{route('quirofano.crear_epicrisis',[ 'id' => $solicitud->id ])}}",
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml) {
 
-                /*$.ajax({
+                $.ajax({
                     type: "get",
                     url: "{{route('quirofano.epicrisis',['id' => $solicitud->id])}}",
                     data: {
@@ -183,8 +176,7 @@
                     error: function() {
                         alert('error al cargar');
                     }
-                });*/
-                epicrisis(datahtml.id);
+                });
 
             },
             error: function() {

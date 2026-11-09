@@ -1,0 +1,7 @@
+@php($months = array(1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'))
+<div class="pp-table-wrap"><table class="table pp-table"><thead><tr><th>Médico</th><th>Público</th><th>Privado</th><th>Particular</th><th>Total órdenes</th><th>Valor público</th><th>Valor privado</th><th>Valor particular</th><th>Valor total</th></tr></thead><tbody>
+@forelse($doctors as $doctor)
+@php($doctorName = trim($doctor->apellido1.' '.$doctor->apellido2.' '.$doctor->nombre1.' '.$doctor->nombre2))
+<tr><td><div class="pp-doctor"><span class="pp-doctor-avatar"><i class="fas fa-user-md"></i></span><span><strong class="co-name">{{$doctorName?:'Médico sin asignar'}}</strong><small class="co-meta">{{$doctor->id_doctor?:'Sin identificación'}}</small></span></div></td><td>{{number_format($doctor->public_orders)}}</td><td>{{number_format($doctor->private_orders)}}</td><td>{{number_format($doctor->particular_orders)}}</td><td><strong>{{number_format($doctor->orders_total)}}</strong></td><td class="pp-money">${{number_format($doctor->public_value,2)}}</td><td class="pp-money">${{number_format($doctor->private_value,2)}}</td><td class="pp-money">${{number_format($doctor->particular_value,2)}}</td><td class="pp-total">${{number_format($doctor->value_total,2)}}</td></tr>
+@empty<tr><td colspan="9" class="pp-empty"><i class="fas fa-user-md fa-2x d-block mb-2"></i>No hay producción por médico para {{$months[$month]}} de {{$year}}.</td></tr>@endforelse
+</tbody></table></div>

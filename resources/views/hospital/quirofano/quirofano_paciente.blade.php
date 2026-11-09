@@ -2,6 +2,7 @@
 @section('content')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <div class="col-md-12">
+        @include('hospital.workflow.episode-links')
         <div class="row">
             <div class="col-md-6 col-xs-6" id="content">
 
@@ -42,7 +43,7 @@
                                 <div class="col-md-2">
                                    <label> <b> Seguro</b> </label> 
                                    <div class="col-md-12" style= "padding-left: 0px; padding-right: 0px;">
-                                        <span>@if(!empty($solicitud)) {{ $solicitud->agenda->seguro->nombre}} @endif</span>
+                                        <span>{{ !empty($data->seguro) ? $data->seguro : 'No registrado' }}</span>
                                    </div>
                                 </div>
                             </div>
@@ -68,20 +69,17 @@
                         
                     </div>
                 </div> 
-				<div class="card col-md-12" id="pasos">
-            	
-            	</div> 
-				<!-- <div class="card col-md-12" id="quirofano">
-            	
-            	</div>  -->
             </div>
 
             <div class="col-md-6 col-xs-6">
 	            @include('layouts.box_quirofano')
-	        </div> 
+	        </div>
+        </div>
 
-
-            
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card" id="pasos"></div>
+            </div>
         </div>
     </div>
 

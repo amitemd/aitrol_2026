@@ -52,10 +52,10 @@
 <div class="content">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Contable</a></li>
-            <li class="breadcrumb-item"><a href="#">Ventas</a></li>
-            <li class="breadcrumb-item"><a href="../ventas">Registro de Factura de Ventas</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Nueva</li>
+            <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Contable')}}</a></li>
+            <li class="breadcrumb-item"><a href="#">{{trans('wfact_venta.Ventas')}}</a></li>
+            <li class="breadcrumb-item"><a href="../ventas">{{trans('wfact_venta.Registro de Factura de Ventas')}}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{trans('wfact_venta.nueva')}}</li>
         </ol>
     </nav>
     <div class="modal fade bd-example-modal-lg" id="calendarModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -70,16 +70,16 @@
             <div class="col-md-12">
                 <div class="row">
                     <div class="col-md-9">
-                        <h3 class="card-title">Nueva Factura de Venta</h3>
+                        <h3 class="card-title">{{trans('wfact_venta.nueva_fact_venta')}}</h3>
                     </div>
                     <div class="col-md-1 text-right">
                         <button onclick="window.location.reload(false);" class="btn btn-primary btn-gray btn-sm">
-                            Nuevo
+                            {{trans('wfact_venta.nuevo')}}
                         </button>
                     </div>
                     <div class="col-md-1 text-right">
                         <button onclick="goBack()" class="btn btn-primary btn-sm">
-                            <i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp;&nbsp;Regresar
+                            <i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp;&nbsp;{{trans('wfact_venta.regresar')}}
                         </button>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                 <div class="header row">
                     <div class="form-group col-xs-6 col-md-2">
                         <div class="col-md-12 px-0">
-                            <label for="id" class=" control-label">Id</label>
+                            <label for="id" class=" control-label">{{trans('wfact_venta.Id')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input type="text" class="form-control" name="id" id="id" value="">
@@ -106,7 +106,7 @@
                     </div>
                     <div class="form-group col-xs-6 col-md-2">
                         <div class="col-md-12 px-0">
-                            <label for="numero" class=" control-label">N&uacute;mero</label>
+                            <label for="numero" class=" control-label">{{trans('wfact_venta.Numero')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input type="text" class="form-control" name="numero" id="numero" value="" onchange="ingresar_cero()">
@@ -119,7 +119,7 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="tipo" class="control-label">Tipo</label>
+                            <label for="tipo" class="control-label">{{trans('wfact_venta.Tipo')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input type="text" class="form-control" name="tipo" id="tipo" value="VEN-FA" readonly>
@@ -132,7 +132,7 @@
                     </div>
                     <div class="form-group col-xs-6 col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="asiento" class="control-label">Asiento</label>
+                            <label for="asiento" class="control-label">{{trans('wfact_venta.Asiento')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input type="text" class="form-control" name="asiento" id="asiento" readonly value="">
@@ -145,7 +145,7 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="fecha_asiento" class="control-label">Fecha</label>
+                            <label for="fecha_asiento" class="control-label">{{trans('wfact_venta.Fecha')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input id="fecha" type="text" class="form-control input-sm flatpickr-date-time active" name="fecha_asiento" value="{{date('Y-m-d H:i:s')}}" required>
@@ -158,7 +158,7 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="orden_venta" class="control-label">Orden de Venta</label>
+                            <label for="orden_venta" class="control-label">{{trans('wfact_venta.orden_venta')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input id="orden_venta" type="text" class="form-control" name="orden_venta" value="{{ old('orden_venta') }}">
@@ -171,7 +171,7 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="empresa" class="control-label">Empresa</label>
+                            <label for="empresa" class="control-label">{{trans('wfact_venta.empresa')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input id="empresa" type="text" class="form-control" name="empresa" value="{{ $empresa->nombrecomercial }}" readonly>
@@ -184,11 +184,11 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-1 ">
                         <div class="col-md-12 px-0">
-                            <label for="sucursal" class="control-label">Sucursal</label>
+                            <label for="sucursal" class="control-label">{{trans('wfact_venta.sucursal')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <select class="form-control" name="sucursal" id="sucursal" onchange="obtener_caja()" required>
-                                <option value="">Seleccione...</option>
+                                <option value="">{{trans('wfact_venta.seleccione')}}</option>
                                 @foreach($sucursales as $value)
                                 <option value="{{$value->id}}">{{$value->codigo_sucursal}}</option>
                                 @endforeach
@@ -197,17 +197,17 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-1 ">
                         <div class="col-md-12 px-0">
-                            <label for="punto_emision" class="control-label">P. Emision</label>
+                            <label for="punto_emision" class="control-label">{{trans('wfact_venta.p_emision')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <select class="form-control" name="punto_emision" id="punto_emision" required>
-                                <option value="">Seleccione...</option>
+                                <option value="">{{trans('wfact_venta.seleccione')}}</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="numero_autorizacion" class="control-label"># Autorización</label>
+                            <label for="numero_autorizacion" class="control-label"># {{trans('wfact_venta.autorizacion')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <input id="numero_autorizacion" type="text" class="form-control" name="numero_autorizacion" value="{{ old('numero_autorizacion') }}">
@@ -220,7 +220,7 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="divisas" class="control-label">Divisas</label>
+                            <label for="divisas" class="control-label">{{trans('wfact_venta.divisas')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <select id="divisas" name="divisas" class="form-control">
@@ -232,11 +232,11 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="recaudador" class="control-label">Recaudador</label>
+                            <label for="recaudador" class="control-label">{{trans('wfact_venta.recaudador')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <select id="recaudador" name="recaudador" class="form-control">
-                                <option value="">Seleccione...</option>
+                                <option value="">{{trans('wfact_venta.seleccione')}}</option>
                                 @foreach($user_recaudador as $value)
                                 <option value="{{$value->id}}">{{$value->nombre1}} {{$value->apellido1}}</option>
                                 @endforeach
@@ -246,11 +246,11 @@
                     </div>
                     <div class="form-group col-xs-6  col-md-2 ">
                         <div class="col-md-12 px-0">
-                            <label for="vendedor" class="control-label">Vendedor</label>
+                            <label for="vendedor" class="control-label">{{trans('wfact_venta.vendedor')}}</label>
                         </div>
                         <div class="col-md-12 px-0">
                             <select id="vendedor" name="vendedor" class="form-control">
-                                <option value="">Seleccione...</option>
+                                <option value="">{{trans('wfact_venta.seleccione')}}</option>
                                 @foreach($user_vendedor as $value)
                                 <option value="{{$value->nombre1}} {{$value->apellido1}}" data-id="{{$value->id}}" data-name="{{$value->nombre1}} {{$value->apellido1}}">{{$value->nombre1}} {{$value->apellido1}}</option>
                                 @endforeach
@@ -259,10 +259,10 @@
                         </div>
                     </div>
                     <div class="col-md-12 form-group">
-                        <label for="cliente" class="control-label text-left">Cliente</label>
+                        <label for="cliente" class="control-label text-left">{{trans('wfact_venta.Cliente')}}</label>
                     </div>
                     <div class="col-md-2 form-group">
-                        <input id="identificacion_cliente" type="text" class="form-control" name="identificacion_cliente" autocomplete="off" value="{{ old('identificacion_cliente') }}" onchange="reloadCliente(this)" required placeholder="Identificacion">
+                        <input id="identificacion_cliente" type="text" class="form-control" name="identificacion_cliente" autocomplete="off" value="{{ old('identificacion_cliente') }}" onchange="reloadCliente(this)" required placeholder="{{trans('wfact_venta.identificacion')}}">
                         @if ($errors->has('identificacion_cliente'))
                         <span class="help-block">
                             <strong>{{ $errors->first('identificacion_cliente') }}</strong>
@@ -270,7 +270,7 @@
                         @endif
                     </div>
                     <div class="col-md-2 form-group">
-                        <input id="nombre_cliente" type="text" class="form-control" name="nombre_cliente" autocomplete="off" value="{{ old('nombre_cliente') }}" onchange="reloadCliente()" required placeholder="Nombre">
+                        <input id="nombre_cliente" type="text" class="form-control" name="nombre_cliente" autocomplete="off" value="{{ old('nombre_cliente') }}" onchange="reloadCliente()" required placeholder="{{trans('wfact_venta.nombre')}}">
                         @if ($errors->has('nombre_cliente'))
                         <span class="help-block">
                             <strong>{{ $errors->first('nombre_cliente') }}</strong>
@@ -278,7 +278,7 @@
                         @endif
                     </div>
                     <div class="col-md-2 form-group">
-                        <input id="direccion_cliente" type="text" class="form-control" name="direccion_cliente" value="{{ old('direccion_cliente') }}" required placeholder="Dirección">
+                        <input id="direccion_cliente" type="text" class="form-control" name="direccion_cliente" value="{{ old('direccion_cliente') }}" required placeholder="{{trans('wfact_venta.direccion')}}">
                         @if ($errors->has('direccion_cliente'))
                         <span class="help-block">
                             <strong>{{ $errors->first('direccion_cliente') }}</strong>
@@ -286,7 +286,7 @@
                         @endif
                     </div>
                     <div class="col-md-2 form-group">
-                        <input id="ciudad_cliente" type="text" class="form-control" name="ciudad_cliente" value="{{ old('ciudad_cliente') }}" required placeholder="Ciudad">
+                        <input id="ciudad_cliente" type="text" class="form-control" name="ciudad_cliente" value="{{ old('ciudad_cliente') }}" required placeholder="{{trans('wfact_venta.ciudad')}}">
                         @if ($errors->has('ciudad_cliente'))
                         <span class="help-block">
                             <strong>{{ $errors->first('ciudad_cliente') }}</strong>
@@ -294,7 +294,7 @@
                         @endif
                     </div>
                     <div class="col-md-2 form-group">
-                        <input id="mail_cliente" type="text" class="form-control" name="mail_cliente" value="{{ old('mail_cliente') }}" required placeholder="Mail">
+                        <input id="mail_cliente" type="text" class="form-control" name="mail_cliente" value="{{ old('mail_cliente') }}" required placeholder="{{trans('wfact_venta.correo')}}">
                         @if ($errors->has('mail_cliente'))
                         <span class="help-block">
                             <strong>{{ $errors->first('mail_cliente') }}</strong>
@@ -304,7 +304,7 @@
                     </div>
                     <div class="col-md-2 form-group">
                         <input type="hidden" name="valid" id="valid" value="0">
-                        <input id="telefono_cliente" type="text" class="form-control" name="telefono_cliente" value="{{ old('telefono_cliente') }}" required placeholder="Teléfono">
+                        <input id="telefono_cliente" type="text" class="form-control" name="telefono_cliente" value="{{ old('telefono_cliente') }}" required placeholder="{{trans('wfact_venta.telefono')}}">
                         <input id="tipo_cliente" type="hidden" class="form-control" name="tipo_cliente" value="{{ old('tipo_cliente') }}" required placeholder="tipo">
                         <!--<span style="color: white;">{{$t_factura}}</span>-->
                         @if ($errors->has('telefono_cliente'))
@@ -316,30 +316,30 @@
 
                     </div>
                     <div class="col-md-12">
-                        <label class="control-label text-left">Información Adicional</label>
+                        <label class="control-label text-left">{{trans('wfact_venta.informacion_adicional')}}</label>
                     </div>
                     <div class="col-md-2">
-                        <label class="control-label">Dirección</label>
-                        <input name="direccioninfo" type="text" class="form-control" placeholder="Ingrese Direccion">
+                        <label class="control-label">{{trans('wfact_venta.direccion')}}</label>
+                        <input name="direccioninfo" type="text" class="form-control" placeholder="{{trans('wfact_venta.ingrese_direccion')}}">
                     </div>
                     <div class="col-md-2 ">
                         <label class="control-label">Email</label>
-                        <input name="emailinfo" type="text" class="form-control" placeholder="Ingrese email">
+                        <input name="emailinfo" type="text" class="form-control" placeholder="{{trans('wfact_venta.ingrese_email')}}">
                     </div>
                     <div class="col-md-2 ">
-                        <label class="control-label">Paciente</label>
-                        <input type="text" class="form-control" name="pacienteinfo" placeholder="Ingrese Paciente">
+                        <label class="control-label">{{trans('wfact_venta.Paciente')}}</label>
+                        <input type="text" class="form-control" name="pacienteinfo" placeholder="{{trans('wfact_venta.ingrese_paciente')}}">
                     </div>
                     <div class="col-md-2 ">
-                        <label class="control-label">Seguro</label>
-                        <input type="text" class="form-control" name="segurosinfo" placeholder="Ingrese Seguros">
+                        <label class="control-label">{{trans('wfact_venta.seguro')}}</label>
+                        <input type="text" class="form-control" name="segurosinfo" placeholder="{{trans('wfact_venta.ingrese_seguros')}}">
                     </div>
                     <div class="col-md-2 ">
-                        <label class="control-label">Procedimiento</label>
-                        <input type="text" class="form-control" name="procedimientoinfo" placeholder="Ingrese Procedimiento">
+                        <label class="control-label">{{trans('wfact_venta.Procedimiento')}}</label>
+                        <input type="text" class="form-control" name="procedimientoinfo" placeholder="{{trans('wfact_venta.ingrese_procedimiento')}}">
                     </div>
                     <div class="col-md-2">
-                        <label class="control-label">Fecha Procedimiento</label>
+                        <label class="control-label">{{trans('wfact_venta.fecha_procedimiento')}}</label>
                         <input type="text" class="form-control input-sm flatpickr-date-time active" name="fechaprocedimiento">
                     </div>
 
@@ -359,14 +359,14 @@
                     <table class="table table-bordered table-hover dataTable noacti" role="grid" aria-describedby="example2_info" style="margin-top:0 !important;">
                         <thead>
                             <tr class="well-dark">
-                                <th width="35%" tabindex="0">Descripci&oacute;n del Producto</th>
-                                <th width="10%" tabindex="0">Cantidad</th>
-                                <th width="10%" tabindex="0">Precio</th>
-                                <th width="10%" tabindex="0">Cobrar Seguro</th>
-                                <th width="10%" tabindex="0">% Desc</th>
-                                <th width="10%" tabindex="0">Descuento</th>
-                                <th width="10%" tabindex="0">Precio Neto</th>
-                                <th width="5%" tabindex="0">IVA</th>
+                                <th width="35%" tabindex="0">{{trans('wfact_venta.descri_producto')}}</th>
+                                <th width="10%" tabindex="0">{{trans('wfact_venta.cantidad')}}</th>
+                                <th width="10%" tabindex="0">{{trans('wfact_venta.precio')}}</th>
+                                <th width="10%" tabindex="0">{{trans('wfact_venta.cobrar_seguro_item')}}</th>
+                                <th width="10%" tabindex="0">{{trans('wfact_venta.porcentaje_descuento')}}</th>
+                                <th width="10%" tabindex="0">{{trans('wfact_venta.descuento')}}</th>
+                                <th width="10%" tabindex="0">{{trans('wfact_venta.precio_neto')}}</th>
+                                <th width="5%" tabindex="0">{{trans('wfact_venta.iva')}}</th>
                                 <th width="10%" tabindex="0">
                                     <button type="button" class="btn btn-warning btn-gray anadir btn-sm" onclick="nuevox()"> <i class="fa fa-plus"></i> </button>
                                 </th>
@@ -381,14 +381,16 @@
                                     <input type="hidden" class="id_patient" value="">
                                     <input type="hidden" name="verid[]" class="verid" value="1">
                                     <select class="form-control select2 productos"  name="nombre[]" required onchange="verificar(this)">
-                                    <option value="">Seleccione ... </option>
+                                    <option value="">{{trans('wfact_venta.seleccione')}}</option>
                                     @foreach($productos as $value)
-                                        <option value="{{$value->nombre}}" data-name="{{$value->nombre}}" data-codigo="{{$value->codigo}}" data-descuento="{{$value->mod_desc}}" data-precio="{{$value->mod_precio}}" data-maxdesc="{{$value->descuento}}" data-iva="{{$value->iva}}">{{$value->codigo}} | {{$value->descripcion}}</option>
+                                        <option value="{{$value->nombre}}" data-name="{{$value->nombre}}" data-codigo="{{$value->codigo}}" data-descuento="{{$value->mod_desc}}" data-precio="{{$value->mod_precio}}" data-valor="{{$value->precio1}}" data-maxdesc="{{$value->descuento}}" data-iva="{{$value->iva}}">{{$value->codigo}} | {{$value->descripcion}}</option>
                                         @endforeach
                                        
                                     </select>
-                                    <textarea wrap="hard" rows="3" class="form-control px-1 desc_producto" placeholder="Detalle del producto"></textarea>
+                                    <textarea wrap="hard" rows="3" name="descrip_prod[]" class="form-control px-1 desc_producto" placeholder="{{trans('wfact_venta.detalle_prod')}}"></textarea>
                                     <input type="hidden" name="iva[]" class="iva" />
+                                    <input type="hidden" name="bodega[]" value="">
+                                    <input type="hidden" name="id_inv_serie[]" value="">
                                 </td>
                                 <td>
                                     <input class="form-control text-right cneto" name="cantidad[]" type="text"  onkeypress="return isNumberKey(event)" onblur="this.value=parseFloat(this.value).toFixed(0);" value="0" required>
@@ -406,7 +408,7 @@
                                     <input name="maxdesc[]" class="form-control text-right maxdesc" type="hidden"  onkeypress="return isNumberKey(event)" onblur="this.value=parseFloat(this.value).toFixed(0);" value="0" required>
                                 </td>
                                 <td>
-                                    <input class="form-control text-right desc" type="text"  onkeypress="return isNumberKey(event)" name="maxdesc[]" onblur="this.value=parseFloat(this.value).toFixed(2);" value="0" required>
+                                    <input class="form-control text-right desc" type="text"  onkeypress="return isNumberKey(event)" name="desc[]" onblur="this.value=parseFloat(this.value).toFixed(2);" value="0" required>
                                 </td>
                                 <td>
 
@@ -483,7 +485,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td colspan="2" class="text-right">Descuento</td>
+                            <td colspan="2" class="text-right">{{trans('wfact_venta.descuento')}}</td>
                             <td id="descuento" class="text-right">0.00</td>
                             <input type="hidden" name="descuento1" id="descuento1" class="hidden">
                         </tr>
@@ -494,7 +496,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td colspan="2" class="text-right">Subtotal sin Impuesto</td>
+                            <td colspan="2" class="text-right">{{trans('wfact_venta.subtotal_sin_impuesto')}}</td>
                             <td id="base" class="text-right">0.00</td>
                             <input type="hidden" name="base1" id="base1" class="hidden">
                         </tr>
@@ -505,7 +507,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td colspan="2" class="text-right">Tarifa Iva 12%</td>
+                            <td colspan="2" class="text-right">{{trans('wfact_venta.tarifa_iva')}} 12%</td>
                             <td id="tarifa_iva" class="text-right">0.00</td>
                             <input type="hidden" name="tarifa_iva1" id="tarifa_iva1" class="hidden">
                         </tr>
@@ -522,7 +524,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td colspan="2" class="text-right"><strong>Total</strong></td>
+                            <td colspan="2" class="text-right"><strong>{{trans('wfact_venta.total')}}</strong></td>
                             <td id="total" class="text-right">0.00</td>
                             <input type="hidden" name="total1" id="total1" class="hidden">
                         </tr>
@@ -533,7 +535,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td colspan="2" class="text-right"><strong>Por Cobrar Seguro</strong></td>
+                            <td colspan="2" class="text-right"><strong>{{trans('wfact_venta.por_cobrar_seguro')}}</strong></td>
                             <td id="copagoTotal" class="text-right">0.00</td>
                             <input type="hidden" name="totalc" id="totalc" class="hidden">
                         </tr>
@@ -542,7 +544,7 @@
                 <div class="col-md-12" style="height:30px;">
                     <div class="row head-title">
                         <div class="col-md-12 cabecera">
-                            <label class="color_texto">Forma de Pago</label>
+                            <label class="color_texto">{{trans('wfact_venta.forma_pago')}}</label>
                         </div>
                     </div>
                 </div>
@@ -552,15 +554,15 @@
 
                         <thead>
                             <tr>
-                                <th width="20%" style="text-align: center;">Metodo</th>
-                                <th width="10%" style="text-align: center;">Fecha</th>
-                                <th width="15%" style="text-align: center;">Tipo Tarjeta</th>
-                                <th width="10%" style="text-align: center;">Número</th>
-                                <th width="15%" style="text-align: center;">Banco</th>
-                                <th width="10%" style="text-align: center;">Cuenta</th>
-                                <th width="10%" style="text-align: center;">Girado a</th>
-                                <th width="10%" style="text-align: center;">Valor</th>
-                                <th width="10%" style="text-align: center;">Valor Base</th>
+                                <th width="20%" style="text-align: center;">{{trans('wfact_venta.metodo')}}</th>
+                                <th width="10%" style="text-align: center;">{{trans('wfact_venta.Fecha')}}</th>
+                                <th width="15%" style="text-align: center;">{{trans('wfact_venta.tipo_tarjeta')}}</th>
+                                <th width="10%" style="text-align: center;">{{trans('wfact_venta.Numero')}}</th>
+                                <th width="15%" style="text-align: center;">{{trans('wfact_venta.banco')}}</th>
+                                <th width="10%" style="text-align: center;">{{trans('wfact_venta.cuenta')}}</th>
+                                <th width="10%" style="text-align: center;">{{trans('wfact_venta.girado_a')}}</th>
+                                <th width="10%" style="text-align: center;">{{trans('wfact_venta.valor')}}</th>
+                                <th width="10%" style="text-align: center;">{{trans('wfact_venta.valor_base')}}</th>
                                 <th width="5%" style="text-align: center;"><button id="btn_pago" type="button" class="btn btn-success btn-sm btn-gray">
 
                                         <i class="fa fa-plus" aria-hidden="true"></i>
@@ -574,14 +576,16 @@
                                 <td style="max-width:100px;">
                                     <input type="hidden" name="codigo[]" class="codigo_producto" />
                                     <select name="nombre[]" class="form-control select" style="width:100%;" required onchange="verificar(this)">
-                                        <option value="">Seleccione ...</option>
+                                        <option value="">{{trans('wfact_venta.seleccione')}}</option>
                                         @foreach($productos as $value)
-                                        <option value="{{$value->nombre}}" data-name="{{$value->nombre}}" data-codigo="{{$value->codigo}}" data-descuento="{{$value->mod_desc}}" data-precio="{{$value->mod_precio}}" data-maxdesc="{{$value->descuento}}" data-iva="{{$value->iva}}">{{$value->codigo}} | {{$value->descripcion}}</option>
+                                        <option value="{{$value->nombre}}" data-name="{{$value->nombre}}" data-codigo="{{$value->codigo}}" data-descuento="{{$value->mod_desc}}" data-precio="{{$value->mod_precio}}" data-valor="{{$value->precio1}}" data-maxdesc="{{$value->descuento}}" data-iva="{{$value->iva}}">{{$value->codigo}} | {{$value->descripcion}}</option>
                                         @endforeach
 
                                     </select>
-                                    <textarea wrap="hard" rows="3" name="descrip_prod[]" class="form-control desc_producto" placeholder="Detalle del producto"></textarea>
+                                    <textarea wrap="hard" rows="3" name="descrip_prod[]" class="form-control desc_producto" placeholder="{{trans('wfact_venta.detalle_prod')}}"></textarea>
                                     <input type="hidden" name="iva[]" class="iva" />
+                                    <input type="hidden" name="bodega[]" value="">
+                                    <input type="hidden" name="id_inv_serie[]" value="">
                                 </td>
                                 <td>
                                     <input class="form-control text-right cneto" type="text" style="width: 80%;" onkeypress="return isNumberKey(event)" onblur="this.value=parseFloat(this.value).toFixed(0);" value="0" name="cantidad[]" required>
@@ -628,7 +632,7 @@
                 <div class="form-group col-xs-12" style="text-align: center;">
                     <div class="col-md-12 col-md-offset-4" style="text-align: center;">
                         <button type="button" class="btn btn-primary btn-gray btn-sm btn_add">
-                            <i class="fa fa-save" aria-hidden="true"></i>&nbsp;&nbsp;Guardar
+                            <i class="fa fa-save" aria-hidden="true"></i>&nbsp;&nbsp;{{trans('wfact_venta.guardar')}}
                         </button>
                     </div>
                 </div>
@@ -892,7 +896,7 @@
             if (secuencia_factura > 0) {
                 var longitud = parseInt(secuencia_factura.length);
                 if (longitud > 10) {
-                    swal("Error!", "Valor no permitido", "error");
+                    swal("{{trans('wfact_venta.error')}}", "{{trans('wfact_venta.valor_no_permitido')}}", "error");
                     $('#numero').val('');
 
                 } else {
@@ -930,7 +934,7 @@
 
 
             } else {
-                swal("Error!", "Valor no permitido", "error");
+                swal("{{trans('wfact_venta.error')}}", "{{trans('wfact_venta.valor_no_permitido')}}", "error");
                 $('#numero').val('');
             }
         }
@@ -941,9 +945,13 @@
             var usadescuento = $('option:selected', e).data("descuento");
             var max = $('option:selected', e).data("maxdesc");
             var modPrecio = $('option:selected', e).data("precio");
+            var valorInicial = $('option:selected', e).data("valor");
 
             $(e).parent().children().closest(".codigo_producto").val(codigo);
             $(e).parent().children().closest(".iva").val(iva);
+            if ($(e).parent().next().next().children().closest(".pneto").is('input') && valorInicial !== undefined) {
+                $(e).parent().next().next().children().closest(".pneto").val(parseFloat(valorInicial || 0).toFixed(2));
+            }
             //console.log($(e).parent().next().next().children().closest(".cp"));
 
             if (modPrecio) {
@@ -1261,9 +1269,11 @@
                     datatype: 'json',
                     data: $("#form").serialize(),
                     success: function(data) {
-                        console.log(data);
+                        if (!data || !data.idventa) {
+                            Swal.fire("No se pudo guardar", data && data.mensaje ? data.mensaje : "La factura no fue confirmada por el servidor.", "error");
+                            return;
+                        }
 
-                      
                             $("#asiento").val(data.idasiento);
                             $("#id").val(data.idventa);
                             $("#numero").val(data.idventa);
@@ -1279,7 +1289,7 @@
                     },
                     error: function(data) {
                         console.log(data.responseText);
-                        Swal.fire("Guardado con Exito!");
+                        Swal.fire("No se pudo guardar", "Revise los datos de la factura e inténtelo nuevamente.", "error");
                     }
                 });
             } else {
@@ -1295,7 +1305,7 @@
             id = document.getElementById('contador_pago').value;
             var midiv_pago = document.createElement("tr")
             midiv_pago.setAttribute("id", "dato_pago" + id);
-            midiv_pago.innerHTML = '<td><select class="form-control" name="id_tip_pago' + id + '" id="id_tip_pago' + id + '" style="" onchange="revisar_componentes(this,' + id + ');"><option value="">Seleccione</option>@foreach($tipo_pago as $value)<option value="{{$value->id}}">{{$value->nombre}}</option>@endforeach</select><input type="hidden" id="visibilidad_pago' + id + '" name="visibilidad_pago' + id + '" value="1"></td><td><input type="date" class="form-control input-number" value="{{date('Y-m-d')}}" name="fecha_pago' + id + '" id="fecha_pago' + id + '" style="width: 120px;"></td><td><select  id="tipo_tarjeta' + id + '" name="tipo_tarjeta' + id + '" style="width: 175px;height:25px"><option value="">Seleccione...</option> @foreach($tipo_tarjeta as $tipo_t) <option value="{{$tipo_t->id}}">{{$tipo_t->nombre}}@endforeach</select></td><td><input  type="text" name="numero_pago' + id + '" id="numero_pago' + id + '" style="" ></td><td><select class="form-control" name="id_banco_pago' + id + '" id="id_banco_pago' + id + '" style="width: 90px;"><option value="">Seleccione...</option>@foreach($lista_banco as $value)<option value="{{$value->id}}">{{$value->nombre}}</option>@endforeach</select></td><td><input  style="width: 80%;;" autocomplete="off" class="form-control" name="id_cuenta_pago' + id + '" id="id_cuenta_pago' + id + '" ></td><td><input class="form-control" style="width: 80%;;"  type="text" id="giradoa' + id + '" name="giradoa' + id + '"></td><td><input class="form-control text-right input-number fpago" type="text" id="valor' + id + '" name="valor' + id + '" style="" onblur="this.value=parseFloat(this.value).toFixed(2);"  value="0" onchange="revision_total(' + id + ')" onkeypress="return soloNumeros(this);"></td><td><input class="form-control input-number" type="text" readonly id="valor_base' + id + '" name="valor_base' + id + '" onkeypress="return soloNumeros(event);" onchange="return redondea_valor_base(this,' + id + ',2);"></td><td><button style="text-align:center;" type="button" onclick="eliminar_form_pag(' + id + ')" class="btn btn-danger btn-gray delete btn-xs"><i class="glyphicon glyphicon-trash" aria-hidden="true"></i></button></td>';
+            midiv_pago.innerHTML = '<td><select class="form-control" name="id_tip_pago' + id + '" id="id_tip_pago' + id + '" style="" onchange="revisar_componentes(this,' + id + ');"><option value="">{{trans('wfact_venta.seleccione')}}</option>@foreach($tipo_pago as $value)<option value="{{$value->id}}">{{$value->nombre}}</option>@endforeach</select><input type="hidden" id="visibilidad_pago' + id + '" name="visibilidad_pago' + id + '" value="1"></td><td><input type="date" class="form-control input-number" value="{{date('Y-m-d')}}" name="fecha_pago' + id + '" id="fecha_pago' + id + '" style="width: 120px;"></td><td><select  id="tipo_tarjeta' + id + '" name="tipo_tarjeta' + id + '" style="width: 175px;height:25px"><option value="">{{trans('wfact_venta.seleccione')}}</option> @foreach($tipo_tarjeta as $tipo_t) <option value="{{$tipo_t->id}}">{{$tipo_t->nombre}}@endforeach</select></td><td><input  type="text" name="numero_pago' + id + '" id="numero_pago' + id + '" style="" ></td><td><select class="form-control" name="id_banco_pago' + id + '" id="id_banco_pago' + id + '" style="width: 90px;"><option value="">{{trans('wfact_venta.seleccione')}}</option>@foreach($lista_banco as $value)<option value="{{$value->id}}">{{$value->nombre}}</option>@endforeach</select></td><td><input  style="width: 80%;;" autocomplete="off" class="form-control" name="id_cuenta_pago' + id + '" id="id_cuenta_pago' + id + '" ></td><td><input class="form-control" style="width: 80%;;"  type="text" id="giradoa' + id + '" name="giradoa' + id + '"></td><td><input class="form-control text-right input-number fpago" type="text" id="valor' + id + '" name="valor' + id + '" style="" onblur="this.value=parseFloat(this.value).toFixed(2);"  value="0" onchange="revision_total(' + id + ')" onkeypress="return soloNumeros(this);"></td><td><input class="form-control input-number" type="text" readonly id="valor_base' + id + '" name="valor_base' + id + '" onkeypress="return soloNumeros(event);" onchange="return redondea_valor_base(this,' + id + ',2);"></td><td><button style="text-align:center;" type="button" onclick="eliminar_form_pag(' + id + ')" class="btn btn-danger btn-gray delete btn-xs"><i class="glyphicon glyphicon-trash" aria-hidden="true"></i></button></td>';
 
             document.getElementById('agregar_pago').appendChild(midiv_pago);
             id = parseInt(id);
@@ -1468,73 +1478,73 @@
 
 
             if (divisas == "") {
-                msj += "Por favor,Selecione la divisa\n";
+                msj += "{{trans('wfact_venta.seleccione_divisa')}}\n";
             }
 
 
             //Datos Generales
 
             if (id_emp == "") {
-                msj += "Por favor, Seleccione la Empresa\n";
+                msj += "{{trans('wfact_venta.seleccione_empresa')}}\n";
             }
 
             if (sucurs == "") {
-                msj += "Por favor, Seleccione la Sucursal\n";
+                msj += "{{trans('wfact_venta.seleccione_sucursal')}}\n";
             }
 
             if (punt_emision == "") {
-                msj += "Por favor, Seleccione el Punto de Emision\n";
+                msj += "{{trans('wfact_venta.seleccione_p_emision')}}\n";
             }
 
 
             //Paciente
             if (cedula == "") {
-                msj += "Por favor,Ingrese la cedula del paciente\n";
+                msj += "{{trans('wfact_venta.seleccione_cedula')}}\n";
             }
             if (nombre_paciente == "") {
-                msj += "Por favor,Ingrese el nombre del paciente\n";
+                msj += "{{trans('wfact_venta.seleccione_nombre_paciente')}}\n";
             }
             if (seguro_paciente == "") {
-                msj += "Por favor,Seleccione el seguro paciente\n";
+                msj += "{{trans('wfact_venta.seleccione_seguro_paciente')}}\n";
             }
             if (proced == "") {
-                msj += "Por favor,Ingrese los Procedimientos del paciente\n";
+                msj += "{{trans('wfact_venta.seleccione_proc_paciente')}}\n";
             }
             if (fech_proced == "") {
-                msj += "Por favor,Seleccione la fecha de procedimientos\n";
+                msj += "{{trans('wfact_venta.seleccione_fecha_proc')}}\n";
             }
 
             //Cliente
             if (cliente == "") {
-                msj += "Por favor,Selecione el cliente\n";
+                msj += "{{trans('wfact_venta.seleccione_cliente')}}\n";
             }
             if (ruc_ced_cliente == "") {
-                msj += "Por favor,Ingrese el ruc del cliente\n";
+                msj += "{{trans('wfact_venta.ingrese_ruc_cliente')}}\n";
             }
             if (direccion == "") {
-                msj += "Por favor,Ingrese la direccion del cliente\n";
+                msj += "{{trans('wfact_venta.ingrese_direccion_cliente')}}\n";
             }
             if (ciud_cliente == "") {
-                msj += "Por favor,Ingrese la ciudad del cliente\n";
+                msj += "{{trans('wfact_venta.ingrese_ciudad_cliente')}}\n";
             }
             if (email_cliente == "") {
-                msj += "Por favor,Ingrese el email del cliente\n";
+                msj += "{{trans('wfact_venta.ingrese_correo_cliente')}}\n";
             }
             if (telf_cliente == "") {
-                msj += "Por favor,Ingrese el telefono del cliente\n";
+                msj += "{{trans('wfact_venta.ingrese_telefono_cliente')}}\n";
             }
 
             //Vendedor/Recaudador
             if (recaud == "") {
-                msj += "Por favor,Selecione el recaudador\n";
+                msj += "{{trans('wfact_venta.seleccione_recaudador')}}\n";
             }
             if (ced_recaudador == "") {
-                msj += "Por favor,Ingrese la cedula del recaudador\n";
+                msj += "{{trans('wfact_venta.seleccione_cedula_recaudador')}}\n";
             }
 
             //Detalle Asiento
             if (det_asiento == "") {
-                msj += "Por favor,Ingrese el detalle del asiento\n";
+                msj += "{{trans('wfact_venta.ingrese_detalle_asiento')}}\n";
             }
 
             if (msj == "") {
@@ -1596,7 +1606,7 @@
 
 
             if ((cod.length == 0) && (nomb.length == 0)) {
-                alert("Debe ingresar el código, nombre del producto");
+                alert("{{trans('wfact_venta.ingrese_producto')}}");
                 $('#cantidad' + id).val("0.00");
                 $('#desc' + id).val("0.00");
                 $('#extendido' + id).val("0.00");
@@ -1606,7 +1616,7 @@
 
             if (num.length == 0) {
 
-                alert("Cantidad no permitida");
+                alert("{{trans('wfact_venta.cantidad_no_permitida')}}");
                 $('#cantidad' + id).val("0");
                 $('#desc' + id).val("0");
                 $('#extendido' + id).val("0");
@@ -1655,7 +1665,7 @@
             var nomb = $('#nombre' + id).val()
 
             if ((cod.length == 0) && (nomb.length == 0)) {
-                alert("Debe ingresar el código, nombre del producto");
+                alert("{{trans('wfact_venta.ingrese_producto')}}");
                 $('#cantidad' + id).val("0");
                 $('#desc' + id).val("0");
                 $('#extendido' + id).val("0");
@@ -1665,7 +1675,7 @@
             var num = elemento.value;
             if (num.length == 0) {
 
-                alert("Cantidad no permitida");
+                alert("{{trans('wfact_venta.cantidad_no_permitida')}}");
                 $('#cantidad' + id).val("0");
                 $('#desc' + id).val("0");
                 $('#extendido' + id).val("0");
@@ -1677,7 +1687,7 @@
             var nu = parseInt(elemento.value, 10);
 
             if (nu > st) {
-                alert("Cantidad no debe ser mayor al stock");
+                alert("{{trans('wfact_venta.cantidad_mayor_stock')}}");
                 $('#cantidad' + id).val("0");
                 $('#total_acum' + id).val('');
             }
@@ -1686,7 +1696,7 @@
             var numero = parseInt(elemento.value, 10);
             //Validamos que se cumpla el rango
             if (numero < 1 || numero > 999999999) {
-                alert("Cantidad no permitida");
+                alert("{{trans('wfact_venta.cantidad_no_permitida')}}");
                 $('#cantidad' + id).val("0");
                 return false;
             }
@@ -1701,7 +1711,7 @@
             var numero = parseInt(elemento.value, 10);
             //Validamos que se cumpla el rango
             if (numero < 1 || numero > 999999999) {
-                alert("Total no permitido");
+                alert("{{trans('wfact_venta.total_no_permitido')}}");
                 $('#total' + id).val("");
                 return false;
             }
@@ -1841,7 +1851,7 @@
             var nomb = $('#nombre' + id).val()
 
             if ((cod.length == 0) && (nomb.length == 0)) {
-                alert("Debe ingresar el código, nombre, cantidad del producto");
+                alert("{{trans('wfact_venta.ingrese_producto_cantidad')}}");
                 $('#precio' + id).val("0");
                 $('#desc' + id).val("0");
                 $('#extendido' + id).val("0");
@@ -1851,7 +1861,7 @@
             var prec = elemento.value;
             if (prec.length == 0) {
 
-                alert("Precio no permitido");
+                alert("{{trans('wfact_venta.precio_no_permitido')}}");
                 $('#precio' + id).val("0");
                 $('#desc' + id).val("0");
                 $('#extendido' + id).val("0");
@@ -1861,7 +1871,7 @@
             var numero = parseInt(elemento.value, 10);
             //Validamos que se cumpla el rango
             if (numero < 1 || numero > 999999999) {
-                alert("Precio no permitido");
+                alert("{{trans('wfact_venta.precio_no_permitido')}}");
                 $('#precio' + id).val("0");
                 return false;
             }

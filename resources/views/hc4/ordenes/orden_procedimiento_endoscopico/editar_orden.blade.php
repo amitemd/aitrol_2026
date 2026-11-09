@@ -38,34 +38,109 @@
       z-index: 9999;
       bottom:  500px;
       left: 200px;
-      
+
+    }
+
+    .endoscopy-order-actions {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 24px;
+      margin: 0;
+      overflow-x: auto;
+      padding: 0 45px 15px;
+    }
+
+    .endoscopy-order-actions__item {
+      flex: 1 1 0;
+      min-width: 180px;
+    }
+
+    .endoscopy-order-actions .btn_ordenes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100% !important;
+      height: 46px !important;
+      margin: 0 !important;
+      padding: 8px 12px;
+      font-size: 14px !important;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .form053-download-modal .modal-dialog {
+      max-width: 440px;
+      margin: 12vh auto 0;
+    }
+
+    .form053-download-modal .modal-content {
+      overflow: hidden;
+      border: 0;
+      border-radius: 14px;
+      box-shadow: 0 18px 46px rgba(8, 53, 88, .28);
+    }
+
+    .form053-download-modal .modal-header {
+      color: #fff;
+      border: 0;
+      background: linear-gradient(118deg, #053d68 0%, #007bb8 58%, #12a4b4 100%);
+    }
+
+    .form053-download-modal .modal-header .close {
+      color: #fff;
+      opacity: .9;
+    }
+
+    .form053-download-options {
+      display: flex;
+      gap: 14px;
+      padding: 10px 0;
+    }
+
+    .form053-download-options .btn {
+      flex: 1 1 0;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 13px 10px;
+      border-radius: 9px;
+      color: #fff !important;
+      font-weight: 600;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .form053-download-options .form053-download-excel {
+      border-color: #16884e !important;
+      background: #16884e !important;
+    }
+
+    .form053-download-options .form053-download-pdf {
+      border-color: #cf3f35 !important;
+      background: #cf3f35 !important;
     }
 
 </style>
 @php
-  
   $aleatorio = rand();$idusuario = Auth::user()->id;
+  $aceptacion = $co_aceptacion = $en_aceptacion = $ec_aceptacion = $cp_aceptacion = $br_aceptacion = 0;
 @endphp
 <div id="alerta_guardado" class="alert alert-success alerta_guardado alert-dismissable" role="alert" style="display:none;">
      <button type="button" class="close" data-dismiss="alert">&times;</button>
-     @lang('hc4.guardadoCorrectamente')
+       Guardado Correctamente
 </div>
 <div id="select_proc" class="alert alert-danger alerta_correcto alert-dismissable col-10" role="alert" style="display:none;font-size: 14px">
-@lang('hc4.seleccioneProcedimiento')
+        Seleccione un Procedimiento
 </div>
 <div id="req_val" class="alert alert-danger alerta_correcto alert-dismissable col-10" role="alert" style="display:none;font-size: 14px">
-@lang('hc4.indiqueRequiereValoracionCardiologica')
+        Indique si requiere valoración cardiológica
 </div>
 <div class="col-md-12" style="padding-left: 15px;padding-right: 30px;">
 
     @php
-    
-      if(!is_null($paciente)){
-
-        $seguro = Sis_medico\Seguro::find($paciente->id_seguro);
-
-      }
-
       $fecha = substr($data_orden->fecha_orden,0,10);
       $invert = explode( '-',$fecha);
       $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];
@@ -79,26 +154,26 @@
       <div class="row">
         <div class="col-md-8">
           @if(!is_null($fecha_invert))
-            <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.fecha-'):</span>
+            <span style="font-family: 'Helvetica general';font-size: 12px">FECHA:</span>
             <label for="fecha" class="control-label" style="font-family: 'Helvetica general';font-size: 12px"><b>{{$fecha_invert}}</b>
             </label>
           @endif
         </div>
         @if($ndoctor->id != 1307189140)
-          <div class="col-md-4">
-            <span style="font-family: 'Helvetica general';font-size: 16px;color: green;">@lang('hc4.agregarFirmaCRM')</span>
+          <!--div class="col-md-4">
+            <span style="font-family: 'Helvetica general';font-size: 16px;color: green;">Agregar Firma CRM</span>
             <input style="width:17px;height:17px;" type="checkbox" id="firma_doctor_rob_end" class="flat-green" name="firma_doctor_rob_end" value="1"
               @if(old('firma_doctor_rob_end')=="1")
                 checked
               @elseif($data_orden->check_doctor =='1')
                 checked
               @endif>
-          </div>
+          </div-->
         @endif
 
         <div class="col-md-12">
           <div class="col-md-12" style="padding-left: 0;">
-            <span style="font-family: 'Helvetica general';color: red;">@lang('hc4.requiereValoracionCardiologica')</span>
+            <span style="font-family: 'Helvetica general';color: red;">REQUIERE VALORACIÓN CARDIOLÓGICA</span>
           </div>  
           <input style="width:17px;height:17px;" type="radio" id="necesita_valoracion_NO" class="flat-red" name="necesita_valoracion" value="NO"
            
@@ -108,7 +183,7 @@
               checked
             @endif
             
-          <span style="color: red;font-weight: bold;"> @lang('hc4.no')</span>
+          <span style="color: red;font-weight: bold;"> NO</span>
           <input style="width:17px;height:17px;" type="radio" id="necesita_valoracion_SI" class="flat-red" name="necesita_valoracion" value="SI"
             @if($ndoctor->id == 1307189140)
               checked
@@ -119,7 +194,7 @@
                 checked
               @endif
             @endif  
-            > <span style="color: red;font-weight: bold;"> @lang('hc4.si')</span> 
+            > <span style="color: red;font-weight: bold;"> SI</span> 
         </div>
         <div class="col-md-12">&nbsp;</div>
       </div>
@@ -127,7 +202,7 @@
         <div class="col-md-8">
           <div>
             @if(!is_null($ndoctor))
-            <span style="font-family: 'Helvetica general'; font-size: 12px">@lang('hc4.doctorSolicitante-'):</span>
+            <span style="font-family: 'Helvetica general'; font-size: 12px">DOCTOR SOLICITANTE:</span>
             <label for="doctor" class="control-label" style="font-family: 'Helvetica general';font-size: 12px"><b>{{$ndoctor->apellido1}} {{$ndoctor->apellido2}} {{$ndoctor->nombre1}} {{$ndoctor->nombre2}}</b>
             </label>
             @endif
@@ -135,7 +210,7 @@
         </div>
         <div class="col-md-4">
           @if(!is_null($seguro))
-            <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.seguro-'):</span>
+            <span style="font-family: 'Helvetica general';font-size: 12px">SEGURO:</span>
             <label for="convenio" class="control-label" style="font-family: 'Helvetica general';font-size: 12px">
               <b>
                 {{$seguro->nombre}}
@@ -147,7 +222,7 @@
       </div>
       <div class="row">
         <div class="form-group col-md-12">
-                  <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.motivo-'):</span>
+                  <span style="font-family: 'Helvetica general';font-size: 12px">MOTIVO:</span>
                   <textarea id="xmotivo_orden" name="xmotivo_orden"  style="width: 100%; border: 2px solid #004AC1;" rows="3">@if(!is_null($data_orden)){{$data_orden->motivo_consulta}}@endif
                   </textarea>
         </div>
@@ -155,7 +230,7 @@
       <div class="col-12">&nbsp;</div>
         <div class="row">
             <div class="col-md-12">
-              <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.resumenHistoriaClinica-'):</span>
+              <span style="font-family: 'Helvetica general';font-size: 12px">RESUMEN DE LA HISTORIA CL&IacuteNICA:</span>
               <div id="endos_resumen_orden{{$data_orden->id}}{{$aleatorio}}"  style="width: 100%; border: 2px solid #004AC1;">
                 @if(!is_null($data_orden))<?php echo $data_orden->resumen_clinico ?>@endif
               </div>
@@ -165,7 +240,7 @@
         <br>
         <div class="row">
               <div class="col-md-12">
-                <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.diagnostico-'):</span>
+                <span style="font-family: 'Helvetica general';font-size: 12px">DIAGNOSTICO:</span>
                 <div id="endos_diagnostico{{$data_orden->id}}{{$aleatorio}}"  style="width: 100%; border: 2px solid #004AC1;">
                   @if(!is_null($data_orden))<?php echo $data_orden->diagnosticos ?>@endif
                 </div>
@@ -173,114 +248,17 @@
               </div>
         </div>
         <div class="col-12">&nbsp;</div>
-        @php
-
-          $x_orden_tipo_eda = null;
-          $x_orden_tipo_broncoscopia = null;
-          $x_orden_tipo_colono = null;
-          $x_orden_tipo_enteroscopia = null;
-          $x_orden_tipo_ecoendoscopia = null;
-          $x_orden_tipo_cpre = null;
-
-
-          if(!is_null($data_orden->id)){
-
-
-          $x_orden_tipo_eda = Sis_medico\Orden_Tipo::where('id_orden', $data_orden->id)
-                                                  ->where('id_grupo_procedimiento','1')
-                                                  ->first();
-
-          $x_orden_tipo_broncoscopia = Sis_medico\Orden_Tipo::where('id_orden', $data_orden->id)
-                                                  ->where('id_grupo_procedimiento','14')
-                                                  ->first();
-
-
-          $x_orden_tipo_colono = Sis_medico\Orden_Tipo::where('id_orden', $data_orden->id)
-                                                  ->where('id_grupo_procedimiento','2')
-                                                  ->first();
-
-
-          $x_orden_tipo_enteroscopia = Sis_medico\Orden_Tipo::where('id_orden', $data_orden->id)
-                                                  ->where('id_grupo_procedimiento','3')
-                                                  ->first();
-
-          $x_orden_tipo_ecoendoscopia = Sis_medico\Orden_Tipo::where('id_orden', $data_orden->id)
-                                                  ->where('id_grupo_procedimiento','9')
-                                                  ->first();
-
-          $x_orden_tipo_cpre = Sis_medico\Orden_Tipo::where('id_orden', $data_orden->id)
-                                                  ->where('id_grupo_procedimiento','10')
-                                                  ->first();
-          }
-
-        @endphp
         <div class="row">
           <div class="col-md-12">
             <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">@lang('hc4.endoscopiasDigestivas')
+              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">ENDOSCOPIAS DIGESTIVAS
               </label>
             </div>
           </div>
           <div class="col-md-12">
-            <select id="id_procedimiento_endosco" class="form-control input-sm select2_proc" name="x_procedimiento[]" multiple="multiple" data-placeholder="Seleccione" style="width: 100%;" autocomplete="off">
-              @php
-               $aceptacion = 0;
-               $validacion = null;
-              @endphp
-
-              @if(!is_null($x_orden_tipo_eda))
-                @php
-                  $proc_endo = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_eda->id)->get();
-                @endphp
-                  @foreach($proc_endo as $value)
-                    @php
-
-                      $clase = 'c';
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-
-                      $aceptacion++;
-
-                    if($value->procedimiento->id == '71'){
-
-                      $clase = 'c';
-
-                    }
-
-                    @endphp
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                  @endforeach
-              @endif
-
-              @foreach($px as $value)
-                @php
-
-                  $clase = 'c';
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
-
-                  if(!is_null($x_orden_tipo_eda)){
-
-                    $validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_eda->id)->first();
-
-                    if(!is_null($validacion)){
-                      $aceptacion++;
-                    }
-
-                  }
-
-                  if($value->id == '71'){
-
-                      $clase = 'c';
-
-                  }
-
-                @endphp
-                @if(is_null($validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif
+            <select id="id_procedimiento_endosco" class="form-control input-sm select2_proc" name="x_procedimiento[]" multiple="multiple" data-placeholder="Seleccione" data-grupo="1" style="width: 100%;" autocomplete="off">
+              @foreach($procedimientos_seleccionados->get(1, collect()) as $procedimiento)
+                <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
               @endforeach
             </select>
           </div>
@@ -289,60 +267,14 @@
         <div class="row">
           <div class="col-md-12">
             <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">@lang('hc4.colonoscopia')-@lang('hc4.proctologia')
+              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">COLONOSCOPIA-PROCTOLOGIA
               </label>
             </div>
           </div>
           <div class="col-md-12">
-            <select id="id_procedimiento_colono" class="form-control input-sm select2_proc" name="x_procedimiento_colono[]" multiple="multiple" data-placeholder="@lang('hc4.seleccione')" style="width: 100%;" autocomplete="off">
-              @php
-               $co_aceptacion = 0;
-               $co_validacion = null;
-              @endphp
-
-              @if(!is_null($x_orden_tipo_colono))
-                @php
-                  $proc_colono = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_colono->id)->get();
-                @endphp
-                  @foreach($proc_colono as $value)
-                    @php
-
-                      $clase = 'co';
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-
-                      $co_aceptacion++;
-
-
-                    @endphp
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                  @endforeach
-              @endif
-
-              @foreach($px as $value)
-                @php
-
-                  $clase = 'co';
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
-
-                  if(!is_null($x_orden_tipo_colono)){
-
-                    $co_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_colono->id)->first();
-
-                    if(!is_null($co_validacion)){
-                      $co_aceptacion++;
-                    }
-
-                  }
-
-
-                @endphp
-                @if(is_null($co_validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif
+            <select id="id_procedimiento_colono" class="form-control input-sm select2_proc" name="x_procedimiento_colono[]" multiple="multiple" data-placeholder="Seleccione" data-grupo="2" style="width: 100%;" autocomplete="off">
+              @foreach($procedimientos_seleccionados->get(2, collect()) as $procedimiento)
+                <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
               @endforeach
             </select>
           </div>
@@ -352,60 +284,14 @@
         <div class="row">
           <div class="col-md-12">
             <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">@lang('hc4.intestinoDelgado')
+              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">INTESTINO DELGADO
               </label>
             </div>
           </div>
           <div class="col-md-12">
-            <select id="id_procedimiento_entero" class="form-control input-sm select2_proc" name="x_procedimiento_entero[]" multiple="multiple" data-placeholder="@lang('hc4.seleccione')" style="width: 100%;" autocomplete="off">
-              @php
-               $en_aceptacion = 0;
-               $en_validacion = null;
-              @endphp
-
-              @if(!is_null($x_orden_tipo_enteroscopia))
-                @php
-                  $proc_enter = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_enteroscopia->id)->get();
-                @endphp
-                  @foreach($proc_enter as $value)
-                    @php
-
-                      $clase = 'en';
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-
-                      $en_aceptacion++;
-
-
-                    @endphp
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                  @endforeach
-              @endif
-
-              @foreach($px as $value)
-                @php
-
-                  $clase = 'en';
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
-
-                  if(!is_null($x_orden_tipo_enteroscopia)){
-
-                    $en_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_enteroscopia->id)->first();
-
-                    if(!is_null($en_validacion)){
-                      $en_aceptacion++;
-                    }
-
-                  }
-
-
-                @endphp
-                @if(is_null($en_validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif
+            <select id="id_procedimiento_entero" class="form-control input-sm select2_proc" name="x_procedimiento_entero[]" multiple="multiple" data-placeholder="Seleccione" data-grupo="3" style="width: 100%;" autocomplete="off">
+              @foreach($procedimientos_seleccionados->get(3, collect()) as $procedimiento)
+                <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
               @endforeach
             </select>
           </div>
@@ -415,60 +301,14 @@
         <div class="row">
           <div class="col-md-12">
             <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">@lang('hc4.ecoendoscopias')
+              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">ECOENDOSCOPIAS
               </label>
             </div>
           </div>
           <div class="col-md-12">
-            <select id="id_procedimiento_ecoend" class="form-control input-sm select2_proc" name="x_procedimiento_ecoend[]" multiple="multiple" data-placeholder="@lang('hc4.seleccione')" style="width: 100%;" autocomplete="off">
-              @php
-               $ec_aceptacion = 0;
-               $ec_validacion = null;
-              @endphp
-
-              @if(!is_null($x_orden_tipo_ecoendoscopia))
-                @php
-                  $proc_ecoend = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_ecoendoscopia->id)->get();
-                @endphp
-                  @foreach($proc_ecoend as $value)
-                    @php
-
-                      $clase = 'ec';
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-
-                      $ec_aceptacion++;
-
-
-                    @endphp
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                  @endforeach
-              @endif
-
-              @foreach($px as $value)
-                @php
-
-                  $clase = 'ec';
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
-
-                  if(!is_null($x_orden_tipo_ecoendoscopia)){
-
-                    $ec_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_ecoendoscopia->id)->first();
-
-                    if(!is_null($ec_validacion)){
-                      $ec_aceptacion++;
-                    }
-
-                  }
-
-
-                @endphp
-                @if(is_null($ec_validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif
+            <select id="id_procedimiento_ecoend" class="form-control input-sm select2_proc" name="x_procedimiento_ecoend[]" multiple="multiple" data-placeholder="Seleccione" data-grupo="9" style="width: 100%;" autocomplete="off">
+              @foreach($procedimientos_seleccionados->get(9, collect()) as $procedimiento)
+                <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
               @endforeach
             </select>
           </div>
@@ -478,59 +318,14 @@
         <div class="row">
           <div class="col-md-12">
             <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">@lang('hc4.cpre')
+              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">CPRE
               </label>
             </div>
           </div>
           <div class="col-md-12">
-            <select id="id_procedimiento_cpre" class="form-control input-sm select2_proc" name="x_procedimiento_cpre[]" multiple="multiple" data-placeholder="@lang('hc4.seleccione')" style="width: 100%;" autocomplete="off">
-              @php
-               $cp_aceptacion = 0;
-               $cp_validacion = null;
-              @endphp
-              @if(!is_null($x_orden_tipo_cpre))
-                @php
-                  $proc_cpre = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_cpre->id)->get();
-                @endphp
-                  @foreach($proc_cpre as $value)
-                    @php
-
-                      $clase = 'cp';
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-
-                      $cp_aceptacion++;
-
-
-                    @endphp
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                  @endforeach
-              @endif
-
-              @foreach($px as $value)
-                @php
-
-                  $clase = 'cp';
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
-
-                  if(!is_null($x_orden_tipo_cpre)){
-
-                    $cp_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_cpre->id)->first();
-
-                    if(!is_null($cp_validacion)){
-                      $cp_aceptacion++;
-                    }
-
-                  }
-
-
-                @endphp
-                @if(is_null($cp_validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif
+            <select id="id_procedimiento_cpre" class="form-control input-sm select2_proc" name="x_procedimiento_cpre[]" multiple="multiple" data-placeholder="Seleccione" data-grupo="10" style="width: 100%;" autocomplete="off">
+              @foreach($procedimientos_seleccionados->get(10, collect()) as $procedimiento)
+                <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
               @endforeach
             </select>
           </div>
@@ -539,60 +334,14 @@
         <div class="row">
           <div class="col-md-12">
             <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">@lang('hc4.broncoscopia')
+              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">BRONCOSCOPIA
               </label>
             </div>
           </div>
           <div class="col-md-12">
-            <select id="id_procedimiento_bronc" class="form-control input-sm select2_proc" name="x_procedimiento_bronc[]" multiple="multiple" data-placeholder="@lang('hc4.seleccione')" style="width: 100%;" autocomplete="off">
-              @php
-               $br_aceptacion = 0;
-               $br_validacion = null;
-              @endphp
-
-              @if(!is_null($x_orden_tipo_broncoscopia))
-                @php
-                  $proc_broncoscopia = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_broncoscopia->id)->get();
-                @endphp
-                  @foreach($proc_broncoscopia as $value)
-                    @php
-
-                      $clase = 'br';
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-
-                      $br_aceptacion++;
-
-
-                    @endphp
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                  @endforeach
-              @endif
-
-              @foreach($px as $value)
-                @php
-
-                  $clase = 'br';
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
-
-                  if(!is_null($x_orden_tipo_broncoscopia)){
-
-                    $br_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_broncoscopia->id)->first();
-
-                    if(!is_null($br_validacion)){
-                      $br_aceptacion++;
-                    }
-
-                  }
-
-
-                @endphp
-                @if(is_null($br_validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif
+            <select id="id_procedimiento_bronc" class="form-control input-sm select2_proc" name="x_procedimiento_bronc[]" multiple="multiple" data-placeholder="Seleccione" data-grupo="14" style="width: 100%;" autocomplete="off">
+              @foreach($procedimientos_seleccionados->get(14, collect()) as $procedimiento)
+                <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
               @endforeach
             </select>
           </div>
@@ -600,55 +349,63 @@
         <br>
         <div class="row">
             <div class="form-group col-md-12">
-              <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.observacionMedica'):</span>
+              <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION M&EacuteDICA:</span>
               <textarea id="xobservacion_orden" name="xobservacion_orden"  style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_endoscopica({{$data_orden->id}});">@if(!is_null($data_orden))<?php echo $data_orden->observacion_medica ?>@endif</textarea>
             </div>
         </div>
         <div class="row">
           <div class="col-md-12">
-           <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.observacionRecepcion'):</span><textarea id="xobservacion_recepcion" name="xobservacion_recepcion" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_endoscopica({{$data_orden->id}});">@if(!is_null($data_orden))<?php echo $data_orden->observacion_recepcion ?>@endif</textarea>
+           <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION RECEPCI&OacuteN:</span><textarea id="xobservacion_recepcion" name="xobservacion_recepcion" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_endoscopica({{$data_orden->id}});">@if(!is_null($data_orden))<?php echo $data_orden->observacion_recepcion ?>@endif</textarea>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-12">
-           <span style="font-family: 'Helvetica general';font-size: 12px">OTROS PROCEDIMIENTOS:</span><textarea id="xotros" name="xotros" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_endoscopica({{$data_orden->id}});">@if(!is_null($data_orden))<?php echo $data_orden->otros?>@endif</textarea>
-          </div>
-      </div>
         <br>
-        <div class="row">
-          <div class="col-3">
-            <center>
-              <button style="font-size: 12px; margin-bottom: 12px; height: 60%; width: 70%"  type="button" class="btn btn-info btn_ordenes" onclick="actualiza_orden_endoscopica({{$data_orden->id}})"><span class="fa fa-floppy-o"></span>&nbsp;&nbsp;@lang('hc4.guardar')
-              </button>
-            </center>
+        <div class="endoscopy-order-actions">
+          <div class="endoscopy-order-actions__item">
+            <button type="button" class="btn btn-info btn_ordenes" onclick="actualiza_orden_endoscopica({{$data_orden->id}})"><span class="fa fa-floppy-o"></span><span>Guardar</span>
+            </button>
           </div>
-          <div class="col-3">
-            <center>
-              <button style="font-size: 12px; margin-bottom: 12px; height: 60%; width: 90%"  type="button" class="btn btn-info btn_ordenes" onclick="descargar({{$data_orden->id}});"><span class="glyphicon glyphicon-download-alt"></span>&nbsp;@lang('hc4.descargarOrden')
-              </button>
-            </center>
+          <div class="endoscopy-order-actions__item">
+            <button type="button" class="btn btn-info btn_ordenes" onclick="descargar({{$data_orden->id}});"><span class="glyphicon glyphicon-download-alt"></span><span>Descargar Orden</span>
+            </button>
           </div>
           @if($data_orden->id_evolucion!=null)
-          <div class="col-3">
-            <center>
-              <button style="font-size: 12px; margin-bottom: 12px; height: 60%; width: 70%"  type="button" class="btn btn-info btn_ordenes" onclick="formato_012({{$data_orden->id_evolucion}},{{$data_orden->id}},'area_trabajo_formato012{{$data_orden->id}}{{$aleatorio}}')"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;@lang('hc4.formato012')
-              </button>
-            </center>
+          <div class="endoscopy-order-actions__item">
+            <button type="button" class="btn btn-info btn_ordenes" onclick="formato_012({{$data_orden->id_evolucion}},{{$data_orden->id}},'area_trabajo_formato012{{$data_orden->id}}{{$aleatorio}}')"><span class="glyphicon glyphicon-list-alt"></span><span>Formato 012</span>
+            </button>
           </div>
-          <div class="col-3">
-            <center>
-              <button style="font-size: 12px; margin-bottom: 12px; height: 60%; width: 70%"  type="button" class="btn btn-info btn_ordenes" onclick="formato_053('{{$data_orden->id}}','area_trabajo_formato053{{$data_orden->id}}{{$aleatorio}}');"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;Formulario 053
-              </button>
-            </center>
+          <div class="endoscopy-order-actions__item">
+            <button type="button" class="btn btn-info btn_ordenes" onclick="jQuery('#form053Download{{$data_orden->id}}{{$aleatorio}}').modal('show');"><span class="glyphicon glyphicon-list-alt"></span><span>Formulario 053</span>
+            </button>
           </div>
           @endif
         </div>
-        
+
     </form>
+
+    <div class="modal fade form053-download-modal" id="form053Download{{$data_orden->id}}{{$aleatorio}}" tabindex="-1" role="dialog" aria-labelledby="form053DownloadTitle{{$data_orden->id}}{{$aleatorio}}">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="form053DownloadTitle{{$data_orden->id}}{{$aleatorio}}"><i class="glyphicon glyphicon-list-alt"></i>&nbsp; Formulario 053</h4>
+          </div>
+          <div class="modal-body">
+            <p class="text-center">Seleccione el formato que desea descargar.</p>
+            <div class="form053-download-options">
+              <a class="btn form053-download-excel" style="display:inline-flex !important;align-items:center;justify-content:center;min-height:48px;padding:13px 10px;border:1px solid #16884e !important;border-radius:9px;background:#16884e !important;color:#fff !important;font-weight:700;opacity:1 !important;visibility:visible !important;" href="{{route('formato_053.index', ['id' => $data_orden->id])}}" target="_blank" rel="noopener">
+                <i class="fa fa-file-excel-o"></i>&nbsp; Descargar Excel
+              </a>
+              <a class="btn form053-download-pdf" style="display:inline-flex !important;align-items:center;justify-content:center;min-height:48px;padding:13px 10px;border:1px solid #cf3f35 !important;border-radius:9px;background:#cf3f35 !important;color:#fff !important;font-weight:700;opacity:1 !important;visibility:visible !important;" href="{{route('formato_053.pdf', ['id' => $data_orden->id])}}" target="_blank" rel="noopener">
+                <i class="fa fa-file-pdf-o"></i>&nbsp; Descargar PDF
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="row" style="border-radius: 8px;" id="area_trabajo_formato012{{$data_orden->id}}{{$aleatorio}}"></div>
-
     <div class="row" style="border-radius: 8px;" id="area_trabajo_formato053{{$data_orden->id}}{{$aleatorio}}"></div>
-
 
 </div>
 
@@ -1337,25 +1094,38 @@
        window.open('{{url('imprimir/orden_hc4/endoscopico')}}/'+id_or,'_blank');  
     }
 
-    function formato_053(id_orden, div) {
-      $.ajax({
-        type: 'GET',
-        url:"{{url('formato_053/index')}}/"+id_orden,
-        headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-        datatype: 'json',
-        data: $("#frm_evol").serialize(),
-        success: function(data){
-          console.log(data);
-          //console.log(data);
-          $(`#${div}`).empty().html(data)
-        },
-        error: function(data){
-          console.log(data);
-        }
-      });
-      }
-</script>
 
+    // El catálogo se consulta bajo demanda. Las opciones seleccionadas ya
+    // vienen precargadas desde el controlador en una sola consulta.
+    $('.select2_proc').each(function() {
+      var $select = $(this);
+      var grupo = $select.data('grupo');
+
+      if ($select.hasClass('select2-hidden-accessible')) {
+        $select.select2('destroy');
+      }
+
+      $select.off('select2:select select2:unselect select2:unselecting');
+      $select.select2({
+        width: '100%',
+        tags: false,
+        ajax: {
+          url: "{{route('hc4.ordenes.procedimientos.buscar')}}",
+          dataType: 'json',
+          delay: 250,
+          data: function(params) {
+            return {q: params.term || '', grupo: grupo};
+          },
+          processResults: function(data) {
+            return {results: data.results || []};
+          },
+          cache: true
+        }
+      }).on('select2:select select2:unselect', function() {
+        actualiza_orden_endoscopica({{$data_orden->id}});
+      });
+    });
+</script>
 
 
 

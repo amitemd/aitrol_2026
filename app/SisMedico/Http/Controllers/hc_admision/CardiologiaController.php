@@ -34,7 +34,6 @@ use Sis_medico\Hc_Evolucion_Indicacion;
 use Sis_medico\Agenda_Proc_Cardiologia;
 use Sis_medico\Sala;
 use Excel;
-use Sis_medico\Doctor_Tiempo;
 
 
 use Illuminate\Support\Facades\Storage;
@@ -72,7 +71,7 @@ class CardiologiaController extends Controller
 
     private function rol(){
         $rolUsuario = Auth::user()->id_tipo_usuario;      
-        if(in_array($rolUsuario, array(1, 3, 6, 11,7)) == false){
+        if(in_array($rolUsuario, array(1, 3, 6, 11,7,20)) == false){
           return true;
         }
     }
@@ -258,23 +257,34 @@ class CardiologiaController extends Controller
         if($this->rol_rec()){
             return response()->view('errors.404');
         } 
-        $cardiologos = DB::table('user_espe as ue')
-        ->where('ue.espid','8')
-        ->join('users as u','u.id','ue.usuid')
-        ->where('u.estado','1')
-        ->orderBy('u.nombre1')
-        ->select('u.*')->get();
+        $companyId = session()->get('id_empresa');
+        $specialtyId = $this->cardiologySpecialtyId($companyId);
+        $cardiologos = DB::table('user_espe as ue')->where('ue.espid',$specialtyId)->join('users as u','u.id','ue.usuid')
+            ->join('usuario_empresa as uem', 'uem.id_usuario', '=', 'u.id')->where('uem.id_empresa', $companyId)
+            ->where('u.estado', 1)->select('u.*')->distinct()->get();
 
-        $agenda = DB::table('agenda as a')->where('a.id',$id_agenda)->join('paciente as p','p.id','a.id_paciente')->select('a.*','p.nombre1','p.nombre2','p.apellido1','p.apellido2')->first();
+        $agenda = DB::table('agenda as a')->where('a.id',$id_agenda)->where('a.id_empresa', $companyId)
+            ->join('paciente as p','p.id','a.id_paciente')->select('a.*','p.nombre1','p.nombre2','p.apellido1','p.apellido2')->first();
+        if (!$agenda) abort(404, 'La agenda no pertenece a la empresa activa.');
 
         $fecha_desde = date('Y-m-d',strtotime($agenda->fechaini."- 3 month"));  
 
-        $consulta_cardio = DB::table('agenda as a')->where('a.espid','8')->where('a.estado','1')->join('users as d','d.id','a.id_doctor1')->select('a.*','d.nombre1','d.apellido1')->where('a.id_paciente',$agenda->id_paciente)->where('a.fechaini','>=',$fecha_desde)->orderBy('a.fechaini','desc')->get();
+        $consulta_cardio = DB::table('agenda as a')->where('a.espid',$specialtyId)->where('a.id_empresa', $companyId)
+            ->where('a.estado','1')->join('users as d','d.id','a.id_doctor1')->select('a.*','d.nombre1','d.apellido1')
+            ->where('a.id_paciente',$agenda->id_paciente)->where('a.fechaini','>=',$fecha_desde)->orderBy('a.fechaini','desc')->get();
         //dd($consulta_cardio);
         
-        $salas = Sala::where('proc_consul_sala','0')->orderBy('id_hospital')->get();
-        //dd($salas['0']->hospital()->get());
-        
+        $salas = collect();
+        foreach (app('Sis_medico\Services\V3AvailabilityService')->hospitals($companyId) as $hospital) {
+            foreach ($hospital->rooms as $room) {
+                if ((int) $room->proc_consul_sala !== 0) continue;
+                // V3AvailabilityService entrega objetos de consulta, no modelos Sala.
+                // La sede se adjunta aquí para que la vista no invoque hospital()
+                // sobre un stdClass y termine en un error 500.
+                $room->hospital_name = $hospital->nombre_hospital;
+                $salas->push($room);
+            }
+        }
         return view('hc_admision.cardiologia.agenda',['agenda' => $agenda, 'url_doctor' => $url_doctor, 'cardiologos' => $cardiologos, 'salas' => $salas, 'consulta_cardio' => $consulta_cardio]);
 
     }
@@ -337,16 +347,15 @@ class CardiologiaController extends Controller
 
 
         $extra = Excepcion_Horario::where('id_doctor1', '=', $request['id_doctor'])->get();            
-        //dd($request->all(),$agendas); 
-        $doctor_t = Doctor_Tiempo::where('id_doctor',$request['id_doctor'])->first();
-         
+        //dd($request->all(),$agendas);    
 
-        return view('hc_admision.cardiologia.calendar',['fecha' => $request['fecha'], 'agenda' => $agenda, 'agenda2' => $agenda2,  'agenda3' => $agenda3, 'horario' => $horario, 'extra' => $extra, 'paciente' => $request['paciente'], 'url_doctor' => $request['url_doctor'], 'doctor_t' => $doctor_t, 'id_doctor' => $request->id_doctor]);
+        return view('hc_admision.cardiologia.calendar',['fecha' => $request['fecha'], 'agenda' => $agenda, 'agenda2' => $agenda2,  'agenda3' => $agenda3, 'horario' => $horario, 'extra' => $extra, 'paciente' => $request['paciente'], 'url_doctor' => $request['url_doctor']]);
     }
 
     public function agendar(Request $request){
 
-        $espid = '8';
+        $companyId = session()->get('id_empresa');
+        $espid = $this->cardiologySpecialtyId($companyId);
         date_default_timezone_set('America/Guayaquil');
         $ip_cliente= $_SERVER["REMOTE_ADDR"];
         $idusuario = Auth::user()->id;
@@ -361,7 +370,11 @@ class CardiologiaController extends Controller
 
         $this->validate($request,$rule,$msn);
         //dd($request->all());
-        $agenda_proc = Agenda::find($request['id_agenda']);
+        $agenda_proc = Agenda::where('id', $request['id_agenda'])->where('id_empresa', $companyId)->first();
+        if (!$agenda_proc) abort(404, 'La agenda no pertenece a la empresa activa.');
+        $validDoctor = DB::table('user_espe as ue')->join('usuario_empresa as uem', 'uem.id_usuario', '=', 'ue.usuid')
+            ->where('ue.usuid', $request['id_doctor'])->where('ue.espid', $espid)->where('uem.id_empresa', $companyId)->exists();
+        if (!$validDoctor) abort(422, 'El cardiólogo no pertenece a la empresa activa.');
 
         $this->validateInput3($request);
         $this->validateInput4($request);
@@ -380,6 +393,7 @@ class CardiologiaController extends Controller
             'observaciones' => $request['observaciones'],
             'est_amb_hos' => $agenda_proc->est_amb_hos,
             'id_seguro' => $agenda_proc->id_seguro,
+            'id_empresa' => $companyId,
             'estado' => 1,
             'ip_creacion' => $ip_cliente,
             'ip_modificacion' => $ip_cliente,
@@ -391,7 +405,7 @@ class CardiologiaController extends Controller
             ];
 
         $especialista = User::find($request['id_doctor']);   
-        Log_Agenda::create([
+        Log_agenda::create([
             'id_agenda' => $agenda_proc->id,
             'estado_cita_ant' => $agenda_proc->estado_cita,
             'fechaini_ant' => $agenda_proc->fechaini,
@@ -455,6 +469,15 @@ class CardiologiaController extends Controller
 
         return $this->agenda($agenda_proc->id,$request['url_doctor']);
 
+    }
+
+    private function cardiologySpecialtyId($companyId)
+    {
+        $specialty = \Sis_medico\Especialidad::query()->from('especialidad as e')->join('user_espe as ue', 'ue.espid', '=', 'e.id')
+            ->join('usuario_empresa as uem', 'uem.id_usuario', '=', 'ue.usuid')->where('uem.id_empresa', $companyId)
+            ->where('e.estado', 1)->whereRaw('UPPER(e.nombre) LIKE ?', array('%CARDIO%'))->select('e.id')->first();
+        if (!$specialty) abort(422, 'Configure una especialidad de cardiología y asígnela a un médico de la empresa activa.');
+        return $specialty->id;
     }
 
     private function  validateInput3($request) {

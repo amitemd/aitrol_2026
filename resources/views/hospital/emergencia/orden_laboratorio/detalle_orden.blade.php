@@ -4,7 +4,7 @@
 		<div class="col-md-3">
 			@if($orden->seguro->tipo!='0')
 				<div class="btn" style="color: white">
-    				<a class="fa fa-pencil-square-o " onclick="editar_orden_lab({{$orden->id}},{{$orden->estado}});" ><span style="font-size: 13px">&nbsp;{{trans('emergencia.Editar')}}</span>
+                    <a class="fa fa-pencil-square-o " onclick="editar_labs('{{ $orden->id }}');" ><span style="font-size: 13px">&nbsp;{{trans('emergencia.Editar')}}</span>
     				</a>
 				</div>
 			@endif
@@ -30,9 +30,7 @@
 			}else{
 
 
-				$detalles = Sis_medico\Examen_Detalle::where('id_examen_orden',$orden->id)->join('examen_agrupador_sabana as es','es.id_examen','examen_detalle.id_examen')->orderBy('es.id_examen_agrupador_labs')->get();
-
-				$examenes_labs = DB::table('examen_detalle as ed')->where('id_examen_orden',$orden->id)->join('examen as e','e.id','ed.id_examen')->join('examen_agrupador_sabana as sa','sa.id_examen','ed.id_examen')->join('examen_agrupador_labs as l','l.id','sa.id_examen_agrupador_labs')->select('sa.*','e.descripcion','e.nombre','e.valor','e.id as ex_id','l.nombre as lnombre')->orderBy('sa.id_examen_agrupador_labs')->orderBy('sa.nro_orden')->get();
+                $examenes_labs = app(\Sis_medico\Services\HospitalLaboratoryOrderCatalog::class)->data($orden, ['seleccionados' => 1])['examenes_labs'];
 			}
 		@endphp
 
@@ -48,17 +46,17 @@
 			        	</tr>
 			       		@php  $cambia = 0; $contador = 0; @endphp
 			       		@foreach($examenes_labs as $examen)
-			       			@if($cambia != $examen->id_examen_agrupador_labs)
+                            @if($loop->first || $cambia != $examen->id_agrupador)
 			       				@php $contador = 0; @endphp
 			       				<tr>
-					            	<td colspan="2" style="background-color: #ff6600;color: white;margin: 0px;padding: 0;">{{$examen->lnombre}}</td>
+                                    <td colspan="2" style="background-color: #edf6fa;color: #174763;margin: 0px;padding: 6px;">{{$examen->lnombre ?: 'Sin agrupador'}}</td>
 					            </tr>
-					            @php $cambia = $examen->id_examen_agrupador_labs; @endphp
+                                @php $cambia = $examen->id_agrupador; @endphp
 			       			@endif
 			       			@if($contador == 0)
 			       			<tr >
 			       			@endif
-			                  <td style="padding: 5px;" >{{$examen->descripcion}}</td>
+                              <td style="padding: 5px;" >{{$examen->descripcion ?: $examen->nombre}}</td>
 
 			                  @php $contador ++; @endphp
 			                  @if($contador == 2) @php $contador = 0; @endphp @endif

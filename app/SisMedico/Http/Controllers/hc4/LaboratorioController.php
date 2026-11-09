@@ -101,18 +101,11 @@ class LaboratorioController extends Controller
            ->OrderBy('eo.fecha_orden', 'desc')
            ->get();
 
-      /*$id_usuarioprb = Auth::user()->id;
-      if($id_usuarioprb == '9666666666'){
-        return view('hc4/laboratorio/index_new', ['ordenes' => $ordenes, 'usuarios' => $usuarios,'paciente' => $paciente]);
-      }
-
-      return view('hc4/laboratorio/index', ['ordenes' => $ordenes, 'usuarios' => $usuarios,'paciente' => $paciente]);*/
-
-      return view('hc4/laboratorio/index_new', ['ordenes' => $ordenes, 'usuarios' => $usuarios,'paciente' => $paciente]);
+      return view('hc4/laboratorio/index', ['ordenes' => $ordenes, 'usuarios' => $usuarios,'paciente' => $paciente]);
 
      /*return view('hc4/laboratorio/index', ['ordenes' => $ordenes, 'usuarios' => $usuarios,'seguros' => $seguros, 'protocolos' => $protocolos, 'empresas' => $empresas]);*/
 
-  }
+    }
 
 
     /*public function descargar($id){
@@ -255,11 +248,9 @@ class LaboratorioController extends Controller
         
         //$vistaurl="hc4.laboratorio.resultados_pdf";
         $vistaurl="laboratorio.orden.resultados_pdf";
-        $view =  \View::make($vistaurl, compact('orden','pct','detalle', 'resultados', 'agrupador', 'parametros', 'age', 'ucreador','user'))->render();
-
         $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->loadView($vistaurl, compact('orden','pct','detalle', 'resultados', 'agrupador', 'parametros', 'age', 'ucreador','user'));
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true]);
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream('resultado-'.$id.'.pdf');
       }
@@ -284,22 +275,23 @@ class LaboratorioController extends Controller
                     $cant_par = $cant_par + 10;    
                 }
                 //$cant_par++;
-        } else {
-            if ($d->examen->no_resultado == '0') {
+        }else{
+            if($d->examen->no_resultado=='0'){
+              
+              if(count($d->parametros)=='0'){
+                $cant_par ++;  
+              } 
+              if($d->examen->sexo_n_s=='0'){
+                $parametro_nuevo = $d->parametros->where('sexo','3'); 
+              }else{
+                $parametro_nuevo = $d->parametros->where('sexo',$orden->paciente->sexo);
+              }
+              foreach ($parametro_nuevo as $p){
+                $cant_par ++;    
+              }
 
-                if (count($d->parametros->where('estado', '1')) == '0') {
-                    $cant_par++;
-                }
-                if ($d->examen->sexo_n_s == '0') {
-                    $parametro_nuevo = $d->parametros->where('sexo', '3')->where('estado', '1');
-                } else {
-                    $parametro_nuevo = $d->parametros->where('sexo', $orden->paciente->sexo)->where('estado', '1');
-                }
-                foreach ($parametro_nuevo as $p) {
-                    $cant_par++;
-                }
-            }
-        }
+            }     
+        }    
                       
       }
 
@@ -369,7 +361,7 @@ class LaboratorioController extends Controller
         $or_anio = DB::table('examen_orden')
                     ->select('anio')
                     ->selectRaw('count(*) as cantidad')
-                    ->selectRaw('sum(total_valor - recargo_valor) as valor')
+                    ->selectRaw('sum(valor) as valor')
                     ->orderBy('anio')
                     ->groupBy('anio')
                     ->where('estado','1')
@@ -381,7 +373,7 @@ class LaboratorioController extends Controller
                     ->join('seguros as s','s.id','id_seguro') 
                     ->select('anio','s.tipo')
                     ->selectRaw('count(*) as cantidad')
-                    ->selectRaw('sum(total_valor - recargo_valor) as valor')
+                    ->selectRaw('sum(valor) as valor')
                     ->orderBy('anio','s.tipo')
                     ->groupBy('anio','s.tipo')
                     ->where('estado','1')
@@ -400,7 +392,7 @@ class LaboratorioController extends Controller
         $or_anio_mes = DB::table('examen_orden')
                     ->select('anio', 'mes')
                     ->selectRaw('count(*) as cantidad')
-                    ->selectRaw('sum(total_valor - recargo_valor) as valor')
+                    ->selectRaw('sum(valor) as valor')
                     ->orderBy('anio', 'mes')
                     ->groupBy('anio', 'mes')
                     ->where('estado','1')
@@ -412,7 +404,7 @@ class LaboratorioController extends Controller
                     ->join('seguros as s','s.id','id_seguro') 
                     ->select('anio', 'mes', 's.tipo')
                     ->selectRaw('count(*) as cantidad')
-                    ->selectRaw('sum(total_valor - recargo_valor) as valor')
+                    ->selectRaw('sum(valor) as valor')
                     ->orderBy('anio', 'mes' ,'s.tipo')
                     ->groupBy('anio', 'mes' ,'s.tipo')
                     ->where('estado','1')
@@ -510,12 +502,11 @@ class LaboratorioController extends Controller
         $or_aniomes_doctor_privado_not = DB::table('examen_orden as eo')
                     ->join('users as d','d.id','eo.id_doctor_ieced')
                     ->join('seguros as s','s.id','eo.id_seguro')
-                     ->join('labs_doc_externos as de','de.id','eo.codigo') 
-                    ->select('eo.anio','eo.mes','eo.codigo','de.apellido1','de.apellido2','de.nombre1','de.nombre2')
+                    ->select('eo.anio','eo.mes','eo.codigo')
                     ->selectRaw('count(*) as cantidad')
                     ->selectRaw('sum(eo.valor) as valor')
-                    ->orderBy('eo.anio','eo.mes','eo.codigo','de.apellido1','de.apellido2','de.nombre1','de.nombre2')
-                    ->groupBy('eo.anio','eo.mes','eo.codigo','de.apellido1','de.apellido2','de.nombre1','de.nombre2')
+                    ->orderBy('eo.anio','eo.mes','eo.codigo')
+                    ->groupBy('eo.anio','eo.mes','eo.codigo')
                     ->where('eo.estado','1')
                     ->where('eo.realizado','1')
                     ->where('eo.anio',$anio)
@@ -661,15 +652,6 @@ class LaboratorioController extends Controller
 
                     //return "aqui";
       return view('hc4/laboratorio/anio_mes_doctor',['anio' => $anio, 'mes' => $mes , 'or_aniomes_doctor' => $or_aniomes_doctor, 'or_aniomes_doctor_publico' => $or_aniomes_doctor_publico, 'or_aniomes_doctor_privado_hl' => $or_aniomes_doctor_privado_hl, 'or_aniomes_doctor_particular_hl' => $or_aniomes_doctor_particular_hl, 'or_aniomes_doctor_privado' => $or_aniomes_doctor_privado, 'or_aniomes_doctor_particular' => $or_aniomes_doctor_particular,'or_aniomes_doctor_particular_not' =>$or_aniomes_doctor_particular_not,'or_aniomes_doctor_particular_hl2' => $or_aniomes_doctor_particular_hl2, 'or_aniomes_doctor_codigo' => $or_aniomes_doctor_codigo, 'or_aniomes_doctor_privado_not' =>$or_aniomes_doctor_privado_not, 'or_aniomes_doctor_particular_not1' =>$or_aniomes_doctor_particular_not1, 'or_aniomes_doctor_particular_hl3' =>$or_aniomes_doctor_particular_hl3, 'Labs_doc_externos' =>$Labs_doc_externos]);              
-
-    }
-
-    public function imprimir_resultado_x_orden($id){
-
-      $orden = Examen_Orden::find($id);
-
-      return view('hc4/laboratorio/resultado_x_orden',['orden' => $orden]);              
-
 
     }
 

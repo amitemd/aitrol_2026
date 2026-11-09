@@ -1,265 +1,118 @@
-<link rel="stylesheet" href="{{asset('plugins/iCheck/all.css')}}">
-
-
-<div class="card">
-  <div class="card-header bg bg-primary">
-      <div class="col-md-2">
-          <i style="color: white;">{{trans('emergencia.OrdenNo.')}} {{$orden->id}}</i>
-      </div>  
-      <div class="col-md-10" style="text-align: center;color: white;">
-          {{trans('emergencia.DetalledeOrden')}} {{$orden->seguro->nombre}}
-      </div>
-  </div>
-  <div class="card-body" style="margin: 10px 10px;padding: 0;">
-    <form id="form_buscador">
-    
-    <div class="row">
-      <div class="form-group col-3" style="margin-bottom: 0;padding-right: 0;">
-        <div class="input-group mb-3" style="margin-bottom: 0;">
-            <input id="buscador" name="buscador" type="text" class="form-control" placeholder="Buscar Examen" onchange="quitar_todos();cargar_buscador();">
-            <div class="input-group-append">
-              <span class="input-group-text"><i class="glyphicon glyphicon-remove-circle" onclick="document.getElementById('buscador').value = '';cargar_buscador()"></i></span>
-            </div>
-         </div>
-      </div>
-      <div class="form-group col-3" style="margin-bottom: 0;padding-right: 0;">
-        <div class="input-group mb-3" style="margin-bottom: 0;">
-            <input id="buscador2" name="buscador2" type="text" class="form-control" placeholder="Buscar Agrupador" onchange="quitar_todos();cargar_buscador();">
-            <div class="input-group-append">
-              <span class="input-group-text"><i class="glyphicon glyphicon-remove-circle" onclick="document.getElementById('buscador2').value = '';cargar_buscador()"></i></span>
-            </div>
-         </div>
-      </div>
-      <div class="form-group col-3" style="margin-bottom: 0;padding-right: 0;">
-        <div class="input-group mb-3" style="margin-bottom: 0;">
-            <select id="id_protocolo" name="id_protocolo" type="text" class="form-control" onchange="cambia_perfil()">
-              <option value="">{{trans('emergencia.SeleccionePerfil')}}</option>
-              @foreach($protocolos as $protocolo)
-                <option @if($orden->id_protocolo == $protocolo->id) selected @endif value="{{$protocolo->id}}">{{$protocolo->nombre}}</option>
-              @endforeach
-            </select>  
-         </div>
-      </div>
-      <div class="form-group col-1" style="margin-bottom: 0;">
-        <button class="btn btn-success" onclick="" type="button">{{trans('emergencia.Buscar')}}</button>
-      </div>  
-      
-      <div class="form-group col-3" style="margin-bottom: 0;">
-        <input id="seleccionados" name="seleccionados" type="checkbox" class="flat-red" onchange="quitar_buscador();cargar_buscador();" value="1" @if(count($detalles_ch) > 0) checked @endif><label style="color: red;font-size: 14px;">{{trans('emergencia.VerSeleccionados')}}</label>
-      </div>
-      <!--div class="form-group col-4" style="margin-bottom: 0;">
-        <input id="firma_dr" name="firma_dr" type="checkbox" class="flat-green" onchange="cargar_buscador();" value="1" @if($orden->doctor_firma=='1307189140') checked @endif><label style="color: green;font-size: 14px;"> Firma del Dr. Robles</label>
-      </div-->
-      <div class="form-group col-4" style="margin-bottom: 0;">
-        <button type="button" class="btn btn-warning btn-sm" onclick="deseleccionar();"><span style="color: white;">{{trans('emergencia.Deseleccionar')}}</span></button>
-      </div>  
-
-    </div>
-
-  </form> 
-
-
-  <div id="listado_final"> 
-
-    <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-      <div class="row">
-        <div class="table-responsive col-md-12">
-          <table id="example2" class="table table-hover" role="grid" aria-describedby="example2_info" style="font-size: 12px;">
-            <tbody>
-              @php  $cambia = 0; $contador = 0; @endphp 
-              @foreach($examenes_labs as $examen)
-                @if($examen->estado=='0' && !in_array($examen->ex_id,$detalles_ch))
-                @else
-                  @if($cambia != $examen->id_examen_agrupador_labs)
-                    @php $contador = 0; @endphp
-                    <tr>
-                        <td colspan="4" style="background-color: #ff6600;color: white;margin: 0px;padding: 0;">{{$agrupador_labs->where('id',$examen->id_examen_agrupador_labs)->first()->nombre}}</td>
-                      </tr>
-                      @php $cambia = $examen->id_examen_agrupador_labs; @endphp 
-                  @endif
-                  @if($contador == 0)
-                  <tr >
-                  @endif  
-                        <td style="padding: 5px;@if(in_array($examen->ex_id,$detalles_ch)) background-color: #b3e0ff; @endif"><input id="ch{{$examen->ex_id}}" name="ch{{$examen->ex_id}}" type="checkbox" class="flat-orange" @if(in_array($examen->ex_id,$detalles_ch)) checked @endif> </td> 
-                        <td style="padding: 5px;@if(in_array($examen->ex_id,$detalles_ch)) background-color: #b3e0ff; @endif" >{{$examen->descripcion}}</td>  
-                        @php $contador ++; @endphp
-                        @if($contador == 2) @php $contador = 0; @endphp @endif
-                      @if($contador == 0)   
-                      </tr>
-                      @endif
-                @endif      
-              @endforeach
-            </tbody>
-          </table>
+<style>
+    .hospital-lab-editor { padding:20px; color:#174763; }
+    .hospital-lab-editor .lab-filter-grid { display:grid; grid-template-columns:repeat(2,minmax(160px,1fr)) auto; gap:14px; align-items:end; }
+    .hospital-lab-editor .lab-filter-grid label { display:block; font-weight:600; }
+    .hospital-lab-editor .lab-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:16px 0; }
+    .hospital-lab-editor .btn { padding:9px 14px; border-radius:6px; }
+    .hospital-lab-editor .btn-outline-primary { background:#fff; color:#0877a8 !important; border:1px solid #9cbfce; }
+    .hospital-lab-editor .btn-primary { background:#0877a8; color:#fff !important; }
+    .hospital-lab-editor .lab-profile { max-width:360px; }
+    .hospital-lab-editor .lab-feedback { min-height:22px; margin:10px 0; color:#246650; }
+    .hospital-lab-editor .lab-feedback.is-error { background:#fff1f0; color:#a52c28; padding:10px; border-radius:6px; }
+    .hospital-lab-editor .lab-list { max-height:600px; overflow:auto; border:1px solid #d7e6ee; border-radius:8px; padding:14px; }
+    .hospital-lab-editor .lab-exam-group { margin-bottom:18px; }
+    .hospital-lab-editor .lab-exam-group h5 { background:#edf6fa; padding:10px; color:#124464; border-radius:5px; }
+    .hospital-lab-editor .lab-exam-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+    .hospital-lab-editor .lab-exam-option { display:flex; align-items:flex-start; gap:9px; border:1px solid #d8e5ec; border-radius:6px; padding:10px; cursor:pointer; margin:0; color:#174763; }
+    .hospital-lab-editor .lab-exam-option.is-selected { background:#e4f4ff; border-color:#0877a8; }
+    .hospital-lab-editor input[type=checkbox] { appearance:auto !important; opacity:1 !important; position:static !important; width:17px; height:17px; flex-shrink:0; margin:2px 0; accent-color:#0877a8; }
+    .hospital-lab-editor .lab-exam-option small { display:block; color:#617584; }
+    .hospital-lab-editor .lab-catalog-summary { color:#526d80; margin:0 0 12px; }
+    .hospital-lab-editor .lab-catalog-empty { padding:22px; text-align:center; color:#526d80; }
+    @media(max-width:900px) { .hospital-lab-editor .lab-exam-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:600px) { .hospital-lab-editor .lab-filter-grid, .hospital-lab-editor .lab-exam-grid { grid-template-columns:1fr; } }
+</style>
+<div class="hospital-lab-editor" id="hospital-lab-editor-{{ $orden->id }}">
+    <h4>Orden #{{ $orden->id }} · {{ $orden->seguro->nombre }}</h4>
+    <p>Busque y marque los exámenes. Cada cambio se guarda en esta orden y se refleja en el formulario 010A.</p>
+    <form class="js-lab-search" action="{{ route('hospital.laboratory.catalog', ['id_solicitud' => $solicitud->id, 'order' => $orden->id]) }}" method="get">
+        @csrf
+        <div class="lab-filter-grid">
+            <div><label for="lab-search-{{ $orden->id }}">Examen: nombre o código</label><input type="text" id="lab-search-{{ $orden->id }}" class="form-control" name="buscador" placeholder="Ej.: hemograma" autocomplete="off"></div>
+            <div><label for="lab-group-{{ $orden->id }}">Agrupador</label><input type="text" id="lab-group-{{ $orden->id }}" class="form-control" name="buscador2" placeholder="Ej.: hematología" autocomplete="off"></div>
+            <button class="btn btn-primary" type="submit">Buscar</button>
         </div>
-      </div>
-      
-    </div>
-
-  </div>  
-  </div>
-</div>  
-    
-
-
-  
-<script src="{{asset('plugins/iCheck/icheck.min.js')}}"></script>
-<script type="text/javascript">
-  $('input[type="checkbox"].flat-orange').iCheck({
-    checkboxClass: 'icheckbox_flat-orange',
-    radioClass   : 'iradio_flat-orange'
-  });
-  $('input[type="checkbox"].flat-red').iCheck({
-    checkboxClass: 'icheckbox_flat-red',
-    radioClass   : 'iradio_flat-red'
-  });
-  $('input[type="checkbox"].flat-green').iCheck({
-    checkboxClass: 'icheckbox_flat-green',
-    radioClass   : 'iradio_flat-green'
-  });
-
-  function quitar_todos(){
-    $('#seleccionados').iCheck('uncheck');
-  }
-
-  function quitar_buscador(){
-    $('#buscador').val('');
-    $('#buscador2').val('');
-  }
-
-  $('input[type="checkbox"].flat-orange').on('ifChecked', function(event){
-    //console.log(this.name.substring(2));
-    cotizador_crear_id(this.name.substring(2));
-  });
-
-  $('input[type="checkbox"].flat-orange').on('ifUnchecked', function(event){
-    //cotizador_crear();
-    cotizador_delete_id(this.name.substring(2));
-  });
-
-  $('input[type="checkbox"].flat-red').on('ifChecked', function(event){
-    quitar_buscador();
-    cargar_buscador();
-  });
-
-  $('input[type="checkbox"].flat-red').on('ifUnchecked', function(event){
-    cargar_buscador();
-  });
-
-  $('input[type="checkbox"].flat-green').on('ifChecked', function(event){
-    cargar_buscador();
-  });
-
-  $('input[type="checkbox"].flat-green').on('ifUnchecked', function(event){
-    cargar_buscador();
-  });
-
-  function cargar_buscador(){
-  	$.ajax({
-        type: 'post',
-        url:"{{route('decimopaso.buscar_examenes',['id_orden' => $orden->id])}}",
-        headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-        datatype: 'json',
-        data: $("#form_buscador").serialize(),
-        success: function(data){
-            //console.log(data);
-            $('#listado_final').empty().html(data);
-        },
-        error: function(data){
-                
-            }
-    })
-  }
-
-  function cambia_perfil(){
-    var confirmar = confirm("Al cambiar el perfil, perderá los exámenes previamente seleccionados");
-    if(confirmar){
-      $.ajax({
-        type: 'post',
-        url:"{{route('hc4_orden_lab.cambia_perfil',['id_orden' => $orden->id])}}",
-        headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-        datatype: 'json',
-        data: $("#form_buscador").serialize(),
-        success: function(data){
-            //console.log(data);
-            $('#listado_final').empty().html(data);
-        },
-        error: function(data){
-                
-            }
-      })
-
+        <div class="lab-actions">
+            <label><input type="checkbox" name="seleccionados" value="1"> Ver seleccionados</label>
+            <button class="btn btn-outline-primary js-lab-reset" type="button">Limpiar filtros</button>
+            <strong class="js-lab-count">{{ count($detalles_ch) }} seleccionados</strong>
+        </div>
+    </form>
+    @if((int) $orden->estado === -1)
+        <div class="lab-actions">
+            <label for="lab-profile-{{ $orden->id }}">Perfil opcional</label>
+            <select class="form-control lab-profile" id="lab-profile-{{ $orden->id }}" @if($protocolos->isEmpty()) disabled @endif>
+                <option value="">{{ $protocolos->isEmpty() ? 'No tiene perfiles guardados' : 'Seleccione un perfil' }}</option>
+                @foreach($protocolos as $protocolo)<option value="{{ $protocolo->id }}">{{ $protocolo->nombre }}</option>@endforeach
+            </select>
+            <button class="btn btn-outline-primary js-lab-profile" type="button" @if($protocolos->isEmpty()) disabled @endif>Aplicar perfil</button>
+            <button class="btn btn-outline-primary js-lab-clear" type="button">Quitar todos los exámenes</button>
+        </div>
+    @else
+        <p>Esta solicitud ya está confirmada y se muestra en modo de consulta.</p>
+    @endif
+    <div class="lab-feedback" role="status" aria-live="polite"></div>
+    <div class="lab-list">@include('hospital.emergencia.orden_laboratorio.listado')</div>
+</div>
+<script>
+(function () {
+    var root = $('#hospital-lab-editor-{{ $orden->id }}');
+    var form = root.find('.js-lab-search'), list = root.find('.lab-list'), feedback = root.find('.lab-feedback');
+    var request = null, timer = null, version = 0, saving = false;
+    function message(text, error) { feedback.text(text).toggleClass('is-error', !!error); }
+    function errorMessage(xhr) { return xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'No se pudo completar la operación. Actualice la lista e inténtelo de nuevo.'; }
+    function search() {
+        clearTimeout(timer);
+        if (saving) return;
+        if (request) request.abort();
+        var currentVersion = ++version;
+        message('Buscando exámenes…');
+        request = $.ajax({url:form.attr('action'), method:'GET', data:form.serialize(), dataType:'html'})
+            .done(function (html) {
+                if (currentVersion !== version) return;
+                list.html(html);
+                root.find('.js-lab-count').text(list.find('[data-selected-count]').attr('data-selected-count') + ' seleccionados');
+                message('Lista actualizada.');
+            }).fail(function (xhr, status) { if (status !== 'abort' && currentVersion === version) message(errorMessage(xhr), true); });
     }
-  }
-
-  function cotizador_crear_id(id){//ES LA MISMA FUNCION QUE RECEPCION PILAS
-        //alert(id);
-        $.ajax({
-            type: 'get',
-            url:"{{url('cotizador/update')}}/{{$orden->id}}/"+id,
-            
-            datatype: 'json',
-            
-            success: function(data){
-                //alert(data);
-                //cargar_buscador();
-                //cotizador_recalcular();
-                $('#scantidad').empty().html(data.cantidad);
-                $('#svalor').empty().html(data.valor);
-                $('#sdescuento_valor').empty().html(data.descuento_valor);
-                $('#srecargo_valor').empty().html(data.recargo_valor);
-                $('#stotal_valor').empty().html(data.total_valor);
-
-                
-                
-            },
-            error: function(data){
-                    
-                }
-        })
+    function busy(value) {
+        saving = value;
+        var controls = root.find('input,button,select').add(root.closest('.laboratory-order-item').find('form[action$="/confirmar"] button'));
+        controls.each(function () {
+            if (value) { $(this).data('lab-disabled', this.disabled); this.disabled = true; }
+            else { this.disabled = !!$(this).data('lab-disabled'); }
+        });
     }
-
-    function cotizador_delete_id(id){
-        //alert(id);
-        $.ajax({
-            type: 'get',
-            url:"{{url('cotizador/delete')}}/{{$orden->id}}/"+id,
-            datatype: 'json',
-            success: function(data){
-                //alert(data);
-                //cargar_buscador();
-                //cotizador_recalcular();
-                $('#scantidad').empty().html(data.cantidad);
-                $('#svalor').empty().html(data.valor);
-                $('#sdescuento_valor').empty().html(data.descuento_valor);
-                $('#srecargo_valor').empty().html(data.recargo_valor);
-                $('#stotal_valor').empty().html(data.total_valor); 
-            },
-            error: function(data){
-                    
-            }
-        })
+    function save(data, checkbox) {
+        if (saving) return;
+        clearTimeout(timer); ++version; if (request) request.abort();
+        data._token = form.find('[name=_token]').val();
+        busy(true); message('Guardando selección…');
+        $.ajax({url:@json(route('hospital.laboratory.selection', ['id_solicitud' => $solicitud->id, 'order' => $orden->id])), method:'POST', data:data, dataType:'json'})
+            .done(function (result) {
+                var ids = result.selected.map(String);
+                root.find('.js-lab-exam').each(function () { this.checked = ids.indexOf(this.value) !== -1; $(this).closest('label').toggleClass('is-selected', this.checked); });
+                root.find('.js-lab-count').text(result.count + ' seleccionados');
+                list.find('[data-selected-count]').attr('data-selected-count', result.count);
+                list.find('.lab-catalog-summary').text(list.find('.js-lab-exam').length + ' exámenes mostrados · ' + result.count + ' seleccionados en la orden.');
+                message('Selección guardada. ' + result.count + ' exámenes en la orden.');
+                busy(false);
+                if (data.action === 'profile' || data.action === 'clear' || form.find('[name=seleccionados]').prop('checked')) search();
+            }).fail(function (xhr) {
+                if (checkbox) checkbox.checked = !checkbox.checked;
+                busy(false); message(errorMessage(xhr), true);
+            });
     }
-
-    function deseleccionar(){
-      var confirmar = confirm("Perderá los exámenes previamente seleccionados");
-      if(confirmar){
-        $.ajax({
-          type: 'get',
-          url:"{{route('hc4_orden_lab.deseleccionar_perfil',['id_orden' => $orden->id])}}",
-          datatype: 'json',
-          success: function(data){
-              //console.log(data);
-              $('#listado_final').empty().html(data);
-          },
-          error: function(data){
-                  
-              }
-        })
-
-      }  
-    }
-
-
-  
-</script>    
+    form.on('submit', function (event) { event.preventDefault(); search(); });
+    form.find('input[type=text]').on('input', function () { form.find('[name=seleccionados]').prop('checked', false); clearTimeout(timer); timer = setTimeout(search, 300); });
+    form.find('[name=seleccionados]').on('change', search);
+    root.on('click', '.js-lab-reset', function () { form.find('input[type=text]').val(''); form.find('[name=seleccionados]').prop('checked', false); search(); });
+    root.on('change', '.js-lab-exam', function () { save({action:this.checked ? 'add' : 'remove', exam_id:this.value}, this); });
+    root.on('click', '.js-lab-profile', function () {
+        var id = root.find('.lab-profile').val();
+        if (!id) { message('Seleccione un perfil para aplicarlo.', true); return; }
+        if (confirm('Se reemplazarán los exámenes de esta orden por los del perfil seleccionado. ¿Desea continuar?')) save({action:'profile',profile_id:id});
+    });
+    root.on('click', '.js-lab-clear', function () { if (confirm('¿Desea quitar todos los exámenes de esta orden?')) save({action:'clear'}); });
+})();
+</script>

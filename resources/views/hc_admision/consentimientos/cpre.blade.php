@@ -145,7 +145,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Mediante un tubo flexible con un sistema de iluminación y una cámara (duodenoscopio), que se introduce a través de la boca se localiza el orificio de salida del conducto biliar y pancreático al duodeno (papila) y se inyecta por él un líquido (contraste para hacer radiografías). </td>
-                    <td><img style="height:100px;margin:5px" src="{{public_path('/imagenes/cprm.png')}}" /></td>
+                    <td><img style="height:100px;margin:5px" src="{{base_path('public/imagenes/cprm.png')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -238,7 +238,12 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 
             </tr>
 
+            <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
             <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>

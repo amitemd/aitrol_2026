@@ -3,24 +3,201 @@
 <link rel="stylesheet" href="{{ asset('/css/dropzone.css')}}">
 <script src="{{ asset ("/js/dropzone.js") }}"></script>
 
+<style>
+    .surgery-functional-title,
+    .surgery-functional-summary,
+    .surgery-functional-detail-header {
+        background: linear-gradient(110deg, #0b426d 0%, #087eb9 58%, #27b8c5 100%) !important;
+        color: #fff !important;
+    }
+
+    .surgery-functional-title {
+        min-height: 52px;
+        padding: 14px 18px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .surgery-functional-title h4 {
+        margin: 0;
+        font-size: 18px !important;
+        font-weight: 700;
+    }
+
+    .surgery-functional-summary {
+        padding: 14px 18px !important;
+        display: grid;
+        grid-template-columns: 1.15fr 1.45fr 1fr 42px;
+        gap: 18px;
+        align-items: center;
+        border-radius: 12px !important;
+    }
+
+    .surgery-history-item {
+        margin: 0 0 14px;
+        padding: 0 !important;
+        border: 1px solid #cfe2ea;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 7px 18px rgba(17, 74, 105, .07);
+    }
+
+    .surgery-history-toggle {
+        width: 38px;
+        height: 38px;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, .45) !important;
+        border-radius: 9px !important;
+        background: rgba(255, 255, 255, .14) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .surgery-history-content {
+        padding: 14px !important;
+        background: #f7fbfd;
+    }
+
+    .surgery-functional-section {
+        margin-bottom: 14px;
+        border: 1px solid #d5e6ed !important;
+        border-radius: 11px !important;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .surgery-functional-section > .card-header {
+        min-height: 48px;
+        padding: 10px 14px !important;
+        background: linear-gradient(110deg, #0b426d 0%, #087eb9 58%, #27b8c5 100%) !important;
+        color: #fff !important;
+    }
+
+    .surgery-evolution-header {
+        display: grid;
+        grid-template-columns: max-content 1fr 42px;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .surgery-evolution-header .section-title {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .surgery-evolution-list {
+        padding: 12px !important;
+    }
+
+    .surgery-evolution-card {
+        margin-bottom: 10px;
+        border: 1px solid #d8e7ec;
+        border-radius: 9px;
+        overflow: hidden;
+    }
+
+    .surgery-evolution-card:last-child { margin-bottom: 0; }
+
+    .surgery-evolution-card .evolution-card-header {
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #edf7fa;
+        color: #16445d;
+    }
+
+    .surgery-evolution-card .evolution-card-header strong { flex: 1; }
+
+    .surgery-evolution-card .evolution-card-body {
+        padding: 12px;
+        font-size: 12px;
+    }
+
+    .surgery-empty-history {
+        margin: 0 14px 14px;
+        padding: 24px;
+        border: 1px dashed #b9d4df;
+        border-radius: 10px;
+        color: #617c89;
+        text-align: center;
+        background: #f8fcfd;
+    }
+
+    .surgery-functional-summary .summary-label {
+        display: block;
+        margin-bottom: 4px;
+        color: rgba(255, 255, 255, .78);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .surgery-functional-summary .summary-value {
+        display: block;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .surgery-functional-detail-header {
+        min-height: 54px;
+        padding: 10px 16px !important;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .surgery-functional-edit {
+        width: 36px;
+        height: 36px;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 36px;
+    }
+
+    .surgery-functional-detail-header .detail-title {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 767px) {
+        .surgery-functional-summary {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .surgery-history-toggle { justify-self: end; }
+
+        .surgery-evolution-header {
+            grid-template-columns: 1fr 42px;
+        }
+
+        .surgery-evolution-header .surgery-add-evolution {
+            grid-column: 1 / -1;
+        }
+    }
+</style>
+
 <div class="card">
-    <div class="card-header bg bg-primary colorbasic">
-        <div class="col-md-12">
-            <div class="row">
-                <div class="col-md-1">
-                    <!--label class="colorbasic sradio" > 3</label--> 
-                </div>
-                <div class="col-md-7">
-                    <label class="colorbasic" style="font-size: 16px" ><b>Cirugia</b>  </label>
-                </div>
-                <div class="col-md-2">
-                    
-                </div>
-            </div>
-        </div>
+    <div class="card-header bg bg-primary colorbasic surgery-functional-title">
+        <h4 class="colorbasic"><i class="fa fa-history" aria-hidden="true"></i> Historial de cirugías</h4>
     </div>
-    <div class="card-body" style="padding: 0;">
-        <br>
+    <div class="card-body" style="padding: 14px;">
             
                      <!-- DIV DE LOS PROCEDIMIENTOS -->
                     @php
@@ -28,7 +205,7 @@
 
                         $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes','Sabado', 'Domingo'];
                     @endphp
-                    @foreach ($procedimientos1 as $value)
+                    @forelse ($procedimientos1 as $value)
                         @php
                             if($solicitud->paciente->sexo == 1){
                                 $sexo = "MASCULINO";
@@ -55,31 +232,34 @@
 
                             $procedimientos = \Sis_medico\hc_procedimientos::find($value->id_procedimiento);
                             //dd($value);
-                            if($procedimientos->id_procedimiento != null){
+                            if($procedimientos && $procedimientos->id_procedimiento != null && $procedimientos->procedimiento_completo){
                                 $nombre_procedimiento = $procedimientos->procedimiento_completo->nombre_completo;
                             }
                             $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_procedimiento)->get();
 
-                            $mas = true;
-                            $nombre_procedimiento = "";
+                            if($adicionales->isNotEmpty()){
+                                $mas = true;
+                                $nombre_procedimiento = "";
 
-                            foreach($adicionales as $value2)
-                            {
-                                if($mas == true){
-                                    $nombre_procedimiento = $nombre_procedimiento.$value2->procedimiento->nombre  ;
-                                    $mas = false;
-                                 }
-                                else{
-                                    $nombre_procedimiento = $nombre_procedimiento.' + '.  $value2->procedimiento->nombre  ;
-                                 }
+                                foreach($adicionales as $value2)
+                                {
+                                    if($mas == true){
+                                        $nombre_procedimiento = $nombre_procedimiento.$value2->procedimiento->nombre;
+                                        $mas = false;
+                                    }
+                                    else{
+                                        $nombre_procedimiento = $nombre_procedimiento.' + '.  $value2->procedimiento->nombre;
+                                    }
+                                }
                             }
                             $edad = Carbon\Carbon::createFromDate(substr($solicitud->paciente->fecha_nacimiento, 0, 4), substr($solicitud->paciente->fecha_nacimiento, 5, 2), substr($solicitud->paciente->fecha_nacimiento, 8, 2))->age;
                             $contador = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', 0)->orderBy('secuencia', 'DESC')->count();
                             
                         @endphp
-                            <div class="col-md-12" style="padding: 0;">
-                                <div  class="card-header bg bg-primary colorbasic">
-                                        <div class="col-md-4">
+                            <div class="col-md-12 surgery-history-item">
+                                <div class="card-header bg bg-primary colorbasic surgery-functional-summary">
+                                        <div>
+                                            <span class="summary-label">Fecha</span>
                                             @if(!is_null($value->f_operacion))
                                                 @php
                                                     $dia =  Date('N',strtotime($value->f_operacion));
@@ -87,7 +267,7 @@
                                                     $aux = intval($dia)-1;
                                                     $ms  = intval($mes)-1;
                                                 @endphp
-                                                    <b>{{$dias[$aux]}} {{substr($value->f_operacion,8,2)}} de {{$meses[$ms]}} del {{substr($value->f_operacion,0,4)}}</b>
+                                                    <span class="summary-value">{{$dias[$aux]}} {{substr($value->f_operacion,8,2)}} de {{$meses[$ms]}} del {{substr($value->f_operacion,0,4)}}</span>
                                             @else
                                                 @php
                                                     $dia =  Date('N',strtotime(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini));
@@ -95,38 +275,34 @@
                                                     $aux = intval($dia)-1;
                                                     $ms  = intval($mes)-1;
                                                 @endphp
-                                                    <b> {{$dias[$aux]}} {{substr(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini,8,2)}} de {{$meses[$ms]}} del {{substr(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini,0,4)}}</b>
+                                                    <span class="summary-value">{{$dias[$aux]}} {{substr(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini,8,2)}} de {{$meses[$ms]}} del {{substr(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini,0,4)}}</span>
                                             @endif
                                         </div>
-                                        <div class="col-md-5">
-                                            <div>
-                                                <span style=" font-size: 12px">Procedimiento:</span>
-                                                <span style="font-size: 12px"> {{$value->nombre}} </span>
-                                            </div>
+                                        <div>
+                                            <span class="summary-label">Procedimiento</span>
+                                            <span class="summary-value">{{$nombre_procedimiento ?: 'No registrado'}}</span>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div>
-                                                <span style=" font-size: 12px">Dr (a) </span>
-                                                <span style="font-size: 12px"> {{$value->nombre1}} {{$value->apellido1}} </span>
-                                            </div>
+                                        <div>
+                                            <span class="summary-label">Médico examinador</span>
+                                            <span class="summary-value">Dr. {{$value->nombre1}} {{$value->apellido1}}</span>
                                         </div>
+                                        <button class="btn btn-sm surgery-history-toggle collapsed" type="button" data-toggle="collapse" data-target="#surgeryHistory{{$value->id_procedimiento}}" aria-expanded="false" aria-controls="surgeryHistory{{$value->id_procedimiento}}" title="Mostrar u ocultar cirugía">
+                                            <i class="fa fa-plus" aria-hidden="true"></i>
+                                        </button>
                                   
                                     
                                     <!-- /.card-tools -->
                                 </div>
-                                <div class="card-body" style="padding: 0px;">
+                                <div class="card-body collapse surgery-history-content" id="surgeryHistory{{$value->id_procedimiento}}">
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="card">
                                                 <br>
-                                                <div  class="card-header bg bg-primary colorbasic">
-                                                    <div class="col-3" >
-                                                        <a class="btn btn-warning btn-xs waves-effect waves-float waves-light" type="button"  onclick="editar_procedimiento_funcional({{$value->id_procedimiento}}, '{{$solicitud->paciente->id}}');" ><span class="fa fa-pencil-square-o"></span>
-                                                        </a>
-                                                    </div>
-                                                    <div class="col-9">
-                                                      <span>Detalles del Procedimientos</span>
-                                                    </div>
+                                                <div class="card-header bg bg-primary colorbasic surgery-functional-detail-header">
+                                                    <button class="btn btn-warning btn-xs waves-effect waves-float waves-light surgery-functional-edit" type="button" onclick="editar_procedimiento_funcional({{$value->id_procedimiento}}, '{{$solicitud->paciente->id}}');" aria-label="Editar procedimiento">
+                                                        <span class="fa fa-pencil-square-o"></span>
+                                                    </button>
+                                                    <span class="detail-title">Detalles del procedimiento</span>
                                                 </div>
                                                 <div class="card-body" style="font-size: 11px;" id="procedimiento{{$value->id_procedimiento}}" >
                                                     <div class="row">
@@ -137,7 +313,7 @@
 
                                                         <div class="col-12">
                                                             <span>
-                                                                {{$value->nombre}}
+                                                                {{$nombre_procedimiento ?: 'No registrado'}}
                                                             </span>
                                                         </div>
                                                         <div class="col-12">&nbsp;</div>
@@ -186,65 +362,49 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-12" >
-                                            <div class="card">
-                                                <div  class="card-header bg bg-primary colorbasic">
-                                                    
-                                                    <div class="col-md-3 col-sm-3 col-4">
-                                                        <a class="btn btn-info btn-block" style="color: white; width: 100%; height: 100%; padding-left: 0px;padding-right: 0px; border: 2px solid white;" onClick="agregar_evolucion({{$value->id_procedimiento}});" >
-                                                            <div class="row" style="margin-left: 0px; margin-right: 0px; ">
-                                                                <div class="col-12" style="padding-left: 5px;padding-right: 5px;">
-                                                                    <img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
-                                                                    <label style="font-size: 10px; ">AGREGAR EVOLUCION</label>
-                                                                </div>
-                                                            </div>
-                                                        </a>
-                                                    </div>
-                                                    <div class="col-md-6 col-sm-6 col-7" style="padding-left: 5px">
-                                                        <span> <b>Historial de Evoluciones del Procedimiento</b></span>
-                                                    </div>
-
+                                        <div class="col-12">
+                                            <div class="card surgery-functional-section">
+                                                <div class="card-header surgery-evolution-header">
+                                                    <button type="button" class="btn btn-info btn-sm surgery-add-evolution" onclick="agregar_evolucion({{$value->id_procedimiento}});">
+                                                        <i class="fa fa-file-medical" aria-hidden="true"></i> Agregar evolución
+                                                    </button>
+                                                    <span class="section-title">Historial de evoluciones de la cirugía</span>
+                                                    <button class="btn btn-sm surgery-history-toggle" type="button" data-toggle="collapse" data-target="#surgeryEvolutionHistory{{$value->id_procedimiento}}" aria-expanded="true" aria-controls="surgeryEvolutionHistory{{$value->id_procedimiento}}" title="Mostrar u ocultar evoluciones">
+                                                        <i class="fa fa-minus" aria-hidden="true"></i>
+                                                    </button>
                                                 </div>
-                                                <div class="card-body" style="padding: 0px;" id="evolucion_agregar{{$value->id_procedimiento}}">
-                                                    @php
-                                                        $evoluciones = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->orderBy('secuencia', 'DESC')->get();
-                                                    @endphp
-                                                    @foreach($evoluciones as $evolucion)
-                                                    <br>
-                                                    <div class="card">
-                                                        <div  class="card-header bg bg-primary colorbasic">
-                                                            
-                                                            <div class="col-2" style="margin-right: 10px" >
-                                                                
-                                                                <a class="btn btn-warning btn-xs waves-effect waves-float waves-light" type="button"  onclick="editar_evolucion({{$evolucion->id}}, '{{$solicitud->paciente->id}}');"><span class="fa fa-pencil-square-o"></span>
-                                                                </a>
-                                                            </div>
-                                                            <div class="col-9" style="text-align: center;">
-                                                                <span style="padding-top: 5px;">Detalles de la Evolucion</span>
-                                                            </div>
-                                                            
-                                                        </div>
-                                                        <div class="card-body" style="font-size: 11px;" id="evolucion{{$evolucion->id}}">
-                                                            <br>
-                                                            <div class="row">
-                                                                <div class="col-12">
-                                                                    <span style="">Motivo</span>
+                                                <div class="card-body collapse show surgery-evolution-list" id="surgeryEvolutionHistory{{$value->id_procedimiento}}">
+                                                    <div id="evolucion_agregar{{$value->id_procedimiento}}">
+                                                        @php
+                                                            $evoluciones = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)
+                                                                ->where('estado', 1)
+                                                                ->orderBy('secuencia', 'desc')
+                                                                ->get();
+                                                        @endphp
+                                                        @forelse($evoluciones as $evolucion)
+                                                            <div class="surgery-evolution-card">
+                                                                <div class="evolution-card-header">
+                                                                    <button class="btn btn-warning btn-xs" type="button" onclick="editar_evolucion({{$evolucion->id}}, '{{$solicitud->paciente->id}}');" aria-label="Editar evolución">
+                                                                        <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                                    </button>
+                                                                    <strong>{{trim(strip_tags($evolucion->motivo)) ?: 'Evolución sin motivo registrado'}}</strong>
+                                                                    <button class="btn btn-info btn-xs" type="button" data-toggle="collapse" data-target="#surgeryEvolution{{$evolucion->id}}" aria-expanded="false" aria-controls="surgeryEvolution{{$evolucion->id}}" title="Mostrar u ocultar evolución">
+                                                                        <i class="fa fa-plus" aria-hidden="true"></i>
+                                                                    </button>
                                                                 </div>
-                                                                <div class="col-12">
-                                                                    <span>{{$evolucion->motivo}}</span>
-                                                                </div>
-                                                                <div class="col-12">&nbsp;</div>
-                                                                <div class="col-12">
-                                                                    <span style="">Detalle</span>
-                                                                </div>
-                                                                <div class="col-12">
-                                                                    <span><?php echo $evolucion->cuadro_clinico; ?></span>
+                                                                <div class="collapse evolution-card-body" id="surgeryEvolution{{$evolucion->id}}">
+                                                                    <div id="evolucion{{$evolucion->id}}">
+                                                                        <div><strong>Motivo</strong></div>
+                                                                        <div>{{$evolucion->motivo}}</div>
+                                                                        <div class="mt-1"><strong>Detalle</strong></div>
+                                                                        <div>{!! $evolucion->cuadro_clinico !!}</div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                        @empty
+                                                            <div class="text-muted text-center">Esta cirugía todavía no tiene evoluciones registradas.</div>
+                                                        @endforelse
                                                     </div>
-                                                    <div class="col-md-12" style="height: 5px;"></div>
-                                                    @endforeach
                                                 </div>
                                             </div>
                                         </div>
@@ -278,7 +438,7 @@
                                                                 @endphp
                                                                 @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
                                                                     <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-                                                                        <img  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" style='width:100%;'>
+                                                                        <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" style='width:100%;'>
                                                                     </a>
                                                                 @elseif(($extension == 'pdf') || ($extension == 'PDF'))
                                                                     <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
@@ -655,7 +815,12 @@
                                 </div>
                             </div>
                         
-                    @endforeach
+                    @empty
+                        <div class="surgery-empty-history">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i>
+                            No existen cirugías registradas para este paciente.
+                        </div>
+                    @endforelse
             
         
     </div>  
@@ -671,12 +836,21 @@
 <script src="{{asset('plugins/video/gumadapter.js')}}"></script>
 <script type="text/javascript">
 
+    $(document).on('shown.bs.collapse hidden.bs.collapse', '.surgery-history-content, .surgery-evolution-list, .evolution-card-body', function(event) {
+        var targetId = event.target.id;
+        if (!targetId) return;
+
+        var expanded = event.type === 'shown';
+        var $toggle = $('[data-target="#' + targetId + '"]');
+        $toggle.find('i.fa').toggleClass('fa-plus', !expanded).toggleClass('fa-minus', expanded);
+    });
+
     function editar_evolucion(id, id_paciente){
         var entra = id;
             $.ajax({
-            type: "GET",
+            type: "POST",
             url: "{{route('quirofano.editar_evolucion')}}/"+id+'/'+id_paciente,
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml, entra){
                 $("#evolucion"+id).html(datahtml);
@@ -819,8 +993,9 @@
         document.getElementById("tdiagnostico"+id).deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
 
           success: function(data){

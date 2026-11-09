@@ -145,8 +145,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Para el diagnóstico y tratamiento de enfermedades del intestino delgado (duodeno, yeyuno e ileon), Para el procedimiento médico ambulatorio se usa un tubo largo y flexible con un sistema de iluminación y una cámara (enteroscopio). </td>
-                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{public_path('/imagenes/enteroscopia1.jpg')}}" />
-                        <img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{public_path('/imagenes/enteroscopia2.jpg')}}" /></td>
+                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{base_path('public/imagenes/enteroscopia1.jpg')}}" />
+                        <img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{base_path('public/imagenes/enteroscopia2.jpg')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -234,7 +234,12 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 
             </tr>
 
+            <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
             <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>

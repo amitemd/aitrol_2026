@@ -4,6 +4,7 @@
 use Carbon\Carbon;
 $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 @endphp
+
 <head>
     <meta charset="utf-8" />
     <title>CRM - CONSENTIMIENTO BALON COLOCACION-rev02</title>
@@ -143,7 +144,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">El balón intragástrico es un dispositivo de silicona de alta calidad que se introduce desinflado en el estómago, a través de la boca, mediante un tubo flexible con un sistema de iluminación y una cámara (endoscopio), bajo anestesia general. </td>
-                    <td><img style="height:100px;margin:15px" src="{{public_path('/imagenes/balon.jpg')}}" /></td>
+                    <td><img style="height:100px;margin:15px" src="{{base_path('public/imagenes/balon.jpg')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -238,8 +239,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>
@@ -309,7 +315,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
         <table class="table" style="width: 100%;text-align:center; ">
             <tr>
                 <td class="td" style="font-weight: bold;">21. DECLARACIÓN DEL CONSENTIMIENTO INFORMADO</td>
-              
+
 
             </tr>
         </table>

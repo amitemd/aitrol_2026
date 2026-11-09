@@ -1,3 +1,4 @@
+
 <style type="text/css">
   .parent{
       overflow-y:scroll;
@@ -131,11 +132,91 @@
       color: white;
       background-color: green;
     }
-    .alerta_correcto{
+  .alerta_correcto{
     position: absolute;
     z-index: 9999;
     top: 100px;
     right: 10px;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record {
+    border-radius: 18px !important;
+    overflow: hidden;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 52px;
+    gap: 20px;
+    align-items: center;
+    min-height: 92px;
+    padding: 18px 20px 18px 28px !important;
+    color: #fff !important;
+    text-align: left !important;
+    background: linear-gradient(100deg, #075779 0%, #057ca7 54%, #12aaa7 100%) !important;
+    border-bottom: 0 !important;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-header::before,
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-header::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-header-grid {
+    display: grid !important;
+    grid-template-columns: minmax(285px, 0.9fr) minmax(360px, 1.45fr) minmax(220px, 0.75fr);
+    gap: 32px;
+    align-items: center;
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-header-grid > div {
+    float: none !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-date {
+    white-space: nowrap;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-procedure {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-doctor {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-tools {
+    position: static !important;
+    float: none !important;
+    justify-self: end;
+    margin: 0 !important;
+  }
+
+  @media (max-width: 1199px) {
+    #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-header-grid {
+      grid-template-columns: max-content minmax(300px, 1fr) minmax(190px, auto);
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-record-header {
+      align-items: start;
+    }
+
+    #area_trabajo .hc4-epicrisis-view .hc4-epicrisis-header-grid {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
   }
 </style>
 @php
@@ -144,30 +225,12 @@
 @endphp
 
 
-<div class="box " style="border: 2px solid #004AC1; background-color: white; ">
-  <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1; ">
-    <div class="row">
-      <div class="col-md-9 col-sm-8 col-12">
-        <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
-              <img style="width: 35px; margin-left: 5px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/pendo.png">
-              <b>EPICRISIS</b>
-      </h1>
-    </div>
-
-  </div>
-  @if(!is_null($paciente))
-    <center>
-      <div class="col-12" style="padding-top: 15px">
-        <h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-              <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-                {{$paciente->nombre1}} {{$paciente->nombre2}}
-                  </b>
-        </h1>
-        </div>
-    </center>
-  @endif
-    <!-- /.box-tools -->
-  </div>
+<div class="box hc4-epicrisis-view" style="border: 2px solid #004AC1; background-color: white; ">
+  @include('hc4.partials.module_header', [
+      'moduleTitle' => __('hc4.epicrisis'),
+      'moduleIcon' => asset('/').'hc4/img/iconos/pendo.png',
+      'paciente' => $paciente
+  ])
   <!-- /.box-header -->
   <div class="box-body" style="background-color: #56ABE3;">
     <div class="col-12">
@@ -183,8 +246,8 @@
                 $fecha_r = Date('Y-m-d',strtotime(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini));
               }
             @endphp
-            <div class="box @if($fecha_r != date('Y-m-d') ) collapsed-box @endif" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 0px; ">
-            <div class="box-header with-border" style="background-color: white; color: black; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+            <div class="box hc4-epicrisis-record @if($fecha_r != date('Y-m-d') ) collapsed-box @endif" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 0px; ">
+            <div class="box-header with-border hc4-epicrisis-record-header" style="background-color: white; color: black; font-family: 'Helvetica general3';border-bottom: #004AC1;">
 
               @php
                   $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_procedimiento)->get();
@@ -202,8 +265,8 @@
                          }
                     }
                 @endphp
-              <div class="row">
-                <div class="col-4">
+              <div class="row hc4-epicrisis-header-grid">
+                <div class="col-4 hc4-epicrisis-record-date">
                   @if(!is_null($value->f_operacion))
                                 @php
                                 $dia =  Date('N',strtotime($value->f_operacion));
@@ -262,13 +325,13 @@
                                   del {{substr(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini,0,4)}}</b>
                             @endif
                           </div>
-                <div class="col-4">
+                <div class="col-4 hc4-epicrisis-record-procedure">
                   <div>
                     <span style="font-family: 'Helvetica general'; font-size: 12px">Procedimiento:</span>
                     <span style="font-size: 12px">@if(!is_null($texto)) {{$texto}} @endif </span>
                   </div>
                 </div>
-                <div class="col-3">
+                <div class="col-3 hc4-epicrisis-record-doctor">
                   <div>
                     <span style="font-family: 'Helvetica general'; font-size: 12px">Dr (a) </span>
                     <span style="font-size: 12px">
@@ -302,12 +365,9 @@
                   </div>
                 </div>
                       </div>
-                      <div style="color: white">
-                           {{$value->id_protocolo}}
-                        </div>
-                      <div class="pull-right box-tools ">
-                            <button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-                                <i class="fa fa-plus"></i>
+                      <div class="pull-right box-tools hc4-epicrisis-record-tools">
+                            <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
+                                <i class="fa @if($fecha_r == date('Y-m-d')) fa-minus @else fa-plus @endif"></i>
                             </button>
                       </div>
                 <!-- /.box-tools -->
@@ -333,7 +393,13 @@
                       $evoluciones_pre1 = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', '0')->first();
                     @endphp
                     <div class="form-group col-md-12" >
-                        <div id="pre" > @if(!is_null($evoluciones_pre1)) <?php echo $evoluciones_pre1->cuadro_clinico ?> @endif </div>
+                        <div id="pre" >
+                          @if(!is_null($evoluciones_pre1) && !is_null($evoluciones_pre1->cuadro_clinico))
+                            <?php echo $evoluciones_pre1->cuadro_clinico ?>
+                          @elseif(!is_null($reporte_epic) && !is_null($reporte_epic->cuadro_clinico))
+                            <?php echo $reporte_epic->cuadro_clinico ?>
+                          @endif
+                        </div>
                     </div>
 
                     <div class="col-md-12" style="padding-left: 15px">
@@ -343,7 +409,13 @@
                         $evoluciones_post1 = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', '1')->first();
                       @endphp
                       <div class="form-group col-md-12" >
-                          <div id="post" >@if(!is_null($evoluciones_post1)) <?php echo $evoluciones_post1->cuadro_clinico ?> @endif</div>
+                          <div id="post" >
+                            @if(!is_null($evoluciones_post1) && !is_null($evoluciones_post1->cuadro_clinico))
+                              <?php echo $evoluciones_post1->cuadro_clinico ?>
+                            @elseif(!is_null($reporte_epic) && !is_null($reporte_epic->favorable_des))
+                              <?php echo $reporte_epic->favorable_des ?>
+                            @endif
+                          </div>
                       </div>
                       <div class="col-md-12" style="padding-left: 15px">
                         <span style="font-family: 'Helvetica general';">Conclusion</span>
@@ -445,10 +517,10 @@
 
         @foreach($procedimientos1 as $value)
           <div class="col-12">
-            <div class="box collapsed-box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-            <div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-                <div class="row">
-                  <div class="col-4">
+            <div class="box hc4-epicrisis-record collapsed-box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
+            <div class="box-header with-border hc4-epicrisis-record-header" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+                <div class="row hc4-epicrisis-header-grid">
+                  <div class="col-4 hc4-epicrisis-record-date">
                     @if(!is_null($value->f_operacion))
                                 @php
                                 $dia =  Date('N',strtotime($value->f_operacion));
@@ -507,13 +579,13 @@
                                         del {{substr(\Sis_medico\Agenda::where('id', $value->id_agenda)->first()->fechaini,0,4)}}</b>
                               @endif
                           </div>
-                          <div class="col-4">
+                          <div class="col-4 hc4-epicrisis-record-procedure">
                   <div>
                     <span style="font-family: 'Helvetica general'; font-size: 12px">Procedimiento:</span>
                     <span style="font-size: 12px"> {{$value->nombre}} </span>
                   </div>
                 </div>
-                <div class="col-3">
+                <div class="col-3 hc4-epicrisis-record-doctor">
                   <div>
                     <span style="font-family: 'Helvetica general'; font-size: 12px">Dr (a) </span>
                     <span style="font-size: 12px">
@@ -546,10 +618,7 @@
                   </div>
                 </div>
                 </div>
-                <div style="color: white">
-                   {{$value->id_protocolo}}
-                </div>
-                <div class="pull-right box-tools">
+                <div class="pull-right box-tools hc4-epicrisis-record-tools">
                     <button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
                         <i class="fa fa-plus"></i>
                       </button>
@@ -569,10 +638,17 @@
                     <span style="font-family: 'Helvetica general';">Evolucion Pre</span>
                   </div>
                     @php
+                      $reporte_epic2 = \Sis_medico\Hc_Epicrisis::where('hc_id_procedimiento', $value->id_procedimiento)->first();
                       $evoluciones_pre2 = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', '0')->first();
                     @endphp
                     <div class="form-group col-md-12" >
-                        <div id="pre" >@if(!is_null($evoluciones_pre2)) <?php echo $evoluciones_pre2->cuadro_clinico ?> @endif</div>
+                        <div id="pre" >
+                          @if(!is_null($evoluciones_pre2) && !is_null($evoluciones_pre2->cuadro_clinico))
+                            <?php echo $evoluciones_pre2->cuadro_clinico ?>
+                          @elseif(!is_null($reporte_epic2) && !is_null($reporte_epic2->cuadro_clinico))
+                            <?php echo $reporte_epic2->cuadro_clinico ?>
+                          @endif
+                        </div>
                     </div>
 
                     <div class="col-md-12" style="padding-left: 15px">
@@ -582,7 +658,13 @@
                         $evoluciones_post2 = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', '1')->first();
                       @endphp
                       <div class="form-group col-md-12" >
-                          <div id="post" >@if(!is_null($evoluciones_post2)) <?php echo $evoluciones_post2->cuadro_clinico ?> @endif </div>
+                          <div id="post" >
+                            @if(!is_null($evoluciones_post2) && !is_null($evoluciones_post2->cuadro_clinico))
+                              <?php echo $evoluciones_post2->cuadro_clinico ?>
+                            @elseif(!is_null($reporte_epic2) && !is_null($reporte_epic2->favorable_des))
+                              <?php echo $reporte_epic2->favorable_des ?>
+                            @endif
+                          </div>
                       </div>
                       <div class="col-md-12" style="padding-left: 15px">
                         <span style="font-family: 'Helvetica general';">Conclusion</span>

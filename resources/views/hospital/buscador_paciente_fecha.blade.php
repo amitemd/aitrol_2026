@@ -45,6 +45,7 @@
 
                   <?php $agenda_last= DB::table('agenda as a')
                                      ->where('a.id_paciente',$paci->id)
+                                     ->where('a.id_empresa', session('id_empresa'))
                                      ->join('historiaclinica as h','h.id_agenda','a.id')
                                      ->where('a.espid','<>','10')
                                      ->orderBy('a.fechaini','desc')
@@ -193,7 +194,7 @@
                           @endif     
                         </td>
                     @endif 
-                    <td><a class="btn btn-info boton-2" style="color: white; width: 100%; height: 100%; padding-left: 0px; padding-right: 0px" href="{{route('nd.buscador', ['id_paciente' => $paci->id])}}">
+                    <td><a class="btn btn-info boton-2" style="color: white; width: 100%; height: 100%; padding-left: 0px; padding-right: 0px" href="{{route('nd.buscador', ['id_paciente' => $paci->id, 'id_agenda' => $paci->id_agenda])}}">
                     Ver Detalle Completo</a></td>
                   </tr>
               @endforeach

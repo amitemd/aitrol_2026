@@ -1,611 +1,639 @@
 @extends('layouts.app-template-h')
+
 @section('content')
+    @php
+        $diasSemana = [
+            1 => 'Lunes',
+            2 => 'Martes',
+            3 => 'Miércoles',
+            4 => 'Jueves',
+            5 => 'Viernes',
+            6 => 'Sábado',
+            7 => 'Domingo',
+        ];
+        $meses = [
+            1 => 'enero',
+            2 => 'febrero',
+            3 => 'marzo',
+            4 => 'abril',
+            5 => 'mayo',
+            6 => 'junio',
+            7 => 'julio',
+            8 => 'agosto',
+            9 => 'septiembre',
+            10 => 'octubre',
+            11 => 'noviembre',
+            12 => 'diciembre',
+        ];
+        $fechaActual = $diasSemana[(int) date('N')] . ', ' . date('d') . ' de ' . $meses[(int) date('n')] . ' de ' . date('Y');
+        $nombreUsuario = trim((Auth::user()->nombre1 ?? '') . ' ' . (Auth::user()->apellido1 ?? ''));
+        $nombreUsuario = $nombreUsuario !== '' ? $nombreUsuario : 'Profesional de salud';
+    @endphp
 
-<style type="text/css">
-  .oculto{
-    display: none;
-   }
- 
-  @media screen and (max-width:640px) {
+    <style>
+        .hospital-home {
+            --medical-navy: #073b66;
+            --medical-blue: #0877be;
+            --medical-teal: #0d9488;
+            --medical-ink: #17324d;
+            --medical-muted: #66798d;
+            --medical-line: #dbe8f1;
+            --medical-surface: #ffffff;
+            padding: 1.25rem 0 2rem;
+            color: var(--medical-ink);
+        }
 
-    /* reglas CSS */
-    .example-8 .navbar-brand {
-      background: none;
-      width: 200px;
-      height: 50px;
-      transform: translateX(-60%);
-      left: 43%;
-      position: absolute;
-    }
-  }
+        .hospital-home,
+        .hospital-home * {
+            box-sizing: border-box;
+        }
 
-  .align-middle {
-    position: absolute;
-    top: 60%;
-    left: 40%;
-    transform: translate(-50%, -50%);
-    color: blue;
-  }
+        .hospital-hero {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 2rem;
+            align-items: center;
+            min-height: 220px;
+            padding: 2.25rem 2.5rem;
+            overflow: hidden;
+            border-radius: 22px;
+            background: linear-gradient(120deg, #06365f 0%, #086fa8 58%, #0d9488 100%);
+            box-shadow: 0 18px 45px rgba(7, 59, 102, .16);
+            color: #fff;
+        }
 
-  h5,
-  p {}
+        .hospital-hero::before,
+        .hospital-hero::after {
+            content: '';
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, .13);
+            border-radius: 50%;
+            pointer-events: none;
+        }
 
-  span b {
-    font-size: 50px;
-  }
+        .hospital-hero::before {
+            width: 300px;
+            height: 300px;
+            right: 4%;
+            top: -180px;
+        }
 
-  span p {
-    font-size: 30px;
-  }
+        .hospital-hero::after {
+            width: 210px;
+            height: 210px;
+            right: -65px;
+            bottom: -120px;
+        }
 
-  .box-title {
-    color: white;
+        .hospital-hero-content,
+        .hospital-date-card {
+            position: relative;
+            z-index: 1;
+        }
 
-  }
+        .hospital-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            margin-bottom: .7rem;
+            color: #bcecf0;
+            font-size: .85rem;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
 
-  .panel {
-    padding: 10px;
-  }
+        .hospital-eyebrow::before {
+            content: '';
+            width: 28px;
+            height: 2px;
+            border-radius: 999px;
+            background: #7ee0d6;
+        }
 
-  /*colapse*/
-  .panel-group .panel {
-    border-radius: 0;
-    box-shadow: none;
-    border-color: #EEEEEE;
-  }
+        .hospital-hero h1 {
+            margin: 0;
+            color: #fff;
+            font-size: clamp(1.8rem, 3vw, 2.75rem);
+            font-weight: 700;
+            line-height: 1.12;
+        }
 
-  .flexbox {
-    display: flex;
-    flex-direction: row !important;
-    flex-wrap: wrap;
-    gap: 1
-  }
+        .hospital-hero-copy {
+            max-width: 670px;
+            margin: .8rem 0 0;
+            color: rgba(255, 255, 255, .84);
+            font-size: 1.08rem;
+            line-height: 1.65;
+        }
 
-  .flexbox>div {
-    display: flex;
-    margin: 1em;
-    align-items: center;
-    height: 160px;
-    width: 17%;
-  }
+        .hospital-welcome {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin-top: 1.15rem;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+        }
 
-  .box {
-    border-color: #FDFEFE;
-    border-radius: 30px;
-  }
+        .hospital-welcome i {
+            color: #8be1d8;
+            font-size: 1.12rem;
+        }
 
-  .card-img {
-    background: url({{asset('/hc4/img/agenda_quirofano.png')}}) no-repeat center;
-    background-size: cover;
-    object-fit: cover;
-  }
+        .hospital-date-card {
+            width: 210px;
+            padding: 1.15rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, .24);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .13);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15);
+            backdrop-filter: blur(8px);
+        }
 
-  .label1 {
-    font-size: 14px;
-    color: white;
-  }
+        .hospital-date-card span {
+            display: block;
+            color: #beeaf0;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
 
-  .plantilla {
-    padding-top: 14px;
-  }
+        .hospital-date-card strong {
+            display: block;
+            margin-top: .45rem;
+            color: #fff;
+            font-size: 1.08rem;
+            font-weight: 600;
+            line-height: 1.45;
+        }
 
-  @media all and (max-width: 420px) {
+        .hospital-date-card i {
+            margin-right: .4rem;
+            color: #8be1d8;
+        }
 
-    h5,
-    p {
-      font-size: 12px;
-      margin-top: 0px;
-      margin-bottom: 0px;
-    }
+        .hospital-body {
+            display: grid;
+            grid-template-columns: minmax(280px, .78fr) minmax(0, 2.22fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
 
-    span {
-      font-size: 10px;
-    }
+        .hospital-panel {
+            border: 1px solid var(--medical-line);
+            border-radius: 18px;
+            background: var(--medical-surface);
+            box-shadow: 0 10px 30px rgba(18, 69, 116, .07);
+        }
 
-    span b {
-      font-size: 20px;
-    }
+        .hospital-feature {
+            position: relative;
+            display: flex;
+            min-height: 100%;
+            padding: 1.75rem;
+            overflow: hidden;
+            color: #fff;
+            text-decoration: none !important;
+            background:
+                linear-gradient(180deg, rgba(4, 48, 82, .08) 0%, rgba(4, 48, 82, .96) 100%),
+                url('{{ asset('/hc4/img/agenda_quirofano.png') }}') center / cover no-repeat;
+        }
 
-    span p {
-      font-size: 12px;
-    }
-  }
+        .hospital-feature::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(6, 106, 153, .42), transparent 60%);
+        }
 
-  @media all and (max-width: 850px) {
-    .col-md-6 {
-      margin-top: 0px;
-    }
+        .hospital-feature-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
 
-    h5,
-    p {
-      font-size: 12px;
-      margin-top: 0px;
-      margin-bottom: 0px;
-    }
+        .hospital-feature-badge {
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: auto;
+            padding: .52rem .75rem;
+            border: 1px solid rgba(255, 255, 255, .32);
+            border-radius: 999px;
+            background: rgba(7, 59, 102, .56);
+            color: #fff;
+            font-size: .84rem;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
 
-    span {
-      font-size: 10px;
-    }
+        .hospital-feature-badge i {
+            font-size: 1rem;
+        }
 
-    span b {
-      font-size: 20px;
-    }
+        .hospital-feature h2 {
+            margin: 4.5rem 0 .55rem;
+            color: #fff;
+            font-size: 1.78rem;
+            font-weight: 700;
+        }
 
-    span p {
-      font-size: 12px;
-    }
+        .hospital-feature p {
+            margin: 0;
+            color: rgba(255, 255, 255, .82);
+            font-size: 1rem;
+            line-height: 1.55;
+        }
 
-    .label1 {
-      font-size: 10px;
-      color: white;
-    }
+        .hospital-feature-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.4rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, .25);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+        }
 
-    .text1,
-    .text2 {
-      margin-top: 5px
-    }
-  }
+        .hospital-feature-action i {
+            font-size: 1.2rem;
+        }
 
-  @media all and (max-width: 1030px) {
-    .col-md-6 {
-      margin-top: 0px;
-    }
+        .hospital-services {
+            padding: 1.6rem;
+        }
 
-    h5,
-    p {
-      font-size: 12px;
-      margin-top: 0px;
-      margin-bottom: 0px;
-    }
+        .hospital-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
 
-    span {
-      font-size: 10px;
-    }
+        .hospital-section-header h2 {
+            margin: 0;
+            color: var(--medical-navy);
+            font-size: 1.55rem;
+            font-weight: 700;
+        }
 
-    span b {
-      font-size: 20px;
-    }
+        .hospital-section-header p {
+            margin: .35rem 0 0;
+            color: var(--medical-muted);
+            font-size: .98rem;
+        }
 
-    span p {
-      font-size: 12px;
-    }
-  }
-</style>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link rel="stylesheet" href="{{ asset ("/librerias/tempusdominus-bootstrap-4.min.css")}}" />
-<link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css')}}">
-<section class="content">
+        .hospital-service-count {
+            flex: 0 0 auto;
+            padding: .42rem .7rem;
+            border-radius: 999px;
+            background: #eef8fb;
+            color: #087788;
+            font-size: .84rem;
+            font-weight: 700;
+        }
 
-  <!-- <div class="card card-solid">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="row">
-          <div class="col-md-6">
-            <br>
-            <div class="panel card-img"  style="height:340px;border-radius:10px;">
-              <div class="card-img-overlay">
-                <h5 style="border-bottom: 1px solid blue; margin-top: 25px" class="card-title"><img src="{{asset('/')}}hc4/img/bt_ca2.png" style="width:5%; margin-left: 5%"> AGENDA DE QUIR&Oacute;FANO DEL D&Iacute;A</h5>
-                <p class="card-text" style="margin-left: 15%">{{trans('hospital.CALENDARIODEAGENDA')}}</p>
-                <div class="row">
-                  <div class="col-12">
-                    <div class="row">
-                      <span>
-                        <b style="margin-left: 75px">{{date('d')}}</b>
-                      </span>
-                      <span>
-                        <p style="margin-left: 75px">
-                          @if(date('m') == 1) Enero
-                          @elseif(date('m') == 2) Febrero
-                          @elseif(date('m') == 3) Marzo
-                          @elseif(date('m') == 4) Abril
-                          @elseif(date('m') == 5) Mayo
-                          @elseif(date('m') == 6) Junio
-                          @elseif(date('m') == 7) Julio
-                          @elseif(date('m') == 8) Agosto
-                          @elseif(date('m') == 9) Septiembre
-                          @elseif(date('m') == 10) Octubre
-                          @elseif(date('m') == 11) Noviembre
-                          @elseif(date('m') == 12) Diciembre
-                          @endif {{date('Y')}}
-                        </p>
-                      </span>
-                    </div>
-                  </div>
-                  <span>
-                    <p style="margin-left: 75px">
-                      @if(date('N') == 1)
-                      Lunes @elseif(date('N') == 2)
-                      Martes @elseif(date('N') == 3)
-                      Miercoles @elseif(date('N') == 4)
-                      Jueves @elseif(date('N') == 5)
-                      Viernes @elseif(date('N') == 6)
-                      Sabado @elseif(date('N') == 7)
-                      Domingo
-                      @endif
-                    </p>
-                  </span>
-                </div>
-                <p style="margin-left: 60px">
-                  {{$totales}} {{trans('hospital.OPERACIONESPROGRAMADAS')}}
+        .hospital-section-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .65rem;
+            flex-wrap: wrap;
+        }
+
+        .hospital-services-config {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .5rem .72rem;
+            border: 1px solid var(--medical-line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--medical-navy);
+            font-size: .78rem;
+            font-weight: 700;
+            text-decoration: none !important;
+        }
+
+        .hospital-services-config:hover {
+            border-color: var(--medical-blue);
+            color: var(--medical-blue);
+        }
+
+        .hospital-services-empty {
+            grid-column: 1 / -1;
+            padding: 2.2rem 1rem;
+            border: 1px dashed var(--medical-line);
+            border-radius: 14px;
+            color: var(--medical-muted);
+            text-align: center;
+        }
+
+        .hospital-services-empty i {
+            display: block;
+            margin-bottom: .6rem;
+            color: var(--medical-blue);
+            font-size: 1.5rem;
+        }
+
+        .hospital-module-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: .9rem;
+        }
+
+        .hospital-module {
+            position: relative;
+            display: grid;
+            min-height: 152px;
+            grid-template-columns: 60px minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            align-content: center;
+            align-items: center;
+            column-gap: 1rem;
+            padding: 1.3rem 2.5rem 1.3rem 1.3rem;
+            overflow: hidden;
+            border: 1px solid var(--medical-line);
+            border-radius: 14px;
+            color: var(--medical-ink);
+            text-decoration: none !important;
+            background: #fff;
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .hospital-module::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--module-color, var(--medical-blue));
+            opacity: .8;
+        }
+
+        .hospital-module:hover,
+        .hospital-module:focus {
+            border-color: var(--module-color, var(--medical-blue));
+            color: var(--medical-ink);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(18, 69, 116, .12);
+        }
+
+        .hospital-module:focus-visible,
+        .hospital-feature:focus-visible {
+            outline: 3px solid rgba(8, 119, 190, .28);
+            outline-offset: 3px;
+        }
+
+        .hospital-module-icon {
+            display: grid;
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            width: 60px;
+            height: 60px;
+            align-self: center;
+            place-items: center;
+            border-radius: 16px;
+            background: var(--module-soft, #eaf5fb);
+            color: var(--module-color, var(--medical-blue));
+            font-size: 1.75rem;
+        }
+
+        .hospital-module h3 {
+            grid-column: 2;
+            grid-row: 1;
+            align-self: end;
+            margin: 0 0 .3rem;
+            color: var(--medical-ink);
+            font-size: 1.13rem;
+            font-weight: 700;
+        }
+
+        .hospital-module p {
+            grid-column: 2;
+            grid-row: 2;
+            align-self: start;
+            margin: 0;
+            color: var(--medical-muted);
+            font-size: .86rem;
+            line-height: 1.4;
+        }
+
+        .hospital-module-arrow {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            color: #9eb1c1;
+            font-size: 1rem;
+            transform: translateY(-50%);
+            transition: transform .2s ease, color .2s ease;
+        }
+
+        .hospital-module:hover .hospital-module-arrow {
+            color: var(--module-color, var(--medical-blue));
+            transform: translate(3px, -50%);
+        }
+
+        .module-red { --module-color: #d94a4a; --module-soft: #fff0f0; }
+        .module-blue { --module-color: #0877be; --module-soft: #eaf5fb; }
+        .module-purple { --module-color: #7756b5; --module-soft: #f3effc; }
+        .module-green { --module-color: #158b72; --module-soft: #eaf8f4; }
+        .module-cyan { --module-color: #1387a6; --module-soft: #eaf8fb; }
+        .module-pink { --module-color: #c34f7a; --module-soft: #fceff4; }
+        .module-orange { --module-color: #d27b20; --module-soft: #fff5e8; }
+        .module-teal { --module-color: #0d9488; --module-soft: #e8f8f5; }
+
+        .dark-layout .hospital-panel,
+        .dark-layout .hospital-module {
+            border-color: #3b4b5d;
+            background: #283447;
+        }
+
+        /* La regla anterior no debe reemplazar la fotografía del acceso principal. */
+        html.dark-layout .hospital-feature {
+            border-color: #426078;
+            background:
+                linear-gradient(180deg, rgba(5, 35, 59, .16) 0%, rgba(4, 35, 60, .90) 100%),
+                url('{{ asset('/hc4/img/agenda_quirofano.png') }}') center / cover no-repeat;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, .22);
+        }
+
+        html.dark-layout .hospital-feature::after {
+            background: linear-gradient(135deg, rgba(0, 139, 173, .25), transparent 62%);
+        }
+
+        html.dark-layout .hospital-feature-badge {
+            border-color: rgba(159, 226, 239, .48);
+            background: rgba(3, 42, 70, .72);
+        }
+
+        html.dark-layout .hospital-feature p {
+            color: rgba(244, 250, 255, .88);
+        }
+
+        .dark-layout .hospital-section-header h2,
+        .dark-layout .hospital-module h3 {
+            color: #f3f7fa;
+        }
+
+        .dark-layout .hospital-section-header p,
+        .dark-layout .hospital-module p {
+            color: #b8c4cf;
+        }
+
+        .dark-layout .hospital-services-config {
+            border-color: #47586a;
+            background: #283447;
+            color: #dcecf7;
+        }
+
+        @media (max-width: 1199.98px) {
+            .hospital-body {
+                grid-template-columns: 1fr;
+            }
+
+            .hospital-feature {
+                min-height: 320px;
+            }
+
+            .hospital-feature h2 {
+                margin-top: 5rem;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .hospital-module-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .hospital-home {
+                padding-top: .75rem;
+            }
+
+            .hospital-hero {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+                padding: 1.6rem;
+                border-radius: 16px;
+            }
+
+            .hospital-date-card {
+                width: 100%;
+            }
+
+            .hospital-body {
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .hospital-services,
+            .hospital-feature {
+                padding: 1.25rem;
+                border-radius: 16px;
+            }
+        }
+
+        @media (max-width: 479.98px) {
+            .hospital-module-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hospital-module {
+                min-height: 132px;
+            }
+
+            .hospital-section-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hospital-module,
+            .hospital-module-arrow {
+                transition: none;
+            }
+        }
+    </style>
+
+    <main class="hospital-home" aria-labelledby="hospital-dashboard-title">
+        <section class="hospital-hero" data-tour="hospital-welcome" aria-label="Bienvenida al área médica">
+            <div class="hospital-hero-content">
+                <span class="hospital-eyebrow">Gestión clínica hospitalaria</span>
+                <h1 id="hospital-dashboard-title">Área médica y hospitalización</h1>
+                <p class="hospital-hero-copy">
+                    Accede de forma rápida a los servicios clínicos, áreas críticas y procesos de atención hospitalaria.
                 </p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 my-3">
-            <h5 class="card info-color py-3" style="border-radius:30px;background: linear-gradient(to right, #3352ff 0%, #051eff 100%)">
-              <div class="row">
-                <div class="col-md-8">
-                  <strong class="text-white">
-                    <img src="{{asset('/')}}hc4/img/historiaclinic.png" class="float-left mr-3 ml-3" style="width: 25px;">
-                    {{trans('hospital.HistoriaClinicaporPaciente')}}
-                  </strong>
+                <div class="hospital-welcome">
+                    <i class="fa fa-user-md" aria-hidden="true"></i>
+                    Bienvenido, {{ $nombreUsuario }}
                 </div>
-                <div class="col-md-3">
-                  <a class="btn btn-primary" style="border: 2px solid white !important;" href="{{asset('/')}}">Sistema Ambulatorio</a>
-                </div>
-              </div>
-            </h5>
-            <div class="card-body" style="border: blue 2px solid; border-radius: 20px;">
-              <button onclick="location.href='{{route('hospital.agregarpa')}}'" class="btn btn-primary" type="submit">
-                <i class="material-icons float-left">person_add</i>{{trans('hospital.AgregarNuevoPaciente')}}
-              </button>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> -->
 
-  <div class="card card-solid">
-    <div class="row row-cols-12">
-      <div class="col-md-4">
-        <div class="panel card-img" style="height:345px;border-radius:10px;margin:17px;">
-          <a href="{{route('hospital.gcuartos')}}" class="">
-            <div>
-              <h5 style="border-bottom: 1px solid blue; margin-top: 25px" class="card-title"><img src="{{asset('/')}}hc4/img/icono recepcion.png" style="width:5%; margin-left: 5%">RECEPCION</h5>
-              <p class="card-text" style="margin-left: 15%"></p>
-              <div class="row">
-                <div class="col-12">
-                  <div class="row">
-                    <span>
-                      <b style="margin-left: 75px">{{date('d')}}</b>
+            <div class="hospital-date-card" aria-label="Fecha actual">
+                <span>Jornada médica</span>
+                <strong><i class="fa fa-calendar-check-o" aria-hidden="true"></i>{{ $fechaActual }}</strong>
+            </div>
+        </section>
+
+        <div class="hospital-body">
+            <a href="{{ route('hospital.gcuartos') }}" class="hospital-panel hospital-feature" data-tour="hospital-reception">
+                <div class="hospital-feature-content">
+                    <span class="hospital-feature-badge">
+                        <i class="fa fa-bed" aria-hidden="true"></i>
+                        Gestión hospitalaria
                     </span>
-                    <span>
-                      <p style="margin-left: 75px">
-                        @if(date('m') == 1) Enero
-                        @elseif(date('m') == 2) Febrero
-                        @elseif(date('m') == 3) Marzo
-                        @elseif(date('m') == 4) Abril
-                        @elseif(date('m') == 5) Mayo
-                        @elseif(date('m') == 6) Junio
-                        @elseif(date('m') == 7) Julio
-                        @elseif(date('m') == 8) Agosto
-                        @elseif(date('m') == 9) Septiembre
-                        @elseif(date('m') == 10) Octubre
-                        @elseif(date('m') == 11) Noviembre
-                        @elseif(date('m') == 12) Diciembre
-                        @endif {{date('Y')}}
-                      </p>
+                    <h2>Recepción y gestión de camas</h2>
+                    <p>Consulta la disponibilidad, organiza habitaciones y administra el ingreso de pacientes.</p>
+                    <span class="hospital-feature-action">
+                        Ir a recepción
+                        <i class="fa fa-arrow-right" aria-hidden="true"></i>
                     </span>
-                  </div>
                 </div>
-                <span>
-                  <p style="margin-left: 75px">
-                    @if(date('N') == 1)
-                    Lunes @elseif(date('N') == 2)
-                    Martes @elseif(date('N') == 3)
-                    Miercoles @elseif(date('N') == 4)
-                    Jueves @elseif(date('N') == 5)
-                    Viernes @elseif(date('N') == 6)
-                    Sabado @elseif(date('N') == 7)
-                    Domingo
-                    @endif
-                  </p>
-                </span>
-              </div>
-              <p style="margin-left: 60px">
+            </a>
 
-              </p>
-            </div>
-          </a>
+            <section class="hospital-panel hospital-services" aria-labelledby="hospital-services-title">
+                <div class="hospital-section-header">
+                    <div>
+                        <h2 id="hospital-services-title">Servicios hospitalarios</h2>
+                        <p>Selecciona el área clínica en la que deseas trabajar.</p>
+                    </div>
+                    <div class="hospital-section-actions">
+                        @if($canConfigureHospitalServices)
+                            <a class="hospital-services-config" href="{{ route('hospital.services.configuration') }}"><i class="fa fa-cog" aria-hidden="true"></i> Configurar</a>
+                        @endif
+                        <span class="hospital-service-count">{{ $hospitalServices->count() }} {{ $hospitalServices->count() === 1 ? 'área disponible' : 'áreas disponibles' }}</span>
+                    </div>
+                </div>
+
+                <div class="hospital-module-grid">
+                    @forelse($hospitalServices as $service)
+                        <a href="{{ route($service['route'], $service['parameters']) }}" class="hospital-module {{ $service['color'] }}" data-tour="{{ $service['tour'] }}">
+                            <span class="hospital-module-icon"><i class="fa {{ $service['icon'] }}" aria-hidden="true"></i></span>
+                            <span class="hospital-module-arrow"><i class="fa fa-chevron-right" aria-hidden="true"></i></span>
+                            <h3>{{ $service['label'] }}</h3>
+                            <p>{{ $service['description'] }}</p>
+                        </a>
+                    @empty
+                        <div class="hospital-services-empty"><i class="fa fa-info-circle" aria-hidden="true"></i>No hay servicios hospitalarios habilitados para esta empresa.</div>
+                    @endforelse
+                </div>
+            </section>
         </div>
-
-      </div>
-      <div class="col-md-8">
-        <div class="flexbox">
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.index_modulos',['id_paso' => '2'])}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono_ emergencia.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p class="text_2" style="font-size: 15px"><b>@lang('hospital.Emergencia')</b></p>
-
-                </div>
-              </div>
-            </a>
-          </div>
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.index_modulos',['id_paso' => '5'])}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono cirugia.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center;text-align:end">
-                  <p style="font-size: 13px" class="text_2"><b>@lang('hospital.Cirugia')</b></p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital_laboratorio.index')}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono laboratorio.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p class="text_2" style="font-size: 15px"><b>@lang('hospital.Laboratorio')</b></p>
-
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.master_farmacia')}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono farmacia.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p style="font-size: 13px;margin-left:27px;" class="text_2"><b>@lang('hospital.Farmacia')</b></p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.index_modulos',['id_paso' => '4'])}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono imagenes.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p class="text_2" style="font-size: 15px"><b>@lang('hospital.Imagenes')</b></p>
-                  <!-- <p class="text_2" style="font-size: 15px"><b></b> @lang('hc4.ordenes')</p> -->
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.index_modulos',['id_paso' => '7'])}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono UCIN.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center;">
-                  <p style="font-size: 13px;margin-left:27px;" class="text_2"><b>@lang('hospital.UCIN')</b></p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.index_modulos',['id_paso' => '6'])}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono UCI.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p style="font-size: 13px;margin-left:27px;" class="text_2"><b>&nbsp;&nbsp;@lang('hospital.UCI')</b></p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-
-
-          <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="{{route('hospital.index_modulos',['id_paso' => '3'])}}" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono hospitalizacion.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p class="text_2" style="font-size: 15px"><b>@lang('hospital.Hospitalizacion')</b></p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <!-- <div style="color: #124574; background-image: linear-gradient(to right, #FFFFFF,#FFFFFF,#d1d1d1);border-radius: 10px;">
-            <a href="" class="">
-              <div class="row">
-                <div class="col-md-5 col-xs-6" style="margin-top:6px;padding-right: 5px;position: relative;margin-lef:0;margin-right:0">
-                  <img class="image_baner" src="{{asset('/')}}hc4/img/icono farmacia.png" style="width: 95px;">
-                </div>
-                <div class="col-md-7 col-xs-6" style="color: #124574;display:flex;flex-direction:column;justify-content:center">
-                  <p style="font-size: 13px;margin-left:27px;" class="text_2"><b>@lang('hospital.Compras')</b></p>
-                </div>
-              </div>
-            </a>
-          </div> -->
-          
-        </div>
-
-
-      </div>
-    </div>
-  </div>
-
-  <!-- <div class="card card-solid">
-    <div class="row row-cols-12">
-      <div class="container-fluid" id="info" style="padding-left: 0px; padding-right: 0px;">
-        <div class="col-md-12" style="margin-top: 5px; padding: 10px; border-radius: 8px; margin-bottom: 10px">
-          <form method="POST" id="form_buscador" action="{{route('historia_clinica.reporte_hc')}}">
-            {{ csrf_field() }}
-            <div class="row">
-              <div class="col-lg-3 col-12">
-                <h1 style="font-size: 15px; margin:0; position: relative;top: 25%;">
-                  <img style="width: 49px;" src="{{asset('/')}}hc4/img/hc_ima.png">
-                  <b>HISTORIA CL&Iacute;NICA POR PACIENTE</b>
-                </h1>
-              </div>
-              <div class="col-lg-8 col-12">
-                <div class="row" style="padding-top: 5px">
-                  <div class="col-lg-6 col-12" >
-                      <div class="row">
-                        <div class=" col-md-6 " >
-                          <div class="row">
-                            <div class="col-3 "><label for="fecha" class="col-md-10 control-label" style="padding:0px;">Desde</label></div>
-                            <div class="col-9">
-                              <input type="date" class="form-control" name="desde_inicio" id="desde_inicio">
-                              
-                            </div>
-                          </div>
-                        </div>
-                        <div class=" col-md-6 " >
-                          <div class="row">
-                            <div class="col-3"><label for="fecha" class="col-md-10 control-label" style="padding:0px;">Hasta</label></div>
-                            <div class="col-9">
-                              <input type="date" class="form-control" name="hasta_fin" id="hasta_fin">
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                  
-                  <div class="col-lg-6 col-12" >
-                    <div class="row">
-                      
-                      <div class="form-group col-lg-8 col-md-6 col-xs-6" >
-                        <div class="row">
-                          <label for="espid" class="col-lg-4 col-md-3 control-label">Especialidad</label>
-                          <div class="col-md-8">
-                            <select class="form-control form-control-sm input-sm" name="espid" id="espid" onchange="">
-                              <option value="">Todos ...</option>
-                            @foreach($especialidades as $especialidad)
-                              <option @if($especialidad->id==$id_especialidad) selected @endif value="{{$especialidad->id}}">{{$especialidad->nombre}}</option>
-                            @endforeach
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="form-group col-lg-3 col-md-6 col-xs-6" >
-                    <div class="row">
-                      <label for="id_doctor1" class="col-md-3 control-label">Doctor</label>
-                      <div class="col-lg-9 col-md-8">
-                        <select class="form-control form-control-sm input-sm" name="id_doctor1" id="id_doctor1" onchange="">
-                          <option value="">Seleccione ...</option>
-                        @foreach($doctores as $doctor)
-                          <option @if($doctor->id==$id_doctor1) selected @endif value="{{$doctor->id}}">{{$doctor->apellido1}} {{$doctor->apellido2}} {{$doctor->nombre1}}</option>
-                        @endforeach
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-group col-lg-3 col-md-6 col-xs-6" >
-                    <div class="row">
-                      <label for="id_seguro" class="col-md-3 control-label">Seguro</label>
-                      <div class="col-lg-9 col-md-8">
-                        <select class="form-control form-control-sm input-sm" name="id_seguro" id="id_seguro" onchange="">
-                          <option value="">Seleccione ...</option>
-                        @foreach($seguros as $seguro)
-                          <option @if($seguro->id==$id_seguro) selected @endif value="{{$seguro->id}}">{{$seguro->nombre}}</option>
-                        @endforeach
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-2 col-md-6 form-group" >
-                    <div class="input-group">
-                      <input value="{{$request->apellidos}}" type="text" class="form-control form-control-sm " name="apellidos" id="apellidos"   placeholder="Apellidos" style="text-transform:uppercase;" onkeypress="" >
-                    </div>
-                  </div>
-                  <div class="col-lg-2 col-md-6 form-group" >
-                    <div class="input-group">
-                      <input value="{{$request->nombres}}" type="text" class="form-control form-control-sm " name="nombres" id="nombres"   placeholder="Nombres " style="text-transform:uppercase;" onkeypress=""  >
-                    </div>
-                  </div>
-
-                  <div class="col-lg-2 col-md-4 form-group col-xs-4" >
-                    <button type="button" onclick="" class="btn btn-danger" style="color:white; background-color: #124574; border-radius: 5px; border: 2px solid;"> <i class="fa fa-search" aria-hidden="true">
-                    </i> &nbsp;BUSCAR&nbsp;</button>
-
-                    <button type="button" onclick="" id="exp_rev" class="oculto" >
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="box box" style="border-radius: 8px;" id="area_trabajo">
-
-        </div>
-      </div>
-    </div>
-  </div> -->
-</section>
-
-
-<script type="text/javascript">
-  $("#fecha").change(function() {
-    alert($("#fecha").val());
-  });
-
-  function enviar_enter(e) {
-    //alert('entra1');
-    tecla = (document.all) ? e.keyCode : e.which;
-    if (tecla == 13) {
-      buscador_paciente_fecha();
-    };
-  }
-
-  function cambio_fecha() {
-    alert('cambio');
-  }
-</script>
-
-<script type="text/javascript" src="{{ asset ("/librerias/moment.min.js")}}"></script>
-<script type="text/javascript" src="{{ asset ("/librerias/tempusdominus-bootstrap-4.min.js")}}"></script>
-
-<script type="text/javascript">
-  $('#example2').DataTable({
-    'paging': false,
-    'lengthChange': false,
-    'searching': false,
-    'ordering': true,
-    'info': false,
-    'autoWidth': false
-  })
-</script>
-<script type="text/javascript">
-  $(document).ready(function() {
-
-    (function($) {
-
-      $('#filtrar').keyup(function() {
-
-        var rex = new RegExp($(this).val(), 'i');
-
-        $('.buscar tr').hide();
-
-        $('.buscar tr').filter(function() {
-          return rex.test($(this).text());
-        }).show();
-
-      })
-
-    }(jQuery));
-
-  });
-</script>
+    </main>
 @endsection

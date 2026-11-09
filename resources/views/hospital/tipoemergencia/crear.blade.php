@@ -4,6 +4,7 @@
 <html lang="en">
 
 <head>
+    <meta charset="utf-8">
     <style>
         @page {
             margin: 45px 80px;

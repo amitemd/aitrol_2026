@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <style>
         @page {
             margin: 200px 70px;
@@ -154,7 +155,7 @@
                                 <tr style="font-size: 19px;">
                                     <td style="width: 30%;"><b>{{trans('hospitalizacion.GRADO')}}</b></td>
                                     <td style="width: 20%;"><b>{{trans('hospitalizacion.%CELULAS')}}</b></td>
-                                    <td style="width: 15%;"><b>{{trans('hospitalizacion.L.A.P.PUNTOS')}}</b></td>
+                                    <td style="width: 15%;"><b>{{trans('hospitalizacion.LAPPuntos')}}</b></td>
                                     <td style="width: 35%;"><b>{{trans('hospitalizacion.REFERENCIA')}}</b></td>
                                 </tr>
                                 @endif

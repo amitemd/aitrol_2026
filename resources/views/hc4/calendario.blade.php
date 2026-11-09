@@ -178,32 +178,32 @@
   <div class="box box-primary" style="border-top: none;">
     <div class="box-header">
       <div class="row col-md-12 col-12 color">
-        <h4><b>@lang('hc4.agendaDr') {{$doctor->nombre1}} {{$doctor->apellido1}}</b></h4>
+        <h4><b>Agenda del Dr(a). {{$doctor->nombre1}} {{$doctor->apellido1}}</b></h4>
       </div>
       <div class="row ">
         <div class="btn-group col-5" role="group" aria-label="Button group with nested dropdown">
-          <a data-remote="{{route('hc4/agendar_dr.hc4_agendar_doctor',['id_doctor' => $doctor->id, 'i' => '0' ])}}" data-toggle="modal" data-target="#magendar_dr"  class="btn btn-info color2">@lang('hc4.agendar'): @lang('hc4.consultas')</a>
+          <a data-remote="{{route('hc4/agendar_dr.hc4_agendar_doctor',['id' => $doctor->id, 'i' => '0' ])}}" data-toggle="modal" data-target="#magendar_dr"  class="btn btn-secondary color2">Agendar: Consultas</a>
           <div class="btn-group" role="group">
-            <button id="btnGroupDrop1" type="button" class="btn btn-info dropdown-toggle color2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle color2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span class="caret"></span>
             </button>
             <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_agendar_doctor',['id_doctor' => $doctor->id, 'i' => '1' ])}}" data-toggle="modal" data-target="#magendar_dr">@lang('hc4.procedimientos')</a>
+              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_agendar_doctor',['id' => $doctor->id, 'i' => '1' ])}}" data-toggle="modal" data-target="#magendar_dr">Procedimientos</a>
             </div>
           </div>
         </div>
         <div class="col-md-1 col-1">&nbsp;</div>
         <div class="btn-group col-5" role="group" aria-label="Button group with nested dropdown">
-          <a data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id_doctor' => $doctor->id, 'i' => 'Reuniones' ])}}" data-toggle="modal" data-target="#magendar_dr"  class="btn btn-info color2">@lang('hc4.agendar'): @lang('hc4.reuniones')</a>
+          <a data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id' => $doctor->id, 'i' => 'Reuniones' ])}}" data-toggle="modal" data-target="#magendar_dr"  class="btn btn-secondary color2">Agendar: Reuniones</a>
           <div class="btn-group" role="group">
-            <button id="btnGroupDrop1" type="button" class="btn btn-info dropdown-toggle color2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle color2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span class="caret"></span>
             </button>
             <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id_doctor' => $doctor->id, 'i' => 'Vacaciones' ])}}" data-toggle="modal" data-target="#magendar_reunion">@lang('hc4.vacaciones')</a>
-              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id_doctor' => $doctor->id, 'i' => 'Eventos' ])}}" data-toggle="modal" data-target="#magendar_reunion">@lang('hc4.eventos')</a>
-              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id_doctor' => $doctor->id, 'i' => 'Cursos' ])}}" data-toggle="modal" data-target="#magendar_reunion">@lang('hc4.cursos')</a>
-              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id_doctor' => $doctor->id, 'i' => 'Otros' ])}}" data-toggle="modal" data-target="#magendar_reunion">@lang('hc4.otros')</a>
+              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id' => $doctor->id, 'i' => 'Vacaciones' ])}}" data-toggle="modal" data-target="#magendar_reunion">Vacaciones</a>
+              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id' => $doctor->id, 'i' => 'Eventos' ])}}" data-toggle="modal" data-target="#magendar_reunion">Eventos</a>
+              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id' => $doctor->id, 'i' => 'Cursos' ])}}" data-toggle="modal" data-target="#magendar_reunion">Cursos</a>
+              <a class="dropdown-item" data-remote="{{route('hc4/agendar_dr.hc4_reunion',['id' => $doctor->id, 'i' => 'Otros' ])}}" data-toggle="modal" data-target="#magendar_reunion">Otros</a>
             </div>
           </div>
         </div>
@@ -215,7 +215,7 @@
         <div class="row">
           {{ csrf_field() }}
           <div class="col-md-5 col-10 cl_fecha_nacimiento">
-              <label for="fecha" class="col-md-4 control-label">@lang('hc4.fecha')</label>
+              <label for="fecha" class="col-md-4 control-label">Fecha</label>
               <div class="input-group col-12">
                   <div class="input-group-prepend" id="dt1">
                     <span class="input-group-text"><i class="fa fa-calendar"></i></span>
@@ -402,7 +402,7 @@
                   end : '{{ $value->fechafin }}',
                   //url: '{{ route("procedimiento.ruta", ['id' => $value->id])}}',
 
-                  url: '{{route('nd.buscador', ['id_paciente' => $value->id_paciente])}}',
+                  url: '{{route('nd.buscador', ['id_paciente' => $value->id_paciente, 'id_agenda' => $value->id])}}',
                   
                   @if($value->estado_cita == 0)
                     color: 'black',
@@ -458,7 +458,7 @@
                   title : '{{ $value->papellido1}}  @if($value->papellido2 != "(N/A)"){{ $value->papellido2}}@endif {{ $value->pnombre1}} @if($value->pnombre2 != "(N/A)"){{ $value->pnombre2}}@endif  ({{ $value->nombre_seguro}}), PROCEDIMIENTOS: @if($tx_prx!=""){{$tx_prx}}@else{{$value->nombre_procedimiento}} @if(!$agendaprocedimientos->isEmpty()) @foreach($agendaprocedimientos as $agendaproc) + {{Sis_medico\Procedimiento::find($agendaproc->id_procedimiento)->nombre}} @endforeach @endif @endif| @if($value->estado_cita == 4) ASISTIÓ @elseif($value->estado_cita == 0) Por Confirmar @elseif($value->estado_cita == 1) Confirmado @elseif($value->estado_cita == 2) Confirmar Datos @endif | Cortesia: {{ $value->cortesia}} | {{$value->nombre_seguro}}@if($cant>0)|| {{$cant}} archivo(s) cargado(s) ||@endif ',  
                   start : '{{ $value->fechaini }}',
                   end : '{{ $value->fechafin }}',
-                  url: '{{route('nd.buscador', ['id_paciente' => $value->id_paciente])}}',
+                  url: '{{route('nd.buscador', ['id_paciente' => $value->id_paciente, 'id_agenda' => $value->id])}}',
                   
                   @if($value->estado_cita == 0)
                     color: 'black',
@@ -478,7 +478,7 @@
                   title : '{{ $value->papellido1}} @if($value->papellido2 != "(N/A)"){{ $value->papellido2}} @endif {{ $value->pnombre1}} @if($value->pnombre2 != "(N/A)"){{ $value->pnombre2}}@endif  ({{ $value->nombre_seguro}})| CONSULTA | @if($value->estado_cita == 4) ASISTIÓ @elseif($value->estado_cita == 0) Por Confirmar @elseif($value->estado_cita == 1) Confirmado @elseif($value->estado_cita == 2) Confirmar Datos @endif @if($historia!=null)  @endif | Cortesia: {{ $value->cortesia}} | {{$value->nombre_seguro}}',  
                   start : '{{ $value->fechaini }}',
                   end : '{{ $value->fechafin }}',
-                  url: '{{route('nd.buscador', ['id_paciente' => $value->id_paciente])}}',
+                  url: '{{route('nd.buscador', ['id_paciente' => $value->id_paciente, 'id_agenda' => $value->id])}}',
                   /*url: '@if($value->estado_cita >= 4){{ route("agenda.detalle2", ['id' => $value->id ])}}@else{{ route("agenda.detalle", ['id' => $value->id])}}@endif',*/ /* en el title if($historia->estado==0) | Pendiente de Atención else | ATENDIDO endif */
                   @if($value->estado_cita == 0)
                     color: 'black',

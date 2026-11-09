@@ -194,13 +194,6 @@
                             <span class="glyphicon glyphicon-download-alt">  Descargar</span>
                         </a>
                     </div>                                                   
-                    <!-- formulario012B -->
-
-                    <div class="col-md-1" style="color: #f2f2f2;">
-                        <a id="formulario_012" href="{{ route('formulario.12B', ['id' => $protocolo->id]) }}" target="_blank" type="button" class="btn btn-danger" style="color: #fff; background-color: #d9534f; border-color: #d9534f;">
-                            <i class="fa fa-file-pdf-o">&nbsp;&nbsp;PDF 012B</i>
-                        </a>
-                    </div>
                 </div>
                 <div class="col-md-1" style="color: #f2f2f2;">
                     <a type="button" class="btn btn-primary btn-sm" id="recortar_todas">

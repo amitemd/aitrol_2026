@@ -3,9 +3,17 @@
     $extension = end($explotar);
 @endphp
 @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
+    @php
+        $variable = explode('/' , asset('/hc_ima/'));
+        $d1 = $variable[3];
+        $d2 = $variable[4];
+        $d3 = $variable[5];
+        $variable =  env('APP_URL').'/'.$d1.'/'.$d2.'/'.$d3.'/'.$imagen->nombre;
+    @endphp
     <div class="row" id="imagen_solita" style="text-align: center;">
         <div class="col-md-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
+            <!--img id="imafoto" src="http://186.68.76.210:86/sis_medico_prb/storage/app/hc_ima/{{$imagen->nombre}}" alt="Imagen Ingresada" style="max-width: 900px;"-->
             <img id="imafoto" src="{{asset('hc_ima/'.$imagen->nombre)}}" alt="Imagen Ingresada" style="max-width: 900px;">
         </div> 
         <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
@@ -32,14 +40,19 @@
         </div>
     </div>
 @elseif(($extension == 'pdf') || ($extension == 'PDF'))
-   
+    @php
+        $variable = explode('/' , asset('/hc_ima/'));
+        $d1 = $variable[3];
+        $d2 = $variable[4];
+        $d3 = $variable[5];
+        $variable =  env('APP_URL').'/'.$d1.'/'.$d2.'/'.$d3.'/'.$imagen->nombre;
+    @endphp
     <div class="row" >
         <div class="col-md-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
         </div>
         <div class="col-md-12">
-            {{-- <embed id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'> --}}
-            <embed id="miIFrame" src="{{route('video.ver_archivo_biopsia',['id_archivo' => $imagen->nombre])}}" width="100%" type='application/pdf'>
+            <embed id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'>
             <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
                 <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar Archivo </a>
             </div>
@@ -70,6 +83,8 @@
     @php
         $variable = explode('/' , asset('/hc_ima/'));
         $d1 = $variable[3];
+        $d2 = $variable[4];
+        $d3 = $variable[5];
         $ruta = "http%3A%2F%2F186.70.157.2%3A86%2F".$d1."%2Fstorage%2Fapp%2Fhc_ima%2F".$imagen->nombre;
     @endphp
     <div class="container-fluid" >

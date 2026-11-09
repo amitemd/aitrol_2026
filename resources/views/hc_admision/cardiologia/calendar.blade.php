@@ -13,11 +13,6 @@
             views:{
                 agenda:{
                     slotDuration: "00:15:00",
-                    @if(!is_null($doctor_t))
-                        @if($id_doctor == $doctor_t->id_doctor)
-                            slotDuration: "00:10:00" ,
-                        @endif
-                    @endif
                     slotLabelFormat: 'HH:mm',
                     scrollTime: "06:00:00",
                     minTime: "05:00:00",   
@@ -152,13 +147,8 @@
 
             select: function(start, end, allDay) {
                 
-                //console.log(start, end);
+                //alert(start);
                 var fin = moment(start).add(30, 'm');
-                @if(!is_null($doctor_t))
-                    @if($id_doctor == $doctor_t->id_doctor)
-                        var fin = moment(start).add({{$doctor_t->tiempo*10}}, 'm');
-                    @endif
-                @endif
                 //alert(fin);
 
                 
@@ -172,25 +162,23 @@
                 {
                    alert("Fecha pasada, no es posible seleccionar");
                 }else{
-                  //console.log("ok");
                 	var dia =  $.fullCalendar.formatDate(start,'ddd');
                     var hora = $.fullCalendar.formatDate(start,'HH:mm:ss');
                     var dato = 0;
                     @foreach($horario as $value)
-                    if(dia == '<?php echo $value->dia;?>'){ 
+                    if(dia == '<?php echo $value->dia;?>'){
                         if(hora >= '<?php echo $value->hora_ini;?>' && hora < '<?php echo $value->hora_fin;?>'){
                             dato = 1; 
                             //alert("listo");
                             $('#calendar').fullCalendar('renderEvent', {
-          			              title: 'CONSULTA CARDIOLOGIA / {{$paciente}}',
-          			              start: start,
-          			              end: fin,
-          			            });
-
-        				            $('#inicio').val($.fullCalendar.formatDate(start,'YYYY/MM/DD HH:mm'));
-        				            $('#fin').val($.fullCalendar.formatDate(fin,'YYYY/MM/DD HH:mm'));
-        				            //alert("ok"); 
-        				            $('#bagregar').attr('disabled',false);                         
+				              title: 'CONSULTA CARDIOLOGIA / {{$paciente}}',
+				              start: start,
+				              end: fin,
+				            });
+				            $('#inicio').val($.fullCalendar.formatDate(start,'YYYY/MM/DD HH:mm'));
+				            $('#fin').val($.fullCalendar.formatDate(fin,'YYYY/MM/DD HH:mm'));
+				            //alert("ok"); 
+				            $('#bagregar').attr('disabled',false);                         
                         }
 
                     }
@@ -198,18 +186,8 @@
                     var inicial2=  $.fullCalendar.formatDate(start,'YYYY-MM-DD HH:mm:ss');
                     @foreach($extra as $key=>$value)
                         if(inicial2 >= '<?php echo $value->inicio;?>' && inicial2 < '<?php echo $value->fin;?>'){
-                            dato = 1;
-                            $('#calendar').fullCalendar('renderEvent', {
-                              title: 'CONSULTA CARDIOLOGIA / {{$paciente}}',
-                              start: start,
-                              end: fin,
-                            });
-
-                            $('#inicio').val($.fullCalendar.formatDate(start,'YYYY/MM/DD HH:mm'));
-                            $('#fin').val($.fullCalendar.formatDate(fin,'YYYY/MM/DD HH:mm'));
-                            //alert("ok"); 
-                            $('#bagregar').attr('disabled',false);   
-                        }
+                                dato = 1;
+                            }
                     @endforeach
                     if(dato == 0)
                     {
@@ -222,11 +200,11 @@
             },
             
             dayClick: function(date, jsEvent, view, resource) {
-                /*console.log(
+                console.log(
                   'dayClick',
                   date.format(),
                   resource ? resource.id : '(no resource)'
-                );*/
+                );
             }
         });
           

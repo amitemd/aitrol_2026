@@ -1034,7 +1034,7 @@
                 console.log(result);
             }
         });*/
-        makeXMLHttpRequest('{{asset("/")}}save.php', formData, function(progress) {
+        makeXMLHttpRequest('{{url("historiaclinica/video10/grabacion_captura10")}}', formData, function(progress) {
             if (progress !== 'upload-ended') {
                 callback(progress);
                 return;

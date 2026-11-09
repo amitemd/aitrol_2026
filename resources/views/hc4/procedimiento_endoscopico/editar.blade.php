@@ -2,6 +2,308 @@
     .select2-container--default .select2-results__option[aria-disabled=true] {
         display: none;
     }
+
+    .select2-container--open .select2-results__options {
+        max-height: 360px !important;
+        overflow-y: auto !important;
+    }
+
+    .select2-container--open .select2-results__option {
+        box-sizing: border-box;
+        min-height: 36px;
+    }
+
+    #area_trabajo .hc4-endoscopy-edit-form .select2-container {
+        width: 100% !important;
+    }
+
+    #area_trabajo .hc4-endoscopy-edit-form .hc4-safety-check-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    #area_trabajo .hc4-endoscopy-edit-form input[type="checkbox"].hc4-safety-checkbox {
+        display: inline-block !important;
+        flex: 0 0 18px;
+        width: 18px !important;
+        min-width: 18px !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        accent-color: #087eae;
+    }
+
+    #area_trabajo .hc4-procedure-link-editor {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    #area_trabajo .hc4-procedure-link-editor__field {
+        flex: 1 1 auto;
+        position: relative;
+        min-width: 0;
+    }
+
+    #area_trabajo .hc4-procedure-link-editor .form-control {
+        width: 100%;
+        height: 38px;
+        border: 1px solid #cbdde6;
+        border-radius: 7px;
+        color: #087fa7;
+        box-shadow: none;
+        text-decoration: underline;
+    }
+
+    #area_trabajo .hc4-procedure-link-editor__action {
+        display: inline-flex;
+        flex: 0 0 36px;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 1px solid #0b8eaf;
+        border-radius: 5px;
+        color: #16778e;
+        background: #fff;
+        font-size: 14px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell {
+        width: 100%;
+        padding: 20px;
+        background: #f6fbfd;
+        color: #334155;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell > .col-12,
+    #area_trabajo .hc4-procedure-editor-shell > .col-md-12 {
+        float: none;
+        width: 100%;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-card {
+        height: auto;
+        padding: 14px;
+        border: 1px solid #d5e6ed;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 5px 18px rgba(10, 91, 128, .08);
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-top {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0 0 12px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-top > [class*="col-"] {
+        padding: 0;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-procedure {
+        flex: 1 1 58%;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-quick-action {
+        display: flex;
+        flex: 1 1 32%;
+        align-items: flex-start;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-quick-action .col-12 {
+        width: 100%;
+        padding: 0;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-label {
+        display: block;
+        margin: 0 0 6px;
+        color: #185b76;
+        font-family: 'Helvetica general';
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-current-procedure {
+        min-height: 22px;
+        margin-bottom: 10px;
+        color: #334155;
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-inline-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .select2_proc + .select2-container,
+    #area_trabajo .hc4-procedure-editor-shell .select2-selection--multiple {
+        width: 100% !important;
+        min-height: 42px;
+        border-color: #cbdde6;
+        border-radius: 8px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .select2-selection--multiple .select2-selection__rendered {
+        max-height: 94px;
+        padding: 4px 7px;
+        overflow-y: auto;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .select2-selection--multiple .select2-selection__choice {
+        max-width: calc(100% - 8px);
+        margin: 3px 5px 3px 0;
+        padding: 6px 9px;
+        overflow: hidden;
+        border: 1px solid #9ed7df !important;
+        border-radius: 6px;
+        background: #e6f7f8 !important;
+        color: #175e73 !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .select2-selection--multiple .select2-selection__choice__remove {
+        margin-right: 6px;
+        color: #b63849 !important;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-inline-actions .btn,
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-quick-action .btn {
+        width: auto !important;
+        min-height: 38px;
+        margin: 0 !important;
+        padding: 9px 17px;
+        border: 0;
+        border-radius: 8px;
+        background: linear-gradient(110deg, #06658f, #12a8c1) !important;
+        box-shadow: 0 5px 12px rgba(5, 110, 151, .18);
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-quick-action .btn {
+        width: 100% !important;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-template-card {
+        margin-bottom: 14px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-template-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 280px);
+        gap: 10px;
+        align-items: stretch;
+        margin: 0;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-template-row > [class*="col-"] {
+        width: auto !important;
+        padding: 0;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-template-row .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 38px;
+        margin: 0;
+        border-radius: 8px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 14px;
+        padding: 12px 16px;
+        border: 1px solid #d9e8ee;
+        border-radius: 10px;
+        background: #edf7fa;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-meta strong {
+        display: block;
+        margin-top: 3px;
+        color: #243746;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-clinical-field {
+        margin: 3px 0 6px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-clinical-field + .col-12 {
+        margin-bottom: 12px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-clinical-editor {
+        min-height: 84px;
+        padding: 10px 12px;
+        border: 1px solid #cbdde6 !important;
+        border-radius: 8px;
+        background: #fff;
+        line-height: 1.45;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .note-editor {
+        overflow: hidden;
+        border: 1px solid #cbdde6 !important;
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-doctor {
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid #d9e8ee;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 14px;
+    }
+
+    #area_trabajo .hc4-procedure-editor-shell .hc4-editor-footer .btn {
+        width: auto !important;
+        min-width: 170px;
+        margin: 0 !important;
+        padding: 10px 22px;
+        border: 0;
+        border-radius: 8px;
+        background: linear-gradient(110deg, #06658f, #12a8c1);
+        box-shadow: 0 5px 12px rgba(5, 110, 151, .18);
+    }
+
+    @media (max-width: 900px) {
+        #area_trabajo .hc4-procedure-editor-shell { padding: 12px; }
+        #area_trabajo .hc4-procedure-editor-shell .hc4-editor-top { display: block; }
+        #area_trabajo .hc4-procedure-editor-shell .hc4-editor-top > div + div { margin-top: 12px; }
+        #area_trabajo .hc4-procedure-editor-shell .hc4-editor-template-row { grid-template-columns: 1fr; }
+        #area_trabajo .hc4-procedure-editor-shell .hc4-editor-meta { flex-direction: column; }
+    }
+
 </style>
 
 @php
@@ -21,23 +323,28 @@
       </div>
     </div>
 </div>
-<div class="row">
+<div class="row hc4-endoscopy-edit-form">
     @php
-        $fecha_r = Date('Y-m-d',strtotime(\Sis_medico\Agenda::where('id', $procedimiento->historia->id_agenda)->first()->fechaini));
+        if(!is_null($procedimiento->created_at)){
+            $fecha_r =  Date('Y-m-d',strtotime($procedimiento->created_at));
+        }else{
+            $fecha_r = Date('Y-m-d',strtotime(\Sis_medico\agenda::where('id', $procedimiento->historia->id_agenda)->first()->fechaini));
+        }
     @endphp
     <input type="hidden" id="tipo_guardado{{$var_tiempo_endos}}" value="3">
-    <form id="hc_protocolo{{$procedimiento->id}}" style="width: 100%;">
+    <form id="hc_protocolo{{$procedimiento->id}}" class="hc4-procedure-editor-shell">
         <input type="hidden" name="id_paciente" value="{{$id_paciente}}">
          <input type="hidden" name="tipo_procedimiento" value="{{$tipo}}">
         <input type="hidden" name="id_procedimiento" value="{{$procedimiento->id}}">
         <input type="hidden" name="id_protocolo" value="<?php if (!is_null($protocolo)): ?><?php echo e($protocolo->id); ?><?php else: ?><?php echo e('0'); ?><?php endif;?>">
         <input type="hidden" name="tipo" value="{{$tipo}}">
-        <div class="col-12">&nbsp;</div>
-        <div class="row">
-            <div class="col-6">
+        <div class="row hc4-editor-top">
+            <div class="col-6 hc4-editor-procedure">
+
+                <div class="hc4-editor-card">
 
                 <div class="col-12">
-                    <span style="font-family: 'Helvetica general';">Procedimiento</span>
+                    <span class="hc4-editor-label">Procedimiento</span>
                 </div>
                 <?php
 $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento->id)->get();
@@ -57,12 +364,12 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                              }
                         }
                     @endphp
-                    <div class="col-12">
+                    <div class="col-12 hc4-editor-current-procedure">
                         <span>{{$texto}}
                         </span>
                     </div>
                 @else
-                    <div class="col-12">
+                    <div class="col-12 hc4-editor-current-procedure">
                         @php  $procedimiento_completo = \Sis_medico\procedimiento_completo::find($procedimiento->id_procedimiento_completo);
                         @endphp
                         <span>@if(!is_null($procedimiento_completo)) {{$procedimiento_completo->nombre_general}} @endif</span>
@@ -70,24 +377,13 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                 @endif
                 <div class="col-12">
 
-                    <select id="id_procedimiento{{$var_tiempo_endos}}" class="form-control input-sm select2_proc" name="procedimiento[]" multiple="multiple" data-placeholder="Seleccione" style="width: 95.5%; padding-left: 15px " autocomplete="off" onchange="validar_proc();">
+                    <select id="id_procedimiento{{$var_tiempo_endos}}" class="form-control input-sm select2_proc" name="procedimiento[]" multiple="multiple" data-placeholder="Buscar procedimientos" style="width: 95.5%; padding-left: 15px " autocomplete="off" >
                         @php
-                            $aceptacion = 0;
-
-
+                            $aceptacion = 0
                         @endphp
-                          @foreach($px as $key => $value)
+                          @foreach($px as $value)
                               @php
                                   $validacion = \Sis_medico\Hc_Procedimiento_Final::where('id_procedimiento', $value->id)->where('id_hc_procedimientos', $procedimiento->id)->first();
-                                  if($key == 0){
-                                    $cantidad = \Sis_medico\Hc_Procedimiento_Final::where('id_procedimiento', $value->id)->count();
-                                    if($cantidad >= 1){
-                                        $valida_d = 1;
-                                    }else{
-                                        $valida_d = 0;
-                                    }
-                                  }
-
 
                                   $clase = 'c';
                                   if(!is_null($value->grupo_procedimiento)){
@@ -97,16 +393,19 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                                     $aceptacion++;
                                   }
                               @endphp
-                              <option data-clase="{{$clase}}" class="{{$clase}}" @if(!is_null($validacion)) selected @else @if($valida_d == 1 && strlen($clase) > 1 ) disabled="disabled"  @endif @endif value="{{$value->id}}">{{$value->nombre}}</option>
+                              <option data-clase="{{$clase}}"  @if(is_null($validacion)) disabled="disabled" @endif class="{{$clase}}" @if(!is_null($validacion)) selected @endif value="{{$value->id}}">{{$value->nombre}}</option>
                           @endforeach
                     </select>
-                    <br>
+                    <div class="hc4-editor-inline-actions">
                     @if($fecha_r == date('Y-m-d') )
                     <button type="button" class="btn-primary btn" onclick="autoguardado({{$procedimiento->id}}, 1)"><span class="fa fa-floppy-o"></span>&nbsp;&nbsp; Guardar</button>
                     @endif
+                    </div>
+                </div>
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-6 hc4-editor-quick-action">
+                <div class="hc4-editor-card" style="width:100%;">
                 <div class="col-12" >
                     <!--<center>
                         <div class="col-12" style="padding-top: 10px">
@@ -121,6 +420,7 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                         </div>
                     </center>
                 </div>
+                </div>
             </div>
         </div>
         <div id="select_proc" class="alert alert-danger alerta_correcto alert-dismissable col-10" role="alert" style="display:none; margin-left: 20px; font-size: 14px">
@@ -128,14 +428,11 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
           Seleccione un Procedimiento Endoscopico
         </div>
         <br>
-        <div class="col-12">
-            <span style="font-family: 'Helvetica general';">Plantilla de Procedimientos</span>
-        </div>
-
-        <div class="col-md-12">
-            <div class="row">
+        <div class="col-md-12 hc4-editor-card hc4-editor-template-card">
+            <span class="hc4-editor-label">Plantilla de procedimientos</span>
+            <div class="row hc4-editor-template-row">
                 <div class="col-md-7" style="width: 100%">
-                    <select class="form-control select2_plantilla"  name="proc_com" style="width: 100%;">
+                    <select class="form-control select2_plantilla hc4-endoscopy-single-select" name="proc_com" data-placeholder="Buscar plantilla" style="width: 100%;">
                             <option value="">Todos</option>
                         @foreach($proc_completo as $value)
                             <option @if($value->id == $procedimiento_completo_plantilla) selected @endif value="{{$value->id}}">{{$value->nombre_general}}
@@ -154,11 +451,10 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
             </div>
         </div>
 
-        <br>
-
-        <div class="row" style="padding-left: 15px;">
-            <div class="col-6">
-                <span style="font-family: 'Helvetica general';">Seguro</span>
+        <div class="hc4-editor-meta">
+            <div>
+                <span class="hc4-editor-label">Seguro</span>
+                <strong>{{$hc_seguro->nombre}}</strong>
             </div>
         <!-- DOCTOR TRAINING -->
         <!--VH. PREGUNTAR POR EL ESTADO ADMISIONADO -->
@@ -167,54 +463,48 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                 $proc_training = Sis_medico\Hc_protocolo_training::where('id_hc_protocolo',$protocolo->id)->where('id_training',$dr_training->id)->first();
             @endphp
             @if($dr_training->training)
-                <div class="col-6" >
-                    <span style="font-family: 'Helvetica general';">Training </span>
+                <div>
+                    <span class="hc4-editor-label">Training</span>
+                    <div>
+                        <input id="ch{{$protocolo->id}}" name="ch" type="checkbox" class="flat-orange" @if(!is_null($proc_training)) @if($proc_training->estado) checked @endif @endif> <span id="train" @if(!is_null($proc_training)) @if($proc_training->estado) class="text-red" @endif @else class="text-muted" @endif> Participe de este Procedimiento</span>
+                    </div>
                 </div>
             @endif
         <!-- DOCTOR TRAINING -->
         </div>
 
-        <div class="row" style="padding-left: 15px;">
-            <div class="col-6">
-                <span style="font-family: 'Helvetica general';">{{$hc_seguro->nombre}}</span>
-            </div>
-            <!-- DOCTOR TRAINING -->
-            @if($dr_training->training)
-            <div class="col-6">
-                <input id="ch{{$protocolo->id}}" name="ch" type="checkbox" class="flat-orange" @if(!is_null($proc_training)) @if($proc_training->estado) checked @endif @endif> <span id="train" @if(!is_null($proc_training)) @if($proc_training->estado) class="text-red" @endif @else class="text-muted" @endif> Participe de este Procedimiento</span>
-            </div>
-            @endif
-            <!-- DOCTOR TRAINING -->
+        <div class="col-12 hc4-clinical-field">
+            <span class="hc4-editor-label">Motivo</span>
         </div>
-        <br>
+        <div class="col-12">
+            <div class="hc4-clinical-editor" id="mprotocolo<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}"><?php if (!is_null($protocolo)): ?><?php echo $protocolo->motivo ?><?php endif;?></div>
+            <input type="hidden" name="mprotocolo" id="mprotocolos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}">
+        </div>
 
-        <div class="col-12">
-            <span style="font-family: 'Helvetica general';">Hallazgos</span>
+        <div class="col-12 hc4-clinical-field">
+            <span class="hc4-editor-label">Hallazgos</span>
         </div>
         <div class="col-12">
-            <div id="thallazgos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" style="border: solid 1px;"><?php if (!is_null($protocolo)): ?><?php echo $protocolo->hallazgos ?><?php endif;?></div>
+            <div class="hc4-clinical-editor" id="thallazgos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}"><?php if (!is_null($protocolo)): ?><?php echo $protocolo->hallazgos ?><?php endif;?></div>
             <input type="hidden" name="hallazgos" id="hallazgos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}">
         </div>
-        <div class="col-12">&nbsp;</div>
-
-        <div class="col-12">
-            <span style="font-family: 'Helvetica general';">Conclusiones</span>
+        <div class="col-12 hc4-clinical-field">
+            <span class="hc4-editor-label">Conclusiones</span>
         </div>
         <div class="col-12">
-            <div id="tconclusion<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" style="border: solid 1px;"><?php if (!is_null($protocolo)): ?><?php echo $protocolo->conclusion ?><?php endif;?></div>
+            <div class="hc4-clinical-editor" id="tconclusion<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}"><?php if (!is_null($protocolo)): ?><?php echo $protocolo->conclusion ?><?php endif;?></div>
             <input type="hidden" name="conclusion" id="conclusion<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}">
         </div>
 
-        <div class="col-12">
-            <span style="font-family: 'Helvetica general';">&nbsp;</span>
-        </div>
-        <div class="col-12">
-            <span style="font-family: 'Helvetica general';">M&eacute;dico Examinador</span>
-        </div>
-        <div class="col-4">
-            <select name="id_doctor_examinador" onchange="autoguardado({{$procedimiento->id}}, 1)">
+        @include('hc4.partials.procedure_image_links_editor', [
+            'uniqueId' => $var_tiempo_endos,
+            'onChange' => $fecha_r == date('Y-m-d') ? 'autoguardado('.$procedimiento->id.', 1)' : '',
+        ])
+
+        <div class="col-12 hc4-editor-doctor">
+            <span class="hc4-editor-label">M&eacute;dico examinador</span>
+            <select class="form-control hc4-endoscopy-single-select" name="id_doctor_examinador" data-placeholder="Buscar médico" onchange="autoguardado({{$procedimiento->id}}, 1)">
                 @foreach($doctores as $value)
-                    @if($value->training != 1)
                     <option
                     @if(!is_null($procedimiento->id_doctor_examinador))
                         @if($procedimiento->id_doctor_examinador == $value->id)
@@ -223,167 +513,58 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                     @endif
                     value="{{$value->id}}"> {{$value->apellido1}} {{$value->apellido2}} {{$value->nombre1}} {{$value->nombre2}}
                     </option>
-                    @endif
                 @endforeach
             </select>
         </div>
-        <div class="col-12">
-            <span style="font-family: 'Helvetica general';">&nbsp;</span>
-        </div>
-        <div id="escala_boston<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" class="col-12" style="display: none;">
-            <div class="col-12">
-                <span style="font-family: 'Helvetica general';">Escala Boston </span>
-            </div>
-            <div class="col-12" style="padding-left: 25px; "  >
-                <table width="100%">
-                    <tr style="padding: 10px">
-                        <td>Colon Derecho:</td>
-                        <td>
-                            <select name="colon_derecho" id="colon_derecho<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" onchange="calcular_puntaje({{$procedimiento->id}}, {{$var_tiempo_endos}})">
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_derecho == 0) selected @endif value="0" >0 = Inadecuada</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_derecho == 1) selected @endif value="1" >1 = Mala</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_derecho == 2) selected @endif value="2" >2 = Buena</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_derecho == 3) selected @endif value="3" >3 = Excelente</option>
-                            </select>
-                        </td>
-                        <td style="text-align: center;"><span style="font-family: 'Helvetica general';">Puntaje Final:</span></td>
-                    </tr>
-                    <tr style="padding: 10px">
-                        <td>Colon Transverso:</td>
-                        <td>
-                            <select name="colon_transverso" id="colon_transverso<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" onchange="calcular_puntaje({{$procedimiento->id}}, {{$var_tiempo_endos}})">
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_transverso == 0) selected @endif value="0" >0 = Inadecuada</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_transverso == 1) selected @endif value="1" >1 = Mala</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_transverso == 2) selected @endif value="2" >2 = Buena</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_transverso == 3) selected @endif value="3" >3 = Excelente</option>
-                            </select>
-                        </td>
-                        <td rowspan="2" style="text-align: center;"><input type="text" name="puntaje_final" id="puntaje_final<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" style="width: 30px; font-weight: bold; font-size: 18px" @if(!is_null($escala_boston)) value = '{{$escala_boston->puntaje_final}}' @endif placeholder="0" readonly></td>
-                    </tr>
-                    <tr style="padding: 10px">
-                        <td>Colon Izquierdo:</td>
-                        <td>
-                            <select name="colon_izquierdo" id="colon_izquierdo<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" onchange="calcular_puntaje({{$procedimiento->id}}, {{$var_tiempo_endos}})">
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_izquierdo == 0) selected @endif value="0" >0 = Inadecuada</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_izquierdo == 1) selected @endif value="1" >1 = Mala</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_izquierdo == 2) selected @endif value="2" >2 = Buena</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->colon_izquierdo == 3) selected @endif value="3" >3 = Excelente</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="col-12">
-                <span style="font-family: 'Helvetica general';">&nbsp;</span>
-            </div>
-            <div class="col-12">
-                <span style="font-family: 'Helvetica general';">Polipos</span>
-            </div>
-            <div class="col-12" style="padding-left: 25px">
-                <table style="width: 100%">
-                    <tr style="padding: 10px">
-                        <td>Polipo Adenomatosos</td>
-                        <td>
-                            <select name="resp_polipo_adenomatosos" id="resp_polipo_adenomatosos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" onchange="polipo('ubicacion_polipo_adenomatosos{{$procedimiento->id}}{{$var_tiempo_endos}}', '1', 'tamano_adenomatosos{{$procedimiento->id}}{{$var_tiempo_endos}}', '{{$procedimiento->id}}')">
-                                <option @if(!is_null($escala_boston) && $escala_boston->polipo_adenomatosos == 0) selected @endif value="0" >NO</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->polipo_adenomatosos == 1) selected @endif value="1" >SI</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select name="ubicacion_polipo_adenomatosos" id="ubicacion_polipo_adenomatosos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}">
-                                <option value="0" >Seleccione...</option>
-                                @foreach($polipos_ubicacion as $polipo_ub)
-                                <option @if(!is_null($escala_boston) && $escala_boston->ubicacion_polipo_adenomatosos == $polipo_ub->id) selected @endif value="{{$polipo_ub->id}}" >{{$polipo_ub->nombre}}</option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td>Tama&ntilde;o: <input  type="number" name="tamano_adenomatosos" id="tamano_adenomatosos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" placeholder="0 mm" @if(!is_null($escala_boston)) value ='{{$escala_boston->tamano_polipo_adenomatosos}}' @endif style="width: 60px;">mm</td>
-                    </tr>
-                    <tr style="padding: 10px">
-                        <td>Polipo Hiperplasico</td>
-                        <td>
-                            <select name="resp_polipo_hiperplasico" id="resp_polipo_hiperplasico<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" onchange="polipo('ubicacion_polipo_hiperplasico{{$procedimiento->id}}{{$var_tiempo_endos}}', '2', 'tamano_hiperplasico{{$procedimiento->id}}{{$var_tiempo_endos}}', '{{$procedimiento->id}}')">
-                                <option @if(!is_null($escala_boston) && $escala_boston->polipo_hiperplasico == 0) selected @endif value="0" >NO</option>
-                                <option @if(!is_null($escala_boston) && $escala_boston->polipo_hiperplasico == 1) selected @endif value="1" >SI</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select name="ubicacion_polipo_hiperplasico" id="ubicacion_polipo_hiperplasico<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}">
-                                <option value="0">Seleccione...</option>
-                                @foreach($polipos_ubicacion as $polipo_ub)
-                                <option @if(!is_null($escala_boston) && $escala_boston->ubicacion_polipo_hiperplasico == $polipo_ub->id) selected @endif value="{{$polipo_ub->id}}" >{{$polipo_ub->nombre}}</option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td>Tama&ntilde;o: <input type="number" name="tamano_hiperplasico" id="tamano_hiperplasico<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" placeholder="0 mm" @if(!is_null($escala_boston)) value ='{{$escala_boston->tamano_polipo_hiperplasico}}' @endif style="width: 60px;">mm </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="col-12">
-                <span style="font-family: 'Helvetica general';">&nbsp;</span>
-            </div>
-            <div class="col-12">
-                <span style="font-family: 'Helvetica general';">Intubacion: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NO <input id="no<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" value="0" type="radio" checked  name="intubacion" > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SI <input id="si<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}" value="1" type="radio" name="intubacion" @if(!is_null($escala_boston) && $escala_boston->intubacion == 1) checked @endif> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
-            </div>
-        </div>
-        <div class="col-12" >
-        <center>
-        <div class="col-5" style="padding-top: 15px;text-align: center;">
+
+        @include('hc4.partials.procedure_safety')
+
+        <div id="procedure_save_error{{$procedimiento->id}}" class="col-12 alert alert-danger" style="display:none;margin-top:10px;"></div>
+
+        <div class="col-12 hc4-editor-footer">
             <button style="font-size: 15px; margin-bottom: 15px; height: 100%; width: 100%"  type="button" class="btn btn-info btn_ordenes" onclick="guardar_procedimiento({{$procedimiento->id}})" ><span class="fa fa-floppy-o"></span>&nbsp;&nbsp;Guardar
             </button>
-        </div>
-        </center>
         </div>
     </form>
 </div>
 <script src="{{asset('plugins/iCheck/icheck.min.js')}}"></script>
 <script type="text/javascript">
 
+    var hc4EndoscopySelect2Options = {
+        tags: false,
+        width: '100%',
+        minimumResultsForSearch: 0,
+        language: {
+            noResults: function(){ return 'Sin resultados'; },
+            searching: function(){ return 'Buscando...'; }
+        }
+    };
+
+    function inicializarSelect2Endoscopico(){
+      if(!$.fn.select2){
+        return;
+      }
+
+      $('.hc4-endoscopy-single-select').each(function(){
+        var select = $(this);
+        if(!select.hasClass('select2-hidden-accessible')){
+          select.select2(hc4EndoscopySelect2Options);
+        }
+      });
+    }
+
+    inicializarSelect2Endoscopico();
 
     $(document).ready(function(){
 
-        validar_proc();
-      $('.select2_plantilla').select2({
-        tags: false
-      });
-      
+
+
+
       $(".breadcrumb").append('<li class="active">Procedimientos</li>');
-      calcular_puntaje(<?php echo e($procedimiento->id); ?>, {{$var_tiempo_endos}});
+
     });
 
-    function calcular_puntaje(id_proc, tiempo){
-        total = 0;
-        colon_derecho = parseInt($('#colon_derecho'+id_proc+tiempo).val());
-        colon_transverso = parseInt($('#colon_transverso'+id_proc+tiempo).val());
-        colon_izquierdo = parseInt($('#colon_izquierdo'+id_proc+tiempo).val());
-        total = colon_derecho + colon_transverso + colon_izquierdo;
-        $('#puntaje_final'+id_proc+tiempo).val(total);
-    }
 
-    function polipo(ubicacion, tipo, tamano, id_proc){
-        polipo1 = null;
-        if(tipo == '1'){
-            polipo1 = document.querySelector("#resp_polipo_adenomatosos"+id_proc+{{$var_tiempo_endos}});
-        }else if(tipo == '2'){
-            polipo1 = document.querySelector("#resp_polipo_hiperplasico"+id_proc+{{$var_tiempo_endos}});
-        }
-        polipo1.addEventListener("change", () => {
-            if (polipo1.value == "0") {
-                document.getElementById(ubicacion).value = "0"; 
-                document.getElementById(tamano).value = ""; 
-            }
-        });
-    }
-    function validar_proc(){
-        colono = document.querySelector("#id_procedimiento"+{{$var_tiempo_endos}}).value;
-        if(colono == 9){
-            div = document.getElementById('escala_boston'+<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}});
-            div.style.display = '';
-        }else{
-            div = document.getElementById('escala_boston'+<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}});
-            div.style.display = 'none';
-        }
-    }
 
 
      tinymce.init({
@@ -477,8 +658,159 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
             @endif
           }
     });
+    tinymce.init({
+        selector: '#mprotocolo<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}',
+        inline: true,
+        menubar: false,
+        content_style: ".mce-content-body {font-size:14px;}",
+
+        <?php if (is_null($protocolo)): ?>
+        readonly: 1,
+        <?php else: ?>
+        setup: function (editor) {
+            editor.on('init', function (e) {
+               var ed = tinyMCE.get('mprotocolo<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}');
+                $("#mprotocolos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}").val(ed.getContent());
+
+            });
+        },
+        <?php endif;?>
+
+
+        init_instance_callback: function (editor) {
+            editor.on('Change', function (e) {
+                var ed = tinyMCE.get('mprotocolo<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}');
+                $("#mprotocolos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}").val(ed.getContent());
+                @if($fecha_r == date('Y-m-d') )
+                    autoguardado({{$procedimiento->id}}, 1);
+                @endif
+            });
+            @if($fecha_r == date('Y-m-d') )
+            editor.on('keyup', function (e) {
+                contador = parseInt($('#contador{{$var_tiempo_endos}}').val());
+                if(contador <= 19){
+                    contador++
+                    $('#contador{{$var_tiempo_endos}}').val(contador);
+                }else{
+                    var ed = tinyMCE.get('mprotocolo<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}');
+                    $("#mprotocolos<?php echo e($procedimiento->id); ?>{{$var_tiempo_endos}}").val(ed.getContent());
+                    autoguardado({{$procedimiento->id}}, 1);
+                    $('#contador{{$var_tiempo_endos}}').val(0);
+                }
+            });
+            @endif
+          }
+    });
+    function mostrar_error_guardado_procedimiento(id, xhr){
+        var errorBox = $('#procedure_save_error' + id);
+        var mensaje = $.trim(xhr.responseText || 'No se pudo guardar el procedimiento.');
+        errorBox.text(mensaje).show();
+        if (errorBox.length && errorBox[0].scrollIntoView) {
+            errorBox[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    }
+
+    function abrir_link_procedimiento(id){
+        var input = document.getElementById(id);
+        var url = input ? $.trim(input.value) : '';
+        if(!url){ return; }
+        if(!/^https?:\/\//i.test(url)){
+            alert('Ingrese un enlace válido que comience con http:// o https://');
+            return;
+        }
+
+        var nuevaPestana = window.open(url, '_blank');
+        if(nuevaPestana){
+            nuevaPestana.opener = null;
+        }
+    }
+
+    function pegar_link_procedimiento(id){
+        var input = document.getElementById(id);
+        if(!input){ return; }
+        if(navigator.clipboard && navigator.clipboard.readText){
+            navigator.clipboard.readText().then(function(texto){
+                input.value = $.trim(texto);
+                $(input).trigger('input').trigger('change').trigger('focus');
+            }).catch(function(){
+                var texto = window.prompt('Pegue el link de imágenes:');
+                if(texto !== null){ input.value = $.trim(texto); $(input).trigger('input').trigger('change').trigger('focus'); }
+            });
+            return;
+        }
+        var texto = window.prompt('Pegue el link de imágenes:');
+        if(texto !== null){ input.value = $.trim(texto); $(input).trigger('input').trigger('change').trigger('focus'); }
+    }
+
+    function copiar_link_procedimiento(id){
+        var input = document.getElementById(id);
+        if(!input || !$.trim(input.value)){ return; }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText($.trim(input.value)).catch(function(){ input.select(); document.execCommand('copy'); });
+        }else{
+            input.select();
+            document.execCommand('copy');
+        }
+    }
+
+    function copiar_link_visible_procedimiento(control){
+        var url = $.trim($(control).closest('.hc4-procedure-link-controls').find('.hc4-procedure-link-view').attr('href') || '');
+        if(!url){ return; }
+
+        if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(url).catch(function(){
+                var temporal = $('<textarea readonly></textarea>').val(url).appendTo('body');
+                temporal[0].select();
+                document.execCommand('copy');
+                temporal.remove();
+            });
+        }else{
+            var temporal = $('<textarea readonly></textarea>').val(url).appendTo('body');
+            temporal[0].select();
+            document.execCommand('copy');
+            temporal.remove();
+        }
+    }
+
+    function sincronizar_link_imagenes_procedimiento(){
+        var urls = [];
+        $('#hc_protocolo{{$procedimiento->id}}').find('input[name="link_imagenes[]"]').each(function(){
+            var url = $.trim($(this).val());
+            if(url && urls.indexOf(url) === -1){ urls.push(url); }
+        });
+        var controles = $('#hc4_procedure_media_{{$protocolo->id}}, #hc4_images_procedure_media_{{$protocolo->id}}').find('.hc4-procedure-link-controls');
+        if(!controles.length){ return; }
+
+        controles.each(function(){
+            var contenedor = $(this).empty();
+            if(!urls.length){
+                contenedor.append($('<span class="hc4-procedure-link-empty"></span>').text('No hay links de imágenes registrados.'));
+                return;
+            }
+            $.each(urls, function(indice, url){
+                var fila = $('<div class="hc4-procedure-link-row"></div>');
+                fila.append(
+                    $('<a></a>', {
+                        class: 'hc4-procedure-link-view',
+                        href: url,
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        title: 'Abrir enlace de imágenes en una nueva pestaña',
+                        text: url
+                    }),
+                    $('<button type="button" class="hc4-procedure-link-action" title="Copiar enlace" aria-label="Copiar enlace"><i class="fa fa-copy" aria-hidden="true"></i></button>').on('click', function(){
+                        copiar_link_visible_procedimiento(this);
+                    })
+                );
+                contenedor.append(fila);
+            });
+        });
+    }
+
     function guardar_procedimiento(id){
         var jprocedimientos = $('#id_procedimiento{{$var_tiempo_endos}}').val();
+        var errorBox = $('#procedure_save_error' + id);
+        errorBox.hide().text('');
         //console.log (jprocedimientos);
 
         if (jprocedimientos != ""){
@@ -490,20 +822,12 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                 headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
                 datatype: "html",
                 success: function(datahtml, entra){
-
-                    if(datahtml == 'No puede Guardar sin Procedimiento'){
-                        alert(datahtml);
-
-                    }else if(datahtml == 'Seleccione un procedimiento principal.'){
-                        alert(datahtml);
-
-                    }else{
-                        $("#carga_insumo"+id).html("");
-                        $("#procedimiento"+id).html(datahtml);
-                    }
+                    sincronizar_link_imagenes_procedimiento();
+                    $("#procedimiento"+id).html(datahtml);
+                    //console.log(datahtml);
                 },
-                error:  function(){
-                    alert('error al cargar');
+                error:  function(xhr){
+                    mostrar_error_guardado_procedimiento(id, xhr);
                 }
                 });
         }else {
@@ -515,7 +839,7 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
 
 </script>
 <script type="text/javascript">
-    setInterval(carga_insumos({{$procedimiento->id}}), 30000);
+
     @php $dr_training = Auth::user(); @endphp
 
     @if($dr_training->training)
@@ -523,8 +847,9 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
         $('#ch{{$protocolo->id}}').on('ifChecked', function(event){
 
             $.ajax({
-              type: 'get',
+              type: 'post',
               url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '1']) }}",
+              data: {'_token': '{{ csrf_token() }}'},
               datatype: 'json',
               success: function(data_cpre){
                 $('#train').removeClass('text-muted');
@@ -541,8 +866,9 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
         $('#ch{{$protocolo->id}}').on('ifUnchecked', function(event){
 
             $.ajax({
-              type: 'get',
+              type: 'post',
               url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '0']) }}",
+              data: {'_token': '{{ csrf_token() }}'},
 
 
               datatype: 'json',
@@ -563,9 +889,7 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
 
     $('.c{{$tipo}}').removeAttr('disabled');
 
-    $('#id_procedimiento{{$var_tiempo_endos}}').select2({
-        tags: false,
-    });
+    $('#id_procedimiento{{$var_tiempo_endos}}').select2(hc4EndoscopySelect2Options);
 
 
     $('input[type="checkbox"].flat-orange').iCheck({
@@ -577,8 +901,6 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
         //alert("actualiza");
         var seleccionados =  $('#id_procedimiento{{$var_tiempo_endos}}').find(':selected');
         var longitud =  seleccionados.length;
-
-        console.log(seleccionados);
 
 
       if(longitud>=1){
@@ -592,20 +914,22 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
       }
 
       seleccionados.each(function( index ) {
-          $(this).removeAttr('disabled');
-      });
+          $( this ).removeAttr('disabled');;
+        });
 
-          $('#id_procedimiento{{$var_tiempo_endos}}').select2({
-                tags: false,
-            });
+          $('#id_procedimiento{{$var_tiempo_endos}}').select2(hc4EndoscopySelect2Options);
     }
 
     function quita_select{{$var_tiempo_endos}}(){
+        //alert("quita");
         var seleccionados =  $('#id_procedimiento{{$var_tiempo_endos}}').find(':selected');
         var longitud =  seleccionados.length;
+
       if(longitud>1){
+
         $('.c{{$tipo}}').attr('disabled','disabled');
         $('.c').removeAttr('disabled');
+
       }else{
         //alert("salio");
         $('.c{{$tipo}}').removeAttr('disabled');
@@ -616,14 +940,13 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
           $( this ).removeAttr('disabled');;
         });
 
-        $('#id_procedimiento{{$var_tiempo_endos}}').select2({
-            tags: false,
-        });
+        $('#id_procedimiento{{$var_tiempo_endos}}').select2(hc4EndoscopySelect2Options);
 
 
     }
 
     function cargar_plantilla(actualiza, id, id_proc){
+
         $.ajax({
           type: 'post',
           url:"{{route('procedimiento.tecnica_plantilla')}}",
@@ -652,6 +975,8 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
              console.log(data);
           }
         });
+
+    //guardar();
     }
 
     $("#id_procedimiento{{$var_tiempo_endos}}").on("select2:select", function (evt) {
@@ -672,9 +997,7 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
 
 
     @if($aceptacion > 0 )
-        $('#id_procedimiento{{$var_tiempo_endos}}').select2({
-                tags: false,
-            });
+     actualiza_select{{$var_tiempo_endos}}();
     @endif
 
     @if($fecha_r == date('Y-m-d') )
@@ -682,6 +1005,9 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
         function autoguardado(id, tipo){
             var seleccionados =  $('#id_procedimiento{{$var_tiempo_endos}}').find(':selected');
             var longitud =  parseInt(seleccionados.length);
+            //console.log('entra');
+            //console.log(tipo);
+            //console.log($("#hc_protocolo"+id).serialize());return 0;
             var tipo_2 = parseInt($('#tipo_guardado{{$var_tiempo_endos}}').val());
             if(tipo == 1){
                 if(longitud>0){
@@ -695,6 +1021,7 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                         success: function(datahtml){
                             console.log(datahtml);
                             if(datahtml == "ok"){
+                                sincronizar_link_imagenes_procedimiento();
                                 $("#alerta_datos").fadeIn(1000);
                                 $("#alerta_datos").fadeOut(3000);
                             }else{
@@ -702,15 +1029,14 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                             }
 
                         },
-                        error:  function(){
-                            alert('error al cargar');
+                        error:  function(xhr){
+                            mostrar_error_guardado_procedimiento(id, xhr);
                         }
                         });
                 }else {
                     //$("#alerta_datos").fadeIn(1000);
                     //$("#alerta_datos").fadeOut(3000);
-                    //console.log('parsea');
-                    alert("Debe Seleccionar un procedimiento Principal.");
+                    //alert("Debe Seleccionar un procedimiento Principal.");
                 }
 
             }else{
@@ -726,6 +1052,7 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                             success: function(datahtml){
                                 console.log(datahtml);
                                 if(datahtml == "ok"){
+                                    sincronizar_link_imagenes_procedimiento();
                                     $("#alerta_datos").fadeIn(1000);
                                     $("#alerta_datos").fadeOut(3000);
                                 }else{
@@ -733,14 +1060,14 @@ $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos',
                                 }
 
                             },
-                            error:  function(){
-                                alert('error al cargar');
+                            error:  function(xhr){
+                                mostrar_error_guardado_procedimiento(id, xhr);
                             }
                             });
                     }else {
                         //$("#alerta_datos").fadeIn(1000);
                         //$("#alerta_datos").fadeOut(3000);
-                        alert("Debe Seleccionar un procedimiento Principal");
+                        //alert("Debe Seleccionar un procedimiento Principal");
                     }
                 }
             }

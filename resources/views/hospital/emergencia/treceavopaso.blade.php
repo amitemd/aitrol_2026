@@ -50,13 +50,14 @@
                 </div>
                 
                 <div class="col-md-12" id="tabla_detalle">
-                  <table role="table" aria-busy="false" aria-colcount="4" class="table b-table">
+                  <table role="table" aria-busy="false" aria-colcount="5" class="table b-table">
                     <thead role="rowgroup" class="">
                       <tr role="row" class="">
-                        <th width="20%" role="columnheader" scope="col" aria-colindex="1" class=""><div>{{trans('paso2.MEDICAMENTO')}}</div></th>
-                        <th width="10%" role="columnheader" scope="col" aria-colindex="2" class=""><div>{{('paso2.Cantidad')}}</div></th>
-                        <th width="55%" role="columnheader" scope="col" aria-colindex="3" class=""><div>{{trans('paso2.POSOLOGIA')}}</div></th>
-                        <th width="15%" role="columnheader" scope="col" aria-colindex="4" class=""><div>{{trans('paso2.ACCION')}}</div></th>
+                        <th width="15%" role="columnheader" scope="col" aria-colindex="1" class=""><div>{{trans('paso2.MEDICAMENTO')}}</div></th>
+                        <th width="10%" role="columnheader" scope="col" aria-colindex="2" class=""><div>{{trans('paso2.Cantidad')}}</div></th>
+                        <th width="40%" role="columnheader" scope="col" aria-colindex="3" class=""><div>{{trans('paso2.POSOLOGIA')}}</div></th>
+                        <th width="10%" role="columnheader" scope="col" aria-colindex="4" class=""><div>{{trans('paso2.ACCION')}}</div></th>
+                        <th width="25%" role="columnheader" scope="col" aria-colindex="5" class=""><div>Administración eMAR</div></th>
                       </tr>
                     </thead>
                     <tbody role="rowgroup">
@@ -75,6 +76,9 @@
                           <button id="del{{$detalle->id}}" type="button" class="btn btn-danger btn-sm" onclick="eliminar_medicina('{{$detalle->id}}');">
                             <i class="fa fa-trash"></i>
                           </button>
+                        </td>
+                        <td aria-colindex="5" role="cell" class="">
+                          @include('hospital.medication._emar_fields', ['detalle' => $detalle])
                         </td>
                       </tr>
                       @endforeach
@@ -97,6 +101,75 @@
   </div>
 
 </div>
+
+<div class="card mt-3 border-danger">
+  <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+    <strong><i class="fa fa-bolt"></i> Excepción por emergencia sin orden previa</strong>
+    <button type="button" class="btn btn-light btn-sm" onclick="$('#emergency-exception-form').toggle()">Registrar excepción</button>
+  </div>
+  <div class="card-body" id="emergency-exception-form" style="display:none;">
+    <div class="alert alert-warning">
+      Solo se permite ante una emergencia real. Genera una administración eMAR y una orden provisional que debe regularizarse en máximo 60 minutos.
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label>Medicamento</label>
+        <select id="emergency-medication" class="form-control select2-emergency" style="width:100%"><option value="">Seleccione</option></select>
+      </div>
+      <div class="form-group col-md-3">
+        <label>Dosis aplicada</label>
+        <input id="emergency-dose" class="form-control">
+      </div>
+      <div class="form-group col-md-3">
+        <label>Vía</label>
+        <select id="emergency-route" class="form-control">
+          <option value="">Seleccione</option><option value="ORAL">Oral</option><option value="INTRAVENOUS">Intravenosa</option>
+          <option value="INTRAMUSCULAR">Intramuscular</option><option value="SUBCUTANEOUS">Subcutánea</option>
+          <option value="INHALATION">Inhalatoria</option><option value="OTHER">Otra</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-4"><label>Hora real</label><input id="emergency-time" type="datetime-local" class="form-control" value="{{date('Y-m-d\TH:i')}}"></div>
+      <div class="form-group col-md-4"><label>Serie</label><input id="emergency-series" class="form-control"></div>
+      <div class="form-group col-md-4"><label>Código del protocolo</label><input id="emergency-protocol" class="form-control" placeholder="Ej. PARO-01"></div>
+    </div>
+    <div class="form-group"><label>Justificación clínica</label><textarea id="emergency-justification" class="form-control" rows="2"></textarea></div>
+    <div class="form-group"><label>Resultado u observación</label><textarea id="emergency-result" class="form-control" rows="2"></textarea></div>
+    <label class="d-block"><input id="emergency-patient-verified" type="checkbox"> Confirmo identidad del paciente</label>
+    <label class="d-block mb-2"><input id="emergency-medication-verified" type="checkbox"> Confirmo medicamento, dosis, vía y hora</label>
+    <button id="emergency-exception-save" type="button" class="btn btn-danger" onclick="registrarExcepcionEmergencia()">
+      <i class="fa fa-exclamation-triangle"></i> Administrar bajo protocolo
+    </button>
+  </div>
+</div>
+
+@if(isset($pendingMedicationExceptions) && $pendingMedicationExceptions->count())
+<div class="card mt-3 border-warning" id="pending-emergency-medications">
+  <div class="card-header bg-warning"><strong><i class="fa fa-clock-o"></i> Regularizaciones médicas pendientes</strong></div>
+  <div class="card-body">
+    @foreach($pendingMedicationExceptions as $exception)
+      <div class="alert {{\Carbon\Carbon::now()->gt($exception->regularization_due_at) ? 'alert-danger' : 'alert-warning'}}" id="exception-row-{{$exception->id}}">
+        <strong>{{$exception->medicine ? $exception->medicine->nombre : 'Medicamento'}}</strong> — protocolo {{$exception->protocol_code}}.<br>
+        <small>Regularizar hasta: {{$exception->regularization_due_at->format('Y-m-d H:i')}}</small>
+        <div class="form-row mt-2">
+          <div class="col-md-9">
+            <select id="regularization-order-{{$exception->id}}" class="form-control">
+              <option value="">Seleccione la orden médica creada</option>
+              @foreach($detalles as $detalle)
+                @if((string)$detalle->id_medicina === (string)$exception->medication_id)
+                  <option value="{{$detalle->id}}">{{$detalle->nombre}} — {{$detalle->dosis}}</option>
+                @endif
+              @endforeach
+            </select>
+          </div>
+          <div class="col-md-3"><button type="button" class="btn btn-success btn-block" onclick="regularizarExcepcion('{{$exception->id}}')">Vincular orden</button></div>
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>
+@endif
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 <script src="{{ asset ("/js/icheck.js") }}"></script>
@@ -111,7 +184,7 @@
     
     $.ajax({
       type: 'post',
-      url:"{{route('13vopaso.actualizar_doctor',['id' => $receta->id ])}}",
+      url:"{{route('13vopaso.actualizar_doctor',['receta' => $receta->id ])}}",
       headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
       datatype: 'json',
       data: { 'id_doctor' : doctor },
@@ -150,11 +223,20 @@
     }
   });
 
+  $('.select2-emergency').select2({
+    dropdownParent: $('#emergency-exception-form'),
+    ajax: {
+      url: '{{route("hospitalizacion.genericos")}}',
+      data: function(params) { return {search: params.term, type: 'public'}; },
+      processResults: function(data) { return {results: data}; }
+    }
+  });
+
   function buscar_nombre_medicina(){
 
       $.ajax({
         type: 'post',
-        url:"{{route('13vopaso.guardar_medicina',['id' => $solicitud->id])}}",
+        url:"{{route('13vopaso.guardar_medicina',['solic' => $solicitud->id])}}",
         headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
         datatype: 'json',
         data: { 'id_generico' : $("#generico").val() },
@@ -176,7 +258,7 @@
     console.log(iva);
     var contador = $("#contador").val();
     var htmlTable = $('#tableIndicate').html();
-    var midiv_pago = '<div class="card shadow-none bg-transparent border-primary"> <div class="card-header"> <h4 class="card-title">' + iva + '</h4> </div> <div class="card-body"> <table class="table b-table table-hover b-table-fixed">  <thead><tr><th>#</th><th>INDICACIONES</th><th>MEDICAMENTO</th><th>POSOLOGIA</th><th><button class="btn btn-primary" onclick="add(this)" type="button"> <i class="fa fa-plus"> </i> </button></th></tr></thead><tbody class="bodys" ><td>' + contador + '</td><td> <input class="genericoAdded" name="id_generico[]" type="hidden" value="' + data + '">  <input class="form-control" name="indicaciones[]"></td> <td><input class="form-control" type="text" name="medicamentos[]" value="' + iva + '" placeholder="Ingrese medicamentos" readonly></td><td><input class="form-control" type="text" name="posologia[]" placeholder="Ingrese posologia"></td> <td>  <button class="btn btn-danger" onclick="erase(this)" type="button" > <i class="fa fa-remove">   </i> </button> </td></tbody> </table></div> </div>';
+    var midiv_pago = '<div class="card shadow-none bg-transparent border-primary"> <div class="card-header"> <h4 class="card-title">' + iva + '</h4> </div> <div class="card-body"> <table class="table b-table table-hover b-table-fixed">  <thead><tr><th>#</th><th>{{trans('paso2.INDICACIONES')}}</th><th>{{trans('paso2.MEDICAMENTO')}}</th><th>{{trans('paso2.POSOLOGIA')}}</th><th><button class="btn btn-primary" onclick="add(this)" type="button"> <i class="fa fa-plus"> </i> </button></th></tr></thead><tbody class="bodys" ><td>' + contador + '</td><td> <input class="genericoAdded" name="id_generico[]" type="hidden" value="' + data + '">  <input class="form-control" name="indicaciones[]"></td> <td><input class="form-control" type="text" name="medicamentos[]" value="' + iva + '" placeholder="{{trans('paso2.IngreseMedicamentos')}}" readonly></td><td><input class="form-control" type="text" name="posologia[]" placeholder="{{trans('paso2.IngresePosologia')}}"></td> <td>  <button class="btn btn-danger" onclick="erase(this)" type="button" > <i class="fa fa-remove">   </i> </button> </td></tbody> </table></div> </div>';
     contador++;
     $("#contador").val(contador);
     $('#addPlace').append(midiv_pago);
@@ -224,7 +306,7 @@
         return Swal.fire(`{{trans('proforma.GuardadoCorrectamente')}}`);
       },
       error: function() {
-        alert('error al cargar');
+        alert("{{trans('pasos.ErrorCargar')}}");
       }
     });
 
@@ -242,7 +324,7 @@
 
         },
         error:  function(){
-            alert('error al cargar');
+            alert("{{trans('pasos.ErrorCargar')}}");
         }
     });
   }
@@ -254,8 +336,9 @@
 
     $.ajax({
         async: true,
-        type: "GET",
+        type: "DELETE",
         url: "{{url('hospital/formu_005/eliminar_medicina')}}/"+id_detalle,
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
         data: {
           'id_solicitud': id_solicitud,
           'id_receta': id_receta,
@@ -267,8 +350,100 @@
 
         },
         error:  function(){
-            alert('error al cargar');
+            alert("{{trans('pasos.ErrorCargar')}}");
         }
+    });
+  }
+
+  function alternarEmar(id) {
+    $('#emar-form-' + id).toggle();
+  }
+
+  function cambiarEstadoEmarClinico(id) {
+    var omitido = $('#emar-estado-' + id).val() === 'OMITTED';
+    $('#emar-omision-grupo-' + id).toggle(omitido);
+    $('#emar-serie-' + id).prop('disabled', omitido);
+  }
+
+  function registrarEmarClinico(id) {
+    var button = $('#emar-guardar-' + id);
+    button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Verificando...');
+    $.ajax({
+      type: 'post',
+      url: "{{route('clinical_medication.store')}}",
+      headers: {'X-CSRF-TOKEN': $('input[name=_token]').val()},
+      dataType: 'json',
+      data: {
+        id: id,
+        series: $('#emar-serie-' + id).val(),
+        dose: $('#emar-dosis-' + id).val(),
+        route: $('#emar-via-' + id).val(),
+        scheduled_at: $('#emar-programada-' + id).val(),
+        administered_at: $('#emar-real-' + id).val(),
+        status: $('#emar-estado-' + id).val(),
+        omission_reason: $('#emar-omision-' + id).val(),
+        clinical_result: $('#emar-resultado-' + id).val(),
+        patient_verified: $('#emar-paciente-' + id).is(':checked') ? 1 : 0,
+        medication_verified: $('#emar-medicamento-' + id).is(':checked') ? 1 : 0
+      },
+      success: function(response) {
+        $('#emar-panel-' + id).html('<div class="alert alert-success mb-0"><i class="fa fa-check-circle"></i> ' + response.msn + '<br><small>eMAR #' + response.administration_id + '</small></div>');
+      },
+      error: function(xhr) {
+        var response = xhr.responseJSON || {};
+        alert(response.msn || 'No fue posible registrar la administración.');
+        button.prop('disabled', false).html('<i class="fa fa-shield"></i> Confirmar administración');
+      }
+    });
+  }
+
+  function registrarExcepcionEmergencia() {
+    var button = $('#emergency-exception-save');
+    button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Validando protocolo...');
+    $.ajax({
+      type: 'post',
+      url: "{{route('clinical_medication.emergency_exception')}}",
+      headers: {'X-CSRF-TOKEN': $('input[name=_token]').first().val()},
+      dataType: 'json',
+      data: {
+        solicitud_id: '{{$solicitud->id}}',
+        medication_id: $('#emergency-medication').val(),
+        dose: $('#emergency-dose').val(),
+        route: $('#emergency-route').val(),
+        administered_at: $('#emergency-time').val(),
+        series: $('#emergency-series').val(),
+        protocol_code: $('#emergency-protocol').val(),
+        justification: $('#emergency-justification').val(),
+        clinical_result: $('#emergency-result').val(),
+        patient_verified: $('#emergency-patient-verified').is(':checked') ? 1 : 0,
+        medication_verified: $('#emergency-medication-verified').is(':checked') ? 1 : 0
+      },
+      success: function(response) {
+        alert(response.msn + '\nRegularizar hasta: ' + response.regularization_due_at);
+        cargar_paso(13);
+      },
+      error: function(xhr) {
+        var response = xhr.responseJSON || {};
+        alert(response.msn || 'No fue posible registrar la excepción.');
+        button.prop('disabled', false).html('<i class="fa fa-exclamation-triangle"></i> Administrar bajo protocolo');
+      }
+    });
+  }
+
+  function regularizarExcepcion(exceptionId) {
+    $.ajax({
+      type: 'post',
+      url: "{{url('hospital/medicacion/emergencia/excepcion')}}/" + exceptionId + '/regularizar',
+      headers: {'X-CSRF-TOKEN': $('input[name=_token]').first().val()},
+      dataType: 'json',
+      data: {recipe_detail_id: $('#regularization-order-' + exceptionId).val()},
+      success: function(response) {
+        $('#exception-row-' + exceptionId).removeClass('alert-warning alert-danger').addClass('alert-success').html('<i class="fa fa-check-circle"></i> ' + response.msn);
+      },
+      error: function(xhr) {
+        var response = xhr.responseJSON || {};
+        alert(response.msn || 'No fue posible regularizar la excepción.');
+      }
     });
   }
 

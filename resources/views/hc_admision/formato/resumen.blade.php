@@ -3,7 +3,7 @@
 
 <head>
 <br>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
  
@@ -65,9 +65,6 @@ table {
 table, th, td {
   border: 1px solid black;
 }
-td{
-	padding: 0;
-}
 </style>
 
 
@@ -77,7 +74,7 @@ td{
 <body lang=ES-EC style="margin-top: -70px;">
 	<input type="hidden" name="fecha_nacimiento" id="fecha_nacimiento" value="{{$data->fecha_nacimiento}}">
 
-
+<div class=WordSection1 >
 
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
@@ -127,90 +124,71 @@ style='font-size:11.0pt'>{{$empresa->nombre_form}}</span></b></p>
 <br>
 <span ><b>@if($agenda->proc_consul=='1')Procedimientos:</b> @endif <b style="background-color: #DFF8F9;font-size: 16px;">{{ $procedimientos_txt}}</b></span>
 <br>
-<span ><b>Observaciones Médicas:</b></span><br>
-@php $txt_old = ''; @endphp
-@foreach($log_agenda as $log)
-	
-	
-		@if($log->user_crea->id_tipo_usuario=='3')
-			@if(($log->descripcion!='' || $log->observaciones!='' || $log->observaciones_ant!='') && $log->descripcion!='DESPLAZAMIENTO RÁPIDO DOCTOR' && $log->descripcion!='DESPLAZAMIENTO RÁPIDO PENTAX' && $log->descripcion!='DESPLAZAMIENTO RÁPIDO SALAS PENTAX')
-				
-				@if($log->observaciones_ant!='')
-					@php $txt = $log->created_at.' -> '.$log->user_crea->apellido1.':'.$log->descripcion.' '.$log->observaciones_ant.' - '.$log->observaciones; @endphp
-					@if($txt_old!=$txt)<span style="font-size: 10px;">{{$txt}}</span><br>@endif
-				@else
-					@php $txt = $log->created_at.' -> '.$log->user_crea->apellido1.':'.$log->descripcion.' '.$log->observaciones; @endphp
-					@if($txt_old!=$txt)
-					<span style="font-size: 10px;">{{$log->created_at}} -> {{$log->user_crea->apellido1}}: {{$log->descripcion}} @if($log->descripcion!=$log->observaciones){{$log->observaciones}}@endif</span><br>
-					@endif
-				@endif
-				@php $txt_old = $txt; @endphp
-			@endif
-		@endif
-	
-@endforeach
+<span ><b>Observaciones Médicas:</b></span>
 <span ><b>______________________________________________________________________________________________________________</b></span><br>
 <span ><b>______________________________________________________________________________________________________________</b></span><br>
-<span ><b>Observaciones Administrativas:</b></span><br>
+<span ><b>______________________________________________________________________________________________________________</b></span><br>
+<span ><b>______________________________________________________________________________________________________________</b></span><br>
+<span ><b>______________________________________________________________________________________________________________</b></span><br>
+<span ><b>______________________________________________________________________________________________________________</b></span><br>
+<span ><b>Observaciones Administrativas:</b></span>
 @if($log_agenda->count()<=1)
-	
-	<span style="font-size: 10px;">{{$agenda->fechaini}} -> {{$agenda->user_crea->apellido1}}: AGENDA - {{$agenda->observaciones}}</span><br>
+	<br>
+	<span style="font-size: 10px;">{{$agenda->fechaini}} -> {{$agenda->user_crea->apellido1}}: AGENDA - {{$agenda->observaciones}}</span>
 @endif
 @php $txt_old = ''; @endphp
 @foreach($log_agenda as $log)
-	@if($log->user_crea->id_tipo_usuario!='3')
-		@if(($log->descripcion!='' || $log->observaciones!='' || $log->observaciones_ant!='') && $log->descripcion!='DESPLAZAMIENTO RÁPIDO DOCTOR' && $log->descripcion!='DESPLAZAMIENTO RÁPIDO PENTAX' && $log->descripcion!='DESPLAZAMIENTO RÁPIDO SALAS PENTAX')
-			
-			@if($log->observaciones_ant!='')
-				@php $txt = $log->created_at.' -> '.$log->user_crea->apellido1.':'.$log->descripcion.' '.$log->observaciones_ant.' - '.$log->observaciones; @endphp
-				@if($txt_old!=$txt)<span style="font-size: 10px;">{{$txt}}</span><br>@endif
-			@else
-				@php $txt = $log->created_at.' -> '.$log->user_crea->apellido1.':'.$log->descripcion.' '.$log->observaciones; @endphp
-				@if($txt_old!=$txt)
-				<span style="font-size: 10px;">{{$log->created_at}} -> {{$log->user_crea->apellido1}}: {{$log->descripcion}} @if($log->descripcion!=$log->observaciones){{$log->observaciones}}@endif</span><br>
-				@endif
+	@if(($log->descripcion!='' || $log->observaciones!='' || $log->observaciones_ant!='') && $log->descripcion!='DESPLAZAMIENTO RÁPIDO DOCTOR' )
+		<br>
+		@if($log->observaciones_ant!='')
+			@php $txt = $log->created_at.' -> '.$log->user_crea->apellido1.':'.$log->descripcion.' '.$log->observaciones_ant.' - '.$log->observaciones; @endphp
+			@if($txt_old!=$txt)<span style="font-size: 10px;">{{$txt}}</span>@endif
+		@else
+			@php $txt = $log->created_at.' -> '.$log->user_crea->apellido1.':'.$log->descripcion.' '.$log->observaciones; @endphp
+			@if($txt_old!=$txt)
+			<span style="font-size: 10px;">{{$log->created_at}} -> {{$log->user_crea->apellido1}}: {{$log->descripcion}} @if($log->descripcion!=$log->observaciones){{$log->observaciones}}@endif</span>
 			@endif
-			@php $txt_old = $txt; @endphp
 		@endif
-	@endif	
+		@php $txt_old = $txt; @endphp
+	@endif
 @endforeach
 <span ><b>______________________________________________________________________________________________________________</b></span><br>
 <span ><b>______________________________________________________________________________________________________________</b></span><br>
 <!--span ><b>______________________________________________________________________________________________________________</b></span><br>
 <span ><b>______________________________________________________________________________________________________________</b></span><br-->
-
+<br>
 
 @if(!is_null($documentos))
-<span ><b>Documentos:</b></span>
-	<table class="table" style="font-size: 11px;">
-		<tr style="padding: 0;">
-		  <th style="width: 10%"> #</th>
-		  <th style="width: 10%"> Documentación requerida</th>
-		  <th style="width: 10%"> Ch.</th>
-		  <th style="width: 10%"> P.Recibe</th> 
-		  <th style="width: 10%"> Fecha/Hora Entrega</th>
-		</tr>
-		
-		  @php $i=0; @endphp
-		  @foreach($documentos as $documento)
-		  	@php $archivo = DB::table('archivo_historico as ah')->where('ah.id_documento',$documento->id)->where('ah.id_historia',$data->hcid)->join('paciente as ue','ue.id','ah.id_usuario_entrega')->join('users as ur','ur.id','ah.id_usuario_recibe')->select('ah.*','ue.nombre1 as uenombre1','ue.apellido1 as ueapellido1','ur.nombre1 as urnombre1','ur.apellido1 as urapellido1')->first(); @endphp
-		    @if($documento->est_doc_tarea=='0')  
-		        @php $i++; @endphp
-		        <tr style="padding: 0;">
-		          <td>{{$i}}</td> 
-		          <td style="font-size: 9px;">{{$documento->nombre}}</td>
-		          <td @if(!is_null($archivo)) @if($archivo->estado=='1') style="background-color: #ccf5ff;" @endif @endif><span style="text-align: center;"><input id="ch{{$documento->id}}" type="checkbox" class="flat-green" @if(!is_null($archivo)) @if($archivo->estado=='1')checked @endif @endif ></span></td>
-		          <td>@if(!is_null($archivo)){{$archivo->urapellido1}}@endif</td>
-		          <td>@if(!is_null($archivo)){{$archivo->fecha_entrega}}@endif</td>
-		             
-		        </tr> 
-		    @endif      
-		  @endforeach  
-		
-		
-	</table>
+<span ><b>Documentos:</b></span><br>
+<table class="table" style="font-size: 11px;">
+	<tr>
+	  <th style="width: 10px;"> #</th>
+	  <th style="width: 300px;"> Documentación requerida</th>
+	  <th style="width: 10px;"> Ch.</th>
+	  <th style="width: 100px;"> P.Recibe</th> 
+	  <th style="width: 100px;"> Fecha/Hora Entrega</th>
+	</tr>
+	
+	  @php $i=0; @endphp
+	  @foreach($documentos as $documento)
+	  	@php $archivo = DB::table('archivo_historico as ah')->where('ah.id_documento',$documento->id)->where('ah.id_historia',$data->hcid)->join('paciente as ue','ue.id','ah.id_usuario_entrega')->join('users as ur','ur.id','ah.id_usuario_recibe')->select('ah.*','ue.nombre1 as uenombre1','ue.apellido1 as ueapellido1','ur.nombre1 as urnombre1','ur.apellido1 as urapellido1')->first(); @endphp
+	    @if($documento->est_doc_tarea=='0')  
+	        @php $i++; @endphp
+	        <tr>
+	          <td>{{$i}}</td> 
+	          <td style="font-size: 9px;">{{$documento->nombre}}</td>
+	          <td @if(!is_null($archivo)) @if($archivo->estado=='1') style="background-color: #ccf5ff;" @endif @endif><span style="text-align: center;"><input id="ch{{$documento->id}}" type="checkbox" class="flat-green" @if(!is_null($archivo)) @if($archivo->estado=='1')checked @endif @endif ></span></td>
+	          <td>@if(!is_null($archivo)){{$archivo->urapellido1}}@endif</td>
+	          <td>@if(!is_null($archivo)){{$archivo->fecha_entrega}}@endif</td>
+	             
+	        </tr> 
+	    @endif      
+	  @endforeach  
+	
+	
+</table>
 @endif
-
+</div>
 
 <div class="footer">
 	<p style="font-size: 10px;">{{date('d-m-Y')}}  {{date('G:i A')}}</p>

@@ -46,7 +46,7 @@ class GenericosController extends Controller
             return redirect('/');
         }
        
-        $genericos = Principio_Activo::where('estado',1)->orderBy('nombre')->paginate(20);
+        $genericos = Principio_Activo::where('estado',1)->orderBy('nombre')->paginate(15);
         
         return view('hc4.generico.listado_genericos',['genericos' => $genericos,'nombre' => null]);  
     }
@@ -138,9 +138,9 @@ class GenericosController extends Controller
 
         $generico->update($input);
        
-        $genericos = Principio_Activo::where('estado',1)->where('nombre','like','%'.$request['nombre'].'%')->orderBy('nombre')->paginate(20);  
+        $genericos = Principio_Activo::where('estado',1)->orderBy('nombre')->paginate(15);
 
-        return view('hc4.generico.listado_genericos', ['genericos' => $genericos, 'nombre' => $request['nombre']]); 
+        return view('hc4.generico.listado_genericos', ['genericos' => $genericos, 'nombre' => null]);
 
     }
 
@@ -173,7 +173,7 @@ class GenericosController extends Controller
       
       $nombre = $request['nombre'];
 
-      $genericos = Principio_Activo::where('estado',1)->where('nombre','like','%'.$nombre.'%')->orderBy('nombre')->paginate(20);  
+      $genericos = Principio_Activo::where('estado',1)->where('nombre','like','%'.$nombre.'%')->orderBy('nombre')->paginate(15);
 
       return view('hc4.generico.listado_genericos', ['genericos' => $genericos, 'nombre' => $nombre]); 
 
@@ -181,4 +181,3 @@ class GenericosController extends Controller
 
     
 }
- 

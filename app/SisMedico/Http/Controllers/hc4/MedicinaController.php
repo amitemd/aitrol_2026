@@ -207,7 +207,7 @@ class MedicinaController extends Controller
 
         $rules = [
         
-        'nombre' => 'required|max:100',
+        'nombre' => 'required|max:50',
         'cantidad' => 'required|max:50',
         'dosis' => 'required',
         'genericos' => 'required',
@@ -229,7 +229,7 @@ class MedicinaController extends Controller
     private function validateInput($request) {
         
         $rules = [
-            'nombre' => 'required|max:100',
+            'nombre' => 'required|max:50',
             'cantidad' => 'required|max:50',
             'dosis' => 'required',
             ];
@@ -254,10 +254,9 @@ class MedicinaController extends Controller
         return redirect('/');
     }
 
-    $medicinas = Medicina::where('estado',1)->orderBy('nombre')->paginate(50); 
-    $genericos = Principio_Activo::where('estado',1)->get(); 
+    $medicinas = Medicina::with('genericos.generico')->where('estado',1)->orderBy('nombre')->paginate(15);
 
-    return view('hc4/medicina/listado_medicina', ['medicinas' => $medicinas,'genericos'=> $genericos,'nombre' => null]);
+    return view('hc4/medicina/listado_medicina', ['medicinas' => $medicinas,'nombre' => null]);
    }
 
    //INGRESO DE LA MEDICINA A BUSCAR
@@ -271,14 +270,9 @@ class MedicinaController extends Controller
        
     $nombre = $request['nombre'];
     
-    $medicinas = Medicina::where('estado',1)->where('nombre','like','%'.$nombre.'%')->orderBy('nombre')->paginate(50);
-
-
-
-
-    $genericos = Principio_Activo::where('estado',1)->get(); 
+    $medicinas = Medicina::with('genericos.generico')->where('estado',1)->where('nombre','like','%'.$nombre.'%')->orderBy('nombre')->paginate(15);
     
-    return view('hc4/medicina/listado_medicina', ['medicinas' => $medicinas, 'genericos' => $genericos, 'nombre' => $request['nombre']]); 
+    return view('hc4/medicina/listado_medicina', ['medicinas' => $medicinas, 'nombre' => $request['nombre']]);
 
     }
 
@@ -321,6 +315,9 @@ class MedicinaController extends Controller
         }else{
            $this->validateInput4($request);
         }
+
+        DB::beginTransaction();
+        try {
         
         $medicina_principio = Medicina_Principio::where('id_medicina',$id)->get();
         
@@ -372,7 +369,12 @@ class MedicinaController extends Controller
                         'ip_creacion' => $ip_cliente,
                         'id_usuariocrea' => $idusuario, 
                     ];
-                    $id_generico = Principio_Activo::insertGetId($input_principio);
+                    $nombre_generico = $input_principio['nombre'];
+                    $generico = Principio_Activo::where('nombre', $nombre_generico)->first();
+                    if (is_null($generico)) {
+                        $generico = Principio_Activo::create($input_principio);
+                    }
+                    $id_generico = $generico->id;
                     $inputg = [
 
                         'id_medicina' => $id,
@@ -390,12 +392,16 @@ class MedicinaController extends Controller
             }
         }
 
-       
-        $medicinas = Medicina::where('estado',1)->where('nombre','like','%'.$request['nombre'].'%')->orderBy('nombre')->get(); 
+        DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
 
-        $genericos = Principio_Activo::where('estado',1)->get(); 
+
+        $medicinas = Medicina::with('genericos.generico')->where('estado',1)->orderBy('nombre')->paginate(15);
         
-        return view('hc4/medicina/listado_medicina', ['medicinas' => $medicinas, 'genericos' => $genericos, 'nombre' => $request['nombre']]);
+        return view('hc4/medicina/listado_medicina', ['medicinas' => $medicinas, 'nombre' => null]);
 
        //return view('hc4/medicina/inicio_medicina');        
     }
@@ -404,7 +410,7 @@ class MedicinaController extends Controller
     private function validateInput3($request){
 
         $rules = [
-            'nombre' => 'required|max:100',
+            'nombre' => 'required|max:50',
             'cantidad' => 'required|max:50',
             'dosis' => 'required',
             'genericos' => 'required',
@@ -427,7 +433,7 @@ class MedicinaController extends Controller
     private function validateInput4($request){
 
         $rules = [
-                'nombre' => 'required|max:100',
+                'nombre' => 'required|max:50',
                 'cantidad' => 'required|max:50',
                 'dosis' => 'required',
                 'estado' => 'required',
@@ -447,4 +453,3 @@ class MedicinaController extends Controller
 
    
 }
- 

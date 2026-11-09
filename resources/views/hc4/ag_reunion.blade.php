@@ -20,7 +20,7 @@
 <div class="modal-header">
     <div class="col-12">
         <center>
-            <h4 class="modal-title" id="myModalLabel">@lang('hc4.agregar') {{$i}} @lang('hc4.paraDoctor') {{ $doctor->apellido1}}</h4>    
+            <h4 class="modal-title" id="myModalLabel">Agregar {{$i}} para el Dr(a). {{ $doctor->apellido1}}</h4>    
         </center>
     </div>
 </div>
@@ -42,7 +42,7 @@
                     <div class="col-6">          
                         <div class="row">
                             <div class="form-group col-12 cl_inicio {{ $errors->has('inicio') ? ' has-error' : '' }} {{ $errors->has('id_doctor1') ? ' has-error' : '' }}" >
-                                <label class="col-md-4 control-label">@lang('hc4.inicio')</label>
+                                <label class="col-md-4 control-label">Inicio</label>
                                 <div class="col-12">
                                     <div class="input-group date">
                                         <div class="input-group-addon">
@@ -61,7 +61,7 @@
                     <div class="col-6">          
                         <div class="row">
                             <div class="form-group col-12 cl_fin {{ $errors->has('fin') ? ' has-error' : '' }}  {{ $errors->has('id_doctor1') ? ' has-error' : '' }}">
-                                <label class="col-md-4 control-label">@lang('hc4.fin')</label>
+                                <label class="col-md-4 control-label">Fin</label>
                                 <div class="col-12">
                                     <div class="input-group date">
                                         <div class="input-group-addon">
@@ -83,7 +83,7 @@
             <div class="col-12">
             <div class="row">
                 <div class="form-group col-6 cl_observaciones {{ $errors->has('observaciones') ? ' has-error' : '' }}">
-                    <label for="observaciones" class="col-md-4 control-label">@lang('hc4.titulo')</label>
+                    <label for="observaciones" class="col-md-4 control-label">Titulo</label>
                     <div class="col-12">
                         <input id="observaciones" type="text" class="form-control" name="observaciones" value="{{old('observaciones')}}" required="required">
                         <span class="help-block">
@@ -93,10 +93,10 @@
                 </div>
 
                 <div class="form-group col-6 cl_id_sala {{ $errors->has('id_sala') ? ' has-error' : '' }}">
-                    <label for="id_sala" class="col-md-4 control-label">@lang('hc4.ubicacion')</label>
+                    <label for="id_sala" class="col-md-4 control-label">Ubicación</label>
                     <div class="col-12">
                     <select id="id_sala" name="id_sala" class="form-control" required>
-                            <option value="">@lang('hc4.seleccione')..</option>
+                            <option value="">Seleccione..</option>
                             @foreach ($salas as $sala)
                                 <option @if(old('id_sala')==$sala->id){{"selected"}}@endif value="{{$sala->id}}">@if($sala->nombre_sala == "..") {{$sala->nombre_hospital}}{{$sala->nombre_sala}}@else {{$sala->nombre_sala}} / {{$sala->nombre_hospital}} @endif</option>
                             @endforeach
@@ -113,7 +113,7 @@
                 <center>
                     <div class="form-group">
                         <div class="col-md-6 col-md-offset-4">
-                            <a href="#" id="confirme" class="btn btn-primary">@lang('hc4.guardar')</a>
+                            <a href="#" id="confirme" class="btn btn-primary">Guardar</a>
                             
                         </div>
                     </div>  
@@ -124,7 +124,7 @@
     </div>
 </div>        
 <div class="modal-footer">
-  <button type="button" id="bcerrar" class="btn btn-default" data-dismiss="modal" >@lang('hc4.cerrar')</button>
+  <button type="button" id="bcerrar" class="btn btn-default" data-dismiss="modal" >Cerrar</button>
 </div>
 
 <script src="{{ asset ("/bower_components/select2/dist/js/select2.full.js") }}"></script>

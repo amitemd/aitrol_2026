@@ -417,7 +417,9 @@ class ApBitacoraController extends Controller
     }
 
     public function formulario_013_update(Request $request){
-
+        if($this->rol()){
+            return response()->view('errors.404');
+        }
         $array=[
             'id_empresa'=>$request->get('empresa'),
             'resumen_clinico'=>$request->get('resumen_clinico'),
@@ -427,7 +429,7 @@ class ApBitacoraController extends Controller
             'tratamiento'=>$request->get('tratamiento'),
             'fecha_toma'=>$request->get('fecha'),
         ];
-        HcFormulario013::where('id_hc_procedimiento',$request->get('id'))->update($array);
+        HcFormulario013::where('id',$request->get('id'))->update($array);
         return ['respuesta'=>'ok'];
     }
 
@@ -435,7 +437,6 @@ class ApBitacoraController extends Controller
     {
         $evolucion = Hc_Evolucion::find($id);
         $historiaclinica = $evolucion->historiaclinica;
-       
         return ['evolucion' => $evolucion, 'historia' => $historiaclinica];
     }
 

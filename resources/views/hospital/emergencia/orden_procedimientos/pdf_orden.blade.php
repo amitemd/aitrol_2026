@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   
   <title>{{trans('boxesh.ORDENENDOSCOPICO')}}</title>
 
@@ -440,4 +441,4 @@
       </p>
     </div>
   </body>
-</html>  
+</html>

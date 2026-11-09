@@ -1,0 +1,155 @@
+.audit-modern {
+    --audit-primary: #0f4c81;
+    --audit-primary-dark: #0a355a;
+    --audit-accent: #0f766e;
+    --audit-surface: #ffffff;
+    --audit-muted: #64748b;
+    --audit-border: #dbe4ee;
+    --audit-bg: #f4f7fb;
+    color: #1e293b;
+}
+
+.audit-modern.content,
+.audit-modern .content {
+    background: var(--audit-bg);
+}
+
+.audit-modern .box,
+.audit-modern .panel,
+.audit-modern .modal-content {
+    border: 1px solid var(--audit-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15, 76, 129, 0.08);
+    overflow: hidden;
+}
+
+.audit-modern .box-header,
+.audit-modern .panel-heading {
+    background: linear-gradient(135deg, var(--audit-primary), var(--audit-primary-dark));
+    color: #fff;
+    padding: 16px 20px;
+}
+
+.audit-modern .box-header .box-title,
+.audit-modern .box-header h1,
+.audit-modern .box-header h2,
+.audit-modern .box-header h3,
+.audit-modern .panel-heading h1,
+.audit-modern .panel-heading h2,
+.audit-modern .panel-heading h3 {
+    color: inherit;
+    margin: 0;
+}
+
+.audit-modern .box-body,
+.audit-modern .panel-body {
+    background: var(--audit-surface);
+    padding: 20px;
+}
+
+.audit-modern .form-control,
+.audit-modern .select2-container--default .select2-selection--single,
+.audit-modern .select2-container--default .select2-selection--multiple {
+    min-height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.audit-modern .form-control:focus,
+.audit-modern .select2-container--focus .select2-selection {
+    border-color: var(--audit-primary);
+    box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.14);
+}
+
+.audit-modern .btn {
+    border-radius: 8px;
+    font-weight: 600;
+    min-height: 34px;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.audit-modern .btn:hover,
+.audit-modern .btn:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+}
+
+.audit-modern .btn-primary {
+    background: var(--audit-primary);
+    border-color: var(--audit-primary);
+}
+
+.audit-modern .btn-success {
+    background: var(--audit-accent);
+    border-color: var(--audit-accent);
+}
+
+.audit-modern .table-responsive {
+    border: 0;
+    border-radius: 10px;
+}
+
+.audit-modern .table {
+    margin-bottom: 0;
+    background: #fff;
+}
+
+.audit-modern .table > thead > tr > th {
+    background: #eaf1f8 !important;
+    color: var(--audit-primary-dark) !important;
+    border-bottom: 2px solid #bfd0e1;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.audit-modern .table > tbody > tr:hover {
+    background: #f0f7ff;
+}
+
+.audit-modern .nav-tabs {
+    border-bottom: 1px solid var(--audit-border);
+}
+
+.audit-modern .nav-tabs > li > a {
+    border-radius: 8px 8px 0 0;
+    color: var(--audit-muted);
+    font-weight: 600;
+}
+
+.audit-modern .nav-tabs > li.active > a,
+.audit-modern .nav-tabs > li.active > a:hover,
+.audit-modern .nav-tabs > li.active > a:focus {
+    color: var(--audit-primary);
+    border-top: 3px solid var(--audit-primary);
+}
+
+.audit-modern .audit-page-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.audit-modern .audit-page-heading h1,
+.audit-modern .audit-page-heading h2,
+.audit-modern .audit-page-heading h3 {
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .audit-modern .box-body,
+    .audit-modern .panel-body {
+        padding: 14px;
+    }
+
+    .audit-modern .btn {
+        margin-bottom: 6px;
+    }
+
+    .audit-modern .table-responsive {
+        overflow-x: auto;
+    }
+}

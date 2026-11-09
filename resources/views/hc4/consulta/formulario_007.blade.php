@@ -286,7 +286,7 @@
 					<td style="width:30%" class="alinear texto oscuro"><b>{{trans('emergencia.Hora')}}</b></td>
 					<td style="width:50%"class="alinear texto ">{{ substr($interconsulta->fecha,10) }}</td>
 					<td style="width:30%" class="alinear texto oscuro"><b>{{trans('emergencia.Profesional')}}</b></td>
-					<td style="width:50%"class="alinear texto ">{{ $interconsulta->historia->doctor_1->apellido1 }} {{ $interconsulta->historia->doctor_1->nombre1 }}</td>
+					<td style="width:50%"class="alinear texto espacio">{{ $interconsulta->historia->doctor_1->apellido1 }} {{ $interconsulta->historia->doctor_1->nombre1 }}</td>
 					<td style="width:30%"class="alinear texto "></td>
 					<td style="width:30%"class="alinear texto oscuro"><b>{{trans('emergencia.Firma')}}</b></td>
 					<td style="width:50%"class="alinear texto espacio">
@@ -298,7 +298,7 @@
 					<td style="width:10%" class="alinear texto ">1</td>
 				</tr>
 				<tr>
-					<td class="alinear texto espacio" colspan="6">{{trans('emergencia.SNS-MSP/HCU-form.007/2008')}}</td>
+					<td class="alinear texto espacio" colspan="6">{{trans('emergencia.codigo_formulario_007')}}</td>
 
 					<td colspan="5">{{trans('emergencia.INTERCONSULTA-SOLICITUD')}}</td>
 

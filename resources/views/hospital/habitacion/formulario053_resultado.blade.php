@@ -19,7 +19,7 @@
                 </h3>
             </div>
             <div class="col-2">
-                <button type="button" onclick="location.href='{{route('hospital.formulario053',['id_cama'=>$id_cama,'id'=>$paciente->id])}}'" class="btn btn-danger btn-sm btn-block"><i class="far fa-arrow-alt-circle-left"></i>{{trans('hospitalizacion.Regresar')}} </button>
+                <button type="button" onclick="location.href='{{route('hospital.formulario053',['id'=>$id_cama,'id_paciente'=>$paciente->id])}}'" class="btn btn-danger btn-sm btn-block"><i class="far fa-arrow-alt-circle-left"></i>{{trans('hospitalizacion.Regresar')}} </button>
             </div>
         </div>
     </section>
@@ -35,7 +35,7 @@
             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
           </div>
         </div>
-        <form id="formulario_053" action="{{route('hospital.formulario053_resultado',['id_cama'=>$id_cama,'id'=>$paciente->id])}}">
+        <form id="formulario_053" action="{{route('hospital.formulario053_resultado',['id'=>$id_cama,'id_paciente'=>$paciente->id])}}">
           {{ csrf_field() }}
           <div class="box-body">
             <div class="row">

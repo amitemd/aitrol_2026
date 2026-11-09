@@ -29,50 +29,28 @@
 	} 
 
 </style>
-<div class="box " style="border: 2px solid #004AC1; background-color: white;">
-	<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-		<div class="row">
-			<div class="col-md-8 col-sm-8 col-12">
-			    <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;padding-top: 10px">
-                    <b>HISTORIAL ORDENES DE PROCEDIMIENTOS ENDOSCOPICOS</b>
-				</h1>   
-		    </div>
-		    <div class="col-md-4 col-sm-4 col-12" style="padding-left: 0px">
-			    <div style="margin-bottom: 5px;text-align: left; margin-left: 5px; margin-right: 5px">
-					<a class="btn btn-info btn-block" style="color: white;padding-left: 0px;padding-right: 0px; border: 2px solid white; margin-left: 10px" onClick="agregar_orden_proendospico();" >
-		                <div class="row" style="margin-left: 0px; margin-right: 0px; ">
-			            	<div class="col-12" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-			            		<img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
-			            		<label style="font-size: 10px">AGREGAR ORDEN PROCEDIMIENTO</label>
-			            	</div>
-						</div>
-					</a>
-				</div>
-	        </div>
+@include('hc4.ordenes.partials.procedure_history_header_styles')
+@php $xedad = isset($edad) ? (int) $edad : 0; @endphp
+<div class="box hc4-procedure-orders">
+	<div class="box-header with-border hc4-procedure-orders__header">
+		<div class="hc4-procedure-orders__title">
+			<span class="hc4-procedure-orders__icon"><i class="fa fa-stethoscope" aria-hidden="true"></i></span>
+			<span>@lang('hc4.historialOrdenesProcedimientosEndoscopicos')</span>
 		</div>
+		<a class="btn btn-info hc4-procedure-orders__action" onClick="agregar_orden_proendospico();">
+			<img src="{{asset('/')}}hc4/img/iconos/agregar.png" alt="">
+			<span>@lang('hc4.agregarOrdenProcedimiento')</span>
+		</a>
 		@if(!is_null($paciente))
-			@php
-	   			$xedad = Carbon\Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age; 
-			@endphp 
-		<div class="row">	
-			<div class="col-md-9" style="padding-top: 15px">
-				<center>
-				<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			        <b>PACIENTE : {{$paciente->apellido1}} @if($paciente->apellido2!='(N/A)'){{$paciente->apellido2}}@endif 
-			        	{{$paciente->nombre1}} @if($paciente->nombre2!='(N/A)'){{$paciente->nombre2}}@endif
-	                </b>
-				</h1>
-				</center>
-		    </div>
-		    <div class="col-md-3" style="padding-top: 15px">
-				<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			        <b>
-			        	EDAD: {{$xedad}} AÑOS
-	                </b>
-				</h1>
-		    </div> 
-		</div>	
-	    @endif    
+			<div class="hc4-procedure-orders__patient">
+				<div class="hc4-procedure-orders__patient-name">
+					<strong>@lang('hc4.paciente'):</strong>
+					{{$paciente->apellido1}} @if($paciente->apellido2!='(N/A)'){{$paciente->apellido2}}@endif
+					{{$paciente->nombre1}} @if($paciente->nombre2!='(N/A)'){{$paciente->nombre2}}@endif
+				</div>
+				<div class="hc4-procedure-orders__age"><strong>@lang('hc4.edad'):</strong> {{$xedad}} @lang('hc4.anios')</div>
+			</div>
+		@endif
 	</div>
 	<div class="box-body" style="background-color: #56ABE3;">
 		<div class="col-md-12">
@@ -80,13 +58,16 @@
             	
             	<div class="col-md-12" id="nueva_orden" style="padding: 0">
             	</div>
+
                 @foreach($listado as $ordend)
                     
                     @php  $seguro = Sis_medico\Seguro::find($paciente->id_seguro); @endphp
 
                 <div class="col-md-12">
-				   	    @php
-   	  					    if(!is_null($ordend->fecha_orden)){
+						@php
+								$fecha_r = null;
+								$xdoctor = null;
+							if(!is_null($ordend->fecha_orden)){
 				    		   $fecha_r =  Date('Y-m-d',strtotime($ordend->fecha_orden));
 				    	    }
 
@@ -101,116 +82,65 @@
 	                        $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0]; 
 						@endphp
 						
-                        <div id="procedimiento_orden_eliminado{{$ordend->id}}" class="box @if($fecha_r != date('Y-m-d')) collapsed-box @endif" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px;">
-				   	  		<div class="box-header with-border" style="background-color: white; color: black;font-family: 'Helvetica general3';border-bottom: #004AC1;">
-				   	  			<div class="row">
-				   	  				<div class="col-md-5">
-                                       @if(!is_null($ordend->fecha_orden))
-                                            @php 
-					                         $dia =  Date('N',strtotime($ordend->fecha_orden)); 
-					                         $mes =  Date('n',strtotime($ordend->fecha_orden)); 
-					                        @endphp
-					                        <b>
-					                        @if($dia == '1') Lunes 
-			                                 @elseif($dia == '2') Martes
-			                                 @elseif($dia == '3') Miércoles 
-			                                 @elseif($dia == '4') Jueves 
-			                                 @elseif($dia == '5') Viernes 
-			                                 @elseif($dia == '6') Sábado 
-			                                 @elseif($dia == '7') Domingo 
-	                                        @endif
-	                                         {{substr($ordend->fecha_orden,8,2)}} de
-	                                        @if($mes == '1') Enero 
-				                                 @elseif($mes == '2') Febrero 
-				                                 @elseif($mes == '3') Marzo 
-				                                 @elseif($mes == '4') Abril 
-				                                 @elseif($mes == '5') Mayo 
-				                                 @elseif($mes == '6') Junio 
-				                                 @elseif($mes == '7') Julio 
-				                                 @elseif($mes == '8') Agosto 
-				                                 @elseif($mes == '9') Septiembre 
-				                                 @elseif($mes == '10') Octubre 
-				                                 @elseif($mes == '11') Noviembre 
-				                                 @elseif($mes == '12') Diciembre 
-	                                        @endif
-	                                        del {{substr($ordend->fecha_orden,0,4)}}</b>  
-                                        @endif
-                                    </div>
-		                            <div class="col-md-5">
-		                            	<div>
-											<span style="font-family: 'Helvetica general'; font-size: 12px">Dr (a): </span> 
-											<span style="font-size: 12px">@if(!is_null($xdoctor->nombre1))  
-											{{$xdoctor->nombre1}} {{$xdoctor->apellido1}}@endif</span>
-									    </div>
-                                    </div>
-		                            <div class="col-md-1" style="color: white"> 
-						                  @if(!is_null($ordend->id)) 
-						                    {{$ordend->id}}
-						                  @endif
-                                    </div>
-                                   
-		                            <div class="pull-right box-tools" style="padding-top: 4px;">
-			                        	<button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-			                            <i class="fa fa-plus"></i></button>
-		                    	    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-	                                  	<span style="font-family: 'Helvetica general'; font-size: 12px">Procedimientos:</span>
-									</div>
-                                    <div class="col-md-12">
-                                    	@if(!is_null($ordend->orden_tipo))
-	                          
-		                                    @foreach($ordend->orden_tipo as $tipo) 
+                        <div id="procedimiento_orden_eliminado{{$ordend->id}}" class="box hc4-procedure-order-card @if($fecha_r != date('Y-m-d')) collapsed-box @endif">
+					@php
+						$diasOrden = [1 => 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+						$mesesOrden = [1 => 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+						$fechaOrdenTexto = '';
+						if (!is_null($ordend->fecha_orden)) {
+							$fechaOrdenTimestamp = strtotime($ordend->fecha_orden);
+							$fechaOrdenTexto = $diasOrden[(int) date('N', $fechaOrdenTimestamp)].' '.date('d', $fechaOrdenTimestamp).' de '.$mesesOrden[(int) date('n', $fechaOrdenTimestamp)].' del '.date('Y', $fechaOrdenTimestamp);
+						}
 
-		                                        <span style="font-size: 10px;margin-right: 5px;border-radius: 2px;" class="badge badge-primary"> 
-												    @php 
-													    $pflag = 0; 
-													@endphp 
-													@foreach($tipo->orden_procedimiento as $proc) 
-													    @if(!$pflag) 
-														    @php 
-															  $pflag=1; 
-															@endphp 
-														@else + @endif 
-															{{$proc->procedimiento->observacion}} 
-													@endforeach 
-									            </span> 
-				                            
-				                            @endforeach 
-	                                    @endif
-                                    </div>
-									<div class="col-2" style="margin-right: 10px" >
-                                    <div class="btn" style="color: white; background-color: red;">
-                                        <a class="fa fa-trash "  onclick="eliminar_orden_procedimiento({{$ordend->id}});" ><span style="font-size: 13px">&nbsp;Eliminar</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                </div>
-				   	  		</div>
+						$nombresResumen = [];
+						foreach (($ordend->orden_tipo ?? []) as $tipo) {
+							foreach (($tipo->orden_procedimiento ?? []) as $proc) {
+								if (!is_null($proc->procedimiento)) {
+									$nombresResumen[] = $proc->procedimiento->observacion ?: $proc->procedimiento->nombre;
+								}
+							}
+						}
+						$procedimientosResumen = implode(' + ', $nombresResumen);
+					@endphp
+					<div class="box-header with-border hc4-procedure-order-summary hc4-procedure-order-summary--grid">
+						<div class="hc4-procedure-order-summary__date">{{$fechaOrdenTexto}}</div>
+						<div class="hc4-procedure-order-summary__doctor">
+							<strong>Dr (a):</strong>
+							@if(!is_null($xdoctor)) {{$xdoctor->nombre1}} {{$xdoctor->apellido1}} @else No asignado @endif
+						</div>
+						<div class="hc4-procedure-order-summary__right">
+							<div class="hc4-procedure-order-summary__procedures">
+								<span>{{$procedimientosResumen !== '' ? $procedimientosResumen : 'Sin procedimientos seleccionados'}}</span>
+							</div>
+							<div class="hc4-procedure-order-summary__tools box-tools">
+								<span class="hc4-procedure-order-summary__id">Orden #{{$ordend->id}}</span>
+								<button type="button" class="hc4-procedure-order-summary__delete" onclick="eliminar_orden_procedimiento({{$ordend->id}});" title="Eliminar orden">
+									<i class="fa fa-trash" aria-hidden="true"></i><span class="sr-only">@lang('hc4.eliminar')</span>
+								</button>
+								<button type="button" class="btn btn-sm hc4-procedure-order-summary__toggle" data-widget="collapse" title="Mostrar u ocultar orden">
+									<i class="fa fa-plus"></i>
+								</button>
+							</div>
+						</div>
+					</div>
 				   	  		<div class="box-body" style="background: white;">
 				   	  			<div class="col-md-12 col-sm-12 col-12" style="padding-left: 10px; padding-right: 5px; margin-bottom: 5px">
-                                <div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
+                                <div class="box hc4-procedure-order-detail">
                                     
-                                    <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-					  					<div class="row">
-						  					<div class="col-sm" style="margin-right: 10px">
+                                    <div class="box-header with-border hc4-procedure-order-detail__header">
+									<div class="row hc4-procedure-order-detail__header-row">
+						  					<div class="col-3" style="margin-right: 10px">
 						    					<div class="btn" style="color: white">
-								    				<a class="fa fa-pencil-square-o " onclick="editar_orden_proendospico({{$ordend->id}},'{{$paciente->id}}');" ><span style="font-size: 13px">&nbsp;Editar</span>
+											<a class="fa fa-pencil-square-o " onclick="editar_orden_proendospico({{$ordend->id}},'{{$paciente->id}}', this);" ><span style="font-size: 13px">&nbsp;@lang('hc4.editar')</span>
 								    				</a>
 							    				</div>
 						    				</div>
-						    				<div class="col-sm" style="text-align: center;padding-top: 6px"> 
-						  						<span >Detalle de Orden</span>
+						    				<div class="col-4" style="text-align: center;padding-top: 6px"> 
+											<span class="sr-only">@lang('hc4.detalleOrden')</span>
 						  					</div>
-						  					<div class="col-sm" style="text-align: right;padding-top: 6px">
-									           <a class="btn btn-danger" id="desc{{$ordend->id}}" onclick="descargar({{$ordend->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Orden</a>
+						  					<div class="col-4" style="text-align: right;padding-top: 6px">
+											<a class="btn btn-danger" onclick="descargar({{$ordend->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> @lang('hc4.descargarOrden')</a>
 									        </div>
-									        @if($mostrar)
-									        <div class="col-sm" style="text-align: center;padding-top: 6px">
-									           <a class="btn btn-danger" id="desc{{$ordend->id}}" onclick="descargarCIR({{$ordend->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> CIR</a>
-									        </div>
-									        @endif
 					  					</div>
 					  			    </div>
                                 <div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="xorden{{$ordend->id}}">
@@ -622,9 +552,9 @@
         var opcion = confirm("Estas Seguro que deseas borrar el procedimiento?");
         if (opcion == true) {
             $.ajax({
-                type: "GET",
+                type: "DELETE",
                 url: "{{asset('/')}}/orden/procedimientos/eliminar/"+id,
-                data: "",
+                data: {'_token': '{{ csrf_token() }}'},
                 datatype: "html",
                 success: function(datahtml, entra){
                     document.getElementById( 'procedimiento_orden_eliminado'+id ).style.display = 'none';
@@ -641,9 +571,9 @@
     function agregar_orden_proendospico(){
     	$.ajax({
 			async: true,
-			type: "GET",
+			type: "POST",
 			url: "{{route('hc4_orden_proc_endoscopico',['tipo' => '0', 'paciente' => $paciente->id ])}}", 
-			data: "",
+			data: {'_token': '{{ csrf_token() }}'},
 			datatype: "html",
 			success: function(datahtml){
 				
@@ -658,10 +588,18 @@
 
     
     //Funcion Editar Orden de Procedimiento Endoscopico
-    function editar_orden_proendospico(id_orden,id_paciente){
-
-    	
-    	$.ajax({
+    function editar_orden_proendospico(id_orden,id_paciente,boton){
+		var $boton = $(boton);
+		var contenidoOriginal = $boton.html();
+		if (window.tinymce) {
+			$("#xorden"+id_orden).find('[id]').each(function() {
+				var editor = tinymce.get(this.id);
+				if (editor) { editor.remove(); }
+			});
+		}
+		$boton.addClass('disabled').css('pointer-events', 'none').html('<i class="fa fa-spinner fa-spin"></i> Cargando');
+		$("#xorden"+id_orden).html('<div style="padding:25px;text-align:center;color:#087eae"><i class="fa fa-spinner fa-spin"></i> Cargando edición...</div>');
+		$.ajax({
 			type: "GET",
 			url: "{{route('editar.orden_procedimiento_endoscopico')}}/"+id_orden+'/'+id_paciente, 
 			data: "",
@@ -670,7 +608,10 @@
 			   $("#xorden"+id_orden).html(datahtml);
 			},
 			error:  function(){
-				alert('error al cargar');
+				$("#xorden"+id_orden).html('<div class="alert alert-danger">No se pudo cargar la edición.</div>');
+			},
+			complete: function(){
+				$boton.removeClass('disabled').css('pointer-events', '').html(contenidoOriginal);
 			}
 		});	
 	}
@@ -680,18 +621,9 @@
        window.open('{{url('imprimir/orden_hc4/endoscopico')}}/'+id_or,'_blank');  
     }
 
-    ////Descarga Orden de Procedimiento Endoscopico CIR
-    function descargarCIR(id_or){
-    	window.open('{{url('imprimir/orden_hc4/endoscopico/cir')}}/'+id_or,'_blank');  
-    }
-
 </script>
-
 <script type="text/javascript">
-  
-  
   function formato_012(id,id_orden, div) {
-
     $.ajax({
       type: 'GET',
       url:"{{url('hc4/formato012')}}/"+id+"/"+id_orden,
@@ -707,5 +639,4 @@
       }
     });
   }
-      
 </script>

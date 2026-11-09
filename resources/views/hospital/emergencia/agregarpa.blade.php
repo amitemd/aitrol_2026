@@ -153,9 +153,9 @@
 //Function para agregar el nuevo paciente
     function cargar_nuevopaciente(){
       $.ajax({
-        type: "GET",
+        type: "POST",
         url: "{{route('hospital.registropac')}}",
-        data: "",
+        data: {'_token': '{{ csrf_token() }}'},
         datatype: "html",
         success: function(datahtml){
           $("#area_trabajo").html(datahtml);

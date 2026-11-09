@@ -1,32 +1,21 @@
 <!DOCTYPE html>
 <html>
 	<head>
+	    <meta charset="utf-8">
 	  
 	    <title>PROTOCOLO OPERATORIO CPRE+ECO</title>
 
 	  	<style>	
 	  		@page { margin: 80px 30px; }
 		    #header { position: fixed; left: 0px; top: -50px; right: 0px; height: 150px; text-align: center; }
-		    #content { position: fixed; left: 0px; top: 20px; right: 0px; height: 1500px; }
+		    #content { position: fixed; left: 0px; top: 20px; right: 0px; height: 150px; }
 		    #footer { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 150px; }
 		</style>
 	</head>
 	<body>	  
-		@php
-			if($protocolo->procedimiento->id_empresa!=null){
-				$empresa = $protocolo->procedimiento->empresa;
-			}else{
-				$empresa = $agenda->empresa;
-			}
-
-		@endphp
 		<div id="header">
 			@if($protocolo->historiaclinica->id_seguro != 5)
-				@if(!is_null($empresa->logo_form))
-				<div style="width: 150px;float:left;"><img style="margin: 0;width: 150px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></div>
-				@else
-				<div style="width: 200px;float:left;"><span><b>{{$empresa->nombre_form}}</b></span></div>
-				@endif
+				<div style="width: 150px;float:left;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/logo1391707460001.png'}}"	></div>
 			@endif
 			<h2 align="center" >PROTOCOLO OPERATORIO</h2>
 		</div>
@@ -149,8 +138,7 @@
 						</tr>
 						<tr>
 							<td width="85"><b>ANESTESIOLOGO: </b></td>
-							<td colspan="5">Dr(a). {{$protocolo->usuario_anestesiologo->apellido1}} @if($protocolo->usuario_anestesiologo->apellido2!='N/A'){{$protocolo->usuario_anestesiologo->apellido2}}@endif {{$protocolo->usuario_anestesiologo->nombre1}} @if($protocolo->usuario_anestesiologo->nombre2!='N/A'){{$protocolo->usuario_anestesiologo->nombre2}}@endif</td>
-							<!--<td colspan="5">Dr(a). VARGAS MARIO</td>-->
+							<td colspan="5">Dr(a). VARGAS MARIO</td>
 						</tr>
 						<tr>
 							<td width="85"><b>AYUDANTE: </b></td>
@@ -161,7 +149,7 @@
 							<td width="85"><b>FECHA DE OPERACION</b></td>
 							<td width="85">@if(!is_null($cpre_eco)){{$cpre_eco->fecha_operacion}}@endif</td>
 							<td width="100"><b>TIPO DE ANESTESIA: </b></td>
-							<td width="85">@if(!is_null($cpre_eco))@if($cpre_eco->tipo_anestesia=='GENERAL90' || $cpre_eco->tipo_anestesia=='GENERAL120' || $cpre_eco->tipo_anestesia=='GENERAL150' || $cpre_eco->tipo_anestesia=='GENERAL180' || $cpre_eco->tipo_anestesia=='GENERAL210') GENERAL @else {{$cpre_eco->tipo_anestesia}} @endif @endif</td>
+							<td width="85">@if(!is_null($cpre_eco))@if($cpre_eco->tipo_anestesia=='GENERAL90') GENERAL @else {{$cpre_eco->tipo_anestesia}} @endif @endif</td>
 							<td width="85"></td>
 							<td width="85"></td>
 						</tr>
@@ -191,8 +179,7 @@
 				
 				<h4 style="padding-left: 35px;">HALLAZGOS QUIRURGICOS</h4>
 				<h4 style="padding-left: 5px;">TECNICAS QUIRURGICAS</h4>
-				<!--div style="width: 95%;padding-left: 10px;font-size: 11px !important;">@if(!is_null($cpre_eco))<?php echo $cpre_eco->hallazgos; ?>@endif</div-->
-				<div>@if(!is_null($cpre_eco))<?php echo $cpre_eco->hallazgos; ?>@endif</div>
+				<div style="width: 95%;padding-left: 10px;font-size: 11px !important;">@if(!is_null($cpre_eco))<?php echo $cpre_eco->hallazgos; ?>@endif</div>
 				<table >
 					<tbody>
 						<tr >
@@ -249,18 +236,18 @@
 		</div>	
 
 		<div id="footer">
-			<br>
-			<span><i><b>Firma:</b></i></span>
-			<br>
-			<p style="text-align: center;">
-				@if(!is_null($firma))
-					<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
-					<b style="font-size: 10px;">@if(!is_null($cpre_eco))Dr(a). {{$cpre_eco->doctor_firma->apellido1}} @if($cpre_eco->doctor_firma->apellido2!='N/A'){{$cpre_eco->doctor_firma->apellido2}}@endif {{$cpre_eco->doctor_firma->nombre1}} @endif</b><br>
-				@else
-					<br><br><br>
-					<b style="font-size: 10px;">@if(!is_null($cpre_eco))Dr(a). {{$cpre_eco->doctor_firma->apellido1}} @if($cpre_eco->doctor_firma->apellido2!='N/A'){{$cpre_eco->doctor_firma->apellido2}}@endif {{$cpre_eco->doctor_firma->nombre1}} @endif</b><br>
-				@endif
-			</p>
-		</div> 	
+		<br>
+		<span><i><b>Firma:</b></i></span>
+		<br>
+		<p style="text-align: center;">
+			@if(!is_null($firma))
+				<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
+				<b style="font-size: 10px;">@if(!is_null($cpre_eco))Dr(a). {{$cpre_eco->doctor_firma->apellido1}} @if($cpre_eco->doctor_firma->apellido2!='N/A'){{$cpre_eco->doctor_firma->apellido2}}@endif {{$cpre_eco->doctor_firma->nombre1}} @endif</b><br>
+			@else
+				<br><br><br>
+				<b style="font-size: 10px;">@if(!is_null($cpre_eco))Dr(a). {{$cpre_eco->doctor_firma->apellido1}} @if($cpre_eco->doctor_firma->apellido2!='N/A'){{$cpre_eco->doctor_firma->apellido2}}@endif {{$cpre_eco->doctor_firma->nombre1}} @endif</b><br>
+			@endif
+		</p>
+	</div> 	
 	</body>
-</html>			
+</html>

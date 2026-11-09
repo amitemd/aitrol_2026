@@ -53,7 +53,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
         </table>
         <table class="table" style="width: 100%;">
             <tr>
-                <td class="td" style="font-weight: bold;">2. NOMBRE DEL ESTABLECIMIENTO DE SALUD: </td>
+                <td class="td" style="font-weight: bold;">2. NOMBRE DEL ESTABLECIMIENTO DE SALUD: {{$empresa->razonsocial}}</td>
             </tr>
         </table>
         <table class="table" style="width: 100%;">
@@ -144,7 +144,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Consiste en la exploración del recto y del colon (intestino grueso) e incluso los últimos centímetros del intestino delgado. Se realiza con un tubo flexible que se introduce por el ano. El instrumental médico denominado endoscopio (colonoscopio) lleva un sistema de iluminación y una cámara. </td>
-                    <td><img style="height:100px;margin:15px" src="{{public_path('/imagenes/colono.jpg')}}" /></td>
+                    <td><img style="height:100px;margin:15px" src="{{base_path('public/imagenes/colono.jpg')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -239,8 +239,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

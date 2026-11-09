@@ -78,10 +78,12 @@ class Imagenes_PacienteController extends Controller
         //dd($pro_final_0);
         // dd($pro_completo_0);
 
-        $doctores = User::where('id_tipo_usuario', 3)->OrderBy('apellido1')->get();
+        $doctores      = User::where('id_tipo_usuario', 3)->OrderBy('apellido1')->get();
+        $anestesiologo = User::where('id_tipo_usuario', 9)->OrderBy('apellido1')->get();
+        $sedaciones    = DB::table('hc_sedacion')->get();
         //dd($doctores);
 
-        return view('hc4/imagenes_paciente/index', ['paciente' => $paciente, 'procedimientos1' => $pro_completo_0, 'procedimientos2' => $pro_final_0, 'doctores' => $doctores]);
+        return view('hc4/imagenes_paciente/index', ['paciente' => $paciente, 'procedimientos1' => $pro_completo_0, 'procedimientos2' => $pro_final_0, 'doctores' => $doctores, 'anestesiologo' => $anestesiologo, 'sedaciones' => $sedaciones]);
     }
 
     public function seleccion_descargar($id_protocolo)

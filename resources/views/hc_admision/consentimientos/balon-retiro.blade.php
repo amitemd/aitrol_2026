@@ -144,7 +144,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Este procedimiento consiste en la extracción vía endoscópica del balón intragástrico colocado previamente con intención de perder peso, Se programa su retiro por haber cumplido el tiempo de permanencia del balón en el estómago, que puede ser de 6 a 12 meses o retiro prematuro por intolerancia al balón. </td>
-                    <td><img style="height:100px;margin:15px" src="{{public_path('/imagenes/balon-retiro.jpg')}}" /></td>
+                    <td><img style="height:100px;margin:15px" src="{{base_path('public/imagenes/balon-retiro.jpg')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -237,7 +237,12 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 
             </tr>
 
+            <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
             <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>

@@ -20,7 +20,7 @@
                         <div class="form-group col-md-7">
                             <label>{{trans('hospitalizacion.Desayunos')}}</label>
                             <select id="desayunos"  name="desayunos" class="form-control">
-                                <option selected>{{trans('hospitalizacion.Seleccionar...')}}</option>
+                                <option selected>{{trans('hospitalizacion.SeleccionarOpcion')}}</option>
                                 <option>{{trans('hospitalizacion.salmónahumado')}}</option>
                                 <option>{{trans('hospitalizacion.Pitaconguacamole')}}</option>
                                 <option>{{trans('hospitalizacion.Bocadillovegetal')}}</option>

@@ -23,6 +23,7 @@
                 <td style="text-align: center;">
                     <button class="btn btn-primary bg-green" id="boton_enviar" onclick="guardar();" type="button">
                         <i class="fa fa-plus" aria-hidden="true"></i>
+                        <span class="v3-action-label">Agregar antecedente</span>
                     </button>
                 </td>
             </tr>

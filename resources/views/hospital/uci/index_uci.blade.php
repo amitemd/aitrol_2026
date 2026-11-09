@@ -1,6 +1,7 @@
 @extends('layouts.app-template-h')
 @section('content')
     <div class="col-md-12">
+        @include('hospital.workflow.episode-links')
         <div class="row">
             <div class="col-md-6 col-xs-6" id="content">
 				

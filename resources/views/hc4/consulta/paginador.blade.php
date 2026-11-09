@@ -1,6 +1,154 @@
 @php
  $variable_timepicker = 'a'.rand(0,999);
 @endphp
+<style>
+    .hc4-consult-recipe-print-actions {
+        display: flex;
+        width: 100%;
+        align-items: stretch;
+        justify-content: center;
+        gap: 16px;
+        margin: 0;
+        padding: 10px 0;
+    }
+    .hc4-consult-recipe-print-action {
+        flex: 0 1 195px;
+        max-width: 195px;
+        padding: 0;
+    }
+    .hc4-consult-recipe-print-action > .btn {
+        display: flex !important;
+        height: 38px !important;
+        width: 100% !important;
+        min-height: 38px !important;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px !important;
+    }
+    .hc4-consult-recipe-print-action > .btn > .col-md-12,
+    .hc4-consult-recipe-print-action > .btn .row {
+        display: flex !important;
+        width: auto !important;
+        align-items: center !important;
+        justify-content: center;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .hc4-consult-recipe-print-action > .btn .col-md-2 {
+        flex: 0 0 18px;
+        width: 18px !important;
+        padding: 0 !important;
+    }
+    .hc4-consult-recipe-print-action > .btn .col-md-8 {
+        flex: 0 1 auto;
+        width: auto !important;
+        margin: 0 0 0 8px !important;
+        padding: 0 !important;
+    }
+    .hc4-consult-recipe-print-action > .btn label {
+        margin: 0 !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+        white-space: nowrap;
+    }
+    .hc4-recipe-medicine-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .hc4-recipe-medicine-actions > .btn {
+        float: none !important;
+        width: 100% !important;
+        max-width: 130px;
+        margin: 0 !important;
+    }
+    .hc4-consult-recipe-content {
+        clear: both;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .hc4-consult-recipe-editor {
+        width: 100%;
+        padding: 20px 15px 24px !important;
+        box-sizing: border-box;
+    }
+    .hc4-consult-recipe-editor-row {
+        display: flex !important;
+        align-items: stretch !important;
+        margin-right: -6px;
+        margin-left: -6px;
+    }
+    .hc4-consult-recipe-editor-column {
+        display: flex !important;
+        float: none !important;
+        align-self: stretch !important;
+        flex-direction: column;
+        padding-right: 6px;
+        padding-left: 6px;
+    }
+    .hc4-consult-recipe-editor-label {
+        display: block;
+        min-height: 20px;
+        margin: 0 0 6px !important;
+        color: #000000 !important;
+        font-family: 'Helvetica general';
+        font-weight: 700;
+        line-height: 20px;
+    }
+    .hc4-consult-recipe-editor-box {
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 200px;
+        box-sizing: border-box;
+    }
+    .hc4-consult-recipe-save {
+        clear: both;
+        width: 100%;
+        padding: 28px 0 20px;
+    }
+    .hc4-consult-recipe-save center {
+        display: flex;
+        justify-content: center;
+    }
+    .hc4-consult-recipe-save .col-4 {
+        float: none;
+        width: 100%;
+        max-width: 195px;
+        padding: 0;
+    }
+    .hc4-consult-recipe-save .btn {
+        display: inline-flex !important;
+        width: 195px !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 6px 12px !important;
+        line-height: 1 !important;
+    }
+    @media (max-width: 640px) {
+        .hc4-consult-recipe-print-actions {
+            flex-direction: column;
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        .hc4-consult-recipe-print-action {
+            flex-basis: auto;
+            width: 100%;
+            max-width: none;
+        }
+        .hc4-consult-recipe-editor-row {
+            display: block !important;
+        }
+        .hc4-consult-recipe-editor-column + .hc4-consult-recipe-editor-column {
+            margin-top: 16px;
+        }
+    }
+</style>
 <div class="infinite-scroll" >
 @if(count($procedimientos2)>0)
     @foreach($procedimientos2 as $value)
@@ -9,7 +157,7 @@
         @endphp
         <div  class="col-12" id="consulta{{$value->hc_id_procedimiento}}">
             <div class="box @if(substr($value->fechaini,0,10) != date('Y-m-d'))  collapsed-box @endif " style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-                <div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+                <div class="box-header with-border hc4-consultation-record-header" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
                 <div class="row">
                    <div class="col-3">
 
@@ -334,7 +482,7 @@
                                             <input class="form-control input-sm" id="cimc{{$value->hc_id_procedimiento}}" name="cimc" disabled style="width: 100%; border: 2px solid #004AC1;" rows="4"  @if($value->estado_cita!='4') readonly="yes" @endif @if(substr($value->fechaini,0,10) == date('Y-m-d')) onchange="guardar_protocolo({{$value->hc_id_procedimiento}}, {{$value->espid}})" @endif >
                                         </div>
                                     </div>
-                                    <h6><b>Clasificación Child Pugh</b></h6>
+                                    <h6 style="display: none;"><b>Clasificación Child Pugh</b></h6>
                                     @php
                                         $idusuario  = Auth::user()->id;
                                         $ip_cliente = $_SERVER["REMOTE_ADDR"];
@@ -365,7 +513,7 @@
                                         }
                                     @endphp
                                     <input type="hidden" name="id_child_pugh" value="{{$child_pugh->id}}">
-                                    <div class="row">
+                                    <div class="row" style="display: none;">
                                         <!--<input type="hidden" name="id_child_pugh" value="">-->
                                         <div class="col-md-2 col-6" style="padding: 1px;">
                                             <label for="ascitis" class="control-label" style="font-size: 12px">Ascitis</label>
@@ -418,7 +566,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    <div class="row" style="display: none;">
                                         <div class="col-md-3 col-6" style="padding: 1px;">
                                             <label for="puntaje" class="control-label" style="font-size: 12px">Puntaje</label>
                                             <input class="form-control input-sm" id="puntaje{{$value->hc_id_procedimiento}}" name="puntaje" disabled style="width: 100%; border: 2px solid #004AC1;" readonly="yes" >
@@ -499,7 +647,7 @@
                                 <center>
                                     <div class="col-md-12 col-sm-6 col-12" style="padding: 15px; ">
                                         @if($value->estado_cita=='4')
-                                        <button id="bagregar{{$value->hc_id_procedimiento}}{{$variable_tiempo}}" class="btn btn_agregar_diag btn-sm col-10" style=" color: white; @if($value->proc_consul=='1') display: none; @endif"><span class="glyphicon glyphicon-plus"> Agregar</span>
+                                        <button type="button" id="bagregar{{$value->hc_id_procedimiento}}{{$variable_tiempo}}" class="btn btn_agregar_diag btn-sm col-10" style=" color: white; @if($value->proc_consul=='1') display: none; @endif"><span class="glyphicon glyphicon-plus"> Agregar</span>
                                         </button>
                                         @endif
                                     </div>
@@ -539,9 +687,9 @@
                         @endphp
                         <input type="hidden" name="id_receta" value="{{$id_receta}}">
 
-                        <div class="col-md-12" >
-                            <div class="row">
-                                <div class="col-md-4 col-sm-4 col-4" style="margin: 10px; padding: 0px">
+                        <div class="col-md-12" style="padding: 0;">
+                            <div class="hc4-consult-recipe-print-actions">
+                                <div class="hc4-consult-recipe-print-action">
                                   <a target="_blank" class="btn btn-info btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime_hc4', ['id' => $id_receta, 'tipo' => '2']) }}">
                                   <div class="col-md-12" style="text-align: center; ">
                                     <div class="row" style="padding-left: 0px; padding-right: 0px;">
@@ -555,7 +703,7 @@
                                   </div>
                                   </a>
                                 </div>
-                                <div class="col-md-4 col-sm-4 col-4" style="margin: 10px; padding: 0px">
+                                <div class="hc4-consult-recipe-print-action">
                                   <a target="_blank" class="btn btn-info btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime_hc4', ['id' => $id_receta, 'tipo' => '1']) }}">
                                     <div class="col-md-12" style="text-align: center">
                                       <div class="row" style="padding-left: 0px; padding-right: 0px;">
@@ -590,7 +738,7 @@
 
 
 
-                        <div class="col-md-11 col-sm-11 col-11" style="margin-left: 8px;margin-right: 14px;margin-left: 14px;padding-right: 0px;padding-left: 0px;border-radius: 3px;">
+                        <div class="col-md-12 col-sm-12 col-12 hc4-consult-recipe-content" style="border-radius: 3px;">
                           <!--Contenedor Historial de Recetas-->
                             <div  style=" color: white; font-family: 'Helvetica general'; font-size: 16px; ">
                                 <div class="box-title" style=" margin-left: 10px">
@@ -608,12 +756,11 @@
                                                 <div class=" col-md-9 col-sm-9 col-12">
                                                   <input style="margin-bottom: 10px" value="" type="text" class="form-control" name="nombre_generico" id="nombre_generico{{$id_receta}}{{$variable_tiempo}}" placeholder="Nombre">
                                                 </div>
-                                                <div class="col-md-3">
+                                                <div class="col-md-3 hc4-recipe-medicine-actions">
                                                     <button type="button" class="btn btn-primary col-md-8 col-sm-8 col-12" style="background-color: #004AC1;"
                                                     onClick="buscar_nombre_medicina('{{$id_receta}}{{$variable_tiempo}}')">
                                                         <span class="fa fa-plus"></span> Agregar
                                                    </button>
-                                                   <br>
                                                    <a  style="background-color: #004AC1;" class="btn btn-primary col-md-8 col-sm-8 col-12 vademecum" data-toggle="modal_vade" data-target="#vademecum" data-remote="{{$id_receta}}{{$variable_tiempo}}">
                                                         Revisar Vademecum
                                                     </a>
@@ -639,12 +786,12 @@
                                 </div>
                             </div>
 
-                            <div class="contenedor2" id="receta{{$id_receta}}{{$variable_tiempo}}" style="padding-bottom: 20px; padding-right: 15px">
+                            <div class="contenedor2 hc4-consult-recipe-editor" id="receta{{$id_receta}}{{$variable_tiempo}}">
                                 <div class="col-md-12">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <span><b style="font-family: 'Helvetica general';" class="box-title">Rp</b></span>
-                                            <div id="trp{{$id_receta}}{{$variable_tiempo}}" style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #004AC1;">
+                                    <div class="row hc4-consult-recipe-editor-row">
+                                        <div class="col-md-6 hc4-consult-recipe-editor-column">
+                                            <span class="hc4-consult-recipe-editor-label">Rp</span>
+                                            <div class="hc4-consult-recipe-editor-box" id="trp{{$id_receta}}{{$variable_tiempo}}" style="border-radius:3px;border: 2px solid #004AC1;">
                                               <?php if (!is_null($rec)): ?>
                                                 <?php echo $rec->rp ?>
                                               <?php endif;?>
@@ -652,9 +799,9 @@
 
                                             <input type="hidden" value="{{$rec->rp}}" name="rp" id="rp{{$id_receta}}{{$variable_tiempo}}">
                                         </div>
-                                        <div class="col-md-6">
-                                            <span><b style="font-family: 'Helvetica general';" class="box-title">Prescripcion</b></span>
-                                            <div id="tprescripcion<?php echo e($id_receta); ?>{{$variable_tiempo}}"  style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #004AC1;">
+                                        <div class="col-md-6 hc4-consult-recipe-editor-column">
+                                            <span class="hc4-consult-recipe-editor-label">Prescripción</span>
+                                            <div class="hc4-consult-recipe-editor-box" id="tprescripcion<?php echo e($id_receta); ?>{{$variable_tiempo}}" style="border-radius:3px;border: 2px solid #004AC1;">
                                                 <?php if (!is_null($rec)): ?>
                                                 <?php echo $rec->prescripcion ?>
                                                 <?php endif;?>
@@ -885,7 +1032,7 @@
                                 guardar_receta('{{$value->hc_id_procedimiento}}');
                             });
                         </script>
-                        <div class="col-12">
+                        <div class="col-12 hc4-consult-recipe-save">
                             <center>
                                 <div class="col-4">
                                     <button style="font-size: 15px; margin-bottom: 15px; height: 100%; width: 100%"  type="button" class="btn btn-info btn_ordenes" id="bguardar{{$id_receta}}{{$variable_tiempo}}" onclick="guardar_protocolo({{$value->hc_id_procedimiento}}, {{$value->espid}})"  ><span class="fa fa-floppy-o"></span>&nbsp;Guardar

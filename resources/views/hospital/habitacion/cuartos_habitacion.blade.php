@@ -2,20 +2,75 @@
 @section('content')
 
 <style>
-  .caja {
-    margin-bottom: 10px;
-    border-radius: 10px;
-    color: white;
+  .room-patient-list {
+    --room-navy: #07375f;
+    --room-blue: #0b6fac;
+    --room-cyan: #22b8cf;
+    --room-soft: #edf8fb;
+    --room-border: #d2e7ef;
+    --room-text: #17324d;
+    --room-muted: #647b8e;
+    color: var(--room-text);
   }
 
-  .cuarto {
-    margin-bottom: 10px;
+  .room-patient-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+    padding: 22px 24px;
+    border: 1px solid var(--room-border);
+    border-radius: 12px;
+    background: radial-gradient(circle at 12% 0, rgba(34, 184, 207, .2), transparent 34%), linear-gradient(125deg, #fff, #eef9fc);
+    box-shadow: 0 12px 30px rgba(7, 55, 95, .07);
+  }
+
+  .room-patient-hero h3 { margin: 0; color: var(--room-navy); font-size: 24px; font-weight: 900; }
+  .room-patient-hero p { margin: 6px 0 0; color: var(--room-muted); font-weight: 600; }
+  .room-patient-hero .hero-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-right: 10px;
+    border-radius: 10px;
+    background: var(--room-soft);
+    color: var(--room-blue);
+    vertical-align: middle;
+  }
+
+  .room-patient-card .card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .room-patient-card .card-title { margin: 0; color: var(--room-navy); font-size: 17px; font-weight: 900; }
+  .room-patient-count {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--room-soft);
+    color: var(--room-blue);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .room-patient-card .table-responsive { overflow-x: auto; }
+  .room-patient-card .table tbody tr { transition: background-color .15s ease; }
+  .room-patient-card .table tbody tr:hover { background: #f1f9fc; }
+  .room-patient-card .btn-primary { white-space: nowrap; }
+
+  @media (max-width: 767px) {
+    .room-patient-hero { align-items: flex-start; flex-direction: column; padding: 18px; }
+    .room-patient-hero .btn { width: 100%; }
   }
 </style>
 
-<div class="contetn" id="areachange">
-  <section class="card-header">
-    <h4>{{trans('hospitalizacion.GESTIONDECUARTOS')}}</h4>
+<div class="room-patient-list" id="areachange">
+  <section class="room-patient-hero">
+    <div>
+      <h3><span class="hero-icon"><i class="fa fa-user-injured"></i></span> Pacientes en habitación</h3>
+      <p>Consulta los pacientes hospitalizados y accede a su gestión clínica desde un solo lugar.</p>
+    </div>
+    <a href="{{route('hospital.gcuartos')}}" class="btn btn-outline-primary">
+      <i class="fa fa-arrow-left"></i> Volver a gestión de cuartos
+    </a>
   </section>
   <div class="modal fade bd-example-modal-lg" id="calendarModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -24,25 +79,14 @@
       </div>
     </div>
   </div>
-  <div class="card">
+  <div class="card room-patient-card">
+    <div class="card-header">
+      <h4 class="card-title"><i class="fa fa-procedures"></i> {{trans('hospitalizacion.PacientesenHabitación')}}</h4>
+      <span class="room-patient-count">{{$enhabitacion->count()}} registros</span>
+    </div>
     <div class="card-body">
       <div class="row">
-        <div class="col-md-12">&nbsp;</div>
         <div class="col-md-12">
-          <b>{{trans('hospitalizacion.PacientesenHabitacion')}}</b>
-        </div>
-        <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-6">
-              &nbsp;
-            </div>
-            <div class="col-md-6" style="text-align: right;">
-              <!-- <button class="btn btn-primary" type="button" onclick="excel()"> <i class="fa fa-file-excel"></i> </button> -->
-              &nbsp;
-            </div>
-          </div>
-        </div>
-        <div class="col-md-12" style="padding-top: 10px;">
           <div class="table table-responsive">
             <table id="example2" class="table table-striped table-hover-animation">
               <thead>
@@ -51,7 +95,7 @@
                   <th>{{trans('hospitalizacion.Paciente')}}</th>
                   <th>{{trans('hospitalizacion.Causa')}}</th>
                   <th>{{trans('hospitalizacion.Doctor')}}</th>
-                  <th>{{trans('hospitalizacion.Sala')}}</th>
+                  <th>{{trans('hospitalizacion.SalaHabitacion')}}</th>
                   <th>{{trans('hospitalizacion.Observacion')}}</th>
                   <th>{{trans('hospitalizacion.Estado')}}</th>
                   <th>{{trans('hospitalizacion.Accion')}}</th>
@@ -70,7 +114,7 @@
                   <td>{{$y->observaciones}}</td>
                   <td>@if($y->estado==1) <span class="badge badge-light-danger"> {{trans('hospitalizacion.Pendiente')}}</span> @elseif($y->estado==2) {{trans('hospitalizacion.ENHABITACION')}} @endif</td>
                   <!--td> @if(is_null($e)) @if($y->estado==1) <button class="btn btn-primary btn-sm bsz" type="button" onclick="promise('{{$y->id}}',this)"> <i class="fa fa-plus"></i> &nbsp; </button> @endif @endif </td-->
-                  <td><a class="btn btn-primary" href="{{route('hospitalizacion.show',['id'=>$e->id_cama,'ids'=>$e->id])}}"> {{trans('hospitalizacion.Gestion')}}</a></td>
+                  <td><a class="btn btn-primary" href="{{route('hospitalizacion.show',['id'=>$e->id_cama,'id_d'=>$e->id])}}"> {{trans('hospitalizacion.Gestion')}}</a></td>
                 </tr>
                 @endif
                 @endforeach
@@ -109,6 +153,7 @@
     'sInfoFiltered': true,
     "buttons": [{
         extend: 'copyHtml5',
+        text: "{{trans('hospitalizacion.Copiar')}}",
         className: 'btn btn-icon btn-outline-primary btn-sm',
         footer: true
       },
@@ -239,9 +284,9 @@
         console.log(data);
         if ((pacientes_memory.length) > 0) {
           console.log("error");
-          Swal.fire('Mensaje:', 'Ya se encuentra seleccionado un paciente', 'error');
+          Swal.fire("{{trans('hospitalizacion.Mensaje')}}", "{{trans('hospitalizacion.PacienteYaSeleccionado')}}", 'error');
         } else {
-          $('#anadir').append('<div class="col-md-12"> <div class="row"> <div class="col-md-12"> <div class="row"> <div> <b> Paciente Seleccionado:  </b> </div> &nbsp; <button type="button" onclick="reset(this)" class="btn btn-danger btn-sm"> <i class="fa fa-remove"> </i> </button> </div> </div> <div class="col-md-12"> <span class="badge bg-secondary">' + data.paciente + '</span> </div> <div class="col-md-12"> <b> Fecha y Hora: </b> </div> <div class="col-md-12"> <span class="badge bg-secondary">' + data.fecha + '</span>  </div> </div> </div>');
+          $('#anadir').append('<div class="col-md-12"> <div class="row"> <div class="col-md-12"> <div class="row"> <div> <b> {{trans('hospitalizacion.PacienteSeleccionado:')}}  </b> </div> &nbsp; <button type="button" onclick="reset(this)" class="btn btn-danger btn-sm"> <i class="fa fa-remove"> </i> </button> </div> </div> <div class="col-md-12"> <span class="badge bg-secondary">' + data.paciente + '</span> </div> <div class="col-md-12"> <b> {{trans('hospitalizacion.FechayHora:')}} </b> </div> <div class="col-md-12"> <span class="badge bg-secondary">' + data.fecha + '</span>  </div> </div> </div>');
           pacientes_memory.push({
             id: d
           });
@@ -253,20 +298,20 @@
 
       },
       error: function(xhr, status, error) {
-        alert('Error, contactase con el programador');
+        alert("{{trans('hospitalizacion.ErrorContactarSoporte')}}");
       }
     });
   }
 
   function freehabitation() {
     Swal.fire({
-      title: 'Esta seguro?',
-      text: "Se liberará todas las camas, y se pasaran a preparacion",
+      title: "{{trans('hospitalizacion.ConfirmarAccion')}}",
+      text: "{{trans('hospitalizacion.LiberarCamasTexto')}}",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Si'
+      confirmButtonText: "{{trans('hospitalizacion.Si')}}"
     }).then((result) => {
       if (result.isConfirmed) {
         location.href = "{{route('hospitalizacion.freehabitation')}}";
@@ -295,16 +340,16 @@
             location.href = "{{url('hospital/cuarto/paciente/')}}/" + id + "/" + dataurl;
 
           } else {
-            Swal.fire('Mensaje', 'Existe el paciente asignado', 'error');
+            Swal.fire("{{trans('hospitalizacion.Mensaje')}}", "{{trans('hospitalizacion.PacienteAsignado')}}", 'error');
           }
         },
         error: function(xhr, status, error) {
-          alert('Error, contactase con el programador');
+          alert("{{trans('hospitalizacion.ErrorContactarSoporte')}}");
         }
       });
 
     } else {
-      Swal.fire('Mensaje', 'Seleccione paciente primero', 'error');
+      Swal.fire("{{trans('hospitalizacion.Mensaje')}}", "{{trans('hospitalizacion.SeleccionePacientePrimero')}}", 'error');
     }
   }
 
@@ -322,7 +367,7 @@
         $("#calendarModal").modal("show");
       },
       error: function() {
-        alert('error al cargar');
+        alert("{{trans('hospitalizacion.ErrorCargar')}}");
       }
     });
 

@@ -2,10 +2,8 @@
 <html>
 
 @php
-//$fecha=date('Y-m-d');
-$fecha = substr($protocolo->historiaclinica->agenda->fechaini,0,10);
-//$hora = date('H:i:s');
-$hora = substr($protocolo->historiaclinica->agenda->fechaini,11);
+$fecha=date('Y-m-d');
+$hora = date('H:i:s');
 @endphp
 
 
@@ -24,6 +22,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
 <head>
+    <meta charset="utf-8">
     <title>ORDEN 12B</title>
     <style>
         @page {
@@ -50,12 +49,25 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         /** Define the footer rules **/
         footer {
+            display: table;
             position: fixed;
-            bottom: 0cm;
+            bottom: 30px;
             left: 0cm;
             right: 0cm;
-            height: 2cm;
+            width: 100%;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
         }
+
+        footer > span { display: table-cell; width: 50%; }
+        footer .document-name { text-align: right; }
+        .page-number:after { content: counter(page); }
 
         table {
             width: 100px;
@@ -172,21 +184,19 @@ $mesNacimiento = $fechaNacimiento->format('m');
 </head>
 
 <body>
+    <footer>
+        <span>SNS-MSP / HCU-form.012B / 2021</span>
+        <span class="document-name">IMAGENOLOGÍA - INFORME (<span class="page-number"></span>)</span>
+    </footer>
 
     <main>
-
-    <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-        @if(!is_null($protocolo->procedimiento->empresa))
-            @if(!is_null($protocolo->procedimiento->empresa->logo_form))
-            <p><img style="width:150px;height: 50px" src="{{base_path().'/storage/app/logo/'.$protocolo->procedimiento->empresa->logo_form}}" hspace=12></p>
-            @else
-            <p style="width:150px;height: 50px"><b>{{$protocolo->procedimiento->empresa->nombre_form}}</b></p>
-            @endif
-        @endif    
-        </div>
-
-        <br>
-
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <thead>
                 <tr>
@@ -202,10 +212,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td colspan="5" class="bg-green text-center"><b>NÚMERO DE ARCHIVO</b></td>
                 </tr>
                 <tr>
-                    <td class="text-center">{{$protocolo->procedimiento->historia->seguro->nombre}}</td>
-                    <td colspan="2" class="text-center">{{ $protocolo->procedimiento->empresa->unicodigo ?? '' }}</td>
-                    <td colspan="2" class="text-center">{{$protocolo->historiaclinica->agenda->empresa->nombrecomercial}}</td>
-                    <td class="text-center" colspan="4">{{$protocolo->historiaclinica->paciente->id}}</td>
+                    <td class="text-center" style="font-size: 12px;" >{{$protocolo->historiaclinica->seguro->nombre}}</td>
+                    <td colspan="2" class="text-center" style="font-size: 12px;">{{$protocolo->historiaclinica->agenda->empresa->unicodigo}}</td>
+                    <td colspan="2" class="text-center" style="font-size: 12px;">{{$protocolo->historiaclinica->agenda->empresa->nombrecomercial}}</td>
+                    <td class="text-center" colspan="4" style="font-size: 12px;">{{$protocolo->historiaclinica->paciente->id}}</td>
                     <td colspan="5"></td>
                 </tr>
                 <tr>
@@ -349,9 +359,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
                 <td class="td-border text-center" style="width:5%; height: 18px;">{{$fecha}}</td>
                 <td class="td-border text-center" style="width:5%; height: 18px;">{{$hora}}</td>
-                <td class="td-border text-center" style="width:14%; height: 18px;">@if($firma != null) {{$firma->doctor->nombre1}} @endif</td>
-                <td class="td-border text-center" style="width:14%; height: 18px;">@if($firma != null) {{$firma->doctor->apellido1}} @endif</td>
-                <td class="td-border text-center" style="width:14%; height: 18px;">@if($firma != null) @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif @endif</td>
+                <td class="td-border text-center" style="width:14%; height: 18px;">{{$protocolo->historiaclinica->agenda->doctor1->nombre1}}</td>
+                <td class="td-border text-center" style="width:14%; height: 18px;">{{$protocolo->historiaclinica->agenda->doctor1->apellido1}}</td>
+                <td class="td-border text-center" style="width:14%; height: 18px;">{{$protocolo->historiaclinica->agenda->doctor1->apellido2}}</td>
             </tr>
             <tr>
                 <td colspan="2" class="td-border bg-green text-center"><b>NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
@@ -361,21 +371,21 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
             <tr>
-                <td colspan="2" class="td-border text-center" style="width:12%; height:60px; font-size: 12px;"><b> @if($firma != null) {{ $firma->doctor->id }} @endif </b></td>
+                <td colspan="2" class="td-border text-center" style="width:12%; height:60px; font-size: 16px;"><b> @if ( isset ($protocolo->historiaclinica->agenda->doctor1)) {{$protocolo->historiaclinica->agenda->doctor1->id}} @endif </b></td>
                 <td colspan="2" class="text-center" style="height: 70px;">
                     <p style="text-align: center;"> 
                         @if(!is_null($firma) and $firma->firma != null)
                         <img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
                         @else
                         <br><br><br>
-                        <b style="font-size: 10px;"> @if($firma != null) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @endif</b><br>
+                        <b style="font-size: 10px;">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}}</b><br>
                         @endif
                     </p>
                 </td>
                 <td class="text-center" style="height: 50px;">
-                    @if($firma != null) @if($firma->sexo == '2') Dra. @else Dr. @endif  {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif <br>
+                    Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif<br>
                     @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
-                    Cedula No. {{$firma->doctor->id}} @endif
+                    MSP No. {{$protocolo->procedimiento->doctor_firma->id}}
                 </td>
             </tr>
             <tr>
@@ -383,10 +393,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                         prueba complementaria al diagnóstico clínico definitivo, motivo por el cual se recomienda
                         correlacionar con antecedentes clínicos/quirúrgicos, datos clínicos, exámenes de laboratorio
                         complementarios, así como seguimiento imagenológico del paciente.</b>
-            </tr>
-            <tr>
-                <td colspan="2"><b>SNS-MSP/HCU-form.012B/2021</b></td>
-                <td style="font-size: 14px;" colspan="3" class="text-right"><b>IMAGENOLOGÍA - INFORME</b></td>
             </tr>
             </tbody>
         </table>

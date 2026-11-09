@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
 	<title>ORDEN 013</title>
 	<style>
 		@page {
@@ -139,40 +140,42 @@
 </head>
 
 <body>
-	<header>
-		
-	</header>
-	<main>
-		<div class="box-body card" style="text-align: center">
-			@if(!is_null($empresa))
-				<img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:200px;height: 50px">
-			@endif
-		</div>
-		<table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-			<tbody>
-				<tr>
-					<td class="bg-green"><b>INSTITUCION DEL SISTEMA</b></td>
-					<td class="bg-green"><b>UNIDAD OPERATIVA</b></td>
-					<td class="bg-green"><b>COD UO</b></td>
-					<td colspan="3" style="text-align: center;" class="bg-green"><b>COD LOCALIZACION</b></td>
-					<td class="bg-green" rowspan="2"><b>NUMERO DE HISTORIA CLINICA</b></td>
-				</tr>
-				<tr>
-					<td rowspan="2"><b></b>{{ $seguro_nombre }}</td>
-					<td rowspan="2"><b>{{ $empresa->nombrecomercial }}</b></td>
-					<td rowspan="2"><b>{{$paciente->cod_val}}</b></td>
-					<td class="bg-green"><b>PARROQUIA</b></td>
-					<td class="bg-green"><b>CANTON</b></td>
-					<td class="bg-green"><b>PROVINCIA</b></td>
-				</tr>
-				<tr>
-					<td>{{$empresa->parroquia}}</td>
-					<td>{{$empresa->canton}}</td>
-					<td>{{$empresa->provincia}}</td>
-					<td>{{ $paciente->id }}</td>
-				</tr>
-			</tbody>
-		</table>
+    <header>
+    	    
+    </header>
+    <main>
+		<table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
+	    <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
+	        <tbody>
+	            <tr>
+	                <td class="bg-green"><b>INSTITUCION DEL SISTEMA</b></td>
+	                <td class="bg-green"><b>UNIDAD OPERATIVA</b></td>
+	                <td class="bg-green"><b>COD UO</b></td>
+	                <td colspan="3" style="text-align: center;" class="bg-green"><b>COD LOCALIZACION</b></td>
+	                <td class="bg-green" rowspan="2"><b>NUMERO DE HISTORIA CLINICA</b></td>
+	            </tr>
+	            <tr>
+	                <td rowspan="2"><b></b>{{ $seguro_nombre }}</td>
+	                <td rowspan="2"><b>{{ $empresa->nombrecomercial }}</b></td>
+	                <td rowspan="2"><b>{{$paciente->cod_val}}</b></td>
+	                <td class="bg-green"><b>PARROQUIA</b></td>
+	                <td class="bg-green"><b>CANTON</b></td>
+	                <td class="bg-green"><b>PROVINCIA</b></td>
+	            </tr>
+	             <tr>
+	                <td >TARQUI</td>
+	                <td >GUAYAQUIL</td>
+	                <td >GUAYAS</td>
+	                <td >{{ $paciente->id }}</td>
+	            </tr>
+	        </tbody>
+	    </table>
 		<br>
 		<table cellpadding="0" cellspacing="0" style="width: 100%;">
 			<tbody>
@@ -415,7 +418,7 @@
 				<td class="td-border"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
 			</tr>
 			<tr>
-				<td colspan="6"><b>SNS-MSP/HCU-form.013A/2021</b></td>
+				<td colspan="6"><b>SNS-MSP / HCU-form.013A / 2008</b></td>
 				<td colspan="5" class="text-right"><b>HISTOPATOLOGÍA-SOLICITUD</b></td>
 			</tr>
 		</table>

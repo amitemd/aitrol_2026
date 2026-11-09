@@ -145,7 +145,15 @@
 </div>
 
 	<script type="text/javascript">
+		@include('hc4.recetas._medicine_search_alert_js')
 		function buscar_nombre_medicina(div){
+			var medicineField = $("#nombre_generico"+div);
+			var medicineName = $.trim(medicineField.val());
+			if (!medicineName) {
+				window.hc4MedicineNotFound('');
+				medicineField.focus();
+				return;
+			}
 			///alert($("#nombre_generico"+div).val());
 			//console.log($("#nombre_generico"+div).val());
 	      	$.ajax({
@@ -153,10 +161,15 @@
 		        url:"{{route('buscar_nombre2.receta')}}",
 		        headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
 		        datatype: 'json',
-		        data: $("#nombre_generico"+div),
+		        data: medicineField,
 	          
 	            success: function(data){
-	            	console.log(data);
+				console.log(data);
+				if(data == '0'){
+					window.hc4MedicineNotFound(medicineName);
+					medicineField.focus();
+					return;
+				}
 	            	//alert('entra');
 	            	
 	            	if(data!='0'){
@@ -179,6 +192,7 @@
 	                }               
 	            },
 	            error: function(data){
+				window.hc4MedicineSearchError(data);
 	            }
 	      	});
 		} 
@@ -202,8 +216,9 @@
 		    var js_cedula = document.getElementById("id_paciente").value;
 		    var id = div.slice(0, -6);
 		    $.ajax({
-		        type: 'get',
-		        url:"{{url('detalle_receta/detalle_crear')}}"+"/"+id+"/"+med.id+"/"+js_cedula, 
+		        type: 'post',
+		        url:"{{url('detalle_receta/detalle_crear')}}"+"/"+id+"/"+med.id+"/"+js_cedula,
+		        headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
 		        datatype: 'json',
 		        success: function(data){
 	          
@@ -1603,20 +1618,56 @@ OTROS: ',
 
 <script type="text/javascript">
  
-    function guardar_consulta(id_paciente, id_agenda){
+    function guardar_consulta(id_paciente, id_agenda, overrideReason){
+        overrideReason = overrideReason || '';
         $.ajax({
 			//async: true,
-			type: "GET",
+			type: "POST",
 			url: "{{route('consulta.crear_nueva_consulta')}}/"+id_paciente+'/'+id_agenda, 
-			data: "",
-			datatype: "html",
-			success: function(datahtml){
-				//alert("!! CONSULTA CREADA !!");
-				$("#area_trabajo").html(datahtml);
-			},
-			error:  function(){
-				alert('error al cargar');
-			}
+			data: {
+                '_token': '{{ csrf_token() }}',
+                'clinical_override': overrideReason ? '1' : '0',
+                'clinical_override_reason': overrideReason
+            },
+            dataType: "json",
+            success: function(response){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Consulta agregada',
+                    text: response.message || 'La consulta fue agregada correctamente.',
+                    confirmButtonText: 'Entendido'
+                });
+            },
+			error:  function(xhr){
+				var response = xhr && xhr.responseJSON ? xhr.responseJSON : {};
+				var message = response.msn || response.message || response.error || 'No se pudo agregar la consulta.';
+				if (xhr && xhr.status === 409 && response.estado === 'conflicto_clinico') {
+					if (!response.puede_autorizar) {
+						Swal.fire({icon: 'warning', title: 'Episodio clínico activo', text: message + ' Solicita autorización a un médico responsable o a Sistemas.', confirmButtonText: 'Entendido'});
+						return;
+					}
+					Swal.fire({
+						icon: 'warning', title: 'Confirmar excepción clínica',
+						html: message + '<br><br><b>La autorización quedará auditada.</b>',
+						input: 'textarea', inputPlaceholder: 'Motivo clínico de la excepción (mínimo 10 caracteres)',
+						showCancelButton: true, confirmButtonText: 'Autorizar y continuar', cancelButtonText: 'Cancelar',
+						inputValidator: function(value) { if (!value || $.trim(value).length < 10) return 'Debes registrar un motivo clínico suficiente.'; }
+					}).then(function(result) {
+						if (result.isConfirmed && result.value) guardar_consulta(id_paciente, id_agenda, $.trim(result.value));
+					});
+					return;
+				}
+                if (window.Swal && typeof window.Swal.fire === 'function') {
+                    Swal.fire({
+                        icon: xhr && xhr.status === 409 ? 'warning' : 'error',
+                        title: xhr && xhr.status === 409 ? 'Atención clínica' : 'No se pudo agregar la consulta',
+                        text: message,
+                        confirmButtonText: 'Entendido'
+                    });
+                } else {
+                    console.error(message);
+                }
+            }
 		});
     }
 
@@ -1725,8 +1776,9 @@ OTROS: ',
         document.getElementById("tdiagnostico"+id+'{{date("his")}}').deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){
@@ -2086,4 +2138,3 @@ OTROS: ',
 
 </script>
 
- 

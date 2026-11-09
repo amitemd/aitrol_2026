@@ -18,8 +18,8 @@
   <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
 </div>
 
- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
-    <script src="http://malsup.github.com/jquery.form.js"></script> 
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+    <script src="https://malsup.github.com/jquery.form.js"></script>
  
     <script> 
         // wait for the DOM to be loaded 
@@ -29,4 +29,4 @@
                 alert("Thank you for your comment!"); 
             }); 
         }); 
-    </script> 
+    </script>

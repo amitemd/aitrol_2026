@@ -61,9 +61,19 @@ class FormulariosPDFController extends Controller
     }
 
     public function formulario001_pdf($id_solicitud){
+        abort_unless(
+            app(\Sis_medico\Services\ClinicalHospitalFormAvailabilityService::class)
+                ->isAvailable($id_solicitud, \Sis_medico\Services\ClinicalHospitalFormAvailabilityService::FORM_001),
+            404,
+            'El Formulario 001 todavía no tiene información de ingreso registrada.'
+        );
+
         $solicitud = Ho_Solicitud::find($id_solicitud);
         $id_empresa = Session::get('id_empresa');
-        $empresa = Empresa::find($id_empresa);;
+        $empresa = Empresa::find($id_empresa);
+        if (is_null($empresa) && !is_null($solicitud) && !is_null($solicitud->agenda)) {
+            $empresa = Empresa::find($solicitud->agenda->id_empresa);
+        }
         if(!is_null($solicitud)){
             $data['id_solicitud'] = $id_solicitud;
             $ho_log_solicitud = Ho_Log_Solicitud::where('id_ho_solicitud',$solicitud->id)->whereNotNull('id_agenda')->get();
@@ -177,8 +187,7 @@ class FormulariosPDFController extends Controller
             }         
             $view = View::make('pdf_hospital.formulario001',compact('data','empresa','edad','datos_paciente','seguro','paciente'))->render();
             $pdf  = App::make('dompdf.wrapper');
-            //$pdf->setPaper('A4');
-            $pdf->setPaper('A4', 'landscape');
+            $pdf->setPaper('A4', 'portrait');
             $pdf->loadHTML($view);
             return $pdf->stream('formulario001.pdf');
         }
@@ -203,7 +212,11 @@ class FormulariosPDFController extends Controller
         //$id_empresa = $request->session()->get('id_empresa');
         $empresa = Empresa::where('id', $id_empresa)->first();
         $paciente = paciente::find($id_paciente);
-        $consentimiento = Formato_consentimiento::where('estado', 1)->get();
+        $consentimiento = Formato_consentimiento::where('estado', 1)
+            ->whereNotNull('nombre')->where('nombre', '<>', '')
+            ->selectRaw('MIN(id) as id, MIN(nombre) as nombre')
+            ->groupBy(\Illuminate\Support\Facades\DB::raw('UPPER(TRIM(nombre))'))
+            ->orderBy('nombre')->get();
 
         return view('pdf_hospital/consentimiento_modal', ['paciente' => $paciente, 'consentimiento' => $consentimiento, 'empresa' => $empresa, 'agenda' => $agenda]);
     }

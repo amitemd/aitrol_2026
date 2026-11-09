@@ -635,8 +635,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-            type: 'get',
+            type: 'delete',
             url: "{{url('cie10/eliminar')}}/" + id_h, //epicrisis.eliminar
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: 'json',
 
             success: function(data) {

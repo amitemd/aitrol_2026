@@ -16,6 +16,7 @@ $fechaNacimiento = new DateTime($paciente->fecha_nacimiento);
 $mesNacimiento = $fechaNacimiento->format('m');
 ?>
 <head>
+    <meta charset="utf-8">
     <title>ORDEN 007</title>
     <style>
         @page {
@@ -42,12 +43,25 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         /** Define the footer rules **/
         footer {
+            display: table;
             position: fixed;
-            bottom: 0cm;
+            bottom: 30px;
             left: 0cm;
             right: 0cm;
-            height: 2cm;
+            width: 100%;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
         }
+
+        footer > span { display: table-cell; width: 50%; }
+        footer .document-name { text-align: right; }
+        .page-number:after { content: counter(page); }
 
         table {
             width: 100px;
@@ -164,6 +178,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
 </head>
 
 <body>
+    <footer>
+        <span>SNS-MSP / HCU-form.007 / 2021</span>
+        <span class="document-name">INTERCONSULTA - SOLICITUD (<span class="page-number"></span>)</span>
+    </footer>
     <header>
     </header>
     <main>
@@ -193,7 +211,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 </tr>
                 <tr>
                     <td class="text-center" colspan="2">IESS</td>
-                    <td class="text-center" colspan="2">026247</td>
+                    <td class="text-center" colspan="2">{{$empresa->unicodigo}}</td>
                     <td class="text-center" colspan="2">{{$empresa->nombre_corto}}</td>
                     <td class="text-center" colspan="2">{{$paciente->id}}</td>
                     <td class="text-center" colspan="2"></td>
@@ -419,10 +437,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     @endif
                 </td>
                 <td class="text-center" style="width:25%; height:60px;"></td>
-            </tr>
-            <tr>
-                <td colspan="2"><b>SNS-MSP/HCU-form.007/2021</b></td>
-                <td colspan="3" class="text-right"><b>INTERCONSULTA - SOLICITUD</b></td>
             </tr>
             </tbody>
         </table>

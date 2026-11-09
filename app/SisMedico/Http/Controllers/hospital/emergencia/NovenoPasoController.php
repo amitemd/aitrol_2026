@@ -19,6 +19,9 @@ class NovenoPasoController extends Controller
     }
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {

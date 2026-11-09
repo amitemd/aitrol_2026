@@ -139,13 +139,443 @@
 	    -webkit-transform:  translateY(-15px);
 	  }
 	}
+
+	.hospital-patient-workspace {
+		padding: 12px 14px 28px !important;
+		background:
+			radial-gradient(circle at 95% 2%, rgba(20, 145, 162, .1), transparent 28rem),
+			linear-gradient(180deg, #f4f8fb 0%, #edf3f7 100%);
+	}
+
+	.hospital-patient-workspace > .container-fluid {
+		padding-right: 0;
+		padding-left: 0;
+	}
+
+	.hospital-patient-hero {
+		position: relative;
+		overflow: hidden;
+		min-height: 82px;
+		margin: 0 0 14px !important;
+		padding: 18px 24px !important;
+		border: 1px solid rgba(255,255,255,.22);
+		border-radius: 16px !important;
+		background: linear-gradient(118deg, #123c68 0%, #126b8b 56%, #16969a 100%) !important;
+		box-shadow: 0 12px 28px rgba(18, 66, 105, .18);
+	}
+
+	.hospital-patient-hero::after {
+		content: '';
+		position: absolute;
+		top: -75px;
+		right: 8%;
+		width: 180px;
+		height: 180px;
+		border: 28px solid rgba(255,255,255,.07);
+		border-radius: 50%;
+	}
+
+	.hospital-patient-hero h1 {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		font-size: 20px !important;
+		letter-spacing: .2px;
+	}
+
+	.hospital-patient-hero h1 img { width: 42px !important; }
+
+	.hospital-patient-grid {
+		display: flex;
+		align-items: stretch;
+		margin-right: -6px;
+		margin-left: -6px;
+	}
+
+	.hospital-patient-grid > [class*="col-md-"] {
+		padding-right: 6px !important;
+		padding-left: 6px !important;
+	}
+
+	.hospital-patient-summary {
+		overflow: hidden;
+		margin: 0 !important;
+		border: 1px solid #cbdbe6 !important;
+		border-radius: 14px !important;
+		background: linear-gradient(135deg,#fff 0%,#f5fafc 100%);
+		box-shadow: 0 8px 22px rgba(29, 70, 103, .1);
+	}
+
+	.hospital-patient-summary > .col-md-12 {
+		padding: 16px 18px !important;
+	}
+
+	.hospital-patient-summary label {
+		color: #155d7d !important;
+		font-weight: 600;
+	}
+
+	.hospital-patient-summary table {
+		width: calc(100% - 40px);
+		margin: 8px 20px 12px !important;
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	.hospital-patient-summary table tr:first-child td {
+		padding: 4px 8px 5px 0;
+		color: #748296;
+		font-size: 10px !important;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	.hospital-patient-summary table tr:nth-child(2) td {
+		padding: 5px 8px 9px 0;
+		color: #27384b;
+		font-size: 12px !important;
+		font-weight: 600;
+	}
+
+	.hospital-patient-summary table tr:nth-child(2) td:first-child {
+		color: #b73e45 !important;
+		font-size: 17px !important;
+	}
+
+	.hospital-patient-summary input[type="text"],
+	.hospital-patient-summary textarea,
+	.hospital-patient-summary select {
+		min-height: 36px;
+		padding: 7px 10px;
+		border: 1px solid #cedae4;
+		border-radius: 8px;
+		background: #fbfdff;
+		box-shadow: inset 0 1px 2px rgba(38, 68, 93, .04);
+		transition: border-color .18s ease, box-shadow .18s ease;
+	}
+
+	.hospital-patient-summary textarea { width: 100%; min-height: 62px; resize: vertical; }
+	.hospital-patient-summary input:focus,
+	.hospital-patient-summary textarea:focus,
+	.hospital-patient-summary select:focus {
+		border-color: #1c8ba0;
+		box-shadow: 0 0 0 3px rgba(28,139,160,.12);
+		outline: none;
+	}
+
+	.hospital-patient-summary .btn_ordenes {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 42px;
+		padding: 8px 10px;
+		border: 1px solid #16798f;
+		border-radius: 9px;
+		background: linear-gradient(135deg, #126b8b, #16969a) !important;
+		box-shadow: 0 5px 12px rgba(18,107,139,.18);
+		transition: transform .18s ease, box-shadow .18s ease;
+	}
+
+	.hospital-patient-summary .btn_ordenes:hover {
+		color: #fff;
+		box-shadow: 0 8px 17px rgba(18,107,139,.27);
+		transform: translateY(-2px);
+	}
+
+	.hospital-patient-summary > .col-md-12 > .row {
+		display: flex;
+		align-items: flex-start;
+		margin-right: -8px;
+		margin-left: -8px;
+	}
+
+	.hospital-patient-summary > .col-md-12 > .row > [class*="col-"] {
+		padding-right: 8px !important;
+		padding-left: 8px !important;
+	}
+
+	.hospital-patient-summary form .row {
+		margin-right: -6px;
+		margin-left: -6px;
+	}
+
+	.hospital-patient-summary form .row > [class*="col-"] {
+		padding-right: 6px !important;
+		padding-left: 6px !important;
+	}
+
+	.hospital-patient-summary textarea { display:block; }
+
+	#area_trabajo {
+		width: 100%;
+		padding: 12px !important;
+	}
+
+	#area_trabajo > *,
+	#area_trabajo .container,
+	#area_trabajo .container-fluid,
+	#area_trabajo .box,
+	#area_trabajo .panel,
+	#area_trabajo .card {
+		width: 100%;
+		max-width: none;
+		margin-right: 0;
+		margin-left: 0;
+	}
+
+	#area_trabajo .box,
+	#area_trabajo .panel,
+	#area_trabajo .card {
+		overflow: hidden;
+		border: 1px solid #d2e0e7 !important;
+		border-radius: 13px !important;
+		background: #fff;
+		box-shadow: 0 7px 20px rgba(24,70,96,.09);
+	}
+
+	#area_trabajo .box-header,
+	#area_trabajo .panel-heading,
+	#area_trabajo .card-header,
+	.modal-content .modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 48px;
+		gap: 10px;
+		padding: 11px 15px !important;
+		border-bottom: 0 !important;
+		color: #fff !important;
+		background: linear-gradient(105deg,#123f68 0%,#117c97 68%,#19a7a8 100%) !important;
+	}
+
+	#area_trabajo .box-title,
+	#area_trabajo .panel-title,
+	#area_trabajo .card-title,
+	.modal-content .modal-title {
+		margin: 0 !important;
+		color: #fff !important;
+		font-size: 14px !important;
+		font-weight: 700;
+	}
+
+	#area_trabajo .box-body,
+	#area_trabajo .panel-body,
+	#area_trabajo .card-body,
+	.modal-content .modal-body { padding: 16px !important; }
+
+	#area_trabajo .row,
+	.modal-content .modal-body > .row {
+		margin-right: -7px;
+		margin-left: -7px;
+	}
+
+	#area_trabajo .row > [class*="col-"],
+	.modal-content .modal-body > .row > [class*="col-"] {
+		padding-right: 7px;
+		padding-left: 7px;
+	}
+
+	#area_trabajo .form-group,
+	.modal-content .form-group { margin-bottom: 13px; }
+
+	#area_trabajo .form-control,
+	#area_trabajo input,
+	#area_trabajo select,
+	#area_trabajo textarea,
+	.modal-content .form-control {
+		width: 100%;
+		min-height: 36px;
+		border: 1px solid #cedbe3;
+		border-radius: 8px;
+	}
+
+	#area_trabajo .table-responsive { width:100%; margin:0; overflow-x:auto; }
+	#area_trabajo table { width:100% !important; margin-bottom:0; }
+	#area_trabajo table th,
+	#area_trabajo table td { padding:9px 10px !important; vertical-align:middle !important; }
+
+	.modal-dialog {
+		display: flex;
+		align-items: center;
+		min-height: calc(100vh - 30px);
+		margin: 15px auto !important;
+	}
+
+	.modal-content {
+		width: 100%;
+		overflow: hidden;
+		border: 0;
+		border-radius: 15px;
+		box-shadow: 0 20px 55px rgba(10,38,55,.28);
+	}
+
+	.modal-content .modal-footer {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 8px;
+		padding: 12px 16px;
+	}
+
+	@media (max-width: 767px) {
+		.hospital-patient-summary > .col-md-12 > .row { display:block; }
+		#area_trabajo { padding:8px !important; }
+		.modal-dialog { min-height:calc(100vh - 16px); margin:8px auto !important; }
+	}
+
+	.hospital-clinical-modules .recuadro {
+		overflow: hidden;
+		height: 210px;
+		margin-bottom: 12px;
+		border: 1px solid #d3dee7;
+		border-radius: 12px;
+		background: #fff;
+		box-shadow: 0 6px 17px rgba(29, 70, 103, .09);
+		transition: transform .18s ease, box-shadow .18s ease;
+	}
+
+	.hospital-clinical-modules > .row {
+		margin-right: 0 !important;
+		margin-left: 0 !important;
+	}
+
+	.hospital-clinical-modules > .row > .col-md-12 > .row {
+		margin-right: -5px !important;
+		margin-left: -5px !important;
+	}
+
+	.hospital-clinical-modules > .row > .col-md-12 > .row > [class*="col-md-"] {
+		padding: 5px !important;
+	}
+
+	.hospital-clinical-modules .recuadro:hover {
+		box-shadow: 0 10px 23px rgba(29, 70, 103, .15);
+		transform: translateY(-2px);
+	}
+
+	.hospital-clinical-modules .fila1,
+	.hospital-clinical-modules .fila2,
+	.hospital-clinical-modules .fila3,
+	.hospital-clinical-modules .fila4 {
+		height: 42px;
+		background: linear-gradient(100deg, #145c82, #167f98) !important;
+	}
+
+	.hospital-clinical-modules .fila2 { background: linear-gradient(100deg, #176f91, #209bae) !important; }
+	.hospital-clinical-modules .fila3 { background: linear-gradient(100deg, #347ea5, #58a8c4) !important; }
+	.hospital-clinical-modules .recuadro .fila1 { border-bottom: 3px solid #32c2c5; }
+	.hospital-clinical-modules .recuadro .fila2 { border-bottom: 3px solid #55b6d0; }
+	.hospital-clinical-modules .recuadro .fila3 { border-bottom: 3px solid #8ccadf; }
+
+	.hospital-clinical-modules .box-header {
+		display: flex;
+		align-items: center;
+		min-height: 42px;
+		padding: 7px 10px;
+	}
+
+	.hospital-clinical-modules .box-header .box-title {
+		margin: 0;
+		font-size: 11px !important;
+		font-weight: 700;
+		letter-spacing: .2px;
+	}
+
+	.hospital-clinical-modules .box-tools { margin-left: auto; }
+	.hospital-clinical-modules .btn-box-tool {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		border: 1px solid rgba(255,255,255,.28);
+		border-radius: 8px;
+		background: rgba(255,255,255,.1);
+	}
+
+	.hospital-clinical-modules .box-body {
+		padding: 12px !important;
+		color: #34475a;
+		background: #fff;
+		font-size: 11px !important;
+	}
+
+	.hospital-clinical-modules .btn_ordenes,
+	.hospital-clinical-modules .btn-block {
+		border: 0;
+		border-radius: 7px;
+		background: #edf6f8 !important;
+		color: #126b83 !important;
+		font-weight: 600;
+	}
+
+	@media (max-width: 991px) {
+		.hospital-patient-grid { display: block; }
+		.hospital-clinical-modules { margin-top: 12px; }
+		.hospital-patient-summary table { display: block; overflow-x: auto; white-space: nowrap; }
+	}
+
+	html.dark-layout .hospital-patient-workspace {
+		color: #dce9f0;
+		background: linear-gradient(180deg,#10212d,#0e1c27) !important;
+	}
+	html.dark-layout .hospital-patient-summary,
+	html.dark-layout .hospital-clinical-modules .recuadro {
+		border-color: #365463 !important;
+		color: #dce9f0;
+		background: #182d3a !important;
+		box-shadow: 0 8px 22px rgba(0,0,0,.22);
+	}
+	html.dark-layout .hospital-patient-summary table,
+	html.dark-layout .hospital-patient-summary table td,
+	html.dark-layout .hospital-clinical-modules .box-body {
+		border-color: #324d5d !important;
+		color: #d7e5ed !important;
+		background: #182d3a !important;
+	}
+	html.dark-layout .hospital-patient-summary table tr:first-child td { color: #9eb4c1 !important; }
+	html.dark-layout .hospital-patient-summary table tr:nth-child(2) td { color: #e2edf3 !important; }
+	html.dark-layout .hospital-patient-summary label { color: #8bd5df !important; }
+	html.dark-layout .hospital-patient-summary input,
+	html.dark-layout .hospital-patient-summary textarea,
+	html.dark-layout .hospital-patient-summary select {
+		border-color: #3b5969;
+		color: #e2edf3;
+		background: #203845;
+	}
+	html.dark-layout #area_trabajo .box,
+	html.dark-layout #area_trabajo .panel,
+	html.dark-layout #area_trabajo .card,
+	html.dark-layout #area_trabajo .box-body,
+	html.dark-layout #area_trabajo .panel-body,
+	html.dark-layout #area_trabajo .card-body,
+	html.dark-layout .modal-content,
+	html.dark-layout .modal-content .modal-body,
+	html.dark-layout .modal-content .modal-footer {
+		border-color:#365463 !important;
+		color:#dce9f0 !important;
+		background:#182d3a !important;
+	}
+	html.dark-layout #area_trabajo input,
+	html.dark-layout #area_trabajo select,
+	html.dark-layout #area_trabajo textarea,
+	html.dark-layout #area_trabajo .form-control,
+	html.dark-layout .modal-content .form-control {
+		border-color:#3e5c6c !important;
+		color:#e1edf2 !important;
+		background:#203845 !important;
+	}
+	html.dark-layout #area_trabajo table,
+	html.dark-layout #area_trabajo table td { border-color:#35505f !important; color:#d7e5ed !important; background:#182d3a !important; }
+	html.dark-layout #area_trabajo table th { border-color:#405e6d !important; color:#eef7fa !important; background:#243e4b !important; }
 </style>
 <script type="text/javascript">
     function cargar_consulta(){
 			$.ajax({
-				type: "GET",
+				type: "POST",
 				url: "{{route('paciente.consulta', ['id_paciente' => $paciente->id])}}", 
-				data: "",
+				data: {'_token': '{{ csrf_token() }}'},
 				datatype: "html",
 				success: function(datahtml){
 					$("#area_trabajo").html(datahtml);
@@ -196,10 +626,10 @@
 	<input type="hidden" name="variable4" id="variable4">
 </form>
 
-<section class="content" >
+<section class="content hospital-patient-workspace" >
 	<div class="container-fluid" >      
 		<div class="row">       
-		    <div class="col-md-12" style="font-family: Helvetica;color: white; margin-top: 5px; padding: 10px; border-radius: 8px; background-image: linear-gradient(to right, #004AC1,#0C8BEC,#004AC1); margin-bottom: 10px">   
+		    <div class="col-md-12 hospital-patient-hero" style="font-family: Helvetica;color: white; margin-top: 5px; padding: 10px; border-radius: 8px; background-image: linear-gradient(to right, #004AC1,#0C8BEC,#004AC1); margin-bottom: 10px">
 		     	<div class="row">  
 			        <div class="col-md-7" style=""> 
 			            <h1 style="font-size: 15px; margin:0;">
@@ -226,11 +656,11 @@
 	</div>
 
 	<div class="container-fluid" >      
-		<div class="row">  
+		<div class="row hospital-patient-grid">
 			<div class="col-md-7"  style="padding-left: 5px; padding-right: 10px; " >
 				<div class="row">
 					<div class="col-md-12">
-						<div style="border: 2px solid #004AC1; border-radius: 8px; margin-left: 8px; margin-bottom: 5px" >
+						<div class="hospital-patient-summary" style="border: 2px solid #004AC1; border-radius: 8px; margin-left: 8px; margin-bottom: 5px" >
 							<div class="col-md-12" style="" >
 								<div class="row">
 									<div class="col-md-9 col-12" style="padding-left: 0px; padding-right: 15px;" >
@@ -531,7 +961,7 @@
 				</div>
 			</div>		
 
-			<div id="area_trabajo_2" class="col-md-5" style="padding-left: 0px; padding-right: 0px; ">
+			<div id="area_trabajo_2" class="col-md-5 hospital-clinical-modules" style="padding-left: 0px; padding-right: 0px; ">
 				<div class="row" style="margin-right: 25px;">
 					<!--parte 1-->
 					<div class="col-md-12" style="padding-left: 0px; padding-right: 0px;">

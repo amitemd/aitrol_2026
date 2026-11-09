@@ -19,6 +19,9 @@ public function __construct()
         $this->middleware('auth');
     }
     private function rol_new($opcion){
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
 
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion',$opcion)->where('id_tipo_usuario',$rolUsuario)->first();
@@ -204,7 +207,7 @@ public function __construct()
     }
     public function enable(Request $request){
         $idusuario  = Auth::user()->id;
-        $class= $request['class'];
+        $class = $request->input('class') === 'dark-layout' ? 'dark-layout' : 'light-layout';
         $classes="sun";
         if($class=='dark-layout'){
             $classes="moon";

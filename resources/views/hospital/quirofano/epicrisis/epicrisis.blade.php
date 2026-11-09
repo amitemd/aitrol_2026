@@ -90,8 +90,9 @@
     function agregar_epicrisis(){
         $.ajax({
             async: true,
-            type: "GET",
+            type: "POST",
             url: "{{route('quirofano.crear_epicrisis',[ 'id' => $solicitud->id ])}}",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml){
                 console.log(datahtml);

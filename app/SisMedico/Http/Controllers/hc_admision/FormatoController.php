@@ -192,69 +192,65 @@ class FormatoController extends Controller
 
     public function update(Request $request, $id)
     {
-
-
-         $id_empresa = $request->session()->get('id_empresa');
+        $id_empresa = $request->session()->get('id_empresa');
         $ip_cliente          = $_SERVER["REMOTE_ADDR"];
         $idusuario           = Auth::user()->id;
         //dd($request->all());
         $formato= FormatoDescargaInsumos::find($id);
         if(!is_null($request['codigo'])){
             $contador=0;
-            $id_formato=$formato->update([
-                'descripcion'=>$request['descripcion'],
-                'nota'=>$request['nota'],
-                'estado'=>$request['estado'],
-                'ip_modificacion'     => $ip_cliente,
-                'id_usuariomod'       => $idusuario,
-            ]);
-            foreach($request['id_detalle'] as $key=>$value){
-                //consulta ap
-                //dd($value);
-                if(!is_null($request['codigo'][$contador])){
-                    if($value=='-1'){
-                        $ap= ApProcedimiento::where('id',$request['codigo'][$contador])->first();
-                        if(!is_null($ap)){
-                            Detalle_Formato_Descargo::create([
-                                'id_formato'=>$id,
-                                'codigo'=>$request['codigo'][$contador],
-                                'nombre'=>$ap->descripcion,
-                                'cantidad'=>$request['cantidad'][$contador],
-                                'precio'=>$request['precio'][$contador],
-                                'ip_creacion'         => $ip_cliente,
-                                'ip_modificacion'     => $ip_cliente,
-                                'id_usuariocrea'      => $idusuario,
-                                'id_usuariomod'       => $idusuario,    
-                            ]);
-                        }
-                    }else{
-                        $ap= ApProcedimiento::where('id',$request['codigo'][$contador])->first();
-                        if(!is_null($ap)){
-                            $det= Detalle_Formato_Descargo::where('id_formato',$id)->get();
-
-                            $detalles= Detalle_Formato_Descargo::find($value);
-                            $detalles->codigo=$request['codigo'][$contador];
-                            $detalles->nombre=$ap->descripcion;
-                            $detalles->cantidad=$request['cantidad'][$contador];
-                            $detalles->cantidad=$request['precio'][$contador];
-                            $detalles->id_usuariomod=$idusuario;
-                            $detalles->ip_modificacion=$ip_cliente;
-                            $detalles->save();
-                            foreach($det as $z){
-                                if($z->id!=$value){
-                                    $zx= Detalle_Formato_Descargo::find($z->id);
-                                    $zx->delete();
+            if($formato!=null){
+                $id_formato=$formato->update([
+                    'descripcion'=>$request['descripcion'],
+                    'nota'=>$request['nota'],
+                    'estado'=>$request['estado'],
+                    'ip_modificacion'     => $ip_cliente,
+                    'id_usuariomod'       => $idusuario,
+                ]);
+                foreach($request['id_detalle'] as $key=>$value){
+                    //consulta ap
+                    //dd($value);
+                    if(!is_null($request['codigo'][$contador])){
+                        if($value=='-1'){
+                            $ap= ApProcedimiento::where('id',$request['codigo'][$contador])->first();
+                            if(!is_null($ap)){
+                                Detalle_Formato_Descargo::create([
+                                    'id_formato'=>$id,
+                                    'codigo'=>$request['codigo'][$contador],
+                                    'nombre'=>$ap->descripcion,
+                                    'cantidad'=>$request['cantidad'][$contador],
+                                    'precio'=>$request['precio'][$contador],
+                                    'ip_creacion'         => $ip_cliente,
+                                    'ip_modificacion'     => $ip_cliente,
+                                    'id_usuariocrea'      => $idusuario,
+                                    'id_usuariomod'       => $idusuario,    
+                                ]);
+                            }
+                        }else{
+                            $ap= ApProcedimiento::where('id',$request['codigo'][$contador])->first();
+                            if(!is_null($ap)){
+                                $det= Detalle_Formato_Descargo::where('id_formato',$id)->get();
+                                $detalles= Detalle_Formato_Descargo::find($value);
+                                $detalles->codigo=$request['codigo'][$contador];
+                                $detalles->nombre=$ap->descripcion;
+                                $detalles->cantidad=$request['cantidad'][$contador];
+                                $detalles->precio=$request['precio'][$contador];
+                                $detalles->id_usuariomod=$idusuario;
+                                $detalles->ip_modificacion=$ip_cliente;
+                                $detalles->save();
+                                foreach($det as $z){
+                                    if($z->id!=$value){
+                                        $zx= Detalle_Formato_Descargo::find($z->id);
+                                        $zx->delete();
+                                    }
                                 }
                             }
+                            
                         }
-                        
-                    }
+                    }   
+                    $contador++;
                 }
-
-               
-               
-                $contador++;
-            }
+            }           
         }
 
         return redirect()->route('formatosProductos.index');

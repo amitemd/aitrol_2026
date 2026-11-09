@@ -129,7 +129,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
                 <td style="font-weight: bold;">13. Gráfico de la Exploración </td>
             </tr>
             <tr>
-                <td><img class="centrado" src="{{public_path('/imagenes/retrogada.jpg')}}"></td>
+                <td><img class="centrado" src="{{base_path('public/imagenes/retrogada.jpg')}}"></td>
             </tr>
             <tr>
                 <td style="font-weight: bold;">14. DURACIÓN ESTIMADA DE LA EXPLORACIÓN:</td>

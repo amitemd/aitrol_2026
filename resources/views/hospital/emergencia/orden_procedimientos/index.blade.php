@@ -124,9 +124,9 @@
 
 		$.ajax({
 			async: true,
-			type: "GET",
+			type: "POST",
 			url: "{{route('decimopaso.procedimiento_crear',[ 'id' => $solicitud->id, 'tipo' => $tipo ])}}",
-			data: "",
+			data: {'_token': '{{ csrf_token() }}'},
 			datatype: "html",
 			success: function(datahtml){
 

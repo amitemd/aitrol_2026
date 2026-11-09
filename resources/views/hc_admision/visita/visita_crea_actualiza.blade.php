@@ -358,11 +358,6 @@
                                         </button>    
                                     </a>
                                 @endif    
-                                @if(!is_null($cardiologia))
-                                    <a href="{{route('auditoria_cardio.reporte_cardiologia',['id' => $evolucion->id,"agenda"=>$agenda->id])}}" class="btn btn-success btn-sm"> 
-                                        <span class="glyphicon glyphicon-file"> @lang('laboratorio.reporte_cardiologia')</span>
-                                    </a>
-                                @endif
                             @endif
 
                             <div class="col-md-6">
@@ -907,8 +902,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){
@@ -1303,9 +1299,9 @@
         var js_cedula = document.getElementById("id_paciente").value;
         //alert(js_cedula);
         $.ajax({
-          type: 'get',
+          type: 'post',
           url:"{{url('receta_detalle/crear_detalle')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula, //receta.crear_detalle
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
           
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -1415,9 +1411,9 @@
 
     function det_delete(id) {
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('receta_detalle/eliminar_detalle')}}/"+{{$hc_receta->id}}+"/"+id,
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
           
           datatype: 'json',
           //data: $("#frm").serialize(),

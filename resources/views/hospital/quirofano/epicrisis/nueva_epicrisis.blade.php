@@ -7,22 +7,13 @@
                 <input type="hidden" name="solicitud_id" id="solicitud_id" value="{{$solicitud->id}}">
 
                 <div class="col-md-12">
+                    <label><b> Conclusiones </b></label>
+                    <textarea name="conclusion" id="conclusion" class="form-control input-sm" rows="3"></textarea>
+                </div>
+                <div class="col-md-12">
                     <label><b> {{trans('hospitalizacion.Evolución')}}: </b> </label>
-                    <textarea name="n_epicrisis" id="n_epicrisis" class="form-control input-sm" rows="3">{{$epicrisis->cuadro_clinico}}</textarea>
+                    <textarea name="n_epicrisis" id="n_epicrisis" class="form-control input-sm" rows="3"></textarea>
                 </div>
-                <div class="col-md-12">
-                    <label><b> Favorable/Desfavorable </b></label>
-                    <textarea name="favorable_des" id="favorable_des" class="form-control input-sm" rows="3">{{$epicrisis->favorable_des}}</textarea>
-                </div>
-                <div class="col-md-12">
-                    <label><b> Complicacion </b></label>
-                    <textarea name="complicacion" id="complicacion" class="form-control input-sm" rows="3">{{$epicrisis->complicacion}}</textarea>
-                </div>
-                <div class="col-md-12">
-                    <label><b> Hallazgo </b></label>
-                    <textarea name="hallazgo" id="hallazgo" class="form-control input-sm" rows="3">{{$epicrisis->hallazgo}}</textarea>
-                </div>
-                
                
             </div>
             <div class="row" style="padding-top: 10px;">

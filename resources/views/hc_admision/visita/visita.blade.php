@@ -129,8 +129,21 @@
     </div>
 </div>
 <script type="text/javascript">
+    function enviarPostClinico(url){
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        var token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = '_token';
+        token.value = '{{ csrf_token() }}';
+        form.appendChild(token);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function envio(dato){
-        location.href ="{{route('visita.crea_actualiza')}}/"+dato;
+        enviarPostClinico("{{route('visita.crea_actualiza')}}/"+dato);
     }
 
     $(document).ready(function() {

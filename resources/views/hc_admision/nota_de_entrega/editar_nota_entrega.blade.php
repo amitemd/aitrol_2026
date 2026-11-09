@@ -1,5 +1,11 @@
 @extends('hc_admision.nota_de_entrega.base')
 @section('action-content')
+    <div class="modal fade" id="Subir" tabindex="-1" role="dialog" aria-labelledby="favoritesModalLabel">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content" id="imprimir3">
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="tarifario_nivel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content ">
@@ -18,7 +24,7 @@
                         $logs = $nota_entrega->logs_nota; @endphp
                         @if(!is_null($logs))
                             @foreach ($logs as $log)
-                                <p><b>{{ $log->usercrea->apellido1 }} {{ $log->usercrea->apellido2 }} {{ $log->usercrea->nombre1 }}: </b>{{ $log->descripcion }}
+                                <p><b>@if($log->usercrea) {{ $log->usercrea->apellido1 }} {{ $log->usercrea->apellido2 }} {{ $log->usercrea->nombre1 }} @else Usuario histórico @endif: </b>{{ $log->descripcion }}
                                 </p>
                             @endforeach
                         @endif
@@ -44,29 +50,66 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading " style="background-color: #D3EEFF;">
                                         <div class="row">
-                                            <label class="col-md-4" style="font-size: 20px">{{ trans('new_recibo.DatosPrincipales') }}</label>
+                                            <label class="col-md-3" style="font-size: 20px">{{ trans('new_recibo.DatosPrincipales') }}</label>
                                             @if ($nota_entrega->estado == 1)
-                                                <div class="col-md-2 alert-success" style="text-align: center; padding: 10px;">!! Nota de Entrega emitida !!</div>
-                                                <div class="col-md-2" style="text-align: center;">
-                                                    <a target="_blank" style="font-size: 18px" class="btn btn-primary" formtarget="_blank" id="examenes_externos" href="{{route('nota_entrega.imprimir_pdf_nota_entrega', ['id_nota' => $nota_entrega->id]) }}"> <span class="glyphicon glyphicon-download-alt" aria-hidden="true"> Impimir</span> </a>
+                                        <div class="col-md-1 btn-sm" style="text-align: center; padding: 10px;"><span class="btn btn-success btn-sm">!! Emitida !!</span></div>
+                                        <div class="col-md-1 btn-sm" style="text-align: center; padding: 10px; ">
+                                            <a target="_blank" style="font-size: 12px; width:100%" class="btn btn-primary btn-sm" formtarget="_blank" id="examenes_externos" href="{{route('nota_entrega.imprimir_pdf_nota_entrega', ['id_nota' => $nota_entrega->id]) }}"> <span class="glyphicon glyphicon-download-alt" aria-hidden="true"> Impimir</span> </a>
                                                 </div>
-                                                <div class="col-md-2" style="text-align: center;">
-                                                    <a target="_blank" style="font-size: 18px" class="btn btn-primary" formtarget="_blank" id="examenes_externos" onclick="devolver()"> <span aria-hidden="true"> Devolver</span> </a>
-                                                </div>
+                                                @if(Auth::user()->id_tipo_usuario == 1)
+                                        <div class="col-md-1" style="text-align: center; padding: 10px;">
+                                            <a target="_blank" style="font-size: 12px; width:100%" class="btn btn-primary btn-sm" formtarget="_blank" id="examenes_externos" onclick="devolver()"> <span aria-hidden="true"> Devolver</span> </a>
+                                                    </div>
+                                                @endif
                                             @else
-                                                <div class="col-md-2" style="text-align: center;">
-                                                <button class="btn btn-success" type="button" onclick="validar_detalle()" style="font-size: 18px">EMITIR</button>
-                                            </div>
+                                                @if($nota_entrega->estado == -1)
+                                                    <div class="col-md-1" style="text-align: center; padding: 10px;">
+                                            <a href="{{url('receta/nota_entrega/reprocesar')}}/{{$nota_entrega->id}}" class="btn btn-primary btn-sm" style="font-size: 12px; width:100%"> Reprocesar </a>
+                                                    </div>
+                                                @endif
+                                                <div class="col-md-1" style="text-align: center; padding: 10px;">
+                                            <button class="btn btn-success btn-sm" type="button" onclick="emitir()" style="font-size: 12px; width:100%">EMITIR</button>
+                                                </div>
                                             @endif
-                                            <div class="col-md-2" style="text-align: center;">
-                                                <a class="btn btn-primary" data-toggle="modal" data-target="#log_rc" style="font-size: 18px">Logs</a>
+                                            
+                                        <div class="col-md-1" style="text-align: center; padding: 10px;">
+                                            <a class="btn btn-primary btn-sm" data-toggle="modal" data-target="#log_rc" style="font-size: 12px; width:100%">Logs</a>
+                                            </div>
+                                            @php
+                                                $doc_scan = \Sis_medico\Nota_Entrega_Escaneados::where('id_nota_entrega', $nota_entrega->id)->where('estado', '1')->first();
+                                                $detalles = \Sis_medico\Nota_entrega_detalle::where('id_nota_entrega', $nota_entrega->id)->where('estado', '1')->get();
+
+                                                $i=0;
+                                                if(!is_null($detalles)){
+                                                foreach($detalles as $det){
+                                                if($det->cantidad_receta != $det->cantidad){
+                                                $i++;
+                                                }
+                                                }
+                                                }
+                                            @endphp
+                                        <div class="col-md-1" style="text-align: center; padding: 10px;">
+                                                <a href="{{url('nota_entrega/sube/archivo')}}/{{$nota_entrega->id_hc_receta}}/{{$nota_entrega->id}}" data-toggle="modal" data-target="#Subir">
+                                                <button class="btn btn-success btn-sm" style="font-size: 12px; width:100%"> Subir Archivo</button>
+                                                </a>
+                                            </div>
+
+                                        <div class="col-md-1" style="text-align: center; padding: 10px;">
+                                                @if(!is_null($doc_scan))
+                                            <a target="_blank" href="{{route('receta.visualizar_nota_entrega_pdf_nuevo',['nombre'=>$doc_scan->archivo])}}" class="btn btn-primary btn-sm" style="font-size: 12px; width:100%">Ver Archivo</a>
+                                                @endif
+                                            </div>
+                                        <div class="col-md-2" style="text-align: center; padding: 10px;">
+                                                @if($i >= 1)
+                                                    <span style="color: orange; font-weight: bold;">! PENDIENTE DE ENTREGAR MEDICINA !</span>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
                                     <div class="panel-body">
                                         <div class="row">
                                             <div class="col-md-3">
-                                                <img src="{{ asset('/logo') . '/' . $empresa->logo }}" style="width:300px;height:120px">
+                                                <img src="{{ asset('/logo') . '/' . $empresa->logo }}" style="width:150px;height:70px">
                                             </div>
                                             <div class="col-md-9">
                                                 <label>{{ $empresa->nombrecomercial }}</label><br>
@@ -74,12 +117,6 @@
                                             </div>
                                         </div>
                                         <center><b style="font-size: 20px;">NOTA DE ENTREGA No. </b><label style="color: red; font-size: 22px">{{ $nota_entrega->numero }}</label></center>
-
-                                            <b style="text-transform: uppercase; font-size:17px;">Seleccione la bodega:</b>
-                                            <select @if($nota_entrega->estado == '1') disabled @endif style="min-width:25%;width:25%;" name="bodega" id="bodega" class="form-control" required >
-                                               <option value="">Seleccione</option>
-                                               <option selected value="{{$bodegas->id}}">{{$bodegas->nombre}}</option>
-                                            </select>
                                     </div>
                                 </div>
                             </div>
@@ -168,16 +205,23 @@
 
         function actualizar_valor(id) {
             var id_nota = $('#id_nota').val();
+            var cantidad_receta = $('#cantidad_receta' + id).val();
             var cantidad = $('#cantidad' + id).val();
             var precio = $('#precio' + id).val();
             var id_producto = $('#id_producto' + id).val();
             var msj = "";
             if (cantidad == "") {
-                msj += "Ingresar la Cantidad<br/>";
+                msj += "Ingresar la Cantidad a entregar<br/>";
+                $('#cantidad'+id).val(0); 
+                actualizar_valor(id);      
             }
-            if (precio == "") {
-                msj += "Ingresar el Precio<br/>";
+
+            if(cantidad_receta < cantidad){
+                msj += "No se puede entregar mas medicinas de la cantidad recetada.<br/>";
+                $('#cantidad'+id).val(cantidad_receta); 
+                actualizar_valor(id);
             }
+            
             if (msj == '') {
                 cantidad = parseFloat(cantidad);
                 precio = parseFloat(precio);
@@ -197,10 +241,8 @@
                     },
                     success: function(data) {
                         lista_productos();
-                        console.log(data);
                     },
                     error: function(data) {
-                        console.log(data);
                         alert("No se pudo agregar la medicina");
                     }
                 });
@@ -256,66 +298,31 @@
             return /\d/.test(String.fromCharCode(teclaPulsada));
         }
 
-        function validar_detalle() {
-            $.ajax({
-                url: "{{ route('nota_entrega.validar_detalle', ['id' => $nota_entrega->id]) }}",
-                type: 'get',
-                datatype: 'html',
-                success: function(data) {
-                    if (data == 'ok') {
-                        emitir();
-                        //Swal.fire('Correcto', 'validado Correctamente', 'success');
-                    } else {
-                        Swal.fire({
-                            title: "!Advertencia!",
-                            icon: 'info',
-                            html: data
-                        });
-                    }
-                },
-                error: function(data) {
-                    console.log(data);
-                }
-            })
-        }
-
-
         function emitir() {
-            let bodega = document.getElementById("bodega").value;
-            let id = document.getElementById("id_orden").value;
-            var msj = "";
-            if (bodega == "") {
-                msj += "Por favor, Seleccione la Bodega<br/>";
-            }
-            if( msj == '' ){
-                Swal.fire({
-                    title: `Al emitir no se podra editar`,
-                    text: "¿Esta seguro de emitir la nota de entrega?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: `Si, emitir`
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                        url: "{{route('nota_entrega.validar_stock')}}",
+            Swal.fire({
+                title: `Al emitir no se podra editar`,
+                text: "¿Esta seguro de emitir la nota de entrega?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: `Si, emitir`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('nota_entrega.emitir_recibo', ['id' => $nota_entrega->id]) }}",
                         type: 'get',
-                        datatype: 'json',
-                        data : {
-                          "id"    : id,
-                          "id_bodega" : bodega
-                        },
+                        datatype: 'html',
                         success: function(data) {
                             if (data == 'ok') {
-                                emitir_recibo_cobro();
+                                Swal.fire('Correcto', 'Emitida Correctamente', 'success');
                                 setTimeout(function() {
                                     window.location.reload();
                                 }, 1500)
                             } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    icon: 'error',
+                                    type: "error",
                                     html: data
                                 });
                             }
@@ -323,38 +330,8 @@
                         error: function(data) {
                             console.log(data);
                         }
-                        })
-                    } else {
-                    }
-                })
-            }else{
-                Swal.fire({
-                    title: "!Advertencia!",
-                    icon: 'info',
-                    html: msj
-                });
-            }    
-        }
-
-        function emitir_recibo_cobro() {
-            $.ajax({
-                url: "{{ route('nota_entrega.emitir_recibo', ['id' => $nota_entrega->id]) }}",
-                type: 'get',
-                datatype: 'html',
-                success: function(data) {
-                    if (data == 'ok') {
-                        Swal.fire('Correcto', 'Emitida Correctamente', 'success');
-                    } else {
-                        Swal.fire({
-                            title: "Error!",
-                            type: "error",
-                            html: data
-                        });
-                    }
-                },
-                error: function(data) {
-                    console.log(data);
-                }
+                    })
+                } 
             })
         }
 
@@ -383,7 +360,7 @@
                                     window.location.reload();
                                 }, 1500)
                             } else {
-                                Swal.fire('Error', '!No se puede devolver, la planilla ya se encuentra aprobada.!', 'error');
+                                Swal.fire('Error', '!No se puede devolver.!', 'error');
                             }
                         },
                         error: function(data) {
@@ -394,6 +371,5 @@
                 }
             })
         }
-
     </script>
 @endsection

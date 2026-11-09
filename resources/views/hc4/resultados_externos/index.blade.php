@@ -4,8 +4,6 @@
         overflow-x: hidden;
         height: 600px;
     }
-
-
     .parent::-webkit-scrollbar {
         width: 8px;
     } /* this targets the default scrollbar (compulsory) */
@@ -18,90 +16,87 @@
         background-color: #004AC1;
         box-shadow: inset 0px 0px 0px 3px #56ABE3;
     }
+    #area_index .external-result-header {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 48px;
+        align-items: center !important;
+        gap: 12px;
+        min-height: 76px;
+        margin: 0 !important;
+        padding: 12px 16px !important;
+        color: #fff;
+    }
+    #area_index .external-result-header::before,
+    #area_index .external-result-header::after {
+        content: none !important;
+        display: none !important;
+    }
+    #area_index .external-result-date {
+        justify-self: start;
+        min-width: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: #fff;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.3;
+        text-align: left !important;
+    }
+    #area_index .external-result-tools {
+        position: static !important;
+        inset: auto !important;
+        float: none !important;
+        justify-self: end;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    #area_index .external-result-tools .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        margin: 0 !important;
+    }
 </style>
 
 
 <div id="area_index"  class="container-fluid" style="">
 	<div class="row">
 		<div class="col-12" style="padding-left: 0px;padding-right: 0px;margin-left: 0px;margin-right: 0px; ">
-			<div class="col-12" style="border: 2px solid #004AC1; margin-right: 0px;margin-left: 0px;padding-right: 0px;padding-left: 0px; background-color: #56ABE3; ">
-				<h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
-	            	<img style="width: 35px; margin-left: 15px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/exa_externos.png">
-	             	<b>RESULTADOS EXTERNOS</b>
-	             	<br>
-		            @if(!is_null($paciente))
-			            <center>
-			              <div class="col-12" style="padding-bottom: 20px;">
-			                <h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			                    <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-			                          {{$paciente->nombre1}} {{$paciente->nombre2}}
-			                    </b>
-			                </h1>
-			              </div>
-			            </center>
-		            @endif
-			    </h1>
+			<div class="col-12 box hc4-standard-module-container" style="margin-right: 0px; margin-left: 0px; padding-right: 0px; padding-left: 0px;">
+				@include('hc4.partials.module_header', [
+					'moduleTitle' => __('hc4.resultadosExternos-'),
+					'moduleIcon' => asset('/').'hc4/img/iconos/exa_externos.png',
+					'paciente' => $paciente
+				])
 			    <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px"  >
 					<div class="parent"   style="margin-left: 0px;   margin-bottom: 10px ; height: 450px " >
 					    <div style=" margin-right: 30px;" >
 							@foreach($biopsias_1 as $imagen)
-				    			@php
-				    				$explotar = explode( '.', $imagen->nombre);
+			    			@php
+			    				$explotar = explode( '.', $imagen->nombre);
 									$extension = end($explotar);
+									$fechaResultado = null;
+									if (!is_null($imagen->created_at)) {
+										$timestampResultado = strtotime($imagen->created_at);
+										$diasResultado = [1 => 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+										$mesesResultado = [1 => 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+										$fechaResultado = $diasResultado[(int) date('N', $timestampResultado)].' '.date('d', $timestampResultado).' de '.$mesesResultado[(int) date('n', $timestampResultado)].' del '.date('Y', $timestampResultado);
+									}
 								@endphp
 								@if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
-   									@php
-								        $variable = explode('/' , asset('/hc_ima/'));
-								        $d1 = $variable[3];
-								        //$d2 = $variable[4];
-								        $variable =  env('APP_URL').'/'.$d1.'/'.$imagen->nombre;
-								    @endphp
 								    <div class="box" style="border: 2px solid #004AC1; border-radius: 10px; background-color: white;  font-family: Helvetica; margin-bottom: 20px; padding-left: 0px; padding-right: 0px" >
-									    <!--@php
-			                              $fecha = substr($imagen->created_at, 0, 10);
-			                              $invert = explode( '-',$fecha);
-			                              $fecha_invert = $invert[2]."-".$invert[1]."-".$invert[0];
-			                            @endphp-->
-								    	<div class="box-header ">
-									    	<div class="row" style="background-color: #004AC1; color: white; margin-top: 7px; margin-left: 0px; margin-right: 0px">
-									    		<div class="col-md-11 col-sm-11 col-10" style="text-align: center;">
-										    		<span >
-											    		@if(!is_null($imagen->created_at))
-									                        @php
-									                        $dia =  Date('N',strtotime($imagen->created_at));
-									                        $mes =  Date('n',strtotime($imagen->created_at)); @endphp
-					                                   		<span style="font-family: 'Helvetica'; font-size: 14px" class="box-title";>
-					                                        @if($dia == '1') Lunes
-						                                         @elseif($dia == '2') Martes
-						                                         @elseif($dia == '3') Miércoles
-						                                         @elseif($dia == '4') Jueves
-						                                         @elseif($dia == '5') Viernes
-						                                         @elseif($dia == '6') Sábado
-						                                         @elseif($dia == '7') Domingo
-					                                        @endif
-					                                         	{{substr($imagen->created_at,8,2)}} de
-					                                        @if($mes == '1') Enero
-						                                         @elseif($mes == '2') Febrero
-						                                         @elseif($mes == '3') Marzo
-						                                         @elseif($mes == '4') Abril
-						                                         @elseif($mes == '5') Mayo
-						                                         @elseif($mes == '6') Junio
-						                                         @elseif($mes == '7') Julio
-						                                         @elseif($mes == '8') Agosto
-						                                         @elseif($mes == '9') Septiembre
-						                                         @elseif($mes == '10') Octubre
-						                                         @elseif($mes == '11') Noviembre
-						                                         @elseif($mes == '12') Diciembre
-					                                        @endif
-					                                         	del {{substr($imagen->created_at,0,4)}}
-					                                         	</span>
-				                                        @endif
-			                                        </span>
-		                                        </div>
-					                            <button   type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-					                              <i class="fa fa-minus"></i>
-					                            </button>
-									    	</div>
+								    	<div class="box-header external-result-header">
+								    		<div class="external-result-date">{{$fechaResultado}}</div>
+								    		<div class="box-tools external-result-tools">
+												<button type="button" class="btn btn-info btn-sm" data-widget="collapse" aria-label="Contraer resultado">
+													<i class="fa fa-minus"></i>
+												</button>
+											</div>
 								    	</div>
 
 								    	<div class="box-body">
@@ -112,7 +107,7 @@
 													        <div class="col-12">
 													            <img id="imafoto{{$imagen->id}}" src="{{asset('hc_ima/'.$imagen->nombre)}}" alt="Imagen Ingresada" style="max-width: 900px; height: 300px">
 													            <!--<div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
-													                <a class="btn btn-info btn_accion" style="height: 100%; font-size: 16px; color: white;" onclick="eliminar('{{$imagen->id}}');">Eliminar foto  </a>
+										<a class="btn btn-info btn_accion" style="height: 100%; font-size: 16px; color: white;" onclick="eliminar('{{$imagen->id}}');">@lang('hc4.eliminarFoto')</a>
 													            </div>-->
 													        </div>
 													    </div>
@@ -120,12 +115,12 @@
 											    </div>
 											    <div class="col-md-3 col-12" style="padding-left: 0px">
 											    	<center>
-                                						<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
+	<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
 											    			<a class="btn btn-info btn_accion" href="{{asset('laboratorio_externo_descarga')}}/{{$imagen->id}}" style="height: 100%; width: 100%; font-size: 14px">
 		       						 							<div class="row" style="margin-left: 0px; margin-right: 0px">
 										                        	<div class="col-12" style="padding-left: 0px; padding-right: 0px">
 										                        		<img width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
-										                        		<label style="color: white; padding-left: 5px;  padding-top: 1px" >Descargar</label>
+											<label style="color: white; padding-left: 5px;  padding-top: 1px" >@lang('hc4.descargar')</label>
 										                        	</div>
 						                        				</div>
 	       						 							</a>
@@ -133,8 +128,8 @@
 											    	</center>
 										    	</div>
 											</div>
-    									</div>
-    								</div>
+	</div>
+	</div>
 								    <script src="{{asset('/js/lupa.js')}}" > </script>
 								    <script>
 						            	$(document).ready(function() {
@@ -155,85 +150,30 @@
 								    </script>
 
 								@elseif(($extension == 'pdf') || ($extension == 'PDF'))
-								    @php
-								        $variable = explode('/' , asset('/hc_ima/'));
-								        $d1 = $variable[3];
-								        //$d2 = $variable[4];
-								        $variable =  env('APP_URL').'/'.$d1.'/'.$imagen->nombre;
-								    @endphp
-
 								    <div class="box" style="border: 2px solid #004AC1; border-radius: 10px; background-color: white;  font-family: Helvetica; margin-bottom: 20px; padding-left: 0px; padding-right: 0px" class="col-md-12 " >
-								    	<!--@php
-			                              $fecha = substr($imagen->created_at, 0, 10);
-			                              $invert = explode( '-',$fecha);
-			                              $fecha_invert = $invert[2]."-".$invert[1]."-".$invert[0];
-			                            @endphp-->
-			                            <div class="box-header">
-									    	<div class="row " style="background-color: #004AC1; color: white; margin-top: 7px; margin-left: 0px; margin-right: 0px">
-
-									    		<div class="col-md-11 col-sm-11 col-10" style="text-align: center;"><span >
-									    		@if(!is_null($imagen->created_at))
-							                        @php
-							                        $dia =  Date('N',strtotime($imagen->created_at));
-							                        $mes =  Date('n',strtotime($imagen->created_at)); @endphp
-			                                   		<span style="font-family: 'Helvetica'; font-size: 14px" class="box-title";>
-			                                        @if($dia == '1') Lunes
-				                                         @elseif($dia == '2') Martes
-				                                         @elseif($dia == '3') Miércoles
-				                                         @elseif($dia == '4') Jueves
-				                                         @elseif($dia == '5') Viernes
-				                                         @elseif($dia == '6') Sábado
-				                                         @elseif($dia == '7') Domingo
-			                                        @endif
-			                                         	{{substr($imagen->created_at,8,2)}} de
-			                                        @if($mes == '1') Enero
-				                                         @elseif($mes == '2') Febrero
-				                                         @elseif($mes == '3') Marzo
-				                                         @elseif($mes == '4') Abril
-				                                         @elseif($mes == '5') Mayo
-				                                         @elseif($mes == '6') Junio
-				                                         @elseif($mes == '7') Julio
-				                                         @elseif($mes == '8') Agosto
-				                                         @elseif($mes == '9') Septiembre
-				                                         @elseif($mes == '10') Octubre
-				                                         @elseif($mes == '11') Noviembre
-				                                         @elseif($mes == '12') Diciembre
-			                                        @endif
-			                                         	del {{substr($imagen->created_at,0,4)}}</span>
-		                                        @endif
-		                                        </span></div>
-
-				                            	<button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-				                              	<i class="fa fa-minus"></i>
-				                            	</button>
-									    	</div>
-								    	</div>
+			                            <div class="box-header external-result-header">
+			                            	<div class="external-result-date">{{$fechaResultado}}</div>
+			                            	<div class="box-tools external-result-tools">
+													<button type="button" class="btn btn-info btn-sm" data-widget="collapse" aria-label="Contraer resultado">
+														<i class="fa fa-minus"></i>
+													</button>
+												</div>
+			                            </div>
 								    	<div class="box-body">
 										    <div class="row " >
 										        <div class="col-md-9 col-12">
 											        <div style="border: 2px solid #004AC1; margin-bottom: 10px; margin-left: 15px ">
-											            {{-- <embed style="max-width: 900px; height: 300px" id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'> --}}
-															<embed id="miIFrame" src="{{route('video.ver_archivo_biopsia',['id_archivo' => $imagen->nombre])}}" width="100%" type='application/pdf'>
-														</div>
+											            <embed style="max-width: 900px; height: 300px" id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'>
+											        </div>
 										        </div>
 										        <div class="col-md-3 col-12">
 										        	<center>
-                               							<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
+	<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
 										        			<a class="btn btn-info btn_accion" href="{{asset('laboratorio_externo_descarga')}}/{{$imagen->id}}" style="height: 100%; width: 100%;  font-size: 14px">
 		       						 							<div class="row" style="margin-left: 0px; margin-right: 0px">
 										                        	<div class="col-12" style="padding-left: 0px; padding-right: 0px">
 										                        		<img width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
 										                        		<label style="color: white; padding-left: 5px;  padding-top: 1px" >Descargar</label>
-										                        	</div>
-						                        				</div>
-	       						 							</a>
-										        		</div>
-										        		<br>
-										        		<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
-										        			<a class="btn btn-info btn_accion" target="_blank" href="{{route('video.ver_archivo_biopsia',['id_archivo' => $imagen->nombre])}}" style="height: 100%; width: 100%;  font-size: 14px">
-		       						 							<div class="row" style="margin-left: 0px; margin-right: 0px">
-										                        	<div class="col-12" style="padding-left: 0px; padding-right: 0px">
-										                        		<label style="color: white; padding-left: 5px;  padding-top: 1px" >Ver en Pantalla Completa</label>
 										                        	</div>
 						                        				</div>
 	       						 							</a>
@@ -265,37 +205,27 @@
 						       		</script>
 								@else
 								    @php
-								        $variable = explode('/' , asset('/hc_ima/'));
-								        $d1 = $variable[3];
-								        //$d2 = $variable[4];
-								        $ruta = "http%3A%2F%2F186.70.157.2%3A86%2F".$d1."%2Fstorage%2Fapp%2Fhc_ima%2F".$imagen->nombre;
+								        $ruta = rawurlencode(asset('hc_ima/'.ltrim($imagen->nombre, '/')));
 								    @endphp
 								    <div class="box" style="border: 2px solid #004AC1; border-radius: 10px; background-color: white;  font-family: Helvetica; margin-bottom: 20px;" class="col-md-12" >
-								   		@php
-				                            $fecha = substr($imagen->created_at, 0, 10);
-				                            $invert = explode( '-',$fecha);
-				                            $fecha_invert = $invert[2]."-".$invert[1]."-".$invert[0];
-				                        @endphp
-				                        <div class="box-header " style="padding-left: 0px; padding-right: 0px" >
-				                          	<div class="row" style="background-color: #004AC1; color: white; margin-top: 7px; margin-left: 10px; margin-right: 10px">
-				                           		<div class="col-md-11 col-sm-11 col-10" style="text-align: center;"><span >{{$fecha_invert}}</span></div>
-			                            		<div class="pull-right box-tools " >
-					                                <button   type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-					                                  <i class="fa fa-minus"></i>
-					                                </button>
-					                            </div>
-				                          	</div>
-				                        </div>
-                					 	<div class="box-body">
+												<div class="box-header external-result-header">
+													<div class="external-result-date">{{$fechaResultado}}</div>
+													<div class="box-tools external-result-tools">
+														<button type="button" class="btn btn-info btn-sm" data-widget="collapse" aria-label="Contraer resultado">
+															<i class="fa fa-minus"></i>
+														</button>
+													</div>
+												</div>
+	 	<div class="box-body">
 									        <div class="row">
 									            <div class="col-md-9 col-12">
 										            <div style="border: 2px solid #004AC1; margin-bottom: 30px; margin-left: 15px ">
-                              							<embed style="max-width: 900px; height: 300px" id="miIFrame" src="https://docs.google.com/viewer?hl=en&embedded=true&url={{$ruta}}" width="100%" style="border: none;">
-                            						</div>
+	<embed style="max-width: 900px; height: 300px" id="miIFrame" src="https://docs.google.com/viewer?hl=en&embedded=true&url={{$ruta}}" width="100%" style="border: none;">
+	</div>
 									            </div>
 									            <div class="col-md-3 col-12">
 									            	<center>
-                              							<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
+	<div class="col-md-12 col-5" style="padding-left: 0px; padding-right: 0px">
 										        			<a class="btn btn-info btn_accion" href="{{asset('laboratorio_externo_descarga')}}/{{$imagen->id}}" style="height: 100%; width: 100%; font-size: 14px">
 	       						 								<div class="row" style="margin-left: 0px; margin-right: 0px">
 								                        			<div class="col-12" style="padding-left: 0px; padding-right: 0px">

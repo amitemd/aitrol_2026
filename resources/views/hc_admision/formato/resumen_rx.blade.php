@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+	<title>Resumen Procedimiento</title>
+	<style type="text/css">
+	@page { margin: 110px 60px; }
+    #header { position: fixed; left: 0px; top: -90px; right: 0px; height: 100px; text-align: center; }
+    #footer { position: fixed; left: 0px; bottom: -315px; right: 0px; height: 350px; font-size: 10px !important;}
+			body{
+				margin: 0;
+				padding: 0;
+			}
+		  #encabezado td{
+		  	border-style: solid;
+		  	border-width: thin;
+		  	margin: 0;
+		  	padding: 0px 10px;
+		  }
+		  #contenido{
+		  	margin-bottom: 10px;
+		  }
+		  .final td{
+		  	border-style: solid;
+		  	border-width: thin;
+		  	margin: 0;
+		  	padding: 2px 10px;
+		  }
+		  table{
+		  	border-spacing: 0px;
+		  	margin: 0;
+		  	padding: 0;
+		  	margin-left: -15px;
+		  }
+		  div
+		  {
+		  	margin: 0;
+		  	padding: 0;
+		  }
+		  #hallazgos table{
+		  	margin-left: 10px;
+		  }
+	</style>
+</head>
+<body>
+	<div id="header">
+		<table>
+			<tr>
+				@php
+				  $agenda = Sis_medico\Agenda::find($historia->id_agenda);
+				  $empresa = $agenda->empresa;
+				@endphp
+				@if($historia->id_seguro != 5)
+					@if(!is_null($empresa->logo_form))
+					<td style="width: 700px;"><img style="margin: 0;width: 700px;" src="{{base_path().'/public/formato/header.jpg'}}"></td>
+					@else
+					<td style="width: 700px;"><img style="margin: 0;width: 700px;" src="{{base_path().'/public/formato/header.jpg'}}"></td>
+					@endif
+				@else
+					<td style="width: 700px;"><img style="margin: 0;width: 700px;" src="{{base_path().'/public/formato/header.jpg'}}"></td>
+				@endif
+			</tr>
+		</table>
+	</div>
+	<div id="contenido">
+		<table id="encabezado" style="font-size: 11px;">
+			<tr>
+				<td style="width: 80px;"><b>Paciente:</b></td>
+				<td style="width: 250px;"><b style="font-size: 11px;">{{ $paciente->apellido1}} @if($paciente->apellido2 != '(N/A)'){{ $paciente->apellido2}}@endif {{ $paciente->nombre1}} @if($paciente->nombre2 != '(N/A)' ){{ $paciente->nombre2}}@endif</b></td>
+				<td style="width: 25px;"><b>Edad:</b></td>
+				<td style="width: 40px; font-size: 12px;" >{{$edad}} años</td>
+				<td style="width: 70px;"><b>Identificacion:</b></td>
+				<td><b style="font-size: 12px;">{{$paciente->id}}</b></td>
+			</tr>
+			<tr>
+				<td><b>Procedimiento:</b></td>
+				<td colspan="5"><b style="font-size: 12px;">@if($procedimiento_completo != null){{$procedimiento_completo->nombre_completo}}@else
+					@php
+						$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $protocolo->id_hc_procedimientos)->get();
+
+						$mas   = true;
+						$texto = "";
+
+						foreach ($adicionales as $value2) {
+						    if ($mas == true) {
+						        $texto = $texto . $value2->procedimiento->nombre;
+						        $mas   = false;
+						    } else {
+						        $texto = $texto . ' + ' . $value2->procedimiento->nombre;
+						    }
+						}
+						@endphp
+					<?php echo e($texto); ?>@endif</b></td>
+			</tr>
+			<tr>
+			 <td><b>Medico Examinador:</b></td>
+			 <td> <b style="font-size: 11px;"> @if(isset($doctor1)) {{$doctor1->apellido1}} {{$doctor1->nombre1}}  @endif </b> </td>
+			 <td colspan="2"><b>Anestesiologo :</b></td>
+			 <td colspan="2"> <b style="font-size: 11px;">  @if(isset($anestesiologo)) {{$anestesiologo->apellido1}} {{$anestesiologo->nombre1}} @endif </b> </td>
+			</tr>
+			<tr>
+			<td style="width: 80px;"><b>Ayudante:</b></td>
+				<td style="width: 120px;"><b style="font-size: 11px;">@if(isset($ayudante)) {{$ayudante->apellido1}} {{$ayudante->nombre1}} @endif</b></td>
+				<td colspan="2"><b>Instrumento:</b>   {{$protocolo->instrumento}} </td>
+				<td colspan="2"><b>Fecha:</b> <b style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</b></td>
+
+			</tr>
+			<tr>
+				<td><b>Premedicacion:</b></td>
+				<td  colspan="5" style="font-size: 12px;"> @if(!is_null($protocolo->premedicacion))  {{$protocolo->premedicacion}} @endif</td>
+
+				<!-- <td colspan="2"><b>Fecha:</b></td>
+				<td colspan="2" style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</td> -->
+			</tr>
+			<tr>
+				<td><b>Referido por:</b></td>
+				<td style="font-size: 12px;"> @if(!is_null($protocolo->referido_por)) {{$protocolo->referido_por}} @endif</td>
+				<td colspan="2">&nbsp;</td>
+				<td colspan="2">&nbsp;</td>
+				<!-- <td colspan="2"><b>Fecha:</b></td>
+				<td colspan="2" style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</td> -->
+			</tr>
+		</table>
+		<br>
+		<br>
+		<table style="margin-left: -23px;padding: 0;table-layout:fixed; width:700px;" >
+
+			@php  $i = 0;   $j = 0;@endphp
+			@foreach($imagenes as $value)
+				@if($i < 8)
+					@if($j == 0)
+					<tr style="padding: 0; margin:0;">
+					@endif
+						@if($value->seleccionado_recortada == 1)
+						<td style="margin: 0;padding: 0 0px 0px 0px; width: 325px;height: 235px;">
+							<div style="position:relative;overflow: hidden; width: 325px; height: 235px;margin: 0; padding: 0;  ">
+								<img style="margin: 0;width: 530px; height: 235px;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
+							</div>
+						</td>
+						@else
+						<td style="margin: 0;padding: 0 0px 0px 0px;width: 325px; height: 235px;">
+							<div style="position:relative;overflow: hidden; width: 325px; height: 235px; margin: 0; padding: 0;  ">
+								<img style="margin: 0;width: 325px; height: 235px;position: absolute; " src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
+							</div>
+						</td>
+						@endif
+					@if($j >= 1)
+					</tr>
+					@php $j=0-1; @endphp
+					@endif
+					@php $i = $i+1;$j = $j+1; @endphp
+				@endif
+			@endforeach
+
+
+			</tr>
+		</table>
+	</div>
+	<div id="footer">
+		<br>
+		<br>
+		<div style="width: 100%;">
+			@if(!is_null($protocolo->procedimiento->id_doctor_responsable))
+				@php
+					if(!is_null($protocolo->procedimiento->id_doctor_responsable)){
+			            $firma_2 =  \Sis_medico\Firma_Usuario::where('id_usuario', $protocolo->procedimiento->id_doctor_responsable)->get();
+			        }else{
+			            $firma_2 = null;
+			        }
+			        $responsable = \Sis_medico\User::find($protocolo->procedimiento->id_doctor_responsable);
+			        //dd($responsable);
+				@endphp
+				<div style="width: 325px; display: inline-block;">
+					<p style="text-align: center;">
+						@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
+							@if($firma != "[]")
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+							<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
+							@else
+								<br><br><br><br><br>
+								<b>DR.{{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
+							@endif
+						@else
+							<br><br><br><br><br>
+							<b>DR. CARLOS ROBLES JARA</b><br>
+						@endif
+					</p>
+				</div>
+				<div style="width: 325px;display: inline-block;">
+					<p style="text-align: center;">
+						@if((!is_null($protocolo->procedimiento->id_doctor_responsable)))
+							@if($firma_2 != "[]")
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
+							<b>DR. {{$responsable->nombre1}} {{$responsable->apellido1}} {{$responsable->apellido2}} (RESPONSABLE)</b><br>
+							@else
+								<br><br><br><br><br>
+								<b>DR.{{$responsable->nombre1}} {{$responsable->apellido1}} {{$responsable->apellido2}} (RESPONSABLE)</b><br>
+							@endif
+						@endif
+					</p>
+				</div>
+			@else
+			<div style="width: 650px; display: inline-block;">
+				<p style="text-align: center;">
+					@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
+						@if($firma != "[]")
+						<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+						<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
+						@else
+							<br><br><br><br><br>
+							<b>DR.{{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
+						@endif
+					@else
+						<br><br><br><br><br>
+						<b>DR. CARLOS ROBLES JARA</b><br>
+					@endif
+				</p>
+			</div>
+
+			@endif
+		</div>
+	</div>
+
+</body>
+</html>

@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <meta http-equiv=”Content-Type” content=”text/html; charset=UTF-8″ />
+    <meta charset="utf-8">
     <style>
         table {
             font-size: 8px;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: Helvetica, Arial, sans-serif;
             width: 100%;
         }
 
@@ -46,6 +46,12 @@
 
         .campos {
             text-align: center;
+            border: 0.5px solid black;
+            font-size: 9px !important;
+        }
+
+        .campos_left {
+            text-align: left;
             border: 0.5px solid black;
             font-size: 9px !important;
         }
@@ -153,24 +159,101 @@
             counter-reset: page;
         }
         .footer {
+            display: table;
             position: fixed;
-            bottom: 0;
+            right: 0;
+            bottom: 30px;
             left: 0;
             width: 100%;
-            text-align: center;
-            padding: 10px;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
+        }
+        .footer > span {
+            display: table-cell;
+            width: 50%;
+        }
+        .footer .document-name {
+            text-align: right;
         }
         .pageNumber:after {
             content: counter(page);
+        }
+        .form008-signature-cell,
+        .form008-seal-cell {
+            height: 92px;
+            padding: 4px !important;
+            vertical-align: middle;
+        }
+        .form008-electronic-signature {
+            border: none !important;
+            border-collapse: collapse;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .form008-electronic-signature td {
+            border: none !important;
+            font-size: 6px !important;
+            line-height: 1.15;
+            padding: 1px 2px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .form008-electronic-signature .qr-cell {
+            width: 58px;
+        }
+        .form008-electronic-signature .qr-image {
+            height: 54px;
+            width: 54px;
+        }
+        .form008-signature-name {
+            font-size: 6.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .form008-signature-status,
+        .form008-signature-hash {
+            font-size: 5.5px;
+            font-weight: bold;
+        }
+        .form008-manual-signature,
+        .form008-seal-image {
+            display: block;
+            margin: 0 auto 2px;
+            max-height: 68px;
+            max-width: 170px;
+        }
+        .form008-image-caption {
+            font-size: 6px;
+            line-height: 1.15;
+            text-align: center;
+        }
+        .form008-no-seal {
+            display: block;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: .08em;
+            text-align: center;
         }
     </style>
     <title>Formulario 008</title>
 </head>
 
 <body>
+    <div class="footer">
+        <span><b>SNS-MSP / HCU-form.008 / 2021</b></span>
+        <span class="document-name"><b>EMERGENCIA (<span class="pageNumber"></span>)</b></span>
+    </div>
+    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa])
     {{-- TABLA A --}}
     <table class="tabla1" cellspacing="0">
-        @php$fecha = date('Y-m-d H:i:s');
+        @php
+        $fecha = date('Y-m-d H:i:s');
         $triaje = $solicitudemer->manchester->first();
         $fecha_dia = date_format(new DateTime($fecha), 'Y-m-d');
         $fecha_hora = date_format(new DateTime($fecha), 'H:i');
@@ -825,7 +908,7 @@
                 </tr>
                 @if (!($alergias->isEmpty()))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         Alergias:
                         @foreach($alergias as $alergia)
                         1. {{$alergia->principio_activo->nombre." "}}
@@ -835,63 +918,63 @@
                 @endif
                 @if (!(is_null($datos_pac->clinico)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         2. {{$datos_pac->clinico}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($datos_pac->ginecologico)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         3. {{$datos_pac->ginecologico}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($datos_pac->traumatologico)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         4. {{$datos_pac->traumatologico}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($datos_pac->antecedentes_pediatricos)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         5. {{$datos_pac->antecedentes_pediatricos}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($paciente->antecedentes_quir)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         6. {{$paciente->antecedentes_quir}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($datos_pac->farmacologico)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         7. {{$datos_pac->farmacologico}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($datos_pac->habitos)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         8. {{$datos_pac->habitos}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($paciente->antecedentes_fam)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         9. {{$paciente->antecedentes_fam}}
                     </td>
                 </tr>
                 @endif
                 @if (!(is_null($datos_pac->otros_antecedente)))
                 <tr>
-                    <td class="campos" height="10px" colspan="65">
+                    <td class="campos_left" height="10px" colspan="65">
                         10. {{$datos_pac->otros_antecedente}}
                     </td>
                 </tr>
@@ -917,7 +1000,7 @@
             @if(!is_null($form008->observacion_quintop))
                 <tr>
                     <td class="campos" style="text-align: left" colspan="65">
-                        {{$form008->observacion_quintop}}
+                        <?php echo $form008->observacion_quintop; ?>
                     </td>
                 </tr>
                 @else
@@ -933,14 +1016,6 @@
             @endif
 
             </tbody>
-        </table>
-    </div>
-    <div class="footer">
-        <table cellspacing="0" border="none">
-            <tr>
-                <td>SNS-MSP/HCU-form.008/2021</td>
-                <td style="text-align:right">EMERGENCIA (1)</td>
-            </tr>
         </table>
     </div>
     <div style="page-break-after: always;"></div>
@@ -997,7 +1072,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="7" class="subtitulo2">GLASGOW INICIAL</td>
+                    <td colspan="5" class="subtitulo2">GLASGOW INICIAL</td>
+                    <td colspan="2" class="subtitulo2">{{$form008->glasgow_inicial}}</td>
                     <td colspan="4" class="subtitulo2">OCULAR(4)</td>
                     <td colspan="6" class="campos">
                         {{$form008->ocular}}
@@ -1148,7 +1224,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="campos" height=10px colspan="65">
+                    <td class="campos_left" height=10px colspan="65">
                         @if(!is_null($form008->piel_faneras)) 1. {{$form008->piel_faneras}} <br> @endif
                         @if(!is_null($form008->cabeza)) 2. {{$form008->cabeza}} <br> @endif
                         @if(!is_null($form008->ojos)) 3. {{$form008->ojos}} <br> @endif
@@ -1528,7 +1604,7 @@
                     <th class="subtitulo2" colspan="11">POSOLOGIA</th>
                     <th class="subtitulo2" colspan="7">DIAS</th>
                 </tr>
-                @if($detalles->isEmpty())
+                @if(count( $detalles ) == 0)
                 <tr>
                     <td class="subtitulo2" colspan="1">1</td>
                     <td class="campos" colspan="32"></td>
@@ -1698,12 +1774,42 @@
                 </tr>
                 <tr>
                     <td class="campos" rowspan="1" height='20px' colspan="14">{{$form008->id_usuariocrea}}</td>
-                    <td class="campos" rowspan="1" height='20px' colspan="23">{{substr($usuario->nombre1 , 0, 1) }}.
-                        {{ $usuario->apellido1 }} {{ $usuario->apellido2 }}
+                    <td class="campos form008-signature-cell" rowspan="1" colspan="23">
+                        @if(!empty($formSignature['signature_image']))
+                            <img class="form008-manual-signature" src="{{$formSignature['signature_image']}}" alt="Firma manuscrita registrada">
+                            <div class="form008-image-caption">
+                                <span class="form008-signature-name">{{$formSignature['name']}}</span><br>
+                                {{$formSignature['specialty']}}<br>
+                                FIRMA MANUSCRITA REGISTRADA
+                            </div>
+                        @else
+                            <table class="form008-electronic-signature">
+                                <tr>
+                                    <td class="qr-cell">
+                                        @if(!empty($formSignature['qr_source']))
+                                            <img class="qr-image" src="{{$formSignature['qr_source']}}" alt="QR de validación de firma clínica">
+                                        @endif
+                                    </td>
+                                    <td>
+                                        Validar la firma escaneando el QR<br>
+                                        Firmado electrónicamente por:<br>
+                                        <span class="form008-signature-name">{{$formSignature['name']}}</span><br>
+                                        {{$formSignature['specialty']}}<br>
+                                        <span class="form008-signature-status">{{$formSignature['status']}}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                            @if(!empty($formSignature['register']))
+                                <div class="form008-image-caption">REGISTRO PROFESIONAL: {{$formSignature['register']}}</div>
+                            @endif
+                            <div class="form008-signature-hash">HUELLA: {{strtoupper(substr($formSignature['fingerprint'], 0, 24))}}</div>
+                        @endif
                     </td>
-                    <td class="campos" rowspan="1" height='20px' colspan="28">
-                        @if(!is_null($firma))
-                        <img width=180 height=130 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="position:relative; z-index: 999;" align=center hspace=12><br>
+                    <td class="campos form008-seal-cell" rowspan="1" colspan="28">
+                        @if(!empty($formSignature['seal_image']))
+                            <img class="form008-seal-image" src="{{$formSignature['seal_image']}}" alt="Sello registrado del profesional">
+                        @else
+                            <span class="form008-no-seal">SIN SELLO</span>
                         @endif
                     </td>
                 </tr>
@@ -1711,7 +1817,7 @@
         </table>
     </div>
 
-    
 </body>
+
 
 </html>

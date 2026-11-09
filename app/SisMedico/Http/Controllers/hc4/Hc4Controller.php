@@ -13,6 +13,7 @@ use Sis_medico\Agenda;
 use Sis_medico\AgendaProcedimiento;
 use Sis_medico\Cortesia_paciente;
 use Sis_medico\Ct_Rol_Pagos;
+use Sis_medico\Ciudad;
 use Sis_medico\Especialidad;
 use Sis_medico\EstimadoSeguros;
 use Sis_medico\Examen_Orden;
@@ -36,11 +37,13 @@ use Sis_medico\Pentax;
 use Sis_medico\PentaxProc;
 use Sis_medico\Pentax_log;
 use Sis_medico\Procedimiento;
+use Sis_medico\Provincia;
 use Sis_medico\Seguro;
+use Sis_medico\Services\PatientTenantService;
 use Sis_medico\TipoUsuario;
 use Sis_medico\Empresa;
 use Sis_medico\User;
-use Sis_medico\Paciente_biopsia;
+use Svg\Tag\Rect;
 
 class Hc4Controller extends Controller
 {
@@ -78,11 +81,20 @@ class Hc4Controller extends Controller
     {
         $opcion = '2';
         if ($this->rol_new($opcion)) {
-            return redirect('/');
+            return response()->view('errors.403', [
+                'message' => 'El perfil Doctor todavía no tiene habilitado el acceso al módulo clínico.',
+            ], 403);
         }
 
-        $id_usuario     = Auth::user()->id;
-        $doctores       = User::where('id_tipo_usuario', 3)->where('estado', 1)->orderby('apellido1')->get();
+        $usuario        = Auth::user();
+        $id_usuario     = $usuario->id;
+        $doctores       = User::where('id_tipo_usuario', 3)
+            ->where('estado', 1)
+            ->when((int) $usuario->id_tipo_usuario === 3, function ($query) use ($id_usuario) {
+                $query->where('id', $id_usuario);
+            })
+            ->orderby('apellido1')
+            ->get();
         $seguros        = Seguro::where('inactivo', '1')->get();
         $especialidades = Especialidad::where('estado', '1')->get();
         $procedimientos = Procedimiento::where('estado', '1')->orderby('nombre')->get();
@@ -95,20 +107,13 @@ class Hc4Controller extends Controller
         `fechaini` between '".$fecha1."' and '".$fecha2."'");*/
 
         $agenda_consultas = DB::table('agenda as a')
-            ->where('a.estado', 1)
-            ->leftjoin('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->whereBetween('a.fechaini', [$fecha1, $fecha2])
+            ->where('a.estado', 1)->whereBetween('a.fechaini', [$fecha1, $fecha2])
             ->where('a.proc_consul', 0)
             ->where(function ($query) use ($id_usuario) {
-                $query->where([['a.id_doctor1', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor2', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor3', '=', $id_usuario]]);
-            })
-
-            ->join('paciente as p', 'p.id', 'a.id_paciente')
-            ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-            ->join('seguros as se', 'se.id', 'a.id_seguro')
-            ->get();
+                $query->where('a.id_doctor1', $id_usuario)
+                    ->orWhere('a.id_doctor2', $id_usuario)
+                    ->orWhere('a.id_doctor3', $id_usuario);
+            })->count('a.id');
         //dd($agenda_consultas);
         //dd($agenda_consultas);
         /*$procedimiento_consultas = DB::select("select * from `agenda` where `proc_consul` = '1'
@@ -116,20 +121,13 @@ class Hc4Controller extends Controller
         `fechaini` between '".$fecha1."' and '".$fecha2."'");*/
 
         $procedimiento_consultas = DB::table('agenda as a')
-            ->where('a.estado', 1)
-            ->leftjoin('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->whereBetween('a.fechaini', [$fecha1, $fecha2])
+            ->where('a.estado', 1)->whereBetween('a.fechaini', [$fecha1, $fecha2])
             ->where('a.proc_consul', 1)
             ->where(function ($query) use ($id_usuario) {
-                $query->where([['a.id_doctor1', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor2', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor3', '=', $id_usuario]]);
-            })
-
-            ->join('paciente as p', 'p.id', 'a.id_paciente')
-            ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-            ->join('seguros as se', 'se.id', 'a.id_seguro')
-            ->get();
+                $query->where('a.id_doctor1', $id_usuario)
+                    ->orWhere('a.id_doctor2', $id_usuario)
+                    ->orWhere('a.id_doctor3', $id_usuario);
+            })->count('a.id');
 
         //dd($procedimiento_consultas);
         /*$procedimiento_todas = DB::select("select * from `agenda` where `proc_consul` = '1'
@@ -137,14 +135,10 @@ class Hc4Controller extends Controller
         `fechaini` between '".$fecha1."' and '".$fecha2."'");*/
 
         $procedimiento_todas = DB::table('agenda as a')
-            ->where('a.estado', 1)
-            ->whereBetween('a.fechaini', [$fecha1, $fecha2])
+            ->where('a.estado', 1)->whereBetween('a.fechaini', [$fecha1, $fecha2])
             ->where('a.proc_consul', 1)
             ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->join('paciente as p', 'p.id', 'a.id_paciente')
-            ->join('empresa as em', 'em.id', 'a.id_empresa')
-            ->join('seguros as se', 'se.id', 'h.id_seguro')
-            ->get();
+            ->count('a.id');
 
         // dd($procedimiento_todas);
         /*$consultas_todas = DB::select("select * from `agenda` where `proc_consul` = '0'
@@ -152,14 +146,10 @@ class Hc4Controller extends Controller
         `fechaini` between '".$fecha1."' and '".$fecha2."'");*/
 
         $consultas_todas = DB::table('agenda as a')
-            ->where('a.estado', 1)
-            ->whereBetween('a.fechaini', [$fecha1, $fecha2])
+            ->where('a.estado', 1)->whereBetween('a.fechaini', [$fecha1, $fecha2])
             ->where('a.proc_consul', 0)
             ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->join('paciente as p', 'p.id', 'a.id_paciente')
-            ->join('empresa as em', 'em.id', 'a.id_empresa')
-            ->join('seguros as se', 'se.id', 'h.id_seguro')
-            ->get();
+            ->count('a.id');
 
         $ordenes_laboratorio = Examen_Orden::whereBetween('fecha_orden', [$fecha1, $fecha2])->where('estado', '1')->count();
         //dd($ordenes_laboratorio);
@@ -169,8 +159,80 @@ class Hc4Controller extends Controller
 
         //dd($request);
 
-        return view('hc4/inicio', ['agenda_consultas' => $agenda_consultas, 'consultas_todas' => $consultas_todas, 'procedimiento_consultas' => $procedimiento_consultas, 'procedimiento_todas' => $procedimiento_todas, 'ordenes_laboratorio' => $ordenes_laboratorio, 'pacientes' => $pacientes, 'nombres' => $nombres, 'apellidos' => $apellidos, 'request' => $request, 'fecha1' => $fecha1, 'fecha2' => $fecha2, 'doctores' => $doctores, 'id_doctor1' => null, 'seguros' => $seguros, 'id_seguro' => null, 'especialidades' => $especialidades, 'id_especialidad' => null, 'proc_consul' => '2']);
+        $id_doctor1 = (int) $usuario->id_tipo_usuario === 3 ? $id_usuario : null;
 
+        return view('hc4/inicio', ['agenda_consultas' => $agenda_consultas, 'consultas_todas' => $consultas_todas, 'procedimiento_consultas' => $procedimiento_consultas, 'procedimiento_todas' => $procedimiento_todas, 'ordenes_laboratorio' => $ordenes_laboratorio, 'pacientes' => $pacientes, 'nombres' => $nombres, 'apellidos' => $apellidos, 'request' => $request, 'fecha1' => $fecha1, 'fecha2' => $fecha2, 'doctores' => $doctores, 'id_doctor1' => $id_doctor1, 'seguros' => $seguros, 'id_seguro' => null, 'especialidades' => $especialidades, 'id_especialidad' => null, 'proc_consul' => '2']);
+
+    }
+
+    /**
+     * Búsqueda paginada para los filtros Select2 de la pantalla ambulatoria.
+     */
+    public function catalogosSelect2(Request $request)
+    {
+        if ($this->rol_new('2')) {
+            return response()->json(['results' => []], 403);
+        }
+
+        $catalogo = (string) $request->query('catalogo', '');
+        $termino = trim((string) $request->query('q', ''));
+        $pagina = max(1, (int) $request->query('page', 1));
+        $limite = 20;
+
+        if (!in_array($catalogo, ['especialidades', 'doctores', 'seguros'], true) || $termino === '') {
+            return response()->json([
+                'results' => [],
+                'pagination' => ['more' => false],
+            ]);
+        }
+
+        $patron = '%' . addcslashes($termino, '\\%_') . '%';
+
+        if ($catalogo === 'especialidades') {
+            $consulta = Especialidad::where('estado', '1')
+                ->where('nombre', 'like', $patron)
+                ->orderBy('nombre')
+                ->select('id', 'nombre');
+        } elseif ($catalogo === 'seguros') {
+            $consulta = Seguro::where('inactivo', '1')
+                ->where('nombre', 'like', $patron)
+                ->orderBy('nombre')
+                ->select('id', 'nombre');
+        } else {
+            $consulta = User::where('id_tipo_usuario', 3)
+                ->where('estado', 1)
+                ->where(function ($query) use ($patron) {
+                    $query->where('id', 'like', $patron)
+                        ->orWhere('apellido1', 'like', $patron)
+                        ->orWhere('apellido2', 'like', $patron)
+                        ->orWhere('nombre1', 'like', $patron)
+                        ->orWhere('nombre2', 'like', $patron)
+                        ->orWhereRaw("CONCAT_WS(' ', apellido1, apellido2, nombre1, nombre2) LIKE ?", [$patron]);
+                })
+                ->orderBy('apellido1')
+                ->orderBy('nombre1')
+                ->select('id', 'apellido1', 'apellido2', 'nombre1', 'nombre2');
+        }
+
+        $registros = $consulta->skip(($pagina - 1) * $limite)->take($limite + 1)->get();
+        $hayMas = $registros->count() > $limite;
+        $registros = $registros->take($limite);
+
+        $resultados = $registros->map(function ($registro) use ($catalogo) {
+            $texto = $catalogo === 'doctores'
+                ? trim($registro->apellido1 . ' ' . $registro->apellido2 . ' ' . $registro->nombre1 . ' ' . $registro->nombre2)
+                : $registro->nombre;
+
+            return [
+                'id' => (string) $registro->id,
+                'text' => $texto,
+            ];
+        })->values();
+
+        return response()->json([
+            'results' => $resultados,
+            'pagination' => ['more' => $hayMas],
+        ]);
     }
 
     //BUSCAR PACIENTE INGRESADO POR APELLIDOS Y NOMBRES
@@ -187,13 +249,24 @@ class Hc4Controller extends Controller
         $nombres     = $request['nombres'];
         $apellidos   = $request['apellidos'];
         $pacientes   = [];
-        $id_usuario  = Auth::user()->id;
+        $usuario     = Auth::user();
+        $id_usuario  = $usuario->id;
 
         $proc_consul = $request['proc_consul'];
-        $id_doctor1 = $request['id_doctor1'];
+        // Un médico solamente puede consultar sus propias atenciones desde
+        // esta pantalla. El filtro recibido sigue disponible para perfiles
+        // administrativos autorizados, pero nunca puede ampliar el alcance
+        // de una sesión médica.
+        $id_doctor1 = (int) $usuario->id_tipo_usuario === 3
+            ? $id_usuario
+            : $request['id_doctor1'];
         $id_seguro = $request['id_seguro'];
         $espid = $request['espid'];
         $cedula = $request['cedula'];
+        $id_empresa = trim((string) session('id_empresa'));
+        if ($id_empresa === '') {
+            abort(403, 'Seleccione una empresa antes de buscar pacientes.');
+        }
 
         $doctores = User::where('id_tipo_usuario', 3)->where('estado', 1)->get();
         if ($proc_consul == null) {
@@ -216,10 +289,8 @@ class Hc4Controller extends Controller
 
             //dd($nombres);
             $pacientes = DB::table('paciente as p')
-                ->leftjoin('historiaclinica as h', 'h.id_paciente', 'p.id')
-                ->leftjoin('agenda as a', 'h.id_agenda', 'a.id')
-                ->groupBy('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.estado_cita');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento');
+            app(PatientTenantService::class)->constrain($pacientes, 'p.id', $id_empresa);
 
             //dd($pacientes);
 
@@ -264,14 +335,10 @@ class Hc4Controller extends Controller
             $agendas_proc = null;
         } elseif($cedula != null){
             $pacientes = DB::table('paciente as p')
-                ->leftjoin('historiaclinica as h', 'h.id_paciente', 'p.id')
-                ->leftjoin('agenda as a', 'h.id_agenda', 'a.id')
-                //->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
-                ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
-                ->groupBy('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.estado_cita', 'a.id as id_agenda');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento');
+            app(PatientTenantService::class)->constrain($pacientes, 'p.id', $id_empresa);
 
-            $pacientes = $pacientes->where('a.id_paciente', $cedula)->limit('1000')->get();
+            $pacientes = $pacientes->where('p.id', $cedula)->limit('1000')->get();
             $agendas_proc = null;
         } else {
             //BUSCA POR FECHAS
@@ -285,67 +352,82 @@ class Hc4Controller extends Controller
             ->leftjoin('historiaclinica as h','h.id_agenda','a.id');  */
 
             $pacientes1 = DB::table('agenda as a')->where('a.estado', 1)
+                ->where('a.id_empresa', $id_empresa)
                 ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
                 ->whereBetween('fechaini', [$fecha1 . ' 00:00', $fecha2 . ' 23:59'])
                 ->join('paciente as p', 'p.id', 'a.id_paciente')
                 ->join('users as d', 'd.id', 'a.id_doctor1')
                 ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-                ->join('seguros as se', 'se.id', 'a.id_seguro')
                 ->leftjoin('historiaclinica as h', 'h.id_agenda', 'a.id')
+                ->leftJoin('seguros as se_historia', 'se_historia.id', 'h.id_seguro')
+                ->leftJoin('seguros as se_agenda', 'se_agenda.id', 'a.id_seguro')
+                ->leftJoin('seguros as se_paciente', 'se_paciente.id', 'p.id_seguro')
                 ->leftjoin('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                 ->whereNull('h.hcid')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'se.nombre', 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'a.id_doctor1 as doctor', 'a.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', DB::raw('COALESCE(se_historia.nombre, se_agenda.nombre, se_paciente.nombre) as nombre'), 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'a.id_doctor1 as doctor', DB::raw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) as seguro_nom'), 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
             //dd($pacientes1->get());
 
             $pacientes2 = DB::table('agenda as a')->where('a.estado', 1)
+                ->where('a.id_empresa', $id_empresa)
                 ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
                 ->whereBetween('fechaini', [$fecha1 . ' 00:00', $fecha2 . ' 23:59'])
                 ->join('paciente as p', 'p.id', 'a.id_paciente')
                 ->join('users as d', 'd.id', 'a.id_doctor1')
                 ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-                ->join('seguros as se', 'se.id', 'a.id_seguro')
                 ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
-                ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
+                ->leftJoin('seguros as se_historia', 'se_historia.id', 'h.id_seguro')
+                ->leftJoin('seguros as se_agenda', 'se_agenda.id', 'a.id_seguro')
+                ->leftJoin('seguros as se_paciente', 'se_paciente.id', 'p.id_seguro')
+                ->leftJoin('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                 ->where('a.proc_consul', '0')
                 ->whereNull('hc_pro.id_doctor_examinador')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'se.nombre', 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', DB::raw('COALESCE(se_historia.nombre, se_agenda.nombre, se_paciente.nombre) as nombre'), 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', DB::raw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) as seguro_nom'), 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
 
             $pacientes2_0 = DB::table('agenda as a')->where('a.estado', 1)
+                ->where('a.id_empresa', $id_empresa)
                 ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
                 ->whereBetween('fechaini', [$fecha1 . ' 00:00', $fecha2 . ' 23:59'])
                 ->join('paciente as p', 'p.id', 'a.id_paciente')
                 ->join('users as d', 'd.id', 'a.id_doctor1')
                 ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-                ->join('seguros as se', 'se.id', 'a.id_seguro')
                 ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
+                ->leftJoin('seguros as se_historia', 'se_historia.id', 'h.id_seguro')
+                ->leftJoin('seguros as se_agenda', 'se_agenda.id', 'a.id_seguro')
+                ->leftJoin('seguros as se_paciente', 'se_paciente.id', 'p.id_seguro')
                 ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                 ->where('a.proc_consul', '0')
                 ->whereNotNull('hc_pro.id_doctor_examinador')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'se.nombre', 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', DB::raw('COALESCE(se_historia.nombre, se_agenda.nombre, se_paciente.nombre) as nombre'), 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', DB::raw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) as seguro_nom'), 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
 
             $pacientes3 = DB::table('agenda as a')->where('a.estado', 1)
+                ->where('a.id_empresa', $id_empresa)
                 ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
                 ->whereBetween('fechaini', [$fecha1 . ' 00:00', $fecha2 . ' 23:59'])
                 ->join('paciente as p', 'p.id', 'a.id_paciente')
                 ->join('users as d', 'd.id', 'a.id_doctor1')
                 ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-                ->join('seguros as se', 'se.id', 'a.id_seguro')
                 ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
+                ->leftJoin('seguros as se_historia', 'se_historia.id', 'h.id_seguro')
+                ->leftJoin('seguros as se_agenda', 'se_agenda.id', 'a.id_seguro')
+                ->leftJoin('seguros as se_paciente', 'se_paciente.id', 'p.id_seguro')
                 ->where('a.proc_consul', '1')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'se.nombre', 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', DB::raw('COALESCE(se_historia.nombre, se_agenda.nombre, se_paciente.nombre) as nombre'), 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', DB::raw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) as seguro_nom'), 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
             //dd($pacientes3->get());
 
             $pacientes4 = DB::table('agenda as a')->where('a.estado', 4)
+                ->where('a.id_empresa', $id_empresa)
                 ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
                 ->whereBetween('fechaini', [$fecha1 . ' 00:00', $fecha2 . ' 23:59'])
                 ->join('paciente as p', 'p.id', 'a.id_paciente')
                 ->join('users as d', 'd.id', 'a.id_doctor1')
                 ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-                ->join('seguros as se', 'se.id', 'a.id_seguro')
                 ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
+                ->leftJoin('seguros as se_historia', 'se_historia.id', 'h.id_seguro')
+                ->leftJoin('seguros as se_agenda', 'se_agenda.id', 'a.id_seguro')
+                ->leftJoin('seguros as se_paciente', 'se_paciente.id', 'p.id_seguro')
                 ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                 ->where('a.proc_consul', '4')
-                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'se.nombre', 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
+                ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', DB::raw('COALESCE(se_historia.nombre, se_agenda.nombre, se_paciente.nombre) as nombre'), 'em.nombre_corto', 'h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', DB::raw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) as seguro_nom'), 'a.observaciones', 'a.id_procedimiento', 'a.omni', 'a.tc', 'a.teleconsulta');
 
             if ($proc_consul != 2) {
                 //  $pacientes = $pacientes->where('a.proc_consul', $proc_consul);
@@ -374,11 +456,11 @@ class Hc4Controller extends Controller
 
             if (!is_null($id_seguro)) {
                 //  $pacientes = $pacientes->where('a.id_seguro', $id_seguro);
-                $pacientes1   = $pacientes1->where('a.id_seguro', $id_seguro);
-                $pacientes2   = $pacientes2->where('h.id_seguro', $id_seguro);
-                $pacientes2_0 = $pacientes2_0->where('h.id_seguro', $id_seguro);
-                $pacientes3   = $pacientes3->where('h.id_seguro', $id_seguro);
-                $pacientes4   = $pacientes4->where('h.id_seguro', $id_seguro);
+                $pacientes1   = $pacientes1->whereRaw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) = ?', [$id_seguro]);
+                $pacientes2   = $pacientes2->whereRaw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) = ?', [$id_seguro]);
+                $pacientes2_0 = $pacientes2_0->whereRaw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) = ?', [$id_seguro]);
+                $pacientes3   = $pacientes3->whereRaw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) = ?', [$id_seguro]);
+                $pacientes4   = $pacientes4->whereRaw('COALESCE(h.id_seguro, a.id_seguro, p.id_seguro) = ?', [$id_seguro]);
             }
 
             if (!is_null($espid)) {
@@ -397,7 +479,18 @@ class Hc4Controller extends Controller
             $pacientes1 = $pacientes1->union($pacientes2)->union($pacientes2_0)->union($pacientes3)->union($pacientes4);
 
             $pacientes1 = $pacientes1->limit('1000')->get();
-            $pacientes  = $pacientes1;
+
+            // El resultado representa atenciones. Un paciente puede tener
+            // consultas de distintas especialidades dentro del mismo rango;
+            // se elimina solamente la duplicidad producida por los UNION y
+            // se conserva una fila por agenda.
+            $pacientes = $pacientes1
+                ->sortByDesc('fechaini')
+                ->groupBy('id_agenda')
+                ->map(function ($atenciones) {
+                    return $atenciones->first();
+                })
+                ->values();
             // dd($pacientes);
             //dd($pacientes);
             $agendas_proc = null;
@@ -482,13 +575,15 @@ class Hc4Controller extends Controller
             ->where('a.estado', 1)
             ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
             ->whereBetween('a.fechaini', [$fecha1, $fecha2])
-            ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
+            ->leftJoin('historiaclinica as h', 'h.id_agenda', 'a.id')
             ->join('paciente as p', 'p.id', 'a.id_paciente')
-            ->join('users as d', 'd.id', 'h.id_doctor1')
-            ->join('empresa as em', 'em.id', 'a.id_empresa')
-            ->join('seguros as se', 'se.id', 'h.id_seguro')
+            ->leftJoin('users as d', 'd.id', 'a.id_doctor1')
+            ->leftJoin('empresa as em', 'em.id', 'a.id_empresa')
+            ->leftJoin('seguros as se_historia', 'se_historia.id', 'h.id_seguro')
+            ->leftJoin('seguros as se_agenda', 'se_agenda.id', 'a.id_seguro')
+            ->leftJoin('seguros as se_paciente', 'se_paciente.id', 'p.id_seguro')
             ->where('a.espid', '<>', '10')
-            ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'se.nombre as seguro_nombre', 'em.nombre_corto as empresa_nombre', 'h.hcid', 'a.omni', 'a.estado_cita', 'a.tc', 'a.teleconsulta')->Orderby('a.fechaini', 'asc')->get();
+            ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', DB::raw('COALESCE(se_historia.nombre, se_agenda.nombre, se_paciente.nombre) as seguro_nombre'), 'em.nombre_corto as empresa_nombre', 'h.hcid', 'a.omni', 'a.estado_cita', 'a.tc', 'a.teleconsulta')->Orderby('a.fechaini', 'asc')->get();
 
         //dd($agendas_pac->count());
         $agendas_proc = null;
@@ -513,12 +608,22 @@ class Hc4Controller extends Controller
             }
         }
 
+        $diagnosticos_por_hcid = collect();
+        $hcids = $agendas_pac->pluck('hcid')->filter()->unique()->values();
+        if ($hcids->count() > 0) {
+            $diagnosticos_por_hcid = DB::table('hc_cie10')
+                ->whereIn('hcid', $hcids->all())
+                ->select('hcid', DB::raw('COUNT(*) as total'))
+                ->groupBy('hcid')
+                ->pluck('total', 'hcid');
+        }
+
         $fecha       = Date('Y-m-d');
         $fecha_hasta = Date('Y-m-d');
 
         /*return view('hc4/inicio_busqueda', ['agenda_consultas' => $agenda_consultas, 'consultas_todas' => $consultas_todas, 'procedimiento_consultas' => $procedimiento_consultas, 'procedimiento_todas' => $procedimiento_todas,'ordenes_laboratorio'=>$ordenes_laboratorio,'agendas_pac'=>$agendas_pac]);*/
 
-        return view('hc4/inicio_busqueda', ['agendas_pac' => $agendas_pac, 'fecha1' => $fecha1, 'fecha2' => $fecha2, 'agendas_proc' => $agendas_proc, 'fecha1' => $fecha1, 'fecha2' => $fecha2]);
+        return view('hc4/inicio_busqueda', ['agendas_pac' => $agendas_pac, 'fecha1' => $fecha1, 'fecha2' => $fecha2, 'agendas_proc' => $agendas_proc, 'diagnosticos_por_hcid' => $diagnosticos_por_hcid]);
     }
 
     //AGENDA DEL DIA
@@ -526,128 +631,60 @@ class Hc4Controller extends Controller
     //SOLO PARA DOCTORES
     public function buscar_pacientes_doctor(Request $request)
     {
-
-        $opcion = '2';
-        if ($this->rol_new($opcion)) {
+        if ($this->rol_new('2')) {
             return redirect('/');
         }
 
-        $id_usuario = Auth::user()->id;
+        $id_usuario = Auth::id();
+        $fecha = $request->input('fecha') ?: date('Y-m-d');
+        $fecha1 = $fecha . ' 00:00:00';
+        $fecha2 = $fecha . ' 23:59:59';
 
-        if ($request['fecha'] == null) {
-            $fecha1 = date('Y/m/d ') . "00:00:00";
-            $fecha2 = date('Y/m/d ') . "23:59:59";
-        } else {
-            $fecha1 = $request['fecha'] . " 00:00:00";
-            $fecha2 = $request['fecha'] . " 23:59:59";
-            //return $fecha1;
-        }
-
-        /*$agenda_consultas = DB::select("select * from `agenda` where `proc_consul` = '0'
-        and (`id_doctor1` = '".$id_usuario."' or `id_doctor2` = '".$id_usuario."' or `id_doctor3` = '".$id_usuario."')  AND estado = '1'  AND
-        `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-        $procedimiento_consultas = DB::select("select * from `agenda` where `proc_consul` = '1'
-        and (`id_doctor1` = '".$id_usuario."' or `id_doctor2` = '".$id_usuario."' or `id_doctor3` = '".$id_usuario."')  AND estado = '1'  AND
-        `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-        $procedimiento_todas = DB::select("select * from `agenda` where `proc_consul` = '1'
-        AND estado = '1'  AND
-        `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-        $consultas_todas = DB::select("select * from `agenda` where `proc_consul` = '0'
-        AND estado = '1'  AND
-        `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-        $ordenes_laboratorio = Examen_Orden::whereBetween('fecha_orden', [$fecha1, $fecha2])->count();*/
-        $agendas_pac = [];
-
-        $agendas_pac = DB::table('agenda as a')
+        // Consultas y procedimientos comparten filtros y joins: una sola lectura.
+        $agendas_dia = DB::table('agenda as a')
             ->where('a.estado', 1)
             ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
             ->whereBetween('a.fechaini', [$fecha1, $fecha2])
-            ->leftjoin('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->join('paciente as p', 'p.id', 'a.id_paciente')
-        //->join('users as d','d.id','a.id_doctor1')
-            ->join('users as d', 'd.id', 'a.id_doctor1')
-            ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-            ->leftjoin('seguros as se', 'se.id', 'a.id_seguro')
-        //->where('a.id_doctor1',$id_usuario)
+            ->leftJoin('historiaclinica as h', 'h.id_agenda', '=', 'a.id')
+            ->join('paciente as p', 'p.id', '=', 'a.id_paciente')
+            ->join('users as d', 'd.id', '=', 'a.id_doctor1')
             ->where(function ($query) use ($id_usuario) {
-                $query->where([['a.id_doctor1', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor2', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor3', '=', $id_usuario]]);
+                $query->where('a.id_doctor1', $id_usuario)
+                    ->orWhere(function ($procedimientos) use ($id_usuario) {
+                        $procedimientos->where('a.proc_consul', '1')
+                            ->where(function ($colaboradores) use ($id_usuario) {
+                                $colaboradores->where('a.id_doctor2', $id_usuario)
+                                    ->orWhere('a.id_doctor3', $id_usuario);
+                            });
+                    });
             })
-
             ->where('a.espid', '<>', '10')
-            ->where('a.proc_consul', '0')
-            ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'h.hcid', 'a.omni', 'a.estado_cita', 'a.tc', 'a.teleconsulta')->Orderby('a.fechaini', 'asc')->get();
+            ->whereIn('a.proc_consul', ['0', '1'])
+            ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2',
+                'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'a.proc_consul',
+                'a.id as id_agenda', 'a.cortesia', 'd.nombre1 as dnombre1',
+                'd.apellido1 as dapellido1', 'h.hcid', 'a.omni', 'a.estado_cita',
+                'a.tc', 'a.teleconsulta', 'a.id_procedimiento')
+            ->orderBy('a.fechaini')->get();
 
-        $agendas_pac_procedimientos = [];
-
-        $agendas_pac_procedimientos = DB::table('agenda as a')
-            ->where('a.estado', 1)
-            ->whereNotIn('a.id_doctor1', ['4444444444', '444444444A', '444444444B'])
-            ->whereBetween('a.fechaini', [$fecha1, $fecha2])
-            ->leftjoin('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->join('paciente as p', 'p.id', 'a.id_paciente')
-        //->join('users as d','d.id','a.id_doctor1')
-            ->join('users as d', 'd.id', 'a.id_doctor1')
-            ->leftjoin('empresa as em', 'em.id', 'a.id_empresa')
-            ->leftjoin('seguros as se', 'se.id', 'a.id_seguro')
-        //->where('a.id_doctor1',$id_usuario)
-            ->where(function ($query) use ($id_usuario) {
-                $query->where([['a.id_doctor1', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor2', '=', $id_usuario]])
-                    ->orWhere([['a.id_doctor3', '=', $id_usuario]]);
-            })
-
-            ->where('a.espid', '<>', '10')
-            ->where('a.proc_consul', '1')
-            ->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento', 'a.fechaini', 'a.fechafin', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'a.proc_consul', 'a.id as id_agenda', 'a.cortesia', 'h.hcid', 'a.omni', 'a.estado_cita')->Orderby('a.fechaini', 'asc')->get();
+        $agendas_pac = $agendas_dia->where('proc_consul', '0')->values();
+        $agendas_pac_procedimientos = $agendas_dia->where('proc_consul', '1')->values();
         $agendas_reuniones = Agenda::where('estado', 1)
             ->whereBetween('fechaini', [$fecha1, $fecha2])
-        //->where('a.id_doctor1',$id_usuario)
             ->where(function ($query) use ($id_usuario) {
-                $query->where([['id_doctor1', '=', $id_usuario]])
-                    ->orWhere([['id_doctor2', '=', $id_usuario]])
-                    ->orWhere([['id_doctor3', '=', $id_usuario]]);
+                $query->where('id_doctor1', $id_usuario)
+                    ->orWhere('id_doctor2', $id_usuario)
+                    ->orWhere('id_doctor3', $id_usuario);
             })
-            ->where('proc_consul', '2')
-            ->Orderby('fechaini', 'asc')->get();
-        // dd($agendas_pac);
-        //dd($agendas_reuniones);
+            ->where('proc_consul', '2')->orderBy('fechaini')->get();
 
-        //Nuevo campo procedimiento
-        $agendas_proc = null;
-        foreach ($agendas_pac_procedimientos as $pac) {
+        $summary = app(\Sis_medico\Services\DoctorAgendaSummaryService::class)
+            ->load($agendas_dia, $agendas_reuniones);
 
-            if ($pac->proc_consul == '1') {
-                $pentax = Pentax::where('id_agenda', $pac->id_agenda)->first();
-                if (!is_null($pentax)) {
-                    $txt_px = '';
-                    foreach ($pentax->procedimientos as $p) {
-                        if ($txt_px == '') {
-                            $txt_px = $p->procedimiento->nombre;
-                        } else {
-                            $txt_px = $txt_px . '+' . $p->procedimiento->nombre;
-                        }
-
-                    }
-                    //dd($txt_px);
-                    $agendas_proc[$pac->id_agenda] = [$txt_px];
-                    //dd($agendas_proc[$pac->id_agenda]);
-                }
-
-            }
-
-        }
-
-        /*return view('hc4/inicio_busqueda', ['agenda_consultas' => $agenda_consultas, 'consultas_todas' => $consultas_todas, 'procedimiento_consultas' => $procedimiento_consultas, 'procedimiento_todas' => $procedimiento_todas,'ordenes_laboratorio'=>$ordenes_laboratorio,'agendas_pac'=>$agendas_pac]);*/
-        return view('hc4/inicio_busqueda_doctor', ['agendas_pac' => $agendas_pac, 'agendas_proc' => $agendas_proc, 'agendas_pac_procedimientos' => $agendas_pac_procedimientos, 'agendas_reuniones' => $agendas_reuniones]);
-
+        return view('hc4/inicio_busqueda_doctor', array_merge($summary, compact(
+            'agendas_pac', 'agendas_pac_procedimientos', 'agendas_reuniones'
+        )));
     }
-
     //HORARIO LABORABLE
     //MUESTRA EL HORARIO LABORABLE DEL DOCTOR QUE INGRESA SESION
     //SOLO PARA DOCTORES
@@ -687,6 +724,71 @@ class Hc4Controller extends Controller
         return view('hc4/horario_doctor/buscar_horario', ['nombre_doctor' => $nombre_doctor, 'extra' => $extra, 'horarios' => $horarios]);
     }
 
+    /**
+     * Devuelve las agendas del médico autenticado para el rango visible del
+     * calendario de horario laboral.
+     */
+    public function eventos_horario_doctor(Request $request)
+    {
+        $opcion = '2';
+        if ($this->rol_new($opcion)) {
+            return response()->json(array(), 403);
+        }
+
+        $inicio = strtotime((string) $request->input('start'));
+        $fin = strtotime((string) $request->input('end'));
+        if ($inicio === false || $fin === false || $fin <= $inicio || ($fin - $inicio) > (62 * 86400)) {
+            return response()->json(array('message' => 'El rango de fechas del calendario no es válido.'), 422);
+        }
+
+        $idDoctor = Auth::id();
+        $idEmpresa = trim((string) session('id_empresa'));
+        $agendas = DB::table('agenda as a')
+            ->join('paciente as p', 'p.id', '=', 'a.id_paciente')
+            ->where('a.estado', 1)
+            ->whereIn('a.proc_consul', array('0', '1'))
+            ->where('a.fechaini', '<', date('Y-m-d H:i:s', $fin))
+            ->where('a.fechafin', '>', date('Y-m-d H:i:s', $inicio))
+            ->where(function ($query) use ($idDoctor) {
+                $query->where('a.id_doctor1', $idDoctor)
+                    ->orWhere('a.id_doctor2', $idDoctor)
+                    ->orWhere('a.id_doctor3', $idDoctor);
+            });
+
+        if ($idEmpresa !== '') {
+            $agendas->where('a.id_empresa', $idEmpresa);
+        }
+
+        $agendas = $agendas->select(
+            'a.id', 'a.id_paciente', 'a.fechaini', 'a.fechafin', 'a.proc_consul',
+            'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2'
+        )->orderBy('a.fechaini')->get();
+
+        $eventos = array();
+        foreach ($agendas as $agenda) {
+            $paciente = trim(preg_replace('/\s+/', ' ', implode(' ', array_filter(array(
+                $agenda->apellido1, $agenda->apellido2, $agenda->nombre1, $agenda->nombre2
+            )))));
+            $esProcedimiento = (int) $agenda->proc_consul === 1;
+            $eventos[] = array(
+                'id' => 'agenda-' . $agenda->id,
+                'title' => ($esProcedimiento ? 'Procedimiento: ' : 'Consulta: ') . $paciente,
+                'start' => $agenda->fechaini,
+                'end' => $agenda->fechafin,
+                'color' => $esProcedimiento ? '#17a090' : '#087ca7',
+                'textColor' => '#ffffff',
+                'editable' => false,
+                'overlap' => true,
+                'className' => 'hc4-patient-event',
+                'patient' => $paciente,
+                'patient_id' => $agenda->id_paciente,
+                'appointment_type' => $esProcedimiento ? 'Procedimiento' : 'Consulta',
+            );
+        }
+
+        return response()->json($eventos);
+    }
+
     //ORDENES DE LABORATORIO
     //MUESTRA LAS ORDENES DE LABORATORIO INGRESADAS EL DIA DE HOY
     //SOLO PARA DOCTORES
@@ -716,158 +818,14 @@ class Hc4Controller extends Controller
         //dd($ordenes_lab);
 
         return view('hc4/ordenes_lab', ['ordenes_lab' => $ordenes_lab, 'fecha1' => $fecha1, 'fecha2' => $fecha2]);
+
     }
-    public function cargar_ordenes_lab_nuevo(Request $request)
-    {
-
-        $opcion = '2';
-        if ($this->rol_new($opcion)) {
-            return redirect('/');
-        }
-
-        $fecha1 = $request->fecha1;
-        $fecha2 = $request->fecha2;
-        if (is_null($fecha1)) {
-            $fecha1 = date("Y-m-d");
-        }
-        if (is_null($fecha2)) {
-            $fecha2 = date("Y-m-d");
-        }
-
-        $ordenes_lab = DB::table('examen_orden as eo')
-            ->join('paciente as p', 'p.id', 'eo.id_paciente')
-            ->join('seguros as s', 's.id', 'eo.id_seguro')
-            ->leftjoin('empresa as em', 'em.id', 'eo.id_empresa')
-            ->leftjoin('nivel as n', 'n.id', 'eo.id_nivel')
-            ->leftjoin('protocolo as proto', 'proto.id', 'eo.id_protocolo')
-            ->leftjoin('users as d', 'd.id', 'eo.id_doctor_ieced')
-            ->join('users as cu', 'cu.id', 'eo.id_usuariocrea')
-            ->join('users as mu', 'mu.id', 'eo.id_usuariomod');
-
-        $ordenes_agrupadas = Examen_Orden::join('seguros as s', 's.id', 'examen_orden.id_seguro')->where('examen_orden.estado', '1')->groupBy('s.id');
-
-        if (!is_null($fecha1)) {
-            $ordenes_lab = $ordenes_lab->whereBetween('eo.fecha_orden', [$fecha1 . ' 00:00:00', $fecha2 . ' 23:59:59']);
-            $ordenes_agrupadas = $ordenes_agrupadas->whereBetween('examen_orden.fecha_orden', [$fecha1 . ' 00:00:00', $fecha2 . ' 23:59:59']);
-
-        } else {
-            $ordenes_lab = $ordenes_lab->where('eo.fecha_orden', '<=', $fecha2);
-            $ordenes_agrupadas = $ordenes_agrupadas->where('examen_orden.fecha_orden', '<=', $fecha2);
-        }
-        $ordenes_lab = $ordenes_lab->where('eo.estado', '1')
-            ->select('eo.*', 'p.nombre1 as pnombre1', 'p.nombre2 as pnombre2', 'p.apellido2 as papellido2', 'p.apellido1 as papellido1', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 's.nombre as snombre', 'n.nombre as nnombre', 'em.nombrecomercial', 'cu.nombre1 as cnombre1', 'cu.apellido1 as capellido1', 'mu.nombre1 as mnombre1', 'mu.apellido1 as mapellido1', 'em.nombre_corto', 'proto.pre_post', 's.tipo as stipo', 'p.sexo')->get();
-
-        $ordenes_agrupadas = $ordenes_agrupadas->select('s.id', 's.nombre as snombre', 's.tipo as stipo', DB::raw('count(s.id) as cantidad'))->get();
-
-        $agrupado = [];
-        foreach ($ordenes_agrupadas as $value) {
-            $data['id_seguro'] = $value->id;
-            $data['nombre_seguro'] = $value->snombre;
-            $data['tipo_seguro'] = $value->stipo;
-            $data['cantidad'] = $value->cantidad;
-            array_push($agrupado, $data);
-        }
-        return view('hc4/ordenes_lab', ['ordenes_lab' => $ordenes_lab, 'fecha1' => $fecha1, 'fecha2' => $fecha2, 'agrupado' => $agrupado]);
-    }
-
-    //ORDENES DE LABORATORIO BUSCADOR
-    //MUESTRA LAS ORDENES DE LABORATORIO INGRESADAS EL DIA DE HOY
-    //SOLO PARA DOCTORES
-    /*public function  cargar_ordenes_lab_buscador(){
-
-    $opcion = '2';
-    if($this->rol_new($opcion)){
-    return redirect('/');
-    }
-
-    $id_usuario = Auth::user()->id;
-    $fecha1 =  date('Y/m/d ')."00:00:00";
-    $fecha2 =  date('Y/m/d ')."23:59:59";
-
-    $agenda_consultas = DB::select("select * from `agenda` where `proc_consul` = '0'
-    and (`id_doctor1` = '".$id_usuario."' or `id_doctor2` = '".$id_usuario."' or `id_doctor3` = '".$id_usuario."')  AND estado = '1'  AND
-    `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-    $procedimiento_consultas = DB::select("select * from `agenda` where `proc_consul` = '1'
-    and (`id_doctor1` = '".$id_usuario."' or `id_doctor2` = '".$id_usuario."' or `id_doctor3` = '".$id_usuario."')  AND estado = '1'  AND
-    `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-    $procedimiento_todas = DB::select("select * from `agenda` where `proc_consul` = '1'
-    AND estado = '1'  AND
-    `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-    $consultas_todas = DB::select("select * from `agenda` where `proc_consul` = '0'
-    AND estado = '1'  AND
-    `fechaini` between '".$fecha1."' and '".$fecha2."'");
-
-    $ordenes_laboratorio = Examen_Orden::whereBetween('fecha_orden', [$fecha1, $fecha2])->count();
-
-    $ordenes_lab = DB::table('examen_orden as eo')
-    ->join('paciente as p','p.id','eo.id_paciente')
-    ->join('seguros as s','s.id','eo.id_seguro')
-    ->leftjoin('empresa as em','em.id','eo.id_empresa')
-    ->leftjoin('nivel as n','n.id','eo.id_nivel')
-    ->leftjoin('protocolo as proto','proto.id','eo.id_protocolo')
-    ->leftjoin('users as d','d.id','eo.id_doctor_ieced')
-    ->join('users as cu','cu.id','eo.id_usuariocrea')
-    ->join('users as mu','mu.id','eo.id_usuariomod')
-    ->whereBetween('eo.fecha_orden', [$fecha1,$fecha2])
-    ->where('eo.estado','<>','0')
-    ->select('eo.*','p.nombre1 as pnombre1','p.nombre2 as pnombre2','p.apellido2 as papellido2','p.apellido1 as papellido1','d.nombre1 as dnombre1','d.apellido1 as dapellido1','s.nombre as snombre','n.nombre as nnombre','em.nombrecomercial','cu.nombre1 as cnombre1','cu.apellido1 as capellido1','mu.nombre1 as mnombre1','mu.apellido1 as mapellido1','em.nombre_corto', 'proto.pre_post','s.tipo as stipo','p.sexo')->get();
-
-    return view('hc4/inicio_lab', ['agenda_consultas' => $agenda_consultas, 'consultas_todas' => $consultas_todas, 'procedimiento_consultas' => $procedimiento_consultas, 'procedimiento_todas' => $procedimiento_todas,'ordenes_laboratorio'=>$ordenes_laboratorio,'ordenes_lab' => $ordenes_lab]);
-
-    }*/
 
     //MUESTRA BARRA DE PROGRESO EN LAS ORDENES DE LABORATORIO
     public function carga_barra_progress($id)
     {
-
-        $orden      = Examen_Orden::find($id);
-        $detalle    = $orden->detalles;
-        $resultados = $orden->resultados;
-
-        $cant_par = 0;
-        foreach ($detalle as $d) {
-            //$parametros = $parametros->where('id_examen', $d->id_examen);
-            if ($d->examen->no_resultado == '0') {
-
-                if (count($d->parametros) == '0') {
-                    $cant_par++;
-                }
-                if ($d->examen->sexo_n_s == '0') {
-                    $parametro_nuevo = $d->parametros->where('sexo', '3');
-
-                } else {
-                    $parametro_nuevo = $d->parametros->where('sexo', $orden->paciente->sexo);
-
-                }
-                foreach ($parametro_nuevo as $p) {
-                    $cant_par++;
-                }
-            }
-
-        }
-
-        $certificados = 0;
-        $cantidad     = 0;
-        foreach ($resultados as $r) {
-            $cantidad++;
-            if ($r->certificado == '1') {
-                $certificados++;
-
-            }
-        }
-        if ($certificados > $cant_par) {
-            $certificados = $cant_par;
-        }
-
-        return ['cantidad' => $cantidad, 'certificados' => $certificados, 'cant_par' => $cant_par];
-
+        return app(\Sis_medico\Services\ClinicalHc4SupportQueryService::class)->carga_barra_progress($id);
     }
-
-    //AGREGAR NUEVO PACIENTE
-    //SOLO PARA DOCTORES
     public function agregar_paciente()
     {
         $opcion = '2';
@@ -876,6 +834,37 @@ class Hc4Controller extends Controller
         }
 
         return view('hc4/nuevo_paciente');
+    }
+
+    public function cargar_log_hc(Request $request)
+    {
+        $opcion = '2';
+        if ($this->rol_new($opcion)) {
+            return redirect('/');
+        }
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $query = Log_usuario::join('users as u', 'u.id', 'log_usuario.id_usuario')->where('log_usuario.descripcion', 'DESCARGO HISTORIA CLINICA');
+
+        // Si hay ambas fechas, filtramos entre fechas (inclusive)
+        if ($from && $to) {
+            // Aseguramos formato correcto y rango inclusive
+            $fromDate = Carbon::parse($from)->startOfDay();
+            $toDate = Carbon::parse($to)->endOfDay();
+            $query->whereBetween('log_usuario.created_at', [$fromDate, $toDate]);
+        } elseif ($from) {
+            $fromDate = Carbon::parse($from)->startOfDay();
+            $query->where('log_usuario.created_at', '>=', $fromDate);
+        } elseif ($to) {
+            $toDate = Carbon::parse($to)->endOfDay();
+            $query->where('log_usuario.created_at', '<=', $toDate);
+        }
+
+        // Orden ejemplo: más recientes arriba
+        $items = $query->select('u.nombre1', 'u.apellido1', 'u.apellido2', 'log_usuario.descripcion', 'log_usuario.dato_ant2', 'log_usuario.created_at')->orderBy('log_usuario.created_at', 'desc')->get();
+        return view('hc4/log_hc', compact('items', 'from', 'to'));
     }
 
     //BUSCA EL PACIENTE POR NOMBRES Y APELLIDOS, SI EXISTE MUESTRA MENSAJE DE ALERTA
@@ -933,9 +922,9 @@ class Hc4Controller extends Controller
         if ($agenda_last != null) {
             $agenda = DB::table('agenda')
                 ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
-                ->join('seguros', 'paciente.id_seguro', '=', 'seguros.id')
-                ->join('users as uc', 'uc.id', 'agenda.id_usuariocrea')
-                ->join('users as um', 'um.id', 'agenda.id_usuariomod')
+                ->leftJoin('seguros', 'paciente.id_seguro', '=', 'seguros.id')
+                ->leftJoin('users as uc', 'uc.id', 'agenda.id_usuariocrea')
+                ->leftJoin('users as um', 'um.id', 'agenda.id_usuariomod')
                 ->leftjoin('historiaclinica as h', 'h.id_agenda', 'agenda.id')
                 ->leftjoin('seguros as hs', 'hs.id', 'h.id_seguro')
                 ->leftjoin('sala', 'agenda.id_sala', 'sala.id')
@@ -950,21 +939,22 @@ class Hc4Controller extends Controller
 
             //dd($agenda);
 
-            if ($agenda->fecha_nacimiento != null) {
-                $edad = Carbon::createFromDate(substr($agenda->fecha_nacimiento, 0, 4), substr($agenda->fecha_nacimiento, 5, 2), substr($agenda->fecha_nacimiento, 8, 2))->age;
-            }
-
-            if ($agenda->pparentesco == 'Principal') {
-                $mail = null;
-                $u1   = User::find($agenda->id_paciente);
-                if (!is_null($u1)) {
-                    $mail = $u1->email;
+            if (!is_null($agenda)) {
+                if (!empty($agenda->fecha_nacimiento)) {
+                    try {
+                        $edad = Carbon::parse($agenda->fecha_nacimiento)->age;
+                    } catch (\Exception $exception) {
+                        $edad = 0;
+                    }
                 }
-            } else {
-                $mail = User::find($agenda->id_usuario)->email;
-            }
 
-            $alergiasxpac = Paciente_Alergia::where('id_paciente', $agenda->id_paciente)->get();
+                $usuarioCorreo = $agenda->pparentesco == 'Principal'
+                    ? User::find($agenda->id_paciente)
+                    : User::find($agenda->id_usuario);
+                $mail = is_null($usuarioCorreo) ? null : $usuarioCorreo->email;
+
+                $alergiasxpac = Paciente_Alergia::where('id_paciente', $agenda->id_paciente)->get();
+            }
 
         }
 
@@ -986,8 +976,11 @@ class Hc4Controller extends Controller
     public function selecciona_procedimiento($tipo, $paciente)
     {
 
-        //'0: endoscopico, 1: funcional, 2:imagen, 3:consulta', 4:broncoscopias
-        $px = Procedimiento::where('procedimiento.estado', '1')->get();
+        // Clínica Borja utiliza un único catálogo de procedimientos activos.
+        $px = Procedimiento::with('grupo_procedimiento')
+            ->where('procedimiento.estado', '1')
+            ->orderBy('procedimiento.nombre')
+            ->get();
 
         $paciente = Paciente::find($paciente);
 
@@ -1000,8 +993,11 @@ class Hc4Controller extends Controller
     public function selecciona_procedimiento2($tipo, $paciente, $hcid)
     {
 
-        //'0: endoscopico, 1: funcional, 2:imagen, 3:consulta', 4:broncoscopias
-        $px = Procedimiento::where('procedimiento.estado', '1')->get();
+        // Clínica Borja utiliza un único catálogo de procedimientos activos.
+        $px = Procedimiento::with('grupo_procedimiento')
+            ->where('procedimiento.estado', '1')
+            ->orderBy('procedimiento.nombre')
+            ->get();
 
         $paciente = Paciente::find($paciente);
 
@@ -1101,212 +1097,9 @@ class Hc4Controller extends Controller
 
     public function crear_procedimiento(Request $request)
     {
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $id_doctor  = Auth::user()->id;
-
-        $procedimientos = $request['procedimiento'];
-
-        $procedimientop = $procedimientos[0];
-        $paciente       = Paciente::find($request->paciente);
-        $sala           = \Sis_medico\Sala::where('proc_consul_sala', 1)->first();
-
-        $empresa = Empresa::where('prioridad','1')->first();
-        //dd($empresa);
-
-        $procedimiento_crear_new = [
-            'anterior'        => 'PROC_ENDOSCOPICOS -> El Dr. creo nuevo procedimiento endoscopico',
-            'nuevo'           => 'PROC_ENDOSCOPICOS -> El Dr. creo nuevo procedimiento endoscopico',
-            'id_paciente'     => $paciente->id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($procedimiento_crear_new);
-
-        if ($procedimientos != null) {
-
-            $input_agenda = [
-                'fechaini'         => Date('Y-m-d H:i:s'),
-                'fechafin'         => Date('Y-m-d H:i:s'),
-                'id_paciente'      => $paciente->id,
-                'id_doctor1'       => $id_doctor,
-                'proc_consul'      => '4',
-                'estado_cita'      => '4',
-                'id_empresa'       => $empresa->id,
-                'espid'            => '4',
-                'observaciones'    => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-                'id_seguro'        => $paciente->id_seguro,
-                'estado'           => '4',
-                'ip_creacion'      => $ip_cliente,
-                'ip_modificacion'  => $ip_cliente,
-                'id_usuariocrea'   => $id_doctor,
-                'id_usuariomod'    => $id_doctor,
-                'id_procedimiento' => $procedimientop,
-                'id_sala'          => $sala->id,
-            ];
-
-            $id_agenda = agenda::insertGetId($input_agenda);
-            //return $id_agenda;
-
-            $txt_pro = '';
-            foreach ($procedimientos as $value) {
-
-                if ($procedimientop != $value) {
-                    $txt_pro = $txt_pro . '+' . $value;
-                    AgendaProcedimiento::create([
-                        'id_agenda'        => $id_agenda,
-                        'id_procedimiento' => $value,
-                        'ip_creacion'      => $ip_cliente,
-                        'ip_modificacion'  => $ip_cliente,
-                        'id_usuariocrea'   => $id_doctor,
-                        'id_usuariomod'    => $id_doctor,
-                    ]);
-                }
-            }
-
-            $input_log = [
-                'id_agenda'       => $id_agenda,
-                'estado_cita_ant' => '0',
-                'estado_cita'     => '0',
-                'fechaini'        => Date('Y-m-d H:i:s'),
-                'fechafin'        => Date('Y-m-d H:i:s'),
-                'estado'          => '4',
-                'observaciones'   => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-                'id_doctor1'      => $id_doctor,
-                'descripcion'     => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-                'campos_ant'      => 'PRO: ' . $procedimientop . $txt_pro,
-
-                'id_usuariomod'   => $id_doctor,
-                'id_usuariocrea'  => $id_doctor,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ];
-
-            $idusuario = $id_doctor;
-
-            Log_agenda::create($input_log);
-
-            $input_historia = [
-
-                'parentesco'      => $paciente->parentesco,
-                'id_usuario'      => $paciente->id_usuario,
-                'id_agenda'       => $id_agenda,
-                'id_paciente'     => $paciente->id,
-                'id_seguro'       => $paciente->id_seguro,
-
-                'id_doctor1'      => $id_doctor,
-                'id_usuariocrea'  => $id_doctor,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $id_doctor,
-                'ip_creacion'     => $ip_cliente,
-
-            ];
-
-            $id_historia = Historiaclinica::insertGetId($input_historia);
-
-            $input_pentax = [
-                'id_agenda'       => $id_agenda,
-                'hcid'            => $id_historia,
-                'id_sala'         => $sala->id,
-                'id_doctor1'      => $idusuario,
-                'id_seguro'       => $paciente->id_seguro,
-                'observacion'     => "PROCEDIMIENTO CREADO POR EL DOCTOR",
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
-            ];
-
-            $id_pentax = Pentax::insertGetId($input_pentax);
-
-            $list_proc = '';
-            foreach ($procedimientos as $value) {
-                $input_pentax_pro2 = [
-                    'id_pentax'        => $id_pentax,
-                    'id_procedimiento' => $value,
-                    'id_usuariocrea'   => $idusuario,
-                    'ip_modificacion'  => $ip_cliente,
-                    'id_usuariomod'    => $idusuario,
-                    'ip_creacion'      => $ip_cliente,
-                ];
-
-                PentaxProc::create($input_pentax_pro2);
-                $list_proc = $list_proc . "+" . $value;
-            }
-
-            $input_log_px = [
-                'id_pentax'       => $id_pentax,
-                'tipo_cambio'     => "CREADO POR EL DOCTOR",
-                'descripcion'     => "EN ESPERA",
-                'estado_pentax'   => '0',
-                'procedimientos'  => $list_proc,
-                'id_doctor1'      => $idusuario,
-                'observacion'     => "CREADO POR EL DOCTOR",
-                'id_sala'         => $sala->id,
-                'id_seguro'       => $paciente->id_seguro,
-
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-            ];
-
-            Pentax_log::create($input_log_px);
-
-            $input_hc_procedimiento = [
-                'id_hc'                 => $id_historia,
-                'id_seguro'             => $paciente->id_seguro,
-                'id_doctor_examinador'  => $idusuario,
-                'id_doctor_examinador2' => $idusuario,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-                'ip_creacion'           => $ip_cliente,
-
-            ];
-
-            $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-            $input_hc_protocolo = [
-                'fecha'                => date('Y-m-d'),
-                'id_hc_procedimientos' => $id_hc_procedimiento,
-                'hora_inicio'          => date('H:i:s'),
-                'hora_fin'             => date('H:i:s'),
-                'estado_final'         => ' ',
-                'ip_modificacion'      => $ip_cliente,
-                'hcid'                 => $id_historia,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-                'created_at'           => date('Y-m-d H:i:s'),
-                'updated_at'           => date('Y-m-d H:i:s'),
-                'tipo_procedimiento'   => $request->tipo_procedimiento,
-            ];
-            hc_protocolo::insert($input_hc_protocolo);
-
-            foreach ($procedimientos as $value) {
-                $input_pro_final = [
-                    'id_hc_procedimientos' => $id_hc_procedimiento,
-                    'id_procedimiento'     => $value,
-                    'id_usuariocrea'       => $idusuario,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariomod'        => $idusuario,
-                    'ip_creacion'          => $ip_cliente,
-                ];
-
-                Hc_Procedimiento_Final::create($input_pro_final);
-            }
-
-            return "ok";
-        }
-
-        return "Ingrese el Procedimiento";
-
+        return app(\Sis_medico\Services\ClinicalHc4ProcedureService::class)->crear_procedimiento($request);
     }
 
-    //CREAR PACIENTE
     public function crear_paciente(Request $request)
     {
 
@@ -1315,12 +1108,21 @@ class Hc4Controller extends Controller
 
         date_default_timezone_set('America/Guayaquil');
         $bandera = 0;
-        $id      = $request['cedula'];
+        $id      = trim((string) $request->input('cedula'));
+        $request->merge(array('cedula' => $id));
 
-        $user = User::find($id);
+        $birthDate = trim((string) $request->input('fecha_nacimiento'));
+        if ($birthDate !== '' && strtotime(str_replace('/', '-', $birthDate)) !== false) {
+            $request->merge(array('fecha_nacimiento' => date('Y-m-d', strtotime(str_replace('/', '-', $birthDate)))));
+        }
 
-        // Redirect to user list if updating user wasn't existed
-        if (!is_null($user)) {
+        // La identidad del usuario es global. El alcance por empresa puede
+        // ocultar una cuenta existente y provocar un intento de duplicar su PK.
+        $user = User::withoutGlobalScope('active_company')->find($id);
+
+        DB::transaction(function () use ($request, $user, $id, $ip_cliente, $idusuario) {
+            // Redirect to user list if updating user wasn't existed
+            if (!is_null($user)) {
 
             $this->validateInput2($request);
             Paciente::create([
@@ -1365,7 +1167,7 @@ class Hc4Controller extends Controller
                 'dato_ant1'   => $request['cedula'],
                 'dato1'       => strtoupper($request['nombre1']) . " " . strtoupper($request['nombre2']) . " " . strtoupper($request['apellido1']) . " " . strtoupper($request['apellido2']),
             ]);
-        } else {
+            } else {
 
             $this->validateInput($request);
 
@@ -1422,23 +1224,28 @@ class Hc4Controller extends Controller
                 'dato_ant1'   => $request['cedula'],
                 'dato1'       => strtoupper($request['nombre1']) . " " . strtoupper($request['nombre2']) . " " . strtoupper($request['apellido1']) . " " . strtoupper($request['apellido2']),
             ]);
-        }
+            }
+
+            if ($request->cortesia == 'SI') {
+                $cortesia_paciente = Cortesia_paciente::find($id);
+                if (is_null($cortesia_paciente)) {
+                    Cortesia_paciente::create([
+                        'id'              => $id,
+                        'cortesia'        => 'SI',
+                        'ilimitado'       => 'NO',
+                        'ip_creacion'     => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariocrea'  => $idusuario,
+                        'id_usuariomod'   => $idusuario,
+                    ]);
+                }
+            }
+        });
 
         $paciente = Paciente::find($id);
 
-        if ($request->cortesia == 'SI') {
-            $cortesia_paciente = Cortesia_paciente::find($id);
-            if (is_null($cortesia_paciente)) {
-                Cortesia_paciente::create([
-                    'id'              => $id,
-                    'cortesia'        => 'SI',
-                    'ilimitado'       => 'NO',
-                    'ip_creacion'     => $ip_cliente,
-                    'ip_modificacion' => $ip_cliente,
-                    'id_usuariocrea'  => $idusuario,
-                    'id_usuariomod'   => $idusuario,
-                ]);
-            }
+        if (is_null($paciente)) {
+            throw new \RuntimeException('El paciente no quedó asociado a la empresa activa.');
         }
 
         return $paciente->id;
@@ -1455,7 +1262,7 @@ class Hc4Controller extends Controller
             'nombre2'          => 'required|max:60',
             'apellido1'        => 'required|max:60',
             'apellido2'        => 'required|max:60',
-            'fecha_nacimiento' => 'required',
+            'fecha_nacimiento' => 'required|date',
 
         ];
 
@@ -1481,8 +1288,8 @@ class Hc4Controller extends Controller
             'telefono22.numeric'         => 'El teléfono celular debe ser numérico.',
             'telefono22.max'             => 'El teléfono celular no puede ser mayor a :max caracteres.',
             'id_pais2.required'          => 'Selecciona el pais.',
-            'fecha_nacimiento2.required' => 'Agrega la fecha de nacimiento.',
-            'fecha_nacimiento2.date'     => 'La fecha de nacimiento tiene formato incorrecto.',
+            'fecha_nacimiento.required'  => 'Agrega la fecha de nacimiento.',
+            'fecha_nacimiento.date'      => 'La fecha de nacimiento tiene formato incorrecto.',
             'menoredad.in'               => 'El Asegurado Principal no puede ser menor de edad.',
         ];
 
@@ -1493,14 +1300,13 @@ class Hc4Controller extends Controller
     {
         $rules = [
 
-            'cedula'           => 'required|max:10|unique:users',
+            'cedula'           => 'required|max:10|unique:users,id|unique:paciente,id',
             'nombre1'          => 'required|max:60',
             'nombre2'          => 'required|max:60',
             'apellido1'        => 'required|max:60',
             'apellido2'        => 'required|max:60',
             'email'            => 'required|email|max:191|unique:users',
-            'cedula'           => 'required|max:10|unique:paciente,id',
-            'fecha_nacimiento' => 'required',
+            'fecha_nacimiento' => 'required|date',
 
         ];
 
@@ -1560,132 +1366,8 @@ class Hc4Controller extends Controller
 
     public function calendario(Request $request)
     {
-
-        //dd($request->all());
-        if ($request['fecha'] == null) {
-            $fecha_hoy = Date('Y-m-d');
-        } else {
-            $fecha_hoy = Date('Y-m-d', strtotime($request['fecha']));
-        }
-
-        $fecha_desde = date('Y-m-d', strtotime($fecha_hoy . "- 90 days"));
-        $fecha_hasta = date('Y-m-d', strtotime($fecha_hoy . "+ 90 days"));
-        //dd($fecha_hoy);
-        $tipo = Auth::user()->id_tipo_usuario;
-
-        $id   = Auth::user()->id;
-        $user = DB::table('users')->where([['id_tipo_usuario', '=', 3], ['id', '=', $id]])->get(); //3=DOCTORES;
-        // Redirect to user list if updating user wasn't existed
-        if ($user == null || count($user) == 0) {
-            return redirect()->intended('/agenda');
-        }
-
-        $agenda = DB::table('agenda')
-            ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
-            ->join('seguros', 'agenda.id_seguro', '=', 'seguros.id')
-            ->join('procedimiento', 'agenda.id_procedimiento', '=', 'procedimiento.id')
-            ->select('agenda.*', 'paciente.nombre1 as pnombre1', 'paciente.nombre2 as pnombre2', 'paciente.apellido1 as papellido1', 'paciente.apellido2 as papellido2', 'seguros.color as color', 'seguros.nombre as nombre_seguro', 'procedimiento.nombre as nombre_procedimiento')->where('agenda.estado_cita', '<', '4')
-            ->where('agenda.proc_consul', '=', 1)
-            ->where(function ($query) use ($id) {
-                $query->where([['id_doctor1', '=', $id], ['agenda.estado', '=', '1']])
-                    ->orWhere([['id_doctor2', '=', $id], ['agenda.estado', '=', '1']])
-                    ->orWhere([['id_doctor3', '=', $id], ['agenda.estado', '=', '1']]);
-            })
-
-            ->whereBetween('fechaini', [$fecha_desde . ' 0:00:00', $fecha_hasta . ' 23:59:00'])
-            ->get();
-
-        $agenda_px = DB::table('agenda as a')
-            ->join('historiaclinica as h', 'h.id_agenda', 'a.id')
-            ->leftjoin('pentax as p', 'p.id_agenda', 'a.id')
-            ->join('paciente', 'a.id_paciente', '=', 'paciente.id')
-            ->join('seguros', 'h.id_seguro', '=', 'seguros.id')
-            ->join('procedimiento', 'a.id_procedimiento', '=', 'procedimiento.id')
-            ->select('a.*', 'paciente.nombre1 as pnombre1', 'paciente.nombre2 as pnombre2', 'paciente.apellido1 as papellido1', 'paciente.apellido2 as papellido2', 'seguros.color as color', 'seguros.nombre as nombre_seguro', 'procedimiento.nombre as nombre_procedimiento', 'p.id as pentax')
-            ->where('a.proc_consul', '=', 1)
-            ->where(function ($query) use ($id) {
-                $query->where([['h.id_doctor1', '=', $id], ['a.estado', '=', '1']])
-                    ->orWhere([['h.id_doctor2', '=', $id], ['a.estado', '=', '1']])
-                    ->orWhere([['h.id_doctor3', '=', $id], ['a.estado', '=', '1']]);
-            })
-            ->where('a.created_at', '>', $fecha_desde)->where('a.estado_cita', '4')
-            ->whereBetween('fechaini', [$fecha_desde . ' 0:00:00', $fecha_hasta . ' 23:59:00'])
-            ->get();
-
-        //dd($agenda,$agenda_px);
-        $agenda3 = DB::table('agenda')
-            ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
-            ->join('seguros', 'agenda.id_seguro', '=', 'seguros.id')
-            ->select('agenda.*', 'paciente.nombre1 as pnombre1', 'paciente.nombre2 as pnombre2', 'paciente.apellido1 as papellido1', 'paciente.apellido2 as papellido2', 'seguros.color as color', 'seguros.nombre as nombre_seguro')
-            ->where('proc_consul', '=', 0)
-            ->where(function ($query) use ($id) {
-                $query->where([['id_doctor1', '=', $id], ['agenda.estado', '=', '1']])
-                    ->orWhere([['id_doctor2', '=', $id], ['agenda.estado', '=', '1']])
-                    ->orWhere([['id_doctor3', '=', $id], ['agenda.estado', '=', '1']]);
-            })
-
-            ->whereBetween('fechaini', [$fecha_desde . ' 0:00:00', $fecha_hasta . ' 23:59:00'])
-            ->get();
-
-        //dd($agenda3);
-
-        $agenda2 = DB::table('agenda')->where('proc_consul', '=', 2)
-            ->where(function ($query) use ($id) {
-                $query->where([['id_doctor1', '=', $id], ['estado', '=', '1']])
-                    ->orWhere([['id_doctor2', '=', $id], ['estado', '=', '1']])
-                    ->orWhere([['id_doctor3', '=', $id], ['estado', '=', '1']]);
-            })
-
-            ->whereBetween('fechaini', [$fecha_desde . ' 0:00:00', $fecha_hasta . ' 23:59:00'])
-            ->get();
-
-        $salas = DB::table('sala')
-            ->join('hospital', 'hospital.id', '=', 'sala.id_hospital')
-            ->select('sala.*', 'hospital.nombre_hospital as nombre_hospital')
-            ->get();
-        //dd($fecha_desde);
-        $doctores    = DB::table('users')->where([['id_tipo_usuario', '=', 3]])->get(); //3=DOCTORES;
-        $enfermero   = DB::table('users')->where([['id_tipo_usuario', '=', 6]])->get();
-        $doctor      = User::find($id);
-        $nombres     = $request['nombres'];
-        $nombres_sql = '';
-        $agendas_pac = [];
-        if ($nombres != null) {
-            $agendas_pac = DB::table('paciente as p')->join('historiaclinica as h', 'h.id_paciente', 'p.id')->groupBy('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento')->select('p.id', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'p.fecha_nacimiento');
-
-            $nombres2 = explode(" ", $nombres);
-            $cantidad = count($nombres2);
-            foreach ($nombres2 as $n) {
-                $nombres_sql = $nombres_sql . '%' . $n;
-            }
-            $nombres_sql = $nombres_sql . '%';
-
-            if ($cantidad == '2' || $cantidad == '3') {
-                $agendas_pac = $agendas_pac->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);
-                });
-
-            } else {
-
-                //$agendas_pac = $agendas_pac->whereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', ['%'.$nombres.'%']);
-                $agendas_pac = $agendas_pac->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
-                });
-            }
-
-            $agendas_pac = $agendas_pac->get();
-        }
-
-        //dd($agendas_pac);
-        //return "hola";
-
-        return view('hc4/calendario', ['user' => $user, 'doctor' => $doctor, 'users' => $doctores, 'enfermero' => $enfermero, 'id' => $id, 'agenda' => $agenda, 'agenda2' => $agenda2, 'salas' => $salas, 'agenda3' => $agenda3, 'agenda_px' => $agenda_px, 'fecha_hoy' => $fecha_hoy, 'nombres' => $nombres, 'agendas_pac' => $agendas_pac]);
+        return app(\Sis_medico\Services\ClinicalHc4SupportQueryService::class)->calendario($request);
     }
-
     public function hc4_agendar_doctor($id_doctor, $i)
     {
         /*
@@ -1716,1240 +1398,92 @@ class Hc4Controller extends Controller
 
     public function guardado_foto2_documento(Request $request)
     {
-        $path        = public_path() . '/app/hc/';
-        $files       = $request->file('foto');
-        $idhc        = $request['id_hc_protocolo'];
-        $ip_cliente  = $_SERVER["REMOTE_ADDR"];
-        $idusuario   = Auth::user()->id;
-        $protocolo   = hc_protocolo::find($idhc);
-        $id_paciente = $protocolo->historiaclinica->id_paciente;
-        $i           = 0;
-        $data        = array();
-        //return "entra";
-        foreach ($files as $file) {
-
-            $input_archivo = [
-                'id_hc_protocolo' => $idhc,
-                'estado'          => 2,
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
-            ];
-            //sacar la extension
-            $extension = $file->getClientOriginalExtension();
-
-            $id_archivo = hc_imagenes_protocolo::insertGetId($input_archivo);
-
-            array_push($data, $id_archivo);
-            //nuevo nombre del archivo
-            $fileName = 'hc_doc_' . $id_paciente . '_' . $idhc . '_' . date('Ymd') . '_' . $id_archivo . '.' . $extension;
-            //ingresar la foto
-            Storage::disk('hc_ima')->put($fileName, \File::get($file));
-            //ACTUALIZAR LOS DATOS
-            $archivo_historico = hc_imagenes_protocolo::find($id_archivo);
-
-            $archivo_historico->nombre          = $fileName;
-            $nombre_anterior                    = $file->getClientOriginalName();
-            $archivo_historico->nombre_anterior = $nombre_anterior;
-            $archivo_historico->ip_modificacion = $ip_cliente;
-            $archivo_historico->id_usuariomod   = $idusuario;
-            $r2                                 = $archivo_historico->save();
-            $i                                  = $i + 1;
-        }
-        return $data;
+        return app(\Sis_medico\Services\ClinicalProtocolAttachmentService::class)
+            ->store($request, \Sis_medico\Services\ClinicalProtocolAttachmentService::DOCUMENT);
     }
 
     public function guardado_foto2_estudios(Request $request)
     {
-        $path        = public_path() . '/app/hc/';
-        $files       = $request->file('foto');
-        $idhc        = $request['id_hc_protocolo'];
-        $ip_cliente  = $_SERVER["REMOTE_ADDR"];
-        $idusuario   = Auth::user()->id;
-        $protocolo   = hc_protocolo::find($idhc);
-        $id_paciente = $protocolo->historiaclinica->id_paciente;
-        $i           = 1;
-        $data        = array();
-        foreach ($files as $file) {
-
-            $input_archivo = [
-                'id_hc_protocolo' => $idhc,
-                'estado'          => 3,
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
-            ];
-            //sacar la extension
-            $extension = $file->getClientOriginalExtension();
-
-            $id_archivo = hc_imagenes_protocolo::insertGetId($input_archivo);
-            array_push($data, $id_archivo);
-            //nuevo nombre del archivo
-            $fileName = 'hc_estudios_' . $id_paciente . '_' . $idhc . '_' . date('Ymd') . '_' . $id_archivo . '.' . $extension;
-            //ingresar la foto
-            Storage::disk('hc_ima')->put($fileName, \File::get($file));
-            //ACTUALIZAR LOS DATOS
-            $archivo_historico = hc_imagenes_protocolo::find($id_archivo);
-
-            $archivo_historico->nombre          = $fileName;
-            $nombre_anterior                    = $file->getClientOriginalName();
-            $archivo_historico->nombre_anterior = $nombre_anterior;
-            $archivo_historico->ip_modificacion = $ip_cliente;
-            $archivo_historico->id_usuariomod   = $idusuario;
-            $r2                                 = $archivo_historico->save();
-            $i                                  = $i + 1;
-        }
-        return $data;
+        return app(\Sis_medico\Services\ClinicalProtocolAttachmentService::class)
+            ->store($request, \Sis_medico\Services\ClinicalProtocolAttachmentService::STUDY);
     }
 
     public function perfil()
     {
-        $id         = Auth::user()->id;
-        $rolusuario = Auth::user()->id_tipo_usuario;
-        $user       = User::find($id);
-        // Redirect to user list if updating user wasn't existed
-
-        $especialidades = especialidad::all();
-        $especialidad   = DB::table('user_espe')->where('usuid', '=', $id)->get();
-        $paises         = pais::all();
-        $tipousuarios   = tipousuario::all();
-        $anio           = date('Y');
-        $rol_pag        = Ct_Rol_Pagos::where('estado', '1')->where('id_user', $user->id)->where('certificado','1')->orderby('id', 'desc')->get();
-
-        return view('hc4/perfil', ['user' => $user])->with('paises', $paises)->with('tipousuarios', $tipousuarios)->with('rolusuario', $rolusuario)->with('especialidad', $especialidad)->with('especialidades', $especialidades)->with('id', $id)->with('rol_pag', $rol_pag);
+        return app(\Sis_medico\Services\ClinicalHc4SupportQueryService::class)->perfil();
     }
-
     public function pasteles_hc4(Request $request)
     {
-        $fecha       = $request['fecha'];
-        $fecha_hasta = $request['fecha_hasta'];
-        $doctor_ag   = [];
-        $i           = 0;
-        $doctores    = User::where('id_tipo_usuario', '3')->get();
-        //procedimientos agendados por doctores
-        foreach ($doctores as $doctor) {
-            $ctaagenda = Agenda::where('id_doctor1', $doctor->id)->where('proc_consul', '1')->where('estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->count();
-            if ($ctaagenda != '0') {
-                $doctor_ag[$i] = [$doctor, $ctaagenda];
-                $i++;
-            }
-
-        }
-
-        //CONSULTAS AGENDADAS por doctores
-        $doctor_co = [];
-        $k         = 0;
-        foreach ($doctores as $doctor) {
-            $ctaagenda = Agenda::where('id_doctor1', $doctor->id)->where('proc_consul', '0')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->count();
-            if ($ctaagenda != '0') {
-                $doctor_co[$k] = [$doctor, $ctaagenda];
-                $k++;
-            }
-
-        }
-
-        //CONSULTAS AGENDADAS REALIZADAS por doctores
-        $doctor_co_ok = [];
-        $k            = 0;
-        foreach ($doctores as $doctor) {
-            $ctaagenda = Agenda::where('id_doctor1', $doctor->id)->where('proc_consul', '0')->where('estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->where('estado_cita', '4')->count();
-            if ($ctaagenda != '0') {
-                $doctor_co_ok[$k] = [$doctor, $ctaagenda];
-                $k++;
-            }
-
-        }
-
-        //PROCEDIMIENTOS REALIZADOS por doctor (pentax)
-        $proc_doc = [];
-        $i1       = 0;
-        $doctores = User::where('id_tipo_usuario', '3')->get();
-        foreach ($doctores as $doctor) {
-            $ctaagenda = DB::table('agenda as a')->where('a.proc_consul', '1')->where('a.estado', '1')->whereBetween('a.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('pentax as p', 'p.id_agenda', 'a.id')->where('p.id_doctor1', $doctor->id)->where('p.estado_pentax', '4')->count();
-
-            if ($ctaagenda != '0') {
-                $proc_doc[$i1] = [$doctor, $ctaagenda];
-                $i1++;
-            }
-
-        }
-
-        //procedimientos por seguros
-        $proc_seg = [];
-        $j        = 0;
-        $seguros  = Seguro::all();
-        foreach ($seguros as $seguro) {
-            $cta_seguro = Agenda::where('id_seguro', $seguro->id)->where('proc_consul', '1')->where('estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->count();
-            if ($cta_seguro != '0') {
-                $proc_seg[$j] = [$seguro, $cta_seguro];
-                $j++;
-            }
-
-        }
-
-        $co_seg = [];
-        $l      = 0;
-        foreach ($seguros as $seguro) {
-            $cta_seguro = Agenda::where('id_seguro', $seguro->id)->where('proc_consul', '0')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->count();
-            if ($cta_seguro != '0') {
-                $co_seg[$l] = [$seguro, $cta_seguro];
-                $l++;
-            }
-
-        }
-        return view('hc4/pastel/procesos', ['doctor_ag' => $doctor_ag, 'doctor_co' => $doctor_co, 'proc_seg' => $proc_seg, 'co_seg' => $co_seg, 'fecha' => $fecha, 'fecha_hasta' => $fecha_hasta, 'proc_doc' => $proc_doc, 'doctor_co_ok' => $doctor_co_ok]);
+        return app(\Sis_medico\Services\ClinicalHc4AnalyticsService::class)->pasteles_hc4($request);
     }
 
     public function ganancia_hc4(Request $request)
     {
-        $fecha       = $request['fecha'];
-        $fecha_hasta = $request['fecha_hasta'];
-        $doctor_ag   = [];
-        $i           = 0;
-
-        //consultas por doctores
-        $doctores       = User::where('id_tipo_usuario', '3')->get();
-        $doctor_ganacia = [];
-        $k              = 0;
-        foreach ($doctores as $doctor) {
-            $ganancia        = 0;
-            $agendas         = Agenda::where('agenda.proc_consul', '0')->where('agenda.estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->where('agenda.estado_cita', '4')->select('agenda.*')->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->where('hp.id_doctor_examinador', $doctor->id)->get();
-            $elementod       = 0;
-            $doctor_consulta = [];
-            if ($agendas->count() != '0') {
-                foreach ($agendas as $value) {
-
-                    $estimado = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', $doctor->id)->first();
-                    if ($value->cortesia == 'NO') {
-                        if ($value->vip == 1) {
-                            $ganancia                       = $ganancia + 120;
-                            $doctor_consulta[$elementod][0] = '120';
-                            $doctor_consulta[$elementod][1] = $value->seguro->nombre;
-                            $doctor_consulta[$elementod][2] = $value->id;
-                            $doctor_consulta[$elementod][3] = $value->fechaini;
-                            $doctor_consulta[$elementod][4] = $value->paciente->nombre1 . ' ' . $value->paciente->apellido1;
-                            $elementod++;
-                        } elseif ($value->id_seguro == 2) {
-                            if ($value->id_empresa == '0992704152001') {
-                                $ganancia                       = $ganancia + 14;
-                                $doctor_consulta[$elementod][0] = '14';
-                                $doctor_consulta[$elementod][1] = $value->seguro->nombre;
-                                $doctor_consulta[$elementod][2] = $value->id;
-                                $doctor_consulta[$elementod][3] = $value->fechaini;
-                                $doctor_consulta[$elementod][4] = $value->paciente->nombre1 . ' ' . $value->paciente->apellido1;
-                                $elementod++;
-                            } elseif ($value->id_empresa == '1307189140001') {
-
-                                $doctor_consulta[$elementod][0] = '12';
-                                $doctor_consulta[$elementod][1] = $value->seguro->nombre;
-                                $doctor_consulta[$elementod][2] = $value->id;
-                                $doctor_consulta[$elementod][3] = $value->fechaini;
-                                $doctor_consulta[$elementod][4] = $value->paciente->nombre1 . ' ' . $value->paciente->apellido1s;
-                                $elementod++;
-                                $ganancia = $ganancia + 12;
-                            }
-
-                        } else {
-                            if (!is_null($estimado)) {
-                                $ganancia                       = $ganancia + $estimado->costo;
-                                $doctor_consulta[$elementod][0] = $estimado->costo;
-                                $doctor_consulta[$elementod][1] = $estimado->seguro->nombre;
-                                $elementod++;
-                            } else {
-                                $estimado2 = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', 'GASTRO')->first();
-                                if (!is_null($estimado2)) {
-                                    $ganancia = $ganancia + $estimado2->costo;
-
-                                    $doctor_consulta[$elementod][0] = $estimado2->costo;
-                                    $doctor_consulta[$elementod][1] = $estimado2->seguro->nombre;
-                                    $elementod++;
-                                }
-
-                            }
-                        }
-
-                    }
-                    //dd($value);
-                }
-            }
-
-            $agendas = Agenda::where('agenda.proc_consul', '0')->where('agenda.id_doctor1', $doctor->id)->where('agenda.estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->where('agenda.estado_cita', '4')->select('agenda.*')->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->whereNull('hp.id_doctor_examinador')->get();
-
-            if ($agendas->count() != '0') {
-                foreach ($agendas as $value) {
-
-                    $estimado = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', $doctor->id)->first();
-                    if ($value->cortesia == 'NO') {
-                        if ($value->vip == 1) {
-                            $ganancia = $ganancia + 120;
-                        } elseif ($value->id_seguro == 2) {
-                            if ($value->id_empresa == '0992704152001') {
-                                $ganancia = $ganancia + 14;
-                            } elseif ($value->id_empresa == '1307189140001') {
-                                $ganancia = $ganancia + 12;
-                            }
-
-                        } else {
-                            if (!is_null($estimado)) {
-                                $ganancia = $ganancia + $estimado->costo;
-                            } else {
-                                $estimado2 = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', 'GASTRO')->first();
-                                if (!is_null($estimado2)) {
-                                    $ganancia = $ganancia + $estimado2->costo;
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            if ($ganancia > 0) {
-                $doctor_ganacia[$k] = [$doctor, $ganancia];
-                //dd($doctor_consulta);
-                $k++;
-            }
-
-        }
-
-        //consultas por seguros
-
-        $seguros = Seguro::all();
-        $co_seg  = [];
-        $l       = 0;
-        foreach ($seguros as $seguro) {
-            $ganancia   = 0;
-            $cta_seguro = Agenda::where('agenda.id_seguro', $seguro->id)->where('agenda.proc_consul', '0')->where('agenda.estado', '1')->where('agenda.estado_cita', '4')->where('agenda.cortesia', 'NO')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->get();
-            if ($cta_seguro->count() > '0') {
-                foreach ($cta_seguro as $value) {
-                    $estimado = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', $value->id_doctor1)->first();
-                    if ($value->vip != 1) {
-                        if (!is_null($estimado)) {
-                            $ganancia = $ganancia + $estimado->costo;
-                        } else {
-                            $estimado2 = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', 'GASTRO')->first();
-                            if (!is_null($estimado2)) {
-                                $ganancia = $ganancia + $estimado2->costo;
-                            }
-
-                        }
-                    }
-
-                }
-                if ($ganancia > 0) {
-                    $co_seg[$l] = [$seguro, $ganancia];
-                    $l++;
-                }
-            }
-
-        }
-        $ganancia   = 0;
-        $cta_seguro = Agenda::where('agenda.id_seguro', '2')->where('agenda.proc_consul', '0')->where('agenda.estado', '1')->where('agenda.estado_cita', '4')->where('agenda.cortesia', 'NO')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->select('agenda.*')->get();
-        if ($cta_seguro->count() > '0') {
-            foreach ($cta_seguro as $value) {
-                if ($value->vip != 1) {
-                    if ($value->id_empresa == '0992704152001') {
-                        $ganancia = $ganancia + 14;
-                    } elseif ($value->id_empresa == '1307189140001') {
-                        $ganancia = $ganancia + 12;
-                    }
-                }
-
-            }
-            $seguro = Seguro::find(2);
-            if ($ganancia > 0) {
-                $co_seg[$l] = [$seguro, $ganancia];
-                $l++;
-            }
-        }
-
-        $ganancia   = 0;
-        $vip        = [];
-        $cta_seguro = Agenda::where('agenda.proc_consul', '0')->where('agenda.estado', '1')->where('agenda.estado_cita', '4')->where('agenda.vip', 1)->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->get();
-
-        if ($cta_seguro->count() > '0') {
-            foreach ($cta_seguro as $value) {
-                $ganancia = $ganancia + 120;
-
-            }
-
-            if ($ganancia > 0) {
-                $vip[0] = ['vip', $ganancia];
-            }
-        }
-        //ESTADISTICO DE ORDENES DE VENTA POR AGENDA CONSULTA
-        $orden_venta_seguro = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->join('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->where('co.estado', 1)
-            ->where('agenda.proc_consul', 0)
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.cortesia', 'agenda.vip', 's.nombre as seguro', 's.id as sid', 's.clase')
-            ->selectRaw('count(*) as cantidad')
-            ->selectRaw('sum(co.total_sin_tarjeta) as total1')
-            ->selectRaw('sum(co.valor_oda) as total2')
-            ->orderBy('s.clase', 'agenda.cortesia', 'agenda.vip', 's.nombre', 's.id')
-            ->groupBy('agenda.cortesia', 'agenda.vip', 's.nombre', 's.id', 's.clase')
-            ->get();
-
-        $orden_venta_seguro2 = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->leftjoin('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->whereNull('co.id')
-            ->where('agenda.proc_consul', 0)
-            ->where('agenda.estado', 1)
-            ->where('agenda.estado_cita', 4)
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.cortesia', 'agenda.vip', 's.nombre as seguro', 's.id as sid', 's.clase')
-            ->selectRaw('count(*) as cantidad')
-            ->selectRaw('sum(co.total_sin_tarjeta) as total1')
-            ->selectRaw('sum(co.valor_oda) as total2')
-            ->orderBy('s.clase', 'agenda.cortesia', 'agenda.vip', 's.nombre', 's.id')
-            ->groupBy('agenda.cortesia', 'agenda.vip', 's.nombre', 's.id', 's.clase')
-            ->get();
-        //dd($orden_venta_seguro2);
-
-        //dd($orden_venta_seguro);
-
-        $orden_venta_tipo_total = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->leftjoin('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->where('agenda.estado', 1)
-            ->where('agenda.estado_cita', '4')
-            ->where('agenda.proc_consul', 0)
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.id', 'agenda.id_paciente', 'agenda.cortesia', 'agenda.vip', 's.clase', 's.nombre', 'co.id as orden', 'co.estado', 'co.total_sin_tarjeta', 'co.valor_oda')
-            ->get();
-
-        $agenda_dia = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->where('agenda.estado', 1)
-            ->where('agenda.estado_cita', '4')
-            ->where('agenda.proc_consul', 0)
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('agenda.fechaini', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->selectRaw('date_format(agenda.fechaini,"%Y-%m-%d") as fecha')
-            ->selectRaw('count(*) as cantidad')
-            ->get();
-
-        $cantidad_dias = $agenda_dia->count();
-
-        //dd($orden_venta_tipo_total);
-
-        $arr          = [];
-        $cantidad_nt  = 0;
-        $total_nt     = 0;
-        $cantidad_vip = 0;
-        $total_vip    = 0;
-        $cantidad_top = 0;
-        $total_top    = 0;
-        $arr2         = [];
-        $meta_valor   = 0;
-        foreach ($orden_venta_tipo_total as $value) {
-            if ($value->orden != null && $value->estado == '1') {
-                if ($value->cortesia == 'SI') {
-                    $cantidad_nt++;
-                    $arr[0] = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->vip == '1') {
-                    $cantidad_vip++;
-                    $total_vip = $total_vip + $value->total_sin_tarjeta + $value->valor_oda;
-                    $arr[1]    = ['tipo' => 'PACIENTES VIP', 'cantidad' => $cantidad_vip, 'valor' => $total_vip, 'meta_cantidad' => $cantidad_dias * 2, 'meta_valor' => $cantidad_dias * 120];
-                } elseif ($value->clase != '1') {
-                    $cantidad_nt++;
-                    $total_nt = $total_nt + $value->total_sin_tarjeta + $value->valor_oda;
-                    $arr[0]   = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->clase == '1') {
-                    $cantidad_top++;
-                    $total_top = $total_top + $value->total_sin_tarjeta + $value->valor_oda;
-                    $arr[2]    = ['tipo' => 'PARTICULARES, BMI, BUPA, BEST', 'cantidad' => $cantidad_top, 'valor' => $total_top, 'meta_cantidad' => $cantidad_dias * 7, 'meta_valor' => $cantidad_dias * 504];
-                }
-            }
-            if ($value->orden == null) {
-                if ($value->cortesia == 'SI') {
-                    $cantidad_nt++;
-                    $arr[0] = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->vip == '1') {
-                    $cantidad_vip++;
-                    $arr[1] = ['tipo' => 'PACIENTES VIP', 'cantidad' => $cantidad_vip, 'valor' => $total_vip, 'meta_cantidad' => 0, 'meta_valor' => $cantidad_dias * 120];
-                } elseif ($value->clase != '1') {
-                    $cantidad_nt++;
-                    $arr[0] = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->clase == '1') {
-                    $cantidad_top++;
-                    $arr[2] = ['tipo' => 'PARTICULARES, BMI, BUPA, BEST', 'cantidad' => $cantidad_top, 'valor' => $total_top, 'meta_cantidad' => $cantidad_dias * 7, 'meta_valor' => $cantidad_dias * 504];
-                }
-            }
-
-        }
-
-        //dd($arr[0]);
-
-        return view('hc4/pastel/ganacia_estimada', ['doctor_ganacia' => $doctor_ganacia, 'co_seg' => $co_seg, 'vip' => $vip, 'orden_venta_seguro' => $orden_venta_seguro, 'request' => $request, 'arr' => $arr, 'orden_venta_tipo_total' => $orden_venta_tipo_total, 'orden_venta_seguro2' => $orden_venta_seguro2]);
+        return app(\Sis_medico\Services\ClinicalHc4AnalyticsService::class)->ganancia_hc4($request);
     }
 
     public function ganancia_efectiva(Request $request)
     {
-        //return "hola";
-        $fecha       = $request['fecha'];
-        $fecha_hasta = $request['fecha_hasta'];
-        $doctor_ag   = [];
-        $i           = 0;
-
-        //consultas por doctores
-        $doctores       = User::where('id_tipo_usuario', '3')->get();
-        $doctor_ganacia = [];
-        $k              = 0;
-        foreach ($doctores as $doctor) {
-            $ganancia = 0;
-            $agendas  = Agenda::where('agenda.proc_consul', '0')->where('agenda.estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->where('agenda.estado_cita', '4')->select('agenda.*')->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->where('hp.id_doctor_examinador', $doctor->id)->get();
-            if ($agendas->count() != '0') {
-                foreach ($agendas as $value) {
-
-                    $estimado = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', $doctor->id)->first();
-                    if ($value->cortesia == 'NO') {
-                        if ($value->vip == 1) {
-                            $ganancia = $ganancia + 120;
-                        } elseif ($value->id_seguro == 2) {
-                            if ($value->id_empresa == '0992704152001') {
-                                $ganancia = $ganancia + 14;
-                            } elseif ($value->id_empresa == '1307189140001') {
-                                $ganancia = $ganancia + 12;
-                            }
-
-                        } else {
-                            if (!is_null($estimado)) {
-                                $ganancia = $ganancia + $estimado->costo;
-                            } else {
-                                $estimado2 = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', 'GASTRO')->first();
-                                if (!is_null($estimado2)) {
-                                    $ganancia = $ganancia + $estimado2->costo;
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            $agendas = Agenda::where('agenda.proc_consul', '0')->where('agenda.id_doctor1', $doctor->id)->where('agenda.estado', '1')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->where('agenda.estado_cita', '4')->select('agenda.*')->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->whereNull('hp.id_doctor_examinador')->get();
-            if ($agendas->count() != '0') {
-                foreach ($agendas as $value) {
-
-                    $estimado = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', $doctor->id)->first();
-                    if ($value->cortesia == 'NO') {
-                        if ($value->vip == 1) {
-                            $ganancia = $ganancia + 120;
-                        } elseif ($value->id_seguro == 2) {
-                            if ($value->id_empresa == '0992704152001') {
-                                $ganancia = $ganancia + 14;
-                            } elseif ($value->id_empresa == '1307189140001') {
-                                $ganancia = $ganancia + 12;
-                            }
-
-                        } else {
-                            if (!is_null($estimado)) {
-                                $ganancia = $ganancia + $estimado->costo;
-                            } else {
-                                $estimado2 = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', 'GASTRO')->first();
-                                if (!is_null($estimado2)) {
-                                    $ganancia = $ganancia + $estimado2->costo;
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            if ($ganancia > 0) {
-                $doctor_ganacia[$k] = [$doctor, $ganancia];
-                $k++;
-            }
-
-        }
-
-        //consultas por seguros
-
-        $seguros = Seguro::all();
-        $co_seg  = [];
-        $l       = 0;
-        foreach ($seguros as $seguro) {
-            $ganancia   = 0;
-            $cta_seguro = Agenda::where('agenda.id_seguro', $seguro->id)->where('agenda.proc_consul', '0')->where('agenda.estado', '1')->where('agenda.estado_cita', '4')->where('agenda.cortesia', 'NO')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->get();
-            if ($cta_seguro->count() > '0') {
-                foreach ($cta_seguro as $value) {
-                    $estimado = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', $value->id_doctor1)->first();
-                    if ($value->vip != 1) {
-                        if (!is_null($estimado)) {
-                            $ganancia = $ganancia + $estimado->costo;
-                        } else {
-                            $estimado2 = EstimadoSeguros::where('id_seguro', $value->id_seguro)->where('id_doctor', 'GASTRO')->first();
-                            if (!is_null($estimado2)) {
-                                $ganancia = $ganancia + $estimado2->costo;
-                            }
-
-                        }
-                    }
-
-                }
-                if ($ganancia > 0) {
-                    $co_seg[$l] = [$seguro, $ganancia];
-                    $l++;
-                }
-            }
-
-        }
-        $ganancia   = 0;
-        $cta_seguro = Agenda::where('agenda.id_seguro', '2')->where('agenda.proc_consul', '0')->where('agenda.estado', '1')->where('agenda.estado_cita', '4')->where('agenda.cortesia', 'NO')->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->select('agenda.*')->get();
-        if ($cta_seguro->count() > '0') {
-            foreach ($cta_seguro as $value) {
-                if ($value->vip != 1) {
-                    if ($value->id_empresa == '0992704152001') {
-                        $ganancia = $ganancia + 14;
-                    } elseif ($value->id_empresa == '1307189140001') {
-                        $ganancia = $ganancia + 12;
-                    }
-                }
-
-            }
-            $seguro = Seguro::find(2);
-            if ($ganancia > 0) {
-                $co_seg[$l] = [$seguro, $ganancia];
-                $l++;
-            }
-        }
-
-        $ganancia   = 0;
-        $vip        = [];
-        $cta_seguro = Agenda::where('agenda.proc_consul', '0')->where('agenda.estado', '1')->where('agenda.estado_cita', '4')->where('agenda.vip', 1)->whereBetween('agenda.fechaini', [$fecha . ' 00:00', $fecha_hasta . ' 23:59'])->join('historiaclinica as hc', 'hc.id_agenda', 'agenda.id')->join('hc_procedimientos as hp', 'hc.hcid', 'hp.id_hc')->get();
-
-        if ($cta_seguro->count() > '0') {
-            foreach ($cta_seguro as $value) {
-                $ganancia = $ganancia + 120;
-
-            }
-
-            if ($ganancia > 0) {
-                $vip[0] = ['vip', $ganancia];
-            }
-        }
-        //ESTADISTICO DE ORDENES DE VENTA POR AGENDA CONSULTA
-        $orden_venta_seguro = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->join('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->where('co.estado', 1)
-            ->where('agenda.proc_consul', 0)
-            ->where('agenda.cortesia', 'NO')
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.cortesia', 'agenda.vip', 's.nombre as seguro', 's.id as sid', 's.clase')
-            ->selectRaw('count(*) as cantidad')
-            ->selectRaw('sum(co.total) as total1')
-            ->selectRaw('sum(co.valor_oda) as total2')
-            ->orderBy('s.clase', 'agenda.cortesia', 'agenda.vip', 's.nombre', 's.id')
-            ->groupBy('agenda.cortesia', 'agenda.vip', 's.nombre', 's.id', 's.clase')
-            ->get();
-
-        $cortesia_t = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->join('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->where('co.estado', 1)
-            ->where('agenda.proc_consul', 0)
-            ->where('agenda.cortesia', 'SI')
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.cortesia', 'agenda.vip')
-            ->selectRaw('count(*) as cantidad')
-            ->selectRaw('sum(co.total) as total1')
-            ->selectRaw('sum(co.valor_oda) as total2')
-            ->orderBy('agenda.cortesia')
-            ->groupBy('agenda.cortesia')
-            ->first();
-
-        //dd($orden_venta_seguro);
-
-        $orden_venta_seguro2 = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->leftjoin('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->whereNull('co.id')
-            ->where('agenda.proc_consul', 0)
-            ->where('agenda.estado', 1)
-            ->where('agenda.estado_cita', 4)
-            ->where('agenda.cortesia', 'NO')
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.cortesia', 'agenda.vip', 's.nombre as seguro', 's.id as sid', 's.clase')
-            ->selectRaw('count(*) as cantidad')
-            ->selectRaw('sum(co.total) as total1')
-            ->selectRaw('sum(co.valor_oda) as total2')
-            ->orderBy('s.clase', 'agenda.cortesia', 'agenda.vip', 's.nombre', 's.id')
-            ->groupBy('agenda.cortesia', 'agenda.vip', 's.nombre', 's.id', 's.clase')
-            ->get();
-        //dd($orden_venta_seguro2);
-
-        //dd($orden_venta_seguro);
-
-        $orden_venta_tipo_total = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->leftjoin('ct_orden_venta as co', 'co.id_agenda', 'agenda.id')
-            ->where('agenda.estado', 1)
-            ->where('agenda.estado_cita', '4')
-            ->where('agenda.cortesia', 'NO')
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('co.fecha_emision', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->select('agenda.id', 'agenda.id_paciente', 'agenda.cortesia', 'agenda.vip', 's.clase', 's.nombre', 'co.id as orden', 'co.estado', 'co.total_sin_tarjeta', 'co.valor_oda', 'co.total')
-            ->get();
-
-        $agenda_dia = Agenda::join('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->where('agenda.estado', 1)
-            ->where('agenda.estado_cita', '4')
-            ->where('agenda.proc_consul', 0)
-            ->where('h.id_doctor1', '1307189140')
-            ->whereBetween('agenda.fechaini', [$fecha . ' 00:00:00', $fecha_hasta . ' 23:59:00'])
-            ->selectRaw('date_format(agenda.fechaini,"%Y-%m-%d") as fecha')
-            ->selectRaw('count(*) as cantidad')
-            ->get();
-
-        $cantidad_dias = $agenda_dia->count();
-
-        //dd($orden_venta_tipo_total);
-
-        $arr          = [];
-        $cantidad_nt  = 0;
-        $total_nt     = 0;
-        $cantidad_vip = 0;
-        $total_vip    = 0;
-        $cantidad_top = 0;
-        $total_top    = 0;
-        $arr2         = [];
-        $meta_valor   = 0;
-        foreach ($orden_venta_tipo_total as $value) {
-            if ($value->orden != null && $value->estado == '1') {
-                if ($value->cortesia == 'SI') {
-                    $cantidad_nt++;
-                    $arr[0] = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->vip == '1') {
-                    $cantidad_vip++;
-                    $total_vip = $total_vip + $value->total + $value->valor_oda;
-                    $arr[1]    = ['tipo' => 'PACIENTES VIP', 'cantidad' => $cantidad_vip, 'valor' => $total_vip, 'meta_cantidad' => $cantidad_dias * 2, 'meta_valor' => $cantidad_dias * 120];
-                } elseif ($value->clase != '1') {
-                    $cantidad_nt++;
-                    $total_nt = $total_nt + $value->total + $value->valor_oda;
-                    $arr[0]   = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->clase == '1') {
-                    $cantidad_top++;
-                    $total_top = $total_top + $value->total + $value->valor_oda;
-                    $arr[2]    = ['tipo' => 'PARTICULARES, BMI, BUPA, BEST', 'cantidad' => $cantidad_top, 'valor' => $total_top, 'meta_cantidad' => $cantidad_dias * 7, 'meta_valor' => $cantidad_dias * 504];
-                }
-            }
-            if ($value->orden == null) {
-                if ($value->cortesia == 'SI') {
-                    $cantidad_nt++;
-                    $arr[0] = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->vip == '1') {
-                    $cantidad_vip++;
-                    $arr[1] = ['tipo' => 'PACIENTES VIP', 'cantidad' => $cantidad_vip, 'valor' => $total_vip, 'meta_cantidad' => 0, 'meta_valor' => $cantidad_dias * 120];
-                } elseif ($value->clase != '1') {
-                    $cantidad_nt++;
-                    $arr[0] = ['tipo' => 'CORTESIA-IESS DCTO-SEG PRIV', 'cantidad' => $cantidad_nt, 'valor' => $total_nt, 'meta_cantidad' => $cantidad_dias * 1, 'meta_valor' => 0];
-                } elseif ($value->clase == '1') {
-                    $cantidad_top++;
-                    $arr[2] = ['tipo' => 'PARTICULARES, BMI, BUPA, BEST', 'cantidad' => $cantidad_top, 'valor' => $total_top, 'meta_cantidad' => $cantidad_dias * 7, 'meta_valor' => $cantidad_dias * 504];
-                }
-            }
-
-        }
-
-        //dd($arr[0]);
-
-        return view('hc4/pastel/ganancia_efectiva', ['doctor_ganacia' => $doctor_ganacia, 'co_seg' => $co_seg, 'vip' => $vip, 'orden_venta_seguro' => $orden_venta_seguro, 'request' => $request, 'arr' => $arr, 'orden_venta_tipo_total' => $orden_venta_tipo_total, 'orden_venta_seguro2' => $orden_venta_seguro2, 'cortesia_t' => $cortesia_t]);
-    }
-
-    public function revisar_procedimientos(Request $request)
-    {
-        $procedimientos = Agenda::where('estado', '<>', '0')->where('proc_consul', '1')->whereBetween('fechaini', [$request->desde_inicio . '  0:00:00', $request->fecha_hasta . ' 23:59:59'])->Orderby('fechaini')->get();
-
-        $pxs = Procedimiento::where('estado', 1)->get();
-
-        return view('hc4/revisar_procedimientos', ['desde' => $request->desde_inicio, 'hasta' => $request->fecha_hasta, 'procedimientos' => $procedimientos, 'pxs' => $pxs]);
+        return app(\Sis_medico\Services\ClinicalHc4AnalyticsService::class)->ganancia_efectiva($request);
     }
 
     public function formulario_procs(Request $request)
     {
-
-        $ip_cliente     = $_SERVER["REMOTE_ADDR"];
-        $idusuario      = Auth::user()->id;
-        $procedimientos = $request->procedimientos;
-        $procedimientos = array_unique($procedimientos);
-
-        if (count($procedimientos) != 0) {
-            $pentax = Pentax::where('id_agenda', $request->id)->first();
-            if (!is_null($pentax)) {
-                $pentax_procs = PentaxProc::where('id_pentax', $pentax->id)->get();
-                $name_procs   = '';
-                foreach ($pentax_procs as $ad) {
-                    $name_procs = Procedimiento::find($ad->id_procedimiento)->observacion . ' ' . $name_procs;
-                    $ad->delete();
-                }
-                $name_procs2 = '';
-                foreach ($procedimientos as $value) {
-                    $name_procs2      = Procedimiento::find($value)->observacion . ' ' . $name_procs2;
-                    $input_pentax_pro = [
-                        'id_pentax'        => $pentax->id,
-                        'id_procedimiento' => $value,
-                        'id_usuariocrea'   => $idusuario,
-                        'ip_modificacion'  => $ip_cliente,
-                        'id_usuariomod'    => $idusuario,
-                        'ip_creacion'      => $ip_cliente,
-                    ];
-                    PentaxProc::create($input_pentax_pro);
-
-                }
-                $input_log = [
-                    'id_pentax'       => $pentax->id,
-                    'tipo_cambio'     => 'REVISA AGENDA',
-                    'descripcion'     => 'CAMBIO PROCEDIMIENTOS',
-                    'estado_pentax'   => $pentax->estado_pentax,
-                    'id_seguro'       => $pentax->id_seguro,
-                    'id_subseguro'    => $pentax->id_subseguro,
-                    'procedimientos'  => $name_procs2,
-                    'id_doctor1'      => $pentax->id_doctor1,
-                    'id_doctor2'      => $pentax->id_doctor2,
-                    'id_doctor3'      => $pentax->id_doctor3,
-                    'id_sala'         => $pentax->id_sala,
-
-                    'observacion'     => 'CAMBIA PROCEDIMIENTOS',
-                    'ip_modificacion' => $ip_cliente,
-                    'ip_creacion'     => $ip_cliente,
-                    'id_usuariomod'   => $idusuario,
-                    'id_usuariocrea'  => $idusuario,
-                ];
-
-                Pentax_log::create($input_log);
-            } else {
-                $agenda     = Agenda::find($request->id);
-                $agproc     = AgendaProcedimiento::where('id_agenda', $request->id)->get();
-                $name_procs = Procedimiento::find($agenda->id_procedimiento)->observacion;
-                foreach ($agproc as $ad) {
-                    $name_procs = $name_procs . ' ' . Procedimiento::find($ad->id_procedimiento)->observacion;
-                    $ad->delete();
-                }
-                $input_proc = [
-                    'id_procedimiento' => $procedimientos[0],
-                    'id_usuariomod'    => $idusuario,
-                    'ip_modificacion'  => $ip_cliente,
-                ];
-                $agenda->update($input_proc);
-
-                $name_procs2 = '';
-                foreach ($procedimientos as $value) {
-                    $name_procs2 = Procedimiento::find($value)->observacion . ' ' . $name_procs2;
-                    if ($procedimientos[0] != $value) {
-                        AgendaProcedimiento::create([
-                            'id_agenda'        => $request->id,
-                            'id_procedimiento' => $value,
-                            'ip_creacion'      => $ip_cliente,
-                            'ip_modificacion'  => $ip_cliente,
-                            'id_usuariocrea'   => $idusuario,
-                            'id_usuariomod'    => $idusuario,
-                        ]);
-                    }
-                }
-                Log_agenda::create([
-                    'id_agenda'       => $request->id,
-                    'descripcion'     => 'REVISA AGENDA',
-                    'descripcion2'    => 'ACTUALIZA PROCEDIMIENTOS',
-                    'observaciones'   => 'REVISA AGENDA: ' . $name_procs . '=>' . $name_procs2,
-                    'id_usuariomod'   => $idusuario,
-                    'id_usuariocrea'  => $idusuario,
-                    'ip_modificacion' => $ip_cliente,
-                    'ip_creacion'     => $ip_cliente,
-                ]);
-            }
-
-        }
-
-        return $procedimientos;
-
+        return app(\Sis_medico\Services\ClinicalHc4ReviewService::class)->formulario_procs($request);
     }
 
     public function carga_revision($id_agenda, $val)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-
-        $id_agenda = substr($id_agenda, 8);
-        $txt       = '';
-        if ($val == '0') {
-            $txt = 'NO';
-        }if ($val == '1') {
-            $txt = 'SI';
-        }
-        $agenda = Agenda::find($id_agenda);
-        if (!is_null($agenda)) {
-            $agenda->update(['revisado' => $val]);
-            Log_agenda::create([
-                'id_agenda'       => $agenda->id,
-                'descripcion'     => 'REVISA AGENDA',
-                'descripcion2'    => $txt,
-                'observaciones'   => 'REVISA AGENDA: ' . $txt,
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ]);
-        }
-
-        return [$id_agenda, $val];
+        return app(\Sis_medico\Services\ClinicalHc4ReviewService::class)->carga_revision($id_agenda, $val);
     }
 
     public function revision_formulario(Request $request)
     {
-        //return $request->all();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $agenda     = Agenda::find($request->id);
-        if (!is_null($agenda)) {
-            $agenda->update([
-                'observacion_proc' => $request->observacion,
-                'diagnostico_proc' => $request->diagnostico,
-            ]);
-            Log_agenda::create([
-                'id_agenda'       => $request->id,
-                'descripcion'     => 'ACTUALIZA OBSERVACION/DIAGNOSTICO',
-                'descripcion2'    => 'obs: ' . $request->observacion . ' diag:' . $request->diagnostico,
-                'observaciones'   => 'obs: ' . $request->observacion . ' diag:' . $request->diagnostico,
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ]);
-
-        }
+        return app(\Sis_medico\Services\ClinicalHc4ReviewService::class)->revision_formulario($request);
     }
 
     public function cambiar_supervision($cambio, $id_agenda)
     {
-        //return $request->all();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $agenda     = Agenda::find($id_agenda);
-        $texto      = 'SUPERVISADO POR EL DR. ROBLES';
-        if (!is_null($agenda)) {
-            if ($cambio != '1') {
-                $cambio = null;
-                $texto  = 'YA NO SERA SUPERVISADO POR EL DR. ROBLES';
-            }
-            $agenda->update([
-                'supervisa_robles' => $cambio,
-            ]);
-            Log_agenda::create([
-                'id_agenda'       => $id_agenda,
-                'descripcion'     => 'REVISION DE PROCEDIMIENTOS',
-                'descripcion2'    => $texto,
-                'observaciones'   => '',
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ]);
-
-        }
+        return app(\Sis_medico\Services\ClinicalHc4ReviewService::class)->cambiar_supervision($cambio, $id_agenda);
     }
+
     public function cambiar_crm($cambio, $id_agenda)
     {
-        //return $request->all();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        $agenda     = Agenda::find($id_agenda);
-        $texto      = 'SOLO REALIZADO POR EL DR. ROBLES';
-        if (!is_null($agenda)) {
-            if ($cambio != '1') {
-                $cambio = null;
-                $texto  = 'PUEDE SER REALIZADO POR CUALQUIER DR';
-            }
-            $agenda->update([
-                'solo_robles' => $cambio,
-            ]);
-            Log_agenda::create([
-                'id_agenda'       => $id_agenda,
-                'descripcion'     => 'REVISION DE PROCEDIMIENTOS',
-                'descripcion2'    => $texto,
-                'observaciones'   => '',
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ]);
-
-        }
+        return app(\Sis_medico\Services\ClinicalHc4ReviewService::class)->cambiar_crm($cambio, $id_agenda);
     }
 
     public function exportar_revision(Request $request)
     {
-        //dd($request->all());
-        $procedimientos = Agenda::where('estado', '<>', '0')->where('proc_consul', '1')->whereBetween('fechaini', [$request->desde_inicio . '  0:00:00', $request->fecha_hasta . ' 23:59:59'])->Orderby('fechaini')->get();
-        //dd($procedimientos);
-        Excel::create('exportar revision', function ($excel) use ($procedimientos) {
-            $excel->sheet('exportar revision', function ($sheet) use ($procedimientos) {
-                $sheet->cell('B2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Fecha / Hora');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('C2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Cedula');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('D2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Apellidos');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('E2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Nombres');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('F2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Edad');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('G2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('MEDICO ASIGNADO');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('H2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Seguro');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('I2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Procedimiento');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('J2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Amb/Hosp');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('K2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Estado');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('L2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Revisado');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('M2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Diagnostico');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-                $sheet->cell('N2', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('Observaciones');
-                    $cell->setBackground('#ECEFF0');
-                    $cell->setAlignment('center');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                });
-
-                $i = 3;
-                foreach ($procedimientos as $procedimiento) {
-                    $resto_procs  = AgendaProcedimiento::where('id_agenda', $procedimiento->id)->get();
-                    $pentax       = Pentax::where('id_agenda', $procedimiento->id)->first();
-                    $pcant        = 0;
-                    $pentax_procs = null;
-                    if (!is_null($pentax)) {
-                        $pentax_procs = PentaxProc::where('id_pentax', $pentax->id)->get();
-                        $pcant        = $pentax_procs->count();
-                    }
-
-                    $edad = 0;
-                    if ($procedimiento->paciente->fecha_nacimiento != null) {
-                        $edad = Carbon::createFromDate(substr($procedimiento->paciente->fecha_nacimiento, 0, 4), substr($procedimiento->paciente->fecha_nacimiento, 5, 2), substr($procedimiento->paciente->fecha_nacimiento, 8, 2))->age;
-                    }
-                    $sheet->cell('B' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->fechaini);
-                    });
-                    $sheet->cell('C' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->id_paciente);
-                    });
-                    $sheet->cell('D' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->paciente->apellido1 . ' ' . $procedimiento->paciente->apellido2);
-                    });
-                    $sheet->cell('E' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->paciente->nombre1 . ' ' . $procedimiento->paciente->nombre2);
-                    });
-                    $sheet->cell('F' . $i, function ($cell) use ($edad) {
-                        // manipulate the cel
-                        $cell->setValue($edad);
-                    });
-                    if (!is_null($procedimiento->id_doctor1)) {
-                        $sheet->cell('G' . $i, function ($cell) use ($procedimiento) {
-                            // manipulate the cel
-                            $cell->setValue('Dr. ' . $procedimiento->doctor1->nombre1 . ' ' . $procedimiento->doctor1->apellido1);
-                        });
-                    }
-                    $sheet->cell('H' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->seguro->nombre);
-                    });
-                    $sheet->cell('I' . $i, function ($cell) use ($procedimiento, $resto_procs, $pentax_procs, $pcant) {
-                        // manipulate the cel
-                        $texto = $procedimiento->procedimiento->nombre;
-                        foreach ($resto_procs as $val) {
-                            $texto = $texto . ' ' . Procedimiento::find($val->id_procedimiento)->observacion;
-                        }
-                        if ($pcant > 0) {
-                            $texto = '';
-                            foreach ($pentax_procs as $val) {
-                                $texto = $texto . ' ' . Procedimiento::find($val->id_procedimiento)->observacion;
-                            }
-                        }
-                        $cell->setValue($texto);
-                    });
-                    $sheet->cell('J' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        if ($procedimiento->est_amb_hos == 0) {
-                            $cell->setValue("Ambulatorio");
-                        } else {
-                            $cell->setValue("Hospitalizado");
-                        }
-                    });
-                    $sheet->cell('K' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        if ($procedimiento->estado_cita == '0') {
-                            $cell->setValue("Por Confirmar");
-                        } elseif ($procedimiento->estado_cita == '1') {
-                            $cell->setValue("Confirmado");
-                        } elseif ($procedimiento->estado_cita == '2') {
-                            $cell->setValue("Reagendar");
-                        } elseif ($procedimiento->estado_cita == '3') {
-                            $cell->setValue("Suspendido");
-                        } elseif ($procedimiento->estado_cita == '4') {
-                            $cell->setValue("Pre-Admisionado");
-                        }
-
-                    });
-                    $sheet->cell('L' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        if ($procedimiento->revisado == '0') {
-                            $cell->setValue("No");
-                        } elseif ($procedimiento->revisado == '1') {
-                            $cell->setValue("Si");
-                        }
-
-                    });
-                    $sheet->cell('M' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->diagnostico_proc);
-                    });
-                    $sheet->cell('N' . $i, function ($cell) use ($procedimiento) {
-                        // manipulate the cel
-                        $cell->setValue($procedimiento->observacion_proc);
-                    });
-                    $i++;
-                }
-
-            });
-        })->export('xlsx');
+        return app(\Sis_medico\Services\ClinicalHc4ReviewService::class)->exportar_revision($request);
     }
 
     public function agenda_log($id)
     {
-
-        $logs   = Log_Agenda::where('id_agenda', $id)->get();
-        $agenda = Agenda::find($id);
-
-        return view('hc4/revisar_procedimientos/log', ['logs' => $logs, 'agenda' => $agenda]);
-
+        return app(\Sis_medico\Services\ClinicalUpcomingProcedureQueryService::class)->reviewLog($id);
     }
     public function busca_log_agenda($id_agenda)
     {
-
-        $logs = Log_Agenda::where('id_agenda', $id_agenda)->get();
-        //dd($logs);
-
-        return view('hc4/consulta/log_agenda', ['logs' => $logs]);
+        return app(\Sis_medico\Services\ClinicalUpcomingProcedureQueryService::class)->agendaLog($id_agenda);
     }
     public function modalimagen($id)
     {
-        $imagenes    = hc_imagenes_protocolo::where('id', $id)->where('estado', '1')->OrderBy('created_at', 'desc')->first();
-        $public_path = public_path();
-        $url         = 'http://192.168.59.38/sis_medico_prb/' . '/storage/app/hc_ima/' . $imagenes->nombre; // depende de root en el archivo filesystems.php.
-
-        //verificamos si el archivo existe y lo retornamos
-        return view('hc4/modaleditor', ['imagenf' => $imagenes, 'url' => $url, 'id' => $id]);
+        return app(\Sis_medico\Services\ClinicalUpcomingProcedureQueryService::class)->imageModal($id);
     }
     public function saveimage(Request $request)
     {
         //dd($request->all());
-        $id               = $request['id'];
-        $imagenes         = hc_imagenes_protocolo::where('id', $id)->where('estado', '1')->OrderBy('created_at', 'desc')->first();
-        $extension        = 'hc_doc_' . $id . '_' . date('Ymd') . '_' . $request['croppedImage']->getClientOriginalName();
-        $imagenes->nombre = $extension;
+        $id= $request['id'];
+        $imagenes = hc_imagenes_protocolo::where('id', $id)->where('estado','1')->OrderBy('created_at', 'desc')->first();
+        $extension = 'hc_doc_'.$id.'_'.date('Ymd').'_'.$request['croppedImage']->getClientOriginalName();
+        $imagenes->nombre= $extension;
         $imagenes->save();
-        $fileName = $extension;
+        $fileName =  $extension;
         //ingresar la foto
         Storage::disk('hc_ima')->put($fileName, \File::get($request['croppedImage']));
-        return response()->json(['success' => '1']);
+        return response()->json(['success'=>'1']);
     }
     public function index_proximos_proc($id_paciente)
     {
-        $fecha = date('Y-m-d H:i:s');
-        $fecha_2 = date('Y-m-d H:i:s', strtotime($fecha. "-3 month"));
-        $prox_procedimientos = Agenda::where('agenda.id_paciente', $id_paciente)
-        ->join('users as uc', 'uc.id', 'agenda.id_usuariocrea')
-        ->join('users as um', 'um.id', 'agenda.id_usuariomod')
-        //->where('agenda.estado', '<>', '0')
-        ->where('agenda.proc_consul', '1')
-        ->where('agenda.fechaini', '>=', $fecha)
-        ->select('agenda.*', 'uc.apellido1 as ucapellido', 'um.apellido1 as umapellido', 'uc.nombre1 as ucnombre', 'um.nombre1 as umnombre')
-        ->OrderBy('agenda.fechaini', 'asc')->get();
-        $procedimientos = Procedimiento::all();
-        $paciente = Paciente::find($id_paciente);
-        return view('hc4/proximos_procedimientos/index', ['paciente' => $paciente, 'prox_procedimientos' => $prox_procedimientos, 'procedimientos' => $procedimientos]);
+        return app(\Sis_medico\Services\ClinicalUpcomingProcedureQueryService::class)->index_proximos_proc($id_paciente);
     }
 }

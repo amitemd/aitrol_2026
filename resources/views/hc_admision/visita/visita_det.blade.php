@@ -212,45 +212,45 @@
                                     <input class="form-control input-sm" id="cimc" name="cimc" disabled style="width: 100%;" rows="4"   readonly="yes" >
                                 </div>
                                 <h4><b>Clasificación Child Pugh</b></h4>
-                                <input type="hidden" name="id_child_pugh" value="@if(isset($child_pugh)){{ $child_pugh->id }}@endif">
+                                <input type="hidden" name="id_child_pugh" value="{{$child_pugh->id}}">
                                 <div class="col-md-2" style="padding: 1px;">
                                     <label for="ascitis" class="control-label">Ascitis</label>
                                     <select   class="form-control input-sm" style="width: 100%;" name="ascitis" id="ascitis" disabled>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->ascitis == 1) selected @endif @endif value="1" >Ausente</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->ascitis == 2) selected @endif @endif value="2" >Leve</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->ascitis == 3) selected @endif @endif value="3" >Moderada</option>
+                                        <option @if($child_pugh->ascitis == 1) selected @endif value="1" >Ausente</option>
+                                        <option @if($child_pugh->ascitis == 2) selected @endif value="2" >Leve</option>
+                                        <option @if($child_pugh->ascitis == 3) selected @endif value="3" >Moderada</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2" style="padding: 1px;">
                                     <label for="encefalopatia" class="control-label">Encefalopatia</label>
                                     <select   class="form-control input-sm" style="width: 100%;" name="encefalopatia" id="encefalopatia" disabled> 
-                                        <option @if(isset($child_pugh)) @if($child_pugh->encefalopatia == 1) selected @endif @endif value="1" >No</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->encefalopatia == 2) selected @endif @endif value="2" >Grado 1 a 2</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->encefalopatia == 3) selected @endif @endif value="3" >Grado 3 a 4</option>
+                                        <option @if($child_pugh->encefalopatia == 1) selected @endif value="1" >No</option>
+                                        <option @if($child_pugh->encefalopatia == 2) selected @endif value="2" >Grado 1 a 2</option>
+                                        <option @if($child_pugh->encefalopatia == 3) selected @endif value="3" >Grado 3 a 4</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2" style="padding: 1px;">
                                     <label for="albumina" class="control-label">Albúmina(g/l)</label>
                                     <select   class="form-control input-sm" style="width: 100%;" name="albumina" id="albumina" disabled> 
-                                        <option @if(isset($child_pugh)) @if($child_pugh->albumina == 1) selected @endif @endif value="1" >&gt; 3.5</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->albumina == 2) selected @endif @endif value="2" >2.8 - 3.5</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->albumina == 3) selected @endif @endif value="3" >&lt; 2.8</option>
+                                        <option @if($child_pugh->albumina == 1) selected @endif value="1" >&gt; 3.5</option>
+                                        <option @if($child_pugh->albumina == 2) selected @endif value="2" >2.8 - 3.5</option>
+                                        <option @if($child_pugh->albumina == 3) selected @endif value="3" >&lt; 2.8</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3" style="padding: 1px;">
                                     <label for="bilirrubina" class="control-label">Bilirrubina(mg/dl)</label>
                                     <select   class="form-control input-sm" style="width: 100%;" name="bilirrubina" id="bilirrubina" disabled> 
-                                        <option @if(isset($child_pugh)) @if($child_pugh->bilirrubina == 1) selected @endif @endif value="1" >&lt; 2</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->bilirrubina == 2) selected @endif @endif value="2" >2 - 3</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->bilirrubina == 3) selected @endif @endif value="3" >&gt; 3</option>
+                                        <option @if($child_pugh->bilirrubina == 1) selected @endif value="1" >&lt; 2</option>
+                                        <option @if($child_pugh->bilirrubina == 2) selected @endif value="2" >2 - 3</option>
+                                        <option @if($child_pugh->bilirrubina == 3) selected @endif value="3" >&gt; 3</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3" style="padding: 1px;">
                                     <label for="inr" class="control-label" >Protrombina% (INR)</label>
                                     <select   class="form-control input-sm" style="width: 100%;" name="inr" id="inr" disabled> 
-                                        <option @if(isset($child_pugh)) @if($child_pugh->inr == 1) selected @endif @endif value="1" >&gt; 50 (&lt; 1.7)</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->inr == 2) selected @endif @endif value="2" >30 - 50 (1.8 - 2.3)</option>
-                                        <option @if(isset($child_pugh)) @if($child_pugh->inr == 3) selected @endif @endif value="3" >&lt; 30 (&gt; 2.3)</option>
+                                        <option @if($child_pugh->inr == 1) selected @endif value="1" >&gt; 50 (&lt; 1.7)</option>
+                                        <option @if($child_pugh->inr == 2) selected @endif value="2" >30 - 50 (1.8 - 2.3)</option>
+                                        <option @if($child_pugh->inr == 3) selected @endif value="3" >&lt; 30 (&gt; 2.3)</option>
                                     </select>
                                 </div>
 
@@ -277,11 +277,11 @@
                                    <h4><b>Datos Generales</b></h4>
                                     <div class="col-md-12" style="padding: 1px;">
                                         <label for="id_doctor_examinador" class="control-label col-md-4">Medico Examinador</label>
-                                        <input class="col-md-8" type="text" name="examinador" readonly value="@if(isset($hc_procedimiento->doctor)){{$hc_procedimiento->doctor->apellido1}} {{$hc_procedimiento->doctor->nombre1}}@else{{$hc_procedimiento->historia->doctor_1->apellido1}} {{$hc_procedimiento->historia->doctor_1->nombre1}}@endif"> 
+                                        <input class="col-md-8" type="text" name="examinador" readonly value="@if($hc_procedimiento->doctor!=null){{$hc_procedimiento->doctor->apellido1}} {{$hc_procedimiento->doctor->nombre1}}@else{{$hc_procedimiento->historia->doctor_1->apellido1}} {{$hc_procedimiento->historia->doctor_1->nombre1}}@endif"> 
                                     </div>
                                     <div class="col-md-12" style="padding: 1px;">
                                         <label for="id_seguro" class="control-label col-md-4">Seguro</label>
-                                        <input class="col-md-8" type="text" name="seguro" readonly value="@if(isset($hc_procedimiento->seguro)){{$hc_procedimiento->seguro->nombre}}@else{{$hc_procedimiento->historia->seguro->nombre}}@endif">
+                                        <input class="col-md-8" type="text" name="seguro" readonly value="@if($hc_procedimiento->seguro!=null){{$hc_procedimiento->seguro->nombre}}@else{{$hc_procedimiento->historia->seguro->nombre}}@endif">
                                     </div>
                                     <div class="col-md-12 has-error" style="padding: 1px;">
                                         <label for="observaciones" class="control-label">Observaciones</label>
@@ -571,8 +571,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){
@@ -880,9 +881,9 @@
         var js_cedula = document.getElementById("id_paciente").value;
         //alert(js_cedula);
         $.ajax({
-          type: 'get',
+          type: 'post',
           url:"{{url('receta_detalle/crear_detalle')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula, //receta.crear_detalle
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
           
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -947,9 +948,9 @@
 
     function det_delete(id) {
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('receta_detalle/eliminar_detalle')}}/"+{{$hc_receta->id}}+"/"+id,
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
           
           datatype: 'json',
           //data: $("#frm").serialize(),

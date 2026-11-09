@@ -55,11 +55,33 @@ class ResultadosExternosController extends Controller
             return redirect('/');
         }
 
-        $biopsias_1 = Paciente_biopsia::where('id_paciente', $id_paciente)->where('estado', '1')->OrderBy('created_at', 'desc')->get(); //trae todos 
+        $paciente = Paciente::findOrFail($id_paciente);
+        $idEmpresa = session('id_empresa');
+        abort_unless($idEmpresa, 404, 'No existe una empresa activa.');
+
+        $biopsiasQuery = Paciente_biopsia::where('id_paciente', $id_paciente)
+            ->where('estado', '1')
+            ->where(function ($query) use ($idEmpresa) {
+                $query->where('id_empresa', $idEmpresa)->orWhereNull('id_empresa');
+            });
+
+        // Los resultados históricos pueden no tener id_empresa y el paciente
+        // puede no conservar una agenda vinculada a la empresa activa. Si el
+        // resultado ya pertenece al alcance visible de la empresa, debe poder
+        // abrirse desde la historia clínica.
+        $hasAgendaInActiveCompany = Agenda::where('id_paciente', $id_paciente)
+            ->where('id_empresa', $idEmpresa)
+            ->exists();
+        $hasVisibleExternalResults = (clone $biopsiasQuery)->exists();
+
+        abort_unless(
+            $hasAgendaInActiveCompany || $hasVisibleExternalResults,
+            404,
+            'El paciente no pertenece a la empresa activa.'
+        );
+
+        $biopsias_1 = $biopsiasQuery->orderBy('created_at', 'desc')->get(); //trae todos
        // dd($biopsias_1);
-
-
-        $paciente = Paciente::find($id_paciente);
        	return view('hc4/resultados_externos/index', ['biopsias_1' => $biopsias_1,'paciente' => $paciente]);
     }
 }

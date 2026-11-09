@@ -4,7 +4,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-      {{trans('econsultam.nota_entrega')}}
+      {{ trans('nota_entrega_ui.title') }}
       </h1>
 
     </section>

@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 @php
-$fecha=date('Y-m-d');
-$hora = date('H:i:s');
+$agenda = Sis_medico\Agenda::find($data->id_agenda);
+//$fecha=date('Y-m-d');
+$fecha = substr($agenda->fechaini,0,10);
+//$hora = date('H:i:s');
+$hora = substr($agenda->fechaini,11);
 @endphp
 
 @php
@@ -23,6 +26,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 ?>
 
 <head>
+    <meta charset="utf-8">
     <title>HCU_006</title>
     <style>
         @page {
@@ -53,8 +57,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
             bottom: 0cm;
             left: 0cm;
             right: 0cm;
-            height: 2cm;
+            height: 0.8cm;
+            font-weight: bold;
         }
+
+        footer table { width: 100%; border: 0; }
+        footer td { border: 0; padding: 0; }
+        .page-number:after { content: counter(page); }
 
         table {
             width: 100px;
@@ -171,6 +180,12 @@ $mesNacimiento = $fechaNacimiento->format('m');
 </head>
 
 <body>
+    <footer>
+        <table><tr>
+            <td>SNS-MSP / HCU-form.006 / 2021</td>
+            <td style="text-align:right">EPICRISIS (<span class="page-number"></span>)</td>
+        </tr></table>
+    </footer>
     <header>
 
     </header>
@@ -182,11 +197,14 @@ $mesNacimiento = $fechaNacimiento->format('m');
         $empresa = Sis_medico\Empresa::find($id_empresa);
         
         @endphp
-        <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-            @if(!is_null($procedimiento->empresa))
-            <img src="{{base_path().'/storage/app/logo/'.$procedimiento->empresa->logo}}" style="width:250px;height: 75px">
-            @endif
-        </div><br>
+
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
         <table border="1" style="width: 100%">
             <thead>
                 <tr>
@@ -346,19 +364,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>
                     <td class="td-border" style="width:14%; height: 70px;">
                         <p class=MsoNormal style='margin-top: 0;margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-                    1.2 !important'><span class="parrafo2" style='font-size:11px !important'><?php echo $protocolo->conclusion; ?>
+                    1.2 !important'><span class="parrafo2" style='font-size:11px !important'>@if(!is_null($protocolo))<?php echo $protocolo->conclusion; ?>@endif
                                 <?php //echo $epicrisis->hallazgo 
                                 ?></span></p>
                     </td>
                 </tr>
             </tbody>
         </table>
-
-        <div>
-            <footer>
-                <p>@for($count=0; $count<=10;$count++) &nbsp; @endfor SNS-MSP/HCU-form.006/2021 @for($count=0; $count<=100;$count++) &nbsp; @endfor EPICRISIS ()</p>
-                        <footer>
-        </div>
 
         <p class="page-break-before">
 
@@ -401,7 +413,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tbody>
                 <tr>
                     <td class="td-border" style="width:14%; height: 100px;">
-                        <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:normal'><span style='font-size:10px !important;'><?php echo $protocolo->hallazgos ?> <br><br><br></span></p>
+                        <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:normal'><span style='font-size:10px !important;'>@if(!is_null($protocolo))<?php echo $protocolo->hallazgos ?>@endif <br><br><br></span></p>
                     </td>
                 </tr>
             </tbody>
@@ -549,7 +561,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td class="text-center"> @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif</td>
                 <td class="text-center"> @if( !is_null($firma) ) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$doctor->apellido1}} @if($doctor->apellido2!='N/A'){{$doctor->apellido2}}@endif {{$doctor->nombre1}} @if($doctor->nombre2!='N/A'){{$doctor->nombre2}}@endif @endif<br>
                     @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
-                   Cedula No. @if(!is_null($doctor)) {{$doctor->id}} @endif</td>
+                    Cedula No. {{$procedimiento->doctor->id}}</td>
                 <td></td>
             </tr>
 
@@ -573,20 +585,21 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
                 <td class="td-border text-center" style="width:5%; height: 18px;">
                     <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-                            normal'><span style='font-size: 12px;'>@if(!is_null($epicrisis->fecha_imprime)){{substr($epicrisis->fecha_imprime,0,10)}}@else{{substr($protocolo->created_at,0,10)}}@endif</span></p>
+                            normal'>
+                            <span style='font-size:10.0pt'>{{$fecha}}</span></p>
                 </td>
-                <td class="td-border text-center" style="width:5%; height: 18px; font-size:12px;">{{$hora}} </td>
+                <td class="td-border text-center" style="width:5%; height: 18px; font-size:10.0pt">{{$hora}} </td>
                 <td class="td-border" style="width:14%; height: 18px;">
                     <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-                            normal'><span style='font-size: 12px;'>@if( !is_null($firma) ) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$doctor->nombre1}}@endif</span></p>
-                </td>
-                <td class="td-border" style="width:14%; height: 18px;">
-                    <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-                            normal'><span style='font-size: 12px;'>@if( !is_null($firma) ) {{$doctor->apellido1}} @endif</span></p>
+                            normal'><span style='font-size:10.0pt'>@if($doctor != "" ) Dr(a). {{$doctor->nombre1}}@endif</span></p>
                 </td>
                 <td class="td-border" style="width:14%; height: 18px;">
                     <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-                            normal'><span style='font-size: 12px;'>@if( !is_null($firma) ) {{$doctor->apellido2}} @endif</span></p>
+                            normal'><span style='font-size:10.0pt'>@if($doctor != "" ) {{$doctor->apellido1}} @endif</span></p>
+                </td>
+                <td class="td-border" style="width:14%; height: 18px;">
+                    <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+                            normal'><span style='font-size:10.0pt'>@if($doctor != "" ) {{$doctor->apellido2}} @endif</span></p>
                 </td>
             </tr>
             <tr>
@@ -595,14 +608,15 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td class="td-border bg-green text-center"><b>SELLO</b></td>
             </tr>
             <tr style="height: auto;">
-                <td colspan="2" class="td-border text-center" style="width:12%; height:60px; font-size: 12px;">@if( !is_null($firma) ) {{$doctor->id}} @endif</td>
+                <td colspan="2" class="td-border text-center" style="width:12%; height:60px; font-size: 12;">@if($doctor != "" ) {{$doctor->id}} @endif</td>
                 <td colspan="2" class="td-border" style="width:25%; text-align: center;">
                     @php
-                        $ruta='';
-                   
-                        if(!is_null($firma)){
-                            $ruta = $firma->firma;
-                        }
+                    $ruta='';
+                    if(!is_null($doctor))
+                    $firma = Sis_medico\Firma_Usuario::where('id_usuario',$doctor->id)->first();
+                    if(!is_null($firma)){
+                    $ruta = $firma->firma;
+                    }
                     @endphp
                     @if($ruta !='')
                     <img style='height: auto; width: 95px; margin-top: 5px; ' src="{{base_path().'/storage/app/avatars/'.$ruta}}" align=center hspace=12>
@@ -610,9 +624,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
                 </td>
                 <td class="td-border" style="width:25%; height:60px; text-align: center;">
-                    @if(!is_null($firma)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$doctor->apellido1}} @if($doctor->apellido2!='N/A'){{$doctor->apellido2}}@endif {{$doctor->nombre1}} @if($doctor->nombre2!='N/A'){{$doctor->nombre2}}@endif<br>
+                    @if($doctor != null) Dr(a). {{$doctor->apellido1}} @if($doctor->apellido2!='N/A'){{$doctor->apellido2}}@endif {{$doctor->nombre1}} @if($doctor->nombre2!='N/A'){{$doctor->nombre2}}@endif<br>
                     @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
-                    Cedula No. @if(!is_null($doctor)) {{$doctor->id}} @endif @endif
+                    MSP No. {{$doctor->id}} @endif
                 </td>
             </tr>
             </tbody>
@@ -627,8 +641,3 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 </tr>
             </tbody>
         </table>
-        <div>
-            <footer>
-                <p>@for($count=0; $count<=10;$count++) &nbsp; @endfor SNS-MSP/HCU-form.006/2021 @for($count=0; $count<=100;$count++) &nbsp; @endfor EPICRISIS (2)</p>
-                        <footer>
-        </div>

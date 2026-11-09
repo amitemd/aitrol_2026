@@ -7,15 +7,40 @@ $hora = date('H:i:s');
 $fecha_egreso = date('Y-m-d', strtotime($post_anestesico->historiaclinica->paciente->created_at));
 $hora_egreso = date('H:i', strtotime($post_anestesico->historiaclinica->paciente->created_at));
 
-$fechaNacimiento = new DateTime($post_anestesico->historiaclinica->paciente->fecha_nacimiento);
-$hoy = new DateTime();
-$edad = $hoy->diff($fechaNacimiento)->y;
+$fechaNacimientoValor = trim((string) optional($post_anestesico->historiaclinica->paciente)->fecha_nacimiento);
+$fechaNacimiento = null;
 
-$fechaNacimiento = new DateTime($post_anestesico->historiaclinica->paciente->fecha_nacimiento);
-$diaNacimiento = $fechaNacimiento->format('d');
+if ($fechaNacimientoValor !== '' && $fechaNacimientoValor !== '0000-00-00') {
+    try {
+        $fechaNacimiento = \Carbon\Carbon::parse($fechaNacimientoValor);
+        if ($fechaNacimiento->isFuture()) {
+            $fechaNacimiento = null;
+        }
+    } catch (\Throwable $exception) {
+        $fechaNacimiento = null;
+    }
+}
 
-$fechaNacimiento = new DateTime($post_anestesico->historiaclinica->paciente->fecha_nacimiento);
-$mesNacimiento = $fechaNacimiento->format('m');
+$edad = '';
+$unidadEdad = '';
+if ($fechaNacimiento) {
+    $diferenciaEdad = $fechaNacimiento->diff(now());
+    if ($diferenciaEdad->y >= 1) {
+        $edad = $diferenciaEdad->y;
+        $unidadEdad = 'A';
+    } elseif ($diferenciaEdad->m >= 1) {
+        $edad = $diferenciaEdad->m;
+        $unidadEdad = 'M';
+    } else {
+        $edad = $diferenciaEdad->days;
+        $unidadEdad = 'D';
+    }
+}
+$diaNacimiento = $fechaNacimiento ? $fechaNacimiento->format('d') : '';
+$mesNacimiento = $fechaNacimiento ? $fechaNacimiento->format('m') : '';
+$pacientePost = $post_anestesico->historiaclinica->paciente;
+$nombrePacientePost = trim($pacientePost->apellido1 . ' ' . $pacientePost->apellido2 . ' ' . $pacientePost->nombre1 . ' ' . $pacientePost->nombre2);
+$sexoPacientePost = $pacientePost->sexo == 1 ? 'Masculino' : 'Femenino';
 
 ?>
 <style type="text/css">
@@ -113,87 +138,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
     .ui-widget-content a {
         color: #222222;
     }
-
-    .container {
-        display: grid;
-        grid-template-columns: repeat(38, 1fr);
-        gap: 2px;
-        max-width: 100%;
-        overflow: auto;
-    }
-
-    .bg-blue {
-        background-color: #007bff;
-        color: white;
-        grid-column: span 38;
-        text-align: center;
-    }
-
-    .bg-green {
-        background-color: #28a745;
-        color: white;
-        text-align: center;
-    }
-
-    .text-center {
-        text-align: center;
-    }
-
-    .text-left {
-        text-align: left;
-    }
-
-    .width20 {
-        width: 20px;
-    }
-
-    input[type="text"],
-    input[type="radio"] {
-        width: 100%;
-    }
-    .table-responsive {
-        width: 100%;
-        overflow-x: auto;
-        /* Desplazamiento horizontal */
-        -webkit-overflow-scrolling: touch;
-        /* Para un scroll más suave en dispositivos móviles */
-    }
-
-    /* Asegurarse de que las celdas se ajusten correctamente */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    td,
-    th {
-        padding: 8px;
-        text-align: center;
-        font-size: 12px;
-        /* Ajustar el tamaño de fuente si es necesario */
-    }
-
-    /* Ajustes para pantallas pequeñas */
-    @media (max-width: 768px) {
-
-        td,
-        th {
-            font-size: 10px;
-            /* Reducir el tamaño de la fuente en pantallas más pequeñas */
-        }
-
-        input[type="text"] {
-            width: 80%;
-            /* Ajustar el tamaño de los inputs para pantallas pequeñas */
-        }
-
-        table {
-            width: 100%;
-            /* Asegura que la tabla no exceda el ancho de la pantalla */
-        }
-    }
 </style>
-<section class="content">
+
+
+<section class="content anesthesia-record-v3 postanestesico-v3" data-anesthesia-record>
     <input type="hidden" value="{{$post_anestesico->hc_anestesiologia->id}}" name="id" id="id" />
 
     <input type="hidden" value="" name="id_pre" id="id_pre" />
@@ -202,9 +150,31 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
     <input type="hidden" value="{{$post_anestesico->id_hc}}" name="id_hc" id="id_hc">
 
+    <div class="anesthesia-record-hero">
+        <div class="anesthesia-record-hero__title">
+            <span class="anesthesia-record-hero__icon"><i class="fa fa-heartbeat" aria-hidden="true"></i></span>
+            <div><h1>Recuperación postanestésica</h1><p>Monitoreo, evolución y condiciones de egreso del paciente.</p></div>
+        </div>
+        <div class="anesthesia-record-hero__meta">
+            <div class="anesthesia-save-status is-saved" data-anesthesia-save-status role="status" aria-live="polite"><i class="fa fa-check-circle" aria-hidden="true"></i><span>Guardado</span></div>
+            <div class="anesthesia-record-chip">Paciente<strong>{{ strtoupper($nombrePacientePost) }}</strong></div>
+            <div class="anesthesia-record-chip">Identificación<strong>{{ $pacientePost->id }}</strong></div>
+            <div class="anesthesia-record-chip">Edad / sexo<strong>{{ $edad }} {{ $unidadEdad }} · {{ $sexoPacientePost }}</strong></div>
+        </div>
+    </div>
+
+    <nav class="anesthesia-record-nav" aria-label="Secciones de recuperación postanestésica">
+        <button type="button" data-scroll-target="post-procedimiento"><i class="fa fa-clipboard" aria-hidden="true"></i> Procedimiento</button>
+        <button type="button" data-scroll-target="post-recepcion"><i class="fa fa-exchange" aria-hidden="true"></i> Recepción</button>
+        <button type="button" data-scroll-target="post-monitorizacion"><i class="fa fa-line-chart" aria-hidden="true"></i> Monitorización</button>
+        <button type="button" data-scroll-target="post-balance"><i class="fa fa-balance-scale" aria-hidden="true"></i> Ingresos y eliminación</button>
+        <button type="button" data-scroll-target="post-evolucion"><i class="fa fa-file-text-o" aria-hidden="true"></i> Evolución</button>
+        <button type="button" data-scroll-target="post-egreso"><i class="fa fa-sign-out" aria-hidden="true"></i> Egreso</button>
+    </nav>
 
 
-    <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
+
+    <table class="anesthesia-patient-source" border="1" cellpadding="0" cellspacing="0" style="width: 100%">
         <thead>
             <tr>
                 <td colspan="14" style="font-size: 14px;" class="bg-blue"><b>A. DATOS DEL ESTABLECIMIENTO Y USUARIO / PACIENTE</b></td>
@@ -248,10 +218,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td class="text-center" colspan="1">@if($post_anestesico->historiaclinica->paciente->sexo == '1') Masculino @ELSE Femenino @endif</td>
 
                 <td class="text-center" colspan="2">{{$edad}}</td>
-                <td class="text-center" colspan="1"></td>
-                <td class="text-center" colspan="1">{{$diaNacimiento}}</td>
-                <td class="text-center" colspan="1">{{$mesNacimiento}}</td>
-                <td class="text-center" colspan="1">{{ date('Y', strtotime($post_anestesico->historiaclinica->paciente->fecha_nacimiento))}}</td>
+                <td class="text-center" colspan="1">{{ $unidadEdad === 'H' ? 'X' : '' }}</td>
+                <td class="text-center" colspan="1">{{ $unidadEdad === 'D' ? 'X' : '' }}</td>
+                <td class="text-center" colspan="1">{{ $unidadEdad === 'M' ? 'X' : '' }}</td>
+                <td class="text-center" colspan="1">{{ $unidadEdad === 'A' ? 'X' : '' }}</td>
             </tr>
         </tbody>
     </table>
@@ -259,248 +229,271 @@ $mesNacimiento = $fechaNacimiento->format('m');
     <table border="1" style="width: 100%">
         <thead>
             <tr>
-                <td colspan="6" style="width: 100%;" class="bg-blue"><b>B. PROCEDIMIENTO QUIRÚRGICO ANESTÉSICO</b></td>
+                <td colspan="9" class="bg-blue"><b>B. PROCEDIMIENTO QUIRÚRGICO ANESTÉSICO</b></td>
             </tr>
         </thead>
         <tbody>
-            <!--tr>
-                <td colspan="1" style="width: 20%;" class="bg-green text-center"><b>ESPECIALIDAD</b></td>
-                <td colspan="5" class="text-center" style="width: 80%;"> {{$especialidad->nombre}}</td>
+            <tr>
+                <td style="width: 10%;" class="bg-green text-center"><b>ESPECIALIDAD</b></td>
+                <td class="text-center" style="width: 40%;">{{ optional($especialidad)->nombre }}</td>
+                <td style="width: 10%;" class="bg-green text-center"><b>DIAGNÓSTICO</b></td>
+                <td colspan="6" style="width: 40%;"><input onchange="handlePublica(this)" type="text" name="diagnostico" id="diagnostico" style="width: 100%"></td>
             </tr>
             <tr>
-                <td colspan="1" style="width: 20%;" class="bg-green text-center"><b>DIAGNÓSTICO</b></td>
-                <td colspan="5" style="width: 80%;"><input onchange="handlePublica(this)" type="text" name="diagnostico" id="diagnostico" style="width: 100%"></td>
+                <td rowspan="2" style="width: 10%;" class="bg-green text-center"><b>CIRUGÍA REALIZADA</b></td>
+                <td rowspan="2" style="width: 40%;"><input onchange="handlePublica(this)" type="text" name="cirugia_realizada" id="cirugia_realizada" style="width: 100%"></td>
+                <td rowspan="2" style="width: 10%;" class="bg-green text-center"><b>TÉCNICA ANESTÉSICA</b></td>
+                <td style="width: 10%;">GENERAL</td>
+                <td style="width: 3%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" name="tecnica_anestesica" id="general" value="0" style="width: 100%"> </td>
+                <td style="width: 10%;">LOCAL</td>
+                <td style="width: 3%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" name="tecnica_anestesica" id="local" value="1" style="width: 100%"> </td>
+                <td style="width: 10%;">TRONCULAR</td>
+                <td style="width: 4%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" name="tecnica_anestesica" id="troncular" value="2" style="width: 100%"> </td>
             </tr>
             <tr>
-                <td colspan="1" style="width: 20%;" class="bg-green text-center"><b>CIRUGÍA REALIZADA</b></td>
-                <td colspan="5" style="width: 80%;"><input onchange="handlePublica(this)" type="text" name="cirugia_realizada" id="cirugia_realizada" style="width: 100%"></td>
-            </tr-->
-            <tr>
-                <td colspan="6" style="width: 100%;" class="bg-green text-center"><b>TÉCNICA ANESTÉSICA</b></td>
-            </tr>
-            <tr>
-                <td style="width: 25%;">GENERAL</td>
-                <td style="width: 8%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" value="0" name="tecnica_anestesica" id="general" style="width: 100%" @if($post_anestesico->tecnica_anestesica == '0') checked @endif> </td>
-                <td style="width: 25%;">LOCAL</td>
-                <td style="width: 9%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" value="1" name="tecnica_anestesica" id="local" style="width: 100%" @if($post_anestesico->tecnica_anestesica == '1') checked @endif> </td>
-                <td style="width: 25%;">TRONCULAR</td>
-                <td style="width: 8%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" value="2" name="tecnica_anestesica" id="troncular" style="width: 100%" @if($post_anestesico->tecnica_anestesica == '2') checked @endif> </td>
-            </tr>
-            <tr>
-                <td style="width: 25%;">NEUROAXIAL</td>
-                <td style="width: 8%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" value="3" name="tecnica_anestesica" id="neuroaxial" style="width: 100%" @if($post_anestesico->tecnica_anestesica == '3') checked @endif> </td>
-                <td style="width: 25%;">INTRAVENOSA</td>
-                <td style="width: 9%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" value="4" name="tecnica_anestesica" id="intravenosa" style="width: 100%" @if($post_anestesico->tecnica_anestesica == '4') checked @endif> </td>
-                <td style="width: 25%;">SEDACIÓN</td>
-                <td style="width: 8%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" value="5" name="tecnica_anestesica" id="sedacion" style="width: 100%" @if($post_anestesico->tecnica_anestesica == '5') checked @endif> </td>
+                <td style="width: 10%;">NEUROAXIAL</td>
+                <td style="width: 3%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" name="tecnica_anestesica" id="neuroaxial" value="3" style="width: 100%"> </td>
+                <td style="width: 10%;">INTRAVENOSA</td>
+                <td style="width: 3%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" name="tecnica_anestesica" id="intravenosa" value="4" style="width: 100%"> </td>
+                <td style="width: 10%;">SEDACIÓN</td>
+                <td style="width: 4%;" class="text-center"><input onchange="handlePublica(this)" type="checkbox" name="tecnica_anestesica" id="sedacion" value="5" style="width: 100%"> </td>
             </tr>
         </tbody>
     </table>
     <br>
 
-    <div class="container" style="width: 100%">
-        <div class="bg-blue"><b>C. ENTREGA - RECEPCIÓN DEL PACIENTE</b></div>
-
-        <div class="text-center bg-green" style="grid-column: span 8;"><b>ALDRETE MODIFICADO</b></div>
-        <div class="text-center bg-green" style="grid-column: span 12;"><b>BROMAGE</b></div>
-        <div class="text-center bg-green" style="grid-column: span 18;"><b>RAMSAY</b></div>
-
-        <div class="text-center width20">7</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" value="1" @if($post_anestesico->aldrete_modificado == '1') checked @endif></div>
-        <div class="text-center width20">8</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" value="2" @if($post_anestesico->aldrete_modificado == '2') checked @endif></div>
-        <div class="text-center width20">9</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" value="3" @if($post_anestesico->aldrete_modificado == '3') checked @endif></div>
-        <div class="text-center width20">10</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" value="4" @if($post_anestesico->aldrete_modificado == '4') checked @endif></div>
-        <div class="text-center" style="grid-column: span 2;">100%</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="bromage" value="1" @if($post_anestesico->bromage == '1') checked @endif></div>
-        <div class="text-center" style="grid-column: span 2;">66%</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="bromage" value="2" @if($post_anestesico->bromage == '2') checked @endif></div>
-        <div class="text-center" style="grid-column: span 2;">33%</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="bromage" value="3" @if($post_anestesico->bromage == '3') checked @endif></div>
-        <div class="text-center" style="grid-column: span 2;">0%</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="bromage" value="4" @if($post_anestesico->bromage == '4') checked @endif></div>
-        <div class="text-center width20">0</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="1" @if($post_anestesico->ramsay == '1') checked @endif></div>
-        <div class="text-center width20">1</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="2" @if($post_anestesico->ramsay == '2') checked @endif></div>
-        <div class="text-center width20">2</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="3" @if($post_anestesico->ramsay == '3') checked @endif></div>
-        <div class="text-center width20">3</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="4" @if($post_anestesico->ramsay == '4') checked @endif></div>
-        <div class="text-center width20">4</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="5" @if($post_anestesico->ramsay == '5') checked @endif></div>
-        <div class="text-center" style="grid-column: span 2;">5</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="6" @if($post_anestesico->ramsay == '6') checked @endif></div>
-        <div class="text-center" style="grid-column: span 2;">6</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" value="7" @if($post_anestesico->ramsay == '7') checked @endif></div>
-
-        <div class="bg-green text-center" style="grid-column: span 22;">EVA</div>
-        <div class="bg-green text-center" style="grid-column: span 16;">STEWARD</div>
-
-        <div class="text-center width20">0</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="1" @if($post_anestesico->eva == '1') checked @endif></div>
-        <div class="text-center width20">1</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="2" @if($post_anestesico->eva == '2') checked @endif></div>
-        <div class="text-center width20">2</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="3" @if($post_anestesico->eva == '3') checked @endif></div>
-        <div class="text-center width20">3</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="4" @if($post_anestesico->eva == '4') checked @endif></div>
-        <div class="text-center width20">4</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="5" @if($post_anestesico->eva == '5') checked @endif></div>
-        <div class="text-center width20">5</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="6" @if($post_anestesico->eva == '6') checked @endif></div>
-        <div class="text-center width20">6</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="7" @if($post_anestesico->eva == '7') checked @endif></div>
-        <div class="text-center width20">7</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="8" @if($post_anestesico->eva == '8') checked @endif></div>
-        <div class="text-center width20">8</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="9" @if($post_anestesico->eva == '9') checked @endif></div>
-        <div class="text-center width20">9</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="10" @if($post_anestesico->eva == '10') checked @endif></div>
-        <div class="text-center width20">10</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" value="11" @if($post_anestesico->eva == '11') checked @endif></div>
-        <div class="text-center width20">0</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="1" @if($post_anestesico->steward == '1') checked @endif></div>
-        <div class="text-center width20">1</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="2" @if($post_anestesico->steward == '2') checked @endif></div>
-        <div class="text-center width20">2</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="3" @if($post_anestesico->steward == '3') checked @endif></div>
-        <div class="text-center width20">3</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="4" @if($post_anestesico->steward == '4') checked @endif></div>
-        <div class="text-center width20">4</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="5" @if($post_anestesico->steward == '5') checked @endif></div>
-        <div class="text-center width20">5</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="6" @if($post_anestesico->steward == '6') checked @endif></div>
-        <div class="text-center width20">6</div>
-        <div class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" value="7" @if($post_anestesico->steward == '7') checked @endif></div>
-
-        <div class="bg-green text-left" style="grid-column: span 3;">OTRO</div>
-        <div class="text-center" style="grid-column: span 35;"><input input onchange="handlePublica(this)" type="text" name="otro" value="{{$post_anestesico->otro}}"></div>
-    </div>
+    <table border="1" style="width: 100%">
+        <thead>
+            <tr>
+                <td colspan="40" class="bg-blue"><b>C. ENTREGA - RECEPCIÓN DEL PACIENTE</b></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3" class="text-center width100">INGRESO A UNIDAD CUIDADOS POSTANESTÉSICOS</td>
+                <td rowspan="2" colspan="37" style="width: 60%;" class="text-center">ESCALAS / ÍNDICES / PUNTAJES</td>
+                <td colspan="2" class="text-center width100"><b>RESPONSABLES</b></td>
+            </tr>
+            <tr>
+                <td class="text-center" colspan="2"><b>ENTREGA</b></td>
+            </tr>
+            <tr>
+                <td colspan="8" class="bg-green text-center"><b>ALDRETE MODIFICADO</b></td>
+                <td colspan="12" class="bg-green text-center"><b>BROMAGE</b></td>
+                <td colspan="14" class="bg-green text-center"><b>RAMSAY</b></td>
+                <td rowspan="2" colspan="3" class="bg-green text-center"></td>
+                <td>NOMBRE</td>
+                <td style="width: 40%;"><input onchange="handlePublica(this)" type="text" name="nombre" id="nombre" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td rowspan="2" style="width: 20%;" class="text-left">FECHA:</td>
+                <td class="text-center width20">7</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" id="7" value="1"></td>
+                <td class="text-center width20">8</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" id="8" value="2"></td>
+                <td class="text-center width20">9</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" id="9" value="3"> </td>
+                <td class="text-center width20">10</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="aldrete_modificado" id="10" value="4"> </td>
+                <td colspan="2">100%</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="bromage" id="100" value="1"> </td>
+                <td colspan="2">66%</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="bromage" id="66" value="2"> </td>
+                <td colspan="2">33%</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="bromage" id="33" value="3"></td>
+                <td colspan="2">0%</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="bromage" id="0" value="4"> </td>
+                <td class="text-center width20">0</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="ramsay" id="0" value="1"></td>
+                <td class="text-center width20">1</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="ramsay" id="1" value="2"></td>
+                <td class="text-center width20">2</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="ramsay" id="2" value="3"></td>
+                <td class="text-center width20">3</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" id="3" value="4"> </td>
+                <td class="text-center width20">4</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" id="4" value="5"> </td>
+                <td class="text-center width20">5</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="ramsay" id="5" value="6"> </td>
+                <td class="text-center width20">6</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="ramsay" id="6" value="7"></td>
+                <td>FIRMA</td>
+                <td style="width: 40%;"><input onchange="handlePublica(this)" type="text" name="firm" id="firm" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td class="bg-green text-center" colspan="22">EVA</td>
+                <td class="bg-green text-center" colspan="15">STEWARD</td>
+                <td class="text-center" colspan="2"><b>RECIBE</b></td>
+            </tr>
+            <tr>
+                <td rowspan="2" style="width: 20%;" class="text-left"> HORA:</td>
+                <td class="text-center width20">0</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="0" value="1"></td>
+                <td class="text-center width20">1</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="1" value="2"></td>
+                <td class="text-center width20">2</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" id="2" value="3"> </td>
+                <td class="text-center width20">3</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="3" value="4"></td>
+                <td class="text-center width20">4</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" id="4" value="5"> </td>
+                <td class="text-center width20">5</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="5" value="6"></td>
+                <td class="text-center width20">6</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="6" value="7"></td>
+                <td class="text-center width20">7</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="7" value="8"></td>
+                <td class="text-center width20">8</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" id="8" value="9"> </td>
+                <td class="text-center width20">9</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="eva" id="9" value="10"> </td>
+                <td class="text-center width20">10</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="eva" id="10" value="11"></td>
+                <td class="text-center width20">0</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" id="0" value="1"> </td>
+                <td class="text-center width20">1</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="steward" id="1" value="2"></td>
+                <td class="text-center width20">2</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" id="2" value="3"> </td>
+                <td class="text-center width20">3</td>
+                <td class="text-center width20"><input onchange="handlePublica(this)" type="radio" name="steward" id="3" value="4"> </td>
+                <td class="text-center width20">4</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="steward" id="4" value="5"></td>
+                <td class="text-center width20">5</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="steward" id="5" value="6"></td>
+                <td class="text-center width20" colspan="2">6</td>
+                <td class="text-center width20"> <input onchange="handlePublica(this)" type="radio" name="steward" id="6" value="7"></td>
+                <td>NOMBRE</td>
+                <td style="width: 40%;"><input onchange="handlePublica(this)" type="text" name="name" id="name" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td class="bg-green text-left" colspan="2">OTRO</td>
+                <td class="text-center" colspan="35"><input onchange="handlePublica(this)" type="text" name="otro" id="otro" style="width: 100%"></td>
+                <td class="text-left">FIRMA</td>
+                <td style="width: 40%;"><input onchange="handlePublica(this)" type="text" name="firma" id="fir" style="width: 100%"></td>
+            </tr>
+        </tbody>
+    </table>
     <br>
-    <div class="container" style="width: 100%">
-        <div class="bg-blue"><b>D. MONITORIZACIÓN</b></div>
-        <div id="vistaImagen" style="grid-column: span 36;"></div>
+    <table border="1" style="width: 100%">
+        <thead>
+            <tr>
+                <td colspan="7" class="bg-blue"><b>D. MONITORIZACIÓN</b></td>
+            </tr>
+            <tr>
+                <td colspan="7" id="vistaImagen"></td>
+            </tr>
+            <tr>
+                <td style="width: 2%;" class="bg-green text-left">ALDRETE MODIFICADO</td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete1" id="valor_aldrete1" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete2" id="valor_aldrete2" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete3" id="valor_aldrete3" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete4" id="valor_aldrete4" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete5" id="valor_aldrete5" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete6" id="valor_aldrete6" style="width: 100%"></td>
 
-        <div class="bg-green text-left" style="grid-column: span 6;">ALDRETE MODIFICADO</div>
-        <div class="text-center" style="grid-column: span 5;"><input value="{{$post_anestesico->valor_aldrete1}}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete1" id="valor_aldrete1"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete2" id="valor_aldrete2" value="{{$post_anestesico->valor_aldrete2}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete3" id="valor_aldrete3" value="{{$post_anestesico->valor_aldrete3}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete4" id="valor_aldrete4" value="{{$post_anestesico->valor_aldrete4}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete5" id="valor_aldrete5" value="{{$post_anestesico->valor_aldrete5}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete6" id="valor_aldrete6" value="{{$post_anestesico->valor_aldrete6}}"></div>
+            </tr>
+            <tr>
+                <td style="width: 2%;" class="bg-green text-left">BROMAGE</td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage1" id="valor_bromage1" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage2" id="valor_bromage2" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage3" id="valor_bromage3" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage4" id="valor_bromage4" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage5" id="valor_bromage5" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage6" id="valor_bromage6" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td style="width: 2%;" class="bg-green text-left">RAMSAY</td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay1" id="valor_ramsay1" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay2" id="valor_ramsay2" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay3" id="valor_ramsay3" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay4" id="valor_ramsay4" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay5" id="valor_ramsay5" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay6" id="valor_ramsay6" style="width: 100%"></td>
 
-        <div class="bg-green text-left" style="grid-column: span 6;">BROMAGE</div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage1" id="valor_bromage1" value="{{$post_anestesico->valor_bromage1}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage2" id="valor_bromage2" value="{{$post_anestesico->valor_bromage2}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage3" id="valor_bromage3" value="{{$post_anestesico->valor_bromage3}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage4" id="valor_bromage4" value="{{$post_anestesico->valor_bromage4}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage5" id="valor_bromage5" value="{{$post_anestesico->valor_bromage5}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage6" id="valor_bromage6" value="{{$post_anestesico->valor_bromage6}}"></div>
+            </tr>
+            <tr>
+                <td style="width: 2%;" class="bg-green text-left">EVA</td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva1" id="valor_eva1" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva2" id="valor_eva2" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva3" id="valor_eva3" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva4" id="valor_eva4" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva5" id="valor_eva5" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva6" id="valor_eva6" style="width: 100%"></td>
 
-        <div class="bg-green text-left" style="grid-column: span 6;">RAMSAY</div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay1" id="valor_ramsay1" value="{{$post_anestesico->valor_ramsay1}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay2" id="valor_ramsay2" value="{{$post_anestesico->valor_ramsay2}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay3" id="valor_ramsay3" value="{{$post_anestesico->valor_ramsay3}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay4" id="valor_ramsay4" value="{{$post_anestesico->valor_ramsay4}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay5" id="valor_ramsay5" value="{{$post_anestesico->valor_ramsay5}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay6" id="valor_ramsay6" value="{{$post_anestesico->valor_ramsay6}}"></div>
 
-        <div class="bg-green text-left" style="grid-column: span 6;">EVA</div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva1" id="valor_eva1" value="{{$post_anestesico->valor_ramsay6}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva2" id="valor_eva2" value="{{$post_anestesico->valor_ramsay6}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva3" id="valor_eva3" value="{{$post_anestesico->valor_ramsay6}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva4" id="valor_eva4" value="{{$post_anestesico->valor_ramsay6}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva5" id="valor_eva5" value="{{$post_anestesico->valor_ramsay6}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva6" id="valor_eva6" value="{{$post_anestesico->valor_ramsay6}}"></div>
+            </tr>
+            <tr>
+                <td style="width: 2%;" class="bg-green text-left">STEWARD</td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward1" id="valor_steward1" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward2" id="valor_steward2" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward3" id="valor_steward3" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward4" id="valor_steward4" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward5" id="valor_steward5" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward6" id="valor_steward6" style="width: 100%"></td>
 
-        <div class="bg-green text-left" style="grid-column: span 6;">STEWARD</div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward1" id="valor_steward1" value="{{$post_anestesico->valor_steward1}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward2" id="valor_steward2" value="{{$post_anestesico->valor_steward2}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward3" id="valor_steward3" value="{{$post_anestesico->valor_steward3}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward4" id="valor_steward4" value="{{$post_anestesico->valor_steward4}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward5" id="valor_steward5" value="{{$post_anestesico->valor_steward5}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward6" id="valor_steward6" value="{{$post_anestesico->valor_steward6}}"></div>
-
-        <div class="bg-green text-left" style="grid-column: span 6;">OTRO</div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro1" id="valor_otro1" value="{{$post_anestesico->valor_otro1}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro2" id="valor_otro2" value="{{$post_anestesico->valor_otro2}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro3" id="valor_otro3" value="{{$post_anestesico->valor_otro3}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro4" id="valor_otro4" value="{{$post_anestesico->valor_otro4}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro5" id="valor_otro5" value="{{$post_anestesico->valor_otro5}}"></div>
-        <div class="text-center" style="grid-column: span 5;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro6" id="valor_otro6" value="{{$post_anestesico->valor_otro6}}"></div>
-    </div>
+            </tr>
+            <tr>
+                <td style="width: 2%;" class="bg-green text-left">OTRO</td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro1" id="valor_otro1" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro2" id="valor_otro2" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro3" id="valor_otro3" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro4" id="valor_otro4" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro5" id="valor_otro5" style="width: 100%"></td>
+                <td class="text-center" style="width: 14%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro6" id="valor_otro6" style="width: 100%"></td>
+            </tr>
+            </tbody>
+    </table>
     <br>
     <table border="1" style="width: 100%">
         <thead>
             <tr>
                 <td colspan="2" style="width: 50%;" class="bg-blue text-left"><b>E. INGRESOS</b></td>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td style="width: 50%;" class="text-left">ORAL</td>
-                <td style="width: 50%;">
-                    <input onchange="handlePublica(this)" type="text" name="oral" id="oral" style="width: 100%" value="{{$post_anestesico->oral}}">
-                </td>
-            </tr>
-            <tr>
-                <td style="width: 50%;" class="text-left">INFUSIONES</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="infusion" id="infusion" style="width: 100%" value="{{$post_anestesico->infusion}}"></td>
-            </tr>
-            <tr>
-                <td style="width: 50%;" class="text-left">SANGRE Y DERIVADOS</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="sangre_derivados" id="sangre_derivados" style="width: 100%" value="{{$post_anestesico->sangre_derivados}}"></td>
-            </tr>
-            <tr>
-                <td style="width: 50%;" class="text-left">OTROS</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="otros" id="otros" style="width: 100%" value="{{$post_anestesico->otros}}"></td>
-            </tr>
-            <tr>
-                <td style="width: 50%;" class="text-left"><b>TOTAL</b></td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="total_ingresos" id="total_ingresos" style="width: 100%; height: 55px;" value="{{$post_anestesico->total_ingresos}}"></td>
-            </tr>
-        </tbody>
-    </table>
-    <table border="1" style="width: 100%">
-        <thead>
-            <tr>
                 <td colspan="2" style="width: 50%;" class="bg-blue text-left"><b>F. ELIMINACIÓN</b></td>
             </tr>
         </thead>
         <tbody>
+
             <tr>
-                <td style="width: 50%;">DIURESIS O SONDA VESICAL</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="diuresis_sonda_vesical" id="diuresis_sonda_vesical" style="width: 100%" value="{{$post_anestesico->diuresis_sonda_vesical}}"></td>
+                <td style="width: 25%;" class="text-left">ORAL</td>
+                <td style="width: 25%;">
+                    <input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="oral" id="oral" style="width: 100%">
+                </td>
+
+                <td style="width: 25%;">DIURESIS O SONDA VESICAL</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="diuresis_sonda_vesical" id="diuresis_sonda_vesical" style="width: 100%"></td>
             </tr>
             <tr>
-                <td style="width: 50%;">VÓMITO O SONDA NASOGÁSTRICO</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="vomito" id="vomito" style="width: 100%" value="{{$post_anestesico->vomito}}"></td>
+                <td style="width: 25%;" class="text-left">INFUSIONES</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="infusion" id="infusion" style="width: 100%"></td>
+                <td style="width: 25%;">VÓMITO O SONDA NASOGÁSTRICO</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="vomito" id="vomito" style="width: 100%"></td>
             </tr>
             <tr>
-                <td style="width: 50%;">TORÁCICO</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="toracico" id="toracico" style="width: 100%" value="{{$post_anestesico->toracico}}"></td>
+                <td style="width: 25%;" class="text-left">SANGRE Y DERIVADOS</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="sangre_derivados" id="sangre_derivados" style="width: 100%"></td>
+                <td style="width: 25%;">TORÁCICO</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="toracico" id="toracico" style="width: 100%"></td>
             </tr>
             <tr>
-                <td style="width: 50%;">DRENAJES</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="drenajes" id="drenajes" style="width: 100%" value="{{$post_anestesico->drenajes}}"></td>
+                <td style="width: 25%;" class="text-left">OTROS</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="otros" id="otros" style="width: 100%"></td>
+                <td style="width: 25%;">DRENAJES</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="drenajes" id="drenajes" style="width: 100%"></td>
             </tr>
             <tr>
-                <td style="width: 50%;">OTRAS</td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="eliminacion_otras" id="eliminacion_otras" style="width: 100%" value="{{$post_anestesico->eliminacion_otras}}"></td>
+                <td rowspan="2" style="width: 25%;" class="text-left"><b>TOTAL</b></td>
+                <td rowspan="2" style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="totals_texto" id="totals_texto" style="width: 100%; height: 55px;" readonly></td>
+                <td style="width: 25%;">OTRAS</td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="eliminacion_otras" id="eliminacion_otras" style="width: 100%"></td>
             </tr>
             <tr>
-                <td style="width: 50%;" class="text-left"><b>TOTAL</b></td>
-                <td style="width: 50%;"><input onchange="handlePublica(this)" type="text" name="total_eliminacion" id="total_eliminacion" style="width: 100%" value="{{$post_anestesico->total_eliminacion}}"></td>
+                <td style="width: 25%;" class="text-left"><b>TOTAL</b></td>
+                <td style="width: 25%;"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="total_eliminacion" id="total_eliminacion" style="width: 100%" readonly></td>
             </tr>
         </tbody>
     </table>
-    
     <br>
-
-
     <table border="1" style="width: 100%">
         <thead>
             <tr>
@@ -518,106 +511,119 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
                 <td></td>
                 <td></td>
-                <td><input onchange="handlePublica(this)" type="text" name="evolucion" id="evolucion" style="width: 100%" value="{{$post_anestesico->evolucion}}"></td>
-                <td><input onchange="handlePublica(this)" type="text" name="prescripcion" id="prescripcion" style="width: 100%" value="{{$post_anestesico->prescripcion}}"></td>
-                <td><input onchange="handlePublica(this)" type="text" name="administracion_farmacos" id="administracion_farmacos" style="width: 100%" value="{{$post_anestesico->administracion_farmacos}}"></td>
+                <td><input onchange="handlePublica(this)" type="text" name="evolucion" id="evolucion" style="width: 100%"></td>
+                <td><input onchange="handlePublica(this)" type="text" name="prescripcion" id="prescripcion" style="width: 100%"></td>
+                <td><input onchange="handlePublica(this)" type="text" name="administracion_farmacos" id="administracion_farmacos" style="width: 100%"></td>
             </tr>
         </tbody>
     </table>
     <br>
-    <div class="table-responsive">
-        <table border="1" style="width: 100%">
-            <thead>
-                <tr>
-                    <td colspan="14" class="bg-blue"><b>H. CONDICIÓN DE EGRESO</b></td>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="width: 20%;"><b>CONSTANTES VITALES DE ENTREGA</b></td>
-                    <td style="font-size: 18px">TA <input onchange="handlePublica(this)" style="width: 150px;" value="{{$post_anestesico->presion}}" name="presion" id="ta" type="text">
-                    </td>
-                    <td style="font-size: 18px">FC <input onchange="handlePublica(this)" style="width: 150px;" value="{{$post_anestesico->pulso}}" name="pulso" id="fc" type="text">
-                    </td>
-                    <td style="font-size: 18px">FR <input onchange="handlePublica(this)" style="width: 150px;" value="{{$post_anestesico->fecuencia_respiratoria}}" name="fecuencia_respiratoria" id="fr" type="text">
-                    </td>
-                    <td style="font-size: 18px">SAT. O2 <input onchange="handlePublica(this)" style="width: 150px;" value="{{$post_anestesico->o2}}" name="o2" id="sat" type="text">
-                    </td>
-                    <td style="font-size: 18px">T° <input onchange="handlePublica(this)" style="width: 150px;" value="{{$post_anestesico->temperatura}}" name="temperatura" id="t" type="text">
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 50px;" rowspan="3"><b>EGRESO DE LA UNIDAD CUIDADOS POSTANESTÉSICOS</b></td>
-                    <td class="text-center"><b>ESCALA / ÍNDICE</b></td>
-                    <td class="text-center"><b>PUNTAJE</b></td>
-                    <td colspan="3" class="text-center"><b>RESPONSABLES</b></td>
-                </tr>
-                <tr>
-                    <td class="text-right">ALDRETE MODIFICADO</td>
-                    <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete_egreso" id="valor_aldrete_egreso" style="width: 100%" value="{{$post_anestesico->valor_aldrete_egreso}}"></td>
-                    <td colspan="3" class="text-center"><b>ENTREGA</b></td>
-                </tr>
-                <tr>
-                    <td class="text-right">BROMAGE</td>
-                    <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage_egreso" id="valor_bromage_egreso" style="width: 100%" value="{{$post_anestesico->valor_bromage_egreso}}"></td>
-                    <td class="text-left"><b>NOMBRE</b></td>
-                    <td colspan="2"><input onchange="handlePublica(this)" type="text" name="nom_texto" id="nom_texto" style="width: 100%" readonly value="@if(!is_null($anestesiologia->anestesiologo)){{$anestesiologia->anestesiologo->apellido1}}  {{$anestesiologia->anestesiologo->nombre1}} @endif"></td>
-                </tr>
-                <tr>
-                    <td class="text-left" rowspan="2"><b>FECHA:</b></td>
-                    <td class="text-right">RAMSAY</td>
-                    <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay_egreso" id="valor_ramsay_egreso" style="width: 100%" value="{{$post_anestesico->valor_ramsay_egreso}}"></td>
-                    <td class="text-left"><b>FIRMA</b></td>
-                    <td colspan="2"><input onchange="handlePublica(this)" type="text" name="firm_texto" id="firm_texto" style="width: 100%" readonly></td>
-                </tr>
-                <tr>
-                    <td class="text-right">EVA</td>
-                    <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva_egreso" id="valor_eva_egreso" style="width: 100%" value="{{$post_anestesico->valor_eva_egreso}}"></td>
-                    <td colspan="3" class="text-center"><b>RECIBE</b></td>
-                </tr>
-                <tr>
-                    <td class="text-left" rowspan="2"><b>HORA:</b> </td>
-                    <td class="text-right">STEWARD</td>
-                    <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward_egreso" id="valor_steward_egreso" style="width: 100%" value="{{$post_anestesico->valor_steward_egreso}}"></td>
-                    <td class="text-left"><b>NOMBRE</b></td>
-                    <td colspan="2"><input onchange="handlePublica(this)" type="text" name="nb_texto" id="nb_texto" style="width: 100%" readonly value="@if(!is_null($anestesiologia->anestesiologo)){{$anestesiologia->anestesiologo->apellido1}}  {{$anestesiologia->anestesiologo->nombre1}} @endif"></td>
-                </tr>
-                <tr>
-                    <td class="text-right">OTRO:</td>
-                    <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro_egreso" id="valor_otro_egreso" style="width: 100%" value="{{$post_anestesico->valor_otro_egreso}}"></td>
-                    <td class="text-left"><b>FIRMA</b></td>
-                    <td colspan="2"><input onchange="handlePublica(this)" type="text" name="firmatexto" id="firmatexto" style="width: 100%" readonly></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <table border="1" style="width: 100%">
+        <thead>
+            <tr>
+                <td colspan="14" class="bg-blue"><b>H. CONDICIÓN DE EGRESO</b></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 20%;"><b>CONSTANTES VITALES DE ENTREGA</b></td>
+                <td style="font-size: 18px">TA @for($count=0; $count<=10;$count++) &nbsp; @endfor <input onchange="handlePublica(this)" style="height: 25px;" name="constantes_vitales" id="ta" type="radio">
+                </td>
+                <td style="font-size: 18px">FC @for($count=0; $count<=10;$count++) &nbsp; @endfor <input onchange="handlePublica(this)" style="height: 25px;" name="constantes_vitales" id="fc" type="radio">
+                </td>
+                <td style="font-size: 18px">FR @for($count=0; $count<=10;$count++) &nbsp; @endfor <input onchange="handlePublica(this)" style="height: 25px;" name="constantes_vitales" id="fr" type="radio">
+                </td>
+                <td style="font-size: 18px">SAT. O2 @for($count=0; $count<=10;$count++) &nbsp; @endfor <input onchange="handlePublica(this)" style="height: 25px;" name="constantes_vitales" id="sat" type="radio">
+                </td>
+                <td style="font-size: 18px">T° @for($count=0; $count<=10;$count++) &nbsp; @endfor <input onchange="handlePublica(this)" style="height: 25px;" name="constantes_vitales" id="t" type="radio">
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 50px;" rowspan="3"><b>EGRESO DE LA UNIDAD CUIDADOS POSTANESTÉSICOS</b></td>
+                <td class="text-center"><b>ESCALA / ÍNDICE</b></td>
+                <td class="text-center"><b>PUNTAJE</b></td>
+                <td colspan="3" class="text-center"><b>RESPONSABLES</b></td>
+            </tr>
+            <tr>
+                <td class="text-right">ALDRETE MODIFICADO</td>
+                <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_aldrete_egreso" id="valor_aldrete_egreso" style="width: 100%"></td>
+                <td colspan="3" class="text-center"><b>ENTREGA</b></td>
+            </tr>
+            <tr>
+                <td class="text-right">BROMAGE</td>
+                <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_bromage_egreso" id="valor_bromage_egreso" style="width: 100%"></td>
+                <td class="text-left"><b>NOMBRE</b></td>
+                <td colspan="2"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="nom_texto" id="nom_texto" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td class="text-left" rowspan="2"><b>FECHA:</b></td>
+                <td class="text-right">RAMSAY</td>
+                <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_ramsay_egreso" id="valor_ramsay_egreso" style="width: 100%"></td>
+                <td class="text-left"><b>FIRMA</b></td>
+                <td colspan="2"><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="firm_texto" id="firm_texto" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td class="text-right">EVA</td>
+                <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_eva_egreso" id="valor_eva_egreso" style="width: 100%"></td>
+                <td colspan="3" class="text-center"><b>RECIBE</b></td>
+            </tr>
+            <tr>
+                <td class="text-left" rowspan="2"><b>HORA:</b> </td>
+                <td class="text-right">STEWARD</td>
+                <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_steward_egreso" id="valor_steward_egreso" style="width: 100%"></td>
+                <td class="text-left"><b>NOMBRE</b></td>
+                <td colspan="2"><input onchange="handlePublica(this)" type="text" name="nb_texto" id="nb_texto" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td class="text-right">OTRO:</td>
+                <td><input oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" onchange="handlePublica(this)" type="text" name="valor_otro_egreso" id="valor_otro_egreso" style="width: 100%"></td>
+                <td class="text-left"><b>FIRMA</b></td>
+                <td colspan="2"><input onchange="handlePublica(this)" type="text" name="firmatexto" id="firmatexto" style="width: 100%"></td>
+            </tr>
+        </tbody>
+    </table>
     <br>
     <table border="1" style="width: 100%">
         <tr>
             <td rowspan="2" style="width: min-content;"><b>CONDICIONES AL SALIR</b></td>
             <td style="width: min-content;">EXTUBADO</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" value="1" name="condiciones_al_salir" id="exturbado" @if($post_anestesico->condiciones_al_salir == '1') checked @endif ></td>
+            <td class="text-center"><input onchange="handlePublica(this)" type="radio" name="condicion_salir" id="extubado" value="1"></td>
+
             <td style="width: min-content;" rowspan="2"><b>CONDUCIDO A:</b></td>
-            <td style="width: min-content;">HOSPITALIZACIÓN</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" value="0" name="conducido" id="hospitalizacion" @if($post_anestesico->conducido == '0') checked @endif></td>
-            <td style="width: min-content;">CRÍTICOS DE EMERGENCIA</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" value="2" name="conducido" id="criticos_emergencia" @if($post_anestesico->conducido == '2') checked @endif></td>
-            <td style="width: min-content;">MORGUE</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" value="4" name="conducido" id="morgue" @if($post_anestesico->conducido == '4') checked @endif></td>
+
+            <td style="width: min-content;" rowspan="2">HOSPITALIZACIÓN</td>
+            <td class="text-center" rowspan="2"><input onchange="handlePublica(this)" type="radio" name="conducido_a" id="hospita" value="1"></td>
+
+            <td style="width: min-content;" rowspan="2">UNIDAD CUIDADOS INTENSIVOS</td>
+            <td class="text-center" rowspan="2"><input onchange="handlePublica(this)" type="radio" name="conducido_a" id="uci1" value="2"></td>
+
+            <td style="width: min-content;" rowspan="2">CRÍTICOS DE EMERGENCIA</td>
+            <td class="text-center" rowspan="2"><input onchange="handlePublica(this)" type="radio" name="conducido_a" id="cde" value="3"></td>
+
+            <td style="width: min-content;" rowspan="2">DOMICILIO</td>
+            <td class="text-center" rowspan="2"><input onchange="handlePublica(this)" type="radio" name="conducido_a" id="domi" value="4"></td>
+
+            <td style="width: min-content;" rowspan="2">MORGUE</td>
+            <td class="text-center" rowspan="2"><input onchange="handlePublica(this)" type="radio" name="conducido_a" id="morgue" value="5"></td>
         </tr>
         <tr>
             <td style="width: min-content;">INTUBADO</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" name="condiciones_al_salir" id="intubado" value="2" @if($post_anestesico->condiciones_al_salir == '2') checked @endif></td>
-            <td style="width: min-content;">UNIDAD CUIDADOS INTENSIVOS</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" value="1" name="conducido" id="cuidados_intensivos" @if($post_anestesico->conducido == '1') checked @endif></td>
-            <td style="width: min-content;">DOMICILIO</td>
-            <td class="text-center"><input onchange="handlePublica(this)" type="radio" value="3" name="conducido" id="domicilio" @if($post_anestesico->conducido == '3') checked @endif></td>
+            <td class="text-center"><input onchange="handlePublica(this)" type="radio" name="condicion_salir" id="intubado" value="2"></td>
         </tr>
     </table>
     <br>
+    <div class="anesthesia-layout-end" hidden></div>
+    <script type="application/json" class="anesthesia-layout-config">
+    {"groups":[
+        {"match":"B. PROCEDIMIENTO QUIRÚRGICO ANESTÉSICO","id":"post-procedimiento","title":"Procedimiento quirúrgico anestésico","description":"Especialidad, diagnóstico, cirugía y técnica utilizada.","icon":"fa-clipboard","open":true},
+        {"match":"C. ENTREGA - RECEPCIÓN DEL PACIENTE","id":"post-recepcion","title":"Entrega y recepción del paciente","description":"Responsables y escalas clínicas al ingreso.","icon":"fa-exchange","open":true},
+        {"match":"D. MONITORIZACIÓN","id":"post-monitorizacion","title":"Monitorización postanestésica","description":"Controles seriados de las escalas e índices clínicos.","icon":"fa-line-chart","open":true},
+        {"match":"E. INGRESOS","id":"post-balance","title":"Ingresos y eliminación","description":"Balance de líquidos, pérdidas y totales calculados.","icon":"fa-balance-scale","open":true},
+        {"match":"G. EVOLUCIÓN POSTANESTÉSICA","id":"post-evolucion","title":"Evolución postanestésica","description":"Evolución, prescripción y administración de fármacos.","icon":"fa-file-text-o","open":true},
+        {"match":"H. CONDICIÓN DE EGRESO","id":"post-egreso","title":"Condición de egreso","description":"Constantes, escalas, responsables y destino del paciente.","icon":"fa-sign-out","open":true}
+    ]}
+    </script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
 
     <script src="{{ asset ('/js/jquery-ui.js')}}"></script>
@@ -640,7 +646,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 }
             });
         });
-
         function handlePublica(input) {
 
             let nombre, valor;
@@ -655,9 +660,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 input.name === 'evolucion' || input.name === 'bromage' || input.name === 'ramsay' || input.name === 'eva' || input.name === 'steward' || input.name === 'tecnica_anestesica' ||
                 input.name === 'otro' || input.name === 'oral' || input.name === 'infusion' || input.name === 'sangre_derivados' || input.name === 'otros' || input.name === 'diuresis_sonda_vesical' || input.name === 'vomito' ||
                 input.name === 'toracico' || input.name === 'drenajes' || input.name === 'eliminacion_otras' || input.name === 'valor_aldrete_egreso' || input.name === 'valor_bromage_egreso' || input.name === 'valor_ramsay_egreso' ||
-                input.name === 'valor_eva_egreso' || input.name === 'valor_steward_egreso' || input.name === 'valor_otro_egreso' || input.name === 'fecha_egreso' || input.name === 'prescripcion' || input.name === 'administracion_farmacos' ||
-                input.name === 'total_eliminacion' || input.name === 'total_ingresos' || input.name === 'presion' || input.name === 'pulso' || input.name === 'fecuencia_respiratoria' || input.name === 'o2' || input.name === 'temperatura' || 
-                input.name === 'condiciones_al_salir' || input.name === 'conducido'
+                input.name === 'valor_eva_egreso' || input.name === 'valor_steward_egreso' || input.name === 'valor_otro_egreso' || input.name === 'fecha_egreso' || input.name === 'prescripcion' || input.name === 'administracion_farmacos'
             ) {
 
                 nombre = input.name;
@@ -667,6 +670,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 valor = input.checked ? 1 : 0;
             }
 
+            window.setAnesthesiaRecordStatus('saving');
             $.ajax({
                 url: "{{ route('formato.postanestesico_guardar') }}",
                 headers: {
@@ -675,25 +679,26 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 type: 'POST',
                 data: {
                     [nombre]: valor,
+
                     id_hc: $("#id_hc").val(),
-                    id_hc_anestesiologia: $("#id").val(),
 
 
                 },
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
-
-                        //sumaTotales(input);
+                        window.setAnesthesiaRecordStatus('saved');
+                        sumaTotales(input);
                     }
                 },
                 error: function(error) {
+                    window.setAnesthesiaRecordStatus('error');
                     console.error(error);
                 }
             });
         }
 
-        /*function sumaTotales(input) {
+        function sumaTotales(input) {
 
             var valorOral = parseFloat(document.getElementById('oral').value) || 0;
             var valorInfusion = parseFloat(document.getElementById('infusion').value) || 0;
@@ -718,7 +723,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
             document.getElementById('total_eliminacion').value = suma2;
-        }*/
+        }
     </script>
 </section>
 @endsection

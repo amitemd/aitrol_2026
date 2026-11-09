@@ -23,7 +23,7 @@
     <link href="{{asset("fullcalendar/bootstrap/main.css")}}" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.11.0/sweetalert2.css"/>
     <link rel="stylesheet" href="{{asset('css/w3.css')}}">
-    <link rel="shortcut icon" href="{{ asset("/favicon.ico")}}" />
+    <link rel="icon" type="image/png" sizes="128x128" href="{{ asset('assets/images/aitrol-favicon.png') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ asset("/plugins/colorpicker/bootstrap-colorpicker.css")}}">
     <!-- Ionicons -->

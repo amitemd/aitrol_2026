@@ -57,12 +57,6 @@
 
 <div class="col-md-12" style="padding-left: 15px;padding-right: 30px;">
   @php
-    if(!is_null($paciente)){
-
-      $seguro = Sis_medico\Seguro::find($paciente->id_seguro);
-
-    }
-
       $fecha = substr($data_orden_fun->fecha_orden,0,10);
       $invert = explode( '-',$fecha);
       $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];
@@ -81,17 +75,6 @@
             </label>
           @endif
         </div>
-        @if($ndoctor->id != 1307189140)
-          <div class="col-md-4">
-            <span style="font-family: 'Helvetica general';font-size: 16px;color: red;">Agregar Firma CRM</span>
-            <input style="width:17px;height:17px;" type="checkbox" id="firma_doctor_rob_fun" class="flat-red" name="firma_doctor_rob_fun" value="1"
-              @if(old('firma_doctor_rob_fun')=="1")
-                checked
-              @elseif($data_orden_fun->check_doctor =='1')
-                checked
-              @endif>
-          </div>
-        @endif
       </div>
       <div class="row">
         <div class="col-md-8">
@@ -141,14 +124,6 @@
             </div>
       </div>
       <div class="col-12">&nbsp;</div>
-      @php
-        $x_orden_tipo_funcional= null;
-        if(!is_null($data_orden_fun->id)){
-          $x_orden_tipo_funcional = Sis_medico\Orden_Tipo::where('id_orden', $data_orden_fun->id)
-                                                            ->where('id_grupo_procedimiento','18')
-                                                            ->first();
-        }
-      @endphp
       <div class="row">
         <div class="col-md-12">
           <div style="background-color: #004AC1; color: white">
@@ -158,53 +133,8 @@
         </div>
         <div class="col-md-12">
           <select id="id_procedimiento_func" class="form-control input-sm select2_proc" name="x_procedimiento_func[]" multiple="multiple" data-placeholder="Seleccione" style="width: 100%;" autocomplete="off">
-            @php
-             $fu_aceptacion = 0;
-             $fu_validacion = null;
-            @endphp
-            @if(!is_null($x_orden_tipo_funcional))
-              @php
-                $proc_func = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_funcional->id)->get();
-              @endphp
-                @foreach($proc_func as $value)
-                  @php
-
-                    $clase = 'fu';
-                    if(!is_null($value->procedimiento->grupo_procedimiento)){
-                      $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                    }
-
-                    $fu_aceptacion++;
-
-
-                  @endphp
-                  <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
-                @endforeach
-            @endif
-
-            @foreach($px as $value)
-              @php
-
-                $clase = 'fu';
-                if(!is_null($value->grupo_procedimiento)){
-                  $clase = $clase.$value->id_grupo_procedimiento;
-                }
-
-                if(!is_null($x_orden_tipo_funcional)){
-
-                  $fu_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_funcional->id)->first();
-
-                  if(!is_null($fu_validacion)){
-                    $fu_aceptacion++;
-                  }
-
-                }
-
-
-              @endphp
-              @if(is_null($fu_validacion))
-                <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-              @endif
+            @foreach($procedimientos_seleccionados as $procedimiento)
+              <option selected value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
             @endforeach
           </select>
         </div>
@@ -218,11 +148,6 @@
       <div class="row">
           <div class="col-md-12">
            <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION RECEPCI&OacuteN:</span><textarea id="xobservacion_recepcion" name="xobservacion_recepcion" style="width: 100%; border: 2px solid #004AC1;" rows="3">@if(!is_null($data_orden_fun))<?php echo $data_orden_fun->observacion_recepcion ?>@endif</textarea>
-          </div>
-      </div>
-      <div class="row">
-          <div class="col-md-12">
-           <span style="font-family: 'Helvetica general';font-size: 12px">OTROS PROCEDIMIENTOS:</span><textarea id="xotros" name="xotros" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_funcional({{$data_orden_fun->id}});">@if(!is_null($data_orden_fun))<?php echo $data_orden_fun->otros?>@endif</textarea>
           </div>
       </div>
       <br>
@@ -242,7 +167,7 @@
           @if($data_orden_fun->id_evolucion!=null)
           <div class="col-4">
             <center>
-              <button style="font-size: 14px; margin-bottom: 15px; height: 80%; width: 70%"  type="button" class="btn btn-info btn_ordenes" onclick="formato_012({{$data_orden_fun->id_evolucion}},{{$data_orden_fun->id}}, 'area_trabajo_formato012_pf{{$data_orden_fun->id}}{{$aleatorio}}')"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;Formato 012
+              <button style="font-size: 14px; margin-bottom: 15px; height: 80%; width: 70%" type="button" class="btn btn-info btn_ordenes" onclick="formato_012({{$data_orden_fun->id_evolucion}}, {{$data_orden_fun->id}}, 'area_trabajo_formato012_pf{{$data_orden_fun->id}}{{$aleatorio}}')"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;Formato 012
               </button>
             </center>
           </div>
@@ -312,93 +237,24 @@
 </script>
 
 <script type="text/javascript">
-
-    $('.fu18').removeAttr('disabled');
-
-    $('.select2_proc').select2({
-            tags: false,
-    });
-
-    function fu_actualiza_select(){
-
-      var seleccionados =  $('#id_procedimiento_func').find(':selected');
-      var longitud =  seleccionados.length;
-      //alert(longitud);
-      if(longitud>=1){
-        //alert("mayor igual a 1");
-        //$('.fu18').attr('disabled','disabled');
-        $('.fu').removeAttr('disabled');
-
-      }else{
-        //alert("cero");
-        $('.fu18').removeAttr('disabled');
-        $('.fu').attr('disabled','disabled');
-        //$('.c').prop('disabled','false');
+    $('#id_procedimiento_func').select2({
+      width: '100%',
+      tags: false,
+      ajax: {
+        url: "{{route('hc4.ordenes.procedimientos.buscar')}}",
+        dataType: 'json',
+        delay: 250,
+        data: function(params) {
+          return {q: params.term || '', grupo: 18};
+        },
+        processResults: function(data) {
+          return {results: data.results || []};
+        },
+        cache: true
       }
-
-      seleccionados.each(function( index ) {
-          $( this ).removeAttr('disabled');
-      });
-
-      $('.select2_proc').select2({
-        tags: false,
-      });
-
-
-    }
-
-    function fu_quita_select(){
-      //alert("quita");
-      var seleccionados =  $('#id_procedimiento_func').find(':selected');
-      var longitud =  seleccionados.length;
-      //alert("q"+longitud);
-      if(longitud>1){
-
-        $('.fu18').attr('disabled','disabled');
-        $('.fu').removeAttr('disabled');
-
-      }else{
-        //alert("salio");
-        $('.fu18').removeAttr('disabled');
-        $('.fu').attr('disabled','disabled');
-
-      }
-
-      seleccionados.each(function( index ) {
-          $( this ).removeAttr('disabled');
-      });
-
-      $('.select2_proc').select2({
-        tags: false,
-      });
-
-
-    }
-
-    $(".select2_proc").on("select2:select", function (evt) {
-
-        var element = evt.params.data.element;
-        //console.log(element);
-        var $element = $(element);
-
-        $element.detach();
-        $(this).append($element);
-        $(this).trigger("change");
-        fu_actualiza_select();
-        actualiza_orden_funcional({{$data_orden_fun->id}});
-
-    });
-
-    $(".select2_proc").on("select2:unselecting", function (evt) {
-       fu_quita_select();
-
-    });
-
-    @if($fu_aceptacion > 0 )
-      //alert("base");
-      fu_actualiza_select();
+    }).on('select2:select select2:unselect', function() {
       actualiza_orden_funcional({{$data_orden_fun->id}});
-    @endif
+    });
 
 </script>
 
@@ -444,4 +300,23 @@
 
 </script>
 
+<script type="text/javascript">
 
+function formato_012(id, id_orden, div) {
+
+$.ajax({
+  type: 'GET',
+  url:"{{url('hc4/formato012')}}/"+id+"/"+id_orden,
+  headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+  datatype: 'json',
+  success: function(data){
+    $("#"+div).empty().html(data);
+    //console.log(data);
+  },
+  error: function(data){
+    console.log(data);
+  }
+});
+}
+  
+</script>

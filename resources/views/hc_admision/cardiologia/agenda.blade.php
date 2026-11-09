@@ -29,7 +29,7 @@
                             <div class="col-md-12">
                                 <select id="id_doctor" name="id_doctor" class="form-control input-sm" required onchange="calendario();">
                                     @foreach ($cardiologos as $cardiologo)
-                                        <option  @if($cardiologo->id=='3596988777') {{"selected"}} @endif value="{{$cardiologo->id}}">{{$cardiologo->nombre1}} {{$cardiologo->apellido1}}</option>
+                                        <option  @if(old('id_doctor')==$cardiologo->id){{"selected"}} @endif value="{{$cardiologo->id}}">{{$cardiologo->nombre1}} {{$cardiologo->apellido1}}</option>
                                     @endforeach
                                 </select>
                                 @if ($errors->has('id_doctor'))
@@ -55,7 +55,7 @@
                                 <select id="id_sala" name="id_sala" class="form-control input-sm" required >
                                     <!--option value="">Seleccionar...</option-->
                                 @foreach ($salas as $sala)
-                                    <option @if(old('id_sala')==$sala->id){{"selected"}} @elseif($agenda->id_sala==$sala->id){{"selected"}} @endif value="{{$sala->id}}">{{$sala->nombre_sala}} / {{$sala->hospital()->first()->nombre_hospital}}</option>
+                                    <option @if(old('id_sala')==$sala->id){{"selected"}} @elseif($agenda->id_sala==$sala->id){{"selected"}} @endif value="{{$sala->id}}">{{$sala->nombre_sala}} / {{$sala->hospital_name}}</option>
                                 @endforeach
                                 </select> 
                                 @if ($errors->has('id_sala'))

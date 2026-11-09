@@ -145,7 +145,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">El procedimiento al que va a someterse consiste en la realización de un túnel submucoso en el esófago, hasta el cardias cortar las fibras musculares (circulares y longitudinales) para que la presión del esfínter esofágico inferior disminuya, de tal manera los alimentos pasarán con mayor facilidad del esófago al estómago. </td>
-                    <td><img style="margin:6px;margin-top:10px;height: 80px;width:80px;" src="{{public_path('/imagenes/crm.jpg')}}" />
+                    <td><img style="margin:6px;margin-top:10px;height: 80px;width:80px;" src="{{base_path('public/imagenes/crm.jpg')}}" />
                 </tr>
             </tbody>
         </table>
@@ -235,8 +235,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

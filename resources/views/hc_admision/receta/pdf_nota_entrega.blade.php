@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-@section('action-content')
 <html lang="en">
     <head>
+        <meta charset="utf-8">
         <title>Nota de Entrega</title>
         <style>
 
@@ -91,19 +91,19 @@
        
         @php $empresa_nombre = Sis_medico\Empresa::where('prioridad', '1')->where('estado', 1)->first();   @endphp
         <div id="page_pdf" style="font-family: Arial">
-            <!-- @if(is_null($agenda->id_empresa))
+                    @if(is_null($agenda->id_empresa))
             <strong style="font-size:22px; font-family: sans-serif !important;"> FARMACIA INSTITUTO FARMACEUTICO DE ENFERMEDADES DIGESTIVAS</strong>
-            @endif -->
+            @endif
             <table class="table"  width="100%;" >
                 <thead>
                     @if(is_null($agenda->id_empresa) || $agenda->id_empresa == $empresa_nombre->id)
                         <tr>
                             <td >
-                                @if(!is_null($empresa_nombre->id))
-                                    @if(!is_null($empresa_nombre->logo))
-                                        <img src="{{base_path().'/storage/app/logo/'.$empresa_nombre->logo}}" style="width:285px;height: 140px;">
-                                    @endif
-                                @endif
+                                        @if(!is_null($empresa_nombre->id))
+                                            @if(!is_null($empresa_nombre->logo))
+                                                <img src="{{base_path().'/storage/app/logo/'.$empresa_nombre->logo}}" style="width:285px;height: 140px;">
+                                            @endif
+                                        @endif
                             </td>
                             <td style="width:40%; text-align: center;">
                                         <strong style="font-size:30px">@if(!is_null($empresa_nombre->id)) {{$empresa_nombre->nombrecomercial}} @endif</strong><br>
@@ -144,11 +144,11 @@
                             <span class="negrita">Dir:</span> <span style="font-size: 20px">Olmedo 401 A y boyaca</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             <span class="negrita">Telf:</span> <span style="font-size: 20px">2400057</span>
                         </td>
-                        <td><span class="negrita">Fecha:</span> <span style="font-size: 20px">{{substr($nota_entrega->created_at, 0, 10)}}</span></td>
+                        <td><span class="negrita">Fecha:</span> <span style="font-size: 20px"></span></td>
                     </tr>
                     <tr>
                         @php $paciente= Sis_medico\Paciente::find($agenda->id_paciente); @endphp
-                        <td><span class="negrita">Paciente:</span> <span style="font-size: 20px"> @if(!is_null($paciente)) {{$paciente->apellido1}} {{$paciente->apellido2}} {{$paciente->nombre1}} {{$paciente->nombre2}} @endif</span> </td>
+                        <td><span class="negrita">Paciente:</span> <span style="font-size: 20px"> @if(!is_null($paciente)) {{$paciente->nombre1}} {{$paciente->apellido1}} {{$paciente->apellido2}} @endif</span> </td>
                         <td><span class="negrita">Cédula:</span> <span style="font-size: 20px">@if(!is_null($agenda->id_paciente)) {{$agenda->id_paciente}} @endif</span></td>
                     </tr>
                 </thead>
@@ -181,7 +181,7 @@
                 @endforeach
                 @if(!is_null($nota_entrega_detalle))
                         @if(count($nota_entrega_detalle) < 20)
-                            @for($i = count($nota_entrega_detalle); $i <= 18; $i++)
+                            @for($i = count($nota_entrega_detalle); $i <= 20; $i++)
                             <tr>
                                 <td style="border:1px solid black; " class="celda1"> </td>
                                 <td style="border:1px solid black; " class="celda2"> </td>
@@ -238,9 +238,9 @@
                 </thead>
             </table>
         </div>
-       <!--  <footer>
+	       {{-- <footer>
                 <label style="font-size: 18px; color: black;"><b style="font-size: 18px;">Impreso por:</b>{{$usuarioNombre->nombre1}} {{$usuarioNombre->apellido1}} {{$usuarioNombre->apellido2}} &nbsp;&nbsp;<b style="font-size: 18px;">Fecha:</b> {{$fecha}}
-        </footer> -->
+	        </footer> --}}
             
        
            

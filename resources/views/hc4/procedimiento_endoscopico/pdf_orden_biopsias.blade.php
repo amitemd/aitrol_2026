@@ -1,15 +1,14 @@
-<html>
+  <html>
   <head>
     <title>ORDEN BIOPSIAS</title>
     <style type="text/css">
       #principal{
-       width:800px;
+       width:100%;
       }
 
-      @page { margin-top:25px;margin-bottom:30px; }
+      @page { margin:45px 18px 150px; }
 
-      #footer { margin-top: 110px;}
-      #footer1 {  margin-top: 50px; }
+      .doctor-signature { margin-top:110px;text-align:center; }
 
       @font-face
         {font-family:"Cambria Math";
@@ -42,46 +41,103 @@
       }
 
       #bloq1{
-        /*float:left;*/
-        width:800px;
-        padding-right:20px;
+        width:100%;
+        padding-right:10px;
+        box-sizing:border-box;
       }
 
       #bloq2{
-        /*float:right;*/
-        width:800px;
-        padding-left:20px;
+        width:100%;
+        padding-left:10px;
+        box-sizing:border-box;
       }
 
       .table_wrapper{
-        width:100%;margin:0px;padding:0px;
+        width:100%;margin:0px;padding:0px;table-layout:fixed;
 
       }
+
+      .company-brand{
+        margin:0 0 10px 0;
+        text-align:center;
+        font-family:Arial,sans-serif;
+        height:/*AITROL_PDF_BRANDING_HEIGHT*/126px;
+        line-height:0;
+      }
+
+      .company-brand img{width:430px;height:auto;max-width:95%;max-height:126px;vertical-align:middle;}
+      .company-brand span{font-size:16px;font-weight:bold;color:#17324d;}
+
+      .order-title-cell{
+        background-color:#16b9b1;
+        color:#fff;
+        border-color:#16b9b1 !important;
+        font-size:19px;
+        text-align:center;
+      }
+
+      .section-title-cell{
+        background-color:#16b9b1;
+        color:#fff;
+        border-color:#16b9b1 !important;
+        font-size:17px;
+        letter-spacing:.2px;
+      }
+
+      .recipe-watermark{
+        position:fixed;
+        left:0;
+        right:0;
+        top:275px;
+        z-index:-1000;
+        width:100%;
+      }
+
+      .recipe-watermark table,
+      .recipe-footer table{width:100%;border-collapse:collapse;table-layout:fixed;}
+      .recipe-watermark td{width:50%;text-align:center;vertical-align:middle;}
+      .recipe-watermark img{width:500px;max-width:90%;height:auto;opacity:1;}
+
+      .recipe-footer{
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:-150px;
+        height:150px;
+        width:100%;
+      }
+
+      .recipe-footer td{width:50%;padding:0;vertical-align:bottom;}
+      .recipe-footer img{display:block;width:100%;height:126px;max-height:126px;margin:0;}
     </style>
   </head>
   <body lang=ES-EC style="margin-top: 5px;margin-top:0px;padding-top:0px">
+    @php
+      $companyName = !empty($empresa) && !empty($empresa->nombrecomercial)
+        ? $empresa->nombrecomercial
+        : (!empty($empresa) && !empty($empresa->razonsocial) ? $empresa->razonsocial : 'ESTABLECIMIENTO DE SALUD');
+    @endphp
     <div id="principal" style="margin-top:0px;padding-top:0px">
       <table class="table_wrapper"   cellpadding="0" cellspacing="0" style="margin-top:0px;padding-top:0px">
         <tr>
-          <td style="width:50%;border-right:1px solid dashed" valign="top">
+          <td style="width:50%;border-right:1px dashed #777" valign="top">
             <div id="bloq1">
               @php
                   $date = $historia->fecha_atencion;
               @endphp
               <div id="header">
-                <div style="float: left;width: 10%;text-align: left;">
-                  <img style="margin: 0;width: 200px" src="{{public_path().'/imagenes/endoscopynet_gastroquito.png'}}">
-                </div>
-                <div  style="text-align: center;">
-                    <img style="margin: 0;width: 180px;">
-                    <p style="font-size: 19px;"><b style="text-align: center;">INSTITUTO ECUATORIANO <b><br><b>DE ENFERMEDADES DIGESTIVAS</b></p>
+                <div class="company-brand">
+                  <!--AITROL_PDF_BRANDING_SLOT-->
+                  <!--AITROL_PDF_BRANDING_FALLBACK_START-->
+                    @if(!empty($recipeLogo))<img src="{{$recipeLogo}}" alt="{{$companyName}}">@endif
+                  <!--AITROL_PDF_BRANDING_FALLBACK_END-->
                 </div>
               </div>
               <br>
               <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
                 <tbody>
                   <tr>
-                    <td style="border-right: 1px solid;width: 103px;text-align: center;font-size: 19px;background-color: #4682B4;"><b style="text-align: center;color: white">ORDEN DE BIOPSIAS</b></td>
+                    <td class="order-title-cell" style="border-right:1px solid;width:103px;"><b>ORDEN DE BIOPSIAS</b></td>
                   </tr>
                 </tbody>
               </table>
@@ -90,13 +146,19 @@
                     $seguro = Sis_medico\Seguro::find($paciente->id_seguro);
                   }
                 @endphp
-                @if(!is_null($biop_first->created_at))
-                  @php
+                @php
+                  $fecha = substr($historia->fecha_atencion ?: $biop_first->created_at, 0, 10);
+                  $invert = explode('-', $fecha);
+                  $fecha_invert = count($invert) === 3 ? $invert[2]."/".$invert[1]."/".$invert[0] : $fecha;
+                @endphp
+                @php
+                  /*
+                  elseif(!is_null($biop_first->created_at))
+
                     $fecha = substr($biop_first->created_at,0,10);
                     $invert = explode( '-',$fecha);
-                    $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];
+                    $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];*/
                   @endphp
-                @endif
                 <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
                   <tbody>
                     <tr>
@@ -114,16 +176,10 @@
                       <td style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;<b>EDAD:</b></td>
                       <td colspan="2"style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;{{$edad}}</td>
                       <td style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;<b>SEGURO:</b></td>
-                      <td colspan="1" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;{{$seguro->nombre}}</td>
+                      <td colspan="1" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;{{optional($seguro)->nombre ?: 'PARTICULAR'}}</td>
                     </tr>
                     <tr>
-                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;background-color: #4682B4;color: white;border-color: currentColor;"><b>PROCEDIMIENTOS</b></td>
-                      </tr>
-                      <tr>
-                       <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;padding-left: 5px;padding-top: 5px"><?php echo $lista_proced ?></td>
-                      </tr>
-                    <tr>
-                      <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;text-align: center;"><b>&nbsp;DETALLES FRASCOS</b></td>
+                      <td class="section-title-cell" colspan="5" style="border-right:1px solid;border-top:1px solid;text-align:center;"><b>DETALLES FRASCOS</b></td>
                     </tr>
                     @foreach($impr_biospsias as $value)
                     <tr>
@@ -132,48 +188,25 @@
                     </tr>
                     @endforeach
                       <tr>
-                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;CUADRO CLINICO:</b></td>
+                        <td class="section-title-cell" colspan="5" style="border-right:1px solid;border-top:1px solid;"><b>&nbsp;CUADRO CLINICO:</b></td>
                       </tr>
                       <tr>
                         <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;padding-left: 5px;padding-top: 5px"><?php echo $hc_proced->cuadro_clinico_bp ?></td>
                       </tr>
                       <tr>
-                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;DIAGN&Oacute;STICO</b></td>
+                        <td class="section-title-cell" colspan="5" style="border-right:1px solid;border-top:1px solid;"><b>&nbsp;DIAGN&Oacute;STICO</b></td>
                       </tr>
                       <tr>
                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;padding-left: 5px;padding-top: 5px"><?php echo $hc_proced->diagnosticos_bp ?>
                        </td>
                       </tr>
-                    
-
                   </tbody>
                 </table>
-                @php
-                  $nom = "";
-                  if(!is_null($firma)){
-                    $nom = "/storage/app/avatars/$firma->nombre";
-                  }
-                @endphp
-
-                @if($nom != "")
-                <div id="footer" style="text-align: center">
-                  <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:normal'><span style='font-size:6.0pt;mso-bidi-font-size:11.0pt'><o:p><img  width=250 height=100 src="{{base_path().$nom}}" align=center hspace=6></o:p></span>
-                  </p>
-                  <hr style="width: 30%;margin-left: 202pt;margin:0 auto">
-                  <label class="control-label" style="font-family: 'Helvetica general';font-size: 20px;">Doctor (a) </label>
-                </div>
-                @endif
-                <!-- <div id="footer" style="text-align: center">
+                <div class="doctor-signature">
                   <p style="text-align: center;">
                     <hr style="width: 30%;margin-left: 202pt;margin:0 auto">
                     <label class="control-label" style="font-family: 'Helvetica general';font-size: 20px;">Doctor (a)
                     </label>
-                  </p>
-                </div> -->
-                
-                
-                <div id="footer2">
-                  <p>
                   </p>
                 </div>
             </div>
@@ -184,19 +217,18 @@
                   $date = $historia->fecha_atencion;
               @endphp
               <div id="header">
-                <div style="float: left;width: 10%;text-align: left;">
-                  <img style="margin: 0;width: 200px" src="{{public_path().'/imagenes/endoscopynet_gastroquito.png'}}">
-                </div>
-                <div  style="text-align: center;">
-                    <img style="margin: 0;width: 180px;">
-                    <p style="font-size: 19px;"><b style="text-align: center;">ENDOSCOPYNET </b></p>
+                <div class="company-brand">
+                  <!--AITROL_PDF_BRANDING_SLOT-->
+                  <!--AITROL_PDF_BRANDING_FALLBACK_START-->
+                    @if(!empty($recipeLogo))<img src="{{$recipeLogo}}" alt="{{$companyName}}">@endif
+                  <!--AITROL_PDF_BRANDING_FALLBACK_END-->
                 </div>
               </div>
               <br>
               <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
                 <tbody>
                   <tr>
-                    <td style="border-right: 1px solid;width: 103px;text-align: center;font-size: 19px;background-color: #4682B4;"><b style="text-align: center;color: white">ORDEN DE BIOPSIAS</b></td>
+                    <td class="order-title-cell" style="border-right:1px solid;width:103px;"><b>ORDEN DE BIOPSIAS</b></td>
                   </tr>
                 </tbody>
               </table>
@@ -205,13 +237,11 @@
                     $seguro = Sis_medico\Seguro::find($paciente->id_seguro);
                   }
                 @endphp
-                @if(!is_null($biop_first->created_at))
-                  @php
-                    $fecha = substr($biop_first->created_at,0,10);
-                    $invert = explode( '-',$fecha);
-                    $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];
-                  @endphp
-                @endif
+                @php
+                  $fecha = substr($historia->fecha_atencion ?: $biop_first->created_at, 0, 10);
+                  $invert = explode('-', $fecha);
+                  $fecha_invert = count($invert) === 3 ? $invert[2]."/".$invert[1]."/".$invert[0] : $fecha;
+                @endphp
                 <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
                   <tbody>
                     <tr>
@@ -229,16 +259,10 @@
                       <td style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;<b>EDAD:</b></td>
                       <td colspan="2"style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;{{$edad}}</td>
                       <td style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;<b>SEGURO:</b></td>
-                      <td colspan="1" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;{{$seguro->nombre}}</td>
+                      <td colspan="1" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px">&nbsp;{{optional($seguro)->nombre ?: 'PARTICULAR'}}</td>
                     </tr>
                     <tr>
-                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;background-color: #4682B4;color: white;border-color: currentColor;"><b>PROCEDIMIENTOS</b></td>
-                      </tr>
-                      <tr>
-                       <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;padding-left: 5px;padding-top: 5px"><?php echo $lista_proced ?></td>
-                      </tr>
-                    <tr>
-                      <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;text-align: center;"><b>&nbsp;DETALLES FRASCOS</b></td>
+                      <td class="section-title-cell" colspan="5" style="border-right:1px solid;border-top:1px solid;text-align:center;"><b>DETALLES FRASCOS</b></td>
                     </tr>
                     @foreach($impr_biospsias as $value)
                     <tr>
@@ -247,52 +271,46 @@
                     </tr>
                     @endforeach
                       <tr>
-                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;CUADRO CLINICO:</b></td>
+                        <td class="section-title-cell" colspan="5" style="border-right:1px solid;border-top:1px solid;"><b>&nbsp;CUADRO CLINICO:</b></td>
                       </tr>
                       <tr>
                         <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;padding-left: 5px;padding-top: 5px"><?php echo $hc_proced->cuadro_clinico_bp ?></td>
                       </tr>
                       <tr>
-                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;DIAGN&Oacute;STICO</b></td>
+                        <td class="section-title-cell" colspan="5" style="border-right:1px solid;border-top:1px solid;"><b>&nbsp;DIAGN&Oacute;STICO</b></td>
                       </tr>
                       <tr>
                        <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 16px;padding-left: 5px;padding-top: 5px"><?php echo $hc_proced->diagnosticos_bp ?></td>
                       </tr>
                   </tbody>
                 </table>
-                @php
-                  $nom = "";
-                  if(!is_null($firma)){
-                    $nom = "/storage/app/avatars/$firma->nombre";
-                  }
-                @endphp
-
-                @if($nom != "")
-                <div id="footer" style="text-align: center">
-                  <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:normal'><span style='font-size:6.0pt;mso-bidi-font-size:11.0pt'><o:p><img  width=250 height=100 src="{{base_path().$nom}}" align=center hspace=6></o:p></span>
-                  </p>
-                  <hr style="width: 30%;margin-left: 202pt;margin:0 auto">
-                  <label class="control-label" style="font-family: 'Helvetica general';font-size: 20px;">Doctor (a) </label>
-                </div>
-                @endif
-                <!-- <div id="footer" style="text-align: center">
+                <div class="doctor-signature">
                   <p style="text-align: center;">
                     <hr style="width: 30%;margin-left: 202pt;margin:0 auto">
                     <label class="control-label" style="font-family: 'Helvetica general';font-size: 20px;">Doctor (a)
                     </label>
                   </p>
-                </div> -->
+                </div>
             </div>
           </td>
         </tr>
       </table>
-      <div style="position: fixed; bottom: 28px; height: 100px;">
-        <div style="float: left;width: 100%;text-align: center;">
-          
-            <img width=100% height=170 src="{{base_path().'/storage/app/logo/ordenes_pie_pagina.png'}}" style="" align=center ><br>
-           
-        </div>
-      </div> 
+    </div>
+    <div class="recipe-watermark">
+      <table cellpadding="0" cellspacing="0">
+        <tr>
+          <td>@if(!empty($recipeWatermark))<img src="{{$recipeWatermark}}" alt="">@endif</td>
+          <td>@if(!empty($recipeWatermark))<img src="{{$recipeWatermark}}" alt="">@endif</td>
+        </tr>
+      </table>
+    </div>
+    <div class="recipe-footer">
+      <table cellpadding="0" cellspacing="0">
+        <tr>
+          <td>@if(!empty($recipeFooter))<img src="{{$recipeFooter}}" alt="">@endif</td>
+          <td>@if(!empty($recipeFooter))<img src="{{$recipeFooter}}" alt="">@endif</td>
+        </tr>
+      </table>
     </div>
   </body>
 </html>

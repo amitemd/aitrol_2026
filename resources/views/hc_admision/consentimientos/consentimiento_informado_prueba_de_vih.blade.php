@@ -19,6 +19,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
 <head>
+    <meta charset="utf-8">
     <title>Consentimiento informado prueba de VIH</title>
     <style>
         @page {
@@ -183,7 +184,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
                 <td class="td-border" style="height:45px">
                     @if(!is_null($empresa_nombre->logo))
-                    <img src="{{base_path().'/storage/app/logo/'.$empresa_nombre->logo}}" style="width:125px;height: 40px;">
+                    <img src="{{base_path().'/storage/app/logo/logo0993075000001.jpg'}}" style="width:150px;height: 75px;">
                     @endif
                 </td>
                 <td style="width: 20%; font-size: 12px;" class="text-center td-border"><b>CONSENTIMIENTO INFORMADO PARA REALIZACIÓN DE PRUEBA DE VIH</b></td>

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+	    <meta charset="utf-8">
+	  
+	    <title>F007_{{$evolucion->historiaclinica->paciente->apellido1}}_{{$evolucion->historiaclinica->paciente->nombre1}}</title>
 
-	    <title>HCU_007</title>
-
-	  	<style>
+	  	<style>	
 	  		@page { margin: 20px 20px;}
 		    #header { position: fixed; left: 20px; top: -10px; right: 20px; height: 150px; text-align: center;}
 		   /* #content { position: fixed; left: 20px; top: 10px; right: 20px; height: 150px; } */
@@ -13,7 +14,7 @@
     			font-family: Comic Sans MS, cursive, sans-serif;
     			font-size: 10px !important;
     			text-align:justify;
-
+    			
 			}
 			.dg > p {
 				font-family: Comic Sans MS, cursive, sans-serif;
@@ -28,7 +29,7 @@
     			width: 103.4%;
     			margin-left: -15px;
 
-
+    				
 			}
 			table, th, td {
 			  border: 1px solid black;
@@ -36,13 +37,13 @@
 			  text-align: center;
 			}
 
-
-
+			
+			
 		</style>
 	</head>
-	<body style="border: 1px solid black;">
-
-
+	<body style="border: 1px solid black;">	  
+		
+		
 		<div id="" style="padding-left: 19px; padding-right: 19px; " >
 			<b style="font-size: 11px;">FORMULARIO 007</b>
 			<table class="table1">
@@ -58,7 +59,7 @@
 				</thead>
 				<tbody>
 					<tr style="font-size: 10px !important;">
-						@php
+						@php 
 							$nombre_empresa = $evolucion->historiaclinica->agenda->empresa->nombrecomercial;
 
 							$procedimiento = Sis_medico\hc_procedimientos::find($evolucion->hc_id_procedimiento);
@@ -66,8 +67,8 @@
 							if($procedimiento->id_empresa!=null){
 
 								$nombre_empresa = Sis_medico\Empresa::find($procedimiento->id_empresa)->nombrecomercial;
-
-							}
+								
+							} 
 
 						@endphp
 						<td>{{$nombre_empresa}}</td>
@@ -83,8 +84,8 @@
 					<tr>
 						<td colspan="6" style="text-align: left;"><b>1 CARACTERISTICAS DE LA SOLICITUD Y MOTIVO</b></td>
 					</tr>
-				</tbody>
-			</table>
+				</tbody>	
+			</table> 
 			<br>
 			<table style="font-size: 9px !important;">
 				<tbody>
@@ -100,9 +101,9 @@
 						<td style="width: 10%"><b>CAMA</b></td>
 						<td style="width: 5%"></td>
 					</tr>
-
-				</tbody>
-			</table>
+					
+				</tbody>	
+			</table> 
 			<table style="font-size: 9px !important;">
 				<tbody>
 					<tr>
@@ -111,7 +112,7 @@
 						<td style="width: 5%"><b>URGENTE</b></td>
 						<td style="width: 5%"></td>
 						<td style="width: 10%"><b>MEDICO INTERCONSULTADO</b></td>
-						<td style="width: 30%">Dr. Cesar Salazar Bowen</td>
+						<td style="width: 30%">DR(A). PATRICIA DELGADO</td>
 						<td style="width: 10%"><b>DESCRIPCION DEL MOTIVO</b></td>
 						<td style="width: 30%">VALORACIÓN PRE-QUIRURGICA</td>
 					</tr>
@@ -134,9 +135,9 @@
 						<td colspan="8" style="font-size: 12px !important;height: 200px; "><?php echo $cardio->resultados; ?></td>
 					</tr>
 
-				</tbody>
+				</tbody>	
 			</table>
-			<br>
+			<br> 
 			<table style="width: 75% !important;">
 				<thead >
 					<tr>
@@ -156,8 +157,8 @@
 						<td>@if($val['pre_def']=='DEFINITIVO') X @endif</td>
 					</tr>
 					@endforeach
-				</tbody>
-			</table>
+				</tbody>	
+			</table> 
 			<br>
 			<table style="font-size: 9px !important;">
 				<tbody>
@@ -167,9 +168,9 @@
 					<tr>
 						<td style="font-size: 12px !important; height: 100px"><?php echo $cardio->examenes_realizar; ?></td>
 					</tr>
-
-				</tbody>
-			</table>
+					
+				</tbody>	
+			</table> 	
 			<br>
 			<div id="footer">
 
@@ -186,7 +187,7 @@
 							<td style="width: 5%;"><b>Hora</b></td>
 							<td style="width: 10%;">{{substr($cardio->fecha_formato,10,10)}}</td>
 							<td style="width: 5%;"><b>Profesional</b></td>
-							<td style="width: 20%;">Dr. Cesar Salazar Bowen</td>
+							<td style="width: 20%;">DR(A). PATRICIA DELGADO</td>
 							<td style="width: 5%;">3582</td>
 							<td style="width: 5%;"><b>Firma</b></td>
 							<td style="width: 15%;"></td>
@@ -198,12 +199,12 @@
 						</tr>
 					</tbody>	
 				</table> 
-				<img src="{{base_path().'/storage/app/avatars/firma_salazar.png'}}" width="30%" style="float: right;margin-top: -100px;margin-right: 100px;">
+				<img src="{{asset('/imagenes/card.png')}}" width="20%" style="float: right;margin-top: -100px;margin-right: 100px;">
 				
 				
 			</div> 
 		</div>
-
+			
 			<div style="page-break-after:always;"></div>
 
 		<div id="" style="padding-left: 19px; padding-right: 19px; " >
@@ -227,9 +228,9 @@
 						<td>{{$age}}</td>
 						<td>{{$evolucion->historiaclinica->paciente->id}}</td>
 					</tr>
-
-				</tbody>
-			</table>
+					
+				</tbody>	
+			</table> 
 			<br>
 			<table style="font-size: 9px !important;">
 				<tbody>
@@ -239,9 +240,9 @@
 					<tr>
 						<td style="font-size: 12px !important; height: 100px"><?php echo $evolucion->cuadro_clinico; ?></td>
 					</tr>
-
-				</tbody>
-			</table>
+					
+				</tbody>	
+			</table> 	
 			<br>
 			<table style="font-size: 9px !important;">
 				<tbody>
@@ -249,11 +250,11 @@
 						<td style="font-size: 12px !important;text-align: left;"><b>7 RESUMEN DEL CRITERIO CLINICO</b></td>
 					</tr>
 					<tr>
-						<td style="font-size: 10px !important; height: 50px;text-align: left;"><div style="width: 100%;"><?php echo str_replace('<', '&lt;', $cardio->resumen); ?></div></td>
+						<td style="font-size: 10px !important; height: 50px;text-align: left;"><div style="width: 100%;"><?php echo $cardio->resumen; ?></div></td>
 					</tr>
-
-				</tbody>
-			</table>
+					
+				</tbody>	
+			</table> 	
 			<br>
 			<table style="width: 75% !important;">
 				<thead >
@@ -274,8 +275,8 @@
 						<td>@if($val['pre_def']=='DEFINITIVO') X @endif</td>
 					</tr>
 					@endforeach
-				</tbody>
-			</table>
+				</tbody>	
+			</table> 
 			<br>
 			<table style="font-size: 9px !important;">
 				<tbody>
@@ -285,9 +286,9 @@
 					<tr>
 						<td style="font-size: 10px !important; height: 50px;text-align: left;"><div style="width: 100%;"><?php echo $cardio->plan_diagnostico; ?></div></td>
 					</tr>
-
-				</tbody>
-			</table>
+					
+				</tbody>	
+			</table> 
 			<br>
 			<table style="font-size: 9px !important;">
 				<tbody>
@@ -296,9 +297,9 @@
 					</tr>
 					<tr>
 						<td style="font-size: 10px !important; height: 50px;text-align: left;"><div style="width: 100%;"><?php echo $cardio->plan_tratamiento; ?></div></td>
-					</tr>
-				</tbody>
-			</table>
+					</tr>	
+				</tbody>	
+			</table> 
 			<div id="footer">
 				<table style="font-size: 9px !important;width: 103.7%;">
 					<tbody>
@@ -313,7 +314,7 @@
 							<td style="width: 5%;"><b>Hora</b></td>
 							<td style="width: 10%;">{{substr($cardio->fecha_formato,10,10)}}</td>
 							<td style="width: 5%;"><b>Profesional</b></td>
-							<td style="width: 20%;">Dr. Cesar Salazar Bowen</td>
+							<td style="width: 20%;">DR(A). PATRICIA DELGADO</td>
 							<td style="width: 5%;">3582</td>
 							<td style="width: 5%;"><b>Firma</b></td>
 							<td style="width: 15%;"></td>
@@ -323,12 +324,12 @@
 						<tr>
 							<td colspan="11"><div style="width: 75%;float: left;text-align: left;">SNS-MSP / HCU-form.007 / 2008</div><div><b>INTERCONSULTA - INFORME</b></div></td>
 						</tr>
-					</tbody>
+					</tbody>	
 				</table>
-				<img src="{{base_path().'/storage/app/avatars/firma_salazar.png'}}" width="30%" style="float: right;margin-top: -100px;margin-right: 100px;">
-
-			</div>
-
+				<img src="{{asset('/imagenes/card.png')}}" width="20%" style="float: right;margin-top: -100px;margin-right: 100px;">
+				
+			</div> 
+			
 		</div>
 	</body>
 </html>

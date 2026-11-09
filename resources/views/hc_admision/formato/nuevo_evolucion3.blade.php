@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <title> Evolución </title>
     <style>
         table,
@@ -137,11 +138,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 <body>
     <main>
-        <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-            @if(!is_null($procedimiento->empresa))
-            <img style="width:150px;height: 50px" src="{{base_path().'/storage/app/logo/'.$procedimiento->empresa->logo}}">
-            @endif
-        </div>
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
         <table class="table9">
             <tr>
                 <th bgcolor="#B4A7FD" ; colspan="18" align="left" style="font-size:15px"><b>A. DATOS DEL ESTABLECIMIENTO USUARIO / PACIENTE </b> </th>
@@ -184,12 +187,12 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td colspan="3">{{$procedimiento->historia->paciente->apellido2}}</td>
                 <td colspan="3">{{$procedimiento->historia->paciente->nombre1}}</td>
                 <td colspan="3">{{$procedimiento->historia->paciente->nombre2}}</td>
-                <td colspan="1">@if($procedimiento->historia->paciente->sexo == 1) Masculino @else Femenino @endif</td>
+                <td colspan="1">@if($procedimiento->historia->paciente->sexo == 1) Maculino @else Femenino @endif</td>
                 <td colspan="1">{{$edad}}</td>
                 <td colspan="1"></td>
                 <td colspan="1">{{$diaNacimiento}}</td>
                 <td colspan="1">{{$mesNacimiento}}</td>
-                <td colspan="1">{{date('Y', strtotime($data->fecha_nacimiento))}}</td>
+                <td colspan="1">{{ date('Y', strtotime($procedimiento->historia->paciente->fecha_nacimiento))}}</td>
             </tr>
 
 
@@ -217,14 +220,14 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td style="font-size:10px">{{date("d/m/Y", strtotime($fecha_operacion))}}</td>
                 <td style="font-size:10px">{{$hora_ini}}</td>
                 <td style="font-size:10px !important;"><?php echo strip_tags($evolucion[0]->cuadro_clinico) ?> <?php echo strip_tags($evolucion[0]->laboratorio) ?> </td>
-                <td style="font-size:10px !important; text-align: justify !important;"><br>1.- CSV <br> 2.- PREPARAR PARA PROCEDIMIENTO <br> <!--3.- SOL SAL 0,9% 1000cc a 30gts x min <br> --> 3.-SEGUIR INDICACIONES DE MEDICO RESIDENTE <br> <!-- 5.-SE SOLICITA EXAMENES PRE-QUIRURGICOS --> @if($cardiologia!=null)  4.- VALORACIÓN CARDIOLÓGICA @endif <br><br> </td>
+                <td style="font-size:10px"><br>1.- CSV <br> 2.- PREPARAR PARA PROCEDIMIENTO <br> 3.- SOL SAL 0,9% 1000cc a 30gts x min <br> 4.-SEGUIR INDICACIONES DE MEDICO RESIDENTE <br> 5.-SE SOLICITA EXAMENES PRE-QUIRURGICOS @if($cardiologia!=null) <br> 6.- VALORACIÓN CARDIOLÓGICA @endif <br><br> </td>
                 <td style="font-size:10px">&nbsp; </td>
             </tr>
             <tr>
                 <td style="font-size:10px">{{date("d/m/Y", strtotime($fecha_operacion))}}</td>
                 <td style="font-size:10px">{{$hora_fin}}</td>
                 <td style="font-size:10px !important;"><?php echo strip_tags($evolucion[1]->laboratorio) ?> </td>
-                <td style="font-size:10px !important; text-align: justify !important;"> <!--1.- BUTIL BROMURO DE HIOSCINBA IV PRN  <br>--> 1.- SEGUIR INDICACIONES </td>
+                <td style="font-size:10px"> 1.- BUTIL BROMURO DE HIOSCINBA IV PRN <br> 2.- SEGUIR INDICACIONES </td>
                 <td style="font-size:10px"> &nbsp;</td>
             </tr>
 
@@ -232,19 +235,8 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <br>
         <div style="padding: 0;">
             <p style="text-align: center;">
-                @php $especialidad = Sis_medico\Especialidad::find($procedimiento->historia->agenda->espid) @endphp
-                @if(!is_null($firma) && !is_null($firma->firma))
-
-
-                <div style="text-align: center;margin-top: -20px;">
-                    <img width="180" height="75" src="{{base_path().'/storage/app/avatars/'.$firma->firma}}"  hspace="12">
-                        <div style="width: 100%; text-align: center;">
-                            <p style="text-align: center; font-size: 8px;"><b>@if(!is_null($firma)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif</b></p>
-                            <p style="text-align: center; font-size: 8px;"><b>@if(!is_null($especialidad)) {{$especialidad->nombre}} @endif</b></p>
-                            <p style="text-align: center; font-size: 8px;"><b>cedula No. {{$firma->doctor->id}} @endif</b></p>
-                        </div>    
-                </div>
-
+                @if(!is_null($firma))
+                <img width=180 height=75 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12>
                 @endif
             </p>
         </div>

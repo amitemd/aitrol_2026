@@ -42,10 +42,13 @@
             </h1>
           </div>
           <div class="col-md-4" style="top: 5px">
-            <a class="btn btn-danger" style="color:white; background-color: #3c8dbc; border-radius: 5px; border: 2px solid white;height:30px;" href='{{route('historiaclinica_paciente_nueva.receta',['id' =>$paciente->id])}}'>
-              <img style="color: black" width="15px" src="{{asset('/')}}hc4/img/iconos/receta.png"> 
-              <i aria-hidden="true"></i>Nueva Receta
-            </a>
+            <form method="POST" action="{{route('historiaclinica_paciente_nueva.receta',['id_paciente' =>$paciente->id])}}">
+              {{ csrf_field() }}
+              <button type="submit" class="btn btn-danger" style="color:white; background-color: #3c8dbc; border-radius: 5px; border: 2px solid white;height:30px;">
+                <img style="color: black" width="15px" src="{{asset('/')}}hc4/img/iconos/receta.png">
+                <i aria-hidden="true"></i>Nueva Receta
+              </button>
+            </form>
           </div>
         </div>
         <div>
@@ -160,8 +163,8 @@
                                             <p>{{$detalle->nombre}} @foreach($genericos as $gen) ( {{$gen->generico->nombre}} ) @endforeach : {{$detalle->cantidad}} {{ $detalle->detalle_cantidad}}</p>
                                           @endforeach
                                           @if(!is_null($re_hist->rp))
-                                          <p><?php echo $re_hist->rp?>
-                                          </p>
+                                            <p><?php echo $re_hist->rp?>
+                                            </p>
                                           @endif
                                         @endif  
                                         </div>
@@ -178,7 +181,7 @@
                                           @if(!is_null($re_hist->prescripcion))
                                             <p><?php echo $re_hist->prescripcion?></p>
                                           @endif
-                                        @endif
+                                          @endif
                                         </div>
                                       </div>
                                     </div>
@@ -209,20 +212,6 @@
                                         </div>
                                         <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px;">
                                           <label style="font-size: 14px;color: white">Imprimir</label>
-                                        </div>  
-                                      </div>
-                                    </div>
-                                    </a>
-                                  </div>
-                                  <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">
-                                    <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('receta.nota_entrega', ['id' => $re_hist->id]) }}"> 
-                                    <div class="col-md-12" style="text-align: center; ">
-                                      <div class="row" style="padding-left: 0px; padding-right: 0px;">
-                                        <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
-                                          <img style="" width="20px" src="{{asset('/')}}hc4/img/iconos/receta.png">
-                                        </div>
-                                        <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-                                          <label style="font-size: 14px;color: white">Nota de Entrega</label>
                                         </div>  
                                       </div>
                                     </div>

@@ -4,10 +4,19 @@
   scratch. This page gets rid of all links and provides the needed markup only.
   -->
 <html>
+  <script>
+    (function () {
+      try {
+        if (window.localStorage.getItem('hospital-theme') === 'dark-layout') {
+          document.documentElement.classList.add('dark-layout');
+        }
+      } catch (error) {}
+    })();
+  </script>
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>AITROL</title>
+    <title>SM | Sistema Medico</title>
 
     <!-- Tell the browser to be responsive to screen width -->
 
@@ -19,7 +28,7 @@
     <!-- Font Awesome -->
 
     <link rel="stylesheet" href="{{asset('css/w3.css')}}">
-    <link rel="shortcut icon" href="{{ asset("/favicon.ico")}}" />
+    <link rel="icon" type="image/png" sizes="128x128" href="{{ asset('assets/images/aitrol-favicon.png') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ asset("/plugins/colorpicker/bootstrap-colorpicker.css")}}">
     <!-- Ionicons -->
@@ -28,6 +37,7 @@
     <link href="{{ asset("/bower_components/select2/dist/css/select2.min.css")}}" rel="stylesheet" type="text/css" />
     <!-- Bootstrap time Picker -->
     <link href="{{ asset ("/plugins/sweet_alert/sweetalert.css") }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('/assets/vendors/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Theme style -->
     <link href="{{ asset("/bower_components/AdminLTE/dist/css/AdminLTE.min.css")}}" rel="stylesheet" type="text/css" />
@@ -41,7 +51,7 @@
     <link rel="stylesheet" href="{{ asset('/css/dropzone.css')}}">
     <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css')}}">
 
-    <link rel="stylesheet" href="{{ asset('hc4/awesome/chart/Chart.css')}}">
+    <link rel="stylesheet" href="{{ asset('hc4/chart/Chart.css')}}">
     <link type="text/css" href="{{asset('imageedit/dist/tui-image-editor.css')}}" rel="stylesheet" />
     <script
       type="text/javascript"
@@ -107,6 +117,7 @@ Full screen Modal
 
     <script src="{{ asset ("/hc4/js/popper.js") }}" type="text/javascript"></script>
     <script src="{{ asset ("/hc4/js/jquery.js") }}" type="text/javascript"></script>
+    <script src="{{ asset('/js/jquery-ui.js') }}" type="text/javascript"></script>
 
     <script src="{{ asset ("/bower_components/datatables.net/js/jquery.dataTables.min.js") }}"></script>
     <script src="{{ asset ("/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js") }}"></script>
@@ -123,12 +134,14 @@ Full screen Modal
     <script src="{{ asset ("/js/tinymce/tinymce.min.js") }}"></script>
     <script src="{{ asset ("/js/lupa.js") }}"></script>
     <script src="{{ asset ("/plugins/sweet_alert/sweetalert.min.js") }}"></script>
+    <script src="{{ asset('/assets/vendors/sweetalert2/sweetalert2.min.js') }}"></script>
 
     <script src="{{ asset ("/hc4/chart/utils.js") }}" type="text/javascript"></script>
     <script src="{{ asset ("/hc4/chart/Chart.js") }}" type="text/javascript"></script>
 
     <script src="{{ asset ("/hc4/js/chart.min.js") }}"></script>
-    <script src="{{ asset('js/jquery.jscroll.min.js')}}"></script>
+    {{-- Dependencia conservada como referencia: el archivo no existe y HC4 no utiliza .jscroll(). --}}
+    {{-- <script src="{{ asset('js/jquery.jscroll.min.js')}}"></script> --}}
 
 
     <!-- Select2 -->
@@ -137,21 +150,6 @@ Full screen Modal
 
 
 
-    <script type="text/javascript" >
-      function copiarAlPortapapeles(elemento) {
-        // Crear un campo de texto temporal para copiar el contenido
-        var tempInput = document.createElement("input");
-        tempInput.value = elemento.innerHTML; 
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand("copy");
-        document.body.removeChild(tempInput);        
-        // Opcional: Confirmar que se copió
-        $("#alerta_guardado").fadeIn(1000);
-        $("#alerta_guardado").fadeOut(3000);
-      }
-    </script>
-    
     <script type="text/javascript" ></script>
 <!--
 <script language="JavaScript">
@@ -172,12 +170,6 @@ document.onmousedown=click
       {
         display: none;
       }
-      .alerta_portapeles{
-        position: fixed;
-        z-index: 9999;
-        top: 150px;
-        right: 30%;
-    }
     </style>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -185,6 +177,7 @@ document.onmousedown=click
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+    @include('layouts.clinical-dark-styles')
   </head>
   <!--
     Creado y Diseñado por:
@@ -210,20 +203,19 @@ document.onmousedown=click
     |               | sidebar-mini                            |
     |---------------------------------------------------------|
     -->
-  <body class=" layout-top-nav" id="body2" >
+  <body class="layout-top-nav hc4-clinical-ui" id="body2" >
     <div class="wrapper">
     <!-- Main Header -->
-    @include('hc4.header')
+    @if (!View::hasSection('hide_hc4_header'))
+      @include('hc4.header')
+    @endif
     <!-- Sidebar -->
-    <div id="alerta_guardado" class="alert alert-success alerta_portapeles alert-dismissable" role="alert" style="display:none;">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-      Copiado al portapapeles
-    </div>
 
     @yield('content')
     <!-- /.content-wrapper -->
     <!-- Footer -->
     @include('layouts.footer')
+    </div>
 
     <!-- ./wrapper -->
     <!-- REQUIRED JS SCRIPTS -->
@@ -280,7 +272,7 @@ document.onmousedown=click
             }
         });
         function explode(){
-          alert('Se ha cerrado sesion por inactividad');
+          alert({!! json_encode(trans('hc4.session_closed_inactivity')) !!});
           location.reload();
         }
         setTimeout(explode, 7201000);
@@ -291,6 +283,8 @@ document.onmousedown=click
   $('.colorpicker').colorpicker();
 
 </script>
+  @include('layouts.medical-tour', ['medicalTourArea' => 'ambulatory'])
+  @include('layouts.patient-library-floating')
   </body>
 
 </html>

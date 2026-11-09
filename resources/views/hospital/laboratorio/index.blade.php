@@ -8,90 +8,273 @@
 @endphp
 
 <style type="text/css">
-  .table>tbody>tr>td, .table>tbody>tr>th {
-      padding: 1px;
-  } 
-  .dropdown-menu>li>a{
-    color:white !important;
-    padding-left: 3px !important;
-    padding-right: 3px !important;
-    font-size: 12px !important;
+  .laboratory-page {
+    --lab-navy: #073b66;
+    --lab-blue: #0878ba;
+    --lab-cyan: #17a9bd;
+    --lab-purple: #7457b8;
+    --lab-ink: #17344e;
+    --lab-muted: #6a8092;
+    --lab-line: #d6e6ee;
+    color: var(--lab-ink);
   }
- 
-  .dropdown-menu>li>a:hover{
-    background-color:#008d4c !important;
+
+  .laboratory-page, .laboratory-page * { box-sizing: border-box; }
+
+  .laboratory-heading {
+    position: relative;
+    display: flex;
+    min-height: 116px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    overflow: hidden;
+    padding: 1.55rem 1.75rem;
+    border-radius: 18px;
+    background: linear-gradient(118deg, #073b66, #0878ba 60%, #1598a2);
+    box-shadow: 0 15px 36px rgba(7,59,102,.14);
+    color: #fff;
   }
-  .cot>li>a:hover{
-    background-color:#00acd6 !important;
+
+  .laboratory-heading::after {
+    content: '';
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    right: -65px;
+    top: -120px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 50%;
   }
-  .form-group{
-    margin-bottom: 2px;
+
+  .laboratory-heading-main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
-  .hovers:hover{
-    cursor: pointer;
+
+  .laboratory-heading-icon {
+    display: inline-flex;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 16px;
+    background: rgba(255,255,255,.14);
+    font-size: 1.65rem;
+  }
+
+  .laboratory-heading-label {
+    display: block;
+    margin-bottom: .25rem;
+    color: #bceaf0;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+  }
+
+  .laboratory-heading h1 { margin: 0; color: #fff; font-size: 1.55rem; font-weight: 800; }
+  .laboratory-heading p { margin: .35rem 0 0; color: rgba(255,255,255,.82); font-size: .8rem; }
+
+  .laboratory-heading-count {
+    position: relative;
+    z-index: 1;
+    min-width: 135px;
+    padding: .8rem 1rem;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 13px;
+    background: rgba(255,255,255,.12);
+    text-align: center;
+  }
+
+  .laboratory-heading-count strong { display: block; color: #fff; font-size: 1.45rem; line-height: 1; }
+  .laboratory-heading-count span { display: block; margin-top: .35rem; color: #d2f0f2; font-size: .65rem; font-weight: 700; text-transform: uppercase; }
+
+  .laboratory-card {
+    margin-top: 1.15rem;
+    overflow: hidden;
+    border: 1px solid var(--lab-line) !important;
+    border-radius: 16px !important;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(7,59,102,.07) !important;
+  }
+
+  .laboratory-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--lab-line);
+    background: linear-gradient(100deg,#f8fcfe,#eaf7fa);
+  }
+
+  .laboratory-card-title { display: flex; align-items: center; gap: .75rem; }
+  .laboratory-card-title-icon {
+    display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center;
+    border-radius: 10px; background: #dff2f7; color: var(--lab-blue); font-size: .95rem;
+  }
+  .laboratory-card-title h2 { margin: 0; color: var(--lab-navy); font-size: 1.02rem; font-weight: 800; }
+  .laboratory-card-title p { margin: .15rem 0 0; color: var(--lab-muted); font-size: .72rem; }
+  .laboratory-card-tool {
+    display: inline-flex; width: 34px; height: 34px; align-items: center; justify-content: center;
+    padding: 0 !important; border: 1px solid var(--lab-line) !important; border-radius: 9px !important;
+    background: #fff !important; color: var(--lab-muted) !important;
+  }
+
+  .laboratory-filter { padding: 1.2rem 1.25rem; background: #fbfdfe; }
+  .laboratory-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(150px,.85fr)) minmax(190px,.9fr) minmax(240px,1.2fr) auto;
+    gap: 1rem;
+    align-items: end;
+  }
+  .laboratory-field { min-width: 0; margin: 0 !important; }
+  .laboratory-page .laboratory-field label {
+    display: block; margin: 0 0 .45rem; color: var(--lab-ink); font-size: .72rem; font-weight: 800;
+  }
+  .laboratory-input-wrap { position: relative; }
+  .laboratory-input-wrap > i {
+    position: absolute; z-index: 2; left: .8rem; top: 50%; color: #88a0b2;
+    font-size: .82rem; transform: translateY(-50%); pointer-events: none;
+  }
+  .laboratory-page .laboratory-input-wrap .form-control {
+    width: 100%; height: 42px; padding: .55rem .75rem .55rem 2.25rem;
+    border: 1px solid #ccdde7; border-radius: 9px; background: #fff; color: var(--lab-ink);
+    font-size: .8rem; box-shadow: none;
+  }
+  .laboratory-page .laboratory-input-wrap .form-control:focus {
+    border-color: var(--lab-cyan); box-shadow: 0 0 0 3px rgba(23,169,189,.13);
+  }
+  .laboratory-search-btn {
+    display: inline-flex; min-width: 118px; min-height: 42px; align-items: center; justify-content: center;
+    gap: .5rem; padding: .65rem 1rem !important; border: 1px solid var(--lab-blue) !important;
+    border-radius: 9px !important; background: var(--lab-blue) !important; color: #fff !important;
+    font-size: .76rem !important; font-weight: 800 !important;
+  }
+
+  .laboratory-results-body { padding: 1rem !important; }
+  .laboratory-table-wrap { overflow-x: auto; border: 1px solid var(--lab-line); border-radius: 11px; }
+  .laboratory-page .laboratory-table { min-width: 1180px; margin: 0; }
+  .laboratory-page .laboratory-table thead th {
+    padding: .85rem .7rem; border: 0; border-bottom: 1px solid var(--lab-line);
+    background: #edf7fa; color: var(--lab-navy); font-size: .65rem; font-weight: 800;
+    letter-spacing: .035em; text-transform: uppercase; white-space: nowrap;
+  }
+  .laboratory-page .laboratory-table tbody td {
+    padding: .8rem .7rem !important; border-color: #e7eff3; color: var(--lab-ink);
+    font-size: .72rem !important; vertical-align: middle;
+  }
+  .laboratory-page .laboratory-table tbody tr:hover { background: #f7fbfd; }
+  .laboratory-page .label { display: inline-flex; margin: 2px; padding: .35rem .5rem; border-radius: 999px; font-size: .62rem !important; }
+  .laboratory-page .progress { overflow: hidden; min-width: 85px; border-radius: 999px; background: #e7eef2; }
+  .laboratory-page .progress-bar { border-radius: 999px; }
+
+  .laboratory-empty-state { padding: 3.25rem 1rem !important; text-align: center; }
+  .laboratory-empty-icon {
+    display: inline-flex; width: 62px; height: 62px; align-items: center; justify-content: center;
+    margin-bottom: .85rem; border-radius: 17px; background: #e5f4f8; color: var(--lab-blue); font-size: 1.65rem;
+  }
+  .laboratory-empty-state strong { display: block; color: var(--lab-navy); font-size: .9rem; }
+  .laboratory-empty-state small { display: block; margin-top: .35rem; color: var(--lab-muted); font-size: .72rem; }
+
+  .laboratory-pagination {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: .85rem .2rem 0; color: var(--lab-muted); font-size: .72rem;
+  }
+  .laboratory-pagination .pagination { margin: 0; }
+  .laboratory-page .hovers:hover { cursor: pointer; }
+  .laboratory-page .cot > li > a:hover { background-color: #00acd6 !important; }
+
+  @media (max-width: 1100px) {
+    .laboratory-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .laboratory-filter-grid .laboratory-field:last-child { grid-column: span 2; }
+    .laboratory-search-btn { width: 100%; }
+  }
+  @media (max-width: 600px) {
+    .laboratory-heading { align-items: flex-start; padding: 1.25rem; }
+    .laboratory-heading-count { display: none; }
+    .laboratory-heading-icon { width: 48px; height: 48px; flex-basis: 48px; }
+    .laboratory-heading h1 { font-size: 1.25rem; }
+    .laboratory-filter-grid { grid-template-columns: 1fr; }
+    .laboratory-filter-grid .laboratory-field:last-child { grid-column: auto; }
+    .laboratory-pagination { align-items: flex-start; flex-direction: column; }
   }
 </style>
 
-<div class="content">
-  <section class="content-header">
-    <div class="row">
-        <div class="col-md-9 col-sm-9">
-            <h3>
-              {{trans('translab.OrdenesdeLaboratorio')}}
-            </h3>
-        </div>
-        <div class="col-3">
-          
-        </div>
-    </div>
-  </section>
-  <div class="card card-primary">
-    <div class="card-header with-border">
-      <h3 class="card-title">{{trans('translab.ListadodeOrdenesdeLaboratorio')}}</h3>
-      <div class="card-tools pull-right">
-        <button type="button" class="btn btn-card-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+<main class="content laboratory-page">
+  <section class="laboratory-heading" aria-labelledby="laboratory-page-title">
+    <div class="laboratory-heading-main">
+      <span class="laboratory-heading-icon"><i class="fa fa-flask" aria-hidden="true"></i></span>
+      <div>
+        <span class="laboratory-heading-label">Diagnóstico clínico</span>
+        <h1 id="laboratory-page-title">{{trans('translab.OrdenesdeLaboratorio')}}</h1>
+        <p>Consulta las órdenes, revisa su avance y accede a los resultados disponibles.</p>
       </div>
     </div>
-    <div class="card-body">
+    <div class="laboratory-heading-count">
+      <strong>{{ $ordenes->total() }}</strong>
+      <span>órdenes encontradas</span>
+    </div>
+  </section>
+
+  <div class="card laboratory-card">
+    <div class="laboratory-card-header">
+      <div class="laboratory-card-title">
+        <span class="laboratory-card-title-icon"><i class="fa fa-search" aria-hidden="true"></i></span>
+        <div>
+          <h2>{{trans('translab.ListadodeOrdenesdeLaboratorio')}}</h2>
+          <p>Utiliza uno o varios criterios para localizar las órdenes.</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-card-tool laboratory-card-tool" data-widget="collapse" aria-label="Contraer filtros"><i class="fa fa-minus"></i></button>
+    </div>
+    <div class="card-body laboratory-filter">
       <form method="POST" action="{{route('hospital_laboratorio.index')}}">
         {{ csrf_field() }}
-        <div class="row">
+        <div class="laboratory-filter-grid">
           
-            <div class="form-group col-md-2">
-              <label class="col-form-label-sm"><b>{{trans('translab.Desde')}}</b></label>
-              <!--input type="text" class="form-control form-control-sm" id="f_nacimiento" name="f_nacimiento"--> 
-              <div class="input-group date">
+            <div class="form-group laboratory-field">
+              <label for="fecha">{{trans('translab.Desde')}}</label>
+              <div class="input-group date laboratory-input-wrap">
+                <i class="fa fa-calendar" aria-hidden="true"></i>
                 <input type="text"  data-input="true" class="form-control input-xs flatpickr-basic active" name="fecha" id="fecha" value="{{$fecha}}" autocomplete="off">
-                <div class="input-group-addon">
-                  <i class="glyphicon glyphicon-remove-circle"></i>
-                </div>   
               </div>
             </div>
-            <div class="form-group col-md-2">
-              <label class="col-form-label-sm"><b>{{trans('translab.Hasta')}}</b></label>
-              <!--input type="text" class="form-control form-control-sm" id="f_nacimiento" name="f_nacimiento"--> 
-              <div class="input-group date">
+            <div class="form-group laboratory-field">
+              <label for="fecha_hasta">{{trans('translab.Hasta')}}</label>
+              <div class="input-group date laboratory-input-wrap">
+                <i class="fa fa-calendar" aria-hidden="true"></i>
                 <input type="text"  data-input="true" class="form-control input-xs flatpickr-basic active" name="fecha_hasta" id="fecha_hasta" value="{{$fecha_hasta}}" autocomplete="off">
-                <div class="input-group-addon">
-                  <i class="glyphicon glyphicon-remove-circle"></i>
-                </div>   
               </div>
             </div>
-            <div class="form-group col-md-2">
-              <label class="col-form-label-sm"><b>{{trans('translab.Seguro')}}</b></label>
-              <select class="form-control form-control-sm" id="seguro" name="seguro">
-                <option value="">{{trans('translab.TODOS')}}</option>
-                @foreach ($seguros as $value)
-                  <option @if(!is_null($seguro))@if($seguro == $value->id) selected @endif @endif value="{{$value->id}}">{{$value->nombre}}</option>
-                @endforeach  
-              </select>
-            </div> 
-            <div class="form-group col-md-2">
-              <label class="col-form-label-sm"><b>{{trans('translab.Paciente')}}</b></label>
-              <input type="text" class="form-control form-control-sm" id="nombres" name="nombres" placeholder="Nombres y Apellidos" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();" value="{{$nombres}}">
-            </div> 
-            <div class="form-group col-md-2"><br>
-              <button type="submit" class="btn btn-primary btn-xs" id="boton_buscar">
+            <div class="form-group laboratory-field">
+              <label for="seguro">{{trans('translab.Seguro')}}</label>
+              <div class="laboratory-input-wrap">
+                <i class="fa fa-shield" aria-hidden="true"></i>
+                <select class="form-control form-control-sm" id="seguro" name="seguro">
+                  <option value="">{{trans('translab.TODOS')}}</option>
+                  @foreach ($seguros as $value)
+                    <option @if(!is_null($seguro))@if($seguro == $value->id) selected @endif @endif value="{{$value->id}}">{{$value->nombre}}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div class="form-group laboratory-field">
+              <label for="nombres">{{trans('translab.Paciente')}}</label>
+              <div class="laboratory-input-wrap">
+                <i class="fa fa-user-o" aria-hidden="true"></i>
+                <input type="text" class="form-control form-control-sm" id="nombres" name="nombres" placeholder="{{trans('translab.NombresApellidos')}}" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();" value="{{$nombres}}">
+              </div>
+            </div>
+            <div class="form-group laboratory-field">
+              <button type="submit" class="btn btn-primary btn-xs laboratory-search-btn" id="boton_buscar">
+                <i class="fa fa-search" aria-hidden="true"></i>
                 {{trans('translab.Buscar')}}
               </button>
             </div>  
@@ -99,11 +282,20 @@
        </form>  
     </div>  
   </div>  
-  <div class="card card-primary">
-   
-    <div class="card-body">
-      <div id="muestra" class="card-body table-responsive">       
-        <table class="table table-hover">
+  <div class="card laboratory-card">
+    <div class="laboratory-card-header">
+      <div class="laboratory-card-title">
+        <span class="laboratory-card-title-icon"><i class="fa fa-list-alt" aria-hidden="true"></i></span>
+        <div>
+          <h2>Resultados de la consulta</h2>
+          <p>Seguimiento de muestras, valores y disponibilidad de resultados.</p>
+        </div>
+      </div>
+      <span class="badge badge-light">{{ $ordenes->total() }} registros</span>
+    </div>
+    <div class="card-body laboratory-results-body">
+      <div id="muestra" class="laboratory-table-wrap">
+        <table class="table table-hover laboratory-table">
           <thead class="table-primary">
             <tr >
               <th width="5">{{trans('translab.Id')}}</th>
@@ -143,13 +335,13 @@
                   <td>
                     @if($value->estado=='-1')
                       @if($value->stipo!='0')
-                        <span class="label pull-right bg-red" style="font-size: 10px">Cotiz.</span>
+                        <span class="label pull-right bg-red" style="font-size: 10px">{{trans('translab.CotizacionAbrev')}}</span>
                       @else
-                        <span class="label pull-right bg-red" style="font-size: 10px">{{$value->pre_post}}-Pendiente</span>
+                        <span class="label pull-right bg-red" style="font-size: 10px">{{$value->pre_post}}-{{trans('translab.Pendiente')}}</span>
                       @endif 
                     @else  
                       @if($value->estado_pago =='1')
-                        <span class="label pull-right bg-green" style="font-size: 10px">Pag. @if($value->pago_online=='1')Online @endif</span>
+                        <span class="label pull-right bg-green" style="font-size: 10px">{{trans('translab.PagadoAbrev')}} @if($value->pago_online=='1'){{trans('translab.Online')}} @endif</span>
                       @endif
                       @if($value->pre_post!=null)
                         <span class="label pull-right bg-primary" style="font-size: 10px">{{$value->pre_post}}</span>
@@ -216,7 +408,7 @@
                       @if($agendas->count()=='1') 
                       <div class="col-md-3" style="padding-left: 0px">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <a href="{{ route('agenda.edit2', ['id' => $agendas->first()->id_agenda, 'doctor' => '4444444444']) }}" target="_blank" class="btn btn-block btn-info btn-xs" style="padding: 0px;">
+                        <a href="{{ route('agenda.edit2', ['agenda' => $agendas->first()->id_agenda, 'doctor' => '4444444444']) }}" target="_blank" class="btn btn-block btn-info btn-xs" style="padding: 0px;">
                         <span class="glyphicon glyphicon-calendar"></span>
                         </a>   
                       </div>
@@ -241,7 +433,7 @@
                       @if($value->realizado=='0')
                         <div class="col-md-3" style="padding: 3px;">
                           
-                          <a href="{{ route('orden.edit', ['id' => $value->id]) }}" class="btn btn-block btn-warning btn-xs" style="padding: 0px;">
+                          <a href="{{ route('orden.edit', ['orden' => $value->id]) }}" class="btn btn-block btn-warning btn-xs" style="padding: 0px;">
                           <span class="glyphicon glyphicon-edit"></span>
                           </a>  
                         </div>
@@ -251,9 +443,13 @@
                     @if($value->realizado=='0' && $value->estado_pago =='0')
                         <div class="col-md-2" style="padding: 3px;">
                           
-                          <a href="{{ route('orden.eliminar',['id' => $value->id]) }}" class="btn btn-block btn-danger btn-xs" >
-                          <span class="glyphicon glyphicon-trash"></span>
-                          </a>  
+                          <form method="POST" action="{{ route('orden.eliminar',['id' => $value->id]) }}">
+                            {{ csrf_field() }}
+                            {{ method_field('DELETE') }}
+                            <button type="submit" class="btn btn-block btn-danger btn-xs" onclick="return confirm('¿Eliminar esta orden?');">
+                              <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                          </form>
                         </div>
                     @endif
                    
@@ -308,25 +504,33 @@
                   </td-->          
                 </tr>
               @endforeach
-            
+              @if($ordenes->count() === 0)
+                <tr>
+                  <td colspan="12" class="laboratory-empty-state">
+                    <span class="laboratory-empty-icon"><i class="fa fa-flask" aria-hidden="true"></i></span>
+                    <strong>No se encontraron órdenes de laboratorio</strong>
+                    <small>Modifica el periodo o los criterios de búsqueda e inténtalo nuevamente.</small>
+                  </td>
+                </tr>
+              @endif
+
           </tbody>
         </table>
       </div>
-      <div class="row">
-        <div class="col-md-5">
-          <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">{{trans('translab.Mostrando')}} {{1+($ordenes->currentPage()-1)*$ordenes->perPage()}}  / @if(($ordenes->currentPage()*$ordenes->perPage())<$ordenes->total()){{($ordenes->currentPage()*$ordenes->perPage())}} @else {{$ordenes->total()}} @endif de {{$ordenes->total()}} {{trans('translab.registros')}}</div>
-        </div>
-        <div class="col-md-7">
+      <div class="laboratory-pagination">
+          <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
+            {{trans('translab.Mostrando')}} {{ $ordenes->firstItem() ?: 0 }} / {{ $ordenes->lastItem() ?: 0 }} {{trans('translab.de')}} {{$ordenes->total()}} {{trans('translab.registros')}}
+          </div>
           <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
             {{ $ordenes->appends(Request::only(['fecha', 'fecha_hasta', 'nombres', 'seguro', 'facturadas']))->links()}}
           </div>
-        </div>
       </div>
 
     </div>  
-  </div>  
+  </div>
+</main>
 
-  
+
 <script src="{{ asset ("/plugins/datetimepicker/bootstrap-material-datetimepicker.js") }}"></script>
 
 <script src="{{ asset ("/js/bootstrap-datetimepicker.js") }}"></script>
@@ -370,7 +574,7 @@
 
       $.ajax({
         type: 'get',
-        url:"{{ route('resultados.puede_imprimir',['id' => $value->id]) }}", 
+        url:"{{ route('resultados.puede_imprimir',['id_orden' => $value->id]) }}",
         
         success: function(data){
           
@@ -428,7 +632,7 @@
             buscar();
         });
 
-    $(".breadcrumb").append('<li class="active">Órdenes</li>');
+    $(".breadcrumb").append('<li class="active">{{trans('translab.Ordenes')}}</li>');
 
     $('#example2').DataTable({
       'paging'      : false,
@@ -462,7 +666,7 @@
   function descargar(id_or){
     var cert = $('#sp'+id_or).text();
     if(cert=='0%'){
-      alert("Sin Exámenes Ingresados");
+      alert("{{trans('translab.SinExamenesIngresados')}}");
     }else{
       //location.href = '{{url('resultados/imprimir')}}/'+id_or;
       window.open('{{url('resultados/imprimir')}}/'+id_or,'_blank');  
@@ -545,7 +749,7 @@
             
       },
       error:  function(){
-        alert('error al cargar');
+        alert("{{trans('translab.ErrorCargar')}}");
       }
     });
   }
@@ -559,11 +763,11 @@
         if(data=='ok'){
           $("#btn"+id_orden).css("background-color", "green"); 
         }else{
-          alert("No se puede agregar la orden, seguro o nivel diferente");
+          alert("{{trans('translab.NoAgregarOrden')}}");
         }   
       },
       error: function(data){
-        alert("Error no se pudo agregar orden");
+        alert("{{trans('translab.ErrorAgregarOrden')}}");
       }
     }); 
   }
@@ -579,7 +783,7 @@
         }  
       },
       error: function(data){
-        alert("Error no se pudo agregar orden");
+        alert("{{trans('translab.ErrorAgregarOrden')}}");
       }
     }); 
   }
@@ -596,7 +800,7 @@
             
       },
       error:  function(){
-        alert('error al cargar');
+        alert("{{trans('translab.ErrorCargar')}}");
       }
     });
     }

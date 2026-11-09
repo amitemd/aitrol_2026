@@ -4,11 +4,11 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        Orden Ingresadas Formato 12
+        @lang('formato012.title')
       </h1>
       <ol class="breadcrumb">
         <!-- li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li-->
-        <li class="active">Consultas y Procedimientos</li>
+        <li class="active">@lang('formato012.breadcrumb')</li>
       </ol>
     </section>
     @yield('action-content')

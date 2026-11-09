@@ -30,7 +30,7 @@
                     </a>
                     <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('historia.historia',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-level-up"></span> Historia Clinica</button>
                     </a>  
-                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
+                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['ag' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
                     </a>
                     @php $especialidad=Sis_medico\Especialidad::find($agenda->espid); @endphp
                     <table class="table table-striped">
@@ -50,12 +50,16 @@
                         </tbody>
                     </table>
                     <div class="w3-bar w3-blue">
-                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('epicrisis.diagnostico',['id' => $id])}}' ">DIAGNOSTICO</button>
-                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('anestesiologia.mostrar',['id' => $hc_procedimiento->id])}}' ">ANESTESIOLOGÍA</button>
-                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('protocolo.mostrar',['id' => $id])}}'">PROTOCOLO</button>  
-                        <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('evolucion.evolucion',['id' => $id])}}'">EVOLUCIÓN</button>
-                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('epicrisis.mostrar',['id' => $id])}}'">EPICRISIS</button>
-                        <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('hc_video.mostrar',['id' => $id])}}'">VIDEO</button>
+                    <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('epicrisis.diagnostico',['hcid' => $id])}}' ">DIAGNOSTICO</button>
+                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('anestesiologia.mostrar',['ag' => $hc_procedimiento->id])}}' ">ANESTESIOLOGÍA</button>
+                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('protocolo.mostrar',['ag' => $id])}}'">PROTOCOLO</button>
+                        <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('evolucion.evolucion',['hcid' => $id])}}'">EVOLUCIÓN</button>
+                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('epicrisis.mostrar',['hcid' => $hc_procedimiento->id_hc, 'proc' => $hc_procedimiento->id])}}'">EPICRISIS</button>
+                        @if(isset($protocolo) && $protocolo)
+                        <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('hc_video.mostrar',['protocolo_id' => $protocolo->id, 'agendas' => $agenda->id, 'ruta' => 1])}}'">VIDEO</button>
+                        @else
+                        <button class="w3-bar-item w3-button tablink " type="button" disabled>VIDEO</button>
+                        @endif
                     </div>
                     <br>    
                     <a class="form-group col-md-3 col-md-offset-6 col-sm-3 col-xs-3" data-toggle="modal" data-target="#Crea_Actualiza" href="{{ route('evolucion.mostrar',['id' => $id, 'id_evolucion' => '0'])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-level-up"></span> Nuevo</button>

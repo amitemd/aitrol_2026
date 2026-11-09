@@ -151,7 +151,7 @@
         var opcion = confirm("¿Estas Seguro que deseas eliminar la foto?");
         if (opcion == true) {
             $.ajax({
-                type: 'get',
+                type: 'delete',
                 url:'{{ url("historiaclinica/video/eliminar_foto/eliminar")}}/'+id,
                 headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
                 success: function(data){

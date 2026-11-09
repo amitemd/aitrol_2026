@@ -13,6 +13,8 @@ use Sis_medico\Ho_Solicitud;
 use Sis_medico\Medicina;
 use Sis_medico\hc_receta;
 use Sis_medico\hc_receta_detalle;
+use Sis_medico\ClinicalEmergencyMedicationException;
+use Sis_medico\Support\RequestSchema as Schema;
 
 class TreceavoPasoController extends Controller
 {
@@ -22,6 +24,9 @@ class TreceavoPasoController extends Controller
     }
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
@@ -35,8 +40,16 @@ class TreceavoPasoController extends Controller
         $historia = $solicitud->agenda->historia_clinica;
 
         $receta = hc_receta::where('id_hc',$historia->hcid)->first();
+        $pendingMedicationExceptions = Schema::hasTable('clinical_emergency_medication_exceptions')
+            ? ClinicalEmergencyMedicationException::where('solicitud_id', $solicitud->id)->where('status', 'PENDING')->get()
+            : collect();
 
-        return view('hospital.emergencia.treceavopaso',['solicitud' => $solicitud, 'detalles' => $receta->detalles, 'receta' => $receta]);
+        return view('hospital.emergencia.treceavopaso',[
+            'solicitud' => $solicitud,
+            'detalles' => $receta->detalles,
+            'receta' => $receta,
+            'pendingMedicationExceptions' => $pendingMedicationExceptions,
+        ]);
     }
 
     public function store(Request $request)
@@ -127,7 +140,7 @@ class TreceavoPasoController extends Controller
                 'id_doctor_examinador' => $request->id_doctor,
             ]);
         }
-        dd($id_receta);
+        return response()->json(array('estado' => 'O', 'id_receta' => $id_receta));
 
     }
 }

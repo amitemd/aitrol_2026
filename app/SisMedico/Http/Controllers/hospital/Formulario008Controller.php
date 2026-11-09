@@ -44,6 +44,14 @@ use PDF;
 use Sis_medico\Firma_Usuario;
 use Sis_medico\Hc_Cie10;
 use Sis_medico\Log_usuario;
+use Sis_medico\Exceptions\ClinicalEncounterConflictException;
+use Sis_medico\Services\ClinicalEncounterService;
+use Sis_medico\Services\ClinicalEmergencyTriageSyncService;
+use Sis_medico\Services\ClinicalEmergencyFormService;
+use Sis_medico\Services\HospitalEpisodeEmergencySource;
+use Sis_medico\Services\ClinicalElectronicSignatureQr;
+use Sis_medico\Services\ClinicalRecordSignatureService;
+use Sis_medico\Services\DoctorSignatureService;
 
 class Formulario008Controller extends Controller
 {
@@ -53,6 +61,9 @@ class Formulario008Controller extends Controller
     }
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
@@ -94,10 +105,20 @@ class Formulario008Controller extends Controller
         //dd($id_solicitud);
         $ho_solicitud = null;
         if ($id_solicitud != '0') {
-            $ho_solicitud = Ho_solicitud::find($id_solicitud);
+            $ho_solicitud = Ho_Solicitud::findOrFail($id_solicitud);
+            app(\Sis_medico\Services\ClinicalHospitalTransferService::class)
+                ->authorize($ho_solicitud, 'hospital.admission', ['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA'], false);
+            if ($ho_solicitud->id_agenda) {
+                return redirect()->route('hospital.detallep', ['id' => $ho_solicitud->id]);
+            }
         }
 
-        return view('hospital/emergencia/ingreso008', ['seguros' => $seguros, 'fecha' => $fecha, 'ho_solicitud' => $ho_solicitud, 'id_solicitud' => $id_solicitud]);
+        $salas = app(\Sis_medico\Services\ClinicalHospitalDestinationService::class)->salas([2]);
+        $doctores = User::where('estado', 1)->where('id_tipo_usuario', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->orderBy('apellido1')->get();
+        $patientData = $ho_solicitud ? $this->admissionPatientData($ho_solicitud->id_paciente) : [];
+        return view('hospital/emergencia/ingreso008', ['seguros' => $seguros, 'fecha' => $fecha,
+            'ho_solicitud' => $ho_solicitud, 'id_solicitud' => $id_solicitud, 'salas' => $salas,
+            'doctores' => $doctores, 'patientData' => $patientData]);
     }
 
     //Ingreso a emergencia tabla ingrenso_emer_008
@@ -136,406 +157,17 @@ class Formulario008Controller extends Controller
 
     public function guardar(Request $request)
     {
-
-        $ip_cliente   = $_SERVER["REMOTE_ADDR"];
-        $idusuario    = Auth::user()->id;
-        $id_doctor    = Auth::user()->id;
-        $id_paciente = $request['cedula'];
-        $paciente = paciente::find($id_paciente);
-        $user = User::find($id_paciente);
-        $datos_paciente = Ho_Datos_Paciente::Where('id_paciente', $id_paciente)->first();
-        $id_empresa = $request->session()->get('id_empresa');
-        $empresa    = Empresa::find($id_empresa);
-
-        $input_pac = [
-            'id'                 => $id_paciente,
-            'id_usuario'         => $id_paciente,
-            'nombre1'            => strtoupper($request['nombre1']),
-            'nombre2'            => strtoupper($request['nombre2']),
-            'apellido1'          => strtoupper($request['apellido1']),
-            'apellido2'          => strtoupper($request['apellido2']),
-            'fecha_nacimiento'   => $request['f_nacimiento'],
-            'sexo'               => $request['sexo'],
-            'ciudad'             => $request['ciudad'],
-            'direccion'          => $request['direccion'],
-            'telefono1'          => $request['telefono1'],
-            'telefono2'          => $request['telefono2'],
-            'nombre1familiar'    => strtoupper($request['nombre1']),
-            'nombre2familiar'    => strtoupper($request['nombre2']),
-            'apellido1familiar'  => strtoupper($request['apellido1']),
-            'apellido2familiar'  => strtoupper($request['apellido2']),
-            'telefono_llamar'    => $request['telefono_llamar'],
-            'ocupacion'          => $request['ocupacion'],
-            'parentesco'         => 'Principal',
-            'parentescofamiliar' => 'Principal',
-            'referido'           => $request['referido'],
-            'tipo_documento'     => 1,
-            'id_seguro'          => 1,
-            'imagen_url'         => ' ',
-            'menoredad'          => 0,
-            'ip_creacion'        => $ip_cliente,
-            'ip_modificacion'    => $ip_cliente,
-            'id_usuariocrea'     => $idusuario,
-            'id_usuariomod'      => $idusuario,
-        ];
-
-        $input_pac_upd = [
-            'id'                 => $id_paciente,
-            'id_usuario'         => $id_paciente,
-            'nombre1'            => strtoupper($request['nombre1']),
-            'nombre2'            => strtoupper($request['nombre2']),
-            'apellido1'          => strtoupper($request['apellido1']),
-            'apellido2'          => strtoupper($request['apellido2']),
-            'fecha_nacimiento'   => $request['f_nacimiento'],
-            'sexo'               => $request['sexo'],
-            'ciudad'             => $request['ciudad'],
-            'direccion'          => $request['direccion'],
-            'telefono1'          => $request['telefono1'],
-            'telefono2'          => $request['telefono2'],
-            'nombre1familiar'    => strtoupper($request['nombre1']),
-            'nombre2familiar'    => strtoupper($request['nombre2']),
-            'apellido1familiar'  => strtoupper($request['apellido1']),
-            'apellido2familiar'  => strtoupper($request['apellido2']),
-            'parentescofamiliar' => $request['parentesco'],
-            'telefono3'          => $request['telefono_llamar'],
-            'ocupacion'          => $request['ocupacion'],
-            'referido'           => $request['referido'],
-            'ip_modificacion'    => $ip_cliente,
-            'id_usuariomod'      => $idusuario,
-        ];
-
-        $input_usu_c = [
-            'id'               => $id_paciente,
-            'nombre1'          => strtoupper($request['nombre1']),
-            'nombre2'          => strtoupper($request['nombre2']),
-            'apellido1'        => strtoupper($request['apellido1']),
-            'apellido2'        => strtoupper($request['apellido2']),
-            'fecha_nacimiento' => $request['fecha_nacimiento'],
-            'telefono1'        => $request['telefono1'],
-            'telefono2'        => $request['telefono2'],
-            'id_tipo_usuario'  => 2,
-            'email'            => $request['id'] . '@mail.com',
-            'password'         => bcrypt($request['id']),
-            'tipo_documento'   => 1,
-            'estado'           => 1,
-            'imagen_url'       => ' ',
-            'ip_creacion'      => $ip_cliente,
-            'ip_modificacion'  => $ip_cliente,
-            'id_usuariocrea'   => $idusuario,
-            'id_usuariomod'    => $idusuario,
-        ];
-
-        $input_usu_up = [
-            'id'               => $id_paciente,
-            'nombre1'          => strtoupper($request['nombre1']),
-            'nombre2'          => strtoupper($request['nombre2']),
-            'apellido1'        => strtoupper($request['apellido1']),
-            'apellido2'        => strtoupper($request['apellido2']),
-            'fecha_nacimiento' => $request['fecha_nacimiento'],
-            'telefono1'        => $request['telefono1'],
-            'telefono2'        => $request['telefono2'],
-            'id_tipo_usuario'  => 2,
-            'ip_modificacion'  => $ip_cliente,
-            'id_usuariomod'    => $idusuario,
-        ];
-
-        $arr_ho_pac = [
-            'id_paciente'        => $id_paciente,
-            'barrio'             => $request['barrio'],
-            'parroquia'          => $request['parroquia'],
-            'canton'             => $request['canton'],
-            'provincia'          => $request['provincia'],
-            'zona_ur'            => $request['zona'],
-            'grupo_cultural'     => $request['grupo_cultural'],
-            'edad'               => $request['edad'],
-            'direccion_familiar' => $request['direccion_familiar'],
-            'forma_llegada'      => $request['forma_llegada'],
-            'fuente_informacion'     => $request['fuente_informacion'],
-            'telefono_inst_per_paci' => $request['telefono_inst_per_paci'],
-            'instruccion'            => $request['instruccion'],
-            'empresa_trabajo'        => $empresa->id,
-            'llamar_a'               => $request['llamar_a'],
-            'nacionalidad'           => $request['nacionalidad'],
-            'ip_creacion'            => $ip_cliente,
-            'ip_modificacion'        => $ip_cliente,
-            'id_usuariocrea'         => $idusuario,
-            'id_usuariomod'          => $idusuario,
-            'parentesco_afinidad'    => $request['parentesco'],
-        ];
-
-        $arr_ho_pac_up = [
-            'id_paciente'        => $id_paciente,
-            'barrio'             => $request['barrio'],
-            'parroquia'          => $request['parroquia'],
-            'canton'             => $request['canton'],
-            'provincia'          => $request['provincia'],
-            'zona_ur'            => $request['zona'],
-            'grupo_cultural'     => $request['grupo_cultural'],
-            'edad'               => $request['edad'],
-            'direccion_familiar' => $request['direccion_familiar'],
-            'forma_llegada'      => $request['forma_llegada'],
-            'fuente_informacion'     => $request['fuente_informacion'],
-            'telefono_inst_per_paci' => $request['telefono_inst_per_paci'],
-            'instruccion'            => $request['instruccion'],
-            'empresa_trabajo'        => $empresa->id,
-            'llamar_a'               => $request['llamar_a'],
-            'nacionalidad'           => $request['nacionalidad'],
-            'parentesco_afinidad'    => $request['parentesco'],
-            'ip_modificacion'        => $ip_cliente,
-            'id_usuariomod'          => $idusuario,
-        ];
-
-
-        if (is_null($paciente)) {
-
-            if (!is_null($user)) {
-                $user->update($input_usu_up);
-            } else {
-                User::create($input_usu_c);
-            }
-
-            paciente::create($input_pac);
-
-            $input_log = [
-                'id_usuario'  => $idusuario,
-                'ip_usuario'  => $ip_cliente,
-                'descripcion' => "CREA NUEVO PACIENTE",
-                'dato_ant1'   => $id_paciente,
-                'dato1'       => strtoupper($request['nombre1'] . " " . $request['nombre2'] . " " . $request['apellido1'] . " " . $request['apellido2']),
-                'dato2'       => 'Emergencia-Hospital',
-            ];
-
-            Log_usuario::create($input_log);
-        } else {
-            $paciente->update($input_pac_upd);
-            if (!is_null($datos_paciente)) {
-                $datos_paciente->update($arr_ho_pac_up);
-            }
-        }
-
-        if (is_null($datos_paciente)) {
-            Ho_Datos_Paciente::create($arr_ho_pac);
-        } else {
-            $datos_paciente->update($arr_ho_pac_up);
-        }
-
-        $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
-
-        if (!is_null($especialidad)) {
-            $espid = $especialidad->espid;
-        } else {
-            $espid = '4';
-        }
-
-        $id_sala = Sala::where('nombre_sala', 'like', '%emergencia%')->first();
-        // dd($id_sala);
-        //where a sala con like %sala emergengia% first 'id_sala'
-        $input_agenda = [
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'id_paciente'     => $id_paciente,
-            'id_doctor1'      => $id_doctor,
-            'proc_consul'     => '4',
-            'estado_cita'     => '0',
-            'id_empresa'      => $empresa->id,
-            'espid'           => $espid,
-            'observaciones'   => 'EVOLUCION CREADA POR HOSPITAL',
-            'id_seguro'       => $paciente->id_seguro,
-            'estado'          => '4',
-            'id_sala'         => $id_sala->id,
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $id_doctor,
-            'id_usuariomod'   => $id_doctor,
-        ];
-
-        $id_agenda = Agenda::insertGetId($input_agenda);
-
-
-        $consulta_crear_new = [
-            'anterior'        => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'nuevo'           => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($consulta_crear_new);
-
-        $input_log = [
-            'id_agenda'       => $id_agenda,
-            'estado_cita_ant' => '0',
-            'estado_cita'     => '0',
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'estado'          => '4',
-            'observaciones'   => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_doctor1'      => $id_doctor,
-            'descripcion'     => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-
-        Log_agenda::create($input_log);
-
-        $input_historia = [
-
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_seguro'       => $paciente->id_seguro,
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_procedimiento_completo = '40';
-
-        $id_historia = Historiaclinica::insertGetId($input_historia);
-
-        $input_hc_procedimiento = [
-            'id_hc'                     => $id_historia,
-            'id_seguro'                 => $paciente->id_seguro,
-            'id_procedimiento_completo' => $id_procedimiento_completo,
-            'ip_modificacion'           => $ip_cliente,
-            'id_usuariocrea'            => $idusuario,
-            'id_usuariomod'             => $idusuario,
-            'ip_creacion'               => $ip_cliente,
-
-        ];
-
-        $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-        $input_hc_evolucion = [
-            'hc_id_procedimiento' => $id_hc_procedimiento,
-            'hcid'                => $id_historia,
-            'secuencia'           => '0',
-            'fecha_ingreso'       => ' ',
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariomod'       => $idusuario,
-            'id_usuariocrea'      => $idusuario,
-            'ip_creacion'         => $ip_cliente,
-
-        ];
-        $id_evolucion    = Hc_Evolucion::insertGetId($input_hc_evolucion);
-
-        $input_child_pugh = [
-            'id_hc_evolucion'       => $id_evolucion,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-            'id_usuariomod'         => $idusuario,
-            'ip_creacion'           => $ip_cliente,
-            'examen_fisico'         => 'ESTADO CABEZA Y CUELLO:
-                                                            ESTADO TORAX:
-                                                            ESTADO ABDOMEN:
-                                                            ESTADO MIEMBROS SUPERIORES:
-                                                            ESTADO MIEMBROS INFERIORES:
-                                                            OTROS: ',
-        ];
-
-        $id_child = hc_child_pugh::create($input_child_pugh);
-
-        $input_hc_receta = [
-            'id_hc'           => $id_historia,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-        hc_receta::insert($input_hc_receta);
-
-        $id_solicitud = $request['idsolicitud'];
-
-        if ($id_solicitud != 0) {
-            $solicitud = Ho_Solicitud::find($id_solicitud);
-            $arr_sol = [
-                'estado_paso'       => '2',
-                'id_agenda'         => $id_agenda,
-                'id_seguro'         => $request['id_seguro'],
-                'ip_modificacion'   => $ip_cliente,
-                'id_usuariomod'     => $idusuario,
-            ];
-            $solicitud->update($arr_sol);
-
-            $sol_log = [
-                'id_ho_solicitud'       => $solicitud->id,
-                'estado_paso'           => '2',
-                'id_agenda'             => $id_agenda,
-                'fecha_ingreso'         => date('Y-m-d'),
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $log_soli = Ho_Log_Solicitud::create($sol_log);
-
-            $arr_008 = [
-                'id_solicitud'          => $solicitud->id,
-                'id_agenda'             => $id_agenda,
-                'fecha_creacion'        => date('Y-m-d H:i:s'),
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $ho_form_008 = Ho_Form008::create($arr_008);
-        } else {
-            $arr_solicitud = [
-                'id_paciente'           => $request['cedula'],
-                'id_agenda'             => $id_agenda,
-                'id_seguro'             => $request['id_seguro'],
-                'fecha_ingreso'         => date('Y-m-d H:i:s'),
-                'estado_paso'           => '2',
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $ho_solicitud = Ho_solicitud::insertGetId($arr_solicitud);
-
-            $solicitud_log = [
-                'id_ho_solicitud'       => $ho_solicitud,
-                'estado_paso'           => '2',
-                'id_agenda'             => $id_agenda,
-                'fecha_ingreso'         => date('Y-m-d'),
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $log = Ho_Log_Solicitud::create($solicitud_log);
-
-            $arr_008 = [
-                'id_solicitud'          => $ho_solicitud,
-                'id_agenda'             => $id_agenda,
-                'fecha_creacion'        => date('Y-m-d H:i:s'),
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $ho_form_008 = Ho_Form008::create($arr_008);
-        }
+        $request->validate([
+            'nombre1' => 'required|string|max:60', 'apellido1' => 'required|string|max:60',
+            'nombre2' => 'nullable|string|max:60', 'apellido2' => 'nullable|string|max:60',
+            'f_nacimiento' => 'nullable|date_format:Y-m-d|before_or_equal:today',
+        ], [], ['nombre1' => 'primer nombre', 'apellido1' => 'primer apellido',
+            'f_nacimiento' => 'fecha de nacimiento']);
+        $request->request->set('id_paso', 2);
+        $result = app(\Sis_medico\Services\ClinicalHospitalModuleService::class)->ingreso_modulos($request);
+        return response()->json($result, isset($result['respuesta']) && $result['respuesta'] === 'success' ? 200 : 422);
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function formulario08(Request $request, $id_paciente)
     {
         $opcion = '57';
@@ -707,7 +339,7 @@ class Formulario008Controller extends Controller
         $nombres = DB::select($query);
 
         foreach ($nombres as $nombre) {
-            $jquery = DB::table('seguros')->where('id', $nombre->id_seguro)->first();
+            $jquery = \Sis_medico\Seguro::query()->where('id', $nombre->id_seguro)->first();
             $pais = DB::table('pais')->where('id', $nombre->id_pais)->first();
             $data[] = array(
                 'value' =>  $nombre->completo,
@@ -746,18 +378,21 @@ class Formulario008Controller extends Controller
 
     public function busca_paciente($id)
     {
+        return $this->admissionPatientData($id) ?: 'no';
+    }
 
-        //$paciente = Paciente::find($id);
-        $paciente = Paciente::where('paciente.id', $id)
-            ->leftjoin('ho_datos_paciente as hopac', 'hopac.id_paciente', 'paciente.id')
-            ->select('paciente.*', 'hopac.*')
-            ->first();
-        //dd($paciente);
-        if (!is_null($paciente)) {
-            return $paciente;
-        } else {
-            return 'no';
-        }
+    private function admissionPatientData($id)
+    {
+        $patient = Paciente::find($id);
+        if (!$patient) return [];
+        $details = Ho_Datos_Paciente::where('id_paciente', $patient->id)->first();
+        // Keep the patient's identity: the administrative record has its own id.
+        $data = array_merge($details ? $details->getAttributes() : [], $patient->getAttributes());
+        $data['llamar_a'] = ($details->llamar_a ?? null) ?: trim(implode(' ', array_filter([
+            $patient->apellido1familiar, $patient->apellido2familiar,
+            $patient->nombre1familiar, $patient->nombre2familiar,
+        ])));
+        return $data;
     }
 
     public function guardar_atencio_motivo(Request $request)
@@ -935,26 +570,12 @@ class Formulario008Controller extends Controller
 
     public function guardar_formulario008_alta(Request $request)
     {
-        $opcion = '57';
-        if ($this->rol_new($opcion)) {
-            return redirect('/');
-        }
-
-        $formulario008_alta = new Hosp_formulario008_alta();
-        $formulario008_alta->id_emer                = $request->id_paciente;
-        $formulario008_alta->lugar_alta             = $request->lugar_alta;
-        $formulario008_alta->condicion_alta         = $request->condicion_alta;
-        $formulario008_alta->dia_incapacidad        = $request->dia_incapacidad;
-        $formulario008_alta->servicio_referencia    = $request->servicio_referencia;
-        $formulario008_alta->establecimiento        = $request->establecimiento;
-        $formulario008_alta->causa_alta             = $request->causa_alta;
-        $formulario008_alta->desc_alta              = $request->desc_alta;
-        $formulario008_alta->fecha_hora_emision     = $request->fecha_hora_emision;
-        $formulario008_alta->nombre_profesional     = $request->nombre_profesional;
-        $formulario008_alta->firma                  = $request->firma;
-        $formulario008_alta->save();
-
-        return back()->with('message_formulario008_alta', 'Se ha guardado correctamente la informacion !');
+        $this->validate($request, ['id_solicitud' => 'required|integer']);
+        $solicitud = Ho_Solicitud::findOrFail($request->id_solicitud);
+        app(\Sis_medico\Services\ClinicalHospitalTransferService::class)
+            ->authorize($solicitud, 'encounter.close', ['SISTEMAS', 'DOCTORES', 'DOCTOR'], false);
+        return response()->json(['estado' => 'continuar', 'msj' => 'Complete y firme el alta del episodio.',
+            'url' => route('epicrisis.mostrar_final', ['id_solicitud' => $solicitud->id])]);
     }
 
     public function historial_atencion(Request $request, $id_paciente)
@@ -1103,16 +724,40 @@ class Formulario008Controller extends Controller
     }
     public function formulario008_pdf($id, Request $request)
     {
-        $empresa        = Empresa::where('prioridad', 2)->first();
-        $log_solicitud = Ho_Log_Solicitud::where('id_ho_solicitud', $id)->where('estado_paso', '2')->first();
+        $solicitudPdf = Ho_Solicitud::findOrFail($id);
+        if (in_array((int) $solicitudPdf->estado_paso, [1, 2, 3, 5, 6, 7], true)) {
+            app(\Sis_medico\Services\ClinicalHospitalTransferService::class)->authorize(
+                $solicitudPdf, 'hospital.view', ['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA', 'ANESTESIÓLOGO', 'ANESTESIOLOGO'], false);
+        }
+        abort_unless(
+            app(\Sis_medico\Services\ClinicalHospitalFormAvailabilityService::class)
+                ->isAvailable($id, \Sis_medico\Services\ClinicalHospitalFormAvailabilityService::FORM_008),
+            404,
+            'El Formulario 008 todavía no tiene información clínica registrada.'
+        );
+
+        $log_solicitud = Ho_Log_Solicitud::where('id_ho_solicitud', $id)->where('estado_paso', '2')->whereNotNull('id_agenda')->first();
+        abort_unless($log_solicitud && $log_solicitud->agenda && $log_solicitud->agenda->historia_clinica,
+            422, 'Complete primero el ingreso administrativo.');
         //dd($log_solicitud);
         $solicitudemer = Ho_Solicitud::find($id);
+        $empresa = Empresa::find($request->session()->get('id_empresa'));
+        if (is_null($empresa) && !is_null($solicitudemer) && !is_null($solicitudemer->agenda)) {
+            $empresa = Empresa::find($solicitudemer->agenda->id_empresa);
+        }
         //dd($solicitudemer);
         $historia = $log_solicitud->agenda->historia_clinica;
+        abort_unless(((string) $historia->encounter_id === (string) $solicitudemer->encounter_id
+                || (!$historia->encounter_id && (string) $historia->id_agenda === (string) $log_solicitud->id_agenda))
+            && (string) $historia->id_paciente === (string) $solicitudemer->id_paciente, 404);
         $verificar = Ho_Lesiones008::where('id_008', $id)->first();
         $verificacion = Ho_Traspaso_Sala008::where('id_solicitud', $solicitudemer->id)->first();
         $form008    = $solicitudemer->form008->first();
+        abort_unless($form008 && $form008->agenda && $form008->agenda->historia_clinica, 404);
         $hc            = $form008->agenda->historia_clinica;
+        abort_unless(((string) $hc->encounter_id === (string) $solicitudemer->encounter_id
+                || (!$hc->encounter_id && (string) $hc->id_agenda === (string) $log_solicitud->id_agenda))
+            && (string) $hc->id_paciente === (string) $solicitudemer->id_paciente, 404);
         $alergias = $solicitudemer->paciente->a_alergias;
         $txt_al = '';
         $cont = 0;
@@ -1125,7 +770,8 @@ class Formulario008Controller extends Controller
 
         // return view('hospital.emergencia.formulario008_pdf', ['pasos'=>$pasos,'solicitudemer' => $solicitudemer, 'txt_al' => $txt_al, 'alergias' => $alergias, 'form008' => $form008, 'hc' => $hc, 'ocular' => $ocular, 'verbal' => $verbal, 'motora' => $motora, 'verificar' => $verificar,  'verificacion' => $verificacion,  'detalles' => $receta->detalles, 'receta' => $receta, 'empresa' => $empresa]);
 
-        $view = \View::make('hospital.emergencia.formulario008_pdf', ['pasos' => $pasos, 'solicitudemer' => $solicitudemer, 'txt_al' => $txt_al, 'alergias' => $alergias, 'form008' => $form008, 'hc' => $hc, 'ocular' => $ocular, 'verbal' => $verbal, 'motora' => $motora, 'verificar' => $verificar,  'verificacion' => $verificacion,  'detalles' => $receta->detalles, 'receta' => $receta, 'empresa' => $empresa])->render();
+        $emergencySource = app(HospitalEpisodeEmergencySource::class)->forForm($solicitudemer->id, '008');
+        $view = \View::make('hospital.emergencia.formulario008_pdf', ['pasos' => $pasos, 'solicitudemer' => $solicitudemer, 'txt_al' => $txt_al, 'alergias' => $alergias, 'form008' => $form008, 'hc' => $hc, 'ocular' => $ocular, 'verbal' => $verbal, 'motora' => $motora, 'verificar' => $verificar,  'verificacion' => $verificacion,  'detalles' => $receta ? $receta->detalles : collect(), 'receta' => $receta, 'empresa' => $empresa, 'emergencySource' => $emergencySource])->render();
         $pdf  = \App::make('dompdf.wrapper');
 
         $pdf->loadHTML($view);
@@ -1134,17 +780,37 @@ class Formulario008Controller extends Controller
     }
     public function pdf_formulario008_nuevo($id, Request $request) //
     {
-        $empresa        = Empresa::where('prioridad', 1)->first(); //xq era prioridad 2?
+        $solicitudPdf = Ho_Solicitud::findOrFail($id);
+        $isHospital = in_array((int) $solicitudPdf->estado_paso, [1, 2, 3, 5, 6, 7], true);
+        if ($isHospital) {
+            app(\Sis_medico\Services\ClinicalHospitalTransferService::class)->authorize(
+                $solicitudPdf, 'hospital.view', ['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA', 'ANESTESIÓLOGO', 'ANESTESIOLOGO'], false);
+        }
+        abort_unless(
+            app(\Sis_medico\Services\ClinicalHospitalFormAvailabilityService::class)
+                ->isAvailable($id, \Sis_medico\Services\ClinicalHospitalFormAvailabilityService::FORM_008),
+            404,
+            'El Formulario 008 todavía no tiene información clínica registrada.'
+        );
 
-        $log_solicitud = Ho_Log_Solicitud::where('id_ho_solicitud', $id)->where('estado_paso', '2')->first();
+        $log_solicitud = Ho_Log_Solicitud::where('id_ho_solicitud', $id)->where('estado_paso', '2')->whereNotNull('id_agenda')->first();
+        //SOLO PARA AMBULATORIO 
+        if(is_null($log_solicitud)){
+            $log_solicitud = Ho_Log_Solicitud::where('id_ho_solicitud', $id)->where('estado_paso', '0')->first();    
+        }
         //dd($log_solicitud);
         $solicitudemer = Ho_Solicitud::find($id);
+        $empresa = Empresa::find($request->session()->get('id_empresa'));
+        if (is_null($empresa) && !is_null($solicitudemer) && !is_null($solicitudemer->agenda)) {
+            $empresa = Empresa::find($solicitudemer->agenda->id_empresa);
+        }
         //dd($solicitudemer);
         $historia = $log_solicitud->agenda->historia_clinica;
         $verificar = Ho_Lesiones008::where('id_008', $id)->first();
         $verificacion = Ho_Traspaso_Sala008::where('id_solicitud', $solicitudemer->id)->first();
 
         $form008    = $solicitudemer->form008->first();
+        if (!$isHospital) $this->precarga_formulario($form008);
         $hc       = $solicitudemer->agenda->historia_clinica;
         $hc_cie10_ingreso = Hc_Cie10::where('hc_cie10.hc_id_procedimiento', $hc->hc_procedimientos->id)->get();
         $alergias = $solicitudemer->paciente->a_alergias;
@@ -1164,14 +830,86 @@ class Formulario008Controller extends Controller
         $verbal = Ho_Glasgow::where('tipo', '2')->where('estado', '1')->get();
         $motora = Ho_Glasgow::where('tipo', '3')->where('estado', '1')->get();
         $receta = hc_receta::where('id_hc', $historia->hcid)->first();
-        $firma     = Firma_Usuario::where('id_usuario', $solicitudemer->id_usuariocrea)->first();
+        $detalles = [];
+        if(!is_null($receta)){
+            $detalles = $receta->detalles;
+        }
+        $formSignature = $this->form008Signature($form008, $usuario);
+        //dd($receta);
 
-
-        $view = \View::make('hospital/emergencia/formulario008_nuevo', ['hc_cie10_ingreso' => $hc_cie10_ingreso, 'datos_pac' => $datos_pac, 'paciente' => $paciente, 'examen_fisico' => $examen_fisico, 'signos_vitales' => $signos_vitales, 'glasgow' => $glasgow, 'pasos' => $pasos, 'user_crea' => $user_crea, 'solicitudemer' => $solicitudemer, 'usuario' => $usuario, 'txt_al' => $txt_al, 'alergias' => $alergias, 'form008' => $form008, 'hc' => $hc, 'ocular' => $ocular, 'verbal' => $verbal, 'motora' => $motora, 'verificar' => $verificar,  'verificacion' => $verificacion,  'detalles' => $receta->detalles, 'receta' => $receta, 'empresa' => $empresa, 'firma' => $firma])->render();
+        $view = \View::make('hospital/emergencia/formulario008_nuevo', ['hc_cie10_ingreso' => $hc_cie10_ingreso, 'datos_pac' => $datos_pac, 'paciente' => $paciente, 'examen_fisico' => $examen_fisico, 'signos_vitales' => $signos_vitales, 'glasgow' => $glasgow, 'pasos' => $pasos, 'user_crea' => $user_crea, 'solicitudemer' => $solicitudemer, 'usuario' => $usuario, 'txt_al' => $txt_al, 'alergias' => $alergias, 'form008' => $form008, 'hc' => $hc, 'ocular' => $ocular, 'verbal' => $verbal, 'motora' => $motora, 'verificar' => $verificar,  'verificacion' => $verificacion,  'detalles' => $detalles, 'receta' => $receta, 'empresa' => $empresa, 'formSignature' => $formSignature])->render();
         $pdf  = \App::make('dompdf.wrapper');
 
 
         $pdf->loadHTML($view);
         return $pdf->stream('formulario008_nuevo.pdf');
+    }
+
+    private function form008Signature(Ho_Form008 $form008, $author = null)
+    {
+        $authorId = (string) $form008->id_usuariocrea;
+        $author = $author ?: User::withoutGlobalScopes()->find($authorId);
+        $name = $author ? trim(implode(' ', array_filter([
+            $author->nombre1, $author->nombre2, $author->apellido1, $author->apellido2,
+        ], function ($part) {
+            $value = strtoupper(trim((string) $part));
+            return $value !== '' && $value !== 'N/A' && $value !== '(N/A)';
+        }))) : '';
+        $specialty = $author
+            ? DB::table('user_espe as ue')->join('especialidad as e', 'e.id', '=', 'ue.espid')
+                ->where('ue.usuid', $author->id)->orderBy('ue.id')->pluck('e.nombre')->unique()->implode(', ')
+            : '';
+        $stored = Firma_Usuario::where('id_usuario', $authorId)->orderBy('id')->first();
+        $images = app(DoctorSignatureService::class);
+        $proof = app(ClinicalRecordSignatureService::class)->issueForm008($form008);
+
+        return [
+            'name' => $name !== '' ? $name : 'PROFESIONAL NO IDENTIFICADO',
+            'specialty' => $specialty !== '' ? $specialty : 'Especialidad no registrada',
+            'register' => $author ? trim((string) $author->registro_doctor) : '',
+            'status' => 'VALIDADO POR AITROL',
+            'fingerprint' => $proof['fingerprint'],
+            'validation_url' => $proof['validation_url'],
+            'qr_source' => app(ClinicalElectronicSignatureQr::class)->dataUri($proof['validation_url']),
+            'signature_image' => $stored ? $images->dataUriForFilename($stored->firma) : null,
+            'seal_image' => $stored ? $images->dataUriForFilename($stored->nombre) : null,
+        ];
+    }
+
+    public function precarga_formulario($form008){
+
+        $agenda = $form008->agenda;
+        if(!is_null($agenda)){
+            $hc = Historiaclinica::where('id_agenda',$agenda->id)->first();//dd($hc);
+            if(!is_null($hc)){
+                $evo = $hc->evoluciones->where('secuencia','0')->first();
+                if(!is_null($evo)){
+                    //dd($evo,$form008);
+                  
+                    $form008->update([
+                        'motivo'                => $evo->motivo,
+                        'observacion_quintop'   => $evo->cuadro_clinico,
+                        'frec_respiratoria'     => $hc->frecuencia_respiratoria,
+                        'pulsioximetria'        => $hc->o2,
+                        'perimetro_cefalico'    => $hc->perimetro,
+                        'glicemia_capilar'      => $hc->glicemia_capilar,
+                        'glasgow_inicial'       => $hc->glasgow,
+                        'ocular'                => $hc->ocular,
+                        'verbal'                => $hc->verbal,
+                        'motora'                => $hc->motora,
+                        'reac_pupila_der'       => $hc->reaccion_pupila_izq,
+                        'reac_pupila_izq'       => $hc->reaccion_pupila_izq,
+                        't_llenado_capilar'     => $hc->t_llenado_capilar,        
+                    ]);
+                  
+
+                }
+
+            }
+        }
+        
+
+        
+
     }
 }

@@ -144,8 +144,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">El procedimiento al que usted va a someterse es una técnica mixta que utiliza la imagen endoscópica (introducción de un cable con luz y cámara) y ecográfica. La prueba permite el examen ecográfico, toma de biopsias y algunos tratamientos de lesiones en la pared del recto. </td>
-                    <td><img style="margin:6px;margin-top:10px;height:60px;width:60px;" src="{{public_path('/imagenes/anorectal.jpg')}}" />
-                        <img style="margin:6px;margin-top:10px;height:60px;width:60px;" src="{{public_path('/imagenes/anorectal1.jpg')}}" /></td>
+                    <td><img style="margin:6px;margin-top:10px;height:60px;width:60px;" src="{{base_path('public/imagenes/anorectal.jpg')}}" />
+                        <img style="margin:6px;margin-top:10px;height:60px;width:60px;" src="{{base_path('public/imagenes/anorectal1.jpg')}}" /></td>
 
                 </tr>
             </tbody>
@@ -240,7 +240,12 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 
             </tr>
 
+            <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
             <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>

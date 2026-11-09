@@ -145,9 +145,9 @@
     function editarprocedimiento(id, id_paciente){
     	var entra = id;
 			$.ajax({
-			type: "GET",
+			type: "POST",
 			url: "{{route('quirofano.editar_ecografia')}}/"+id+'/'+id_paciente,
-			data: "",
+			data: {'_token': '{{ csrf_token() }}'},
 			datatype: "html",
 			success: function(datahtml, entra){
 				$("#procedimiento"+id).html(datahtml);
@@ -1065,8 +1065,9 @@
         document.getElementById("tdiagnostico"+id).deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
 
           success: function(data){

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
 
 	<title>Resumen Procedimiento</title>
 	<style type="text/css">
@@ -47,37 +48,25 @@
 		<table>
 			<tr>
 				@php
-					$agenda = Sis_medico\Agenda::find($historia->id_agenda);
-					if($protocolo->procedimiento->id_empresa!=null){
-						$empresa = $protocolo->procedimiento->empresa;
-					}else{
-						$empresa = $agenda->empresa;
-					}
+				  $agenda = Sis_medico\Agenda::find($historia->id_agenda);
+				  $empresa = $agenda->empresa;
 				@endphp
-				
-				<td style="width: 150px;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></td>
 
 				@if($historia->id_seguro != 5)
 					@if(!is_null($empresa->logo_form))
 						<!--td style="width: 150px;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></td-->
-						<td colspan="2">
-							<p  style="font-size: 18px; text-align: center; width: 500px; margin-left:0px; "><b style="text-align: center;">{{$empresa->nombre_form}}</b></p>
-						</td>
+						<td style="width: 700px;"><img style="margin: 0;width: 700px;" src="{{base_path().'/public/formato/header.jpg'}}"></td>
 					@else
-						<td colspan="2">
-							<p  style="font-size: 19px; text-align: center; width: 350px; margin-left:180px; "><b style="text-align: center;">{{$empresa->nombre_form}}</b></p>
-						</td>
+						<td style="width: 700px;"><img style="margin: 0;width: 700px;" src="{{base_path().'/public/formato/header.jpg'}}"></td>
 					@endif
 				@else
-					<td colspan="2">
-						<p  style="font-size: 18px; text-align: center; width: 500px; margin-left:0px; "><b style="text-align: center;">{{$empresa->nombre_form}}</b></p>
-					</td>
+					<td style="width: 700px;"><img style="margin: 0;width: 700px;" src="{{base_path().'/public/formato/header.jpg'}}"></td>
 				@endif
 			</tr>
 		</table>
 	</div>
 	<div id="contenido">
-		<table id="encabezado">
+		<table id="encabezado" style="font-size: 11px;">
 			<tr>
 				<td style="width: 80px;"><b>Paciente:</b></td>
 				<td style="width: 250px;"><b style="font-size: 11px;">{{ $paciente->apellido1}} @if($paciente->apellido2 != '(N/A)'){{ $paciente->apellido2}}@endif {{ $paciente->nombre1}} @if($paciente->nombre2 != '(N/A)' ){{ $paciente->nombre2}}@endif</b></td>
@@ -105,10 +94,32 @@ foreach ($adicionales as $value2) {
 ?><?php echo e($texto); ?>@endif</b></td>
 			</tr>
 			<tr>
+			 <td><b>Medico Examinador:</b></td>
+			 <td> <b style="font-size: 11px;"> @if(isset($doctor1)) {{$doctor1->apellido1}} {{$doctor1->nombre1}}  @endif </b> </td>
+			 <td colspan="2"><b>Anestesiologo :</b></td>
+			 <td colspan="2"> <b style="font-size: 11px;">  @if(isset($anestesiologo)) {{$anestesiologo->apellido1}} {{$anestesiologo->nombre1}} @endif </b> </td>
+			</tr>
+			<tr>
+			<td style="width: 80px;"><b>Ayudante:</b></td>
+				<td style="width: 120px;"><b style="font-size: 11px;">@if(isset($ayudante)) {{$ayudante->apellido1}} {{$ayudante->nombre1}} @endif</b></td>
+				<td colspan="2"><b>Instrumento:</b>   {{$protocolo->instrumento}} </td>
+				<td colspan="2"><b>Fecha:</b> <b style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</b></td>
+
+			</tr>
+			<tr>
+				<td><b>Premedicacion:</b></td>
+				<td  colspan="5" style="font-size: 12px;"> @if(!is_null($protocolo->premedicacion))  {{$protocolo->premedicacion}} @endif</td>
+
+				<!-- <td colspan="2"><b>Fecha:</b></td>
+				<td colspan="2" style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</td> -->
+			</tr>
+			<tr>
 				<td><b>Referido por:</b></td>
 				<td style="font-size: 12px;"> @if(!is_null($protocolo->referido_por)) {{$protocolo->referido_por}} @endif</td>
-				<td colspan="2"><b>Fecha:</b></td>
-				<td colspan="2" style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</td>
+				<td colspan="2">&nbsp;</td>
+				<td colspan="2">&nbsp;</td>
+				<!-- <td colspan="2"><b>Fecha:</b></td>
+				<td colspan="2" style="font-size: 12px;">@if($protocolo->fecha == null){{date('d/m/Y', strtotime($historia->fecha_atencion))}}@else{{date('d/m/Y', strtotime($protocolo->fecha))}}@endif</td> -->
 			</tr>
 		</table>
 		<br>
@@ -116,19 +127,18 @@ foreach ($adicionales as $value2) {
 
 			@php  $i = 0;   $j = 0;@endphp
 
-			@if($protocolo->procedimiento->procedimiento_completo != "")
-				@if($protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen != "")
+			@php $imagenGrupoProcedimiento = optional(optional($protocolo->procedimiento->procedimiento_completo)->grupo_procedimiento)->imagen; @endphp
+			@if(!empty($imagenGrupoProcedimiento))
 					@if($i < 4)
 						@if($j == 0)
 						<tr style="padding: 0;">
 						@endif
-						<td style="margin: 0;padding: 0 4px 0px 0px;"><img style="width: 185px; height: 185px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen}}" hspace=12></td>
+						<td style="margin: 0;padding: 0 4px 0px 0px;"><img style="width: 185px; height: 185px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$imagenGrupoProcedimiento}}" hspace=12></td>
 						@if($j >= 3)
 						</tr>
 						@endif
 						@php $i = $i+1;$j = $j+1; @endphp
 					@endif
-				@endif
 			@endif
 			@foreach($imagenes as $value)
 				@if($i < 4)
@@ -138,16 +148,31 @@ foreach ($adicionales as $value2) {
 						@if(count($imagenes) > 1)
 							@if($value->seleccionado_recortada == 1)
 							<td style="margin: 0;padding: 0 4px 0px 0px;">
-							<div style="overflow: hidden; width: 190px; height: 185px; @if($j == 0){{'margin-left: -0px;'}}@else @if($imagenes[$j-1]->seleccionado_recortada == 0){{'margin-left: -15px;'}}@else{{'margin-left: -71px;'}}@endif @endif  ">
-								<img style="width: 246px; height: 185px;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
-							</div>
-						</td>
+
+								<div style="overflow: hidden; width: 190px; height: 185px; @if($j == 1){{'margin-left: -0px;'}}@elseif($j == 2) @if($imagenes[0]->seleccionado_recortada == 0){{'margin-left: -15px;'}}@else{{'margin-left: -71px;'}}@endif @else @if($imagenes[1]->seleccionado_recortada == 0){{'margin-left: -15px;'}}@else{{'margin-left: -71px;'}}@endif @endif  ">
+									<img style="width: 246px; height: 185px;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
+								</div>
+							</td>
 							@else
 							<td style="margin: 0;padding: 0 4px 0px 0px;">
-							<div style="overflow: hidden; width: 190px; height: 185px; @if($j == 0){{'margin-left: -0px;'}}@else @if($imagenes[$j-1]->seleccionado_recortada == 0){{'margin-left: -15px;'}}@else{{'margin-left: -71px;'}}@endif @endif">
-								<img style="width: 178px; height: 185px;position: absolute;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
-							</div>
-						</td>
+								<div style="overflow: hidden; width: 190px; height: 185px; @if($j == 1){{'margin-left: -0px;'}}@elseif($j == 2) @if($imagenes[0]->seleccionado_recortada == 0){{'margin-left: -15px;'}}@else{{'margin-left: -71px;'}}@endif @else @if($imagenes[1]->seleccionado_recortada == 0){{'margin-left: -15px;'}}@else{{'margin-left: -71px;'}}@endif @endif">
+									<img style="width: 178px; height: 185px;position: absolute;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
+								</div>
+							</td>
+							@endif
+						@else
+							@if($value->seleccionado_recortada == 1)
+							<td style="margin: 0;padding: 0 4px 0px 0px;">
+								<div style="overflow: hidden; width: 190px; height: 185px; margin-left: -0px; ">
+									<img style="width: 246px; height: 185px;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
+								</div>
+							</td>
+							@else
+							<td style="margin: 0;padding: 0 4px 0px 0px;">
+								<div style="overflow: hidden; width: 190px; height: 185px; margin-left: -0px;">
+									<img style="width: 178px; height: 185px;position: absolute;" src="{{base_path().'/storage/app/hc_ima/'.$value->nombre}}" hspace=12>
+								</div>
+							</td>
 							@endif
 						@endif
 					@if($j >= 3)
@@ -161,14 +186,14 @@ foreach ($adicionales as $value2) {
 			</tr>
 		</table>
 		<hr>
-		<!--table width="716px;" class="final">
-			<tr>
-				<td >Hallazgos</td>
-			</tr>
-			<tr>
-				<td style="font-size: 12px !important;"><?php echo $protocolo->hallazgos; ?></td>
-			</tr>
-		</table-->
+		
+		<div style="width: 107%;margin-left: -17px;border: 1px black solid;">
+			<span>Motivo</span>
+		</div>
+		<div id="motivo" style="width: 107%;margin-left: -17px;border: 1px black solid;font-size: 11px !important;">
+			<?php echo $protocolo->motivo; ?>
+		</div>
+		<hr>
 		<div style="width: 107%;margin-left: -17px;border: 1px black solid;">
 			<span>Hallazgos</span>
 		</div>
@@ -204,7 +229,7 @@ foreach ($adicionales as $value2) {
 					<p style="text-align: center;">
 						@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
 							@if($firma != "[]")
-							<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 							<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
 							@else
 								<br><br><br><br><br>
@@ -220,7 +245,7 @@ foreach ($adicionales as $value2) {
 					<p style="text-align: center;">
 						@if((!is_null($protocolo->procedimiento->id_doctor_responsable)))
 							@if($firma_2 != "[]")
-							<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
 							<b>DR. {{$responsable->nombre1}} {{$responsable->apellido1}} {{$responsable->apellido2}} (RESPONSABLE)</b><br>
 							@else
 								<br><br><br><br><br>
@@ -230,11 +255,11 @@ foreach ($adicionales as $value2) {
 					</p>
 				</div>
 			@else
-			<div style="width: 650px; display: inline-block;margin-top:-30px">
+			<div style="width: 650px; display: inline-block;">
 				<p style="text-align: center;">
 					@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
 						@if($firma != "[]")
-						<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+						<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 
 							@if($firma[0]->id_usuario=='094346835')
 								<b>Dra. ISABEL FARIA URDANETA</b><br>

@@ -4,12 +4,29 @@
     }
     .seleccionada_imagen:hover{
       transform:scale(0.9);
-        -ms-transform:scale(0.9); // IE 9 
-        -moz-transform:scale(0.9); // Firefox 
-        -webkit-transform:scale(0.9); // Safari and Chrome 
+        -ms-transform:scale(0.9); // IE 9
+        -moz-transform:scale(0.9); // Firefox
+        -webkit-transform:scale(0.9); // Safari and Chrome
         -o-transform:scale(0.9) ;
-        -webkit-filter: grayscale(80%); 
+        -webkit-filter: grayscale(80%);
         filter: grayscale(80%);
+    }
+    .formatos-grid {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+    .formatos-grid > .imagen {
+        float: none;
+        margin-bottom: 18px;
+    }
+    .formatos-grid > .imagen > a,
+    .formatos-grid .seleccionada_imagen {
+        display: block;
+    }
+    .formatos-grid .seleccionada_imagen {
+        margin-left: auto;
+        margin-right: auto;
     }
 </style>
 
@@ -18,13 +35,15 @@
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span>
             </button>
         </div>
-
+        <?php
+            $id_auth    = Auth::user()->id;
+        ?>
         <div class="col-12">
-            <h1>@lang('contable.seleccioneTipoFormatoDescargar')</h1>
+            <h1>Seleccione el Tipo de Formato a Descargar</h1>
         </div>
 
         <div class="col-12">
-            <div class="row">
+            <div class="row formatos-grid">
                 <div class="col-md-3 col-sm-4 col-6 imagen" style="text-align: center;">
                     <a target="_blank" href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => '1' ])}}">
                         <img class="seleccionada_imagen" src="{{asset('formato/1.jpg')}}" width="90%">
@@ -65,13 +84,39 @@
                         <img class="seleccionada_imagen" src="{{asset('formato/8.jpg')}}" width="90%">
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-4 col-12 imagen" style="text-align: center;">
+
+                <div class="col-md-3 col-sm-4 col-6 imagen" style="text-align: center;">
+                    <a target="_blank" href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => 'rx' ])}}">
+                        <img class="seleccionada_imagen" src="{{asset('formato/9.jpg')}}" width="90%" alt="Formato de imágenes RX">
+                    </a>
+                    <span style="display: block; margin-top: 8px;">Imágenes RX</span>
+                </div>
+                <div class="col-md-3 col-sm-4 col-6 imagen" style="text-align: center;">
                     <a target="_blank" href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => '9' ])}}">
                         <img class="seleccionada_imagen" src="{{asset('formato/9.jpg')}}" width="90%">
                     </a>
                 </div>
+                <div class="col-md-3 col-sm-4 col-6 imagen" style="text-align: center;">
+                    <a  href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => '10' ])}}" target="_blank" rel="noopener noreferrer">
+                   <!--  <img class="seleccionada_imagen" src="{{asset('formato/6.jpg')}}" width="90%"> -->
+                   6 imagenes
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-4 col-6 imagen" style="text-align: center;">
+                    <a  href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => '11' ])}}" target="_blank" rel="noopener noreferrer">
+                   <!--  <img class="seleccionada_imagen" src="{{asset('formato/7.jpg')}}" width="90%"> -->
+                      8 imagenes
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-4 col-6 imagen" style="text-align: center;">
+                    <a  href="{{route('hc_reporte.descargar', ['id'=> $id_protocolo, 'tipo' => '12' ])}}" target="_blank" rel="noopener noreferrer">
+                        <img class="seleccionada_imagen" src="{{asset('formato/4.jpg')}}" width="90%" alt="Formato de 4 imágenes">
+                        <span style="display: block; margin-top: 8px;">4 imágenes</span>
+                    </a>
+                </div>
+
             </div>
-        </div>  
+        </div>
 
         <br>
         <div class="col-12" style="height: 35px;"></div>

@@ -31,7 +31,7 @@
                 <div class="col-4">
                     <button type="button" class="btn btn-primary"  onclick ="location.href='{{ URL::previous() }}'">{{trans('hospitalizacion.Regresar')}}</button>
                      <button type="button"
-                                data-remote="{{ route('hospital.servicio',['id_paciente'=>$id_paciente])}}"
+                                data-remote="{{ route('hospital.servicio',['id'=>$id_paciente])}}"
                                 class="btn btn-success btn-sm" data-toggle="modal" data-target="#modalservicios">{{trans('hospitalizacion.SeleccionarProducto')}}
                      </button>
                 </div>

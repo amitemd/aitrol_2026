@@ -121,6 +121,7 @@
 <div class="modal fade" id="asiento" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content" style="width: 95%;">
+
       </div>
     </div>
 </div>
@@ -180,6 +181,8 @@
                         <a href="{{ route('protocolo.pr_modal', ['id_protocolo' => $protocolo->id]) }}" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#mprotocolo">
                             <span class="glyphicon glyphicon-download-alt"> Protocolo</span>
                         </a>
+
+
                     </div>
                 </div>
             </div>
@@ -323,7 +326,7 @@
             </div>
         </div>
 
-        {{--<div class="col-md-12" style="padding-right: 6px;">
+        <div class="col-md-12" style="padding-right: 6px;">
             <div class="box box-primary collapsed-box" style="margin-bottom: 5px;">
                 <div class="box-header">
                     <div class="col-md-6" style="padding-left: 0px;"><h3 class="box-title"><b><a href="javascript:void($('#equipos_usados').click());">Equipos Usados</a></b></h3></div><div class="col-md-6" style="color: #f2f2f2;"></div>
@@ -359,55 +362,21 @@
                     </div>
                 </div>
             </div>
-        </div>--}}
+        </div>
 
         <div class="col-md-12" style="padding-right: 6px;">
             <div class="box box-primary collapsed-box" style="margin-bottom: 5px;">
                 <div class="box-header">
-                    <div class="col-md-6" style="padding-left: 0px;">
-                        <h3 class="box-title">
-                            <b><a href="javascript:void($('#ima_historico').click());">Insumos Utilizados</a></b>
-                        </h3>
-                    </div>
-                    <div class="col-md-6" style="color: #f2f2f2;">
-                    </div>
+                    <div class="col-md-6" style="padding-left: 0px;"><h3 class="box-title"><b><a href="javascript:void($('#ima_historico').click());">Insumos Utilizados</a></b></h3></div><div class="col-md-6" style="color: #f2f2f2;"></div>
                         <!-- tools box -->
-                    <div class="pull-right box-tools">
+                        <div class="pull-right box-tools">
                             <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="ima_historico">
                                 <i class="fa fa-plus"></i></button>
-                    </div>
+                        </div>
                         <!-- /. tools -->
                 </div>
                 <div class="box-body" style="padding: 5px;">
-                    
-                        <div class="col-md-12" style="font-weight: bolder; font-size: 1.5em;">
-                            Equipos Usados
-                        </div>
-                        <div class="col-md-12" style="padding: 1px; border-bottom: 1px solid black;">
-                        @if($equipos != '[]')
-                            <center>
-                                <table style="text-align: center;">
-                                    <tr>
-                                        <td style="width: 25%"><b>SERIE</b></td>
-                                        <td style="width: 25%"><b>NOMBRE DEL EQUIPO</b></td>
-                                        <td style="width: 25%"><b>FECHA</b></td>
-                                    </tr>
-                                        @foreach($equipos as $value)
-                                        <tr>
-                                        <td><span>@if(!is_null($value)){{$value->serie}}@endif</span></td>
-                                        <td><span>@if(!is_null($value)){{$value->nombre}}@endif</span></td>
-                                        <td><span>@if(!is_null($value)){{$value->created_at}}@endif</span></td>
-                                        </tr>
-                                        @endforeach
-                                </table>
-                            </center>
-                        @else
-                            <label>NO SE ENCONTRARON EQUIPOS UTILIZADOS</label>
-                        @endif
-                        </div>
-
-                    
-                    <div style="margin-top: 20px;" class="col-md-12">
+                    <div class="col-md-12">
                         <span><b>Observaciones:</b></span>
                         <p>{{$procedimiento->historia->observaciones_enfermeria}}</p>
                     </div>
@@ -427,50 +396,82 @@
                       }
                       //echo $texto;
                     @endphp
-                    <div class="col-md-12">
+                    <div class="col-md-12" style="padding: 1px;">
                     @if($insumos != '[]')
                         <center>
-                                @include('hc_admision.procedimientos.details2')
-                           
+                            
+                            <table id="examples2" class="display compact responsive"  role="grid" aria-describedby="example2_info" style="margin-top:0 !important; width: 100%!important;">
+                                    <!-- <tr >
+                                    <td colspan="4"><b>@if($procedimiento->procedimiento_completo!=null){{$procedimiento->procedimiento_completo->nombre_general}}@elseif(!is_null($texto)){{$texto}}@endif</b></td>
+                                </tr> -->
+                                <thead>
+                                <tr>
+                                    <th><b>SERIE</b></th>
+                                    <th><b>NOMBRE DEL INSUMO</b></th>
+                                    <th><b>DESCRIPCION DEL INSUMO</b></th>
+                                    <th><b>FECHA</b></th>
+                                    <th><b>COSTO </b> </th> 
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach($insumos as $value)
+                                        @php 
+                                            $invcosto = null;
+                                            $px= \Sis_medico\InvInventarioSerie::where('serie',$value->serie)->first(); 
+                                            if (is_null($px)) {
+                                                $px = \Sis_medico\Movimiento::where('serie',$value->serie)->first(); 
+                                            } 
+                                            if (!is_null($px)) { 
+                                                $invcosto = \Sis_medico\InvCosto::where('id_producto',$px->id_producto)->first();
+                                            } 
+                                            $product=null;
+                                            $x=[];
+                                            $last=[];
+                                            if($px!=null){
+                                                $product= \Sis_medico\Ct_productos_insumos::where('id_insumo',$px->id_producto)->first();
+                                                /*if($product!=null){
+                                                    $x= \Sis_medico\Ct_Productos::where('id',$product->id_producto)->first();
+                                                } 
+                                                if($x!=null){
+                                                    $last= \Sis_medico\Ct_detalle_venta::where('id_ct_productos',$x->id_producto)->get()->last();
+                                                } */
+                                            }
+                                            $noligado = "";
+                                        @endphp
+                                        {{-- @if($px!=null) --}}
+                                            @php if (is_null($product)) $noligado = ""; else $noligado = "* "; @endphp
+                                            <tr>
+                                            <td><span>@if(!is_null($value)){{$noligado}}{{$value->serie}}@endif</span></td>
+                                            <td><span>@if(!is_null($value)){{$value->nombre}}@endif</span></td>
+                                            <td><span>@if(!is_null($value)){{$value->descripcion}}@endif</span></td>
+                                            <td><span>@if(!is_null($value)){{$value->updated_at}}@endif</span></td> 
+                                            <td>@if(!is_null($invcosto)) {{$invcosto->costo_promedio}}@endif</td>
+                                            {{-- <td>@if(!is_null($last)) {{$last->precio}} @else <span class="label label-danger"> 0.00 </span>  @endif</td> --}}
+                                            </tr>
+                                        {{-- @endif --}}
+                                    @endforeach
+                                </tbody>
+                                   
+                            </table>
                         </center>
-
-                        <div class="col-md-12" style="margin-top:20px">
-                            <center style="margin-bottom: 20px;">
-                                @php
-                                    $comparativo= Sis_medico\Planilla::where('id_hc_procedimiento',$procedimiento->id)->first();
-                                @endphp
-                                @if(!is_null($comparativo))
-                                    <a class="btn btn-primary" data-remote="{{route('venta.planilla.detalle',['id' => $procedimiento->id])}}" data-toggle="modal" data-target="#md_planilla" >Planilla</a>
-
-                                    <a href="{{route('productos.edit_comparar',['id'=>$comparativo->id])}}" target="_blank" class="btn btn-primary"> Planilla Verificar </a>
-                                    <!--  <button type="button" onclick="return alert('Asiento Generado Correctamente');" class="btn btn-warning" > Generar Asiento</button> -->
-                                    @if($comparativo->id_asiento_cabecera==null)
-                                    <a class="btn btn-primary" data-toggle="modal" data-target="#asiento" href="{{ route('productos.modal.asiento', ['id' => $comparativo->id]) }}">
-                                        Generar Asiento Insumos
-                                    </a>
-                                    @else
-                                    <a class="btn btn-success" href="{{route('librodiario.revisar',['id'=>$comparativo->id_asiento_cabecera])}}" target="_blank">
-                                        Asiento Insumos No. {{ $comparativo->id_asiento_cabecera }}
-                                    </a>
-                                    @endif
-                                    @if($comparativo->id_asiento_medico==null)
-                                    @else
-                                    <a class="btn btn-success" >
-                                        Asiento H. Médicos No. {{ $comparativo->id_asiento_cabecera }}
-                                    </a>
-                                    @endif
-                                    @if($comparativo->id_asiento_anestesia==null)
-                                    @else
-                                    <a class="btn btn-success" >
-                                        Asiento H. Anestesiologicos No. {{ $comparativo->id_asiento_cabecera }}
-                                    </a>
-                                    @endif
-                                @else
-                                    <label style="font-size: 17px;" class="label label-danger">No tiene una Planilla Asociada</label>
+                        <center style="margin-bottom: 20px;">
+                            @php 
+                                $comparativo= Sis_medico\Planilla::where('id_hc_procedimiento',$procedimiento->id)->first();
+                            @endphp
+                            @if(!is_null($comparativo))
+                                <a class="btn btn-primary" data-remote="{{route('venta.planilla.detalle',['id' => $procedimiento->id])}}" data-toggle="modal" data-target="#md_planilla" >Planillas</a>
+                          
+                                <a href="{{route('productos.edit_comparar',['id'=>$comparativo->id])}}" target="_blank" class="btn btn-primary"> Planilla Verificar </a>
+                               <!--  <button type="button" onclick="return alert('Asiento Generado Correctamente');" class="btn btn-warning" > Generar Asiento</button> -->
+                               @if($comparativo->id_asiento_cabecera==null)
+                               <a class="btn btn-primary" data-toggle="modal" data-target="#asiento" href="{{ route('productos.modal.asiento', ['id' => $comparativo->id]) }}">
+                                       Generar Asiento
+                                 </a>
                                 @endif
-                            </center>
-                        </div>
-                       
+                            @else
+                                <label style="font-size: 17px;" class="label label-danger">No tiene una Planilla Asociada</label>
+                            @endif
+                        </center>
                     @else
                         <label>NO SE ENCONTRARON INSUMOS UTILIZADOS</label>
                     @endif
@@ -669,10 +670,10 @@
         <div class="col-md-12">
             <div class="box box-primary collapsed-box" style="margin-bottom: 5px;">
                 <div class="box-header">
-                    <div class="col-md-6" style="padding-left: 0px;"><h3 class="box-title"><b><a href="javascript:void($('#imagenes').click());">Imagenes</a></b></h3></div><div class="col-md-6" style="color: #f2f2f2;"></div>
+                    <div class="col-md-6" style="padding-left: 0px;"><h3 class="box-title"><b><a href="javascript:void($('#ima_historico').click());">Imagenes</a></b></h3></div><div class="col-md-6" style="color: #f2f2f2;"></div>
                         <!-- tools box -->
                         <div class="pull-right box-tools">
-                            <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="imagenes">
+                            <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="ima_historico">
                                 <i class="fa fa-plus"></i></button>
                         </div>
                         <!-- /. tools -->
@@ -715,7 +716,7 @@
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
                                         $d2 = $variable[4];
-                                        
+                                        $d3 = $variable[5];
 
                                     @endphp
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -736,7 +737,7 @@
         <div class="col-md-12">
             <div class="box box-primary collapsed-box" style="margin-bottom: 5px;">
                 <div class="box-header">
-                    <div class="col-md-6" style="padding-left: 0px;"><h3 class="box-title"><b><a href="javascript:void($('#doc_historico').click());">Documentos. &amp; Anexos</a></b></h3></div><div class="col-md-6" style="color: #f2f2f2;"></div>
+                    <div class="col-md-6" style="padding-left: 0px;"><h3 class="box-title"><b><a href="javascript:void($('#doc_historico').click());">Documentos &amp; Anexos</a></b></h3></div><div class="col-md-6" style="color: #f2f2f2;"></div>
                         <!-- tools box -->
                         <div class="pull-right box-tools">
                             <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="doc_historico">
@@ -745,6 +746,7 @@
                         <!-- /. tools -->
                 </div>
                 <div class="box-body" style="padding: 5px;">
+
 
                     <div class="table-responsive col-md-12">
                         <table class="table table-bordered  dataTable" >
@@ -770,7 +772,7 @@
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
                                         $d2 = $variable[4];
-                                        
+                                        $d3 = $variable[5];
 
                                     @endphp
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -824,7 +826,7 @@
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
                                         $d2 = $variable[4];
-                                        
+                                        $d3 = $variable[5];
 
                                     @endphp
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -880,7 +882,7 @@
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
                                         $d2 = $variable[4];
-                                        
+                                        $d3 = $variable[5];
 
                                     @endphp
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -917,7 +919,6 @@
                                         <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #ffffff; margin-left: 0px">
                                             <div class="parent" style="background-color: #ffffff">
                                                 <div style=" margin-right: 30px;">
-                                                    @if(count($hist_recetas)>0)
                                                     @if($hist_recetas != null)
                                                         @foreach($hist_recetas as $re_hist)
                                                         <div class="box collapsed-box " style="border: 2px solid #3c8dbc; border-radius: 10px; background-color: white; font-size: 13px; font-family: Helvetica; margin-bottom: 10px;margin-top: 0px;">
@@ -1048,7 +1049,6 @@
                                                             </div>
                                                         </div>
                                                         @endforeach
-                                                        @endif
                                                     @endif
                                                 </div>
                                             </div>
@@ -1063,64 +1063,6 @@
             </div>
         @endif
 
-        <div class="col-md-12" style="padding-right: 6px;">
-            <div  class="box box-primary collapsed-box" style="margin-bottom: 5px;" >
-                <div class="box-header">
-                    <div class="col-md-4">
-                        <h3 class="box-title"><a href="javascript:void($('#venta').click());"><b>Proyeccion de Venta</b></a></h3>
-                    </div>
-                    <div class="pull-right box-tools">
-                        <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="venta">
-                            <i class="fa fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body" style="padding: 5px;">
-                    <div class="table-responsive">
-                        <table id="example2" class="table table-striped table-hover" >
-                            <thead style="font-size: 12px;">
-                                <tr>
-                                    <th style="width: 20%">Insumo</th>
-                                    <th style="width: 20%">Producto</th>
-                                    <th style="width: 20%">Publico</th>
-                                    <th style="width: 20%">Cantidad</th>
-                                    <th style="width: 20%">Valor</th>
-                                    <th style="width: 20%">Total</th>
-                                </tr>      
-                            </thead>    
-                            <tbody style="font-size: 12px;">
-                                @php $count=0; @endphp
-                                @if($detalles!='[]')
-                                    @foreach($detalles as $detalle)
-                                        <tr>
-                                            @php
-                                                $ct_producto = Sis_medico\Ct_productos::find($detalle->id_ct_producto);
-                                            @endphp
-                                            <td>@if(!is_null($detalle->producto)){{ $detalle->producto->codigo }} <br> {{ $detalle->producto->nombre }} @endif </td>
-                                            <td>@if(!is_null($ct_producto)){{ $ct_producto->codigo }} <br> {{ $ct_producto->nombre }} @endif</td>
-                                            @php
-                                                $ap_proc = Sis_medico\ApProcedimiento::find($detalle->id_ap_procedimiento);
-                                            @endphp
-                                            <td>@if(!is_null($ap_proc)){{ $ap_proc->descripcion }}@endif</td>
-                                            <td>{{ $detalle->cantidad }}</td>
-                                            <td>{{ number_format($detalle->valor_ap_procedimiento,2,',','.')  }}</td>
-                                            <td>{{ number_format($detalle->total_proyeccion,2,',','.')  }}</td>
-                                        </tr>
-                                    @endforeach
-                                @endif
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="5" align="right">
-                                        <a type="button" style="color: black;" class="btn-lg" href="{{route('consultam.reporte_insumos_procedimientos',['id' => $protocolo->id])}}"><i class="fa fa-download">Descargar</i></a>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>        
-            </div>
-        </div>     
     </div>
 </div>
 
@@ -1142,17 +1084,9 @@
 <script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
 <script type="text/javascript">
 
-    $('#example2').DataTable({
-        'paging'      : false,
-        'lengthChange': false,
-        'searching'   : false,
-        'ordering'    : true,
-        'info'        : false,
-        'autoWidth'   : false,
-        });
-    $('#asiento').on('hidden.bs.modal', function(){
-        $(this).removeData('bs.modal');
-    });
+    $('#mprotocolo').on('hidden.bs.modal', function(){
+                $(this).removeData('bs.modal');
+            });
 
     $('.select2').select2({
         tags: false
@@ -1295,10 +1229,23 @@
         $(this).removeData('bs.modal');
     });
 
+    function enviarPostClinico(url){
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        var token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = '_token';
+        token.value = '{{ csrf_token() }}';
+        form.appendChild(token);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function editar_consulta(id,agenda){
         //alert(agenda);
 
-        location.href ="{{url('historialclinico/visitas_ingreso')}}/"+id+"/"+agenda;//visita.crea_actualiza
+        enviarPostClinico("{{url('historialclinico/visitas_ingreso')}}/"+id+"/"+agenda);//visita.crea_actualiza
 
     }
 
@@ -1463,8 +1410,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
 
           success: function(data){
@@ -1509,12 +1457,6 @@
     $("#limpiar").click( function(){
         $('#nombre_generico').val('');
     });
-
-    $('#forma_pago').on('hidden.bs.modal', function(){
-      location.reload();
-      $(this).removeData('bs.modal');
-    });
-
     $("#nombre_generico").autocomplete({
         source: function( request, response ) {
 
@@ -1595,9 +1537,9 @@
         var js_cedula = document.getElementById("id_paciente").value;
         //alert(js_cedula);
         $.ajax({
-          type: 'get',
+          type: 'post',
           url:"{{url('receta_detalle/crear_detalle')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula, //receta.crear_detalle
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
 
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -1631,6 +1573,7 @@
     }
 
     function index(){
+
         $.ajax({
           type: 'get',
           url:"{{route('receta.index_detalle',['receta' => $hc_receta->id])}}",
@@ -1649,9 +1592,9 @@
 
     function det_delete(id) {
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('receta_detalle/eliminar_detalle')}}/"+{{$hc_receta->id}}+"/"+id,
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
 
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -1665,6 +1608,7 @@
     }
 
     @endif
+
 
     function guardar3(){
         $.ajax({

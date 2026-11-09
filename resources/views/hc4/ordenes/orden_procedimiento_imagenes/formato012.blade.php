@@ -408,8 +408,9 @@ $rd = rand();
         document.getElementById("tdiagnostico{{$orden_012->id}}").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('orden_012/cargar/ci10/eliminar')}}/"+id_h,
+          headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
           datatype: 'json',
 
           success: function(data){

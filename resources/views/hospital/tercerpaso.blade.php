@@ -74,7 +74,7 @@ $fecha = date("Y-m-d");
                 <input type="checkbox" name="arma_fuego" value="1"><br>
             </div>    
             <div class="col-md-4" style="padding: 0px;">
-                <label >{{trans('pasos.ViolemciaXArmaC.Punzante')}}</label>
+                <label >{{trans('pasos.ViolemciaXArmaC_Punzante')}}</label>
                 <input type="checkbox" name="arma_punzante" value="1"><br>
             </div>
             <div class="col-md-4" style="padding: 0px;">

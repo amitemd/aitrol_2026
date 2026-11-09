@@ -78,7 +78,7 @@ $fecha = date("Y-m-d H:m:i");
             </div>    
             <div class="col-md-4">
                 <input type="checkbox" name="arma_punzante" value="1" @if($form008->violencia_armcp=='1') checked @endif>
-                <label >{{trans('pasos.ViolemciaXArmaC.Punzante')}}</label>
+                <label >{{trans('pasos.ViolemciaXArmaC_Punzante')}}</label>
                 
             </div>
             <div class="col-md-4">
@@ -180,7 +180,7 @@ $fecha = date("Y-m-d H:m:i");
             </div> --}}
 
             <div class="col-md-12" style="text-align: center; margin-top: 10px;">
-                <button class="btn btn-primary" onclick="guardar_paso3();" type="button"> <i class="fa fa-save"></i> </button>
+                <button class="btn btn-primary" onclick="guardar_paso3();" type="button"><i class="fa fa-save"></i> Guardar</button>
             </div>
 
         </div>
@@ -213,7 +213,7 @@ $fecha = date("Y-m-d H:m:i");
                 return Swal.fire('Guardado Correctamente'); 
             },
             error: function() {
-                alert('error al cargar');
+                alert("{{trans('pasos.ErrorCargar')}}");
             }
         });
            

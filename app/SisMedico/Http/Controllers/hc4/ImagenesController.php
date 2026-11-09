@@ -48,7 +48,38 @@ class ImagenesController extends Controller
 
     }
 
+    /**
+     * Mantiene compatibles las URL antiguas del editor sin volver a cargar la
+     * copia obsoleta de toda la historia clinica que existe en hc4/imagenes.
+     * El editor actual se solicita por AJAX desde la vista canonica del paciente.
+     */
+    public function redirigir_historia_paciente($id_protocolo = null)
+    {
+        $opcion = '2';
+        if ($this->rol_new($opcion) || is_null($id_protocolo)) {
+            return redirect('/');
+        }
+
+        $protocolo = hc_protocolo::find($id_protocolo);
+        if (is_null($protocolo) || is_null($protocolo->historiaclinica)) {
+            return redirect('/');
+        }
+
+        return redirect()->route('nd.buscador', [
+            'id_paciente' => $protocolo->historiaclinica->id_paciente,
+        ]);
+    }
+
     public function index($id_protocolo)
+    {
+        return $this->redirigir_historia_paciente($id_protocolo);
+    }
+
+    /**
+     * Implementacion historica conservada solo como referencia. Ya no debe
+     * utilizarse porque duplica la pantalla completa de Ambulatorio.
+     */
+    public function index_legacy($id_protocolo)
     {
         $opcion = '2';
         if ($this->rol_new($opcion)) {
@@ -79,7 +110,7 @@ class ImagenesController extends Controller
         if (!is_null($evoluciones)) {
             $procedimientos_observaciones = hc_procedimientos::find($evoluciones->hc_id_procedimiento);
 
-            $especialidad = DB::table('especialidad')->find($evoluciones->espid);
+            $especialidad = \Sis_medico\Especialidad::query()->find($evoluciones->espid);
         }
 
         $hc_rec    = null;
@@ -113,6 +144,9 @@ class ImagenesController extends Controller
 
             $laboratorio_externo = Paciente_biopsia::where('id_paciente', $id_paciente)
                 ->where('estado', '1')
+                ->where(function ($query) {
+                    $query->where('id_empresa', session('id_empresa'))->orWhereNull('id_empresa');
+                })
                 ->OrderBy('created_at', 'desc')
                 ->get()->first();
         }
@@ -352,8 +386,39 @@ class ImagenesController extends Controller
                 hc.id_paciente = p.id AND
                 hc_ima.estado = 1 AND
                 p.id = '" . $id_paciente . "'
-                ORDER BY id desc LIMIT 50 OFFSET 0;");
+                ORDER BY id desc;");
 
         return view('hc4/imagenes/index', ['seguro' => $seguro, 'imagenes' => $imagenes, 'id' => $id_protocolo, 'cvideo' => $cvideo, 'cimagenes' => $cimagenes, 'edad' => $edad, 'paciente' => $paciente, 'cortesia_paciente' => $cortesia_paciente, 'evoluciones' => $evoluciones, 'alergiasxpac' => $alergiasxpac, 'procedimientos_observaciones' => $procedimientos_observaciones, 'especialidad' => $especialidad, 'hc_rec' => $hc_rec, 'biopsias_1' => $biopsias_1, 'biopsias_2' => $biopsias_2, 'laboratorio_externo' => $laboratorio_externo, 'estudios' => $estudios, 'doctor_procedimiento_endoscopico' => $doctor_procedimiento_endoscopico, 'doctor_procedimiento_funcional' => $doctor_procedimiento_funcional, 'orden_lab' => $orden_lab, 'consulta_nueva' => $consulta_nueva, 'imagenes2' => $imagenes2, 'nuevo_armado' => $nuevo_armado, 'doctor_procedimiento_ecografia' => $doctor_procedimiento_ecografia]);
+    }
+
+    public function editor_protocolo($id_protocolo)
+    {
+        if ($this->rol_new('2')) {
+            abort(403);
+        }
+
+        $protocolo = hc_protocolo::find($id_protocolo);
+        if (is_null($protocolo)) {
+            abort(404, 'No se encontró el protocolo solicitado.');
+        }
+
+        $imagenes = hc_imagenes_protocolo::where('id_hc_protocolo', $id_protocolo)
+            ->where('estado', '1')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $cvideo = $imagenes->filter(function ($imagen) {
+            return strtolower(pathinfo((string) $imagen->nombre, PATHINFO_EXTENSION)) === 'mp4';
+        })->count();
+
+        $cimagenes = $imagenes->count() - $cvideo;
+
+        return view('hc4.imagenes.editor_protocolo', [
+            'id'        => $id_protocolo,
+            'protocolo' => $protocolo,
+            'imagenes'  => $imagenes,
+            'cvideo'    => $cvideo,
+            'cimagenes' => $cimagenes,
+        ]);
     }
 }

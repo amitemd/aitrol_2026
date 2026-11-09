@@ -66,7 +66,7 @@ class ConsultaController extends Controller
 
     private function rol(){
         $rolUsuario = Auth::user()->id_tipo_usuario;      
-        if(in_array($rolUsuario, array(1, 3, 6, 11, 7,5,20)) == false){
+        if(in_array($rolUsuario, array(1, 3, 6, 11, 7,5, 20)) == false){
           return true;
         }
     }
@@ -673,7 +673,7 @@ EXTREMIDADES: SIN LESIONES NI ALTERACIONES';
             $id_evolucion = Hc_Evolucion::insertGetId($input);
         }
 
-        return redirect()->route('visita.crea_actualiza_funcion', ['id_protocolo' => $id_evolucion, 'agenda' => $id_agenda]);
+        return $this->ingreso_actualiza_visita($id_evolucion, $id_agenda);
     }
 
     public function actualiza_paciente(Request $request){

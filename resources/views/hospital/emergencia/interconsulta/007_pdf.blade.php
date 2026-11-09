@@ -2,6 +2,7 @@
 <html>
 
 <head>
+	<meta charset="utf-8">
 	<title>{{trans('emergencia.ORDEN007')}}</title>
 	<style>
 		@page {
@@ -303,7 +304,7 @@
 					<td style="width:10%" class="alinear texto espacio">1</td>
 				</tr>
 				<tr>
-					<td class="alinear texto espacio" colspan="6">{{trans('emergencia.SNS-MSP/HCU-form.007/2008')}}</td>
+					<td class="alinear texto espacio" colspan="6">{{trans('emergencia.codigo_formulario_007')}}</td>
 
 					<td colspan="5">{{trans('emergencia.INTERCONSULTA-SOLICITUD')}}</td>
 

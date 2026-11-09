@@ -24,7 +24,10 @@ public function __construct()
     {
         $this->middleware('auth');
     }
-    private function rol_new($opcion){ 
+    private function rol_new($opcion){
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion',$opcion)->where('id_tipo_usuario',$rolUsuario)->first();
         if(is_null($opcion_usuario)){
@@ -202,6 +205,10 @@ public function __construct()
         }
         return back();
     }
+   public function darbaja_form(){
+       return view('hospital_admin/producto/darbaja');
+   }
+
    public function darbaja(Request $request){
            $opcion = '1';
          if($this->rol_new($opcion)) {

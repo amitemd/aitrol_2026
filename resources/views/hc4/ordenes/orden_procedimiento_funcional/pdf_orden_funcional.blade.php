@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  
+
   <title>ORDEN FUNCIONAL</title>
 
   <style>
-   
+
     @page { margin: 80px 70px; }
     #header { position: fixed; left: 0px; top: -40px; right: 0px; height: 150px; text-align: center; }
     #footer { position: fixed; left: 0px; bottom: 0px; right: 0px; height: 320px; }
     #footer1 { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 110px; }
     #footer2 { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 255px; }
-   
+
     /* Font Definitions */
     @font-face
       {font-family:"Cambria Math";
@@ -39,18 +39,18 @@
     .parrafo2 p{
       margin: 0;
     }
-  </style>    
+  </style>
 </head>
 <body lang=ES-EC style="margin-top: 5px;">
-    
+
     <div id="header">
-     
+
       <div style="float: left;width: 10%;text-align: left;">
-        <img style="margin: 0;width: 200px" src="{{public_path().'/imagenes/endoscopynet_gastroquito.png'}}">
+        <img style="margin: 0;width: 200px" src="{{base_path().'/storage/app/logo/logo1391707460001.png'}}">
       </div>
       <div  style="text-align: center;">
           <img style="margin: 0;width: 180px;">
-          <p style="font-size: 19px;"><b style="text-align: center;">ENDOSCOPYNET</b></p>
+          <p style="font-size: 19px;"><b style="text-align: center;">INSTITUTO ECUATORIANO <b><br><b>DE ENFERMEDADES DIGESTIVAS</b></p>
       </div>
     </div>
     <br>
@@ -63,14 +63,14 @@
     </table>
       @php
         if(!is_null($paciente)){
-          $seguro = Sis_medico\Seguro::find($paciente->id_seguro); 
+          $seguro = Sis_medico\Seguro::find($paciente->id_seguro);
         }
       @endphp
       @if(!is_null($orden_proc_funcional->fecha_orden))
         @php
           $fecha = substr($orden_proc_funcional->fecha_orden,0,10);
           $invert = explode( '-',$fecha);
-          $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0]; 
+          $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];
         @endphp
       @endif
       @php
@@ -80,27 +80,27 @@
                                       ->first();
         }
 
-        $texto = ""; 
-        if(!is_null($procedimiento_orden_tipo)){ 
-        
+        $texto = "";
+        if(!is_null($procedimiento_orden_tipo)){
+
           $procedimiento_orden_proced = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo', $procedimiento_orden_tipo->id)->get();
 
           $mas = true;
           foreach($procedimiento_orden_proced as $value2)
           {
             $nombre_procedimiento = \Sis_medico\Procedimiento::where('id', $value2->id_procedimiento)->first();
-            
+
             if($mas == true){
               $texto = $nombre_procedimiento->nombre;
-              $mas = false; 
+              $mas = false;
             }
             else{
               $texto = $texto.' + '.$nombre_procedimiento->nombre;
             }
 
           }
-        
-        }   
+
+        }
       @endphp
     <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
       <tbody>
@@ -127,39 +127,39 @@
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;ANTECEDENTES PATOLOGICOS</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $paciente->antecedentes_pat?></td>
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $paciente->antecedentes_pat ?></td>
         </tr>
         <tr>
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;ANTECEDENTES FAMILIARES</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $paciente->antecedentes_fam?></td>
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $paciente->antecedentes_fam ?></td>
         </tr>
         <tr>
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;ANTECEDENTES QUIRURGICOS</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $paciente->antecedentes_quir?></td>
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $paciente->antecedentes_quir ?></td>
         </tr>
-    
+
         <tr>
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;MOTIVO</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $orden_proc_funcional->motivo_consulta?></td>
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $orden_proc_funcional->motivo_consulta ?></td>
         </tr>
         <tr>
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;RESUMEN DE LA HISTORIA CL&Iacute;NICA</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 5px"><?php echo $orden_proc_funcional->resumen_clinico?></td>
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 5px"><?php echo $orden_proc_funcional->resumen_clinico ?></td>
         </tr>
-   
+
         <tr>
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;DIAGN&Oacute;STICO</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 5px"><?php echo $orden_proc_funcional->diagnosticos?></td>
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 5px"><?php echo $orden_proc_funcional->diagnosticos ?></td>
         </tr>
       </tbody>
     </table>
@@ -183,18 +183,7 @@
           <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;OBSERVACI&Oacute;N M&Eacute;DICA</b></td>
         </tr>
         <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $orden_proc_funcional->observacion_medica?></td>
-        </tr>
-      </tbody>
-    </table>
-    <br>
-    <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
-      <tbody>
-        <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 19px;background-color: #4682B4;color: white;border-color: currentColor;"><b>&nbsp;OTROS PROCEDIMIENTOS</b></td>
-        </tr>
-        <tr>
-          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $orden_proc_funcional->otros?></td> 
+          <td colspan="5" style="border-right: 1px solid;border-top: 1px solid;font-size: 18px;padding-left: 5px;padding-top: 10px"><?php echo $orden_proc_funcional->observacion_medica ?></td>
         </tr>
       </tbody>
     </table>
@@ -208,29 +197,40 @@
     @endphp
     @if($nom != "")
     <div id="footer" style="text-align: center">
-      <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:normal'><span style='font-size:6.0pt;mso-bidi-font-size:11.0pt'><o:p><img style='position: absolute;top: -50px;margin-left: 240pt;padding-left: 0px;' width=190 height=140 src="{{base_path().$nom}}" align=center hspace=12></o:p></span>
+      <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:normal'><span style='font-size:6.0pt;mso-bidi-font-size:11.0pt'><o:p><img style='position: absolute;top: -12px;margin-left: 220pt;padding-left: 0px;' width=250 height=100 src="{{base_path().$nom}}" align=center hspace=12></o:p></span>
       </p>
     </div>
     @endif
 
 
     <div id="footer1">
-      <div style="float: left;font-size: 15px;width: 50%;text-align: center;">
-         @php $empresa = Sis_medico\Empresa::where('prioridad', '1')->first(); @endphp
-        <p> @if(!is_null($empresa->direccion)) {{$empresa->direccion}} @endif </p>
-        <p> Telfs: @if(!is_null($empresa->telefono1)) {{$empresa->telefono1}} @endif </p>
+
+
+      <!--div style="float: left;font-size: 14px;width: 50%;text-align: center;">
+
+        Av.Juan Tanca Marengo, Calle 13E NE <br>
+            Torre Médico Vitalis 1 - Mezanine 3 <br>
+            Telfs.: 042109180 - 042109180 <br>
+            Celular: 09993066407 - 0959777712 <br>
+            iecedgye@gmail.com / www.ieced.com.ec
+
       </div>
-      <div style="font-size: 15px;text-align: center;">
-       <p> @if(!is_null($empresa->direccion)) {{$empresa->direccion}} @endif </p>
-       <p> Telfs: @if(!is_null($empresa->telefono1)) {{$empresa->telefono1}} @endif </p>
-      </div>
+
+       <div style="font-size: 14px;text-align: center;">
+        Av.Juan Tanca Marengo, Calle 13E NE <br>
+            Torre Médica II - 4to piso # 408-406 <br>
+            Telfs.: 042109180 - 042109180 <br>
+            Celular: 09993066407 - 0959777712 <br>
+            iecedgye@gmail.com / www.ieced.com.ec
+
+      </div-->
     </div>
     <div id="footer2">
       <p>
         <hr style="width: 30%;margin-left: 202pt">
-        <label class="control-label" style="font-family: 'Helvetica general';font-size: 20px;">Doctor (a) 
+        <label class="control-label" style="font-family: 'Helvetica general';font-size: 20px;">Doctor (a)
         </label>
       </p>
     </div>
   </body>
-</html>  
+</html>

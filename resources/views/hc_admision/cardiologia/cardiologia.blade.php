@@ -60,7 +60,7 @@
                         </tbody>
                     </table>
                     <div class="w3-bar w3-blue">
-                        <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('procedimientos_historia.mostrar',['id' => $agenda->id])}}'">PROCEDIMIENTOS</button>
+                        <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('procedimientos_historia.mostrar',['ag' => $agenda->id])}}'">PROCEDIMIENTOS</button>
                         <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('preparacion.mostrar',['id' => $agenda->id])}}'">PREPARACIÓN</button>
                         <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('cardiologia.mostrar',['id' => $agenda->id])}}'">CARDIOLOGIA</button>
                         <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('receta.mostrar',['id' => $agenda->id])}}'">RECETA</button>

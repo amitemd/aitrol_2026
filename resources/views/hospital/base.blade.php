@@ -131,7 +131,7 @@
         </div>
 
         <div class="col-md-2 col-sm-4 col-6" style="margin-bottom: 15px; height: 40px">
-          <a class="btn btn_ordenes coloresb" onclick ="location.href='{{route('hospital.quirofano')}}'">
+          <a class="btn btn_ordenes coloresb" onclick ="location.href='{{route('hospital.quirofano', ['tipo' => 1])}}'">
             <div class="col-12" style="margin-top: 5px;">
                 <div class="row" style="padding-left: 15px; padding-right: 15px;">
                   <div class="col-md-2 col-sm-2 col-2" style="padding-left: 1px;">

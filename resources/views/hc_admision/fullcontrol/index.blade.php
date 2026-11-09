@@ -321,14 +321,14 @@
                 @endif>
               @endif  */ ?>
               <tr  @if($tipo_usuario == '11') 
-                  @if($pac->hcid!=null)
+                  {{-- @if($pac->hcid!=null)
                     @if ($hc_proc_p!=null) onclick="javascript:confirmado_duplicado('{{$pac->id_agenda}}');"
                       @else
                       onclick="javascript:confirmar_duplicado('{{$pac->id_agenda}}');"
                     @endif 
                   @else
                     onclick="javascript:alert('Agenda no Admisionada');"  
-                  @endif  
+                  @endif   --}}
                   @else class='clickable-row' 
                   data-href='{{ route("agenda.detalle", ['id' => $pac->id_agenda])}}' 
                 

@@ -17,6 +17,7 @@ $edad = $hoy->diff($fechaNacimiento)->y;
 ?>
 
 <head>
+    <meta charset="utf-8">
     <title> ANAMENESIS </title>
     <style>
         table,
@@ -50,9 +51,33 @@ $edad = $hoy->diff($fechaNacimiento)->y;
         p {}
 
         footer {
+            display: table;
+            position: fixed;
+            right: 0;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
+        }
 
-            /*background-image: url(""); 
-            background-size: 50%; */
+        footer > span {
+            display: table-cell;
+            width: 50%;
+        }
+
+        footer .document-name {
+            text-align: right;
+        }
+
+        .page-number:after {
+            content: counter(page);
         }
 
         .table1 {
@@ -121,17 +146,24 @@ $edad = $hoy->diff($fechaNacimiento)->y;
 </head>
 
 <body>
+    <footer>
+        <span>SNS-MSP / HCU-form.002 / 2021</span>
+        <span class="document-name">CONSULTA EXTERNA - ANAMNESIS-EXAMEN FÍSICO (<span class="page-number"></span>)</span>
+    </footer>
     <main>
         @php
-        $id_empresa = Session::get('id_empresa');
-        $empresa = Sis_medico\Empresa::find($id_empresa);
+            $id_empresa = Session::get('id_empresa');
+            //$empresa = Sis_medico\Empresa::find($id_empresa);
+	        $empresa = $anamnesis->historiaclinica->agenda->empresa;
 
         @endphp
-        <div class="box-body card" style="text-align: center">
-            @if(!is_null($empresa))
-            <img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:250px;height: 75px">
-            @endif
-        </div><br>
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
         <table class="table1">
             <tr>
                 <TH bgcolor="#B4A7FD" ; COLSPAN="6" ; align="left" style="font-size:12px">A. DATOS DEL ESTABLECIMIENTO Y USUARIO PACIENTE</th>
@@ -352,12 +384,6 @@ $edad = $hoy->diff($fechaNacimiento)->y;
                 <td colspan="15" align="left"></td>
             </tr>
         </table>
-        <table style"width: 100%;>
-            <tr>
-                <td style="text-align: left;width:50%; font-size: 11px">SNS-MSP / HCU-form.002 / 2021</td>
-                <td style="text-align: right;width:50%;font-size: 11px"><b>CONSULTA EXTERNA - ANAMNESIS (1) </b></td>
-            </tr>
-        </table>
         <div class="page-break-before"></div>
 
         <table class="table9">
@@ -510,6 +536,12 @@ $edad = $hoy->diff($fechaNacimiento)->y;
             <tr>
                 <th bgcolor="#B4A7FD" ; colspan="5" align="left" style="font-size:12px">K. DATOS DEL PROFESIONAL RESPONSABLE </th>
             </tr>
+            @php 
+                    $especialidad = Sis_medico\Especialidad::find( $anamnesis->historiaclinica->agenda->espid);
+                    if($empresa->id == '1307189140001'){
+                        $doctor = Sis_medico\User::find('1307189140');
+                    }
+                @endphp
 
             <tr>
                 <td bgcolor="#BBFDAC" align="center"> <b>FECHA <br> (aaaa- mm -dd)</b></td>
@@ -521,9 +553,9 @@ $edad = $hoy->diff($fechaNacimiento)->y;
             <tr>
                 <td style="height: 35px;">{{$fecha}}</td>
                 <td>{{$hora}}</td>
-                <td>{{$anamnesis->historiaclinica->doctor_1->nombre1}}</td>
-                <td>{{$anamnesis->historiaclinica->doctor_1->apellido1}}</td>
-                <td>{{$anamnesis->historiaclinica->doctor_1->apellido2}}</td>
+                <td>{{$doctor->nombre1}}</td>
+                <td>{{$doctor->apellido1}}</td>
+                <td>{{$doctor->apellido2}}</td>
             </tr>
 
             <tr>
@@ -532,10 +564,9 @@ $edad = $hoy->diff($fechaNacimiento)->y;
                 <td bgcolor="#BBFDAC" align="center" colspan="2"> <b> SELLO </b></td>
             </tr>
             <tr>
-                @php $especialidad = Sis_medico\Especialidad::find( $anamnesis->historiaclinica->agenda->espid)
-                @endphp
+                
 
-                <td colspan="1" style="height: 35px;">{{$anamnesis->historiaclinica->doctor_1->id}}</td>
+                <td colspan="1" style="height: 35px;">{{$doctor->id}}</td>
                 <td colspan="2" class="text-center" style="height: 50px;">
                     <p style="text-align: center;">
                         @php
@@ -556,20 +587,14 @@ $edad = $hoy->diff($fechaNacimiento)->y;
                     </p>
                 </td>
                 <td colspan="2" class="text-center" style="height: 50px;">
-                    @if( !is_null($firma) ) 
+                @if(!is_null($firma))
                     @if(!is_null($firma->doctor)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif @endif<br>
                     @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
                     @if(!is_null($firma->doctor)) Cedula No. {{$firma->doctor->id}} @endif
-                    @endif
+                @endif
                 </td>
             </tr>
             
-        </table>
-        <table style"width: 100%;>
-            <tr>
-                <td style="text-align: left;width:50%; font-size: 11px">SNS-MSP / HCU-form.002 / 2021</td>
-                <td style="text-align: right;width:50%;font-size: 11px"><b>CONSULTA EXTERNA -  EXAMEN FÍSICO Y PRESCRIPCIONES (2)</b></td>
-            </tr>
         </table>
     </main>
 </body>

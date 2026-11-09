@@ -144,7 +144,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Es un procedimiento que, mediante la introducción por nariz o boca de un tubo flexible (Broncoscopio), permite la visualización del árbol bronquial así como la exploración y toma de muestras de secreciones o tejidos para su análisis a fin de aproximarnos a un diagnóstico etiológico de la enfermedad causante.</td>
-                    <td><img style="height:100px;margin:15px" src="{{public_path('/imagenes/bronco.png')}}" /></td>
+                    <td><img style="height:100px;margin:15px" src="{{base_path('public/imagenes/bronco.png')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -238,8 +238,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

@@ -115,6 +115,93 @@
 	.image-checkbox-checked .fa {
       display: block !important;
     }
+
+    .study-preview-card {
+        overflow: hidden;
+        border: 1px solid #78c8d4 !important;
+        border-radius: 14px !important;
+        background: #fff !important;
+        box-shadow: 0 10px 24px rgba(8, 72, 108, .08);
+    }
+
+    .study-preview-card > .study-preview-card__header {
+        display: grid !important;
+        grid-template-columns: minmax(170px, 220px) minmax(0, 1fr) 48px;
+        grid-template-rows: auto;
+        align-items: center;
+        gap: 16px;
+        min-height: 96px;
+        padding: 14px 16px !important;
+        color: #fff !important;
+        border: 0 !important;
+        background: linear-gradient(110deg, #08658f 0%, #0784ad 52%, #17aaa8 100%) !important;
+        font-family: 'Helvetica general3', Arial, sans-serif;
+    }
+
+    .study-preview-card__header > b {
+        grid-column: 1;
+        grid-row: 1;
+        display: block;
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.45;
+        text-align: center;
+    }
+
+    .study-preview-card__header > .col-12 {
+        grid-column: 2;
+        grid-row: 1;
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 12px !important;
+        color: #fff !important;
+        background: transparent !important;
+        font-size: 17px;
+        font-weight: 600;
+        line-height: 1.35;
+        text-align: center;
+        overflow-wrap: anywhere;
+    }
+
+    .study-preview-card__header > .box-tools {
+        position: static !important;
+        top: auto !important;
+        right: auto !important;
+        float: none !important;
+        grid-column: 3;
+        grid-row: 1;
+        margin: 0 !important;
+        text-align: right;
+    }
+
+    .study-preview-card__header > .box-tools .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, .35);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .12);
+        box-shadow: none;
+    }
+
+    @media (max-width: 767px) {
+        .study-preview-card > .study-preview-card__header {
+            grid-template-columns: minmax(110px, 135px) minmax(0, 1fr) 42px;
+            gap: 8px;
+            min-height: 82px;
+            padding: 10px !important;
+        }
+
+        .study-preview-card__header > b { font-size: 12px; }
+        .study-preview-card__header > .col-12 { padding: 0 4px !important; font-size: 13px; }
+        .study-preview-card__header > .box-tools .btn { width: 38px; height: 38px; }
+    }
 </style>
 
 <div class="modal fade" id="foto" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -125,28 +212,11 @@
     </div>
 </div>
 <div class="box" style="border: 2px solid#004AC1; background-color: #56ABE3; ">
-	<div class="box-header " style="background-color:#004AC1; color: white; font-family: 'Helvetica general3'; padding-top: 0px; padding-bottom: 0px; ">
-	  	<div class="row">
-		  	<div class="col-md-12">
-			    <h1 style="font-size: 15px; background-color:#004AC1; color: white; margin-top: 0px; margin-bottom: 0px" >
-	            	<img style="width: 35px; margin-left: 5px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/imagenes.png">
-	             	<b>VISUALIZAR ESTUDIOS</b>
-				</h1>
-			</div>
-		</div>
-        @if(!is_null($paciente))
-			<center>
-			    <div class="col-12" style="padding-bottom: 20px;">
-					<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			            <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-			            	{{$paciente->nombre1}} {{$paciente->nombre2}}
-		                </b>
-					</h1>
-				</div>
-			</center>
-		@endif
-	    <!-- /.box-tools -->
-	</div>
+	@include('hc4.partials.module_header', [
+		'moduleTitle' => __('hc4.visualizarestudios_'),
+		'moduleIcon' => asset('/').'hc4/img/iconos/imagenes.png',
+		'paciente' => $paciente
+	])
   <!-- /.box-header -->
   <div class="box-body" style="padding-left: 0px">
   	<div class="col-12">
@@ -155,8 +225,8 @@
 		  		@foreach($procedimientos2 as $value)
 
 			    	<div class="col-12 {{$value->id_protocolo}}">
-			    		<div class="box" style="border: 2px solid #004AC1; background-color: #004AC1; ">
-						  	<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+<div class="box study-preview-card">
+<div class="box-header with-border study-preview-card__header">
 							    			@if(!is_null($value->f_operacion))
 						                        @php
 						                        $dia =  Date('N',strtotime($value->f_operacion));
@@ -219,7 +289,7 @@
 			                            <i class="fa fa-minus"></i>
 			                        </button>
 			                    </div>
-		                        <div class="col-12" style="margin-top: 20px; background-color: #004AC1; color: white; width: 100%; height: 100%">
+		                        <div class="col-12" style="margin-top: 20px; color: white; width: 100%; height: 100%">
 			                    	@if(!is_null($value))
 				                    	@php
 									  		$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_procedimiento)->get();
@@ -274,8 +344,8 @@
 		    	@foreach($procedimientos1 as $value)
 
 			    	<div class="col-12 {{$value->id_protocolo}}">
-			    		<div class="box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-						  <div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+<div class="box study-preview-card">
+						  <div class="box-header with-border study-preview-card__header">
 						    	@if(!is_null($value->f_operacion))
 						                        @php
 						                        $dia =  Date('N',strtotime($value->f_operacion));
@@ -337,7 +407,7 @@
 		                        <button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
 		                            <i class="fa fa-minus"></i></button>
 		                    </div>
-		                        <div class="col-12" style="margin-top: 20px; background-color: #004AC1; color: white">
+		                        <div class="col-12" style="margin-top: 20px; color: white">
 			                    	@php
 			                    		$procedimiento =  \Sis_medico\hc_procedimientos::find($value->id_procedimiento);
 			                    		$procedimiento_completo = \Sis_medico\procedimiento_completo::find($procedimiento->id_procedimiento_completo);

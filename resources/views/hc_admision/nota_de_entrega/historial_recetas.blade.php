@@ -278,21 +278,64 @@
                                                                             </div>
                                                                         </div>
                                                                         <div class="col-md-2">
-                                                                            <div class="row">
-                                                                              <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">              <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime', ['id' => $re_hist->id, 'tipo' => '2']) }}">
+                                                                            <div class="row">                                                                              
+									                                                            <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">   					      
+									                                                              <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime', ['id' => $re_hist->id, 'tipo' => '2']) }}">
                                                                                 <div class="col-md-12" style="text-align: center; ">
                                                                                   <div class="row" style="padding-left: 0px; padding-right: 0px;">
                                                                                     <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
                                                                                       <img style="" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
                                                                                     </div>
                                                                                     <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-                                                                                      <label style="font-size: 14px;color: white">@lang('laboratorio.imprimirMembretada')</label>
+                                                                                      <label style="font-size: 14px;color: white">Receta Membretada</label>
                                                                                     </div>
                                                                                   </div>
                                                                                 </div>
                                                                                 </a>
                                                                               </div>
-                                                                              <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">
+                                                                              <!-- <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">              
+                                                                                <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime', ['id' => $re_hist->id, 'tipo' => '5']) }}">
+                                                                                <div class="col-md-12" style="text-align: center; ">
+                                                                                  <div class="row" style="padding-left: 0px; padding-right: 0px;">
+                                                                                    <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
+                                                                                      <img style="" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
+                                                                                    </div>
+                                                                                    <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
+                                                                                      <label style="font-size: 14px;color: white">Receta IESS</label>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </div>
+                                                                                </a>
+                                                                              </div> 
+                                                                              <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">              
+                                                                                <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime', ['id' => $re_hist->id, 'tipo' => '6']) }}">
+                                                                                <div class="col-md-12" style="text-align: center; ">
+                                                                                  <div class="row" style="padding-left: 0px; padding-right: 0px;">
+                                                                                    <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
+                                                                                      <img style="" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
+                                                                                    </div>
+                                                                                    <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
+                                                                                      <label style="font-size: 14px;color: white">Receta Privada</label>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </div>
+                                                                                </a>
+                                                                              </div>-->
+                                                                              <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">              
+                                                                                <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime', ['id' => $re_hist->id, 'tipo' => '3']) }}">
+                                                                                <div class="col-md-12" style="text-align: center; ">
+                                                                                  <div class="row" style="padding-left: 0px; padding-right: 0px;">
+                                                                                    <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
+                                                                                      <img style="" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
+                                                                                    </div>
+                                                                                    <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
+                                                                                      <label style="font-size: 14px;color: white">Receta CRM</label>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </div>
+                                                                                </a>
+                                                                              </div>
+                                                                              <!-- <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">
                                                                                 <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime', ['id' => $re_hist->id, 'tipo' => '1']) }}">
                                                                                 <div class="col-md-12" style="text-align: center;">
                                                                                   <div class="row" style="padding-left: 0px; padding-right: 0px;">
@@ -300,12 +343,12 @@
                                                                                       <img style="color: black" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
                                                                                     </div>
                                                                                     <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px;">
-                                                                                      <label style="font-size: 14px;color: white">@lang('laboratorio.imprimir')</label>
+                                                                                      <label style="font-size: 14px;color: white">Receta sin Membrete</label>
                                                                                     </div>
                                                                                   </div>
                                                                                 </div>
                                                                                 </a>
-                                                                              </div>
+                                                                              </div> -->
                                                                               <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">
                                                                                 <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('receta.nota_entrega', ['id' => $re_hist->id]) }}">
                                                                                 <div class="col-md-12" style="text-align: center;">
@@ -321,7 +364,7 @@
                                                                                 </a>
                                                                               </div>
                                                                              <!--  <div class="col-md-12 col-sm-11 col-11" style="margin: 10px; padding: 0px;background-color: #3c8dbc;">
-                                                                                <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="{{ route('nota_entrega.editar', ['id' => $re_hist->id]) }}">
+                                                                                <a target="_blank" class="btn btn_accion"  style=" width: 100%; height: 100%" href="">
                                                                                 <div class="col-md-12" style="text-align: center;">
                                                                                   <div class="row" style="padding-left: 0px; padding-right: 0px;">
                                                                                     <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
@@ -350,15 +393,13 @@
                             </div>
                         </div>
                     </div>
-                    </div>
                 </div>
             </div>
-           
+        </div>   
     </div>
 </div>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script src="{{asset('plugins/iCheck/icheck.min.js')}}"></script>
 </section>
-
 @include('sweet::alert')
 @endsection

@@ -112,6 +112,15 @@
             {{ csrf_field() }}
             <input type="hidden" name="id_interconsulta" id="id_interconsulta" value="{{$interconsulta->id}}">
             <div class="row" style="padding: 0;">
+                @php $workflowPriority = $interconsulta->clinicalWorkflow ? $interconsulta->clinicalWorkflow->priority : 'URGENT'; @endphp
+                <div class="col-md-12">
+                    <label><b>Prioridad clínica y tiempo de respuesta:</b></label>
+                    <select name="clinical_priority" class="form-control input-sm">
+                        <option value="ROUTINE" {{ $workflowPriority == 'ROUTINE' ? 'selected' : '' }}>Rutina (24 horas)</option>
+                        <option value="URGENT" {{ $workflowPriority == 'URGENT' ? 'selected' : '' }}>Urgente (60 minutos)</option>
+                        <option value="STAT" {{ $workflowPriority == 'STAT' ? 'selected' : '' }}>Inmediata (15 minutos)</option>
+                    </select>
+                </div>
                 <div class="col-md-12">
                     <label><b> {{trans('emergencia.Servicio')}}: </b> </label>
                     <input name="servicio" id="servicio" class="form-control input-sm" value="{{$interconsulta->servicio}}">
@@ -245,7 +254,7 @@
         var id_tarifario = document.getElementById('tarifario').value;
         var id_interconsulta = document.getElementById('id_interconsulta').value;
         $.ajax({
-			type: 'GET',
+			type: 'POST',
 			url: "{{route('decimopaso.guardar_det_tarifario')}}",
 			headers: {
 				'X-CSRF-TOKEN': $('input[name=_token]').val()
@@ -409,7 +418,7 @@
 
     function cargar_tabla_cie(id) {
         $.ajax({
-            url: `{{route('decimo.cargar_tabla_cie',['id' => $interconsulta->id])}}`,
+            url: `{{route('decimo.cargar_tabla_cie',['id_inter' => $interconsulta->id])}}`,
             dataType: "html",
             type: 'get',
 
@@ -552,8 +561,9 @@
     function eliminar_cie10(id) {
         $.ajax({
             async: true,
-            type: "GET",
+            type: "DELETE",
             url: "{{url('hosp/decimo/cie/eliminar_cie')}}/" + id,
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
             data: "",
             datatype: "html",
             success: function(datahtml) {

@@ -38,7 +38,242 @@
       z-index: 9999;
       bottom:  500px;
       left: 200px;
-      
+
+    }
+
+    .hc4-image-edit-section {
+      margin: 2px 0 10px;
+    }
+
+    #area_trabajo .hc4-image-edit-section__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      margin-bottom: 6px;
+      padding: 6px 10px;
+      border-radius: 7px;
+      background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+      color: #fff !important;
+      font-family: 'Helvetica general';
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .hc4-image-catalog-tools {
+      display: grid;
+      grid-template-columns: minmax(210px, 1fr) minmax(210px, 1fr) auto;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .hc4-image-catalog-tools__field {
+      position: relative;
+    }
+
+    #area_trabajo .hc4-image-catalog-tools__input {
+      width: 100%;
+      height: 34px;
+      padding: 5px 32px 5px 10px;
+      border: 1px solid #cbdde5;
+      border-radius: 7px;
+      color: #485563;
+      background: #fff;
+      box-shadow: none;
+    }
+
+    #area_trabajo .hc4-image-catalog-tools__input:focus {
+      border-color: #13a3ad;
+      box-shadow: 0 0 0 3px rgba(19,163,173,.12);
+      outline: none;
+    }
+
+    .hc4-image-catalog-tools__clear {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 32px;
+      height: 34px;
+      border: 0;
+      background: transparent;
+      color: #82939e;
+    }
+
+    .hc4-image-catalog-selected {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 5px 10px;
+      border: 1px solid #d7e5eb;
+      border-radius: 7px;
+      background: #f3f9fb;
+      color: #4e6070;
+      white-space: nowrap;
+    }
+
+    .hc4-image-catalog-selected input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: #159da8;
+    }
+
+    .hc4-image-catalog {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: dense;
+      align-items: start;
+      gap: 8px;
+      max-height: 440px;
+      padding: 1px 4px 3px 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .hc4-image-group {
+      overflow: hidden;
+      border: 1px solid #d7e3e8;
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .hc4-image-group--wide {
+      grid-column: 1 / -1;
+    }
+
+    .hc4-image-group--medium {
+      grid-column: 1 / -1;
+    }
+
+    .hc4-image-group__title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 30px;
+      margin: 0;
+      padding: 5px 9px;
+      background: var(--group-bg);
+      color: var(--group-text);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .hc4-image-group__title small {
+      color: inherit;
+      font-size: 9px;
+      font-weight: 500;
+      opacity: .75;
+      white-space: nowrap;
+    }
+
+    .hc4-image-group__items {
+      display: grid;
+      grid-template-columns: repeat(var(--group-columns, 1), minmax(0, 1fr));
+    }
+
+    .hc4-image-procedure {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      min-height: 28px;
+      margin: 0;
+      padding: 4px 7px;
+      border-bottom: 1px solid #e8eef1;
+      border-right: 1px solid #eef2f4;
+      color: #53606b;
+      font-size: 10.5px;
+      font-weight: 400;
+      line-height: 1.18;
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+
+    .hc4-image-procedure:last-child {
+      border-bottom: 0;
+    }
+
+    .hc4-image-procedure:hover,
+    .hc4-image-procedure.is-selected {
+      background: var(--group-selected);
+    }
+
+    .hc4-image-procedure input {
+      flex: 0 0 auto;
+      width: 14px !important;
+      min-width: 14px !important;
+      max-width: 14px !important;
+      height: 14px !important;
+      min-height: 14px !important;
+      max-height: 14px !important;
+      margin: 0;
+      padding: 0 !important;
+      position: static !important;
+      accent-color: #2e9ed6;
+    }
+
+    .hc4-image-catalog__empty {
+      grid-column: 1 / -1;
+      padding: 25px;
+      border: 1px dashed #cbdde5;
+      border-radius: 9px;
+      color: #667782;
+      text-align: center;
+    }
+
+    .hc4-image-edit-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0 4px;
+    }
+
+    #area_trabajo .hc4-image-edit-actions__button {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 210px !important;
+      max-width: 100%;
+      height: 42px !important;
+      min-height: 42px !important;
+      margin: 0 !important;
+      padding: 8px 14px !important;
+      border: 0 !important;
+      border-radius: 9px !important;
+      background: linear-gradient(105deg, #07547e, #0795b5) !important;
+      color: #fff !important;
+      box-shadow: 0 6px 14px rgba(5,84,126,.16) !important;
+      font-size: 13px !important;
+      line-height: 1.2 !important;
+    }
+
+    #area_trabajo .hc4-image-edit-actions__button:hover,
+    #area_trabajo .hc4-image-edit-actions__button:focus {
+      background: linear-gradient(105deg, #06486d, #0787a5) !important;
+      color: #fff !important;
+      outline: none;
+    }
+
+    @media (max-width: 560px) {
+      .hc4-image-edit-actions { flex-direction: column; }
+      #area_trabajo .hc4-image-edit-actions__button { width: 100% !important; }
+      .hc4-image-catalog-tools { grid-template-columns: 1fr; }
+      .hc4-image-catalog { grid-template-columns: 1fr; max-height: 460px; }
+      .hc4-image-group--wide { grid-column: span 1; }
+      .hc4-image-group--medium { grid-column: span 1; }
+      .hc4-image-group__items { grid-template-columns: 1fr !important; }
+    }
+
+    @media (min-width: 561px) and (max-width: 1050px) {
+      .hc4-image-catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hc4-image-group--wide { grid-column: 1 / -1; }
+      .hc4-image-group--medium { grid-column: 1 / -1; }
+      .hc4-image-group__items { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     }
 
 </style>
@@ -53,7 +288,7 @@
         Seleccione un Procedimiento Imagenes
 </div>
 
-<div class="col-md-12" style="padding-left: 15px;padding-right: 30px;">
+<div id="hc4_image_editor_{{$data_orden_imag->id}}" class="col-md-12" style="padding-left: 15px;padding-right: 30px;">
   @php
       if(!is_null($paciente)){
             
@@ -66,7 +301,7 @@
       $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0]; 
   @endphp
 
-  <form method="POST" id="edit_orden_imag">
+  <form method="POST" id="edit_orden_imag_{{$data_orden_imag->id}}">
       {{ csrf_field() }}
       <input type="hidden" name="id_ordenimag" value="{{$data_orden_imag->id}}">
       <input type="hidden" name="id_paciente" value="{{$paciente->id}}">
@@ -79,7 +314,7 @@
           @endif 
         </div>
         @if($ndoctor->id != 1307189140)
-          <div class="col-md-4">
+          <!--div class="col-md-4">
             <span style="font-family: 'Helvetica general';font-size: 16px;color: red;">Agregar Firma CRM</span>
             <input style="width:17px;height:17px;" type="checkbox" id="firma_doctor_rob" class="flat-red" name="firma_doctor_rob" value="1" 
               @if(old('firma_doctor_rob')=="1")  
@@ -87,7 +322,7 @@
               @elseif($data_orden_imag->check_doctor =='1') 
                 checked 
               @endif>
-          </div>
+          </div-->
         @endif
       </div>
       <div class="row">
@@ -137,74 +372,95 @@
                 <input type="hidden" name="imag_des_diagnostico" id="imag_des_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}">
               </div>
       </div>
-      <div class="col-12">&nbsp;</div>
-      @php      
-          if(!is_null($data_orden_imag->id)){ 
-           $x_orden_tipo_imagenes = Sis_medico\Orden_Tipo::where('id_orden',$data_orden_imag->id)
-                                          ->where('id_grupo_procedimiento','20')
-                                          ->first();
-          }  
+      @php
+        $paletaImagenes = [
+          ['fondo' => '#dbeafe', 'texto' => '#1e3a5f', 'seleccion' => '#eff6ff'],
+          ['fondo' => '#dcfce7', 'texto' => '#285943', 'seleccion' => '#f0fdf4'],
+          ['fondo' => '#fef3c7', 'texto' => '#6b4f16', 'seleccion' => '#fffbeb'],
+          ['fondo' => '#fce7f3', 'texto' => '#6b3150', 'seleccion' => '#fdf2f8'],
+          ['fondo' => '#cffafe', 'texto' => '#245766', 'seleccion' => '#ecfeff'],
+          ['fondo' => '#ede9fe', 'texto' => '#493d72', 'seleccion' => '#f5f3ff'],
+          ['fondo' => '#e2e8f0', 'texto' => '#34445a', 'seleccion' => '#f8fafc'],
+        ];
       @endphp
-      <div class="row">
-          <div class="col-md-12">
-            <div style="background-color: #004AC1; color: white">
-              <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">PROCEDIMIENTOS IMAGENES 
-              </label>
+      <div class="hc4-image-edit-section">
+          <div class="hc4-image-edit-section__title">
+            <i class="fa fa-picture-o" aria-hidden="true"></i>
+            <span>PROCEDIMIENTOS IMÁGENES</span>
+          </div>
+          <div class="hc4-image-catalog-tools">
+            <div class="hc4-image-catalog-tools__field">
+              <input type="search" class="hc4-image-catalog-tools__input hc4-image-search-exam" placeholder="Buscar examen" autocomplete="off">
+              <button type="button" class="hc4-image-catalog-tools__clear" data-clear="exam" title="Limpiar examen">
+                <i class="glyphicon glyphicon-remove-circle"></i>
+              </button>
             </div>
+            <div class="hc4-image-catalog-tools__field">
+              <input type="search" class="hc4-image-catalog-tools__input hc4-image-search-group" placeholder="Buscar agrupador" autocomplete="off">
+              <button type="button" class="hc4-image-catalog-tools__clear" data-clear="group" title="Limpiar agrupador">
+                <i class="glyphicon glyphicon-remove-circle"></i>
+              </button>
+            </div>
+            <label class="hc4-image-catalog-selected">
+              <input type="checkbox" class="hc4-image-show-selected">
+              <span>Ver seleccionados (<b class="hc4-image-selected-count">{{count($procedimientosSeleccionados)}}</b>)</span>
+            </label>
           </div>
-          <div class="col-md-12">
-            <select id="id_procedimiento_imag" class="form-control input-sm select2_proc" name="x_procedimiento_imag[]" multiple="multiple" data-placeholder="Seleccione" style="width: 100%;" autocomplete="off">
+
+          <div class="hc4-image-catalog">
+            @foreach($gruposImagenes as $indiceGrupo => $grupoImagen)
               @php
-               $im_aceptacion = 0;
-               $im_validacion = null;
+                $colorGrupo = $paletaImagenes[$indiceGrupo % 6];
+                $cantidadGrupo = $grupoImagen->procedimientos->count();
+                $grupoAmplio = $cantidadGrupo > 24;
+                $grupoMediano = $cantidadGrupo > 12 && $cantidadGrupo <= 24;
+                $columnasGrupo = $cantidadGrupo > 70 ? 5 : ($cantidadGrupo > 40 ? 4 : ($cantidadGrupo > 24 ? 3 : ($cantidadGrupo > 12 ? 2 : 1)));
               @endphp
-              @if(!is_null($x_orden_tipo_imagenes))
-                @php
-                  $proc_imag = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo',$x_orden_tipo_imagenes->id)->get();  
-                @endphp
-                  @foreach($proc_imag as $value)
-                    @php
-                      
-                      $clase = 'im'; 
-                      if(!is_null($value->procedimiento->grupo_procedimiento)){
-                        $clase = $clase.$value->procedimiento->id_grupo_procedimiento;
-                      }
-                      
-                      $im_aceptacion++;
-                        
-                     
-                    @endphp 
-                    <option disabled="disabled" class="{{$clase}}" selected value="{{$value->procedimiento->id}}">{{$value->procedimiento->nombre}}</option>
+              <section class="hc4-image-group @if($grupoAmplio) hc4-image-group--wide @elseif($grupoMediano) hc4-image-group--medium @endif"
+                       data-group-name="{{$grupoImagen->nombre}}"
+                       style="--group-bg:{{$colorGrupo['fondo']}};--group-text:{{$colorGrupo['texto']}};--group-selected:{{$colorGrupo['seleccion']}};--group-columns:{{$columnasGrupo}};">
+                <h4 class="hc4-image-group__title">
+                  <span>{{$grupoImagen->nombre}}</span>
+                  <small><span class="hc4-image-group-count">{{$cantidadGrupo}}</span> exámenes</small>
+                </h4>
+                <div class="hc4-image-group__items">
+                  @foreach($grupoImagen->procedimientos as $procedimientoImagen)
+                    @php $estaSeleccionado = in_array($procedimientoImagen->id, $procedimientosSeleccionados); @endphp
+                    <label class="hc4-image-procedure @if($estaSeleccionado) is-selected @endif" data-procedure-name="{{$procedimientoImagen->nombre}}">
+                      <input type="checkbox"
+                             class="hc4-image-procedure-check"
+                             name="x_procedimiento_imag[]"
+                             value="{{$procedimientoImagen->id}}"
+                             @if($estaSeleccionado) checked @endif>
+                      <span>{{$procedimientoImagen->nombre}}</span>
+                    </label>
                   @endforeach
-              @endif  
+                </div>
+              </section>
+            @endforeach
 
-              @foreach($px as $value)
-                @php
-                  
-                  $clase = 'im'; 
-                  if(!is_null($value->grupo_procedimiento)){
-                    $clase = $clase.$value->id_grupo_procedimiento;
-                  }
+            @if($procedimientosAnteriores->isNotEmpty())
+              @php $colorAnterior = $paletaImagenes[6]; @endphp
+              <section class="hc4-image-group" data-group-name="PROCEDIMIENTOS ANTERIORES"
+                       style="--group-bg:{{$colorAnterior['fondo']}};--group-text:{{$colorAnterior['texto']}};--group-selected:{{$colorAnterior['seleccion']}};--group-columns:1;">
+                <h4 class="hc4-image-group__title">
+                  <span>PROCEDIMIENTOS ANTERIORES</span>
+                  <small>{{$procedimientosAnteriores->count()}} exámenes</small>
+                </h4>
+                <div class="hc4-image-group__items">
+                  @foreach($procedimientosAnteriores as $procedimientoAnterior)
+                    <label class="hc4-image-procedure is-selected" data-procedure-name="{{$procedimientoAnterior->nombre}}">
+                      <input type="checkbox" class="hc4-image-procedure-check" name="x_procedimiento_imag[]" value="{{$procedimientoAnterior->id}}" checked>
+                      <span>{{$procedimientoAnterior->nombre}}</span>
+                    </label>
+                  @endforeach
+                </div>
+              </section>
+            @endif
 
-                  if(!is_null($x_orden_tipo_imagenes)){
-                    
-                    $im_validacion = \Sis_medico\Orden_Procedimiento::where('id_procedimiento', $value->id) ->where('id_orden_tipo',$x_orden_tipo_imagenes->id)->first();
-                    
-                    if(!is_null($im_validacion)){
-                      $im_aceptacion++;
-                    }
-                  
-                  }
-                  
-                 
-                @endphp 
-                @if(is_null($im_validacion))
-                  <option disabled="disabled" class="{{$clase}}" value="{{$value->id}}">{{$value->nombre}}</option>
-                @endif  
-              @endforeach
-            </select>
+            <div class="hc4-image-catalog__empty" hidden>No se encontraron exámenes con los filtros ingresados.</div>
           </div>
-        </div>
+      </div>
       <div class="row">
         <div class="form-group col-md-12">
           <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION M&EacuteDICA:</span>
@@ -216,36 +472,18 @@
            <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION RECEPCI&OacuteN:</span><textarea id="xobservacion_recepcion" name="xobservacion_recepcion" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_imagenes({{$data_orden_imag->id}});">@if(!is_null($data_orden_imag))<?php echo $data_orden_imag->observacion_recepcion?>@endif</textarea>
           </div>
       </div>
-      <div class="row">
-          <div class="col-md-12">
-           <span style="font-family: 'Helvetica general';font-size: 12px">OTROS PROCEDIMIENTOS:</span><textarea id="xotros" name="xotros" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_imagenes({{$data_orden_imag->id}});">@if(!is_null($data_orden_imag))<?php echo $data_orden_imag->otros?>@endif</textarea>
-          </div>
-      </div>
-      <br>
-      <div class="row">
-          <div class="col-4">
-            <center>
-              <button style="font-size: 15px; margin-bottom: 15px; height: 80%; width: 100%"  type="button" class="btn btn-info btn_ordenes" onclick="actualiza_orden_imagenes({{$data_orden_imag->id}})"><span class="fa fa-floppy-o"></span>&nbsp;&nbsp;Guardar
-              </button>
-            </center>
-          </div>
-          <div class="col-4">
-            <center>
-              <button style="font-size: 14px; margin-bottom: 15px; height: 80%; width: 70%"  type="button" class="btn btn-info btn_ordenes" onclick="descargar_orden_imagenes({{$data_orden_imag->id}});"><span class="glyphicon glyphicon-download-alt"></span>&nbsp;Descargar Orden
-              </button>
-            </center>
-          </div>
-          @if($data_orden_imag->id_evolucion!=null)
-          <div class="col-4">
-            <center>
-              <button style="font-size: 14px; margin-bottom: 15px; height: 80%; width: 70%"  type="button" class="btn btn-info btn_ordenes" onclick="formato_012({{$data_orden_imag->id_evolucion}}, {{$data_orden_imag->id}}, 'area_trabajo_formato012_pi{{$data_orden_imag->id}}{{$aleatorio}}')"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;Formato 012
-              </button>
-            </center>
-          </div>
-          @endif
+      <div class="hc4-image-edit-actions">
+          <button type="button" class="btn hc4-image-edit-actions__button" onclick="actualiza_orden_imagenes({{$data_orden_imag->id}})">
+            <span class="fa fa-floppy-o" aria-hidden="true"></span>
+            <span>Guardar</span>
+          </button>
+          <button type="button" class="btn hc4-image-edit-actions__button" onclick="descargar_orden_imagenes({{$data_orden_imag->id}});">
+            <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span>
+            <span>Descargar Orden</span>
+          </button>
       </div>
   </form>
-  <div class="row" style="border-radius: 8px;" id="area_trabajo_formato012_pi{{$data_orden_imag->id}}{{$aleatorio}}"></div>
+  <div class="row" style="border-radius: 8px;" id="area_trabajo_formato012_pi"></div>
 </div>
 
 <script type="text/javascript">
@@ -308,91 +546,80 @@
 </script>
 
 <script type="text/javascript">
-    
-    $('.im20').removeAttr('disabled');
+  (function configurarCatalogoImagenes{{$data_orden_imag->id}}(){
+    var idOrden = '{{$data_orden_imag->id}}';
+    var $editor = $('#hc4_image_editor_' + idOrden);
+    var $catalogo = $editor.find('.hc4-image-catalog');
+    var $buscarExamen = $editor.find('.hc4-image-search-exam');
+    var $buscarGrupo = $editor.find('.hc4-image-search-group');
+    var $soloSeleccionados = $editor.find('.hc4-image-show-selected');
 
-    $('.select2_proc').select2({
-            tags: false,  
+    function normalizar(texto){
+      var valor = String(texto || '').toLowerCase();
+      return typeof valor.normalize === 'function'
+        ? valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        : valor;
+    }
+
+    function actualizarContador(){
+      var cantidad = $editor.find('.hc4-image-procedure-check:checked').length;
+      $editor.find('.hc4-image-selected-count').text(cantidad);
+    }
+
+    function filtrarCatalogo(){
+      var examen = normalizar($buscarExamen.val());
+      var grupo = normalizar($buscarGrupo.val());
+      var seleccionados = $soloSeleccionados.prop('checked');
+      var gruposVisibles = 0;
+
+      $catalogo.find('.hc4-image-group').each(function(){
+        var $grupo = $(this);
+        var coincideGrupo = !grupo || normalizar($grupo.data('group-name')).indexOf(grupo) !== -1;
+        var visibles = 0;
+
+        $grupo.find('.hc4-image-procedure').each(function(){
+          var $fila = $(this);
+          var coincideExamen = !examen || normalizar($fila.data('procedure-name')).indexOf(examen) !== -1;
+          var coincideSeleccion = !seleccionados || $fila.find('.hc4-image-procedure-check').prop('checked');
+          var mostrar = coincideGrupo && coincideExamen && coincideSeleccion;
+          $fila.toggle(mostrar);
+          if (mostrar) visibles++;
+        });
+
+        $grupo.find('.hc4-image-group-count').text(visibles);
+        $grupo.toggle(visibles > 0);
+        if (visibles > 0) gruposVisibles++;
+      });
+
+      $catalogo.find('.hc4-image-catalog__empty').prop('hidden', gruposVisibles > 0);
+    }
+
+    $editor.find('.hc4-image-procedure-check').on('change.hc4imagenes', function(){
+      var $check = $(this);
+      if (!$check.prop('checked') && !$editor.find('.hc4-image-procedure-check:checked').length) {
+        $check.prop('checked', true);
+        $check.closest('.hc4-image-procedure').addClass('is-selected');
+        $('#select_proc').stop(true, true).fadeIn(300).delay(1700).fadeOut(500);
+        return;
+      }
+
+      $check.closest('.hc4-image-procedure').toggleClass('is-selected', $check.prop('checked'));
+      actualizarContador();
+      filtrarCatalogo();
+      actualiza_orden_imagenes(idOrden);
     });
 
-    function im_actualiza_select(){
-      
-      var seleccionados =  $('#id_procedimiento_imag').find(':selected');   
-      var longitud =  seleccionados.length; 
-      //alert(longitud);     
-      if(longitud>=1){
-        //alert("mayor igual a 1");
-        //$('.im20').attr('disabled','disabled');
-        $('.im').removeAttr('disabled');
+    $buscarExamen.add($buscarGrupo).on('input.hc4imagenes', filtrarCatalogo);
+    $soloSeleccionados.on('change.hc4imagenes', filtrarCatalogo);
+    $editor.find('.hc4-image-catalog-tools__clear').on('click.hc4imagenes', function(){
+      var objetivo = $(this).data('clear') === 'group' ? $buscarGrupo : $buscarExamen;
+      objetivo.val('').focus();
+      filtrarCatalogo();
+    });
 
-      }else{
-        //alert("cero");
-        $('.im20').removeAttr('disabled'); 
-        $('.im').attr('disabled','disabled');
-        //$('.c').prop('disabled','false');    
-      }
-
-      seleccionados.each(function( index ) {
-          $( this ).removeAttr('disabled');
-      });
-
-      $('.select2_proc').select2({
-        tags: false,  
-      });
-      
-     
-    }
-
-    function im_quita_select(){
-      //alert("quita");
-      var seleccionados =  $('#id_procedimiento_imag').find(':selected');   
-      var longitud =  seleccionados.length; 
-      //alert("q"+longitud);  
-      if(longitud>1){
-        
-        $('.im20').attr('disabled','disabled');
-        $('.im').removeAttr('disabled');
-
-      }else{
-        //alert("salio");
-        $('.im20').removeAttr('disabled');
-        $('.im').attr('disabled','disabled');
-
-      }
-
-      seleccionados.each(function( index ) {
-          $( this ).removeAttr('disabled');
-      });
-
-      $('.select2_proc').select2({
-        tags: false,  
-      });
-      
-      
-    }
-     
-    $(".select2_proc").on("select2:select", function (evt) {
-        
-        var element = evt.params.data.element;
-        //console.log(element);
-        var $element = $(element);
-
-        $element.detach();
-        $(this).append($element);
-        $(this).trigger("change");
-        im_actualiza_select();
-        actualiza_orden_imagenes({{$data_orden_imag->id}});
-    }); 
-
-    $(".select2_proc").on("select2:unselecting", function (evt) {
-       im_quita_select();    
-       actualiza_orden_imagenes({{$data_orden_imag->id}});     
-    }); 
-
-    @if($im_aceptacion > 0 )
-      //alert("base");
-      im_actualiza_select();
-    @endif
+    actualizarContador();
+    filtrarCatalogo();
+  })();
 
 </script>
 
@@ -400,25 +627,46 @@
   
     //Funcion para actualizar Orden de Imagenes
     function actualiza_orden_imagenes(id_orden){
+        var $editor = $('#hc4_image_editor_' + id_orden);
+        var $formulario = $('#edit_orden_imag_' + id_orden);
+        var $procedimientos = $editor.find('.hc4-image-procedure-check:checked');
+        var estadoGuardado = $editor.data('estadoGuardadoImagenes') || {guardando: false, pendiente: false};
 
-        var jprocedimientos = $('#id_procedimiento_imag').val();  
-        if (jprocedimientos != ""){      
+        if ($procedimientos.length){
+          if (estadoGuardado.guardando) {
+            estadoGuardado.pendiente = true;
+            $editor.data('estadoGuardadoImagenes', estadoGuardado);
+            return;
+          }
+
+          estadoGuardado.guardando = true;
+          estadoGuardado.pendiente = false;
+          $editor.data('estadoGuardadoImagenes', estadoGuardado);
+
           $.ajax({
               type: "POST",
               url: "{{route('actualiza.ordenhc4_procedimagenes')}}",
-              headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-              datatype: "html", 
-              data: $("#edit_orden_imag").serialize(),
-              success: function(datahtml){
-                //console.log(datahtml);
-                $("#alerta_guardado").fadeIn(1000);
-                $("#alerta_guardado").fadeOut(3000);
-
+              headers:{'X-CSRF-TOKEN':$formulario.find('input[name=_token]').val()},
+              dataType: "json",
+              data: $formulario.serialize(),
+              success: function(){},
+              error: function(xhr){
+                var mensaje = xhr.responseJSON && xhr.responseJSON.message
+                  ? xhr.responseJSON.message
+                  : 'No se pudo guardar la orden de imágenes.';
+                if (window.Swal && typeof window.Swal.fire === 'function') {
+                  window.Swal.fire({icon: 'error', title: 'No se guardó', text: mensaje});
+                } else {
+                  window.alert(mensaje);
+                }
               },
-              error:  function(){
-                
-               //console.log();
-
+              complete: function(){
+                estadoGuardado.guardando = false;
+                $editor.data('estadoGuardadoImagenes', estadoGuardado);
+                if (estadoGuardado.pendiente) {
+                  estadoGuardado.pendiente = false;
+                  actualiza_orden_imagenes(id_orden);
+                }
               }
             });
         }else{
@@ -432,4 +680,24 @@
        window.open('{{url('imprimir/orden_hc4/imagenes')}}/'+id_or,'_blank');  
     }
 </script>
+<script type="text/javascript">
 
+function formato_012(id) {
+
+$.ajax({
+  type: 'GET',
+  url:"{{url('hc4/formato012')}}/"+id,
+  headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+  datatype: 'json',
+  data: $("#edit_orden").serialize(),
+  success: function(data){
+    $("#area_trabajo_formato012_pi").empty().html(data);
+    //console.log(data);
+  },
+  error: function(data){
+    console.log(data);
+  }
+});
+}
+  
+</script>

@@ -13,6 +13,7 @@ use Sis_medico\Opcion_Usuario;
 use Sis_medico\Ho_Solicitud;
 use Sis_medico\Paciente;
 use Sis_medico\Sala;
+use Sis_medico\Services\CurrentHospitalResolver;
 
 class UciController extends Controller
 {
@@ -26,7 +27,11 @@ class UciController extends Controller
         $fecha_desde = date('Y-m-d');
         $fecha_hasta = date('Y-m-d');
 
-        $salas = Sala::where('estado','1')->where('id_hospital','5')->get();
+        $hospitalId = app(CurrentHospitalResolver::class)->id();
+        $salas = Sala::where('estado', '1')
+            ->when($hospitalId, function ($query) use ($hospitalId) {
+                return $query->where('id_hospital', $hospitalId);
+            })->get();
         
 
         return view('hospital/uci/index',['salas' =>$salas]);;

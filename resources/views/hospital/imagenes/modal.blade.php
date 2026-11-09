@@ -232,14 +232,13 @@
         $d2 = $variable[4];
         $d3 = $variable[5];
         $variable =  env('APP_URL').'/'.$d1.'/'.$d2.'/'.$d3.'/'.$imagen->nombre;
-    @endphp 
+    @endphp
     <div class="row" >
         <div class="col-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
         </div>
         <div class="col-12">
-            {{-- <embed id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'> --}}
-            <embed id="miIFrame" src="{{route('video.ver_archivo_biopsia',['id_archivo' => $imagen->nombre])}}" width="100%" type='application/pdf'>
+            <embed id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'>
             <div class="col-3 col-md-offset-8" style="margin:20px 0;">
                 <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">@lang('hc4.eliminarArchivo')</a>
             </div>
@@ -267,19 +266,15 @@
             });
         </script>
 @else
-    @php
-        $variable = explode('/' , asset('/hc_ima/'));
-        $d1 = $variable[3];
-        $d2 = $variable[4];
-        $d3 = $variable[5];
-        $ruta = "http://ieced.siaam.ec/".$d1."/storage/app/hc_ima/".$imagen->nombre;
-    @endphp
     <div class="container-fluid" >
         <div class="row">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
             <br>
             <hr>
-            <iframe id='miIFrame'  src="http://view.officeapps.live.com/op/view.aspx?src={{$ruta}}" width="100%" style="border: none;"></iframe>
+            <div class="alert alert-warning" role="alert">
+                La vista previa externa fue deshabilitada para no enviar documentos clínicos a terceros.
+            </div>
+            <iframe id='miIFrame' src="about:blank" title="Vista previa deshabilitada" width="100%" style="display:none; border:none;"></iframe>
             <div class="col-3 col-md-offset-8" style="margin:20px 0;">
                 <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">@lang('hc4.eliminarArchivo')</a>
             </div>
@@ -318,7 +313,7 @@
         var opcion = confirm("¿Estas Seguro que deseas eliminar la foto?");
         if (opcion == true) {
             $.ajax({
-                type: 'get',
+                type: 'delete',
                 url:'{{ url("historiaclinica/video/eliminar_foto/eliminar")}}/'+id,
                 headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
                 success: function(data){

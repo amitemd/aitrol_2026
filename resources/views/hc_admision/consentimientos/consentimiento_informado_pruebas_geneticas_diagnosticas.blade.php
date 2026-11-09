@@ -18,6 +18,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 ?>
 
 <head>
+    <meta charset="utf-8">
     <title>Consentimiento informado pruebas geneticas diagnosticas</title>
     <style>
         @page {

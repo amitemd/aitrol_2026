@@ -1,19 +1,15 @@
 <link rel="stylesheet" type="text/css" href="{{asset('ho/app-assets/css/plugins/forms/pickers/form-flat-pickr.css')}}">
 <link rel="stylesheet" type="text/css" href="{{asset('ho/app-assets/css/plugins/forms/pickers/form-pickadate.css')}}">
-<div class="card" id="catorceavopaso">
-    <div class="card-header bg bg-primary">
-        <div class="col-md-12">
-            <div class="row">
-                <div class="col-md-1">
-                </div>
-                <div class="col-md-9">
-                    <label style="color: white;" class="control_label">{{trans('pasos.CondicionAlEgresoDeEmergencia')}}</label>
-                </div>
-
-                
-            </div>
-
-
+@include('hospital.emergencia.partials.clinical-step-styles')
+<div class="card clinical-step-card" id="catorceavopaso">
+    <div class="card-header clinical-step-primary-header clinical-discharge-header">
+        <h4 class="card-title clinical-step-primary-title">{{trans('pasos.CondicionAlEgresoDeEmergencia')}}</h4>
+        <div class="clinical-discharge-actions">
+            <a target="_blank" href="{{route('epicrisis.mostrar_final', ['id_solicitud' => $id_solicitud])}}" class="btn btn-danger btn-sm"><i class="fa fa-lock"></i> Cierre clínico</a>
+            <a target="_blank" href="{{route('clinical_safety.index', ['encounter_id' => $encounterId])}}" class="btn btn-warning btn-sm"><i class="fa fa-shield"></i> Seguridad clínica</a>
+            <a target="_blank" href="{{route('clinical_access.index', ['encounter_id' => $encounterId])}}" class="btn btn-default btn-sm clinical-access-button"><i class="fa fa-unlock"></i> Acceso excepcional</a>
+            <a target="_blank" href="{{route('clinical_consults.index', ['encounter_id' => $encounterId])}}" class="btn btn-info btn-sm"><i class="fa fa-user-md"></i> Interconsultas</a>
+            <a target="_blank" href="{{route('clinical_orders.index', ['encounter_id' => $encounterId])}}" class="btn btn-primary btn-sm"><i class="fa fa-list-alt"></i> Órdenes y resultados</a>
         </div>
     </div>
     <div class="card-body">
@@ -102,6 +98,17 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="form-group col-md-12">
+                        <div class="alert alert-info" style="margin-bottom:0;">
+                            <label style="font-weight:normal; margin-bottom:0;">
+                                <input type="checkbox" name="preserve_active_orders" id="preserve_active_orders" value="PRESERVE">
+                                Conservar las órdenes activas durante el traslado
+                                <b>({{count($activeOrders)}} detectada(s))</b>.
+                            </label>
+                            <div><small>Se registrará la conciliación de laboratorio y procedimientos dentro del episodio clínico.</small></div>
+                        </div>
+                    </div>
                     {{--<div class="form-group col-md-6">
                         <div class="row">
                             <div class="col-md-12">
@@ -142,7 +149,7 @@
                             </div>
                             <div class="col-md-12">
                                 <select class="form-control select_no" name="paso" id="paso">
-                                    <option value="">Seleccione</option>
+                                    <option value="">{{trans('paso2.Seleccionee')}}</option>
                                     @foreach($pasos as $paso)
                                     <option @if(!is_null($new)) @if($new->seccion==$paso->id) selected='selected' @endif @endif value="{{$paso->id}}">{{$paso->nombre_paso}}</option>
                                     @endforeach
@@ -156,7 +163,7 @@
                                 <b>{{trans('paso2.DiasdeReposo')}}</b>
                             </div>
                             <div class="form-group col-md-12">
-                                <input type="text" class="form-control" name="dias_reposo" id="dias_reposo" @if(!is_null($new)) value="{{$new->dias_reposo}}" @endif placeholder="{{trans('Ingrese días de reposo')}}">
+                                <input type="text" class="form-control" name="dias_reposo" id="dias_reposo" @if(!is_null($new)) value="{{$new->dias_reposo}}" @endif placeholder="{{trans('paso2.IngreseDiasReposo')}}">
                             </div>
                         </div>
 
@@ -170,7 +177,7 @@
                             </div>
 
                             <div class="col-md-12">
-                                <input type="text" class="form-control estable" name="servicio_reposo" @if(!is_null($new)) value="{{$new->servicio_reposo}}" @endif id="servicio_referencia" placeholder="{{trans('Ingrese servicios de referencia')}}">
+                                <input type="text" class="form-control estable" name="servicio_reposo" @if(!is_null($new)) value="{{$new->servicio_reposo}}" @endif id="servicio_referencia" placeholder="{{trans('paso2.IngreseServicioReferencia')}}">
                             </div>
                         </div>
 
@@ -203,7 +210,7 @@
                                 <b>{{trans('paso2.Causa')}}</b>
                             </div>
                             <div class="col-md-12">
-                                <input type="text" class="form-control" name="causa" @if(!is_null($new)) value="{{$new->causa}}" @endif id="causa" placeholder="{{trans('Escribe causa')}}">
+                                <input type="text" class="form-control" name="causa" @if(!is_null($new)) value="{{$new->causa}}" @endif id="causa" placeholder="{{trans('paso2.EscribaCausa')}}">
                             </div>
                         </div>
 
@@ -240,7 +247,7 @@
                     </div>
 
                     <div class="col-md-12" style="text-align: center;">
-                        <button class="btn btn-primary but" type="button" onclick="guardar14()"> <i class="fa fa-save"></i> &nbsp; @if(!is_null($new)) {{trans('paso2.Actualizar')}} @else {{trans('paso2.Guardar')}} @endif </button>
+                        <button class="btn btn-primary but" type="button" onclick="guardar14()"><i class="fa fa-save"></i> Guardar</button>
                     </div>
                 </div>
             </form>
@@ -333,6 +340,10 @@
     function guardar14() {
         var response = $('#paso').val();
         var check = 0;
+        if (response && !$('#preserve_active_orders').is(':checked')) {
+            alertas('warning', 'R-07', 'Confirme que las órdenes activas se conservarán durante el traslado.');
+            return;
+        }
         // var checks= $('.domici').attr('checked',true);
         //alert(checks);
         if ($('#form').valid()) {

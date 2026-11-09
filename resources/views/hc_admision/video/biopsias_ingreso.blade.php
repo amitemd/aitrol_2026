@@ -13,15 +13,15 @@
             <div class="box box-primary">
                 <div class="box-header with-border">
                     <div class="col-md-9">
-                        <h4>@lang('admision.ingresobiopsias')</h4>
+                        <h4>Ingreso de Biopsias</h4>
                     </div>                                                     
                 </div>                           
                 <div class="box-body">
                     <div class="row">
                         <div class="form-group col-xs-12{{ $errors->has('conclusiones') ? ' has-error' : '' }}">
-                            <label for="conclusiones" class="col-md-12 control-label"> @lang('laboratorio.biopsias')</label>
-                            <h2 for="conclusiones" class="col-md-12 control-label"> @lang('laboratorio.paciente'): <b>{{$paciente->nombre1}}</b> <b>{{$paciente->apellido1}}</b></h2>
-                            <label for="conclusiones" class="col-md-12 control-label">@lang('admision.selecexamarrastrerecuadro')</label>
+                            <label for="conclusiones" class="col-md-12 control-label">Biopsias</label>
+                            <h2 for="conclusiones" class="col-md-12 control-label">Paciente: <b>{{$paciente->nombre1}}</b> <b>{{$paciente->apellido1}}</b></h2>
+                            <label for="conclusiones" class="col-md-12 control-label">Seleccione los examenes o arrastrelas al recuadro</label>
                             <div class="col-md-12">
                                 <form method="POST" action="{{route('ingreso_biopsias.guardar')}}" enctype="multipart/form-data" class="dropzone" id="addimage"> 
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
@@ -35,8 +35,8 @@
                     </div> 
                     <div class="row">
                         <div class="col-md-12">
-                            <h2>@lang('admision.histobiopsias')</h2>
-                            <h5>@lang('admision.cantbiopsiasingre'): {{count($historico)}}</h5>
+                            <h2>Historial de Biopsias</h2>
+                            <h5>Cantidad de Biopsias Ingresada: {{count($historico)}}</h5>
                             <div class="table-responsive col-md-12">
                                 <table class="table table-bordered  dataTable" >
                                     <tbody style="font-size: 12px;">
@@ -74,7 +74,8 @@
                                             @php
                                                 $variable = explode('/' , asset('/hc_ima/'));
                                                 $d1 = $variable[3];
-                                                
+                                                $d2 = $variable[4];
+                                                $d3 = $variable[5];
                                                 
                                             @endphp 
                                             <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_lab_externo', ['id' => $imagen->id]) }}">
@@ -124,7 +125,8 @@
                                             @php
                                                 $variable = explode('/' , asset('/hc_ima/'));
                                                 $d1 = $variable[3];
-                                                
+                                                $d2 = $variable[4];
+                                                $d3 = $variable[5];
                                                 
                                             @endphp 
                                             <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
@@ -156,7 +158,7 @@
       acceptedFiles: ".pdf, .doc, .docx, .txt, .xls, .xlsx, .jpg, .jpeg, .png, .gif", 
       init: function() {
         this.on("error", function(file, response) { 
-            alert(`{{trans('admision.archivonoformatcorrectoopac')}}`);
+            alert('archivo no consta en el formato correcto o el paciente no existe, revise el archivo');
             console.log(response);
         });
         this.on("success", function(file, response) { 
@@ -174,7 +176,7 @@
       acceptedFiles: ".pdf, .doc, .docx, .txt, .xls, .xlsx, .jpg, .jpeg, .png, .gif", 
       init: function() {
         this.on("error", function(file, response) { 
-            alert(`{{trans('admision.archivonoformatcorrectoopac')}}`);
+            alert('archivo no consta en el formato correcto o el paciente no existe, revise el archivo');
             console.log(response);
         });
         this.on("success", function(file, response) { 
@@ -185,7 +187,7 @@
     };
 
     function eliminar2(id){
-        var opcion = confirm(`{{trans('admision.estaseguroeleliminarfoto')}}`);
+        var opcion = confirm("¿Estas Seguro que deseas eliminar la foto?");
         if (opcion == true) {
             $.ajax({
                 type: 'get',
@@ -202,7 +204,7 @@
     }
 
     function eliminar3(id){
-        var opcion = confirm(`{{trans('admision.estaseguroeleliminarfoto')}}`);
+        var opcion = confirm("¿Estas Seguro que deseas eliminar la foto?");
         if (opcion == true) {
             $.ajax({
                 type: 'get',

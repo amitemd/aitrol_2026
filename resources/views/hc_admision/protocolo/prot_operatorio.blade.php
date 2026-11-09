@@ -1,29 +1,25 @@
 <!DOCTYPE html>
 <html>
 	<head>
-
+	    <meta charset="utf-8">
+	  
 	    <title>PROTOCOLO OPERATORIO</title>
 
-	  	<style>
+	  	<style>	
 	  		@page { margin: 80px 30px; }
 		    #header { position: fixed; left: 0px; top: -50px; right: 0px; height: 150px; text-align: center; }
 		    #content { position: fixed; left: 0px; top: 20px; right: 0px; height: 150px; }
 		    #footer { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 150px; }
 		</style>
 	</head>
-	<body>
+	<body>	  
 		@php
-			if($protocolo->procedimiento->id_empresa!=null){
-				$empresa = $protocolo->procedimiento->empresa;
-			}else{
-				$empresa = $agenda->empresa;
-			}
-
+			$empresa = $agenda->empresa;
 		@endphp
 		<div id="header">
 			@if($protocolo->historiaclinica->id_seguro != 5)
 				@if(!is_null($empresa->logo_form))
-				<div style="width: 150px;float:left;"><img style="margin: 0;width: 150px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></div>
+				<div style="width: 150px;float:left;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></div>
 				@else
 				<div style="width: 200px;float:left;"><span><b>{{$empresa->nombre_form}}</b></span></div>
 				@endif
@@ -31,7 +27,7 @@
 			<h2 align="center" >PROTOCOLO OPERATORIO</h2>
 		</div>
 
-		<div id="content">
+		<div id="content"> 	
 			<div >
 				<table style="font-size: 11px;border: solid 1px;width: 100.8%;">
 					<tbody>
@@ -46,11 +42,11 @@
 						<tr >
 							<td colspan="1" style="border-top: solid 1px;"><b>PACIENTE: </b></td>
 							<td colspan="5" style="border-top: solid 1px;">{{$protocolo->historiaclinica->paciente->apellido1}} {{$protocolo->historiaclinica->paciente->apellido2}} {{$protocolo->historiaclinica->paciente->nombre1}} {{$protocolo->historiaclinica->paciente->nombre2}}</td>
-
+							
 						</tr>
 					</tbody>
 				</table>
-
+				
 			</div>
 			<div style="font-size: 11px;border-left: solid 1px;border-right: solid 1px;width: 100.5%">
 				<br>
@@ -70,7 +66,7 @@
 							<td width="50"></td>
 							<td width="150"></td>
 							<td width="85"></td>
-							<td width="85"></td>
+							<td width="85"></td>	
 						</tr>
 						<tr>
 							<td width="85"></td>
@@ -78,7 +74,7 @@
 							<td width="50"></td>
 							<td width="150"></td>
 							<td width="85"></td>
-							<td width="85"></td>
+							<td width="85"></td>	
 						</tr>
 						<tr >
 							<td width="85"><b>XPRE-QX</b></td>
@@ -100,7 +96,7 @@
 							<td width="85"><b>CIRUGIA</b></td>
 							<td width="40"><b>X</b></td>
 							<td width="50"><b>SOLICITANTE: </b></td>
-							<td width="150">{{$empresa->nombrecomercial}}</td>
+							<td width="150">{{$agenda->empresa->nombrecomercial}}</td>
 							<td width="85"><b>FECHA PROG: </b></td>
 							<td width="85">{{$protocolo->fecha_operacion}}</td>
 						</tr>
@@ -110,7 +106,7 @@
 							<td width="50"></td>
 							<td width="150"></td>
 							<td width="85"></td>
-							<td width="85"></td>
+							<td width="85"></td>	
 						</tr>
 						<tr>
 							<td width="85"></td>
@@ -118,18 +114,18 @@
 							<td width="50"></td>
 							<td width="150"></td>
 							<td width="85"></td>
-							<td width="85"></td>
+							<td width="85"></td>	
 						</tr>
 						<tr>
 							<td colspan="6"><b>OPERACION/PROCEDIMIENTOS REALIZADOS</b></td>
 						</tr>
-
-
-
+						
+						
+						
 					</tbody>
 				</table>
 				<div style="width: 95%;padding-left: 10px;font-size: 11px !important;"><?php echo $protocolo->conclusion; ?></div>
-
+				
 			</div>
 			<div style="font-size: 11px;border-left: solid 1px;border-right: solid 1px;border-top: solid 1px;width: 100.5%">
 				<table >
@@ -145,33 +141,28 @@
 						<tr>
 							<td width="85"><b>CIRUJANO: </b></td>
 							<td colspan="5">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif</td>
+								
 						</tr>
-                        <tr>
+						<tr>
 							<td width="85"><b>ANESTESIOLOGO: </b></td>
-							@if(!is_null($protocolo->usuario_anestesiologo))
-							 <td colspan="5">Dr(a). {{$protocolo->usuario_anestesiologo->apellido1}} @if($protocolo->usuario_anestesiologo->apellido2!='N/A'){{$protocolo->usuario_anestesiologo->apellido2}}@endif {{$protocolo->usuario_anestesiologo->nombre1}} @if($protocolo->usuario_anestesiologo->nombre2!='N/A'){{$protocolo->usuario_anestesiologo->nombre2}}@endif</td>
-							@else
-							  <td colspan="5"></td>
-							@endif
-							<!--<td colspan="5">Dr(a). VARGAS MARIO</td>-->
+							<td colspan="5">Dr(a). VARGAS MARIO</td>
 						</tr>
 						<tr>
 							<td width="85"><b>AYUDANTE: </b></td>
 							<td colspan="5">Dr(a). {{$protocolo->procedimiento->doctor_ayudante->apellido1}} @if($protocolo->procedimiento->doctor_ayudante->apellido2!='N/A'){{$protocolo->procedimiento->doctor_ayudante->apellido2}}@endif {{$protocolo->procedimiento->doctor_ayudante->nombre1}} @if($protocolo->procedimiento->doctor_ayudante->nombre2!='N/A'){{$protocolo->procedimiento->doctor_ayudante->nombre2}}@endif</td>
 						</tr>
-
+						
 						<tr >
 							<td width="85"><b>FECHA DE OPERACION</b></td>
 							<td width="85">{{$protocolo->fecha_operacion}}</td>
 							<td width="100"><b>TIPO DE ANESTESIA: </b></td>
-							<td width="85">@if($protocolo->tipo_anestesia=='GENERAL90' || $protocolo->tipo_anestesia=='GENERAL120' || $protocolo->tipo_anestesia=='GENERAL150' || $protocolo->tipo_anestesia=='GENERAL180' || $protocolo->tipo_anestesia=='GENERAL210') GENERAL @else {{$protocolo->tipo_anestesia}} @endif</td>
+							<td width="85">@if($protocolo->tipo_anestesia=='GENERAL90') GENERAL @else {{$protocolo->tipo_anestesia}} @endif</td>
 							<td width="85"></td>
 							<td width="85"></td>
 						</tr>
 						<tr >
 							<td width="85"><b>HORA DE INICIO</b></td>
-
-							<td width="85">@if($protocolo->id == 37109) 09:30 @else {{$protocolo->hora_inicio}} @endif</td>
+							<td width="85">{{$protocolo->hora_inicio}}</td>
 							<td width="100"></td>
 							<td width="85"></td>
 							<td width="85"></td>
@@ -179,20 +170,20 @@
 						</tr>
 						<tr >
 							<td width="85"><b>HORA TERMINACION</b></td>
-							<td width="85">@if($protocolo->id == 37109) 10:07 @else {{$protocolo->hora_fin}} @endif</td>
+							<td width="85">{{$protocolo->hora_fin}}</td>
 							<td width="100"><b>DURACION</b></td>
-							<td width="85">@if($protocolo->id == 37109) 37 @else {{$protocolo->intervalo_anestesia}} @endif MIN</td>
+							<td width="85">{{$protocolo->intervalo_anestesia}} MIN</td>
 							<td width="85"></td>
 							<td width="85"></td>
 						</tr>
 					</tbody>
 				</table>
-
-
+				
+				
 			</div>
 
 			<div style="font-size: 11px;border: solid 1px;width: 100.5%">
-
+				
 				<h4 style="padding-left: 35px;">HALLAZGOS QUIRURGICOS</h4>
 				<h4 style="padding-left: 5px;">TECNICAS QUIRURGICAS</h4>
 				<div style="width: 95%;padding-left: 10px;font-size: 11px !important;"><?php echo $protocolo->hallazgos; ?></div>
@@ -216,7 +207,7 @@
 							<td width="50"></td>
 							<td width="85"></td>
 							<td width="85"></td>
-							<td width="85"></td>
+							<td width="85"></td>	
 						</tr>
 						<tr>
 							<td width="85"></td>
@@ -224,9 +215,9 @@
 							<td width="50"></td>
 							<td width="85"></td>
 							<td width="85"></td>
-							<td width="85"></td>
+							<td width="85"></td>	
 						</tr>
-
+						
 						<tr >
 							<td width="85"><b>FIRMA DEL CIRUJANO: </b></td>
 							<td colspan="2"  width="105">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif</td>
@@ -241,15 +232,15 @@
 							<td ></td>
 							<td ></td>
 						</tr>
-
-
-
-
+						
+						
+						
+						
 					</tbody>
-				</table>
-
+				</table>	
+				
 			</div>
-		</div>
+		</div>	
 
 		<div id="footer">
 		<br>
@@ -264,6 +255,6 @@
 				<b style="font-size: 10px;">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}}</b><br>
 			@endif
 		</p>
-	</div>
+	</div> 	
 	</body>
 </html>

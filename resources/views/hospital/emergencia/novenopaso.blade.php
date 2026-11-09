@@ -94,7 +94,7 @@ $fecha = date("Y-m-d");
                 <div class="col-md-3">
                     <br>
                   
-                    <input type="checkbox" name="sangrado_vaginal" value="1" @if($form008->sangrado_vaginal=='1') checked @endif id="sangrado_vaginal"> <label>{{ trans('Sangrado Vaginal') }}</label><br>
+                    <input type="checkbox" name="sangrado_vaginal" value="1" @if($form008->sangrado_vaginal=='1') checked @endif id="sangrado_vaginal"> <label>{{trans('paso2.SangradoVaginal')}}</label><br>
                 </div>
                 <div class="col-md-3">
                     <label >{{trans('paso2.Contracciones')}}</label>
@@ -105,7 +105,7 @@ $fecha = date("Y-m-d");
                     <input type="text" name="score_mama" id="score_mama" class="form-control input-sm" value="@if($paciente->sexo=='1'){{'NO APLICA'}}@else{{$form008->score_mama}}@endif">
                 </div>
                 <div class="col-md-12" style="text-align: center; margin-top: 10px;">
-                    <button class="btn btn-primary" onclick="guardar_paso9();" type="button"> <i class="fa fa-save"></i> </button>
+                    <button class="btn btn-primary" onclick="guardar_paso9();" type="button"><i class="fa fa-save"></i> Guardar</button>
                 </div>
            </div>
         </form>  
@@ -137,7 +137,7 @@ $fecha = date("Y-m-d");
                 return Swal.fire(`{{trans('proforma.GuardadoCorrectamente')}}`); 
             },
             error: function() {
-                alert('error al cargar');
+                alert("{{trans('pasos.ErrorCargar')}}");
             }
         });
            

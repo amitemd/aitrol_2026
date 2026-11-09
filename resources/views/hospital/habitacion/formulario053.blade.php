@@ -29,7 +29,7 @@
         <div class="col-md-12">
           	<div class="box box-primary">
 				<div class="box-header with-border">
-					<h3 class="box-title">{{trans('hospitalizacion.1.-DatosdelPaciente')}}</h3>
+					<h3 class="box-title">{{trans('hospitalizacion.seccion1DatosPaciente')}}</h3>
 					<div class="box-tools pull-right">
 						<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
 					</div>
@@ -49,7 +49,7 @@
 											<input type="text" class="form-control form-control-sm" id="unidad" name="unidad" >
 										</div>
 										<div class="form-group col-md-2">
-											<label class="col-form-label-sm">{{trans('hospitalizacion.CODU.O')}}</label>
+											<label class="col-form-label-sm">{{trans('hospitalizacion.CODUO')}}</label>
 											<input type="text" class="form-control form-control-sm" id="cod" name="cod">
 										</div>
 										<div class="form-group col-md-2">
@@ -172,7 +172,7 @@
 	    <div class="col-md-12">
 	        <div class="box box-primary">
 	          <div class="box-header with-border">
-	            <h3 class="box-title">{{trans('hospitalizacion.2.Motivodereferencia:')}}</h3>
+	            <h3 class="box-title">{{trans('hospitalizacion.seccion2MotivoReferencia')}}</h3>
 	            <div class="box-tools pull-right">
 	              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
 	            </div>
@@ -214,7 +214,7 @@
 	    <div class="col-md-12">
 	        <div class="box box-primary">
 	          <div class="box-header with-border">
-	            <h3 class="box-title">{{trans('hospitalizacion.3.Resumendelcuadroclinico:')}}</h3>
+	            <h3 class="box-title">{{trans('hospitalizacion.seccion3ResumenClinico')}}</h3>
 	            <div class="box-tools pull-right">
 	              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
 	            </div>
@@ -245,7 +245,7 @@
 	                  <div class="btn-der">
 				     	<button type="submit"  class="btn btn-primary"><i class="far fa-save"></i>{{trans('hospitalizacion.Guardar')}}</button>
 				     	<button type="button" class="btn btn-info" 
-                          onclick="location.href='{{route('hospital.formulario053_resultado',['id_cama'=>$id_cama,'id'=>$paciente->id])}}'"><i class="fas fa-book"></i>{{trans('hospitalizacion.Resultados')}} 
+                          onclick="location.href='{{route('hospital.formulario053_resultado',['id'=>$id_cama,'id_paciente'=>$paciente->id])}}'"><i class="fas fa-book"></i>{{trans('hospitalizacion.Resultados')}}
                         </button>
 				     </div>
 	                </form>
@@ -258,7 +258,7 @@
 	    <div class="col-md-12">
 	        <div class="box box-primary">
 	          <div class="box-header with-border">
-	            <h3 class="box-title">{{trans('hospitalizacion.4.Hallazgorelevantesdeexamenesyprocedimientosdiagnosticos:')}}</h3>
+	            <h3 class="box-title">{{trans('hospitalizacion.seccion4Hallazgos')}}</h3>
 	            <div class="box-tools pull-right">
 	              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
 	            </div>
@@ -299,7 +299,7 @@
 	   <div class="col-md-12">
 	        <div class="box box-primary">
 	          <div class="box-header with-border">
-	            <h3 class="box-title">{{trans('hospitalizacion.4.Diagnostico:')}}</h3>
+	            <h3 class="box-title">{{trans('hospitalizacion.seccion4Diagnostico')}}</h3>
 	            <small id="emailHelp" class="form-text text-muted">{{trans('hospitalizacion.(PRE=PRESUNTIVODEF=DEFINITIVO)')}}</small>
 	            <div class="box-tools pull-right">
 	              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
@@ -355,7 +355,7 @@
 	   <div class="col-md-12">
 	        <div class="box box-primary">
 	          <div class="box-header with-border">
-	            <h3 class="box-title">{{trans('hospitalizacion.5.PlanTratamientoRealizado:')}}</h3>
+	            <h3 class="box-title">{{trans('hospitalizacion.seccion5PlanTratamiento')}}</h3>
 	            <div class="box-tools pull-right">
 	              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
 	            </div>
@@ -396,7 +396,7 @@
        <div class="col-md-12">
           	<div class="box box-primary">
 				<div class="box-header with-border">
-					<h3 class="box-title">{{trans('hospitalizacion.6.-DatosGenerales')}}</h3>
+					<h3 class="box-title">{{trans('hospitalizacion.seccion6DatosGenerales')}}</h3>
 					<div class="box-tools pull-right">
 						<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
 					</div>

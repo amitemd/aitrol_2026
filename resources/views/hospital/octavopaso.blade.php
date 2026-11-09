@@ -24,6 +24,7 @@ $fecha = date("Y-m-d");
         <div class="col-md-12">
             <div class="row">
                 <div class="col-md-1">
+                    <span class="sradio">8</span>
                 </div>
                 <div class="col-md-9">
                     <label style="color: white;" class="control_label">{{trans('paso2.ExamenFisicoyDiagnostico')}}</label>

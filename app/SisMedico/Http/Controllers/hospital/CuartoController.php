@@ -6,6 +6,7 @@ use  Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Sis_medico\Support\RequestSchema as Schema;
 use Illuminate\Database\Eloquent;
 use Response;
 use Sis_medico\Agenda;
@@ -15,10 +16,12 @@ use Sis_medico\Paciente;
 use Sis_medico\CamaPaciente;
 use Sis_medico\CamaPacienteLog;
 use Sis_medico\CamaTransaccion;
+use Sis_medico\ClinicalOrder;
 use Sis_medico\Habitacion;
 use Sis_medico\Hospital_Producto;
 use Sis_medico\Imagen;
 use Sis_medico\Evolucion_Habitacion;
+use Sis_medico\Formato_consentimiento;
 use Sis_medico\hc_child_pugh;
 use Sis_medico\Hc_Evolucion;
 use Sis_medico\Hc_Log;
@@ -31,7 +34,6 @@ use Sis_medico\Ho_Hospitalizacion;
 use Sis_medico\Ho_Log_Solicitud;
 use Sis_medico\Ho_Solicitud;
 use Sis_medico\Ho_Traspaso_Sala008;
-use Sis_medico\Nota_Enfermeria;
 use Sis_medico\Piso;
 use Sis_medico\Http\Controllers\Controller;
 use Sis_medico\Opcion_Usuario;
@@ -44,6 +46,14 @@ use Sis_medico\Pentax_log;
 use Sis_medico\PentaxProc;
 use Sis_medico\Procedimiento;
 use Sis_medico\Sala;
+use Sis_medico\Services\ClinicalBedAssignmentService;
+use Sis_medico\Services\ClinicalPatientBedTransferService;
+use Sis_medico\Services\ClinicalPatientJourneyService;
+use Sis_medico\Services\ClinicalTransferReconciliationService;
+use Sis_medico\Services\CurrentHospitalResolver;
+use Sis_medico\Services\HospitalBedBoardService;
+use Sis_medico\Exceptions\ClinicalProcedureBlockedException;
+use Sis_medico\Exceptions\ClinicalAccessDeniedException;
 
 class CuartoController extends Controller
 {
@@ -51,9 +61,16 @@ class CuartoController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            abort_if($this->rol_new('1'), 403);
+            return $next($request);
+        });
     }
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
@@ -62,21 +79,35 @@ class CuartoController extends Controller
     }
 
     /**
+     * Devuelve una ubicacion entendible para informar donde ya esta el paciente.
+     */
+    private function descripcionAsignacionActiva(Ho_Hospitalizacion $hospitalizacion)
+    {
+        $cama = Cama::with(['habitacion.piso'])->find($hospitalizacion->id_cama);
+
+        if (is_null($cama)) {
+            return 'otra cama activa';
+        }
+
+        $partes = ['cama ' . $cama->codigo];
+        if (!is_null($cama->habitacion)) {
+            $partes[] = 'habitacion ' . $cama->habitacion->codigo;
+            if (!is_null($cama->habitacion->piso)) {
+                $partes[] = $cama->habitacion->piso->nombre_piso;
+            }
+        }
+
+        return implode(', ', $partes);
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function cuartos()
+    public function cuartos(HospitalBedBoardService $bedBoard)
     {
-
-        $muestra = Habitacion::all();
-        $muestra2 = Cama::all();
-        $muestra3 = CamaTransaccion::all();
-        $pisos = Piso::all();
-        $simples = Habitacion::where('id_tipo', '=', 1);
-        $enespera = Ho_Traspaso_Sala008::where('estado', 1)->get();
-        //dd($enespera);
-        return view('hospital/habitacion/cuartos', ['muestra' => $muestra, 'muestra2' => $muestra2, 'muestra3' => $muestra3, 'pisos' => $pisos, 'simples' => $simples, 'enespera' => $enespera]);
+        return view('hospital/habitacion/cuartos', $bedBoard->data());
     }
 
     /**
@@ -105,7 +136,9 @@ class CuartoController extends Controller
         $data      = array();
 
         //print_r($request)
-        $medicinas = DB::table('hospital_producto')->where('nombre', 'like', '%' . $codigo . '%')->get();
+        $medicinas = DB::table('hospital_producto')->where('estado', 1)
+            ->where('nombre', 'like', trim($codigo) . '%')->orderBy('nombre')
+            ->limit(20)->get(array('nombre'));
         foreach ($medicinas as $value) {
             $data[] = array('value' => $value->nombre);
         }
@@ -210,10 +243,12 @@ class CuartoController extends Controller
         foreach ($nuevo_nombre as $value) {
             $seteo = $seteo . $value . '%';
         }
-        $query = "SELECT CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) as completo, id
-                  FROM `paciente`
-                  WHERE CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like '" . $seteo . "' ";
-        $nombres = DB::select($query);
+        $nombres = DB::table('paciente')
+            ->select('id', DB::raw("CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) as completo"))
+            ->whereRaw("CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like ?", array($seteo))
+            ->orderBy('apellido1')->limit(20);
+        app(\Sis_medico\Services\PatientTenantService::class)->constrain($nombres, 'paciente.id');
+        $nombres = $nombres->get();
         foreach ($nombres as $product) {
             $data[] = array('value' => $product->completo, 'id' => $product->id);
         }
@@ -235,10 +270,14 @@ class CuartoController extends Controller
         foreach ($nuevo_nombre as $value) {
             $seteo = $seteo . $value . '%';
         }
-        $query = "SELECT CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) as completo, telefono1, telefono2, id_seguro, sexo, id, estadocivil,cedulafamiliar,religion,fecha_nacimiento,trabajo,lugar_nacimiento,alergias,ciudad,gruposanguineo,direccion,antecedentes_pat, antecedentes_fam
-                  FROM paciente
-                  WHERE CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like '" . $seteo . "'";
-        $nombres = DB::select($query);
+        $query = DB::table('paciente')
+            ->select('nombre1', 'nombre2', 'apellido1', 'apellido2', 'telefono1', 'telefono2', 'id_seguro',
+                'sexo', 'id', 'estadocivil', 'cedulafamiliar', 'religion', 'fecha_nacimiento', 'trabajo',
+                'lugar_nacimiento', 'alergias', 'ciudad', 'gruposanguineo', 'direccion', 'antecedentes_pat',
+                'antecedentes_fam', DB::raw("CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) as completo"))
+            ->whereRaw("CONCAT_WS(' ', nombre1, nombre2, apellido1, apellido2) like ?", array($seteo));
+        app(\Sis_medico\Services\PatientTenantService::class)->constrain($query, 'paciente.id');
+        $nombres = $query->get();
         foreach ($nombres as $product) {
             $data[] = array(
                 'value' => $product->completo,
@@ -263,218 +302,319 @@ class CuartoController extends Controller
         if ($this->rol_new($opcion)) {
             return redirect('/');
         }
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
 
-        $id_paciente     = $request['id_paciente'];
-        $observaciones   = $request['observacion'];
-        $id_tipos        = $request['id_tipo'];
-        $id_tipo         = (int)$id_tipos;
-        $id_cama         = $request['id_cama'];
-        $id_camita       = (int) $id_paciente;
-        $camalogvalidate = CamaPaciente::where('id_paciente', '=', $id_camita)->get();
-        $validarpaciente = 1;
-        if (($camalogvalidate) == "[]") {
-            $validarpaciente = 1;
-        } else {
-            foreach ($camalogvalidate as $value) {
-                $validarpaciente = $value->id_paciente;
-            }
-        }
-
-        $estado        = $request['estado'];
-        $estadoint     = (int)$estado;
-        $idmejorado    = (int)$id_cama;
-        $idusuario     = Auth::user()->id;
-        $input = [
-            'id_paciente' => $id_paciente,
-            'observacion' => $observaciones,
-            'estado' => '1',
-            'id_usuario' => $idusuario,
-            'id_usuariocrea' => $idusuario,
-            'ip_modificacion' => $ip_cliente,
-            'id_cama' => $id_cama,
-            'observaciones' => '//SE REGISTRÓ CAMA AL PACIENTE DESDE SISTEMA INICIO//'
-        ];
-        $input2 = [
-            'id_paciente' => $id_paciente,
-            'observacion' => $observaciones,
-            'estado' => '1',
-            'id_usuario' => $idusuario,
-            'id_usuariocrea' => $idusuario,
-            'ip_modificacion' => $ip_cliente,
-            'id_cama' => $id_cama,
-            'observaciones' => '//SE REGISTRÓ CAMA AL PACIENTE DESDE SISTEMA INICIO//'
-        ];
-
-        $input_cama = [
-
-            'estado' => '3',
-            'id_usuario' => $idusuario,
-            'id_usuariocrea' => $idusuario,
-            'ip_modificacion' => $ip_cliente,
-        ];
-
-        if ($id_paciente != null) {
-            if ($validarpaciente != $id_paciente) {
-                $cama = Cama::find($idmejorado);
-                $transaccion = CamaTransaccion::where('id_cama', '=', $idmejorado)->get();
-                $actualizarcama = $cama->update($input_cama);
-                foreach ($transaccion as $value) {
-                    $camatransaccion = [
-                        'id_paciente' => $id_paciente,
-                        'id_imagen' => '3',
-                    ];
-                    $comofue = $value->update($camatransaccion);
-
-                    if ($id_tipo == 3) {
-                        $camatransaccion = [
-                            'id_paciente' => $id_paciente,
-                            'id_imagen' => '7',
-                        ];
-                        $comofue = $value->update($camatransaccion);
-                    } elseif ($id_tipo == 5) {
-                        $camatransaccion = [
-                            'id_paciente' => $id_paciente,
-                            'id_imagen' => '11',
-                        ];
-                        $comofue = $value->update($camatransaccion);
-                    }
-                }
-                CamaPaciente::insertGetId($input);
-                CamaPacienteLog::insertGetId($input2);
-                return "EL PACIENTE FUÉ REGISTRADO EN LA CAMA";
-            }
-            return "EL PACIENTE YA SE ENCUENTRA REGISTRADO REINGRESE DE NUEVO";
-        }
-        return "DATOS VACIOS POR FAVOR REINGRESE DE NUEVO";
+        return response()->json(['state' => 'error',
+            'message' => 'Asigne la cama desde una solicitud de traslado pendiente en Recepcion.'], 422);
     }
     //LIBERAR CAMA DE LA HABITACION
     public function liberar(Request $request)
     {
-        dd($request->all());
-        $opcion = '1';
-        if ($this->rol_new($opcion)) {
-            //return redirect('/');
+        $active = Ho_Hospitalizacion::where('id_cama', $request->id_cama)->where('estado', 1)->first();
+        if ($active) {
+            throw new \InvalidArgumentException('Confirme el alta y la salida fisica, o reciba el traslado. No se puede liberar una cama con un paciente activo.');
         }
-
-        $id_paciente     = $request['indetificacion'];
-        $id_tipos        = $request['id_tipo'];
-        $id_tipo         = (int)$id_tipos;
-        $id_cama         = $request['id_cama'];
-        $idmejorado      = (int)$id_cama;
-        $id_hospitalizacion     = $request->id_hospitalizacion;
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-
-        $hospital = Ho_Hospitalizacion::find($id_hospitalizacion);
-        $hospital->update([
-            'estado'          => '2', //DESOCUPA
-            'ip_modificacion' => $ip_cliente,
-        ]);
-
-
-        $cama = Cama::find($idmejorado);
-        $transaccion     = CamaTransaccion::where('id_cama', '=', $idmejorado)->get();
-        $idusuario       = Auth::user()->id;
-        $input = [
-            'id_paciente' => $id_paciente,
-            'observacion' => '',
-            'estado' => '3',
-            'id_usuario' => $idusuario,
-            'id_usuariocrea' => $idusuario,
-            'ip_modificacion' => $idusuario,
-            'id_cama' => $id_cama,
-            'observaciones' => '//SE DESOCUPO LA CAMA//'
-        ];
-        $input_cama = [
-            'estado' => '2',
-            'id_usuario' => $idusuario,
-            'id_usuariocrea' => $idusuario,
-            'ip_modificacion' => $idusuario,
-            'updated_at' => null
-        ];
-
-        $actualizarcama = $cama->update($input_cama);
-        foreach ($transaccion as $value) {
-            $camatransaccion = [
-                'id_imagen' => '2',
-                'updated_at' => null
-            ];
-            $comofue = $value->update($camatransaccion);
-
-            if ($id_tipo == 3) {
-                $camatransaccion = [
-                    'id_imagen' => '6',
-                    'updated_at' => null
-                ];
-                $comofue = $value->update($camatransaccion);
-            } elseif ($id_tipo == 5) {
-                $camatransaccion = [
-                    'id_imagen' => '10',
-                    'updated_at' => null
-                ];
-                $comofue = $value->update($camatransaccion);
-            }
-        }
-        //dd("aa");
-        //CamaPaciente::insertGetId($input);
-        return redirect()->route('hospital.gcuartos');
+        $request->request->set('estado_cama', 'preparacion');
+        return $this->actualizar_estado_cama($request);
     }
     public function freehabitation(Request $request)
     {
-        //free all habitation for module hospital at 12 ago 2021
-        $cama = Cama::where('estado', '<>', '0')->get();
-        $idusuario       = Auth::user()->id;
-        foreach ($cama as $c) {
-            $id_paciente     = $request['id_paciente'];
-            $id_tipo =      $c->habitacion->tipo->id;
-            $id_cama         = $c->id;
-            $idmejorado      = (int)$id_cama;
-            $cama = Cama::find($c->id);
-            $transaccion     = CamaTransaccion::where('id_cama', $idmejorado)->get();
-            $input = [
-                'id_paciente' => $id_paciente,
-                'observacion' => '',
-                'estado' => '3',
-                'id_usuario' => $idusuario,
-                'id_usuariocrea' => $idusuario,
-                'ip_modificacion' => $idusuario,
-                'id_cama' => $id_cama,
-                'observaciones' => '//SE DESOCUPO LA CAMA//'
-            ];
-            $input_cama = [
-                'estado' => '1',
-                'id_usuario' => $idusuario,
-                'id_usuariocrea' => $idusuario,
-                'ip_modificacion' => $idusuario,
-                'updated_at' => null
-            ];
-            $actualizarcama = $cama->update($input_cama);
-            foreach ($transaccion as $value) {
-                $camatransaccion = [
-                    'id_imagen' => '2',
-                    'updated_at' => null
-                ];
-                $s = $value->update($camatransaccion);
+        $idusuario = Auth::user()->id;
+        $ip = $request->ip();
 
-                if ($id_tipo == 3) {
-                    $camatransaccion = [
-                        'id_imagen' => '6',
-                        'updated_at' => null
-                    ];
-                    $s = $value->update($camatransaccion);
-                } elseif ($id_tipo == 5) {
-                    $camatransaccion = [
-                        'id_imagen' => '10',
-                        'updated_at' => null
-                    ];
-                    $s = $value->update($camatransaccion);
+        // Esta operación solo normaliza ocupaciones huérfanas. Nunca libera
+        // ingresos clínicos ni modifica camas en preparación o fuera de servicio.
+        $resultado = DB::transaction(function () use ($idusuario, $ip) {
+            $roomIds = app(\Sis_medico\Services\ClinicalHospitalDestinationService::class)->roomIds();
+            $camas = Cama::whereIn('id_habitacion', $roomIds)->where('estado', 3)->lockForUpdate()->get();
+            $actualizadas = 0;
+            $omitidas = 0;
+
+            foreach ($camas as $cama) {
+                $ocupacion = Ho_Hospitalizacion::where('id_cama', $cama->id)
+                    ->where('estado', 1)
+                    ->lockForUpdate()
+                    ->first();
+                if (!is_null($ocupacion)) {
+                    $omitidas++;
+                    continue;
+                }
+                $bedTransaction = CamaTransaccion::where('id_cama', $cama->id)->orderByDesc('id')->lockForUpdate()->first();
+                if (($bedTransaction && $bedTransaction->id_paciente)
+                    || CamaPaciente::where('id_cama', $cama->id)->where('estado', 1)->exists()) {
+                    $omitidas++;
+                    continue;
+                }
+
+                if ($this->guardar_estado_cama($cama, 'disponible', $idusuario, $ip)) {
+                    $actualizadas++;
                 }
             }
-            CamaPaciente::insertGetId($input);
+
+            return array('actualizadas' => $actualizadas, 'omitidas' => $omitidas);
+        }, 3);
+
+        $mensaje = $resultado['actualizadas'].' cama(s) disponible(s) normalizada(s).';
+        if ($resultado['omitidas'] > 0) {
+            $mensaje .= ' '.$resultado['omitidas'].' cama(s) ocupada(s) se conservaron sin cambios.';
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'state' => 'success',
+                'message' => $mensaje,
+            ]);
         }
 
         return redirect()->route('hospital.gcuartos');
+    }
+
+    public function mover_cama(Request $request)
+    {
+        abort_unless(Auth::user() && (int) Auth::user()->estado === 1
+            && Auth::user()->isSystemUser(), 403);
+        try {
+            $idusuario = Auth::user()->id;
+            $ip = $request->ip();
+            $resultado = DB::transaction(function () use ($request, $idusuario, $ip) {
+                $habitacion = Habitacion::where('id', $request->id_habitacion)->lockForUpdate()->first();
+                if (is_null($habitacion) || (int) $habitacion->estado === 4) {
+                    throw new \RuntimeException('La habitación destino no está disponible.');
+                }
+
+                $cama = Cama::where('id', $request->id_cama)->lockForUpdate()->first();
+                if (is_null($cama)) {
+                    throw new \RuntimeException('No se encontro la cama.');
+                }
+
+                $destinations = app(\Sis_medico\Services\ClinicalHospitalDestinationService::class);
+                $destinations->assertBed($cama);
+                if (!$destinations->roomIds()->contains($habitacion->id)) {
+                    throw new \RuntimeException('La habitacion destino no esta configurada para esta empresa.');
+                }
+                if ((int) $cama->estado === 3 || Ho_Hospitalizacion::where('id_cama', $cama->id)->where('estado', 1)->exists()
+                    || CamaPaciente::where('id_cama', $cama->id)->where('estado', 1)->exists()) {
+                    throw new \RuntimeException('No se puede mover una cama ocupada. Registre el traslado del paciente.');
+                }
+
+                if ((int) $cama->id_habitacion === (int) $habitacion->id) {
+                    return array(
+                        'changed' => false,
+                        'message' => 'La cama ya pertenece a la habitación '.$habitacion->codigo.'.',
+                    );
+                }
+
+                $cama->id_habitacion = $habitacion->id;
+                $cama->id_usuariomod = $idusuario;
+                $cama->ip_modificacion = $ip;
+                $cama->save();
+
+                return array(
+                    'changed' => true,
+                    'message' => 'La cama fue movida a la habitación '.$habitacion->codigo.'.',
+                );
+            }, 3);
+
+            return response()->json([
+                'state' => 'success',
+                'changed' => $resultado['changed'],
+                'message' => $resultado['message'],
+            ]);
+        } catch (\RuntimeException $exception) {
+            return response()->json(['state' => 'error', 'message' => $exception->getMessage()], 422);
+        } catch (\Exception $exception) {
+            report($exception);
+            return response()->json([
+                'state' => 'error',
+                'message' => 'No se pudo mover la cama. Ningun cambio fue guardado.',
+            ], 500);
+        }
+    }
+
+    public function trasladar_paciente(Request $request)
+    {
+        $this->validate($request, array(
+            'id_hospitalizacion' => 'required|integer',
+            'id_cama_destino' => 'required|integer',
+            'motivo' => 'required|string|min:5|max:255',
+        ));
+
+        try {
+            $result = app(ClinicalPatientBedTransferService::class)->transfer(
+                $request->id_hospitalizacion,
+                $request->id_cama_destino,
+                trim((string) $request->motivo),
+                array(
+                    'actor_id' => Auth::user()->id,
+                    'ip' => $request->ip(),
+                )
+            );
+
+            return response()->json(array('state' => 'success') + $result);
+        } catch (ClinicalAccessDeniedException $exception) {
+            return response()->json(array('state' => 'error', 'message' => $exception->getMessage()), 403);
+        } catch (\RuntimeException $exception) {
+            return response()->json(array('state' => 'error', 'message' => $exception->getMessage()), 422);
+        } catch (\Exception $exception) {
+            report($exception);
+            return response()->json(array(
+                'state' => 'error',
+                'message' => 'No se pudo completar el traslado. Ningún cambio fue guardado.',
+            ), 500);
+        }
+    }
+
+    public function liberar_cama_individual(Request $request)
+    {
+        $idusuario = Auth::user()->id;
+        $ip_cliente = $request->ip();
+        try {
+            DB::transaction(function () use ($request, $idusuario, $ip_cliente) {
+                $cama = Cama::where('id', $request->id_cama)->lockForUpdate()->first();
+                if (is_null($cama)) {
+                    throw new \RuntimeException('No se encontro la cama.');
+                }
+                $hospitalizacion = Ho_Hospitalizacion::where('id_cama', $cama->id)
+                    ->where('estado', 1)->lockForUpdate()->first();
+
+                if (!is_null($hospitalizacion)) {
+                    throw new \RuntimeException('La cama tiene un paciente activo. Complete el alta y confirme su salida fisica.');
+                }
+                $estadoFinal = in_array($request->estado_final, ['disponible', 'preparacion', 'no_disponible']) ? $request->estado_final : 'disponible';
+                $this->guardar_estado_cama($cama, $estadoFinal, $idusuario, $ip_cliente);
+            }, 3);
+        } catch (ClinicalAccessDeniedException $exception) {
+            return response()->json(array('state' => 'error', 'message' => $exception->getMessage()), 403);
+        } catch (\RuntimeException $exception) {
+            return response()->json(array('state' => 'error', 'message' => $exception->getMessage()), 422);
+        } catch (\Exception $exception) {
+            report($exception);
+            return response()->json(array('state' => 'error', 'message' => 'No se pudo liberar la cama. Ningun cambio fue guardado.'), 500);
+        }
+
+        return response()->json(['state' => 'success', 'message' => 'La cama fue liberada.']);
+    }
+
+    private function authorizeBedOperation(Ho_Hospitalizacion $hospitalization, $action, Request $request)
+    {
+        return app(ClinicalPatientBedTransferService::class)->authorizeHospitalization(
+            $hospitalization,
+            $action,
+            array(
+                'user' => Auth::user(),
+                'actor_id' => Auth::user()->id,
+                'ip' => $request->ip(),
+                'service_code' => 'HOSPITALIZATION_BEDS',
+            )
+        );
+    }
+
+    public function actualizar_estado_cama(Request $request)
+    {
+        $estado = $request->estado_cama;
+
+        if (!in_array($estado, ['disponible', 'preparacion', 'no_disponible'], true)) {
+            return response()->json(['state' => 'error', 'message' => 'Estado no valido.'], 422);
+        }
+
+        try {
+            $idusuario = Auth::user()->id;
+            $ip = $request->ip();
+            $cambio = DB::transaction(function () use ($request, $estado, $idusuario, $ip) {
+                $cama = Cama::where('id', $request->id_cama)->lockForUpdate()->first();
+                if (is_null($cama)) {
+                    throw new \RuntimeException('No se encontró la cama.');
+                }
+
+                $hospitalizacion = Ho_Hospitalizacion::where('id_cama', $cama->id)
+                    ->where('estado', 1)
+                    ->lockForUpdate()
+                    ->first();
+                if (!is_null($hospitalizacion)) {
+                    throw new \RuntimeException('La cama esta ocupada. Confirme el alta y la salida fisica o reciba el traslado.');
+                }
+
+                return $this->guardar_estado_cama($cama, $estado, $idusuario, $ip);
+            }, 3);
+        } catch (\RuntimeException $exception) {
+            return response()->json(['state' => 'error', 'message' => $exception->getMessage()], 422);
+        } catch (\Exception $exception) {
+            report($exception);
+            return response()->json([
+                'state' => 'error',
+                'message' => 'No se pudo cambiar el estado. Ningún cambio fue guardado.',
+            ], 500);
+        }
+
+        return response()->json([
+            'state' => 'success',
+            'changed' => $cambio,
+            'message' => $cambio ? 'Estado actualizado.' : 'La cama ya tenía el estado solicitado.',
+        ]);
+    }
+
+    private function guardar_estado_cama(Cama $cama, $estado, $idusuario, $ip_cliente)
+    {
+        abort_unless(Auth::user() && (int) Auth::user()->estado === 1
+            && Auth::user()->hasAnyUserTypeName(['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA']), 403);
+        app(\Sis_medico\Services\ClinicalHospitalDestinationService::class)->assertBed($cama);
+        $estadoCama = 1;
+        $imagen = 1;
+
+        if ($estado == 'preparacion') {
+            $estadoCama = 2;
+            $imagen = 2;
+        } elseif ($estado == 'no_disponible') {
+            $estadoCama = 4;
+            $imagen = 4;
+        }
+
+        if (!is_null($cama->habitacion) && !is_null($cama->habitacion->tipo)) {
+            if ($cama->habitacion->tipo->id == 3) {
+                $imagen = $estadoCama + 1 + $cama->habitacion->tipo->id;
+            } elseif ($cama->habitacion->tipo->id == 5) {
+                $imagen = $estadoCama + 3 + $cama->habitacion->tipo->id;
+            }
+        }
+
+        $transaccion = CamaTransaccion::where('id_cama', $cama->id)->orderByDesc('id')->lockForUpdate()->first();
+        if (($transaccion && $transaccion->id_paciente)
+            || CamaPaciente::where('id_cama', $cama->id)->where('estado', 1)->exists()) {
+            throw new \RuntimeException('Existe una ocupacion que debe conciliarse antes de cambiar el estado de la cama.');
+        }
+        $sinCambios = (int) $cama->estado === $estadoCama
+            && !is_null($transaccion)
+            && $transaccion->estado_cama === $estado
+            && empty($transaccion->id_paciente);
+        if ($sinCambios) {
+            return false;
+        }
+
+        $cama->estado = $estadoCama;
+        $cama->id_usuariomod = $idusuario;
+        $cama->ip_modificacion = $ip_cliente;
+        $cama->save();
+
+        if (is_null($transaccion)) {
+            CamaTransaccion::create([
+                'id_cama'          => $cama->id,
+                'estado_cama'      => $estado,
+                'id_imagen'        => $imagen,
+                'id_usuario'       => $idusuario,
+                'id_usuariocrea'   => $idusuario,
+                'id_usuariomod'    => $idusuario,
+                'ip_creacion'      => $ip_cliente,
+                'ip_modificacion'  => $ip_cliente,
+            ]);
+        } else {
+            $transaccion->estado_cama = $estado;
+            $transaccion->id_paciente = null;
+            $transaccion->id_imagen = $imagen;
+            $transaccion->id_usuariomod = $idusuario;
+            $transaccion->ip_modificacion = $ip_cliente;
+            $transaccion->save();
+        }
+
+        return true;
     }
     //MODAL PRESCRIPCION DOCTOR
     public function modalprescripcion($id, Request $request)
@@ -483,10 +623,14 @@ class CuartoController extends Controller
         if ($this->rol_new($opcion)) {
             return redirect('/');
         }
-        //dd($request->all();
-        $examenes = hospital_producto::all();
         $pacienteid = Paciente::find($id);
-        return view('hospital/habitacion/modalprescripcion', ['pacienteid' => $pacienteid, 'examenes' => $examenes]);
+        $solicitud = Ho_Solicitud::where('id_paciente', $id)
+            ->whereHas('encounter', function ($query) {
+                return $query->where('status', 'ACTIVE');
+            })->orderBy('id', 'desc')->first();
+        $history = $solicitud && $solicitud->agenda ? $solicitud->agenda->historia_clinica : null;
+        $prescriptionUrl = $history ? route('receta.receta', array('hcid' => $history->hcid)) : null;
+        return view('hospital/habitacion/modalprescripcion', compact('pacienteid', 'prescriptionUrl'));
     }
     //Vista Costo generados por paciente
     public function costo($id, $id_cama)
@@ -529,18 +673,11 @@ class CuartoController extends Controller
             return redirect('/');
         }
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario1  = Auth::user()->id;
-        //dd($request->all());
-        Evolucion_Habitacion::create([
-            'evolucion_dr'      => $request['evolucion_dr'],
-            'medicamento'       => $request['medicamento'],
-            'prescripcion_dr'   => $request['descripcion'],
-            'id_paciente'       => $request['id_paciente'],
-
-        ]);
-
-        return back();
+        $message = 'La prescripción libre antigua fue deshabilitada. Registre una receta estructurada vinculada al episodio clínico.';
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(array('estado' => 'E', 'msn' => $message), 409);
+        }
+        return back()->withErrors(array($message));
     }
     public function paciente()
     {
@@ -557,10 +694,18 @@ class CuartoController extends Controller
             return redirect('/');
         }
         $pacienteid = Paciente::find($id);
-        $infe = Evolucion_Habitacion::all();
-        //$tipo_habitacion=Evolucion_Habitacion::where('id_cama','=',$id)->get();
-        $prescri = Evolucion_Habitacion::where('id_paciente', '=', $id)->get();
-        return view('hospital/habitacion/modalenfermeria', ['prescri' => $prescri, 'infe' => $infe, 'pacienteid' => $pacienteid, 'id_evolucion' => $id_evolucion]);
+        $solicitud = Ho_Solicitud::where('id_paciente', $id)
+            ->whereHas('encounter', function ($query) {
+                return $query->where('status', 'ACTIVE');
+            })->orderBy('id', 'desc')->first();
+        $receta = null;
+        if ($solicitud && $solicitud->agenda && $solicitud->agenda->historia_clinica) {
+            $receta = hc_receta::where('id_hc', $solicitud->agenda->historia_clinica->hcid)->orderBy('id', 'desc')->first();
+        }
+        $emarUrl = $solicitud && $receta
+            ? route('hospitalizacion.descargo_enfermeria_detalle', array('id' => $receta->id, 'id_solicitud' => $solicitud->id))
+            : null;
+        return view('hospital/habitacion/modalenfermeria', compact('pacienteid', 'emarUrl'));
     }
     //MEDICAMENTO SUMINISTRADO POR ENFERMERIA
     public function suministar(Request $request)
@@ -571,17 +716,11 @@ class CuartoController extends Controller
             return redirect('/');
         }
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario1  = Auth::user()->id;
-
-        Nota_Enfermeria::create([
-            'cantidad_suministrada'  => $request['cantidad_suministrada'],
-            'evolucion_enf'          => $request['evolucion_enf'],
-            'id_evolucion'           => $request['id_evu'],
-            'id_paciente'            => $request['id_paciente']
-        ]);
-
-        return back();
+        $message = 'La administración clínica antigua fue deshabilitada. Registre la dosis desde el eMAR con una orden activa.';
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(array('estado' => 'E', 'msn' => $message), 409);
+        }
+        return back()->withErrors(array($message));
     }
     public function modalservicio(Request $request, $id)
     {
@@ -640,7 +779,9 @@ class CuartoController extends Controller
             //return response()->json($arraySource);
         } else { //ASIGNA CMA A HOSPITALIZACION 
             //dd("aqui");
-            $s = Ho_Hospitalizacion::where('id_cama', $id)->whereDate('fecha', date('Y-m-d'))->first();
+            $s = Ho_Hospitalizacion::where('id_cama', $id)
+                ->where('estado', 1)
+                ->first();
             if (is_null($s)) {
                 return response()->json(['state' => 'success']);
             }
@@ -662,797 +803,278 @@ class CuartoController extends Controller
     }
     public function modal_paciente(Request $request)
     {
-        $id = $request['id'];
-        $cama = Cama::find($id);
-        //dd($cama);
-        $enespera = Ho_Traspaso_Sala008::where('estado', '<>', '0')->where('id_tipo', '<>', '5')->get();
-        return view('hospital.habitacion.modal_paciente', ['enespera' => $enespera, 'cama' => $cama]);
+        $cama = Cama::findOrFail($request->id);
+        $destinations = app(\Sis_medico\Services\ClinicalHospitalDestinationService::class);
+        $destinations->assertBed($cama);
+        $salaId = DB::table('clinical_hospital_bed_locations')->where('habitacion_id', $cama->id_habitacion)
+            ->where('company_id', $destinations->companyId())->value('sala_id');
+        $enespera = Ho_Traspaso_Sala008::with('paciente')->where('estado', 1)
+            ->whereIn('paso', [3, 6, 7])->where('id_sala', $salaId)
+            ->whereHas('solicitud', function ($query) use ($destinations) {
+                $query->where('estado', 1)->whereIn('encounter_id', \Sis_medico\ClinicalEncounter::where('id_empresa', $destinations->companyId())
+                    ->whereNull('ended_at')->pluck('id'));
+            })->orderBy('fecha')->get();
+        return view('hospital.habitacion.modal_paciente', compact('enespera', 'cama'));
     }
     public function asignar_paciente($id, $y)
     {
         $cama = Cama::find($id);
         $traspaso = Ho_Traspaso_Sala008::find($y);
+
+        if (is_null($cama) || is_null($traspaso)) {
+            return redirect()->route('hospital.gcuartos')
+                ->with('error', 'No fue posible encontrar la cama o la solicitud del paciente.');
+        }
+
         $paciente = Paciente::find($traspaso->id_paciente);
+        if (is_null($paciente)) {
+            return redirect()->route('hospital.gcuartos')
+                ->with('error', 'No fue posible encontrar al paciente seleccionado.');
+        }
+
+        app(\Sis_medico\Services\ClinicalHospitalTransferService::class)
+            ->authorize($traspaso->solicitud, 'hospital.transfer.receive', ['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA']);
+        app(\Sis_medico\Services\ClinicalHospitalDestinationService::class)->assertBed($cama, $traspaso->id_sala);
+
         return view('hospital.habitacion.asignar_paciente', ['cama' => $cama, 'paciente' => $paciente, 'traspaso' => $traspaso]);
     }
     public function save_paciente(Request $request)
     {
-        //dd($request->all());
-        $p = $request['id_paciente'];
-        $traspasos = $request['traspaso'];
-        $s = $request['seguro'];
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        if (!is_null($p)) {
-            $paciente = Paciente::find($request['id_paciente']);
-            if (!is_null($paciente)) {
-                $hospitalizacion = Ho_Hospitalizacion::where('id_paciente', $p)->whereDate('fecha', date('Y-m-d'))->first();
-                if (!is_null($hospitalizacion)) {
-
-                    return response()->json(['state' => 'El paciente ya se encuentra asignado']);
-                } else {
-                    $cama = Cama::find($request['id_cama']);
-                    //$cama->estado = 2;
-                    //$cama->save();
-                    $traspaso = Ho_Traspaso_Sala008::find($traspasos);
-                    $solicitud = $traspaso->solicitud;
-                    $agenda    = $solicitud->agenda;
-                    $agenda->update([
-                        'id_sala' => $traspaso->id_sala,
-                    ]);
-                    $traspaso->estado = 2;
-                    $traspaso->save();
-                    $transaccion = CamaTransaccion::where('id_cama', '=', $cama->id)->first();
-                    if (is_null($transaccion)) {
-                        $id_transaccion = CamaTransaccion::insertGetId([
-
-                            'estado_cama'       => 'ocupada',
-                            'id_imagen'         => '3',
-                            //'id_usuario'        => '1',
-                            'id_usuariocrea'    => $idusuario,
-                            'id_usuariomod'     => $idusuario,
-                            'ip_creacion'       => $ip_cliente,
-                            'ip_modificacion'   => $ip_cliente,
-                            'id_cama'           => $request['id_cama'],
-                            'id_paciente'       => $paciente->id,
-                            'fecha_ingreso'     => date('Y-m-d H:s'),
-                        ]);
-                    } else {
-
-                        $camatransaccion = [
-                            'id_paciente' => $paciente->id,
-                            'id_imagen'   => '3',
-                            'estado_cama' => 'ocupada',
-                        ];
-                        $transaccion->update($camatransaccion);
-
-                        /*if ($cama->habitacion->tipo->id == 3) {
-                            $camatransaccion = [
-                                'id_paciente' => $paciente->id,
-                                'id_imagen' => '7',
-                            ];
-                            $actualizar = $value->update($camatransaccion);
-                        } elseif ($cama->habitacion->tipo->id == 5) {
-                            $camatransaccion = [
-                                'id_paciente' => $paciente->id,
-                                'id_imagen' => '11',
-                            ];
-                            $actualizar = $value->update($camatransaccion);
-                        }*/
-                    }
-                    Ho_Hospitalizacion::create([
-                        'id_paciente' => $paciente->id,
-                        'fecha' => date('Y-m-d H:s'),
-                        'id_habitacion' => $request['id_habitacion'],
-                        'detalle' => $request['observacion'],
-                        'id_cama' => $request['id_cama'],
-                        'id_traspaso' => $traspasos,
-                        'id_usuariomod' => $idusuario,
-                        'id_usuariocrea' => $idusuario,
-                        'ip_modificacion' => $idusuario,
-
-                    ]);
-                    return response()->json(['state' => 'Guardado Correctamente']);
-                }
-            }
-            return response()->json(['state' => 'error', 'request' => $request->all()]);
+        $this->validate($request, ['id_paciente' => 'required|string|max:32', 'id_cama' => 'required|integer',
+            'traspaso' => 'required|integer', 'observacion' => 'nullable|string|max:2000']);
+        try {
+            $result = app(\Sis_medico\Services\ClinicalHospitalTransferService::class)->receive(
+                $request->traspaso, $request->id_paciente, $request->id_cama, $request->input('observacion', '')
+            );
+            return response()->json(['state' => 'Guardado Correctamente'] + $result);
+        } catch (\InvalidArgumentException $exception) {
+            return response()->json(['state' => $exception->getMessage(), 'message' => $exception->getMessage(),
+                'code' => 'invalid_hospital_transfer'], 422);
+        } catch (ClinicalAccessDeniedException $exception) {
+            return response()->json(['state' => $exception->getMessage(), 'message' => $exception->getMessage()], 403);
         }
-        return response()->json(['state' => 'error', 'request' => $request->all()]);
     }
     public function show_cama($id, $id_traspaso, Request $request)
     {
-        $cama = Cama::find($id);
-
         $hospitalizacion = Ho_Hospitalizacion::find($id_traspaso);
-        $paciente = Paciente::find($hospitalizacion->id_paciente);
+        abort_unless($hospitalizacion, 404);
+        $workflowSolicitudId = $this->solicitudIdForHospitalization($hospitalizacion->id);
+        $workflowSolicitud = Ho_Solicitud::findOrFail($workflowSolicitudId);
+        app(\Sis_medico\Services\ClinicalHospitalTransferService::class)->authorize(
+            $workflowSolicitud, 'hospital.view', ['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA', 'ANESTESIÓLOGO', 'ANESTESIOLOGO'], false);
+        // La hospitalizacion es la fuente de verdad. Si el usuario conserva una
+        // URL anterior a un traslado, la ficha debe mostrar la cama vigente.
+        $cama = !is_null($hospitalizacion)
+            ? Cama::with(['habitacion.tipo', 'habitacion.piso'])->find($hospitalizacion->id_cama)
+            : null;
 
-        return view('hospital.habitacion.detalle', ['cama' => $cama, 'hospitalizacion' => $hospitalizacion, 'paciente' => $paciente]);
+        if (is_null($cama) || is_null($hospitalizacion)) {
+            return redirect()->route('hospital.gcuartos')
+                ->with('error', 'No fue posible encontrar la cama o el ingreso seleccionado.');
+        }
+
+        $paciente = Paciente::with(['usuario', 'seguro', 'a_alergias.principio_activo'])
+            ->find($hospitalizacion->id_paciente);
+
+        if (is_null($paciente)) {
+            return redirect()->route('hospital.gcuartos')
+                ->with('error', 'No fue posible encontrar la información del paciente.');
+        }
+
+        $edad = null;
+        $fechaNacimiento = null;
+        $fechaNacimientoValor = trim((string) $paciente->fecha_nacimiento);
+
+        if ($fechaNacimientoValor !== '' && $fechaNacimientoValor !== '0000-00-00') {
+            try {
+                $fechaNacimiento = new \DateTime($fechaNacimientoValor);
+                $hoy = new \DateTime('today');
+                if ($fechaNacimiento <= $hoy) {
+                    $edad = $fechaNacimiento->diff($hoy)->y;
+                }
+            } catch (\Exception $exception) {
+                $fechaNacimiento = null;
+            }
+        }
+
+        $diasIngreso = 0;
+        try {
+            $ingreso = new \DateTime(date('Y-m-d', strtotime($hospitalizacion->fecha)));
+            $hoy = new \DateTime('today');
+            $diferenciaIngreso = $ingreso->diff($hoy);
+            $diasIngreso = $diferenciaIngreso->invert ? 0 : (int) $diferenciaIngreso->days;
+        } catch (\Exception $exception) {
+            $diasIngreso = 0;
+        }
+
+        $journey = app(ClinicalPatientJourneyService::class)->forHospitalization($hospitalizacion);
+        $ordersAvailable = Schema::hasTable('clinical_orders');
+        $episodeOrders = $workflowSolicitud->encounter_id && $ordersAvailable
+            ? ClinicalOrder::where('encounter_id', $workflowSolicitud->encounter_id)
+                ->whereIn('category', ['LABORATORY', 'IMAGING'])
+                ->orderBy('ordered_at', 'desc')->orderBy('id', 'desc')->limit(8)->get()
+            : collect();
+
+        return view('hospital.habitacion.detalle', [
+            'cama' => $cama,
+            'hospitalizacion' => $hospitalizacion,
+            'paciente' => $paciente,
+            'edad' => $edad,
+            'fechaNacimiento' => $fechaNacimiento,
+            'diasIngreso' => $diasIngreso,
+            'journey' => $journey,
+            'episodeOrders' => $episodeOrders,
+            'ordersAvailable' => $ordersAvailable,
+            'workflowSolicitudId' => $workflowSolicitudId,
+        ]);
     }
     public function modal_quirofano(Request $request)
     {
-        $sala = Sala::where('estado', '1')->get();
+        $solicitudId = $this->solicitudIdForHospitalization($request->id_hospitalizacion);
+        app(\Sis_medico\Services\ClinicalHospitalTransferService::class)->authorize(
+            Ho_Solicitud::findOrFail($solicitudId), 'hospital.transfer.request', ['SISTEMAS', 'DOCTORES', 'DOCTOR']);
+        $sala = app(\Sis_medico\Services\ClinicalHospitalDestinationService::class)->salas([5]);
         $id_tipo = $request->id_tipo;
         $id_cama = $request->id_cama;
         $id_hospitalizacion = $request->id_hospitalizacion;
         $id_paciente = $request->id_paciente;
-        $users = User::where('id_tipo_usuario', 3)->get();
-        $procedimientos = Procedimiento::all();
-        return view('hospital.habitacion.modal_cirugia', ['sala' => $sala, 'id_tipo' => $id_tipo, 'id_cama' => $id_cama, 'id_paciente' => $id_paciente, 'id_hospitalizacion' => $id_hospitalizacion, 'users' => $users, 'procedimientos' => $procedimientos]);
+        $users = User::where('id_tipo_usuario', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->get();
+        $solicitudId = $this->solicitudIdForHospitalization($id_hospitalizacion);
+        $activeOrders = $solicitudId ? app(ClinicalTransferReconciliationService::class)->previewActiveOrders($solicitudId) : array();
+        $consentFormats = $this->consentFormatsForSolicitud($solicitudId);
+        return view('hospital.habitacion.modal_cirugia', ['sala' => $sala, 'id_tipo' => $id_tipo, 'id_cama' => $id_cama, 'id_paciente' => $id_paciente, 'id_hospitalizacion' => $id_hospitalizacion, 'users' => $users, 'activeOrders' => $activeOrders, 'consentFormats' => $consentFormats]);
+    }
+
+    /**
+     * Catálogo remoto para los selectores de cirugía e imágenes.
+     * Evita cargar miles de procedimientos al abrir el modal.
+     */
+    public function buscar_procedimientos_modal(Request $request)
+    {
+        $termino = trim((string) $request->get('q', ''));
+        $tipo = $request->get('tipo', 'procedimientos');
+
+        $longitud = function_exists('mb_strlen') ? mb_strlen($termino, 'UTF-8') : strlen($termino);
+        if ($longitud < 2) {
+            return response()->json(['results' => []]);
+        }
+
+        $terminoLike = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $termino);
+        $consulta = Procedimiento::query()
+            ->select('id', 'nombre')
+            ->where('estado', 1)
+            ->where('nombre', 'like', '%' . $terminoLike . '%');
+
+        if ($tipo === 'imagenes') {
+            $consulta->where('id_grupo_procedimiento', 20);
+        }
+
+        $resultados = $consulta
+            ->orderBy('nombre')
+            ->limit(20)
+            ->get()
+            ->map(function ($procedimiento) {
+                return [
+                    'id' => (string) $procedimiento->id,
+                    'text' => $procedimiento->nombre,
+                ];
+            })
+            ->values();
+
+        return response()->json(['results' => $resultados]);
     }
     public function cirugia(Request $request)
     {
-        //aqui guardo en la modal de habitacion
-        //dd($request->all());
-        $idusuario    = Auth::user()->id;
-        $ip_cliente   = $_SERVER["REMOTE_ADDR"];
-        //$this->agenda($request);
-        $this->crear_procedimiento($request);
-        $this->liberar($request);
-        $hospitalizacion = Ho_Hospitalizacion::find($request['id_hospitalizacion']);
-        $traspaso = Ho_Traspaso_Sala008::find($hospitalizacion->id_traspaso);
-        $traspaso->update(['estado' => '3']);
-        //dd($traspaso);
-        $solicitud = Ho_Solicitud::find($traspaso->id_solicitud);
-        $sol_log = [
-            'id_ho_solicitud'       => $solicitud->id,
-            'estado_paso'           => '3',
-            'id_agenda'             => $solicitud->id_agenda,
-            'fecha_ingreso'         => date('Y-m-d'),
-            'ip_creacion'           => $ip_cliente,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-        ];
-        $hospitalizacion->estado = 2;
-        $hospitalizacion->id_usuariomod = $idusuario;
-        $hospitalizacion->save();
-
-        //$log_soli = Ho_Log_Solicitud::create($sol_log);
-
-        $solicitud->estado_paso = $request->paso;
-        $solicitud->id_usuariomod = $idusuario;
-        $solicitud->save();
-
-        return redirect()->route('hospital.gcuartos');
+        $this->validate($request, ['id_hospitalizacion' => 'required|integer', 'sala' => 'required|integer',
+            'procedure_indication' => 'required|string|min:10|max:2000', 'procedimiento' => 'required|array|min:1',
+            'procedimiento.*' => 'required|integer|exists:procedimiento,id']);
+        try {
+            $solicitudId = $this->solicitudIdForHospitalization($request->id_hospitalizacion);
+            $names = Procedimiento::whereIn('id', $request->procedimiento)->pluck('nombre')->all();
+            $reason = $request->procedure_indication.' Procedimientos propuestos: '.implode('; ', $names)
+                .' '.mb_substr((string) $request->input('observaciones'), 0, 2000);
+            app(\Sis_medico\Services\ClinicalHospitalTransferService::class)
+                ->requestTransfer($solicitudId, 5, $request->sala, $reason);
+            return redirect()->route('hospital.index_modulos', ['id_paso' => 5])
+                ->with('success', 'Cirugia solicitada. La cama actual se conserva hasta la recepcion.');
+        } catch (\InvalidArgumentException $exception) {
+            return back()->withInput()->withErrors(['transfer' => $exception->getMessage()]);
+        }
     }
     public function agenda(Request $request)
     {
-        $ip_cliente   = $_SERVER["REMOTE_ADDR"];
-        $idusuario    = Auth::user()->id;
-        $id_doctor    = Auth::user()->id;
-        if (!is_null($request['id_doctor'])) {
-        }
-        $id_paciente = $request['id_paciente'];
-        $paciente = paciente::find($id_paciente);
-        $user = User::find($id_paciente);
-        $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
-
-        if (!is_null($especialidad)) {
-            $espid = $especialidad->espid;
-        } else {
-            $espid = '4';
-        }
-
-        $input_agenda = [
-            'fechaini'        => $request['fecha'],
-            'fechafin'        => $request['fechafin'],
-            'id_paciente'     => $id_paciente,
-            'id_doctor1'      => $id_doctor,
-            'proc_consul'     => '1',
-            'estado_cita'     => '1',
-            'id_empresa'      => '1391707460001',
-            'espid'           => $espid,
-            'observaciones'   => 'EVOLUCION CREADA POR HOSPITAL',
-            'id_seguro'       => $paciente->id_seguro,
-            'estado'          => '1',
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $id_doctor,
-            'id_usuariomod'   => $id_doctor,
-        ];
-
-        $id_agenda = agenda::insertGetId($input_agenda);
-
-
-        $consulta_crear_new = [
-            'anterior'        => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'nuevo'           => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($consulta_crear_new);
-
-        $input_log = [
-            'id_agenda'       => $id_agenda,
-            'estado_cita_ant' => '1',
-            'estado_cita'     => '1',
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'estado'          => '4',
-            'observaciones'   => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_doctor1'      => $id_doctor,
-            'descripcion'     => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-
-        Log_Agenda::create($input_log);
-
-        $input_historia = [
-
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_seguro'       => $paciente->id_seguro,
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_procedimiento_completo = '40';
-
-        $id_historia = Historiaclinica::insertGetId($input_historia);
-
-        $input_hc_procedimiento = [
-            'id_hc'                     => $id_historia,
-            'id_seguro'                 => $paciente->id_seguro,
-            'id_procedimiento_completo' => $id_procedimiento_completo,
-            'ip_modificacion'           => $ip_cliente,
-            'id_usuariocrea'            => $idusuario,
-            'id_usuariomod'             => $idusuario,
-            'ip_creacion'               => $ip_cliente,
-
-        ];
-
-        $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-        $input_hc_evolucion = [
-            'hc_id_procedimiento' => $id_hc_procedimiento,
-            'hcid'                => $id_historia,
-            'secuencia'           => '0',
-            'fecha_ingreso'       => ' ',
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariomod'       => $idusuario,
-            'id_usuariocrea'      => $idusuario,
-            'ip_creacion'         => $ip_cliente,
-
-        ];
-        $id_evolucion    = Hc_Evolucion::insertGetId($input_hc_evolucion);
-
-        $input_child_pugh = [
-            'id_hc_evolucion'       => $id_evolucion,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-            'id_usuariomod'         => $idusuario,
-            'ip_creacion'           => $ip_cliente,
-            'examen_fisico'         => 'ESTADO CABEZA Y CUELLO:
-                                                            ESTADO TORAX:
-                                                            ESTADO ABDOMEN:
-                                                            ESTADO MIEMBROS SUPERIORES:
-                                                            ESTADO MIEMBROS INFERIORES:
-                                                            OTROS: ',
-        ];
-
-        $id_child = hc_child_pugh::create($input_child_pugh);
-
-        $input_hc_receta = [
-            'id_hc'           => $id_historia,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-        hc_receta::insert($input_hc_receta);
+        return app(\Sis_medico\Services\ClinicalWardProcedureService::class)->agenda($request);
     }
+
     public function crear_procedimiento(Request $request)
     {
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $id_doctor  = Auth::user()->id;
-
-        $procedimientos = $request['procedimiento'];
-
-        $procedimientop = $procedimientos[0];
-        $paciente       = Paciente::find($request->id_paciente);
-        $sala           = \Sis_medico\Sala::find($request['sala']);
-
-        $hospitalizacion = Ho_Hospitalizacion::find($request['id_hospitalizacion']);
-        $traspaso = Ho_Traspaso_Sala008::find($hospitalizacion->id_traspaso);
-        $solicitud = Ho_Solicitud::find($traspaso->id_solicitud);
-
-        $procedimiento_crear_new = [
-            'anterior'        => 'CIRUJIA HOSPITAL',
-            'nuevo'           => 'CIRUJIA HOSPITAL',
-            'id_paciente'     => $paciente->id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($procedimiento_crear_new);
-
-        if ($procedimientos != null) {
-
-            $input_agenda = [
-                'fechaini'         => $request['fecha'],
-                'fechafin'         => $request['fechafin'],
-                'id_paciente'      => $paciente->id,
-                'id_doctor1'       => $request->doctor,
-                'proc_consul'      => '1',
-                'estado_cita'      => '0',
-                'id_empresa'       => '1391707460001',
-                'espid'            => '4',
-                'observaciones'    => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-                'id_seguro'        => $paciente->id_seguro,
-                'estado'           => '1',
-                'ip_creacion'      => $ip_cliente,
-                'ip_modificacion'  => $ip_cliente,
-                'id_usuariocrea'   => $id_doctor,
-                'id_usuariomod'    => $id_doctor,
-                'id_procedimiento' => $procedimientop,
-                'id_sala'          => $sala->id,
-                'ho_tipo'          => $request->ho_tipo,
-            ];
-
-            $id_agenda = agenda::insertGetId($input_agenda);
-            //return $id_agenda;
-
-            $txt_pro = '';
-            foreach ($procedimientos as $value) {
-
-                if ($procedimientop != $value) {
-                    $txt_pro = $txt_pro . '+' . $value;
-                    AgendaProcedimiento::create([
-                        'id_agenda'        => $id_agenda,
-                        'id_procedimiento' => $value,
-                        'ip_creacion'      => $ip_cliente,
-                        'ip_modificacion'  => $ip_cliente,
-                        'id_usuariocrea'   => $id_doctor,
-                        'id_usuariomod'    => $id_doctor,
-                    ]);
-                }
-            }
-
-            $input_log = [
-                'id_agenda'       => $id_agenda,
-                'estado_cita_ant' => '0',
-                'estado_cita'     => '0',
-                'fechaini'        => Date('Y-m-d H:i:s'),
-                'fechafin'        => Date('Y-m-d H:i:s'),
-                'estado'          => '4',
-                'observaciones'   => 'CIRUGIA HOSPITAL',
-                'id_doctor1'      => $request->doctor,
-                'descripcion'     => 'CIRUGIA HOSPITAL',
-                'campos_ant'      => 'PRO: ' . $procedimientop . $txt_pro,
-
-                'id_usuariomod'   => $id_doctor,
-                'id_usuariocrea'  => $id_doctor,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ];
-            $idusuario = $id_doctor;
-            Log_Agenda::create($input_log);
-            $input_historia = [
-
-                'parentesco'      => $paciente->parentesco,
-                'id_usuario'      => $paciente->id_usuario,
-                'id_agenda'       => $id_agenda,
-                'id_paciente'     => $paciente->id,
-                'id_seguro'       => $paciente->id_seguro,
-
-                'id_doctor1'      => $request->doctor,
-                'id_usuariocrea'  => $id_doctor,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $id_doctor,
-                'ip_creacion'     => $ip_cliente,
-
-            ];
-
-            $id_historia = Historiaclinica::insertGetId($input_historia);
-
-            $input_pentax = [
-                'id_agenda'       => $id_agenda,
-                'hcid'            => $id_historia,
-                'id_sala'         => $sala->id,
-                'id_doctor1'      => $request->doctor,
-                'id_seguro'       => $paciente->id_seguro,
-                'observacion'     => "HOSPITAL CIRUGIA",
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
-            ];
-
-            $id_pentax = Pentax::insertGetId($input_pentax);
-
-            $list_proc = '';
-            foreach ($procedimientos as $value) {
-                $input_pentax_pro2 = [
-                    'id_pentax'        => $id_pentax,
-                    'id_procedimiento' => $value,
-                    'id_usuariocrea'   => $idusuario,
-                    'ip_modificacion'  => $ip_cliente,
-                    'id_usuariomod'    => $idusuario,
-                    'ip_creacion'      => $ip_cliente,
-                ];
-
-                PentaxProc::create($input_pentax_pro2);
-                $list_proc = $list_proc . "+" . $value;
-            }
-
-            $input_log_px = [
-                'id_pentax'       => $id_pentax,
-                'tipo_cambio'     => "HOSPITAL CIRUGIA",
-                'descripcion'     => "EN ESPERA",
-                'estado_pentax'   => '0',
-                'procedimientos'  => $list_proc,
-                'id_doctor1'      => $request->doctor,
-                'observacion'     => "HOSPITAL CIRUGIA",
-                'id_sala'         => $sala->id,
-                'id_seguro'       => $paciente->id_seguro,
-
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-            ];
-
-            Pentax_log::create($input_log_px);
-
-            $input_hc_procedimiento = [
-                'id_hc'                 => $id_historia,
-                'id_seguro'             => $paciente->id_seguro,
-                'id_doctor_examinador'  => $idusuario,
-                'id_doctor_examinador2' => $idusuario,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-                'ip_creacion'           => $ip_cliente,
-
-            ];
-
-            $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-            $input_hc_protocolo = [
-                'fecha'                => date('Y-m-d'),
-                'id_hc_procedimientos' => $id_hc_procedimiento,
-                'hora_inicio'          => date('H:i:s'),
-                'hora_fin'             => date('H:i:s'),
-                'estado_final'         => ' ',
-                'ip_modificacion'      => $ip_cliente,
-                'hcid'                 => $id_historia,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-                'created_at'           => date('Y-m-d H:i:s'),
-                'updated_at'           => date('Y-m-d H:i:s'),
-                'tipo_procedimiento'   => '3',
-            ];
-            hc_protocolo::insert($input_hc_protocolo);
-
-            foreach ($procedimientos as $value) {
-                $input_pro_final = [
-                    'id_hc_procedimientos' => $id_hc_procedimiento,
-                    'id_procedimiento'     => $value,
-                    'id_usuariocrea'       => $idusuario,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariomod'        => $idusuario,
-                    'ip_creacion'          => $ip_cliente,
-                ];
-
-                Hc_Procedimiento_Final::create($input_pro_final);
-            }
-            $arr_solicitud = [
-                'id_paciente'           => $paciente->id,
-                'id_agenda'             => $id_agenda,
-                'id_seguro'             => $paciente->id_seguro,
-                'fecha_ingreso'         => date('Y-m-d H:i:s'),
-                'estado_paso'           => '4',
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $solicitud->update($arr_solicitud);
-
-            $solicitud_log = [
-                'id_ho_solicitud'       => $solicitud->id,
-                'estado_paso'           => '4',
-                'id_agenda'             => $id_agenda,
-                'fecha_ingreso'         => date('Y-m-d'),
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $log = Ho_Log_solicitud::create($solicitud_log);
-
-            return "ok";
-        }
-
-        return "Ingrese el Procedimiento";
+        return app(\Sis_medico\Services\ClinicalWardProcedureService::class)->crear_procedimiento($request);
     }
     public function modal_imagenes(Request $request)
     {
-        return view('hospital.habitacion.modal_imagenes', ['users' => User::where('id_tipo_usuario', 3)->get(), 'procedimientos' => Procedimiento::where('id_grupo_procedimiento', 20)->get(), 'sala' => Sala::where('estado', '1')->get(), 'id_tipo' => $request['id_tipo'], 'id_cama' => $request['id_cama'], 'id_hospitalizacion' => $request['id_hospitalizacion'], 'indetificacion' => $request['indetificacion']]);
+        $solicitudId = $this->solicitudIdForHospitalization($request['id_hospitalizacion']);
+        $activeOrders = $solicitudId ? app(ClinicalTransferReconciliationService::class)->previewActiveOrders($solicitudId) : array();
+        $consentFormats = $this->consentFormatsForSolicitud($solicitudId);
+        return view('hospital.habitacion.modal_imagenes', ['users' => User::where('id_tipo_usuario', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->get(), 'sala' => $this->activeRoomsForSolicitud($solicitudId), 'id_tipo' => $request['id_tipo'], 'id_cama' => $request['id_cama'], 'id_hospitalizacion' => $request['id_hospitalizacion'], 'indetificacion' => $request['indetificacion'], 'activeOrders' => $activeOrders, 'consentFormats' => $consentFormats]);
     }
 
     public function guardar_imagenes(Request $request)
     {
-        //dd($request->all());
-        $idusuario    = Auth::user()->id;
-        $ip_cliente   = $_SERVER["REMOTE_ADDR"];
-        //$this->agenda($request);
-        $this->crear_imagen($request);
-        $this->liberar($request);
-        $hospitalizacion = Ho_Hospitalizacion::find($request['id_hospitalizacion']);
-        $traspaso = Ho_Traspaso_Sala008::find($hospitalizacion->id_traspaso);
-        $traspaso->update(['estado' => '3']);
-        //dd($traspaso);
-        $solicitud = Ho_Solicitud::find($traspaso->id_solicitud);
-        $sol_log = [
-            'id_ho_solicitud'       => $solicitud->id,
-            'estado_paso'           => '3',
-            'id_agenda'             => $solicitud->id_agenda,
-            'fecha_ingreso'         => date('Y-m-d'),
-            'ip_creacion'           => $ip_cliente,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-        ];
-        $hospitalizacion->estado = 2;
-        $hospitalizacion->id_usuariomod = $idusuario;
-        $hospitalizacion->save();
+        $this->validate($request, ['id_hospitalizacion' => 'required|integer', 'id_paciente' => 'required',
+            'procedimiento' => 'required|array|min:1', 'sala' => 'required', 'doctor' => 'required',
+            'procedure_indication' => 'required|min:5', 'procedure_identity_verified' => 'required|in:1']);
+        try {
+            return DB::transaction(function () use ($request) {
+                $solicitud = Ho_Solicitud::where('id', $this->solicitudIdForHospitalization($request->id_hospitalizacion))
+                    ->lockForUpdate()->firstOrFail();
+                app(\Sis_medico\Services\ClinicalHospitalTransferService::class)->authorize($solicitud, 'procedure.order', ['SISTEMAS', 'DOCTORES', 'DOCTOR']);
+                if ((string) $solicitud->id_paciente !== (string) $request->id_paciente) {
+                    throw new \InvalidArgumentException('El paciente no corresponde al episodio.');
+                }
+                $agendaId = $this->crear_imagen($request);
+                if (!is_numeric($agendaId)) throw new \InvalidArgumentException((string) $agendaId);
+                return redirect()->route('hospital.gcuartos')->with('success', 'Estudio solicitado; la cama y el area clinica se conservan.');
+            }, 3);
+        } catch (ClinicalProcedureBlockedException $exception) {
+            return back()->withInput()->withErrors([$exception->getMessage()]);
+        } catch (\InvalidArgumentException $exception) {
+            return back()->withInput()->withErrors([$exception->getMessage()]);
+        }
+    }
 
-        //$log_soli = Ho_Log_Solicitud::create($sol_log);
+    private function solicitudIdForHospitalization($hospitalizationId)
+    {
+        $hospitalization = Ho_Hospitalizacion::find($hospitalizationId);
+        if (!$hospitalization) return null;
+        return Ho_Traspaso_Sala008::where('id', $hospitalization->id_traspaso)->value('id_solicitud');
+    }
 
-        $solicitud->estado_paso = $request->paso;
-        $solicitud->id_usuariomod = $idusuario;
-        $solicitud->save();
-        return redirect()->route('hospital.gcuartos');
+    private function consentFormatsForSolicitud($solicitudId)
+    {
+        $solicitud = $solicitudId ? Ho_Solicitud::with('agenda')->find($solicitudId) : null;
+        $companyId = $solicitud && $solicitud->agenda ? $solicitud->agenda->id_empresa : null;
+        return Formato_consentimiento::where('estado', 1)
+            ->where(function ($query) use ($companyId) {
+                $query->whereNull('id_empresa');
+                if ($companyId) $query->orWhere('id_empresa', $companyId);
+            })->whereNotNull('nombre')->where('nombre', '<>', '')
+            ->selectRaw('MIN(id) as id, MIN(nombre) as nombre')
+            ->groupBy(\Illuminate\Support\Facades\DB::raw('UPPER(TRIM(nombre))'))
+            ->orderBy('nombre')->get();
+    }
+
+    private function activeRoomsForSolicitud($solicitudId)
+    {
+        $hospitalId = app(CurrentHospitalResolver::class)->id(array('solicitud_id' => $solicitudId));
+        return Sala::where('estado', 1)->when($hospitalId, function ($query) use ($hospitalId) {
+            return $query->where('id_hospital', $hospitalId);
+        })->orderBy('nombre_sala')->get();
     }
 
     public function crear_imagen(Request $request)
     {
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $id_doctor  = Auth::user()->id;
-
-        $procedimientos = $request['procedimiento'];
-
-        $procedimientop = $procedimientos[0];
-        $paciente       = Paciente::find($request->id_paciente);
-        $sala           = \Sis_medico\Sala::find($request['sala']);
-
-        $hospitalizacion = Ho_Hospitalizacion::find($request['id_hospitalizacion']);
-        $traspaso = Ho_Traspaso_Sala008::find($hospitalizacion->id_traspaso);
-        $solicitud = Ho_Solicitud::find($traspaso->id_solicitud);
-
-        $procedimiento_crear_new = [
-            'anterior'        => 'IMAGEN HOSPITAL',
-            'nuevo'           => 'IMAGEN HOSPITAL',
-            'id_paciente'     => $paciente->id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($procedimiento_crear_new);
-
-        if ($procedimientos != null) {
-
-            $input_agenda = [
-                'fechaini'         => $request['fecha'],
-                'fechafin'         => $request['fechafin'],
-                'id_paciente'      => $paciente->id,
-                'id_doctor1'       => $request->doctor,
-                'proc_consul'      => '1',
-                'estado_cita'      => '0',
-                'id_empresa'       => '1391707460001',
-                'espid'            => '7',
-                'observaciones'    => 'IMAGEN CREADO POR EL DOCTOR',
-                'id_seguro'        => $paciente->id_seguro,
-                'estado'           => '1',
-                'ip_creacion'      => $ip_cliente,
-                'ip_modificacion'  => $ip_cliente,
-                'id_usuariocrea'   => $id_doctor,
-                'id_usuariomod'    => $id_doctor,
-                'id_procedimiento' => $procedimientop,
-                'id_sala'          => $sala->id,
-                'ho_tipo'          => $request->ho_tipo,
-            ];
-
-            $id_agenda = agenda::insertGetId($input_agenda);
-            //return $id_agenda;
-
-            $txt_pro = '';
-            foreach ($procedimientos as $value) {
-
-                if ($procedimientop != $value) {
-                    $txt_pro = $txt_pro . '+' . $value;
-                    AgendaProcedimiento::create([
-                        'id_agenda'        => $id_agenda,
-                        'id_procedimiento' => $value,
-                        'ip_creacion'      => $ip_cliente,
-                        'ip_modificacion'  => $ip_cliente,
-                        'id_usuariocrea'   => $id_doctor,
-                        'id_usuariomod'    => $id_doctor,
-                    ]);
-                }
-            }
-
-            $input_log = [
-                'id_agenda'       => $id_agenda,
-                'estado_cita_ant' => '0',
-                'estado_cita'     => '0',
-                'fechaini'        => Date('Y-m-d H:i:s'),
-                'fechafin'        => Date('Y-m-d H:i:s'),
-                'estado'          => '4',
-                'observaciones'   => 'IMAGEN HOSPITAL',
-                'id_doctor1'      => $request->doctor,
-                'descripcion'     => 'IMAGEN HOSPITAL',
-                'campos_ant'      => 'PRO: ' . $procedimientop . $txt_pro,
-
-                'id_usuariomod'   => $id_doctor,
-                'id_usuariocrea'  => $id_doctor,
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-            ];
-            $idusuario = $id_doctor;
-            Log_Agenda::create($input_log);
-            $input_historia = [
-
-                'parentesco'      => $paciente->parentesco,
-                'id_usuario'      => $paciente->id_usuario,
-                'id_agenda'       => $id_agenda,
-                'id_paciente'     => $paciente->id,
-                'id_seguro'       => $paciente->id_seguro,
-
-                'id_doctor1'      => $request->doctor,
-                'id_usuariocrea'  => $id_doctor,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $id_doctor,
-                'ip_creacion'     => $ip_cliente,
-
-            ];
-
-            $id_historia = Historiaclinica::insertGetId($input_historia);
-
-            $input_pentax = [
-                'id_agenda'       => $id_agenda,
-                'hcid'            => $id_historia,
-                'id_sala'         => $sala->id,
-                'id_doctor1'      => $request->doctor,
-                'id_seguro'       => $paciente->id_seguro,
-                'observacion'     => "HOSPITAL IMAGEN",
-                'id_usuariocrea'  => $idusuario,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
-            ];
-
-            $id_pentax = Pentax::insertGetId($input_pentax);
-
-            $list_proc = '';
-            foreach ($procedimientos as $value) {
-                $input_pentax_pro2 = [
-                    'id_pentax'        => $id_pentax,
-                    'id_procedimiento' => $value,
-                    'id_usuariocrea'   => $idusuario,
-                    'ip_modificacion'  => $ip_cliente,
-                    'id_usuariomod'    => $idusuario,
-                    'ip_creacion'      => $ip_cliente,
-                ];
-
-                PentaxProc::create($input_pentax_pro2);
-                $list_proc = $list_proc . "+" . $value;
-            }
-
-            $input_log_px = [
-                'id_pentax'       => $id_pentax,
-                'tipo_cambio'     => "HOSPITAL IMAGEN",
-                'descripcion'     => "EN ESPERA",
-                'estado_pentax'   => '0',
-                'procedimientos'  => $list_proc,
-                'id_doctor1'      => $request->doctor,
-                'observacion'     => "HOSPITAL IMAGEN",
-                'id_sala'         => $sala->id,
-                'id_seguro'       => $paciente->id_seguro,
-
-                'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
-            ];
-
-            Pentax_log::create($input_log_px);
-
-            $input_hc_procedimiento = [
-                'id_hc'                 => $id_historia,
-                'id_seguro'             => $paciente->id_seguro,
-                'id_doctor_examinador'  => $idusuario,
-                'id_doctor_examinador2' => $idusuario,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-                'ip_creacion'           => $ip_cliente,
-
-            ];
-
-            $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-            $input_hc_protocolo = [
-                'fecha'                => date('Y-m-d'),
-                'id_hc_procedimientos' => $id_hc_procedimiento,
-                'hora_inicio'          => date('H:i:s'),
-                'hora_fin'             => date('H:i:s'),
-                'estado_final'         => ' ',
-                'ip_modificacion'      => $ip_cliente,
-                'hcid'                 => $id_historia,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-                'created_at'           => date('Y-m-d H:i:s'),
-                'updated_at'           => date('Y-m-d H:i:s'),
-                'tipo_procedimiento'   => '2',
-            ];
-            hc_protocolo::insert($input_hc_protocolo);
-
-            foreach ($procedimientos as $value) {
-                $input_pro_final = [
-                    'id_hc_procedimientos' => $id_hc_procedimiento,
-                    'id_procedimiento'     => $value,
-                    'id_usuariocrea'       => $idusuario,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariomod'        => $idusuario,
-                    'ip_creacion'          => $ip_cliente,
-                ];
-
-                Hc_Procedimiento_Final::create($input_pro_final);
-            }
-            $arr_solicitud = [
-                'id_paciente'           => $paciente->id,
-                'id_agenda'             => $id_agenda,
-                'id_seguro'             => $paciente->id_seguro,
-                'fecha_ingreso'         => date('Y-m-d H:i:s'),
-                'estado_paso'           => '4',
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $solicitud->update($arr_solicitud);
-
-            $solicitud_log = [
-                'id_ho_solicitud'       => $solicitud->id,
-                'estado_paso'           => '4',
-                'id_agenda'             => $id_agenda,
-                'fecha_ingreso'         => date('Y-m-d'),
-                'ip_creacion'           => $ip_cliente,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-            ];
-
-            $log = Ho_Log_solicitud::create($solicitud_log);
-
-            return "ok";
-        }
-
-        return "Ingrese LA Imagen";
+        return app(\Sis_medico\Services\ClinicalWardProcedureService::class)->crear_imagen($request);
     }
-
     public function agenda_hospital(Request $request, $id_sala)
     {
 

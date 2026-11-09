@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+	    <meta charset="utf-8">
 	  
 	    <title>PROTOCOLO OPERATORIO</title>
 
@@ -249,4 +250,4 @@
 		</p>
 	</div> 	
 	</body>
-</html>			
+</html>

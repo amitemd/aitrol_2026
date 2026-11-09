@@ -2,7 +2,7 @@
 
 <head>
   <title>Evolución</title>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
 <!--
@@ -45,13 +45,8 @@ div.WordSection1
 
 <body lang=ES-EC link="#0563C1" vlink="#954F72">
 @php
-  if($procedimiento->id_empresa!=null){
-    $empresa = $procedimiento->empresa;
-  }else{
-    $agenda = Sis_medico\Agenda::find($data->id_agenda);
-    $empresa = $agenda->empresa;
-  }
-  
+  $agenda = Sis_medico\Agenda::find($data->id_agenda);
+  $empresa = $agenda->empresa;
 @endphp
 <div class=WordSection1><!--EVOLUCION DE TIPO DE ANESTESIA GENERAL-->
 
@@ -66,7 +61,7 @@ div.WordSection1
 @endif
 
 <p class=MsoNormal align=center style='text-align:center'><b><span
-style='font-size:28.0pt;line-height:107%'>EVOLUCIÓN </span></b></p>
+style='font-size:28.0pt;line-height:107%'>EVOLUCIÓN</span></b></p>
 
 <table class=MsoTableGrid cellspacing=0 cellpadding=0
  style='margin-left:-7.35pt;border-collapse:collapse;border:none;border-bottom: solid windowtext 1.0pt;height: 500pt;border-right:solid windowtext 1.0pt;'>
@@ -142,7 +137,6 @@ style='font-size:28.0pt;line-height:107%'>EVOLUCIÓN </span></b></p>
   </td>
  </tr>
  <tr>
-
   <td width=288 colspan=6 valign=top style='width:216.0pt;border:solid windowtext 1.0pt;
   border-top:none;padding:0cm 5.4pt 0cm 5.4pt'>
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
@@ -229,9 +223,9 @@ style='font-size:28.0pt;line-height:107%'>EVOLUCIÓN </span></b></p>
   border-left:none;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;border-bottom:solid windowtext 1.0pt;height:50.0pt'>
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal'><span style='font-size:9px !important;'><?php echo str_replace('<','&lt;',$cardiologia->resumen); ?><br></span>
+  normal'><span style='font-size:9px !important;'><?php echo $cardiologia->resumen ?><br></span>
   <!--span style='font-size:7.0pt'><b>LABORATORIO:<br></b></span-->
-  <span style='font-size:7.0pt'><?php echo $evolucion[0]->laboratorio; ?><br></span></p>
+  <span style='font-size:7.0pt'><?php echo $evolucion[0]->laboratorio ?><br></span></p>
   </td>
   <td width=130 colspan=3 valign=top style='width:100pt;border-top:none;
   border-left:none;border-right:solid windowtext 1.0pt;

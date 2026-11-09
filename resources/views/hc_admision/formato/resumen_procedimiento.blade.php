@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
 
 	<title>Resumen Procedimiento</title>
 	<style type="text/css">
@@ -47,14 +48,16 @@
 		<table>
 			<tr>
 				@php
-					$agenda = Sis_medico\Agenda::find($historia->id_agenda);
-					if($protocolo->procedimiento->id_empresa!=null){
-						$empresa = $protocolo->procedimiento->empresa;
-					}else{
-						$empresa = $agenda->empresa;
-					}
+				  $agenda = Sis_medico\Agenda::find($historia->id_agenda);
+				  $empresa = $agenda->empresa;
 				@endphp
-				<td style="width: 150px;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></td>
+				@if($historia->id_seguro != 5)
+					@if(!is_null($empresa->logo_form))
+					<td style="width: 150px;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></td>
+					@else
+					<!--td style="width: 150px;font-size: 12px;"><b>{{$empresa->nombre_form}}</b></td-->
+					@endif
+				@endif
 
 				@if($historia->id_seguro != 5)
 					@if(!is_null($empresa->logo_form))
@@ -69,7 +72,9 @@
 					@endif
 				@else
 					<td colspan="2">
-						<p  style="font-size: 18px; text-align: center; width: 500px; margin-left:0px; "><b style="text-align: center;">{{$empresa->nombre_form}}</b></p>
+						<p  style="font-size: 19px; text-align: center; width: 500px; margin-left:110px; ">
+							<b style="text-align: center;">INSTITUTO ECUATORIANO DE ENFERMEDADES DIGESTIVAS GASTROCLINICA S.A.</b>
+						</p>
 					</td>
 				@endif
 			</tr>
@@ -114,19 +119,18 @@ foreach ($adicionales as $value2) {
 		<table style="margin-left: -23px;padding: 0;" >
 
 			@php  $i = 0;   $j = 0;@endphp
-			@if($protocolo->procedimiento->procedimiento_completo != "")
-				@if($protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen != "")
+			@php $imagenGrupoProcedimiento = optional(optional($protocolo->procedimiento->procedimiento_completo)->grupo_procedimiento)->imagen; @endphp
+			@if(!empty($imagenGrupoProcedimiento))
 					@if($i < 8)
 						@if($j == 0)
 						<tr style="padding: 0;">
 						@endif
-						<td style="margin: 0;padding: 0 4px 0px 0px;"><img style="width: 175px; height: 188px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen}}" hspace=12></td>
+					<td style="margin: 0;padding: 0 4px 0px 0px;"><img style="width: 175px; height: 188px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$imagenGrupoProcedimiento}}" hspace=12></td>
 						@if($j >= 3)
 						</tr>
 						@endif
 						@php $i = $i+1;$j = $j+1; @endphp
 					@endif
-				@endif
 			@endif
 			@foreach($imagenes as $value)
 				@if($i < 8)
@@ -149,14 +153,7 @@ foreach ($adicionales as $value2) {
 			</tr>
 		</table>
 		<hr>
-		<!--table width="716px;" class="final">
-			<tr>
-				<td >Hallazgos</td>
-			</tr>
-			<tr>
-				<td style="font-size: 12px !important;"><?php echo $protocolo->hallazgos; ?></td>
-			</tr>
-		</table-->
+		
 		<div style="width: 107%;margin-left: -17px;border: 1px black solid;">
 			<span>Hallazgos</span>
 		</div>
@@ -196,7 +193,7 @@ foreach ($adicionales as $value2) {
 		</p-->
 		<p style="text-align: center;">
 			@if($firma != "[]")
-				<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+				<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 				@if($firma[0]->id_usuario=='094346835')
 					<b>Dra. ISABEL FARIA URDANETA</b><br>
 				@else

@@ -1,0 +1,240 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::group(array('middleware' => array('general', 'v3.method.guard', 'v3.authorize', 'v3.audit')), function () {
+    Route::get('v3/agenda-clinica/recibo/crear/{id_agenda}', 'contable\NuevoReciboCobroController@crear')->name('v3.agenda-receipts.create');
+    Route::get('v3/agenda-clinica/recibo/{id}/editar', 'contable\NuevoReciboCobroController@editar')->name('v3.agenda-receipts.edit');
+    Route::post('v3/agenda-clinica/recibo/{id}/diagnosticos/refrescar', 'contable\NuevoReciboCobroController@refrescar_diagnosticos')
+        ->where('id', '[0-9]+')->name('v3.agenda-receipts.diagnoses-refresh');
+    Route::get('v3/agenda-clinica/recibo/{receipt}/factura/vista-previa', 'v3\contable\ReceiptInvoiceController@preview')
+        ->where('receipt', '[0-9]+')->name('v3.agenda-receipts.invoice-preview');
+    Route::post('v3/agenda-clinica/recibo/{receipt}/factura/emitir', 'v3\contable\ReceiptInvoiceController@storeInvoice')
+        ->where('receipt', '[0-9]+')->name('v3.agenda-receipts.invoice-store');
+    Route::get('v3/accesos-clinicos/index', 'v3\clinical\ClinicalAccessController@index')->name('v3.clinical-access.index');
+    Route::get('v3/carro-paro/index', 'v3\clinical\CrashCartController@index')->name('v3.crash-cart.index');
+    Route::get('v3/carro-paro/crear', 'v3\clinical\CrashCartController@create')->name('v3.crash-cart.create');
+    Route::post('v3/carro-paro/guardar', 'v3\clinical\CrashCartController@store')->name('v3.crash-cart.store');
+    Route::get('v3/carro-paro/control/{control}', 'v3\clinical\CrashCartController@detail')->where('control', '[0-9]+')->name('v3.crash-cart.detail');
+    Route::get('v3/carro-paro/editar/{control}', 'v3\clinical\CrashCartController@edit')->where('control', '[0-9]+')->name('v3.crash-cart.edit');
+    Route::patch('v3/carro-paro/actualizar/{control}', 'v3\clinical\CrashCartController@update')->where('control', '[0-9]+')->name('v3.crash-cart.update');
+    Route::post('v3/carro-paro/anular/{control}', 'v3\clinical\CrashCartController@cancel')->where('control', '[0-9]+')->name('v3.crash-cart.cancel');
+    Route::get('v3/carro-paro/reporte', 'v3\clinical\CrashCartController@report')->name('v3.crash-cart.report');
+    Route::get('v3/carro-paro/pdf', 'v3\clinical\CrashCartController@pdf')->name('v3.crash-cart.pdf');
+    Route::get('v3/carro-paro/excel', 'v3\clinical\CrashCartController@excel')->name('v3.crash-cart.excel');
+
+    Route::get('v3/especialidades', 'v3\clinical\SystemCatalogController@specialties')->name('v3.specialties.home');
+    Route::get('v3/especialidades/index', 'v3\clinical\SystemCatalogController@specialties')->name('v3.specialties.index');
+    Route::get('v3/especialidades/crear', 'v3\clinical\SystemCatalogController@createSpecialty')->name('v3.specialties.create');
+    Route::post('v3/especialidades', 'v3\clinical\SystemCatalogController@storeSpecialty')->name('v3.specialties.store');
+    Route::get('v3/especialidades/{specialty}/editar', 'v3\clinical\SystemCatalogController@editSpecialty')->name('v3.specialties.edit');
+    Route::patch('v3/especialidades/{specialty}', 'v3\clinical\SystemCatalogController@updateSpecialty')->name('v3.specialties.update');
+    Route::get('v3/especialidades/importar/plantilla', 'v3\clinical\SystemCatalogController@specialtyTemplate')->name('v3.specialties.template');
+    Route::post('v3/especialidades/importar', 'v3\clinical\SystemCatalogController@importSpecialties')->name('v3.specialties.import');
+
+    Route::get('v3/procedimientos/index', 'v3\clinical\SystemCatalogController@procedures')->name('v3.procedures.index');
+    Route::get('v3/procedimientos/crear', 'v3\clinical\SystemCatalogController@createProcedure')->name('v3.procedures.create');
+    Route::post('v3/procedimientos', 'v3\clinical\SystemCatalogController@storeProcedure')->name('v3.procedures.store');
+    Route::get('v3/procedimientos/{procedure}/editar', 'v3\clinical\SystemCatalogController@editProcedure')->name('v3.procedures.edit');
+    Route::patch('v3/procedimientos/{procedure}', 'v3\clinical\SystemCatalogController@updateProcedure')->name('v3.procedures.update');
+    Route::get('v3/procedimientos/importar/plantilla', 'v3\clinical\SystemCatalogController@procedureTemplate')->name('v3.procedures.template');
+    Route::post('v3/procedimientos/importar', 'v3\clinical\SystemCatalogController@importProcedures')->name('v3.procedures.import');
+
+    Route::get('v3/tipos-procedimiento/index', 'v3\clinical\SystemCatalogController@procedureTypes')->name('v3.procedure-types.index');
+    Route::get('v3/tipos-procedimiento/crear', 'v3\clinical\SystemCatalogController@createProcedureType')->name('v3.procedure-types.create');
+    Route::post('v3/tipos-procedimiento', 'v3\clinical\SystemCatalogController@storeProcedureType')->name('v3.procedure-types.store');
+    Route::get('v3/tipos-procedimiento/{type}/editar', 'v3\clinical\SystemCatalogController@editProcedureType')->name('v3.procedure-types.edit');
+    Route::patch('v3/tipos-procedimiento/{type}', 'v3\clinical\SystemCatalogController@updateProcedureType')->name('v3.procedure-types.update');
+
+    Route::get('v3/documentos-requeridos/index', 'v3\clinical\AgendaDocumentRequirementController@index')->name('v3.agenda-document-requirements.index');
+    Route::post('v3/documentos-requeridos', 'v3\clinical\AgendaDocumentRequirementController@update')->name('v3.agenda-document-requirements.update');
+
+    Route::get('v3/preparaciones/index', 'v3\clinical\PreparationController@index')->name('v3.preparations.index');
+    Route::post('v3/preparaciones', 'v3\clinical\PreparationController@store')->name('v3.preparations.store');
+    Route::patch('v3/preparaciones/{preparation}', 'v3\clinical\PreparationController@update')->name('v3.preparations.update');
+    Route::patch('v3/preparaciones/{preparation}/estado', 'v3\clinical\PreparationController@toggle')->name('v3.preparations.toggle');
+    Route::get('v3/preparaciones/{preparation}/archivo', 'v3\clinical\PreparationController@file')->name('v3.preparations.file');
+    Route::get('v3/preparaciones/catalogo', 'v3\clinical\PreparationController@catalog')->name('v3.preparations.catalog');
+
+    Route::get('v3/agenda-clinica/index', 'v3\clinical\ClinicalAgendaController@index')->name('v3.clinical-agenda.index');
+    Route::get('v3/agenda-clinica/horarios', 'v3\clinical\ClinicalAgendaController@schedules')->name('v3.clinical-agenda.schedules');
+    Route::post('v3/agenda-clinica/limites/{doctor}', 'v3\clinical\ClinicalAgendaController@updateLimits')->name('v3.clinical-agenda.limits');
+    Route::get('v3/agenda-clinica/mi-agenda', 'v3\clinical\DoctorAgendaController@myCalendar')->name('v3.doctor-agenda.mine');
+    Route::get('v3/agenda-clinica/mi-horario', 'v3\clinical\DoctorAgendaController@mySchedule')->name('v3.doctor-agenda.my-schedule');
+    Route::get('v3/agenda-clinica/doctor/{doctor}', 'v3\clinical\DoctorAgendaController@calendar')->name('v3.doctor-agenda.calendar');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/semana', 'v3\clinical\DoctorAgendaController@week')->name('v3.doctor-agenda.week');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/pacientes', 'v3\clinical\DoctorAgendaController@patients')->name('v3.doctor-agenda.patients');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/procedimientos', 'v3\clinical\DoctorAgendaController@procedures')->name('v3.doctor-agenda.procedures');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/disponibilidad', 'v3\clinical\DoctorAgendaController@availability')->name('v3.doctor-agenda.availability');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/crear', 'v3\clinical\DoctorAgendaController@create')->name('v3.doctor-agenda.create');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/guardar', 'v3\clinical\DoctorAgendaController@store')->name('v3.doctor-agenda.store');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}', 'v3\clinical\DoctorAgendaController@edit')->name('v3.doctor-agenda.edit');
+    Route::patch('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}', 'v3\clinical\DoctorAgendaController@update')->name('v3.doctor-agenda.update');
+    Route::delete('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}', 'v3\clinical\DoctorAgendaController@destroy')->name('v3.doctor-agenda.destroy');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/archivos', 'v3\clinical\DoctorAgendaController@appointmentFiles')->name('v3.doctor-agenda.files.index');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/archivos', 'v3\clinical\DoctorAgendaController@storeAppointmentFile')->name('v3.doctor-agenda.files.store');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/archivos/{archive}', 'v3\clinical\DoctorAgendaController@showAppointmentFile')->name('v3.doctor-agenda.files.show');
+    Route::delete('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/archivos/{archive}', 'v3\clinical\DoctorAgendaController@destroyAppointmentFile')->name('v3.doctor-agenda.files.destroy');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/accion/{action}', 'v3\clinical\DoctorAgendaController@action')->name('v3.doctor-agenda.action');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/consentimientos', 'v3\clinical\AgendaConsentController@index')->name('v3.agenda-consents.index');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/consentimientos/{format}/pdf', 'v3\clinical\AgendaConsentController@pdf')->name('v3.agenda-consents.pdf');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/certificado-medico', 'v3\clinical\MedicalCertificateController@create')->name('v3.medical-certificates.create');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/certificado-medico/preview/{token}/{filename}', 'v3\clinical\MedicalCertificateController@preview')
+        ->where('token', '[a-f0-9]{64}')
+        ->name('v3.medical-certificates.preview');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/certificado-medico/pdf/{filename?}', 'v3\clinical\MedicalCertificateController@pdf')->name('v3.medical-certificates.pdf');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/documentos', 'v3\clinical\AgendaDocumentController@index')->name('v3.agenda-documents.index');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/orden-laboratorio', 'v3\clinical\LaboratoryOrderController@createForAppointment')->name('v3.appointment-laboratory-orders.create');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/orden-laboratorio/guardar', 'v3\clinical\LaboratoryOrderController@storeForAppointment')->name('v3.appointment-laboratory-orders.store');
+    Route::patch('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/documentos/{document}', 'v3\clinical\AgendaDocumentController@toggle')->name('v3.agenda-documents.toggle');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/documentos/{document}/archivo', 'v3\clinical\AgendaDocumentController@upload')->name('v3.agenda-documents.upload');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/documentos/{document}/archivo', 'v3\clinical\AgendaDocumentController@file')->name('v3.agenda-documents.file');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/copia-identificacion', 'v3\clinical\AgendaDocumentController@patientCopy')->name('v3.agenda-documents.patient-copy');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/documentos/{document}/generar', 'v3\clinical\AgendaDocumentController@generated')->name('v3.agenda-documents.generated');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/escaneado', 'v3\clinical\AgendaDocumentController@uploadScan')->name('v3.agenda-documents.scan.upload');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/agenda/{appointment}/escaneado', 'v3\clinical\AgendaDocumentController@scan')->name('v3.agenda-documents.scan');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/horario', 'v3\clinical\DoctorAgendaController@schedule')->name('v3.doctor-agenda.schedule');
+    Route::get('v3/agenda-clinica/doctor/{doctor}/horario/semana', 'v3\clinical\DoctorAgendaController@scheduleWeek')->name('v3.doctor-agenda.schedule-week');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/horario/recurrente', 'v3\clinical\DoctorAgendaController@storeRecurring')->name('v3.doctor-agenda.recurring.store');
+    Route::patch('v3/agenda-clinica/doctor/{doctor}/horario/recurrente/{slot}', 'v3\clinical\DoctorAgendaController@updateRecurring')->name('v3.doctor-agenda.recurring.update');
+    Route::delete('v3/agenda-clinica/doctor/{doctor}/horario/recurrente/{slot}', 'v3\clinical\DoctorAgendaController@destroyRecurring')->name('v3.doctor-agenda.recurring.destroy');
+    Route::post('v3/agenda-clinica/doctor/{doctor}/horario/excepcion', 'v3\clinical\DoctorAgendaController@storeException')->name('v3.doctor-agenda.exception.store');
+    Route::delete('v3/agenda-clinica/doctor/{doctor}/horario/excepcion/{exception}', 'v3\clinical\DoctorAgendaController@destroyException')->name('v3.doctor-agenda.exception.destroy');
+    Route::get('v3/produccion-medica/index', 'v3\clinical\ProcedureProductionController@index')->name('v3.procedure-production.index');
+    Route::get('v3/produccion-medica/mes/{year}/{month}', 'v3\clinical\ProcedureProductionController@doctors')->name('v3.procedure-production.doctors');
+    Route::get('v3/ordenes-laboratorio/index', 'v3\clinical\LaboratoryOrderController@index')->name('v3.laboratory-orders.index');
+    Route::get('v3/pacientes/{patient}/ordenes-laboratorio', 'v3\clinical\LaboratoryOrderController@patient')->name('v3.patient-laboratory-orders.index');
+    Route::get('v3/ordenes-laboratorio/crear-publica', 'v3\clinical\LaboratoryOrderController@publicOrder')->name('v3.laboratory-orders.public');
+    Route::get('v3/ordenes-laboratorio/crear-privada', 'v3\clinical\LaboratoryOrderController@privateOrder')->name('v3.laboratory-orders.private');
+    Route::match(array('get','post'), 'v3/ordenes-laboratorio/pagos-en-linea', 'v3\clinical\LaboratoryOrderController@onlinePayments')->name('v3.laboratory-orders.online-payments');
+    Route::match(array('get','post'), 'v3/ordenes-laboratorio/devolver', 'v3\clinical\LaboratoryOrderController@returnOrder')->name('v3.laboratory-orders.return');
+    Route::get('v3/ordenes-laboratorio/factura-agrupada', 'v3\clinical\LaboratoryOrderController@groupedInvoices')->name('v3.laboratory-orders.grouped-invoices');
+    Route::match(array('get','post'), 'v3/ordenes-laboratorio/comisiones', 'v3\clinical\LaboratoryOrderController@commissions')->name('v3.laboratory-orders.commissions');
+    Route::get('v3/ordenes-laboratorio/cierre-caja', 'v3\clinical\LaboratoryOrderController@cashClose')->name('v3.laboratory-orders.cash-close');
+    Route::get('v3/ordenes-laboratorio/exportar/{type}', 'v3\clinical\LaboratoryOrderController@export')->name('v3.laboratory-orders.export');
+    Route::get('v3/ordenes-laboratorio/{id}/detalle', 'v3\clinical\LaboratoryOrderController@detail')->name('v3.laboratory-orders.detail');
+    Route::get('v3/ordenes-laboratorio/{id}/orden', 'v3\clinical\LaboratoryOrderController@orderPdf')->name('v3.laboratory-orders.order-pdf');
+    Route::get('v3/ordenes-laboratorio/{id}/resultados', 'v3\clinical\LaboratoryOrderController@results')->name('v3.laboratory-orders.results');
+    Route::get('v3/ordenes-laboratorio/{id}/editar', 'v3\clinical\LaboratoryOrderController@edit')->name('v3.laboratory-orders.edit');
+    Route::get('v3/ordenes-laboratorio/{id}/comentarios', 'v3\clinical\LaboratoryOrderController@comments')->name('v3.laboratory-orders.comments');
+    Route::get('v3/control-laboratorio/index', 'v3\clinical\LaboratoryControlController@index')->name('v3.laboratory-control.index');
+    Route::get('v3/control-laboratorio/exportar/{type}', 'v3\clinical\LaboratoryControlController@export')->name('v3.laboratory-control.export');
+    Route::post('v3/control-laboratorio/{id}/area/{machine}', 'v3\clinical\LaboratoryControlController@area')->name('v3.laboratory-control.area');
+    Route::get('v3/control-laboratorio/{id}/panel-especial', 'v3\clinical\LaboratoryControlController@special')->name('v3.laboratory-control.special');
+    Route::get('v3/control-laboratorio/{id}/codigo-barras', 'v3\clinical\LaboratoryControlController@barcode')->name('v3.laboratory-control.barcode');
+    Route::get('v3/control-laboratorio/{id}/editar', 'v3\clinical\LaboratoryControlController@edit')->name('v3.laboratory-control.edit');
+    Route::get('v3/control-laboratorio/{id}/orden', 'v3\clinical\LaboratoryControlController@order')->name('v3.laboratory-control.order');
+    Route::get('v3/control-laboratorio/{id}/consentimientos', 'v3\clinical\LaboratoryControlController@consent')->name('v3.laboratory-control.consent');
+    Route::get('v3/supervision-laboratorio/index', 'v3\clinical\LaboratorySupervisionController@index')->name('v3.laboratory-supervision.index');
+    Route::get('v3/supervision-laboratorio/exportar/{type}', 'v3\clinical\LaboratorySupervisionController@export')->name('v3.laboratory-supervision.export');
+    Route::get('v3/supervision-laboratorio/cupones', 'v3\clinical\LaboratorySupervisionController@coupons')->name('v3.laboratory-supervision.coupons');
+    Route::get('v3/supervision-laboratorio/comisiones', 'v3\clinical\LaboratorySupervisionController@commissions')->name('v3.laboratory-supervision.commissions');
+    Route::get('v3/supervision-laboratorio/{id}/resultados', 'v3\clinical\LaboratorySupervisionController@results')->name('v3.laboratory-supervision.results');
+    Route::get('v3/supervision-laboratorio/{id}/documento', 'v3\clinical\LaboratorySupervisionController@document')->name('v3.laboratory-supervision.document');
+    Route::get('v3/supervision-laboratorio/{id}/valores', 'v3\clinical\LaboratorySupervisionController@values')->name('v3.laboratory-supervision.values');
+    Route::get('v3/catalogo-examenes/index', 'v3\clinical\LaboratoryExamCatalogController@index')->name('v3.laboratory-exams.index');
+    Route::get('v3/catalogo-examenes/crear', 'v3\clinical\LaboratoryExamCatalogController@create')->name('v3.laboratory-exams.create');
+    Route::post('v3/catalogo-examenes/guardar', 'v3\clinical\LaboratoryExamCatalogController@store')->name('v3.laboratory-exams.store');
+    Route::get('v3/catalogo-examenes/exportar', 'v3\clinical\LaboratoryExamCatalogController@export')->name('v3.laboratory-exams.export');
+    Route::get('v3/catalogo-examenes/{exam}/editar', 'v3\clinical\LaboratoryExamCatalogController@edit')->name('v3.laboratory-exams.edit');
+    Route::patch('v3/catalogo-examenes/{exam}', 'v3\clinical\LaboratoryExamCatalogController@update')->name('v3.laboratory-exams.update');
+    Route::get('v3/catalogo-examenes/{exam}/parametros', 'v3\clinical\LaboratoryExamCatalogController@parameters')->name('v3.laboratory-exams.parameters');
+    Route::get('v3/catalogo-examenes/{exam}/parametros/crear', 'v3\clinical\LaboratoryExamCatalogController@createParameter')->name('v3.laboratory-exams.parameters.create');
+    Route::post('v3/catalogo-examenes/{exam}/parametros', 'v3\clinical\LaboratoryExamCatalogController@storeParameter')->name('v3.laboratory-exams.parameters.store');
+    Route::get('v3/catalogo-examenes/{exam}/parametros/{parameter}/editar', 'v3\clinical\LaboratoryExamCatalogController@editParameter')->name('v3.laboratory-exams.parameters.edit');
+    Route::patch('v3/catalogo-examenes/{exam}/parametros/{parameter}', 'v3\clinical\LaboratoryExamCatalogController@updateParameter')->name('v3.laboratory-exams.parameters.update');
+    Route::post('v3/catalogo-examenes/{exam}/parametros/{parameter}/referencias', 'v3\clinical\LaboratoryExamCatalogController@archiveReference')->name('v3.laboratory-exams.references.store');
+    Route::get('v3/costos-examenes/index', 'v3\clinical\LaboratoryExamCostController@index')->name('v3.laboratory-exam-costs.index');
+    Route::get('v3/costos-examenes/exportar', 'v3\clinical\LaboratoryExamCostController@export')->name('v3.laboratory-exam-costs.export');
+    Route::get('v3/costos-examenes/{exam}/editar', 'v3\clinical\LaboratoryExamCostController@edit')->name('v3.laboratory-exam-costs.edit');
+    Route::patch('v3/costos-examenes/{exam}', 'v3\clinical\LaboratoryExamCostController@update')->name('v3.laboratory-exam-costs.update');
+    Route::get('v3/protocolos-laboratorio/index', 'v3\clinical\LaboratoryAdministrationController@protocols')->name('v3.laboratory-protocols.index');
+    Route::get('v3/protocolos-laboratorio/crear', 'v3\clinical\LaboratoryAdministrationController@createProtocol')->name('v3.laboratory-protocols.create');
+    Route::post('v3/protocolos-laboratorio', 'v3\clinical\LaboratoryAdministrationController@storeProtocol')->name('v3.laboratory-protocols.store');
+    Route::get('v3/protocolos-laboratorio/{protocol}/editar', 'v3\clinical\LaboratoryAdministrationController@editProtocol')->name('v3.laboratory-protocols.edit');
+    Route::patch('v3/protocolos-laboratorio/{protocol}', 'v3\clinical\LaboratoryAdministrationController@updateProtocol')->name('v3.laboratory-protocols.update');
+    Route::get('v3/agrupadores-examenes/index', 'v3\clinical\LaboratoryAdministrationController@groupers')->name('v3.laboratory-groupers.index');
+    Route::get('v3/agrupadores-examenes/crear', 'v3\clinical\LaboratoryAdministrationController@createGrouper')->name('v3.laboratory-groupers.create');
+    Route::post('v3/agrupadores-examenes', 'v3\clinical\LaboratoryAdministrationController@storeGrouper')->name('v3.laboratory-groupers.store');
+    Route::get('v3/agrupadores-examenes/{grouper}/editar', 'v3\clinical\LaboratoryAdministrationController@editGrouper')->name('v3.laboratory-groupers.edit');
+    Route::patch('v3/agrupadores-examenes/{grouper}', 'v3\clinical\LaboratoryAdministrationController@updateGrouper')->name('v3.laboratory-groupers.update');
+    Route::get('v3/agenda-laboratorio/index', 'v3\clinical\LaboratoryAdministrationController@agenda')->name('v3.laboratory-agenda.index');
+    Route::get('v3/facturas-agrupadas-laboratorio/index', 'v3\clinical\LaboratoryAdministrationController@invoices')->name('v3.laboratory-invoices.index');
+    Route::get('v3/facturas-agrupadas-laboratorio/crear', 'v3\clinical\LaboratoryAdministrationController@createInvoice')->name('v3.laboratory-invoices.create');
+    Route::post('v3/facturas-agrupadas-laboratorio', 'v3\clinical\LaboratoryAdministrationController@storeInvoice')->name('v3.laboratory-invoices.store');
+    Route::get('v3/facturas-agrupadas-laboratorio/{invoice}/editar', 'v3\clinical\LaboratoryAdministrationController@editInvoice')->name('v3.laboratory-invoices.edit');
+    Route::patch('v3/facturas-agrupadas-laboratorio/{invoice}', 'v3\clinical\LaboratoryAdministrationController@updateInvoice')->name('v3.laboratory-invoices.update');
+    Route::get('v3/estadisticas-laboratorio/index', 'v3\clinical\LaboratoryAdministrationController@statistics')->name('v3.laboratory-statistics.index');
+    Route::get('v3/parametros-historicos-laboratorio/index', 'v3\clinical\LaboratoryAdministrationController@history')->name('v3.laboratory-history.index');
+    Route::get('v3/parametros-historicos-laboratorio/{exam}', 'v3\clinical\LaboratoryAdministrationController@references')->name('v3.laboratory-history.references');
+    Route::post('v3/parametros-historicos-laboratorio/{exam}/parametros/{parameter}', 'v3\clinical\LaboratoryAdministrationController@archive')->name('v3.laboratory-history.archive');
+    Route::delete('v3/parametros-historicos-laboratorio/{exam}/referencias/{reference}', 'v3\clinical\LaboratoryAdministrationController@deleteReference')->name('v3.laboratory-history.references.destroy');
+    Route::get('v3/ordenes-formato-012/index', 'v3\clinical\Order012Controller@index')->name('v3.order012.index');
+    Route::get('v3/ordenes-formato-012/editar/{id}', 'v3\clinical\Order012Controller@edit')->name('v3.order012.edit');
+    Route::post('v3/ordenes-formato-012/actualizar/{id}', 'v3\clinical\Order012Controller@update')->name('v3.order012.update');
+    Route::get('v3/ordenes-formato-012/cie10', 'v3\clinical\Order012Controller@diagnoses')->name('v3.order012.diagnoses');
+    Route::post('v3/ordenes-formato-012/guardar-diagnostico/{id}', 'v3\clinical\Order012Controller@addDiagnosis')->name('v3.order012.diagnosis.store');
+    Route::delete('v3/ordenes-formato-012/eliminar-diagnostico/{diagnosis}', 'v3\clinical\Order012Controller@deleteDiagnosis')->name('v3.order012.diagnosis.destroy');
+    Route::get('v3/ordenes-formato-012/exportar/{id}', 'v3\clinical\Order012Controller@export')->name('v3.order012.export');
+
+    Route::get('v3/integrales-adelantados/index', 'v3\clinical\AdvancedIntegralController@index')->name('v3.advanced-integrals.index');
+    Route::get('v3/integrales-adelantados/detalle/{id}', 'v3\clinical\AdvancedIntegralController@detail')->name('v3.advanced-integrals.detail');
+    Route::get('v3/integrales-adelantados/exportar', 'v3\clinical\AdvancedIntegralController@export')->name('v3.advanced-integrals.export');
+
+    Route::get('v3/biopsias-faltantes/index', 'v3\clinical\PendingBiopsyController@index')->name('v3.pending-biopsies.index');
+    Route::get('v3/biopsias-faltantes/crear', 'v3\clinical\PendingBiopsyController@create')->name('v3.pending-biopsies.create');
+    Route::post('v3/biopsias-faltantes/guardar', 'v3\clinical\PendingBiopsyController@store')->name('v3.pending-biopsies.store');
+    Route::get('v3/biopsias-faltantes/descargar/{id}', 'v3\clinical\PendingBiopsyController@download')->name('v3.pending-biopsies.download');
+    Route::delete('v3/biopsias-faltantes/eliminar/{id}', 'v3\clinical\PendingBiopsyController@discard')->name('v3.pending-biopsies.discard');
+
+    Route::get('v3/consultas-procedimientos/index', 'v3\clinical\ScheduledCareController@index')->name('v3.scheduled-care.index');
+    Route::get('v3/consultas-procedimientos/catalogos', 'v3\clinical\ScheduledCareController@catalog')->name('v3.scheduled-care.catalog');
+    Route::get('v3/consultas-procedimientos/detalle/{id}', 'v3\clinical\ScheduledCareController@detail')->name('v3.scheduled-care.detail');
+    Route::get('v3/consultas-procedimientos/exportar', 'v3\clinical\ScheduledCareController@export')->name('v3.scheduled-care.export');
+    Route::get('v3/consultas-procedimientos/exportar-pacientes', 'v3\clinical\ScheduledCareController@exportPatients')->name('v3.scheduled-care.export-patients');
+
+    Route::get('v3/pacientes/index', 'v3\clinical\PatientRegistryController@index')->name('v3.patients.index');
+    Route::get('v3/pacientes/crear', 'v3\clinical\PatientRegistryController@create')->name('v3.patients.create');
+    Route::get('v3/pacientes/alergias/buscar', 'v3\clinical\PatientRegistryController@searchAllergies')->name('v3.patients.allergies.search');
+    Route::get('v3/pacientes/{patient}/formulario-ingreso', 'v3\clinical\AgendaDocumentController@patientAdmission')->name('v3.patients.admission-form');
+    Route::get('v3/pacientes/{patient}/editar', 'v3\clinical\PatientRegistryController@edit')->name('v3.patients.edit');
+    Route::post('v3/pacientes', 'v3\clinical\PatientRegistryController@store')->name('v3.patients.store');
+    Route::patch('v3/pacientes/{patient}', 'v3\clinical\PatientRegistryController@update')->name('v3.patients.update');
+    Route::get('v3/pacientes/{patient}/documento-identificacion', 'v3\clinical\PatientRegistryController@identificationDocument')->name('v3.patients.identification-document');
+    Route::post('v3/pacientes/{patient}/documento-identificacion', 'v3\clinical\PatientRegistryController@updateIdentificationDocument')->name('v3.patients.identification-document.update');
+    Route::get('v3/pacientes/{patient}/archivos-biopsias', 'v3\clinical\ClinicalRegistryController@patientBiopsies')->name('v3.patient-biopsy-files.index');
+    Route::get('v3/pacientes/{patient}/documentos-agenda', 'v3\clinical\PatientAgendaArchiveController@index')->name('v3.patient-agenda-archives.index');
+    Route::get('v3/pacientes/{patient}/documentos-agenda/{archive}/archivo', 'v3\clinical\PatientAgendaArchiveController@file')->name('v3.patient-agenda-archives.file');
+    Route::get('v3/pacientes/{patient}/documentos-agenda/{archive}/descargar', 'v3\clinical\PatientAgendaArchiveController@download')->name('v3.patient-agenda-archives.download');
+    Route::get('v3/pacientes/{patient}/documentos-agenda/{archive}/contenido', 'v3\clinical\PatientAgendaArchiveController@text')->name('v3.patient-agenda-archives.text');
+    Route::delete('v3/pacientes/{patient}/documentos-agenda/{archive}', 'v3\clinical\PatientAgendaArchiveController@destroy')->name('v3.patient-agenda-archives.destroy');
+    Route::get('v3/pacientes/{patient}/ordenes-biopsias', 'v3\clinical\ClinicalRegistryController@patientBiopsyOrders')->name('v3.patient-biopsy-orders.index');
+
+    Route::get('v3/pacientes-enfermeria/index', 'v3\clinical\ClinicalOperationsController@nursing')->name('v3.clinical-operations.nursing');
+    Route::get('v3/insumos-usados/index', 'v3\clinical\NursingSupplyController@index')->name('v3.nursing-supplies.index');
+    Route::get('v3/insumos-usados/detalle/{agenda}', 'v3\clinical\NursingSupplyController@detail')->where('agenda', '[0-9]+')->name('v3.nursing-supplies.detail');
+    Route::post('v3/insumos-usados/detalle/{agenda}/bodega/guardar', 'v3\clinical\NursingSupplyController@storeWarehouse')->name('v3.nursing-supplies.warehouse.store');
+    Route::patch('v3/insumos-usados/detalle/{agenda}/observacion/actualizar', 'v3\clinical\NursingSupplyController@updateObservation')->name('v3.nursing-supplies.observation.update');
+    Route::post('v3/insumos-usados/detalle/{agenda}/equipos/registrar', 'v3\clinical\NursingSupplyController@storeEquipment')->name('v3.nursing-supplies.equipment.store');
+    Route::delete('v3/insumos-usados/detalle/{agenda}/equipos/{equipmentHistory}/eliminar', 'v3\clinical\NursingSupplyController@destroyEquipment')->name('v3.nursing-supplies.equipment.destroy');
+    Route::post('v3/insumos-usados/detalle/{agenda}/procedimientos/{procedure}/insumos/registrar', 'v3\clinical\NursingSupplyController@storeSupply')->name('v3.nursing-supplies.supply.store');
+    Route::patch('v3/insumos-usados/detalle/{agenda}/procedimientos/{procedure}/insumos/{movement}/mover', 'v3\clinical\NursingSupplyController@moveSupply')->name('v3.nursing-supplies.supply.move');
+    Route::delete('v3/insumos-usados/detalle/{agenda}/procedimientos/{procedure}/insumos/{movement}/eliminar', 'v3\clinical\NursingSupplyController@destroySupply')->name('v3.nursing-supplies.supply.destroy');
+    Route::get('v3/cortesias-pacientes/index', 'v3\clinical\PatientCourtesyController@index')->name('v3.patient-courtesy.index');
+    Route::post('v3/cortesias-pacientes/guardar', 'v3\clinical\PatientCourtesyController@store')->name('v3.patient-courtesy.store');
+    Route::patch('v3/cortesias-pacientes/{patient}', 'v3\clinical\PatientCourtesyController@update')->name('v3.patient-courtesy.update');
+    Route::get('v3/pacientes-dia/index', 'v3\clinical\ClinicalOperationsController@daily')->name('v3.clinical-operations.daily');
+    Route::get('v3/pacientes-dia/atencion/{agenda}', 'v3\clinical\ClinicalAttentionController@show')
+        ->where('agenda', '[0-9]+')->name('v3.clinical-attention.show');
+    Route::patch('v3/pacientes/{patient}/atencion/{agenda}', 'v3\clinical\ClinicalAttentionController@update')
+        ->where('agenda', '[0-9]+')->name('v3.clinical-attention.update');
+    Route::get('v3/riesgo-caida/index', 'v3\clinical\ClinicalOperationsController@fallRisk')->name('v3.clinical-operations.fall-risk');
+    Route::get('v3/riesgo-caida/registros', 'v3\clinical\ClinicalOperationsController@fallRiskRecords')->name('v3.clinical-operations.fall-risk-records');
+
+    Route::get('v3/historial-laboratorio/index', 'v3\clinical\ClinicalRegistryController@laboratory')->name('v3.clinical-registry.laboratory');
+    Route::get('v3/historial-ordenes/index', 'v3\clinical\ClinicalRegistryController@orders')->name('v3.clinical-registry.orders');
+    Route::get('v3/disponibilidad-consultorios/index', 'v3\clinical\ClinicalRegistryController@availability')->name('v3.clinical-registry.availability');
+    Route::get('v3/disponibilidad-consultorios/index/{hospitalId}', 'v3\clinical\ClinicalRegistryController@availabilitySchedule')->name('v3.clinical-registry.availability.schedule');
+    Route::get('v3/resultado-biopsias/index', 'v3\clinical\ClinicalRegistryController@biopsies')->name('v3.clinical-registry.biopsies');
+    Route::get('v3/resultado-biopsias/exportar', 'v3\clinical\ClinicalRegistryController@exportBiopsies')->name('v3.clinical-registry.biopsies.export');
+});

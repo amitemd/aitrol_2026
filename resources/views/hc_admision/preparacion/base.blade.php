@@ -4,7 +4,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        Signos Vitales
+        Preparación
       </h1>
       
       <ol class="breadcrumb">

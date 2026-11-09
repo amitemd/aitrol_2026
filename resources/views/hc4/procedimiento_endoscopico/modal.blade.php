@@ -3,7 +3,6 @@
     $extension = end($explotar);
 @endphp
 @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG') || ($extension == 'bmp') || ($extension == 'BMP') )
-   
     <style type="text/css">
         .oculto{
             display: none;
@@ -14,11 +13,10 @@
             color: #fff;
         }
     </style>
-     <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
     <div class="row" id="imagen_solita">
         <div class="col-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
-            <!--img id="imafoto" src="{{asset('')}}/../storage/app/hc_ima/{{$imagen->nombre}}" alt="Imagen Ingresada" style="max-width: 900px;"-->
+            <!--img id="imafoto" src="http://186.68.76.210:86/sis_medico_prb/storage/app/hc_ima/{{$imagen->nombre}}" alt="Imagen Ingresada" style="max-width: 900px;"-->
             <img id="imafoto" src="{{asset('hc_ima/'.$imagen->nombre)}}" alt="Imagen Ingresada" style="max-width: 900px;">
             <div class="row">
                 <div class="col-1"></div>
@@ -51,7 +49,7 @@
                     <a href="{{asset('hc_ima/'.$imagen->nombre)}}" class="btn btn-primary" target="_blank"  style="color: white"><!-- ruta 0 desde la historia clinica -->
                         <span class="glyphicon glyphicon-download-alt"> Descargar</span>
                     </a>
-                    <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');" style="color: white">Eliminar foto </a>
+                    <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}', this);" style="color: white">Eliminar foto </a>
                 </div>
 
             </div>
@@ -136,13 +134,13 @@
         <div class="col-12">
 
             <div class="col-md-12">
-                <video loop autoplay="" controls width="100%" height="500"  src="{{asset('/')}}uploads/{{$imagen->nombre}}#t=10800" >
-                   <!--<source src="{{asset('/')}}uploads/endos.mp4" type="video/mp4" />-->
+                <video controls style="width: 100%;">
+                  <source src="{{asset('/')}}uploads/{{$imagen->nombre}}" type="video/mp4" >
+                  Tu navegador no implementa el elemento <code>video</code>.
                 </video>
             </div>
-
             <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-danger btn_ordenes" style="height: 100%; font-size: 16px; color: white;" onclick="eliminar('{{$imagen->id}}');">Eliminar Video</a>
+                <a class="btn btn-danger btn_ordenes" style="height: 100%; font-size: 16px; color: white;" onclick="eliminar('{{$imagen->id}}', this);">Eliminar Video</a>
             </div>
             <div class="col-md-12">
                 <div class="row">
@@ -192,7 +190,6 @@
             <div class="col-md-12">&nbsp;</div>
         </div>
           <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-          <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
 
         <script type="text/javascript">
             $('#load_mp4').hide();
@@ -225,23 +222,17 @@
             }
         </script>
     </div>
+
+
 @elseif(($extension == 'pdf') || ($extension == 'PDF'))
-    @php
-        $variable = explode('/' , asset('/hc_ima/'));
-        $d1 = $variable[3];
-        //$d2 = $variable[4];
-        //$d3 = $variable[5];
-        $variable =  env('APP_URL').'/'.$d1.'/'.$imagen->nombre;
-    @endphp
     <div class="row" >
         <div class="col-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
         </div>
         <div class="col-12">
-            {{-- <embed id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'> --}}
-			<embed id="miIFrame" src="{{route('video.ver_archivo_biopsia',['id_archivo' => $imagen->nombre])}}" width="100%" type='application/pdf'>
+            <embed id="miIFrame" src="{{asset('hc_ima/'.$imagen->nombre)}}" width="100%" type="application/pdf">
             <div class="col-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar Archivo</a>
+                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}', this);">Eliminar Archivo</a>
             </div>
         </div>
     </div>
@@ -268,20 +259,16 @@
         </script>
 @else
     @php
-        $variable = explode('/' , asset('/hc_ima/'));
-        $d1 = $variable[3];
-        //$d2 = $variable[4];
-        
-        $ruta = "http://ieced.siaam.ec/".$d1."/storage/app/hc_ima/".$imagen->nombre;
+        $ruta = urlencode(asset('hc_ima/'.$imagen->nombre));
     @endphp
     <div class="container-fluid" >
         <div class="row">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
             <br>
             <hr>
-            <iframe id='miIFrame'  src="https://view.officeapps.live.com/op/view.aspx?src={{$ruta}}" width="100%" style="border: none;"></iframe>
+            <iframe id='miIFrame'  src="https://docs.google.com/viewer?hl=en&embedded=true&url={{$ruta}}" width="100%" style="border: none;"></iframe>
             <div class="col-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar Archivo</a>
+                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}', this);">Eliminar Archivo</a>
             </div>
         </div>
     </div>
@@ -314,17 +301,56 @@
     $('#video').on('hidden.bs.modal', function(){
         $(this).removeData('bs.modal');
     });
-    function eliminar(id){
+    function eliminar(id, boton){
         var opcion = confirm("¿Estas Seguro que deseas eliminar la foto?");
         if (opcion == true) {
+            var $modalActual = $(boton).closest('.modal');
+            $(boton).addClass('disabled').attr('aria-disabled', 'true');
+
             $.ajax({
-                type: 'get',
+                type: 'delete',
                 url:'{{ url("historiaclinica/video/eliminar_foto/eliminar")}}/'+id,
                 headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
                 success: function(data){
-                    //console.log(data);
-                    alert(data);
-                    location.reload();
+                    $modalActual.one('hidden.bs.modal', function(){
+                        $(this).find('.modal-content').empty();
+                    });
+                    $modalActual.modal('hide');
+
+                    if (typeof window.actualizarImagenesProcedimientoTrasEliminar === 'function') {
+                        window.actualizarImagenesProcedimientoTrasEliminar(data);
+                    } else {
+                        $('[data-hc4-image-id="' + data.id + '"]').remove();
+                    }
+
+                    window.setTimeout(function(){
+                        if ($modalActual.is(':visible')) {
+                            $modalActual.removeClass('in show').hide().attr('aria-hidden', 'true');
+                            if (!$('.modal.in, .modal.show').length) {
+                                $('.modal-backdrop').remove();
+                                $('body').removeClass('modal-open').css('padding-right', '');
+                            }
+                        }
+                    }, 450);
+
+                    if (window.Swal && typeof window.Swal.fire === 'function') {
+                        window.Swal.fire({
+                            icon: 'success',
+                            title: 'Imagen eliminada',
+                            text: data.mensaje || 'El archivo fue eliminado correctamente.',
+                            timer: 1800,
+                            showConfirmButton: false
+                        });
+                    } else if (typeof window.swal === 'function') {
+                        window.swal('Imagen eliminada', data.mensaje || 'El archivo fue eliminado correctamente.', 'success');
+                    } else {
+                        alert(data.mensaje || 'El archivo fue eliminado correctamente.');
+                    }
+                },
+                error: function(xhr){
+                    $(boton).removeClass('disabled').removeAttr('aria-disabled');
+                    var respuesta = xhr.responseJSON || {};
+                    alert(respuesta.error || 'No se pudo eliminar el archivo.');
                 }
             })
 

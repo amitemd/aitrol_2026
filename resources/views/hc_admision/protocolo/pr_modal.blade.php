@@ -148,7 +148,7 @@
 
                 <div class="col-md-4">
                     
-                    <button type="submit" formtarget="_blank" formaction="{{route('formulario.017')}} " class="btn btn-primary btn-sm">Protocolo Quirurgico</a>
+                    <button type="submit" formtarget="_blank" formaction="{{route('formulario.0172')}} " class="btn btn-primary btn-sm">Protocolo Quirurgico</a>
                     
                 </div>
 

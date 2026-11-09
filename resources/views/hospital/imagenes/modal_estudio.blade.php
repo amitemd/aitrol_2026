@@ -6,7 +6,7 @@
     </div>
     <div class="modal-body">
         <div class="box-body">
-            <embed type="text/html" src="{{route('hospitalizacion.imprimir',['id' =>$id])}}" style="width: 100%;height: 80vh;">
+            <embed type="text/html" src="{{route('hospitalizacion.imprimir',['id_orden' =>$id])}}" style="width: 100%;height: 80vh;">
         </div>
     </div>
 </div>

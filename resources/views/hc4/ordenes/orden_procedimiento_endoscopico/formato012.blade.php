@@ -3,6 +3,65 @@
 <script type="text/javascript" src="{{ asset ("/librerias/moment.min.js")}}"></script>
 <script type="text/javascript" src="{{ asset ("/librerias/tempusdominus-bootstrap-4.min.js")}}"></script>
 <style type="text/css">
+    .hc4-format012-header {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-height: 64px;
+        margin: 0 !important;
+        padding: 10px 16px;
+    }
+
+    .hc4-format012-header__title {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .hc4-format012-header__actions {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .hc4-format012-header__actions .btn {
+        position: static !important;
+        inset: auto !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: auto !important;
+        min-width: 190px;
+        height: 42px;
+        margin: 0 !important;
+        padding: 8px 14px;
+        font-size: 14px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 850px) {
+        .hc4-format012-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hc4-format012-header__title {
+            text-align: center;
+        }
+
+        .hc4-format012-header__actions {
+            justify-content: center;
+        }
+    }
+
     .ui-corner-all
     {
         -moz-border-radius: 4px 4px 4px 4px;
@@ -89,7 +148,7 @@
     }
 </style>
 @php 
-
+ $usuarioLogueado = auth()->user();
 $rd = rand(); 
 
 @endphp
@@ -98,11 +157,12 @@ $rd = rand();
     <div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
         
         <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-            <div class="row">
-                <div class="col-8" style="font-size: 15px;"> 
-                    <span style="margin-left: 10px;" >@lang('hc4.formato012')</span>
+            <div class="hc4-format012-header">
+                <div class="hc4-format012-header__title">Formato 012</div>
+                <div class="hc4-format012-header__actions">
+                    <a href="{{route('formulario.12A',['id' => $orden_012->id])}}" target="_blank" class="btn btn-danger"><i class="fa fa-file-pdf-o" aria-hidden="true"></i><span>Descargar PDF 012</span></a>
+                    <a class="btn btn-success" href="{{route('orden_012.imprimir_012_excel',['id' => $orden_012->id])}}" target="_blank"><span class="glyphicon glyphicon-download-alt"></span><span>Descargar Excel 012</span></a>
                 </div>
-                <a class="btn btn-success btn-sm" href="{{route('orden_012.imprimir_012_excel',['id' => $orden_012->id])}}" target="_blank"><span class="glyphicon glyphicon-download-alt"></span> @lang('hc4.descargarExcel012')</a>
             </div>
         </div>
         <form id="frm_evol{{$orden_012->id}}">
@@ -112,10 +172,11 @@ $rd = rand();
                 <div class="col-md-12" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label>@lang('hc4.doctorSolicita')</label>
-                            <select onchange="guardar_orden_012();" class="form-control input-sm" style="width: 100%;" name="id_doctor_examinador" id="id_doctor_examinador{{$orden_012->id}}">
-                                @foreach($doctores as $value)
-                                    <option @if($orden_012->id_doctor_firma == $value->id) selected @endif value="{{$value->id}}" >{{$value->apellido1}} @if($value->apellido2 != "(N/A)"){{ $value->apellido2}}@endif {{ $value->nombre1}} @if($value->nombre2 != "(N/A)"){{ $value->nombre2}}@endif</option>
+                            <label>Doctor Solicita</label>
+                             <select onchange="guardar_orden_012();" class="form-control input-sm" style="width: 100%;" name="id_doctor_solicita" id="id_doctor_solicita{{$orden_012->id}}">
+                             @if ( isset ($usuarioLogueado)) <option value="{{ $usuarioLogueado->id }}">{{$usuarioLogueado->apellido1}} @if($usuarioLogueado->apellido2 != "(N/A)"){{ $usuarioLogueado->apellido2 }} @endif</option>@endif    
+                             @foreach($doctores as $value)
+                                 <option @if($orden_012->id_doctor_solicita == $value->id) selected @endif value="{{$value->id}}" >{{$value->apellido1}} @if($value->apellido2 != "(N/A)"){{ $value->apellido2}}@endif {{ $value->nombre1}} @if($value->nombre2 != "(N/A)"){{ $value->nombre2}}@endif</option>
                                 @endforeach
                             </select>
                         </div>
@@ -142,7 +203,7 @@ $rd = rand();
                 <div class="col-md-12" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-4">
-                            <label>@lang('hc4.fechaOrden')</label>
+                            <label>Fecha Orden</label>
                         
                             <div class="form-group">
                                 <div class="input-group date" id="datetimepicker1{{$orden_012->id}}" data-target-input="nearest">
@@ -155,79 +216,118 @@ $rd = rand();
                         </div>
 
                         <div class="form-group col-md-4">
-                            <label>@lang('hc4.personaRefiere')</label>
+                            <label>Persona Refiere</label>
                             <input class="form-control input-sm" type="text" name="referido" id="referido{{$orden_012->id}}" required="required" onchange="guardar_orden_012();" value="{{$orden_012->referido}}">
                         </div>
                         <div class="form-group col-md-4">
                             <label>Servicio</label>
-                            <input class="form-control input-sm" type="text" name="servicio" id="servicio{{$orden_012->id}}" required="required" onchange="guardar_orden_012();" value="{{$orden_012->servicio}}"> 
+                                 <select onchange="guardar_orden_012();" class="form-control input-sm" style="width: 100%;" name="servicio" id="servicio{{$orden_012->id}}" required="required">
+                                     <option value="">Seleccione un servicio</option>
+                                     <option @if($orden_012->servicio === 'EMERGENCIA') selected @endif value="EMERGENCIA">EMERGENCIA</option>
+                                     <option @if($orden_012->servicio === 'CONSULTA EXTERNA') selected @endif value="CONSULTA EXTERNA">CONSULTA EXTERNA</option>
+                                     <option @if($orden_012->servicio === 'HOSPITALIZACIÓN') selected @endif value="HOSPITALIZACIÓN">HOSPITALIZACIÓN</option>
+                                 </select>
+                        </div>
+                             <label class="form-group col-md-12"><b>Prioridad</b></label>
+                        <div class="form-group col-md-3">
+                            <input class="flat-orange" type="checkbox" value="1" name="urgente" id="urgente{{$orden_012->id}}" required="required" @if($orden_012->urgente) checked @endif onchange="guardar_orden_012();">Urgente 
                         </div>
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="urgente" id="urgente{{$orden_012->id}}" required="required" @if($orden_012->urgente) checked @endif onchange="guardar_orden_012();">@lang('hc4.urgente-')  
+                            <input class="flat-orange" type="checkbox" value="1" name="rutina" id="rutina{{$orden_012->id}}" required="required" @if($orden_012->rutina) checked @endif onchange="guardar_orden_012();">Rutina 
                         </div>
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="rutina" id="rutina{{$orden_012->id}}" required="required" @if($orden_012->rutina) checked @endif onchange="guardar_orden_012();">@lang('hc4.rutina-')  
-                        </div>
-                        <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="control" id="control{{$orden_012->id}}" required="required" @if($orden_012->control) checked @endif onchange="guardar_orden_012();">@lang('hc4.control-')  
+                            <input class="flat-orange" type="checkbox" value="1" name="control" id="control{{$orden_012->id}}" required="required" @if($orden_012->control) checked @endif onchange="guardar_orden_012();">Control 
                         </div>
                     </div>
                 </div>
 
-                <b>1. @lang('hc4.estudiosSolicitados')</b>
+                <b>1. Estudio Solicitado</b>
 
                 <div class="col-md-12" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="rx_convencional" id="rx_convencional{{$orden_012->id}}" required="required" @if($orden_012->rx_convencional) checked @endif onchange="guardar_orden_012();">@lang('hc4.rxConvencional')
+                            <input class="flat-orange" type="checkbox" value="1" name="rx_convencional" id="rx_convencional{{$orden_012->id}}" required="required" @if($orden_012->rx_convencional) checked @endif onchange="guardar_orden_012();">RX-Convencional 
                         </div> 
                         <div class="form-group col-md-3">   
-                            <input class="flat-orange" type="checkbox" value="1" name="tomografia" id="tomografia{{$orden_012->id}}" required="required" @if($orden_012->tomografia) checked @endif onchange="guardar_orden_012();">@lang('hc4.tomografia')
+                                 <input class="flat-orange" type="checkbox" value="1" name="rx_portatil" id="rx_portatil{{$orden_012->id}}" required="required" @if($orden_012->RX_portatil) checked @endif onchange="guardar_orden_012();">@lang('hc4.RXportatil')
+                             </div>
+                             <div class="form-group col-md-3">
+                            <input class="flat-orange" type="checkbox" value="1" name="tomografia" id="tomografia{{$orden_012->id}}" required="required" @if($orden_012->tomografia) checked @endif onchange="guardar_orden_012();">Tomografía 
                         </div>
                         <div class="form-group col-md-3">    
-                            <input class="flat-orange" type="checkbox" value="1" name="resonancia" id="resonancia{{$orden_012->id}}" required="required" @if($orden_012->resonancia) checked @endif onchange="guardar_orden_012();">@lang('hc4.resonancia')
+                            <input class="flat-orange" type="checkbox" value="1" name="resonancia" id="resonancia{{$orden_012->id}}" required="required" @if($orden_012->resonancia) checked @endif onchange="guardar_orden_012();">Resonancia
                         </div>
                         <div class="form-group col-md-3">     
-                            <input class="flat-orange" type="checkbox" value="1" name="ecografia" id="ecografia{{$orden_012->id}}" required="required" @if($orden_012->ecografia) checked @endif onchange="guardar_orden_012();">@lang('hc4.ecografia')  
+                                 <input class="flat-orange" type="checkbox" value="1" name="mamografia" id="mamografia{{$orden_012->id}}" required="required" @if($orden_012->mamografia) hecked @endif onchange="guardar_orden_012();">@lang('hc4.mamografia')
+                             </div>
+                             <div class="form-group col-md-3">
+                            <input class="flat-orange" type="checkbox" value="1" name="ecografia" id="ecografia{{$orden_012->id}}" required="required" @if($orden_012->ecografia) checked @endif onchange="guardar_orden_012();">Ecografía 
                         </div>
                     </div>        
                 </div>
-                <div class="col-md-12" style="padding: 1px;">
+                     <div class="col-md-15" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="procedimiento" id="procedimiento{{$orden_012->id}}" required="required" @if($orden_012->procedimiento) checked @endif onchange="guardar_orden_012();">@lang('hc4.procedimientos')  
+                            <input class="flat-orange" type="checkbox" value="1" name="procedimiento" id="procedimiento{{$orden_012->id}}" required="required" @if($orden_012->procedimiento) checked @endif onchange="guardar_orden_012();">Procedimientos 
                         </div>    
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="otros" id="otros{{$orden_012->id}}" required="required" @if($orden_012->otros) checked @endif onchange="guardar_orden_012();">@lang('hc4.otros')  
+                            <input class="flat-orange" type="checkbox" value="1" name="otros" id="otros{{$orden_012->id}}" required="required" @if($orden_012->otros) checked @endif onchange="guardar_orden_012();">Otros 
                         </div>
-                        <div class="form-group col-md-6"> 
-                            <input class="form-control input-sm" type="text" name="texto_otros" id="texto_otros{{$orden_012->id}}" required="required" onchange="guardar_orden_012();" value="{{$orden_012->texto_otros}}">
+                             <div class="form-group col-md-3">
+                                 <label for="sedacion"><b>Sedacion</b></label>
+                                 <div>
+                                     <label class="radio-inline form-group col-md-3">
+                                         <input type="checkbox" class="flat-orange" name="sedacion" value="1" {{ $orden_012->sedacion == 1 ? 'checked' : '' }} required="required" onchange="guardar_orden_012();"> Sí
+                                     </label>
+                                     <label class="radio-inline form-group col-md-3">
+                                         <input type="checkbox" class="flat-orange" name="sedacion" value="0" {{ $orden_012->sedacion == 0 ? 'checked' : '' }} required="required" onchange="guardar_orden_012();"> No
+                                     </label>
                         </div>
                     </div>           
                 </div>
-               
+                     </div>
+                     <div class="col-md-12" style="padding: 1px;">
+                         <div class="form-row">
+                             <div class="form-group col-md-12">
+                                     <label>Texto Otros</label>
+                                 <textarea name="texto_otros" id="texto_otros{{$orden_012->id}}" style="width: 100%;" rows="1" onchange="guardar_orden_012();"></textarea>
+                             </div>
+                         </div>
+                         <div class="form-group col-md-3">
+                             <label for="paciente_contaminado"><b>PacienteContaminado</b></label>
+                             <div>
+                                 <label class="radio-inline">
+                                     <input type="checkbox" class="flat-orange" name="paciente_contaminado" value="1" {{ $orden_012->paciente_contaminado == 1 ? 'checked' : '' }} required="required" onchange="guardar_orden_012();"> Sí
+                                 </label>
+                                 <label class="radio-inline">
+                                     <input type="checkbox" class="flat-orange" name="paciente_contaminado" value="0" {{ $orden_012->paciente_contaminado == 0 ? 'checked' : '' }} required="required" onchange="guardar_orden_012();"> No
+                                 </label>
+                             </div>
+                         </div>
                 <div class="col-md-12" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-12">
-                            <label>@lang('hc4.descripcion')</label>
+                            <label>Descripción</label>
                             <textarea name="descripcion" id="descripcion{{$orden_012->id}}" style="width: 100%;" rows="1" onchange="guardar_orden_012();">{{$orden_012->descripcion}}</textarea>
                         </div>
                     </div>
                 </div>
+                     </div>
+                 </div>
 
                 <div class="col-md-12" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="puede_mover" id="puede_mover{{$orden_012->id}}" required="required" @if($orden_012->puede_mover) checked @endif onchange="guardar_orden_012();">@lang('hc4.puedeMovilizarse')     
+                            <input class="flat-orange" type="checkbox" value="1" name="puede_mover" id="puede_mover{{$orden_012->id}}" required="required" @if($orden_012->puede_mover) checked @endif onchange="guardar_orden_012();">Puede Movilizarse     
                         </div>
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="puede_retirar" id="puede_retirar{{$orden_012->id}}" required="required" @if($orden_012->puede_retirar) checked @endif onchange="guardar_orden_012();">@lang('hc4.puedeRetirarseVendas')    
+                            <input class="flat-orange" type="checkbox" value="1" name="puede_retirar" id="puede_retirar{{$orden_012->id}}" required="required" @if($orden_012->puede_retirar) checked @endif onchange="guardar_orden_012();">Puede retirarse vendas apósitos o yesos     
                         </div>
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="medico_presente" id="medico_presente{{$orden_012->id}}" @if($orden_012->medico_presente) checked @endif required="required" onchange="guardar_orden_012();">@lang('hc4.medicoPresenteEnExamen')     
+                            <input class="flat-orange" type="checkbox" value="1" name="medico_presente" id="medico_presente{{$orden_012->id}}" @if($orden_012->medico_presente) checked @endif required="required" onchange="guardar_orden_012();">El medico estará presente en el examen    
                         </div>
                         <div class="form-group col-md-3">
-                            <input class="flat-orange" type="checkbox" value="1" name="toma_radio" id="toma_radio{{$orden_012->id}}" required="required" @if($orden_012->toma_radio) checked @endif onchange="guardar_orden_012();">@lang('hc4.tomaRadiografiaEnCama')       
+                            <input class="flat-orange" type="checkbox" value="1" name="toma_radio" id="toma_radio{{$orden_012->id}}" required="required" @if($orden_012->toma_radio) checked @endif onchange="guardar_orden_012();">Toma de radriografía en la cama     
                         </div>
                     </div>
                 </div>
@@ -235,7 +335,7 @@ $rd = rand();
                 <div class="col-md-12" style="padding: 1px;">
                     <div class="form-row">
                         <div class="form-group col-md-12">
-                            <label>2. @lang('hc4.motivoSolicitud')</label>
+                            <label>2. Motivo de la Solicitud</label>
                             <textarea name="motivo" id="motivo{{$orden_012->id}}" style="width: 100%;" rows="1" onchange="guardar_orden_012();">{{$orden_012->motivo}}</textarea>
                         </div>
                     </div>
@@ -245,7 +345,7 @@ $rd = rand();
                     <div class="form-row">
 
                         <div class="form-group col-md-12">
-                            <span style="font-family: 'Helvetica general';font-size: 12px">3. @lang('hc4.resumenClinico'):</span>
+                            <span style="font-family: 'Helvetica general';font-size: 12px">3. Resumen Clínico:</span>
                             <div id="thistoria_clinica{{$orden_012->id}}-{{$rd}}"  style="width: 100%; border: 2px solid #004AC1;">
                                 <?php echo $orden_012->cuadro_clinico ?>
                             </div>
@@ -257,17 +357,17 @@ $rd = rand();
         
                 <input type="hidden" name="codigo_012" id="codigo_012{{$orden_012->id}}">
 
-                <label class="col-md-9 control-label" style="padding-left: 0px;"><b>4. @lang('hc4.diagnosticos')</b></label>
+                <label class="col-md-9 control-label" style="padding-left: 0px;"><b>4. Diagnósticos</b></label>
                 <div class="form-row">
                     <div class="form-group col-md-9" style="padding: 1px;">
-                        <input id="cie10_012{{$orden_012->id}}" type="text" class="form-control input-sm ui-autocomplete-input" style="text-transform:uppercase;" placeholder="@lang('hc4.diagnostico')">
+                        <input id="cie10_012{{$orden_012->id}}" type="text" class="form-control input-sm ui-autocomplete-input" style="text-transform:uppercase;" placeholder="Diagnóstico">
                     </div>
 
                     <div class="form-group col-md-2" style="padding: 1px;">
                         <select id="pre_def{{$orden_012->id}}" name="pre_def" class="form-control input-sm" required="">
-                            <option value="">@lang('hc4.seleccione') ...</option>
-                            <option value="PRESUNTIVO">@lang('hc4.presuntivo')</option>
-                            <option value="DEFINITIVO">@lang('hc4.definitivo')</option>
+                            <option value="">Seleccione ...</option>
+                            <option value="PRESUNTIVO">PRESUNTIVO</option>
+                            <option value="DEFINITIVO">DEFINITIVO</option>
                         </select>
                     </div>
                     <div class="form-group col-md-1" style="padding: 1px;">
@@ -291,6 +391,9 @@ $rd = rand();
                                 <td><a href="javascript:eliminar('{{$val_cie10->id}}');" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash" ></span></a></td>
                             </tr>
                         @endforeach
+                         <a href="{{route('formulario.12A',['id' => $orden_012->id])}}" target="_blank" class="btn btn-danger">DescargarPDF012<i class="fa fa-file-pdf-o" aria-hidder="true"></i></a> &nbsp;&nbsp;
+
+                        <a class="btn btn-success btn-sm" href="{{route('orden_012.imprimir_012_excel',['id' => $orden_012->id])}}" target="_blank"><span class="glyphicon glyphicon-download-alt"></span> @lang('hc4.descargarExcel012')</a>
                     </table>
                 </div>
 
@@ -407,8 +510,9 @@ $rd = rand();
         document.getElementById("tdiagnostico{{$orden_012->id}}").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('orden_012/cargar/ci10/eliminar')}}/"+id_h,
+          headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
           datatype: 'json',
 
           success: function(data){
@@ -446,7 +550,27 @@ $rd = rand();
     });
   
         
+     tinymce.init({
+         selector: '#tdiagnosticos{{$orden_012->id}}-{{$rd}}',
+         inline: true,
+         menubar: false,
+         content_style: ".mce-content-body {font-size:14px;}",
     
+         setup: function(editor) {
+             editor.on('init', function(e) {
+                 var ed = tinyMCE.get('tdiagnosticos{{$orden_012->id}}-{{$rd}}');
+                 //alert(ed.getContent());
+                 $("#diagnosticos{{$orden_012->id}}").val(ed.getContent());
+             });
+         },
+         init_instance_callback: function(editor) {
+             editor.on('Change', function(e) {
+                 var ed = tinyMCE.get('tdiagnosticos{{$orden_012->id}}-{{$rd}}');
+                 $("#diagnosticos{{$orden_012->id}}").val(ed.getContent());
+                 guardar_orden_012();
+             });
+         }
+     });
     /*function guardar_orden_012(){
 
         $.ajax({
@@ -508,6 +632,15 @@ $rd = rand();
         guardar_orden_012();
     });
 
+     $(document).ready(function() {
+         // Agregar un manejador de eventos para detectar cambios en cualquier elemento del formulario
+         $("#frm_evol{{$orden_012->id}} input, #frm_evol{{$orden_012->id}} select, #frm_evol{{$orden_012->id}} textarea").on("change", function() {
+             guardar_orden_012();
+         });
 
-
+         // También puedes utilizar eventos de iCheck para los checkboxes si lo deseas
+         $('input[type="checkbox"].flat-orange').on('ifChecked ifUnchecked', function(event) {
+             guardar_orden_012();
+         });
+     });
 </script>

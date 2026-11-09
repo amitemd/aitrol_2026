@@ -29,6 +29,8 @@ use Sis_medico\Sala;
 use Sis_medico\User;
 use Sis_medico\HoEstadoPaso;
 use Sis_medico\Http\Controllers\hospital\HospitalController;
+use Sis_medico\Services\CurrentHospitalResolver;
+use Sis_medico\Services\ClinicalTransferReconciliationService;
 
 class CatorceavoPasoController extends Controller
 {
@@ -38,6 +40,9 @@ class CatorceavoPasoController extends Controller
     }
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
@@ -48,16 +53,21 @@ class CatorceavoPasoController extends Controller
     {
         $condiciones = Ho_Condiciones::where('estado', '1')->get();
         $establecimientos = Ho_Establecimientos::where('estado', '1')->get();
-        $sala = Sala::where('estado', '1')->where('id_hospital','1')->get();
+        $hospitalId = app(CurrentHospitalResolver::class)->id(array('solicitud_id' => $request['ep']));
+        $sala = Sala::where('estado', '1')
+            ->when($hospitalId, function ($query) use ($hospitalId) {
+                return $query->where('id_hospital', $hospitalId);
+            })->get();
         $doctores = User::where('id_tipo_usuario', '3')->get();
-        //dd($request->all());
         $new = null;
         if ($request['ep'] != null) {
             $new = Ho_Traspaso_Sala008::where('id_solicitud', $request['ep'])->whereDate('fecha',date('Y-m-d'))->first();
         }
         $pasos = HoEstadoPaso::where('estado', '1')->whereNotNull('ruta')->get();
         //dd($pasos);
-        return view('hospital.emergencia.catorceavopaso', ['condiciones' => $condiciones, 'new' => $new, 'establecimientos' => $establecimientos, 'sala' => $sala, 'doctores' => $doctores, 'pasos' => $pasos, 'id_solicitud' => $request['ep'] ]);
+        $activeOrders = app(ClinicalTransferReconciliationService::class)->previewActiveOrders($request['ep']);
+        $encounterId = Ho_Solicitud::where('id', $request['ep'])->value('encounter_id');
+        return view('hospital.emergencia.catorceavopaso', ['condiciones' => $condiciones, 'new' => $new, 'establecimientos' => $establecimientos, 'sala' => $sala, 'doctores' => $doctores, 'pasos' => $pasos, 'id_solicitud' => $request['ep'], 'encounterId' => $encounterId, 'activeOrders' => $activeOrders ]);
     }
     /*public function store(Request $request)
     {
@@ -129,7 +139,7 @@ class CatorceavoPasoController extends Controller
     // VT NUEVO USANDO METODOS DE INGRESO MODULO
     public function store(Request $request)
     {
-        //dd($request->all());
+        //dd("test");
         DB::beginTransaction();
         try {
 
@@ -139,9 +149,17 @@ class CatorceavoPasoController extends Controller
             $id_solicitud  = $request->id;
             $traspaso_sala = Ho_Traspaso_Sala008::where('id_solicitud', $id_solicitud)->first();
             $solicitud     = Ho_Solicitud::find($id_solicitud);
-            //dd($solicitud);
+            
             $opcion  = "traslado";
             $id_paso = $request->paso;
+
+            $transferService = app(ClinicalTransferReconciliationService::class);
+            $reconciliation = $transferService->prepare(
+                $id_solicitud,
+                $id_paso,
+                $request->input('preserve_active_orders'),
+                array('actor_id' => $idusuario, 'ip' => $ip_cliente, 'reason' => $request->input('observaciones'))
+            );
 
             $datos_paciente = Ho_Datos_Paciente::Where('id_paciente', $solicitud->id_paciente)->first();
             $paciente = $solicitud->paciente;
@@ -183,12 +201,12 @@ class CatorceavoPasoController extends Controller
                 'nacionalidad'          => $datos_paciente->nacionalidad,
                 'id_seguro'             => $solicitud->id_seguro,
                 
-            ];//dd($arr_datos);
+            ];
 
             $request->request->add($arr_datos);
             $hospitalController = new HospitalController;
             //dd($hospitalController);
-            $ingreso = $hospitalController->ingreso_modulos($request);//dd($ingreso);
+            $ingreso = $hospitalController->ingreso_modulos($request);
 
             if (is_null($traspaso_sala)) {
                 Ho_Traspaso_Sala008::create([
@@ -239,6 +257,8 @@ class CatorceavoPasoController extends Controller
             ];
 
             $solicitud->update($up_solicitud);
+
+            $transferService->complete($reconciliation, array('actor_id' => $idusuario, 'ip' => $ip_cliente));
 
             /*$sol_log = [
                 'id_ho_solicitud'       => $solicitud->id,

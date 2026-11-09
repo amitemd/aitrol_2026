@@ -1,111 +1,394 @@
+<style>
+    .hc4-lab-order-card {
+        overflow: hidden;
+        margin: 0 0 18px;
+        border: 1px solid #19a4b0 !important;
+        border-radius: 16px !important;
+        background: #fff !important;
+        box-shadow: 0 8px 22px rgba(5, 84, 126, .10);
+    }
 
- @foreach($ordenes as $orden)
+    .hc4-lab-order-card > .hc4-lab-order-summary {
+        display: grid !important;
+        grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+        align-items: center;
+        gap: 18px;
+        min-height: 68px;
+        padding: 12px 18px !important;
+        border: 0 !important;
+        background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+        color: #fff !important;
+    }
+
+    .hc4-lab-order-summary__date,
+    .hc4-lab-order-summary__doctor {
+        float: none !important;
+        width: auto !important;
+        margin: 0 !important;
+        min-width: 0;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .hc4-lab-order-summary__date { grid-column: 1; grid-row: 1; }
+
+    .hc4-lab-order-summary__doctor {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: center;
+    }
+
+    .hc4-lab-order-summary__tools {
+        position: static !important;
+        top: auto !important;
+        right: auto !important;
+        grid-column: 3;
+        grid-row: 1;
+        float: none !important;
+        width: auto !important;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .hc4-lab-order-summary__id {
+        padding: 7px 11px;
+        border-radius: 8px;
+        background: rgba(0, 61, 105, .28);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .hc4-lab-order-card .hc4-lab-order-summary__toggle {
+        width: 38px;
+        height: 38px;
+        margin: 0 !important;
+        border: 1px solid rgba(255, 255, 255, .4);
+        border-radius: 9px;
+        background: rgba(255, 255, 255, .13);
+        color: #fff;
+    }
+
+    .hc4-lab-order-card > .box-body {
+        padding: 18px !important;
+        background: #fff !important;
+    }
+
+    .hc4-lab-order-detail {
+        overflow: hidden;
+        margin: 0 !important;
+        border: 1px solid #25a7b4 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 6px 18px rgba(5, 84, 126, .08);
+    }
+
+    .hc4-lab-order-detail > .hc4-lab-order-detail__header {
+        display: grid !important;
+        grid-template-columns: auto minmax(220px, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        min-height: 66px;
+        padding: 10px 16px !important;
+        border: 0 !important;
+        background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+        color: #fff;
+    }
+
+    .hc4-lab-order-detail__title {
+        grid-column: 2;
+        grid-row: 1;
+        float: none !important;
+        width: auto !important;
+        margin: 0 !important;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .hc4-lab-order-detail__action {
+        position: static !important;
+        grid-column: 1;
+        grid-row: 1;
+        float: none !important;
+        width: auto !important;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        min-width: 0;
+    }
+    .hc4-lab-order-detail__action--right {
+        grid-column: 3;
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+    #area_trabajo .hc4-lab-order-detail .hc4-lab-order-detail__button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: auto !important;
+        height: auto !important;
+        min-height: 40px;
+        margin: 0 !important;
+        padding: 8px 13px;
+        border: 1px solid rgba(255, 255, 255, .42) !important;
+        border-radius: 9px !important;
+        background: rgba(255, 255, 255, .13) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+        font-size: 13px;
+        line-height: 1.2 !important;
+        text-decoration: none !important;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    #area_trabajo .hc4-lab-order-detail .hc4-lab-order-detail__button:hover,
+    #area_trabajo .hc4-lab-order-detail .hc4-lab-order-detail__button:focus {
+        background: rgba(255, 255, 255, .24) !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        outline: none !important;
+    }
+
+    #area_trabajo .hc4-lab-order-detail .hc4-lab-order-detail__button > i {
+        position: static !important;
+        inset: auto !important;
+        display: inline-block !important;
+        flex: 0 0 auto;
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: currentColor !important;
+        font-size: 15px !important;
+        line-height: 1 !important;
+    }
+
+    .hc4-lab-order-detail > .box-body { padding: 16px !important; }
+
+    .hc4-lab-order-view {
+        overflow: hidden;
+        border: 1px solid #d9e3ea;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .hc4-lab-order-view__count {
+        padding: 9px 12px;
+        border-bottom: 1px solid #d9e3ea;
+        background: #f2f8fa;
+        color: #405466;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .hc4-lab-order-view__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-flow: dense;
+        align-items: start;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .hc4-lab-order-view__group {
+        overflow: hidden;
+        min-width: 0;
+        border: 1px solid #dfe7ec;
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    .hc4-lab-order-view__group--wide { grid-column: 1 / -1; }
+
+    .hc4-lab-order-view__group-title {
+        margin: 0;
+        padding: 7px 10px;
+        background: var(--group-bg);
+        color: var(--group-text);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .hc4-lab-order-view__group--wide .hc4-lab-order-view__items {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .hc4-lab-order-view__exam {
+        min-width: 0;
+        padding: 7px 10px;
+        border-bottom: 1px solid #edf1f3;
+        color: #4b5260;
+        font-size: 12px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .hc4-lab-order-view__exam:last-child { border-bottom: 0; }
+
+    @media (max-width: 900px) {
+        .hc4-lab-order-card > .hc4-lab-order-summary {
+            grid-template-columns: 1fr auto;
+        }
+        .hc4-lab-order-summary__doctor {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            text-align: left;
+        }
+        .hc4-lab-order-summary__tools { grid-column: 2; grid-row: 1; }
+        .hc4-lab-order-detail > .hc4-lab-order-detail__header {
+            grid-template-columns: 1fr 1fr;
+        }
+        .hc4-lab-order-detail__title {
+            grid-column: 1 / -1;
+            grid-row: 1;
+        }
+        .hc4-lab-order-detail__action { grid-column: 1; grid-row: 2; }
+        .hc4-lab-order-detail__action--right { grid-column: 2; grid-row: 2; }
+        .hc4-lab-order-view__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .hc4-lab-order-view__group--wide .hc4-lab-order-view__items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+        .hc4-lab-order-card > .hc4-lab-order-summary,
+        .hc4-lab-order-detail > .hc4-lab-order-detail__header {
+            display: flex !important;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .hc4-lab-order-summary__doctor,
+        .hc4-lab-order-detail__title { text-align: left; }
+        .hc4-lab-order-summary__tools { justify-content: flex-start; }
+        .hc4-lab-order-detail__action--right { text-align: left; }
+        #area_trabajo .hc4-lab-order-detail .hc4-lab-order-detail__button { width: 100% !important; }
+        .hc4-lab-order-view__grid,
+        .hc4-lab-order-view__group--wide .hc4-lab-order-view__items { grid-template-columns: 1fr; }
+    }
+</style>
+
+@foreach($ordenes as $orden)
 	<div class="col-md-12">
-   	    @php
-			if(!is_null($orden->created_at)){
-    		  	$fecha_r =  Date('Y-m-d',strtotime($orden->created_at)); 
-    	    }else{
-				$fecha_r =  Date('Y-m-d',strtotime($orden->created_at));
-    		}
-				if($orden->id_usuariocrea != ""){ 
-               		$xdoctor = DB::table('users as us')->where('us.id',$orden->id_usuariocrea)->first();
-               		if($xdoctor->id_tipo_usuario != '3'){
-               			$xdoctor = DB::table('users as us')->where('us.id',$orden->id_doctor_ieced)->first();
-               		}
-            	}
-   	  	@endphp 
+	    @php
+			$xdoctor = null;
+			if(!is_null($orden->fecha_orden)){
+				$fecha_r = Date('Y-m-d', strtotime($orden->fecha_orden));
+			}else{
+				$fecha_r = Date('Y-m-d', strtotime($orden->created_at));
+			}
+			$ordenColapsada = $fecha_r != date('Y-m-d');
+
+			if($orden->id_doctor_ieced != ""){
+				$xdoctor = DB::table('users as us')->where('us.id', $orden->id_doctor_ieced)->first();
+			}
+
+   	  	@endphp
    	  	@php
-            $fecha = substr($orden->created_at,0,10);
+            $fecha = substr($orden->fecha_orden,0,10);
             $invert = explode( '-',$fecha);
             $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0];
 		@endphp
 
-        <div class="box @if($fecha_r != date('Y-m-d')) collapsed-box @endif" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px;">
-   	  		<div class="box-header with-border" style="background-color: white; color: black;font-family: 'Helvetica general3';border-bottom: #004AC1;">
-   	  			<div class="row">
-   	  				<div class="col-md-5">
-                            @if(!is_null($orden->created_at))
+        <div class="box hc4-lab-order-card @if($ordenColapsada) collapsed-box @endif">
+		<div class="hc4-lab-order-summary">
+			<div class="hc4-lab-order-summary__date">
+                            @if(!is_null($orden->fecha_orden))
                                 @php
-		                         $dia =  Date('N',strtotime($orden->created_at));
-		                         $mes =  Date('n',strtotime($orden->created_at));
+		                         $dia =  Date('N',strtotime($orden->fecha_orden));
+		                         $mes =  Date('n',strtotime($orden->fecha_orden));
 		                        @endphp
 
 		                        <b>
-		                        @if($dia == '1') Lunes
-                                 @elseif($dia == '2') Martes
-                                 @elseif($dia == '3') Miércoles
-                                 @elseif($dia == '4') Jueves
-                                 @elseif($dia == '5') Viernes
-                                 @elseif($dia == '6') Sábado
-                                 @elseif($dia == '7') Domingo
+		                        @if($dia == '1') @lang('hc4.monday')
+                                 @elseif($dia == '2') @lang('hc4.tuesday')
+                                 @elseif($dia == '3') @lang('hc4.wednesday')
+                                 @elseif($dia == '4') @lang('hc4.thursday')
+                                 @elseif($dia == '5') @lang('hc4.friday')
+                                 @elseif($dia == '6') @lang('hc4.saturday')
+                                 @elseif($dia == '7') @lang('hc4.sunday')
                                 @endif
-                                 {{substr($orden->created_at,8,2)}} de
-                                @if($mes == '1') Enero
-	                                 @elseif($mes == '2') Febrero
-	                                 @elseif($mes == '3') Marzo
-	                                 @elseif($mes == '4') Abril
-	                                 @elseif($mes == '5') Mayo
-	                                 @elseif($mes == '6') Junio
-	                                 @elseif($mes == '7') Julio
-	                                 @elseif($mes == '8') Agosto
-	                                 @elseif($mes == '9') Septiembre
-	                                 @elseif($mes == '10') Octubre
-	                                 @elseif($mes == '11') Noviembre
-	                                 @elseif($mes == '12') Diciembre
+                                 {{substr($orden->fecha_orden,8,2)}} @lang('hc4.of')
+                                @if($mes == '1') @lang('hc4.january')
+	                                 @elseif($mes == '2') @lang('hc4.february')
+	                                 @elseif($mes == '3') @lang('hc4.march')
+	                                 @elseif($mes == '4') @lang('hc4.april')
+	                                 @elseif($mes == '5') @lang('hc4.may')
+	                                 @elseif($mes == '6') @lang('hc4.june')
+	                                 @elseif($mes == '7') @lang('hc4.july')
+	                                 @elseif($mes == '8') @lang('hc4.august')
+	                                 @elseif($mes == '9') @lang('hc4.september')
+	                                 @elseif($mes == '10') @lang('hc4.october')
+	                                 @elseif($mes == '11') @lang('hc4.november')
+	                                 @elseif($mes == '12') @lang('hc4.december')
                                 @endif
-                                del {{substr($orden->created_at,0,4)}}</b>
+                                @lang('hc4.of') {{substr($orden->fecha_orden,0,4)}}</b>
                             @endif
                     </div>
-                    <div class="col-md-5">
-                    	<div>
-							<span style="font-family: 'Helvetica general'; font-size: 12px">Dr (a): </span>
-							<span style="font-size: 12px">@if(!is_null($xdoctor->nombre1))
-							{{$xdoctor->nombre1}} {{$xdoctor->apellido1}}@endif</span>
-					    </div>
+                    <div class="hc4-lab-order-summary__doctor">
+						<strong>Dr (a):</strong>
+						@if(!is_null($xdoctor) && !is_null($xdoctor->nombre1))
+							{{$xdoctor->nombre1}} {{$xdoctor->apellido1}}
+						@else
+							<span>No asignado</span>
+						@endif
                     </div>
-                    <div class="col-md-1" style="color: white">
-		                  @if(!is_null($orden->id))
-		                    {{$orden->id}}
-		                  @endif
-                    </div>
+                    <div class="hc4-lab-order-summary__tools">
+						@if(!is_null($orden->id))
+							<span class="hc4-lab-order-summary__id">Orden #{{$orden->id}}</span>
+						@endif
+						<button type="button" class="btn btn-sm hc4-lab-order-summary__toggle" data-widget="collapse" title="Mostrar u ocultar orden" aria-expanded="{{$ordenColapsada ? 'false' : 'true'}}">
+                            <i class="fa {{$ordenColapsada ? 'fa-plus' : 'fa-minus'}}"></i>
+						</button>
+					</div>
 
-                    <div class="pull-right box-tools" style="padding-top: 4px;">
-                    	<button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-                        <i class="fa fa-plus"></i></button>
-            	    </div>
-                </div>
+		</div>
+		<div class="box-body" style="background: white;">
+			<div class="col-md-12 col-sm-12 col-12" style="padding-left: 10px; padding-right: 5px; margin-bottom: 5px">
+	                <div class="box hc4-lab-order-detail">
 
-   	  		</div>
-   	  		<div class="box-body" style="background: white;">
-   	  			<div class="col-md-12 col-sm-12 col-12" style="padding-left: 10px; padding-right: 5px; margin-bottom: 5px">
-	                <div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
-
-	                    <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-		  					<div class="row">
-			  					<div class="col-3" style="margin-right: 10px">
-			  						
-			  						@if($orden->seguro->tipo!='0')
-			    					<div class="btn" style="color: white">
-					    				<a class="fa fa-pencil-square-o " onclick="editar_orden_lab({{$orden->id}},{{$orden->estado}});" ><span style="font-size: 13px">&nbsp;Editar</span>
-					    				</a>
-				    				</div>
-				    				@endif
-			    				</div>
-			    				<i style="color: #004AC1;">{{$orden->id}}</i>
-			    				<div class="col-4" style="text-align: center;padding-top: 6px">
-			  						<span >Detalle de Orden {{$orden->seguro->nombre}}</span>
-			  					</div>
-			  					<div class="col-4" style="text-align: right;padding-top: 6px">
-						           <a class="btn btn-danger" @if($orden->seguro->tipo=='0') href="{{url('orden/descargar')}}/{{$orden->id}}" @else href="{{url('cotizador_p/orden/imprimir')}}/{{$orden->id}}"  @endif target="_blank" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Orden</a>
-						        </div>
-		  					</div>
-		  			    </div>
+	                    <div class="hc4-lab-order-detail__header">
+						<div class="hc4-lab-order-detail__action">
+							<button type="button" class="btn hc4-lab-order-detail__button" onclick="editar_orden_lab({{$orden->id}},{{$orden->estado}});">
+								<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+								<span>@lang('hc4.editar')</span>
+							</button>
+						</div>
+						<div class="hc4-lab-order-detail__title">
+							@lang('hc4.detalleOrden') {{optional($orden->seguro)->nombre ?? 'PARTICULAR'}}
+						</div>
+						<div class="hc4-lab-order-detail__action hc4-lab-order-detail__action--right">
+							<a class="btn hc4-lab-order-detail__button" @if(optional($orden->seguro)->tipo=='0') href="{{url('orden/descargar')}}/{{$orden->id}}" @else href="{{url('cotizador_p/orden/imprimir')}}/{{$orden->id}}" @endif target="_blank">
+								<i class="glyphicon glyphicon-download-alt" aria-hidden="true"></i>
+								<span>@lang('hc4.descargarOrden')</span>
+							</a>
+							@if(optional($orden->seguro)->tipo=='0')
+								<a class="btn hc4-lab-order-detail__button" href="{{route('formulario.10A',['id' => $orden->id])}}" target="_blank">
+									<i class="glyphicon glyphicon-download-alt" aria-hidden="true"></i>
+									<span>@lang('hc4.ordenNuevoFormato')</span>
+								</a>
+							@endif
+						</div>
+					</div>
 		                <div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="xorden{{$orden->id}}">
 			   	  			<div class="col-md-12" style="padding: 1px;">
 			   	  			    <div class="row">
 			   	  			    	<div class="col-md-8">
 					                    @if(!is_null($fecha_invert))
-					                      <span style="font-family: 'Helvetica general';font-size: 12px">FECHA:</span>
+					                      <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.fecha'):</span>
 					                      <label for="fecha" class="control-label" style="font-family: 'Helvetica general';font-size: 12px"><b>{{$fecha_invert}}</b>
 					                      </label>
 					                    @endif
@@ -117,7 +400,7 @@
 			                	    <div class="col-md-8">
 				   	  					<div>
 				   	  						@if(!is_null($xdoctor))
-												<span style="font-family: 'Helvetica general'; font-size: 12px">DOCTOR SOLICITANTE:</span>
+												<span style="font-family: 'Helvetica general'; font-size: 12px">@lang('hc4.doctorSolicitante'):</span>
 												<label for="doctor" class="control-label" style="font-family: 'Helvetica general';font-size: 12px"><b>{{$xdoctor->apellido1}} {{$xdoctor->apellido2}}
 												      {{$xdoctor->nombre1}} {{$xdoctor->nombre2}}
 			                                      </b>
@@ -127,7 +410,7 @@
 			                        </div>
 			                        <div class="col-md-4">
 			                        	@if(!is_null($orden->seguro))
-							                <span style="font-family: 'Helvetica general';font-size: 12px">SEGURO:</span>
+							                <span style="font-family: 'Helvetica general';font-size: 12px">@lang('hc4.seguro'):</span>
 						                    <label for="convenio" class="control-label" style="font-family: 'Helvetica general';font-size: 12px">
 						                      <b>
 						                        {{$orden->seguro->nombre}}
@@ -139,68 +422,93 @@
 			                </div>
 			                <div class="col-12" style="padding-top: 5px"></div>
 			                <div class="col-12" style="padding-top: 5px">
-			                	@php
-				                	$examenes_labs= array();
+                            @php
+                                $paletaAgrupadores = [
+                                    ['fondo' => '#dbeafe', 'texto' => '#1e3a5f'],
+                                    ['fondo' => '#dcfce7', 'texto' => '#285943'],
+                                    ['fondo' => '#fef3c7', 'texto' => '#6b4f16'],
+                                    ['fondo' => '#fce7f3', 'texto' => '#6b3150'],
+                                    ['fondo' => '#ede9fe', 'texto' => '#493d72'],
+                                    ['fondo' => '#cffafe', 'texto' => '#245766'],
+                                    ['fondo' => '#ffedd5', 'texto' => '#6b4630'],
+                                    ['fondo' => '#e2e8f0', 'texto' => '#34445a'],
+                                ];
+                                $examenes_labs= array();
 			                		if($orden->seguro->tipo=='0'){
 										$detalles = Sis_medico\Examen_Detalle::where('id_examen_orden',$orden->id)->get();
 			                		}else{
 
 
-										$detalles = Sis_medico\Examen_Detalle::where('id_examen_orden',$orden->id)->join('examen_agrupador_sabana as es','es.id_examen','examen_detalle.id_examen')->orderBy('es.id_examen_agrupador_labs')->get();
+										$detalles = Sis_medico\Examen_Detalle::where('id_examen_orden',$orden->id)
+											->join('examen as e','e.id','examen_detalle.id_examen')
+											->orderBy('e.id_agrupador')
+											->get();
 
-										$examenes_labs = DB::table('examen_detalle as ed')->where('id_examen_orden',$orden->id)->join('examen as e','e.id','ed.id_examen')->join('examen_agrupador_sabana as sa','sa.id_examen','ed.id_examen')->join('examen_agrupador_labs as l','l.id','sa.id_examen_agrupador_labs')->select('sa.*','e.descripcion','e.nombre','e.valor','e.id as ex_id','l.nombre as lnombre')->orderBy('sa.id_examen_agrupador_labs')->orderBy('sa.nro_orden')->get();
-			                		}
-			                	@endphp
+										$examenes_labs = DB::table('examen_detalle as ed')
+											->where('id_examen_orden',$orden->id)
+											->join('examen as e','e.id','ed.id_examen')
+											->join('examen_agrupador as agrupador','agrupador.id','e.id_agrupador')
+											->select('e.id_agrupador','e.descripcion','e.nombre','e.valor','e.id as ex_id','agrupador.nombre as lnombre')
+											->orderBy('e.id_agrupador')
+											->orderBy('e.descripcion')
+											->get();
+                                }
+
+                                $gruposVisualizacion = collect($examenes_labs)
+                                    ->groupBy('id_agrupador')
+                                    ->map(function ($examenesGrupo) use ($paletaAgrupadores) {
+                                        $primero = $examenesGrupo->first();
+                                        $nombreNormalizado = strtoupper(\Illuminate\Support\Str::ascii(trim((string) $primero->lnombre)));
+                                        $indiceColor = abs((int) $primero->id_agrupador) % count($paletaAgrupadores);
+
+                                        return [
+                                            'id' => $primero->id_agrupador,
+                                            'nombre' => $primero->lnombre,
+                                            'otros' => $nombreNormalizado === 'OTROS',
+                                            'cantidad' => $examenesGrupo->count(),
+                                            'extenso' => $examenesGrupo->count() > 12,
+                                            'color' => $paletaAgrupadores[$indiceColor],
+                                            'examenes' => $examenesGrupo->sortBy('descripcion')->values(),
+                                        ];
+                                    })
+                                    ->sort(function ($grupoA, $grupoB) {
+                                        if ($grupoA['otros'] !== $grupoB['otros']) {
+                                            return $grupoA['otros'] ? 1 : -1;
+                                        }
+                                        if ($grupoA['cantidad'] !== $grupoB['cantidad']) {
+                                            return $grupoA['cantidad'] <=> $grupoB['cantidad'];
+                                        }
+                                        return strcasecmp((string) $grupoA['nombre'], (string) $grupoB['nombre']);
+                                    })
+                                    ->values();
+                            @endphp
 
 								@if($orden->seguro->tipo=='0')
-									
+
 								@else
-									<div class="row">
-									    <div class="table-responsive col-md-12">
-										    <table id="example2" class="table table-hover" role="grid" aria-describedby="example2_info" style="font-size: 12px;">
-										        <tbody>
-										        	<tr>
-										        		<td style="text-align: right;"><b>Cantidad:</b></td>
-								              			<td style="text-align: right;"><b>{{$orden->cantidad}}</b></td>
-										        	</tr>
-										       		@php  $cambia = 0; $contador = 0; @endphp
-										       		@foreach($examenes_labs as $examen)
-										       			@if($cambia != $examen->id_examen_agrupador_labs)
-										       				@php $contador = 0; @endphp
-										       				<tr>
-												            	<td colspan="2" style="background-color: #ff6600;color: white;margin: 0px;padding: 0;">{{$examen->lnombre}}</td>
-												            </tr>
-												            @php $cambia = $examen->id_examen_agrupador_labs; @endphp
-										       			@endif
-										       			@if($contador == 0)
-										       			<tr >
-										       			@endif
-										                  <td style="padding: 5px;" >{{$examen->descripcion}}</td>
-
-										                  @php $contador ++; @endphp
-										                  @if($contador == 2) @php $contador = 0; @endphp @endif
-										                @if($contador == 0)
-										                </tr>
-										                @endif
-
-										       		@endforeach
-										        </tbody>
-									      	</table>
-								    	</div>
-								  </div>
+									<div class="hc4-lab-order-view">
+                                        <div class="hc4-lab-order-view__count">
+                                            @lang('hc4.cantidad'): {{$orden->cantidad}}
+                                        </div>
+                                        <div class="hc4-lab-order-view__grid">
+                                            @foreach($gruposVisualizacion as $grupo)
+                                                <section class="hc4-lab-order-view__group @if($grupo['extenso']) hc4-lab-order-view__group--wide @endif"
+                                                         style="--group-bg:{{$grupo['color']['fondo']}};--group-text:{{$grupo['color']['texto']}};">
+                                                    <h4 class="hc4-lab-order-view__group-title">{{$grupo['nombre']}}</h4>
+                                                    <div class="hc4-lab-order-view__items">
+                                                        @foreach($grupo['examenes'] as $examen)
+                                                            <div class="hc4-lab-order-view__exam">{{$examen->descripcion ?: $examen->nombre}}</div>
+                                                        @endforeach
+                                                    </div>
+                                                </section>
+                                            @endforeach
+                                        </div>
+									</div>
 								@endif
 
 			                </div>
 
-			   	  		    <div class="col-md_12" >
-						        <center>
-						            <div class="col-md-5" style="padding-top: 15px;text-align: center;">
-						                <a style="font-size: 15px; margin-bottom: 15px; height: 80%; width: 100%"  class="btn btn-info btn_ordenes" @if($orden->seguro->tipo=='0') href="{{url('orden/descargar')}}/{{$orden->id}}" @else href="{{url('cotizador_p/orden/imprimir')}}/{{$orden->id}}"  @endif target="_blank" ><span class="glyphicon glyphicon-download-alt"></span>&nbsp;&nbsp;Descargar Orden
-						                </a>
-						            </div>
-						        </center>
-			                </div>
-		             	</div>
+				</div>
 	             	</div>
             	</div>
    	  		</div>
@@ -227,12 +535,12 @@
 				   $("#xorden"+id_orden).html(datahtml);
 				},
 				error:  function(){
-					alert('error al cargar');
+					alert({!! json_encode(trans('hc4.errorCargar')) !!});
 				}
 			});
     	}else{
 
-    		alert("orden en Proceso no se puede modificar");
+			alert({!! json_encode(trans('hc4.ordenProcesoNoModificar')) !!});
 
 		}
     }

@@ -149,9 +149,7 @@
               <select name="id_doctor_receta" id="id_doctor_receta" required onchange="obtener_iddoctor();">
                   <option value="">Seleccione ...</option>
                   @foreach($doctores as $value)
-                      <option value="{{$value->id}}">
-                        {{$value->apellido1}} {{$value->apellido2}} 
-                        {{$value->nombre1}} {{$value->nombre2}}
+                      <option @if($xhistoria->id_doctor1 == $value->id) selected @endif value="{{$value->id}}">{{$value->nombre1}} {{$value->nombre2}}{{$value->apellido1}} {{$value->apellido2}} 
                       </option>
                   @endforeach
               </select>
@@ -190,6 +188,7 @@
           <input type="hidden" name="id_paciente" value="{{$id_paciente}}">
           <input type="hidden" name="id_receta" value="{{$hc_receta->id}}">
           <input type="hidden" name="id_doct" id="id_doct">
+          <input type="hidden" name="id_emp" id="id_emp">
           <input type="hidden" name="fech_aten" id="fech_aten">
           <div class="col-md-12" id="actualiza">
             <div class="row">
@@ -226,6 +225,36 @@
   </div>
   
 <script type="text/javascript">
+  mostrar_detalle_receta();
+  function mostrar_detalle_receta()
+  {
+      $.ajax({
+          type: 'get',
+          url:"{{route('recetas.receta_detalle_index',['receta' => $hc_receta->id])}}",
+          datatype: 'json',
+          success: function(datahtml){
+              $("#index").html(datahtml);
+          },
+          error: function(data){
+          }
+      });
+  }   
+
+  function det_delete(id, id_receta){
+    //alert(var_tiempo);
+    $.ajax({
+        type: 'delete',
+        url:"{{url('hc4/receta_detalle/eliminar_detalle')}}/"+id_receta+"/"+id, //receta.editar_detalle
+        headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+        datatype: "html",
+        success: function(datahtml){
+            $("#index").html(datahtml);
+        },
+        error: function(data){
+            }
+    });  
+  }
+
   tinymce.init({
     selector: '#trp<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>',
     inline: true,
@@ -383,6 +412,11 @@
     cambiar_fecha_iddoctor();
   }
 
+  function obtener_empresa(){
+    var idemp = document.getElementById("id_empresa").value;
+    document.getElementById("id_emp").value = idemp;
+    cambiar_fecha_iddoctor();
+  }
   function cambiar_fecha_iddoctor(){
     $.ajax({
       type: 'post',
@@ -391,7 +425,7 @@
       datatype: 'json',
       data: $("#final_receta").serialize(),
       success: function(data){
-        
+        location.reload();
       },
       error: function(data){
         

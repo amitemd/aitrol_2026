@@ -2,7 +2,7 @@
 
 <head>
   <title>Evolución</title>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
 <!--

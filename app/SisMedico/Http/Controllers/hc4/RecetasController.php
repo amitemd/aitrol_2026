@@ -1,11 +1,11 @@
 <?php
-
 namespace Sis_medico\Http\Controllers\hc4;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Response;
 use Sis_medico\Agenda;
 use Sis_medico\Cie_10_3;
@@ -36,6 +36,7 @@ class RecetasController extends Controller
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
             return true;
+
         }
     }
 
@@ -55,7 +56,7 @@ class RecetasController extends Controller
     private function rol_doctor()
     {
         $rolUsuario = Auth::user()->id_tipo_usuario;
-        if (in_array($rolUsuario, array(3)) == false) {
+        if (in_array($rolUsuario, array(1, 3)) == false) {
             return true;
         }
     }
@@ -63,7 +64,6 @@ class RecetasController extends Controller
     //FUNCION EDITAR
     //PERMITE EDITAR EL RP Y LA PRESCRIPCION Y AGREGAR UNA NUEVA NEDICINA
     //SOLO PARA DOCTORES
-
     public function editar($id_receta, $id_paciente)
     {
 
@@ -72,9 +72,10 @@ class RecetasController extends Controller
             return redirect('/');
         }
 
-        $hc_receta          = hc_receta::find($id_receta);
-        $alergiasxpac       = Paciente_Alergia::where('id_paciente', $id_paciente)->get();
-        $paciente           = Paciente::find($id_paciente);
+        $hc_receta    = hc_receta::find($id_receta);
+        $alergiasxpac = Paciente_Alergia::where('id_paciente', $id_paciente)->get();
+        $paciente     = Paciente::find($id_paciente);
+
         $id_seguro_medicina = Historiaclinica::where('hcid', $hc_receta->id_hc)->first();
         $doctor_1           = $id_seguro_medicina->id_doctor1;
         $doctores           = User::where('id_tipo_usuario', '=', 3)->where('id', '<>', '1234517896')->where('id', '<>', '4444444444')->where('id', '<>', '9666666666')->where('id', '<>', 'GASTRO')->where('estado', '=', 1)->orderby('apellido1')->get();
@@ -117,10 +118,11 @@ class RecetasController extends Controller
         if ($this->rol_new($opcion)) {
             return redirect('/');
         }
-        $id_empresa  = session()->get('id_empresa');
+        $id_empresa  = Session::get('id_empresa');
 
         $receta   = hc_receta::find($id);
         $historia = historiaclinica::find($receta->id_hc);
+        //return $historia;
         $paciente = paciente::find($historia->id_paciente);
         $pacienteAlergia = Paciente_Alergia::where('id_paciente', $paciente->id)->get();
         $logo_emp = Empresa::find($id_empresa);
@@ -136,20 +138,17 @@ class RecetasController extends Controller
         } else {
             $principioActivo = "NO TIENE";
         }
-        //return $historia;
-        $paciente  = paciente::find($historia->id_paciente);
+
         $edad      = Carbon::parse($paciente->fecha_nacimiento)->age; // 1990-10-25
         $detalles  = hc_receta_detalle::where('id_hc_receta', $id)->get();
-        $medicinas = Medicina::all();
+        $medicinas = Medicina::where('estado', 1)->get();
         $cie10     = hc_cie10::where('hcid', $receta->id_hc)->get();
 
         $firma = null;
-
         if (!is_null($receta) && is_null($firma)) {
             $id_doctor = $receta->id_doctor_examinador;
             $firma     = Firma_Usuario::where('id_usuario', $id_doctor)->first();
         }
-
         if (!is_null($historia->hc_procedimientos) && is_null($firma)) {
             $id_doctor = $historia->hc_procedimientos->id_doctor_examinador;
             $firma     = Firma_Usuario::where('id_usuario', $id_doctor)->first();
@@ -160,7 +159,9 @@ class RecetasController extends Controller
 
         if ($tipo == 2) {
             //dd($firma);
-            $view = \View::make('hc_admision.receta.menbretada', compact('receta', 'historia', 'paciente', 'edad', 'detalles', 'medicinas', 'cie10', 'firma', 'id_empresa', 'principioActivo', 'logo_emp'))->render();
+            $prescriptionData = compact('receta', 'historia', 'paciente', 'edad', 'detalles', 'medicinas', 'cie10', 'firma', 'id_empresa', 'principioActivo', 'logo_emp');
+            $prescriptionData['_pdf_branding_company_id'] = $id_empresa;
+
         }
         if ($tipo == 1) {
             $view = \View::make('hc_admision.receta.sinmenbrete', compact('receta', 'historia', 'paciente', 'edad', 'detalles', 'medicinas', 'cie10', 'firma', 'id_empresa'))->render();
@@ -170,9 +171,15 @@ class RecetasController extends Controller
         }
 
         $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHTML($view)->setPaper('A4', 'landscape');
+        if ($tipo == 2) {
+            $pdf->loadView('hc_admision.receta.menbretadaor', $prescriptionData);
+        } else {
+            $pdf->loadHTML($view);
+        }
+        $pdf->setPaper('a4', 'landscape');
         $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
         return $pdf->stream($historia->id_paciente . '_Receta_' . $id . '.pdf');
+
     }
 
     //FUNCION BUSCAR NOMBRE MEDICINA
@@ -185,9 +192,8 @@ class RecetasController extends Controller
         if ($this->rol_new($opcion)) {
             return redirect('/');
         }
-        $id_empresa  = session()->get('id_empresa');
         $tipo = 0;
-        //dd($request->all());
+        //return $request->all();
 
         $nombre = $request['term'];
         $seguro = $request['seguro'];
@@ -196,26 +202,19 @@ class RecetasController extends Controller
         $data   = null;
 
         if($tipo == 1){
-            $query1 = Medicina::where('nombre', 'like', '%' . $nombre . '%')->where('estado', 1)->where('iess', '2')->orderBy('nombre')->get();
+            $query1 = Medicina::where('nombre', 'like', '%' . $seteo . '%')->where('estado', 1)->where('iess', '2')->orderBy('nombre')->get();
         }else{
-            if ($seguro == '2' || $seguro == '3' || $seguro == '5' || $seguro == '7') {
-                if($id_empresa == '1391927177001' || $id_empresa == '2390058384001'){
-                    $query1 = Medicina::where('nombre', 'like', '%' . $nombre . '%')
-                    ->where('estado', '1') 
-                    ->where('iess', '2')
-                    ->orderBy('nombre')->get(); 
-                }else{
-                    $query1 = Medicina::where(function ($query1) use ($seteo) {
-                        $query1->where([['nombre', 'like', '%' . $seteo . '%'], ['estado', '=', '1']])
-                            ->orWhere([['nombre_generico', 'like', '%' . $seteo . '%'], ['estado', '=', '1']]);
-                    })->get();
-                }  
-            } else {
-                    $query1 = Medicina::where(function ($query1) use ($seteo) {
-                        $query1->where([['nombre', 'like', '%' . $seteo . '%'], ['estado', '=', '1']])
-                            ->orWhere([['nombre_generico', 'like', '%' . $seteo . '%'], ['estado', '=', '1']]);
-                    })->get();
-                }
+        if ($seguro == '2' || $seguro == '3' || $seguro == '5' || $seguro == '7') {
+            $query1 = Medicina::where('nombre', 'like', '%' . $seteo . '%')
+                ->orwhere('nombre_generico', 'like', '%' . $seteo . '%')
+                ->where('estado', '1')
+                ->orderBy('nombre')->get();
+        } else {
+            $query1 = Medicina::where('nombre', 'like', '%' . $seteo . '%')
+                ->orwhere('nombre_generico', 'like', '%' . $seteo . '%')
+                ->where('estado', '1')
+                ->orderBy('nombre')->get();
+            }
         }
 
         $nombre = $query1;
@@ -223,32 +222,14 @@ class RecetasController extends Controller
         /*foreach ($nombre_generico as $value) {
         $data[]=array('value'=>$value->nombre_generico, 'id'=>$value->id);
         }*/
-        // foreach ($nombre as $value) {
-        //     if (!is_null($value->nombre_generico)) {
-        //         $data[] = array('value' => $value->nombre . ' (' . $value->nombre_generico . ')', 'id' => $value->id);
-        //     } else {
-        //         $data[] = array('value' => $value->nombre . ' ' . $value->presentacion, 'id' => $value->id);
-        //     }
-        // }
+        foreach ($nombre as $value) {
 
-        if($seguro == '2' || $seguro == '3' || $seguro == '5' || $seguro == '7'){
-            foreach ($nombre as $value) {
-                if (!is_null($value->nombre_generico)) {
-                    $data[] = array('value' => $value->nombre . ' ' . $value->nombre_generico . ' ', 'id' => $value->id);
-                } else {
-                    $data[] = array('value' => $value->nombre . ' ' . $value->presentacion, 'id' => $value->id);
-                }
-            }
-        }else{
-            foreach ($nombre as $value) {
-                if (!is_null($value->nombre_generico)) {
-                    $data[] = array('value' => $value->nombre . ' (' . $value->nombre_generico . ')', 'id' => $value->id);
-                } else {
-                    $data[] = array('value' => $value->nombre . ' ' . $value->presentacion, 'id' => $value->id);
-                }
+            if (!is_null($value->nombre_generico)) {
+                $data[] = array('value' => $value->nombre . ' (' . $value->nombre_generico . ')', 'id' => $value->id);
+            } else {
+                $data[] = array('value' => $value->nombre . ' ' . $value->presentacion, 'id' => $value->id);
             }
         }
-
         if (count($data) > 0) {
             return $data;
         } else {
@@ -267,11 +248,7 @@ class RecetasController extends Controller
             return redirect('/');
         }
 
-        if(Auth::user()->id == '9666666666'){
-           // dd($request->all());
-        }
-
-        //dd($request['nombre_generico']);
+        //dd($request->all()); 
         $nombre_medicina = $request['nombre_generico'];
 
         $data = null;
@@ -281,26 +258,22 @@ class RecetasController extends Controller
         $nombre_medicina = $porciones[0];
 
         //return $nombre_medicina;
-        if(Auth::user()->id == '9666666666'){
-             //dd($nombre_medicina);
-         }
 
         if ($nombre_medicina == null) {
             return '0';
         }
+        // return $nombre_medicina;
+        //dd($nombre_medicina);
 
-        $nombre = Medicina::WhereRaw("CONCAT(nombre, ' ', presentacion) LIKE '" . $nombre_medicina . "'")->where('estado', 1)->orderBy('nombre', 'asc')->get();
+        $nombre = Medicina::whereRaw("CONCAT(nombre, ' ', presentacion) LIKE ?", array($nombre_medicina))->where('estado', 1)->orderBy('nombre', 'asc')->get();
         if ($nombre == '[]') {
             $nombre = Medicina::where('nombre', 'like', $nombre_medicina)->where('estado', 1)->orderBy('nombre', 'asc')->get();
         }
+        //dd($nombre);
 
-        $nombre_generico = Medicina::WhereRaw("CONCAT(nombre_generico, ' ', presentacion) LIKE '" . $nombre_medicina . "'")->where('estado', 1)->orderBy('nombre_generico', 'asc')->get();
+        $nombre_generico = Medicina::whereRaw("CONCAT(nombre_generico, ' ', presentacion) LIKE ?", array($nombre_medicina))->where('estado', 1)->orderBy('nombre_generico', 'asc')->get();
         if ($nombre_generico == '[]') {
             $nombre_generico = Medicina::where('nombre_generico', 'like', $nombre_medicina)->where('estado', 1)->orderBy('nombre', 'asc')->get();
-        }
-
-        if(Auth::user()->id == '9666666666'){
-          //  dd($nombre_medicina, $nombre);
         }
 
         foreach ($nombre as $value) {
@@ -312,6 +285,7 @@ class RecetasController extends Controller
                 } else {
                     $generico = $generico . ', ' . $gen2->generico->nombre;
                 }
+
             }
             $data[] = array('value' => $value->nombre . ' ' . $value->presentacion, 'dosis' => $value->dosis, 'nombre_generico' => $value->nombre_generico, 'cantidad' => $value->cantidad, 'id' => $value->id, 'dieta' => $value->dieta, 'genericos' => $generico);
         }
@@ -326,10 +300,11 @@ class RecetasController extends Controller
                 } else {
                     $generico = $generico . ', ' . $gen2->generico->nombre;
                 }
+
             }
             $data[] = array('value' => $value->nombre, 'dosis' => $value->dosis, 'nombre_generico' => $value->nombre_generico, 'cantidad' => $value->cantidad, 'id' => $value->id, 'dieta' => $value->dieta, 'genericos' => $generico);
         }
-        if (count($data) > 0) {
+        if (!empty($data)) {
             return $data[0];
         } else {
             return '0';
@@ -389,14 +364,14 @@ class RecetasController extends Controller
 
         $input1 = [
             'id_doctor_examinador' => $request["id_doctor_examinador"],
-            'prescripcion'         => $request["prescripcion"],
-            'rp'                   => $request["rp"],
-            'ip_modificacion'      => $ip_cliente,
-            'id_usuariomod'        => $idusuario,
+            'prescripcion'    => $request["prescripcion"],
+            'rp'              => $request["rp"],
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariomod'   => $idusuario,
         ];
 
         hc_receta::where('id', $request["id_receta"])->update($input1);
-        return $request;
+        return $request["id_doctor_examinador"];
     }
 
     //FUNCION CREAR DETALLE
@@ -428,8 +403,11 @@ class RecetasController extends Controller
                     if ($p->id_principio_activo == $gen->id_principio_activo) {
 
                         $flag = true;
+
                     }
+
                 }
+
             }
 
             if (!$flag) {
@@ -441,19 +419,21 @@ class RecetasController extends Controller
                 hc_receta_detalle::create([
                     'id_hc_receta' => $receta,
                     'id_medicina'  => $medicina->id,
-                    'nombre'       => $nombre_g,     
+                    'nombre'       => $nombre_g,
                     'cantidad'     => 1,
                     'dosis'        => $medicina->dosis,
                     'ip_modificacion' => $ip_cliente,
                     'ip_creacion'     => $ip_cliente,
                     'id_usuariomod'   => $idusuario,
-                    'id_usuariocrea'  => $idusuario    
+                    'id_usuariocrea'  => $idusuario
 
                 ]);
                 //return 1;
+
             } else {
 
                 $mensaje = "PACIENTE ES ALERGICO A LA MEDICINA SOLICITADA";
+
             }
 
             //return "creo";
@@ -467,13 +447,14 @@ class RecetasController extends Controller
         return view('hc4/recetas/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje, 'id_receta' => $receta]);
     }
 
-    public function receta_detalle_index( $id_receta ){
-        $receta    = hc_receta::find( $id_receta );
+    public function receta_detalle_index($id_receta)
+    {
+        $receta    = hc_receta::find($id_receta);
         $detalles  = $receta->detalles;
         $medicinas = Medicina::where('estado', 1)->get();
         $mensaje   = '';
-        return view('hc4/recetas/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje, 'id_receta' => $id_receta]);    
-    }    
+        return view('hc4/recetas/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje, 'id_receta' => $id_receta]);
+    }
     //FUNCION EDITAR DETALLE
     //SOLO PARA DOCTORES
     public function editar_detalle(Request $request, $id)
@@ -495,27 +476,22 @@ class RecetasController extends Controller
             ];
             $detalle->update($input);
             return "ok";
+
         }
         return "no";
     }
 
     public function eliminar_detalle($receta, $id)
     {
-
         $detalle = hc_receta_detalle::find($id);
-
         if (!is_null($detalle)) {
-
             $detalle->delete();
-
         }
-
         $detalles  = hc_receta_detalle::where('id_hc_receta', $receta)->get();
         $medicinas = Medicina::where('estado', 1)->get();
         $error     = null;
         $mensaje   = "MEDICINA ELIMINADA";
-
-        return view('hc4/recetas/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje, 'id_receta' => $receta]); 
+        return view('hc4/recetas/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje, 'id_receta' => $receta]);
     }
 
     //FUNCION AGREGAR NUEVA RECETA
@@ -528,14 +504,18 @@ class RecetasController extends Controller
         if($this->rol_new($opcion)){
         return redirect('/');
         }*/
-        $empresa = Empresa::where('prioridad', 1)->first();
+
         $paciente   = Paciente::find($id_paciente);
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
+
+        $id_empresa = trim((string) session('id_empresa'));
+        if ($id_empresa === '' || is_null(Empresa::find($id_empresa))) {
+            return response('Seleccione una empresa válida antes de crear la receta.', 422);
+        }
 
         if ($this->rol_doctor()) {
             return response()->view('errors.404');
         }
-
         $evoluciones = DB::table('historiaclinica as h')
             ->where('h.id_paciente', $id_paciente)
             ->join('hc_evolucion as hc_evo', 'hc_evo.hcid', 'h.hcid')
@@ -546,17 +526,14 @@ class RecetasController extends Controller
             //->where('hc_proto.tipo_procedimiento', '0')
             ->select('hc_evo.*')
             ->first();
-
         $x_diagnosticos = null;
         $texto          = "";
-
         if (!is_null($evoluciones)) {
             $x_diagnosticos = DB::table('hc_cie10')
                 ->where('hc_cie10.hc_id_procedimiento', $evoluciones->hc_id_procedimiento)
                 ->groupBy('cie10')
                 ->get();
         }
-
         if (!is_null($x_diagnosticos)) {
             $mas = true;
             foreach ($x_diagnosticos as $value) {
@@ -568,7 +545,6 @@ class RecetasController extends Controller
                 if (!is_null($c4)) {
                     $descripcion = $c4->descripcion;
                 }
-
                 $texto = $texto . '<div class="cie10-receta">' . $value->cie10 . ':' . trim($descripcion) . '</div>';
             }
         }
@@ -602,11 +578,10 @@ class RecetasController extends Controller
             'id_doctor1'      => $id_doctor,
             'proc_consul'     => '4',
             'estado_cita'     => '4',
-            'id_empresa'      => $empresa->id,
             'espid'           => $espid,
             'observaciones'   => 'RECETA CREADA POR EL DOCTOR',
-            //'id_seguro'       => $paciente->id_seguro,
-            'id_seguro'       => '1',
+            'id_seguro'       => $paciente->id_seguro,
+            'id_empresa'      => $id_empresa,
             'estado'          => '4',
             'ip_creacion'     => $ip_cliente,
             'ip_modificacion' => $ip_cliente,
@@ -622,8 +597,7 @@ class RecetasController extends Controller
             'id_usuario'      => $paciente->id_usuario,
             'id_agenda'       => $id_agenda,
             'id_paciente'     => $id_paciente,
-            //'id_seguro'       => $paciente->id_seguro,
-            'id_seguro'       => '1',
+            'id_seguro'       => $paciente->id_seguro,
             'id_doctor1'      => $id_doctor,
             'id_usuariocrea'  => $id_doctor,
             'ip_modificacion' => $ip_cliente,
@@ -800,32 +774,24 @@ class RecetasController extends Controller
         return view('hc4/recetas/nueva_receta', ['alergiasxpac' => $alergiasxpac, 'paciente' => $paciente, 'id_paciente' => $id_paciente, 'hc_receta' => $hc_receta, 'publica' => $publica]);
     }
 
-    public function agregar_nueva_receta_publica($id_paciente)
+    public function nueva_receta_008($id_hc_proced)
     {
-        $paciente   = Paciente::find($id_paciente);
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $empresa = Empresa::where('prioridad', 1)->first();
-        if ($this->rol_doctor()) {
-            return response()->view('errors.404');
-        }
-        $evoluciones = DB::table('historiaclinica as h')
-            ->where('h.id_paciente', $id_paciente)
-            ->join('hc_evolucion as hc_evo', 'hc_evo.hcid', 'h.hcid')
-            ->where('hc_evo.secuencia', 0)
-            ->whereNotNull('hc_evo.cuadro_clinico')
-            ->orderby('hc_evo.updated_at', 'desc')
-        //->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'h.hcid')
-        //->where('hc_proto.tipo_procedimiento', '0')
-            ->select('hc_evo.*')
-            ->first();
+        $idusuario  = Auth::user()->id;
+
+        $hc_proc = hc_procedimientos::find($id_hc_proced);
+        $historia = $hc_proc->historia;
+        $paciente   = $historia->paciente;
+
         $x_diagnosticos = null;
         $texto          = "";
-        if (!is_null($evoluciones)) {
-            $x_diagnosticos = DB::table('hc_cie10')
-                ->where('hc_cie10.hc_id_procedimiento', $evoluciones->hc_id_procedimiento)
+
+        
+        $x_diagnosticos = DB::table('hc_cie10')
+                ->where('hc_cie10.hc_id_procedimiento', $id_hc_proced)
                 ->groupBy('cie10')
                 ->get();
-        }
+        
         if (!is_null($x_diagnosticos)) {
             $mas = true;
             foreach ($x_diagnosticos as $value) {
@@ -837,87 +803,57 @@ class RecetasController extends Controller
                 if (!is_null($c4)) {
                     $descripcion = $c4->descripcion;
                 }
+
                 $texto = $texto . '<div class="cie10-receta">' . $value->cie10 . ':' . trim($descripcion) . '</div>';
+
             }
+
         }
-        //dd($texto);
-        $id_doctor = Auth::user()->id;
-        $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
-        if (!is_null($especialidad)) {
-            $espid = $especialidad->espid;
+
+        $agenda = $historia->agenda;
+
+        if (!is_null($agenda->espid)) {
+            $espid = $agenda->espid;
         } else {
             $espid = '4';
         }
-        $receta_new = [
-            'anterior'        => 'DATOS PRINCIPALES -> El Dr. creo nueva receta',
-            'nuevo'           => 'DATOS PRINCIPALES -> El Dr. creo nueva receta',
-            'id_paciente'     => $paciente->id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($receta_new);
-        $input_agenda = [
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'id_paciente'     => $id_paciente,
-            'id_doctor1'      => $id_doctor,
-            'proc_consul'     => '4',
-            'estado_cita'     => '4',
-            'id_empresa'      => $empresa->id,
-            'espid'           => $espid,
-            'observaciones'   => 'RECETA CREADA POR EL DOCTOR',
-            'id_seguro'       => 2,
-            'estado'          => '4',
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $id_doctor,
-            'id_usuariomod'   => $id_doctor,
-        ];
-        $id_agenda = agenda::insertGetId($input_agenda);
-        $input_historia = [
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_seguro'       => 2,
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        $id_historia = Historiaclinica::insertGetId($input_historia);
-        $idusuario   = $id_doctor;
-        $input_hc_receta = [
-            'id_hc'           => $id_historia,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-            'rp'              => $texto,
-        ];
-        hc_receta::insert($input_hc_receta);
-        $alergiasxpac = Paciente_Alergia::where('id_paciente', $id_paciente)->get();
-        $hc_receta = DB::table('hc_receta as r')
-            ->join('historiaclinica as h', 'r.id_hc', 'h.hcid')
-            ->join('agenda as a', 'a.id', 'h.id_agenda')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->where('h.id_paciente', $id_paciente)
-            ->select('r.*', 'a.fechaini', 's.id as id_seguro', 's.nombre as nombre_seguro')
-            ->get()->last();
-        //dd($hc_receta->nombre_seguro);
-        $publica = '1';
-        return view('hc4/recetas/nueva_receta', ['alergiasxpac' => $alergiasxpac, 'paciente' => $paciente, 'id_paciente' => $id_paciente, 'hc_receta' => $hc_receta, 'publica' => $publica]);
+
+        $hc_receta = hc_receta::where('id_hc',$historia->hcid)->first();
+
+        if(is_null($hc_receta)){
+
+            $input_hc_receta = [
+                'id_hc'           => $historia->hcid,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea'  => $idusuario,
+                'id_usuariomod'   => $idusuario,
+                'ip_creacion'     => $ip_cliente,
+                'rp'              => $texto,
+            ];
+
+            $id_receta = hc_receta::insert($input_hc_receta);
+            $hc_receta = hc_receta::find($id_receta);
+
+        }
+
+
+        $alergiasxpac = Paciente_Alergia::where('id_paciente', $paciente->id)->get();
+
+        $id_paciente = $paciente->id;
+
+        
+        $publica = '0';
+
+        return view('hc4/recetas/nueva_receta_008', ['alergiasxpac' => $alergiasxpac, 'paciente' => $paciente, 'id_paciente' => $id_paciente, 'hc_receta' => $hc_receta, 'publica' => $publica]);
     }
+
+    
 
     //PERMITE VOLVER A LA VISTA HISTORIAL DE RECETAS LUEGO DE HABER DADO A
     //LA OPCION  GUARDAR
     //SOLO PARA DOCTORES
     public function actua_receta(Request $request)
     {
-        //dd('entra');
         $opcion = '2';
         if ($this->rol_new($opcion)) {
             return redirect('/');
@@ -930,3 +866,4 @@ class RecetasController extends Controller
         return view('hc4/recetas/unico', ['hist_recetas' => $hist_recetas]);
     }
 }
+

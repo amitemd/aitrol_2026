@@ -417,7 +417,10 @@
                         </h3>
                     </div>
                     <div class="col-md-3" style="padding-left: 0px;">
-                        <a href="{{route('sin_agenda.crear_evolucion',['id' => $agenda->id_paciente, 'ag' => $agenda->id])}}"><button class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-plus"></span> Agregar Visita</button></a>
+                        <form method="POST" action="{{route('sin_agenda.crear_evolucion',['id' => $agenda->id_paciente, 'ag' => $agenda->id])}}" style="display:inline">
+                            {{ csrf_field() }}
+                            <button type="submit" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-plus"></span> Agregar Visita</button>
+                        </form>
                     </div>    
 
                     
@@ -1549,9 +1552,9 @@
         function agregar_evolucion(){
             var condicion = $('#proc_com').val();
             if(condicion != ""){
-                window.location.href = "{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}";
+                enviarPostClinico("{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}");
             }else{
-                window.location.href = "{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}";
+                enviarPostClinico("{{route('evolucion.crear_evolucion_procedimiento', ['id_agenda' => $agenda->id, 'hc_id_procedimiento' => $protocolo->id_hc_procedimientos])}}");
             }
             
         }
@@ -1685,8 +1688,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){
@@ -2162,10 +2166,23 @@
 
     } 
 
+    function enviarPostClinico(url){
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        var token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = '_token';
+        token.value = '{{ csrf_token() }}';
+        form.appendChild(token);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function editar_consulta(id,agenda){
         //alert(agenda);
 
-        location.href ="{{url('historialclinico/visitas_ingreso')}}/"+id+"/"+agenda;//visita.crea_actualiza
+        enviarPostClinico("{{url('historialclinico/visitas_ingreso')}}/"+id+"/"+agenda);//visita.crea_actualiza
 
     } 
 
@@ -2173,7 +2190,7 @@
 
         $('#nuevo_proc').attr('disabled','disabled');
         //alert("ok");
-        location.href ="{{route('estudio.nuevo', ['id' => $agenda->id ])}}";        
+        enviarPostClinico("{{route('estudio.nuevo', ['id' => $agenda->id ])}}");
     } 
 
     $('#ale_list').select2({
@@ -2287,9 +2304,9 @@
         var js_cedula = document.getElementById("id_paciente").value;
         //alert(js_cedula);
         $.ajax({
-          type: 'get',
+          type: 'post',
           url:"{{url('receta_detalle/crear_detalle')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula, //receta.crear_detalle
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
           
           datatype: 'json',
           //data: $("#frm").serialize(),
@@ -2323,9 +2340,9 @@
 
     function det_delete(id) {
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('receta_detalle/eliminar_detalle')}}/"+{{$hc_receta->id}}+"/"+id,
-          //headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+          headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
           
           datatype: 'json',
           //data: $("#frm").serialize(),

@@ -19,7 +19,7 @@
 <div class="modal fade" id="favoritesModal2" tabindex="-1" role="dialog" aria-labelledby="favoritesModalLabel">
     <div class="modal-dialog" role="document" style="width:1350px; ">
         <div class="modal-content" id="imprimir3">
-            <p>Hola Mundo</p>
+            
         </div>
     </div>
 </div>
@@ -45,7 +45,7 @@
                     </a>
                     <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('historia.historia',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-level-up"></span> Historia Clinica</button>
                     </a>
-                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
+                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['ag' => $agenda->id])}}"><button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
                     </a> -->
                     @php $especialidad=Sis_medico\Especialidad::find($agenda->espid); @endphp
                     <table class="table table-striped">
@@ -95,6 +95,7 @@
                                 <h4>RECORD ANESTÉSICO DEL PACIENTE</h4>
 
                             </div>
+			    
                             @php
                                 $user_mod = null;
                                 if($record_anestesilogico !='[]' ){
@@ -110,10 +111,11 @@
                             
                             
                             @if($record_anestesilogico != '[]')
+                            
                             <div class="col-md-3">
                                 <a style="margin: 10px" class="btn btn-info btn_accion" href="{{ route('formato.rc_preanestesico_crear', ['id' => $record_anestesilogico[0]->id]) }}"> <i class="fa fa-medkit"></i>&nbsp;Pre Anestésico</a>
                             </div>
-                            
+               
                             <div class="col-md-3">
                                 <!--a id="previsualizar" onclick="save2()" href="{{ route('anestesiologia.imprime', ['id' => $id]) }}" target="_blank" type="button" class="btn btn-primary">
                                     Previsualizar
@@ -137,14 +139,7 @@
                                     <select id="id_doctor" class="form-control input-sm" name="id_doctor" required>
                                         <option  value="">Seleccione ...</option>
                                         @foreach($usuarios as $doctor)
-                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_doctor == $doctor->id) selected @endif @endif value="{{$doctor->id}}">Dr. {{$doctor->apellido1}} {{$doctor->apellido2}} {{$doctor->nombre1}}</option>
-                                        @if($record_anestesilogico !='[]' )
-                                            @if($record_anestesilogico[0]->id_doctor == null)
-                                                <option @if($doctor->id == '1307189140') selected @endif value="{{$doctor->id}}">Dr. {{$doctor->apellido1}} {{$doctor->apellido2}} {{$doctor->nombre1}}</option>    
-                                            @endif
-                                        @else
-                                            <option @if($doctor->id == '1307189140') selected @endif value="{{$doctor->id}}">Dr. {{$doctor->apellido1}} {{$doctor->apellido2}} {{$doctor->nombre1}}</option>
-                                        @endif
+                                            <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_doctor == $doctor->id) selected @else @if($record_anestesilogico[0]->id_doctor == null && $doctor->id == '1307189140') selected @endif @endif @endif value="{{$doctor->id}}">{{$doctor->apellido1}} {{$doctor->apellido2}} {{$doctor->nombre1}}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('id_doctor'))
@@ -159,14 +154,7 @@
                                     <select id="id_doctor_ayudante" class="form-control input-sm" name="id_doctor_ayudante" required>
                                         <option  value="">Seleccione ...</option>
                                         @foreach($usuarios as $doctor_ayudante)
-                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_doctor_ayudante == $doctor_ayudante->id) selected @endif @endif value="{{$doctor_ayudante->id}}">Dr. {{$doctor_ayudante->apellido1}} {{$doctor_ayudante->apellido2}} {{$doctor_ayudante->nombre1}}</option>
-                                        @if($record_anestesilogico !='[]' )
-                                            @if($record_anestesilogico[0]->id_doctor_ayudante == null)
-                                                <option @if($hca[0]->id_doctor1 == $doctor_ayudante->id) selected @endif value="{{$doctor_ayudante->id}}">Dr. {{$doctor_ayudante->apellido1}} {{$doctor_ayudante->apellido2}} {{$doctor_ayudante->nombre1}}</option>    
-                                            @endif
-                                        @else
-                                            <!-- <option @if($hca[0]->id_doctor1 == $doctor_ayudante->id) selected @endif value="{{$doctor_ayudante->id}}">Dr. {{$doctor_ayudante->apellido1}} {{$doctor_ayudante->apellido2}} {{$doctor_ayudante->nombre1}}</option> -->
-                                        @endif
+                                            <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_doctor_ayudante == $doctor_ayudante->id) selected @else @if($record_anestesilogico[0]->id_doctor_ayudante == null && $hca[0]->id_doctor1) selected @endif @endif @endif value="{{$doctor_ayudante->id}}">{{$doctor_ayudante->apellido1}} {{$doctor_ayudante->apellido2}} {{$doctor_ayudante->nombre1}}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('id_doctor_ayudante'))
@@ -191,7 +179,7 @@
                                     <select id="id_anestesiologo" class="form-control input-sm" name="id_anestesiologo" required>
                                         <option value="">Seleccione..</option>
                                         @foreach($anestesiologos as $anestesiologo)
-                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_anestesiologo == $anestesiologo->id) selected @endif @endif value="{{$anestesiologo->id}}">Dr. {{$anestesiologo->nombre1}} {{$anestesiologo->apellido1}}</option>
+                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_anestesiologo == $anestesiologo->id) selected @endif @endif value="{{$anestesiologo->id}}">{{$anestesiologo->nombre1}} {{$anestesiologo->apellido1}}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('id_anestesiologo'))
@@ -205,7 +193,7 @@
                                     <select id="id_ayudante" class="form-control input-sm" name="id_ayudante" required>
                                         <option value="">Seleccione..</option>
                                         @foreach($anestesiologos as $anestesiologo)
-                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_ayudante == $anestesiologo->id) selected="selected" @endif @endif value="{{$anestesiologo->id}}">@if($anestesiologo->id == "1203240658") Lcda. @else Dr. @endif  {{$anestesiologo->nombre1}} {{$anestesiologo->apellido1}}</option>
+                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_ayudante == $anestesiologo->id) selected="selected" @endif @endif value="{{$anestesiologo->id}}">{{$anestesiologo->nombre1}} {{$anestesiologo->apellido1}}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('id_ayudante'))
@@ -219,7 +207,7 @@
                                     <select id="id_instrumentista" class="form-control input-sm" name="id_instrumentista">
                                         <option value="">Seleccione..</option>
                                         @foreach($enfermeros as $value)
-                                        <option value="{{$value->id}}" @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_instrumentista == $value->id) selected @endif @endif >Enf. {{$value->nombre1}} {{$value->apellido1}}</option>
+                                        <option value="{{$value->id}}" @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_instrumentista == $value->id) selected @endif @endif >{{$value->nombre1}} {{$value->apellido1}}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('id_instrumentista'))
@@ -371,7 +359,7 @@
                                     <label for="id_guiado" class="col-md-12 control-label">Guiado por</label>
                                     <select id="id_guiado" class="form-control input-sm" name="id_guiado" required>
                                         @foreach($anestesiologos as $anestesiologo)
-                                        <option @if($record_anestesilogico !='[]' ) @if($record_anestesilogico[0]->id_guiado == $anestesiologo->id) selected="selected" @endif @endif  value="{{$anestesiologo->id}}">Dr. {{$anestesiologo->nombre1}} {{$anestesiologo->apellido1}}</option>
+                                        <option value="{{$anestesiologo->id}}">Dr. {{$anestesiologo->nombre1}} {{$anestesiologo->apellido1}}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('id_guiado'))
@@ -1007,8 +995,9 @@
         var confirmar = confirm("Seguro, Desea eliminar Csv");
         if(confirmar){
             $.ajax({
-                type: 'get',
+                type: 'delete',
                 url: '{{ url('nuevo_record/csv/eliminar')}}/'+id, //historia.drogasadministradas
+                data: {'_token': '{{ csrf_token() }}'},
                 success: function(data) {
                     
                     location.reload();

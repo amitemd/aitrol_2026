@@ -54,13 +54,12 @@ class FullcontrolController extends Controller
      */
     private function rol(){
         $rolUsuario = Auth::user()->id_tipo_usuario;      
-        if(in_array($rolUsuario, array(1, 3, 6, 11, 13,5, 7, 20, 9)) == false){
+        if(in_array($rolUsuario, array(1, 3, 6, 11, 13,5, 7,20)) == false){
           return true;
         }
     }
 
-    //VERSION ANTES DE DUPLICAR HISTORIA CLINICA 3
-    /*public function index(Request $request){
+    /* public function index(Request $request){
     	 //return $request->all();
          $rolUsuario = Auth::user()->id_tipo_usuario;  
         if($this->rol()){
@@ -77,9 +76,9 @@ class FullcontrolController extends Controller
         $fecha = $request['fecha']; 
         $fecha_hasta = $request['fecha_hasta'];  
 
-        $especialidades = Especialidad::Orderby('nombre','asc')->get();
+        $especialidades = Especialidad::where('estado', 1)->orderBy('nombre', 'asc')->get();
         $doctores = User::where('id_tipo_usuario','3')->Orderby('apellido1','asc')->get();
-        $seguros = Seguro::Orderby('nombre','asc')->get();
+        $seguros = Seguro::where('inactivo','1')->Orderby('nombre','asc')->get();
 
 
         $agendas = [];
@@ -101,6 +100,74 @@ class FullcontrolController extends Controller
         $nombres_sql='';
         $agendas_pac = [];
 
+        /*if($nombres!=null){//BUSCA POR PACIENTE
+            $agendas_pac = DB::table('paciente as p')->leftjoin('historiaclinica as h','h.id_paciente','p.id')->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento');
+
+            $nombres2 = explode(" ", $nombres); 
+            $cantidad = count($nombres2); 
+            foreach($nombres2 as $n){
+                $nombres_sql = $nombres_sql.'%'.$n;
+            }
+            $nombres_sql= $nombres_sql.'%';
+
+            
+            if($cantidad=='2' || $cantidad=='3'){       
+                    $agendas_pac = $agendas_pac->where(function($jq1) use($nombres_sql){
+                        $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
+                            ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
+                            ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
+                            ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);    
+                    });
+                      
+            }
+            else{
+
+                //$agendas_pac = $agendas_pac->whereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
+                $agendas_pac = $agendas_pac->where(function($jq1) use($nombres_sql){
+                        $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
+                            ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);    
+                    });
+            }  
+
+            $agendas_pac = $agendas_pac->limit('100')->get(); 
+            
+            $agendas_proc=null;
+            
+
+        }else{//BUSCA POR FECHAS
+
+            $agendas_pac = DB::table('agenda as a')->where('a.estado',1)->whereBetween('fechaini',[$fecha.' 00:00',$fecha_hasta.' 23:59'])->join('historiaclinica as h','h.id_agenda','a.id')->join('paciente as p','p.id','a.id_paciente')->join('users as d','d.id','h.id_doctor1')->join('empresa as em','em.id','a.id_empresa')->join('seguros as se','se.id','h.id_seguro')->where('a.espid','<>','10')->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto')->Orderby('a.fechaini','asc');
+
+            $agendas_pac2 = DB::table('agenda as a')->where('a.omni','OM')->whereBetween('fechaini',[$fecha.' 00:00',$fecha_hasta.' 23:59'])->join('historiaclinica as h','h.id_agenda','a.id')->join('paciente as p','p.id','a.id_paciente')->join('users as d','d.id','h.id_doctor1')->join('empresa as em','em.id','a.id_empresa')->join('seguros as se','se.id','h.id_seguro')->where('a.espid','<>','10')->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto')->Orderby('a.fechaini','asc');
+
+            $agendas_pac = $agendas_pac->union($agendas_pac2)->get();
+
+            $agendas_proc=null;
+            foreach($agendas_pac as $pac){
+
+                if($pac->proc_consul=='1'){
+                    $pentax = Pentax::where('id_agenda',$pac->id_agenda)->first();
+                    if(!is_null($pentax)){
+                        $txt_px='';
+                        foreach ($pentax->procedimientos as $p) {
+                            if($txt_px==''){
+                                $txt_px=$p->procedimiento->nombre;
+                            }else{
+                                $txt_px = $txt_px.'+'.$p->procedimiento->nombre;
+                            }
+                            
+                        }
+                        //dd($txt_px);
+                        $agendas_proc[$pac->id_agenda] = [$txt_px];        
+                    }
+                         
+                }
+
+
+            }
+            
+
+        } 
         if($nombres!=null)
         {
 
@@ -108,7 +175,7 @@ class FullcontrolController extends Controller
                          ->leftjoin('historiaclinica as h','h.id_paciente','p.id')
                          ->leftjoin('agenda as a','h.id_agenda','a.id')
                          ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')
-                         ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento', 'a.estado_cita','h.hcid');
+                         ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento', 'a.estado_cita');
            
             $nombres2 = explode(" ", $nombres); 
             $cantidad = count($nombres2);
@@ -155,7 +222,6 @@ class FullcontrolController extends Controller
                           ->leftjoin('historiaclinica as h','h.id_agenda','a.id')
                           ->leftjoin('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                           ->whereNull('h.hcid')
-                          ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')
                           ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'a.id_doctor1 as doctor', 'a.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
             
 
@@ -169,7 +235,6 @@ class FullcontrolController extends Controller
                           ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                           ->where('a.proc_consul', '0')
                           ->whereNull('hc_pro.id_doctor_examinador')
-                          ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')
                           ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
 
 
@@ -184,8 +249,7 @@ class FullcontrolController extends Controller
                           ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                           ->where('a.proc_consul', '0')
                           ->whereNotNull('hc_pro.id_doctor_examinador')
-                          ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')
-                          ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');            
+                          ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');             
 
  
             $pacientes3 = DB::table('agenda as a')->where('a.estado',1)
@@ -196,7 +260,6 @@ class FullcontrolController extends Controller
                           ->join('seguros as se','se.id','a.id_seguro')
                           ->join('historiaclinica as h','h.id_agenda','a.id')
                           ->where('a.proc_consul', '1')
-                          ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')
                           ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
                           
 
@@ -209,7 +272,6 @@ class FullcontrolController extends Controller
                           ->join('historiaclinica as h','h.id_agenda','a.id')
                           ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
                           ->where('a.proc_consul', '4')
-                          ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento')
                           ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
             
 
@@ -271,8 +333,7 @@ class FullcontrolController extends Controller
               }                         
                           
          
-              $pacientes1 = $pacientes1->union($pacientes2)->union($pacientes2_0)->union($pacientes3)->union($pacientes4);
-              //$pacientes1 = $pacientes1->union($pacientes2)->union($pacientes3)->union($pacientes4);            
+              $pacientes1 = $pacientes1->union($pacientes2)->union($pacientes2_0)->union($pacientes3)->union($pacientes4);            
 
               $pacientes1 = $pacientes1->limit('300')->get();
               $pacientes = $pacientes1;
@@ -306,10 +367,10 @@ class FullcontrolController extends Controller
 
 
         Cookie::queue('ruta','historia','1000');
-        //dd($agendas_proc);
+
 
         return view('hc_admision/fullcontrol/index', ['nombres' => $nombres, 'agendas_pac' => $pacientes, 'fecha' => $fecha, 'fecha_hasta' => $fecha_hasta, 'agendas_proc' => $agendas_proc, 'proc_consul' => $proc_consul, 'especialidades' => $especialidades, 'id_especialidad' => '0', 'doctores' => $doctores, 'id_doctor1' => $id_doctor1, 'seguros' => $seguros, 'id_seguro' => $id_seguro]);
-    }*/
+    } */
 
     public function index(Request $request){
         //return $request->all();
@@ -328,7 +389,7 @@ class FullcontrolController extends Controller
         $fecha = $request['fecha']; 
         $fecha_hasta = $request['fecha_hasta'];  
 
-        $especialidades = Especialidad::Orderby('nombre','asc')->get();
+        $especialidades = Especialidad::where('estado', 1)->orderBy('nombre', 'asc')->get();
         $doctores = User::where('id_tipo_usuario','3')->Orderby('apellido1','asc')->get();
         $seguros = Seguro::Orderby('nombre','asc')->get();
 
@@ -607,278 +668,6 @@ class FullcontrolController extends Controller
         Cookie::queue('ruta','historia','1000');
 
         return view('hc_admision/fullcontrol/index', ['nombres' => $nombres, 'agendas_pac' => $pacientes, 'fecha' => $fecha, 'fecha_hasta' => $fecha_hasta, 'agendas_proc' => $agendas_proc, 'proc_consul' => $proc_consul, 'especialidades' => $especialidades, 'id_especialidad' => '0', 'doctores' => $doctores, 'id_doctor1' => $id_doctor1, 'seguros' => $seguros, 'id_seguro' => $id_seguro]);
-    }
-
-    public function imprimir_consentimiento(){
-      
-
-      $view =  \View::make('hc_admision.consentimientos.consentimiento_eda')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento Eda.pdf');
-    }
-
-    public function imprimir_consentimiento_colono(){
-
-      $view =  \View::make('hc_admision.consentimientos.consentimiento_colono')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento colono.pdf');
-    }
-    public function imprimir_consentimiento_cprm(){
-
-          $view =  \View::make('hc_admision.consentimientos.consentimiento_cprm')->render();
-          $pdf = \App::make('dompdf.wrapper');
-  
-          $pdf->loadHTML($view);
-          return $pdf->stream('Consentimiento cprm.pdf');
-      }
-      public function imprimir_consentimiento_eco(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_eco')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento eco.pdf');
-    }
-    public function imprimir_consentimiento_balon(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_balon')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento balon.pdf');
-    }
-    public function imprimir_consentimiento_balonretiro(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_balonretiro')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento balonretiro.pdf');
-    }
-    public function imprimir_consentimiento_poem(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_poem')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento poem.pdf');
-    }
-    public function imprimir_consentimiento_gastro(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_gastro')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento gastro.pdf');
-    }
-    public function imprimir_consentimiento_enteroscopia(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_enteroscopia')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento enteroscopia.pdf');
-    }
-    public function imprimir_consentimiento_enteroscopia_retrograda(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_enteroscopia_retrograda')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento enteroscopia_retrograda.pdf');
-    }
-    public function imprimir_consentimiento_anorectal(){
-
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_anorectal')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Consentimiento anorectal.pdf');
-    }
-    public function balon_colocacionv2(){
-
-        $view =  \View::make('hc_admision.consentimientos.balon-colocacion')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Balon colocacion.pdf');
-    }
-    public function balon_retirov2(){
-
-        $view =  \View::make('hc_admision.consentimientos.balon-retiro')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Balon retiro.pdf');
-    }
-    public function colonov2(){
-
-        $view =  \View::make('hc_admision.consentimientos.colono')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Colono colono.pdf');
-    }
-    public function cprev2(){
-
-        $view =  \View::make('hc_admision.consentimientos.cpre')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Cpre cpre.pdf');
-    }
-    public function anov2(){
-
-        $view =  \View::make('hc_admision.consentimientos.eco_anorectal')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Eco ano.pdf');
-    }
-    public function ecov2(){
-
-        $view =  \View::make('hc_admision.consentimientos.eco')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Eco eco.pdf');
-    }
-    public function edav2(){
-
-        $view =  \View::make('hc_admision.consentimientos.eda')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Eda eda.pdf');
-    }
-    public function enteroscopiav2(){
-
-        $view =  \View::make('hc_admision.consentimientos.enteroscopia')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Enterescopia enteroscopia.pdf');
-    }
-    public function enteroscopia_retrogadav2(){
-
-        $view =  \View::make('hc_admision.consentimientos.enterescopia_retrogada')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Enterescopia_retrogada enteroscopia_retrogada.pdf');
-    }
-    public function gastrostomiav2(){
-
-        $view =  \View::make('hc_admision.consentimientos.gastrostomia')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Gastrostomia gastrostomia.pdf');
-    }
-    public function cpmv2(){
-
-        $view =  \View::make('hc_admision.consentimientos.cpm')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Cpm cpm.pdf');
-    }
-    public function uso_imagen(){
-
-        $view =  \View::make('hc_admision.consentimientos.autorizacion')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Autorizacion  autorizacion_imagen.pdf');
-    }
-    public function manometria_ano_rectal(){
-
-        $view =  \View::make('hc_admision.consentimientos.manometria_ano_rectal')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Manometria_ano_rectal  manometria_ano_rectal_imagen.pdf');
-    }
-    public function anestesia(){
-
-        $view =  \View::make('hc_admision.consentimientos.anestesia')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Anestesia  anestesia.pdf');
-    }
-    public function manometria_esofagica(){
-
-        $view =  \View::make('hc_admision.consentimientos.anestesia')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('Manometria_esofagica  manometria_esofagica.pdf');
-    }
-    public function ph_esofagica(){
-        $view =  \View::make('hc_admision.consentimientos.ph_esofafica')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('ph_esofafica  ph_esofafica.pdf');
-    }
-    public function capsula_endoscopica(){
-        $view =  \View::make('hc_admision.consentimientos.capsula_endoscopica')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('capsula_endoscopica  capsula_endoscopica.pdf');
-    }
-    public function phmetria_cap(){
-        $view =  \View::make('hc_admision.consentimientos.phmetria_cap')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('phmetria_cap  phmetria_cap.pdf');
-    }
-    public function consentimiento_encuesta(){
-        $view =  \View::make('hc_admision.consentimientos.consentimiento_encuesta')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('consentimiento_encuesta  consentimiento_encuesta.pdf');
-
-    }
-    public function anexo_informativo(){
-        $view =  \View::make('hc_admision.consentimientos.anexo_informativo')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('anexo_informativo  anexo_informativo.pdf');
-
-    }
-    public function anexo_anastesico(){
-        $view =  \View::make('hc_admision.consentimientos.anexo_anastesico')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('anexo_anastesico  anexo_anastesico.pdf');
-
-    }
-    public function endoscopica_percutanea(){
-        $view =  \View::make('hc_admision.consentimientos.endoscopica_percutanea')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('endoscopica_percutanea  endoscopica_percutanea.pdf');
-
-    }
-    public function broncoscopia(){
-        $view =  \View::make('hc_admision.consentimientos.broncoscopia')->render();
-        $pdf = \App::make('dompdf.wrapper');
-
-        $pdf->loadHTML($view);
-        return $pdf->stream('broncoscopia  broncoscopia.pdf');
-
     }
 }
     

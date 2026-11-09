@@ -28,7 +28,7 @@ class TecnicasAnestesicasController extends Controller
      */
     private function rol(){
         $rolUsuario = Auth::user()->id_tipo_usuario;      
-        if(in_array($rolUsuario, array(1, 3, 4, 5, 6,11,7)) == false){
+        if(in_array($rolUsuario, array(1, 3, 4, 5, 6,11,7,20)) == false){
           return true;
         }
     }

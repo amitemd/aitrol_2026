@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 use Response;
 use Sis_medico\Agenda;
 use Sis_medico\Firma_Usuario;
@@ -24,27 +22,7 @@ use Sis_medico\Paciente_Alergia;
 use Sis_medico\Seguro;
 use Sis_medico\User;
 use Sis_medico\Principio_Activo;
-use Sis_medico\Nota_entrega;
-use Sis_medico\Nota_entrega_detalle;
-use Sis_medico\Log_nota_entrega;
-use Sis_medico\Planilla_Cabecera;
-use Sis_medico\Insumo_Plantilla_Control;
-use Sis_medico\Medicina_tarifario;
 use Sis_medico\Empresa;
-use Sis_medico\Nota_Entrega_Escaneados;
-use Sis_medico\Log_usuario;
-use Sis_medico\Especialidad;
-use Sis_medico\procedimiento_completo;
-use Sis_medico\Paciente_Biopsia;
-use Sis_medico\Hc4_Biopsias;
-use Sis_medico\Paciente_Observaciones;
-use Sis_medico\hc_procedimientos;
-use Sis_medico\Hc_Evolucion;
-use Sis_medico\Pentax;
-use Sis_medico\PentaxProc;
-use Sis_medico\hc_child_pugh;
-use Sis_medico\hc_imagenes_protocolo;
-use Cookie;
 
 class RecetaController extends Controller
 {
@@ -69,7 +47,7 @@ class RecetaController extends Controller
     private function rol()
     {
         $rolUsuario = Auth::user()->id_tipo_usuario;
-        if (in_array($rolUsuario, array(1, 3, 6, 11, 7, 5, 30, 11)) == false) {
+        if (in_array($rolUsuario, array(1, 3, 6, 11, 7, 20)) == false) {
             return true;
         }
     }
@@ -175,7 +153,7 @@ class RecetaController extends Controller
         $edad = Carbon::parse($paciente->fecha_nacimiento)->age; // 1990-10-25
         //return view('hc_admision/receta/menbretada', ['paciente' => $paciente,'edad' => $edad, 'historia' => $historia,  'receta' => $receta,]);
         $detalles  = hc_receta_detalle::where('id_hc_receta', $id)->get();
-        $medicinas = Medicina::all();
+        $medicinas = Medicina::where('estado', 1)->get();
         $cie10     = hc_cie10::where('hcid', $receta->id_hc)->get();
         $firma     = null;
         if (!is_null($receta) && is_null($firma)) {
@@ -186,22 +164,27 @@ class RecetaController extends Controller
             $id_doctor = $historia->hc_procedimientos->id_doctor_examinador;
             $firma     = Firma_Usuario::where('id_usuario', $id_doctor)->first();
         }
-        if (is_null($firma)) {
-            $firma = Firma_Usuario::where('id_usuario', $historia->id_doctor1)->first();
+        if(is_null($firma)){
+            $firma     = Firma_Usuario::where('id_usuario', $historia->id_doctor1)->first();    
+
         }
 
         if ($tipo == 2) {
-            if ($id == '29716') {
-                //dd($firma);
-            }
-
-            $view = \View::make('hc_admision.receta.menbretada', compact('receta', 'historia', 'paciente', 'edad', 'detalles', 'medicinas', 'cie10', 'firma', 'id_empresa', 'principioActivo', 'logo_emp'))->render();
+            // V3 y HC4 comparten el mismo membrete para que las recetas
+            // descargadas tengan encabezado, fondo y pie idénticos.
+            $prescriptionData = compact('receta', 'historia', 'paciente', 'edad', 'detalles', 'medicinas', 'cie10', 'firma', 'id_empresa', 'principioActivo', 'logo_emp');
+            $prescriptionData['_pdf_branding_company_id'] = $id_empresa;
         }
         if ($tipo == 1) {
             $view = \View::make('hc_admision.receta.sinmenbrete', compact('receta', 'historia', 'paciente', 'edad', 'detalles', 'firma', 'medicinas', 'cie10', 'id_empresa'))->render();
         }
         $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHTML($view)->setPaper('A4', 'landscape');
+        if ($tipo == 2) {
+            $pdf->loadView('hc_admision.receta.menbretadaor', $prescriptionData, array(), 'UTF-8');
+        } else {
+            $pdf->loadHTML($view);
+        }
+        $pdf->setPaper('a4', 'landscape');
 
         //return $pdf->download($historia->id_paciente.'_Receta_'.$id.'.pdf');
         $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
@@ -437,7 +420,7 @@ class RecetaController extends Controller
         }
 
         $detalles  = hc_receta_detalle::where('id_hc_receta', $receta)->get();
-        $medicinas = Medicina::all();
+        $medicinas = Medicina::where('estado', 1)->get();
 
         return view('hc_admision/receta/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje]);
     }
@@ -446,7 +429,7 @@ class RecetaController extends Controller
     {
 
         $detalles  = hc_receta_detalle::where('id_hc_receta', $receta)->get();
-        $medicinas = Medicina::all();
+        $medicinas = Medicina::where('estado', 1)->get();
         $mensaje   = null;
 
         return view('hc_admision/receta/detalle', ['detalles' => $detalles, 'medicinas' => $medicinas, 'receta' => $receta, 'mensaje' => $mensaje]);
@@ -463,8 +446,7 @@ class RecetaController extends Controller
         $detalle = hc_receta_detalle::find($id);
         if (!is_null($detalle)) {
 
-            $input = [
-                'cantidad' => $request->cantidad,
+            $input = ['cantidad' => $request->cantidad,
                 'dosis'              => $request->dosis,
                 'ip_modificacion'    => $ip_cliente,
                 'id_usuariomod'      => $idusuario,
@@ -502,19 +484,23 @@ class RecetaController extends Controller
     public function historial_recetas($id_paciente)
     {
 
+        $companyId = session('id_empresa');
         $paciente = Paciente::find($id_paciente);
+        if (!$paciente || !Agenda::where('id_paciente', $id_paciente)->where('id_empresa', $companyId)->exists()) {
+            abort(404, 'El paciente no tiene agendas en la empresa activa.');
+        }
         //dd($paciente);
 
         $hist_recetas = DB::table('hc_receta as r')
             ->join('historiaclinica as h', 'r.id_hc', 'h.hcid')
             ->where('h.id_paciente', $id_paciente)
-        //->whereNotNull('r.prescripcion')
-        //->whereNotNull('r.rp')
+            ->whereNotNull('r.prescripcion')
+            //->whereNotNull('r.rp')
             ->join('users as d', 'd.id', 'h.id_doctor1')
             ->join('agenda as a', 'a.id', 'h.id_agenda')
+            ->where('a.id_empresa', $companyId)
             ->join('seguros as s', 's.id', 'h.id_seguro')
-            //->orderBy('r.created_at', 'desc')
-            ->orderBy('h.fecha_atencion', 'desc')
+            ->orderBy('r.created_at', 'desc')
             ->select('r.*', 'a.fechaini', 's.nombre', 'h.id_doctor1', 'h.fecha_atencion', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'd.id as id_doctor')
             ->get();
 
@@ -605,7 +591,6 @@ class RecetaController extends Controller
         $paciente   = Paciente::find($id_paciente);
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
         $id_doctor  = '9666666666';
-        $empresa = Empresa::where('prioridad', 1)->first();
 
         $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
         //dd($especialidad);
@@ -636,7 +621,6 @@ class RecetaController extends Controller
             'id_doctor1'      => $id_doctor,
             'proc_consul'     => '4',
             'estado_cita'     => '4',
-            'id_empresa'      => $empresa->id,
             'espid'           => $espid,
             'observaciones'   => 'RECETA CREADA POR EL DOCTOR',
             'id_seguro'       => $paciente->id_seguro,
@@ -771,8 +755,10 @@ class RecetaController extends Controller
     //PERMITE ACTUALIZAR LA FECHA DE ATENCION Y EL NOMBRE DEL DOCTOR DE LA RECETA
     public function update_fech_doct(Request $request)
     {
-
+        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER["REMOTE_ADDR"];
         $hc_receta = hc_receta::find($request["id_receta"]);
+        $hclinica = Historiaclinica::where('hcid',$hc_receta->id_hc)->first();
 
         if (!is_null($request["fech_aten"])) {
 
@@ -796,682 +782,4 @@ class RecetaController extends Controller
 
     }
 
-    private static function generarNumero($id_empresa)
-    {
-        //dd($id_empresa);
-        $num = Nota_entrega::where('id_empresa', $id_empresa)->orderby('id', 'desc')->max('numero');
-        if ($num == '')
-            $num = '0000001';
-        else {
-            $num = $num + 1;
-            $num = str_pad($num, 7, 0, STR_PAD_LEFT);
-        }
-        return $num;
-    }
-    public function nota_entrega($id)
-    {
-        $idusuario  = Auth::user()->id;
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $receta = hc_receta::findorfail($id);
-        $hc = Historiaclinica::findorfail($receta->id_hc);
-        $agenda = Agenda::findOrFail($hc->id_agenda);
-        $empresa_prioridad = Empresa::where('prioridad', '1')->where('estado', 1)->first();
-        $plantilla_control = Insumo_Plantilla_Control::where('nombre', 'FARMACIA')->first();
-        $id_hc_procedimientos = hc_procedimientos::where('id_hc', $hc->hcid)->first()->id;
-
-
-        $detalle_receta = DB::table('hc_receta_detalle as rd')
-            ->join('medicina_tarifario as mt', 'mt.id_medicina', 'rd.id_medicina')
-            ->join('ap_procedimiento as ap', 'ap.id', 'mt.id_ap_procedimiento')
-            ->where('rd.id_hc_receta', $id)
-            ->select('rd.*', 'ap.valor', 'ap.descripcion as nombre_medicina')->get();
-
-
-        $empresa_agenda = $empresa_prioridad->id;
-        if(!is_null($agenda->id_empresa)){
-            $empresa_agenda = $agenda->id_empresa;
-        }else{
-            $fecha_receta = substr($receta->created_at, 0, 10);
-            $agenda_ultima_empresa = Agenda::where('estado', '1')->where('id_paciente', $agenda->id_paciente)->where('proc_consul', '1')->whereBetween('fechaini', [$fecha_receta.' 00:00:00', $fecha_receta.' 23:59:59'])->first();
-            //dd($agenda_ultima_empresa);
-            if(!is_null($agenda_ultima_empresa)){
-                if(!is_null($agenda_ultima_empresa->id_empresa)){
-                    $empresa_agenda = $agenda_ultima_empresa->id_empresa;
-                    $agenda->id_empresa = $empresa_agenda;
-                    $agenda->save();
-                }
-            }
-        }
-        $num_nota_entrega = RecetaController::generarNumero($empresa_agenda);
-        $nota_entrega_detalle = null;
-        $nota_entrega = Nota_entrega::where('id_hc_receta', $id)->where('id_empresa', $empresa_agenda)->where('estado', '<>', 0)->first();
-        if(!is_null($nota_entrega)){
-            $nota_entrega_detalle = Nota_entrega_detalle::where('id_nota_entrega', $nota_entrega->id)->where('estado', '<>', 0)->get();
-        }
-
-        if (is_null($nota_entrega) && is_null($nota_entrega_detalle)) {
-            if (!is_null($receta)) {
-                $planilla_cab_nota_entrega = [
-                    'fecha'                  => date('Y-m-d H:i:s'),
-                    'id_planilla'            => $plantilla_control->id,
-                    'id_agenda'              => $agenda->id,
-                    'id_hc_procedimiento'    => $id_hc_procedimientos,
-                    'observacion'            => 'Paciente: ' . $agenda->paciente->apellido1 . ' ' . $agenda->paciente->apellido2 . ' ' . $agenda->paciente->nombre1 . ' ' . $agenda->paciente->nombre2 . ' | ' . 'Nota_entrega: ' . $num_nota_entrega,
-                    'aprobado'               => 0,
-                    'nota_entrega'           => '1',
-                    'id_usuariomod'          => $idusuario,
-                    'id_usuariocrea'         => $idusuario,
-                    'ip_modificacion'        => $ip_cliente,
-                    'ip_creacion'            => $ip_cliente,
-                ];
-                $id_planilla_cabecera = Planilla_Cabecera::insertGetId($planilla_cab_nota_entrega);
-
-                $cab_nota_entrega = [
-                    'numero'               => $num_nota_entrega,
-                    'id_planilla_cabecera' => $id_planilla_cabecera,
-                    'id_hc'                => $receta->id_hc,
-                    'id_hc_receta'         => $receta->id,
-                    'id_empresa'           => $empresa_agenda,
-                    'estado'               => -1,
-                    'id_usuariomod'        => $idusuario,
-                    'id_usuariocrea'       => $idusuario,
-                    'ip_modificacion'      => $ip_cliente,
-                    'ip_creacion'          => $ip_cliente,
-                ];
-                $id_nota_entrega = Nota_entrega::insertGetId($cab_nota_entrega);
-                $log_nota_entrega = [
-                    'id_hc_receta' => $receta->id,
-                    'id_nota_entrega' => $id_nota_entrega,
-                    'descripcion' => "Creacion de Nota de entrega",
-                    'id_usuariomod' => $idusuario,
-                    'id_usuariocrea' => $idusuario,
-                    'ip_modificacion' => $ip_cliente,
-                    'ip_creacion' => $ip_cliente,           
-                    ];
-                Log_nota_entrega::create($log_nota_entrega);
-            }
-            if(!is_null($detalle_receta)){
-                foreach ($detalle_receta as $det) {
-                    $total = $det->cantidad * $det->valor;
-                    $det_nota_entrega = [
-                        'id_nota_entrega'   => $id_nota_entrega,
-                        'id_medicina'       => $det->id_medicina,
-                        'nombre_medicina'   => $det->nombre_medicina,
-                        'cantidad_receta'   => $det->cantidad,
-                        'cantidad'          => $det->cantidad,
-                        'precio'            => $det->valor,
-                        'subtotal_0'        => $total,
-                        'total'             => $total,
-                        'id_usuariomod'     => $idusuario,
-                        'id_usuariocrea'    => $idusuario,
-                        'ip_modificacion'   => $ip_cliente,
-                        'ip_creacion'       => $ip_cliente,
-                    ];
-                    Nota_entrega_detalle::create($det_nota_entrega);
-                }
-                $nota_entrega = Nota_entrega::where('id_hc_receta', $id)->where('id_empresa', $empresa_agenda)->where('estado', '<>', 0)->first();
-                //dd($nota_entrega);
-                $total = $nota_entrega->detalles->sum('total');
-                $subtotal_0 = $nota_entrega->detalles->sum('subtotal_0');
-                $subtotal_12 = $nota_entrega->detalles->sum('subtotal_12');
-                $arr_cabecera = [
-                    'total'                 => $total,
-                    'subtotal_0'            => $subtotal_0,
-                    'subtotal_12'           => $subtotal_12,
-                    'id_usuariomod'         => $idusuario,
-                    'ip_modificacion'       => $ip_cliente
-                ];
-                $nota_entrega->update($arr_cabecera);
-            }
-        } else {
-            $nota_entrega = Nota_entrega::where('id_hc_receta', $id)->where('id_empresa', $empresa_agenda)->where('estado', '<>', 0)->first();
-            if ($nota_entrega->estado_generado == '0' && $nota_entrega->estado == '-1') {
-                if (!is_null($nota_entrega_detalle)) {
-                    if (!is_null($detalle_receta)) {
-                        $input = Nota_entrega_detalle::where('id_nota_entrega', $nota_entrega->id)->where('estado', '<>', 0)->get();
-
-                        if (!is_null($input)) {
-                            foreach ($input as $val) {
-                                $val->delete();
-                            }
-                        }
-                        foreach ($detalle_receta as $det) {
-                            $total = $det->cantidad * $det->valor;
-                            $act_det_nota_entrega = [
-                                'id_nota_entrega'   => $nota_entrega->id,
-                                'id_medicina'       => $det->id_medicina,
-                                'nombre_medicina'   => $det->nombre_medicina,
-                                'cantidad_receta'   => $det->cantidad,
-                                'cantidad'          => $det->cantidad,
-                                'precio'            => $det->valor,
-                                'subtotal_0'        => $total,
-                                'total'             => $total,
-                                'id_usuariocrea'    => $idusuario,
-                                'id_usuariomod'     => $idusuario,
-                                'ip_modificacion'   => $ip_cliente,
-                            ];
-                            Nota_entrega_detalle::create($act_det_nota_entrega);
-                        }
-                        $nota_entrega = Nota_entrega::where('id_hc_receta', $id)->where('id_empresa', $empresa_agenda)->where('estado', '<>', 0)->first();
-                        $total = $nota_entrega->detalles->sum('total');
-                        $subtotal_0 = $nota_entrega->detalles->sum('subtotal_0');
-                        $subtotal_12 = $nota_entrega->detalles->sum('subtotal_12');
-                        $arr_cabecera = [
-                            'total'                 => $total,
-                            'subtotal_0'            => $subtotal_0,
-                            'subtotal_12'           => $subtotal_12,
-                            'id_usuariomod'         => $idusuario,
-                            'ip_modificacion'       => $ip_cliente
-                        ];
-                        $nota_entrega->update($arr_cabecera);
-
-                        $log_nota_entrega = [
-                            'id_hc_receta' => $receta->id,
-                            'id_nota_entrega' => $nota_entrega->id,
-                            'descripcion' => "Actualizacion de medicina de Nota de entrega",
-                            'id_usuariomod' => $idusuario,
-                            'id_usuariocrea' => $idusuario,
-                            'ip_modificacion' => $ip_cliente,
-                            'ip_creacion' => $ip_cliente,
-                        ];
-                        Log_nota_entrega::create($log_nota_entrega);
-                    }
-                }
-            }
-        }
-        return redirect()->route('nota_entrega.editar', ['id' => $id]);
-
-        // $nota_entrega = Nota_entrega::where('id_hc_receta', $id)->where('id_empresa', $empresa_agenda)->where('estado', 1)->first();
-        // if(!is_null($nota_entrega)){
-        //     $nota_entrega_detalle = Nota_entrega_detalle::where('id_nota_entrega', $nota_entrega->id)->where('estado', 1)->get();
-        // }
-        // $vistaurl = "hc_admision.receta.pdf_nota_entrega";
-        // $view     = \View::make($vistaurl, compact('nota_entrega', 'nota_entrega_detalle', 'hc', 'agenda'))->render();
-        // $pdf = \App::make('dompdf.wrapper');
-        // $pdf->loadHTML($view);
-        // $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
-        // $pdf->setPaper('A4', 'portraint');
-        // return $pdf->stream('Nota de Entrega - ' . $nota_entrega->id . '.pdf');
-    }
-
-    public static function busqueda_notas_entrega($request)
-    {
-        $notas_entrega = Nota_entrega::join('historiaclinica as hc', 'hc.hcid', 'nota_entrega.id_hc')
-            ->join('paciente as p', 'p.id', 'hc.id_paciente')
-            ->where('nota_entrega.estado', '<>', 0)
-            ->orderby('nota_entrega.id', 'desc')
-            ->select('nota_entrega.id', 'nota_entrega.id_empresa', 'nota_entrega.id_hc', 'p.nombre1', 'p.nombre2', 'p.apellido1', 'p.apellido2', 'nota_entrega.id_hc_receta', 'nota_entrega.numero', 'nota_entrega.created_at', 'nota_entrega.estado');
-
-        if (count($request->all()) > 0) {
-            if (!is_null($request->fecha) && !is_null($request->fecha_hasta)) {
-                $notas_entrega = $notas_entrega->whereBetween('nota_entrega.created_at', [$request->fecha . ' 00:00:00', $request->fecha_hasta . ' 23:59:00']);
-            }
-            if (!is_null($request->id)) {
-                $notas_entrega = $notas_entrega->where('nota_entrega.id', $request->id);
-            }
-            if(!is_null($request->secuencia)){
-                $notas_entrega = $notas_entrega->where('nota_entrega.numero', 'like', '%' . $request->secuencia . '%');
-            }
-            if(!is_null($request->id_empresa)){
-                $notas_entrega = $notas_entrega->where('nota_entrega.id_empresa', $request->id_empresa);
-            }
-            if (!is_null($request->cedula)) {
-                $notas_entrega = $notas_entrega->where('p.id',$request->cedula);
-            }
-            if (!is_null($request->paciente)) {
-                $paciente = $request->paciente;
-                $notas_entrega = $notas_entrega->where(function ($jq1) use ($paciente) {
-                    $jq1->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', ['%' . $paciente . '%'])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', ['%' . $paciente . '%'])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', ['%' . $paciente . '%'])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', ['%' . $paciente . '%']);
-                });
-            }
-        }else{
-            $notas_entrega = $notas_entrega->whereBetween('nota_entrega.created_at', [date('Y-m-d') . ' 00:00:00', date('Y-m-d') . ' 23:59:00']);
-        }
-        //dd($notas_entrega->toSql());
-        return $notas_entrega;
-    }
-
-    public function index_nota_entrega(Request $request) 
-    {
-        $paciente    = $request['paciente'];
-        $id          = $request['id'];
-        $cedula      = $request['cedula'];
-        $secuencia   = $request['secuencia'];
-        $id_empresa  = $request['id_empresa'];
-        $fecha = $request['fecha'];
-        if (is_null($fecha)) {
-            $fecha = date('Y-m-d');
-        }
-        $fecha_hasta = $request['fecha_hasta'];
-        if (is_null($fecha_hasta)) {
-            $fecha_hasta = date('Y-m-d');
-        }
-        $notas_entrega = $this->busqueda_notas_entrega($request)->paginate(20);
-
-        return view('hc_admision.nota_de_entrega.index', ['id_empresa' => $id_empresa, 'notas_entrega' => $notas_entrega, 'paciente' => $paciente, 'id' => $id, 'cedula' => $cedula, 'secuencia' => $secuencia, 'fecha' => $fecha, 'fecha_hasta' => $fecha_hasta,]);
-    }
-
-    public function sube_archivo_nota_entrega($id_receta, $id_nota)
-    {
-        return view('hc_admision/nota_de_entrega/sube_archivo_nota_entrega', ['id_receta' => $id_receta, 'id_nota' => $id_nota,]);
-    }
-
-    public function update_nota_entrega(Request $request)
-    {
-        $ip_cliente        = $_SERVER["REMOTE_ADDR"];
-        $idusuario         = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-        $nota_entrega = Nota_entrega::find($request['id_nota']);
-        //dd($nota_entrega);
-        $extension       = $request['archivo']->getClientOriginalExtension();
-        $nuevo_nombre    =  'nota_entrega_'.$nota_entrega->numero. "_" . date('YmdHis') . "." . $extension;
-        $nuevo = Storage::disk('notas_entrega')->put($nuevo_nombre, \File::get($request['archivo']));
-        $notas_escaneadas = Nota_Entrega_Escaneados::where('id_nota_entrega', $request['id_nota'])->where('estado', '1')->first();
-        if (is_null($notas_escaneadas)) {
-            Nota_Entrega_Escaneados::create([
-                'id_nota_entrega'  => $request['id_nota'],
-                'id_hc_receta'     => $request['id_receta'],
-                'archivo'          => $nuevo_nombre,
-                'ip_creacion'      => $ip_cliente,
-                'ip_modificacion'  => $ip_cliente,
-                'id_usuariomod'    => $idusuario,
-                'id_usuariocrea'   => $idusuario,
-            ]);
-        } else {
-            $notas_escaneadas->update([
-                'archivo'          => $nuevo_nombre,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-            ]);
-        }
-
-        $arr_log_nota = [
-            'id_hc_receta'      => $request['id_receta'],
-            'id_nota_entrega'   => $request['id_nota'],
-            'descripcion'       => 'Subio documento',
-            'id_usuariocrea'    => $idusuario,
-            'id_usuariomod'     => $idusuario,
-            'ip_creacion'       => $ip_cliente,
-            'ip_modificacion'   => $ip_cliente,
-        ];
-        Log_nota_entrega::create($arr_log_nota);
-        return "ok";
-    }
-    public function visualizar_nota_entrega_pdf(Request $request)
-    {
-       $nombreArchivo = Nota_Entrega_Escaneados::where('id_nota_entrega', $request['id'])->first();
-       $path1 = storage_path() . "/app/notas_entrega/" . $nombreArchivo->archivo;
-       return response()->file($path1);
-    }
-
-    public function index_generar_nota_entrega(Request $request)
-    {
-        //return $request->all();
-        ini_set('max_execution_time', 300);
-        $rolUsuario = Auth::user()->id_tipo_usuario;  
-        if($this->rol()){
-            return response()->view('errors.404');
-        }
-        $nomb_proc = null;
-        $id_seguro = $request->id_seguro;
-        $espid = $request->espid;
-        $proc_consul = $request->proc_consul;
-        $id_especialidad = $request->id_especialidad;
-        $id_doctor1 = $request->id_doctor1;
-        $nombres = $request['nombres'];
-        $fecha = $request['fecha'];
-        $fecha_hasta = $request['fecha_hasta'];
-
-        $doctores = User::where('id_tipo_usuario', '3')->Orderby('apellido1', 'asc')->get();
-
-        $agendas = [];
-        $consultas = []; 
-        if($fecha==null && $nombres==null){
-            $fecha = Date('Y-m-d');
-            if($rolUsuario == '11'){
-                $fecha = Date('Y-m-d', strtotime("-2 months"));
-            }
-        } 
-        if($proc_consul==null && $rolUsuario == '11'){
-            $proc_consul = '1';
-        }
-        if($fecha_hasta==null){
-            $fecha_hasta = Date('Y-m-d');
-        } 
-        if($proc_consul==null){
-            $proc_consul = '2';
-        }
-        $nombres_sql='';
-        $agendas_pac = [];
-        $pacientes1 = DB::table('agenda as a')->where('a.estado',1)
-            //->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59'])
-            ->join('paciente as p','p.id','a.id_paciente')
-            ->join('users as d','d.id','a.id_doctor1')
-            ->leftjoin('empresa as em','em.id','a.id_empresa')
-            ->join('seguros as se','se.id','a.id_seguro')
-            ->leftjoin('historiaclinica as h','h.id_agenda','a.id')
-            ->leftjoin('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
-            ->whereNull('h.hcid')
-            ->where('a.id_doctor1','<>','4444444444')
-            ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.id')
-            ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'a.id_doctor1 as doctor', 'a.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
-        if($fecha != null){
-            $pacientes1 = $pacientes1->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59']);
-        }    
-        $pacientes2 = DB::table('agenda as a')->where('a.estado',1)
-            //->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59'])
-            ->join('paciente as p','p.id','a.id_paciente')
-            ->join('users as d','d.id','a.id_doctor1')
-            ->leftjoin('empresa as em','em.id','a.id_empresa')
-            ->join('seguros as se','se.id','a.id_seguro')
-            ->join('historiaclinica as h','h.id_agenda','a.id')
-            ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
-            ->where('a.proc_consul', '0')
-            ->where('a.id_doctor1','<>','4444444444')
-            ->whereNull('hc_pro.id_doctor_examinador')
-            ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.id')
-            ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
-        if($fecha != null){
-                $pacientes2 = $pacientes2->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59']);
-        }           
-        $pacientes2_0 = DB::table('agenda as a')->where('a.estado',1)
-            //->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59'])
-            ->join('paciente as p','p.id','a.id_paciente')
-            ->join('users as d','d.id','a.id_doctor1')
-            ->leftjoin('empresa as em','em.id','a.id_empresa')
-            ->join('seguros as se','se.id','a.id_seguro')
-            ->join('historiaclinica as h','h.id_agenda','a.id')
-            ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
-            ->where('a.proc_consul', '0')
-            ->where('a.id_doctor1','<>','4444444444')
-            ->whereNotNull('hc_pro.id_doctor_examinador')
-            ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.id')
-            ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');            
-        if($fecha != null){
-                $pacientes2_0 = $pacientes2_0->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59']);
-        }    
-        $pacientes3 = DB::table('agenda as a')->where('a.estado',1)
-            //->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59'])
-            ->join('paciente as p','p.id','a.id_paciente')
-            ->join('users as d','d.id','a.id_doctor1')
-            ->leftjoin('empresa as em','em.id','a.id_empresa')
-            ->join('seguros as se','se.id','a.id_seguro')
-            ->join('historiaclinica as h','h.id_agenda','a.id')
-            ->where('a.proc_consul', '1')
-            ->where('a.id_doctor1','<>','4444444444')
-            ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.id')
-            ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'h.id_doctor1 as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
-        if($fecha != null){
-                if(Auth::user()->id_tipo_usuario == '1' ){                  
-                    //dd($pacientes3->where('p.id','0955695630')->get());
-                } 
-                $pacientes3 = $pacientes3->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59']);
-        }            
-        $pacientes4 = DB::table('agenda as a')->where('a.estado',4)
-            //->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59'])
-            ->join('paciente as p','p.id','a.id_paciente')
-            ->join('users as d','d.id','a.id_doctor1')
-            ->leftjoin('empresa as em','em.id','a.id_empresa')
-            ->join('seguros as se','se.id','a.id_seguro')
-            ->join('historiaclinica as h','h.id_agenda','a.id')
-            ->join('hc_procedimientos as hc_pro', 'hc_pro.id_hc', 'h.hcid')
-            ->where('a.proc_consul', '4')
-            ->where('a.id_doctor1','<>','4444444444')
-            ->groupBy('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.id')
-            ->select('p.id','p.nombre1','p.nombre2','p.apellido1','p.apellido2','p.fecha_nacimiento','a.fechaini','a.fechafin','d.nombre1 as dnombre1','d.apellido1 as dapellido1','a.proc_consul','a.id as id_agenda', 'a.cortesia','se.nombre','em.nombre_corto','h.hcid', 'a.estado_cita', 'hc_pro.id_doctor_examinador as doctor', 'h.id_seguro as seguro_nom', 'a.observaciones', 'a.id_procedimiento','a.omni');
-        if($fecha != null){
-                $pacientes4 = $pacientes4->whereBetween('fechaini',[$fecha.' 00:00', $fecha_hasta.' 23:59']);
-        }        
-        if($proc_consul != 2){
-            if($proc_consul == 3){
-                $pacientes1 = $pacientes1->where('a.omni', 'OM');
-                $pacientes2 = $pacientes2->where('a.omni', 'OM');
-                $pacientes2_0 = $pacientes2_0->where('a.omni', 'OM');
-                $pacientes3 = $pacientes3->where('a.omni', 'OM');
-                $pacientes4 = $pacientes4->where('a.omni', 'OM');
-            }elseif ($proc_consul == 4) {
-                $pacientes1 = $pacientes1->where('a.omni', 'SI');
-                $pacientes2 = $pacientes2->where('a.omni', 'SI');
-                $pacientes2_0 = $pacientes2_0->where('a.omni', 'SI');
-                $pacientes3 = $pacientes3->where('a.omni', 'SI');
-                $pacientes4 = $pacientes4->where('a.omni', 'SI');
-            } else {
-                $pacientes1 = $pacientes1->where('a.proc_consul', $proc_consul);
-                $pacientes2 = $pacientes2->where('a.proc_consul', $proc_consul);
-                $pacientes2_0 = $pacientes2_0->where('a.proc_consul', $proc_consul);
-                $pacientes3 = $pacientes3->where('a.proc_consul', $proc_consul);
-                $pacientes4 = $pacientes4->where('a.proc_consul', $proc_consul);
-            }
-        }
-        if(!is_null($id_doctor1)){
-            $pacientes1 = $pacientes1->where('a.id_doctor1', $id_doctor1);
-            $pacientes2 = $pacientes2->where('h.id_doctor1', $id_doctor1);
-            $pacientes2_0 = $pacientes2_0->where('hc_pro.id_doctor_examinador', $id_doctor1);
-            $pacientes3 = $pacientes3->where('h.id_doctor1', $id_doctor1);
-            $pacientes4 = $pacientes4->where('hc_pro.id_doctor_examinador', $id_doctor1);
-        }
-        if(!is_null($id_seguro)){
-            $pacientes1 = $pacientes1->where('a.id_seguro', $id_seguro);
-            $pacientes2 = $pacientes2->where('h.id_seguro', $id_seguro);
-            $pacientes2_0 = $pacientes2_0->where('h.id_seguro', $id_seguro);
-            $pacientes3 = $pacientes3->where('h.id_seguro', $id_seguro);
-            $pacientes4 = $pacientes4->where('h.id_seguro', $id_seguro);
-        }
-        if(!is_null($espid)){
-            $pacientes1 = $pacientes1->where('a.espid', $espid);
-            $pacientes2 = $pacientes2->where('a.espid', $espid);
-            $pacientes2_0 = $pacientes2_0->where('a.espid', $espid);
-            $pacientes3 = $pacientes3->where('a.espid', $espid);
-            $pacientes4 = $pacientes4->where('a.espid', $espid);
-        }
-
-        if ($nombres != null) {
-            $nombres2 = explode(" ", $nombres);
-            $cantidad = count($nombres2);
-            foreach($nombres2 as $n){
-                $nombres_sql = $nombres_sql.'%'.$n;
-            }
-            $nombres_sql = $nombres_sql . '%';
-
-            if ($cantidad > '1') {
-                $pacientes1 = $pacientes1->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes2 = $pacientes2->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes2_0 = $pacientes2_0->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes3 = $pacientes3->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes4 = $pacientes4->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1) LIKE ?', [$nombres_sql]);
-                });
-            } else {
-                $pacientes1 = $pacientes1->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes2 = $pacientes2->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes2_0 = $pacientes2_0->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes3 = $pacientes3->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
-                });
-                $pacientes4 = $pacientes4->where(function ($jq1) use ($nombres_sql) {
-                    $jq1->orwhereraw('CONCAT(p.apellido1," ",p.apellido2," ",p.nombre1," ",p.nombre2) LIKE ?', [$nombres_sql])
-                        ->orwhereraw('CONCAT(p.nombre1," ",p.nombre2," ",p.apellido1," ",p.apellido2) LIKE ?', [$nombres_sql]);
-                });
-            }
-        }
-
-        $pacientes1 = $pacientes1->union($pacientes2)->union($pacientes2_0)->union($pacientes3)->union($pacientes4);
-        $pacientes1 = $pacientes1->limit('300')->get();
-        $pacientes = $pacientes1;
-        $agendas_proc=null;
-        foreach($pacientes as $pac){
-            if($pac->proc_consul=='1'){
-                $pentax = Pentax::where('id_agenda',$pac->id_agenda)->first();
-                if(!is_null($pentax)){
-                    $txt_px='';
-                    foreach ($pentax->procedimientos as $p) {
-                        if($txt_px==''){
-                            $txt_px=$p->procedimiento->nombre;
-                        }else{
-                            $txt_px = $txt_px.'+'.$p->procedimiento->nombre;
-                        }
-                    }
-                    $agendas_proc[$pac->id_agenda] = [$txt_px];        
-                }
-            }
-        }
-        Cookie::queue('ruta', 'historia', '1000');
-
-        return view('hc_admision/nota_de_entrega/index_generar_nota_entrega', ['nombres' => $nombres, 'agendas_pac' => $pacientes, 'fecha' => $fecha, 'fecha_hasta' => $fecha_hasta, 'agendas_proc' => $agendas_proc, 'proc_consul' => $proc_consul, 'doctores' => $doctores, 'id_doctor1' => $id_doctor1, 'id_seguro' => $id_seguro]);
-    }
-    public function detalle_receta_nota_entrega($id)
-    {
-        if ($this->rol()) {
-            return response()->view('errors.404');
-        }
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-
-        $agenda = DB::table('agenda')
-            ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
-            ->join('seguros', 'paciente.id_seguro', '=', 'seguros.id')
-            ->join('users as uc', 'uc.id', 'agenda.id_usuariocrea')
-            ->join('users as um', 'um.id', 'agenda.id_usuariomod')
-            ->leftjoin('historiaclinica as h', 'h.id_agenda', 'agenda.id')
-            ->leftjoin('seguros as hs', 'hs.id', 'h.id_seguro')
-            ->leftjoin('sala', 'agenda.id_sala', 'sala.id')
-            ->leftjoin('hospital', 'sala.id_hospital', 'hospital.id')
-            ->leftjoin('users as ud', 'ud.id', 'agenda.id_doctor1')
-            ->leftjoin('especialidad', 'especialidad.id', 'agenda.espid')
-            ->leftjoin('empresa', 'empresa.id', 'agenda.id_empresa')
-            ->leftjoin('procedimiento', 'procedimiento.id', 'agenda.id_procedimiento')
-            ->select('agenda.*')
-            ->where('agenda.id', '=', $id)
-            ->first();
-
-        $hist_recetas = DB::table('hc_receta as r')
-            ->join('historiaclinica as h', 'r.id_hc', 'h.hcid')
-            ->where('h.id_paciente', $agenda->id_paciente)
-            ->join('users as d', 'd.id', 'h.id_doctor1')
-            ->join('agenda as a', 'a.id', 'h.id_agenda')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            //->orderBy('r.created_at', 'desc')
-            ->orderBy('a.fechaini', 'desc')
-            ->select('r.*', 'a.fechaini', 's.nombre', 'h.id_doctor1', 'h.fecha_atencion', 'd.nombre1 as dnombre1', 'd.apellido1 as dapellido1', 'd.id as id_doctor')
-            ->get();
-
-        return view('hc_admision/nota_de_entrega/historial_recetas', ['agenda' => $agenda, 'hist_recetas' => $hist_recetas]);
-    }
-
-
-
-    public function excel_nota_entrega(Request $request)
-    {
-        //dd($request->all());
-        $notas_entrega = $this->busqueda_notas_entrega($request)->get();
-        //dd($notas_entrega);
-        $detalles_nota = [];
-        $i= 0;
-        foreach ($notas_entrega as $nota) {
-            // dd($nota);
-            
-            $detalles = Nota_entrega_detalle::where('id_nota_entrega', $nota->id)->get();
-
-            foreach ($detalles as $detalle) {
-                // dd($detalles);
-                $detalles_nota[$i]=$detalle;
-                $i++;
-            }
-            
-            
-            
-        }
-        // dd($i,$detalles_nota);
-        // dd($detalles_nota,$notas_entrega);
-
-        $titulos = array("FECHA", "CEDULA", "PACIENTE", "NUMERO", "EMPRESA", "NOMBRE MEDICINA", "CANTIDAD", "PRECIO", "TOTAL");
-        $posicion = array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W");
-
-
-        Excel::create('Nota_Entrega', function ($excel) use ($titulos, $posicion, $notas_entrega,$detalles_nota) {
-            $excel->sheet('Nota_Entrega', function ($sheet) use ($titulos, $posicion, $notas_entrega,$detalles_nota) {
-                
-                $comienzo = 1;
-                for ($i = 0; $i < count($titulos); $i++) {
-                    $sheet->cell('' . $posicion[$i] . '' . $comienzo, function ($cell) use ($titulos, $i) {
-                        $cell->setValue($titulos[$i]);
-                        $cell->setFontWeight('bold');
-                        $cell->setAlignment('center');
-                        $cell->setBackground('#92CFEF');
-                        $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    });
-                }
-
-                $comienzo++;
-
-                $total = 0;
-                foreach ($detalles_nota as $detalle) {
-
-                    //dd($detalle);
-
-                    //$detalles = Nota_entrega_detalle::where('estado', 1)->where('id_nota_entrega', $detalle->id)->get();
-                    $nota = Nota_entrega::find($detalle->id_nota_entrega);
-
-                    // dd($nota);
-                    // if(count($detalles)>0){
-                    //     dd($detalles);
-                    // }
-                    $datos_excel = [];
-                    
-                    $fecha_formateada = date('Y-m-d', strtotime($nota->created_at));
-                    $nombre_paciente = $nota->historia->paciente->apellido1 . " " . $nota->historia->paciente->apellido2 . " " . $nota->historia->paciente->nombre1 . " " . $nota->historia->paciente->nombre2;
-                    $total = $detalle->cantidad * $detalle->precio;
-                  
-                    $datos_excel = [$fecha_formateada,$nota->historia->paciente->id,$nombre_paciente,$nota->numero,$nota->empresa->nombrecomercial,$detalle->nombre_medicina,$detalle->cantidad,$detalle->precio,$total];
-                    
-                    for ($i = 0; $i < count($datos_excel); $i++) {
-                        $sheet->cell('' . $posicion[$i] . '' . $comienzo, function ($cell) use ($datos_excel, $i) {
-                            $cell->setValue($datos_excel[$i]);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                            $cell->setAlignment('center');
-                        });                        
-                    }
-                    $comienzo++;                    
-                }
-               
-            });
-        })->export('xlsx');
-    }
 }

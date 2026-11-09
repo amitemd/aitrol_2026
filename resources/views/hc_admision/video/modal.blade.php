@@ -1,22 +1,15 @@
 @php
-    $explotar = explode( '.', $imagen->nombre);
-    $extension = end($explotar);
+    $extension = strtolower(pathinfo((string) $imagen->nombre, PATHINFO_EXTENSION));
 @endphp
-@if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
-    @php
-        $variable = explode('/' , asset('/hc_ima/'));
-        $d1 = $variable[3];
-        //$d2 = $variable[4];
-        //$d3 = $variable[5];
-        $variable =  env('APP_URL').'/'.$d1.'/'.$imagen->nombre;
-    @endphp
+@if(in_array($extension, array('jpg', 'jpeg', 'png', 'bmp', 'jpe', 'jfif', 'tiff', 'tif')))
+    @php $urlImagen = asset('hc_ima/'.$imagen->nombre); @endphp
     <div class="row" id="imagen_solita">
         <div class="col-md-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
             <!--img id="imafoto" src="http://186.68.76.210:86/sis_medico_prb/storage/app/hc_ima/{{$imagen->nombre}}" alt="Imagen Ingresada" style="max-width: 900px;"-->
-            <img id="imafoto" src="{{asset('hc_ima/'.$imagen->nombre)}}" alt="Imagen Ingresada" style="max-width: 900px;">
+            <img id="imafoto" src="{{ $urlImagen }}" data-big="{{ $urlImagen }}" alt="Imagen Ingresada" style="display:block; max-width:100%; height:auto; margin:0 auto; cursor:zoom-in;">
             <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar foto </a>
+                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">@lang('laboratorio.eliminarFoto') </a>
             </div>
         </div>
     </div>
@@ -41,7 +34,7 @@
             });
     </script>
 
-@elseif(($extension == 'mp4'))
+@elseif(($extension == 'mp4') || ($extension == 'webm'))
 
     <div class="row">
         <div class="col-md-12">
@@ -50,31 +43,24 @@
         <div class="col-md-12">
             <div class="col-md-12">
                 <video controls style="width: 100%;">
-                  <source src="{{asset('/')}}uploads/{{$imagen->nombre}}" type="video/mp4" >
-                  Tu navegador no implementa el elemento <code>video</code>.
+                  <source src="{{asset('/')}}uploads/{{$imagen->nombre}}" type="video/{{$extension}}" >
+                  @lang('laboratorio.tunavnoimplentaelelemento') <code>@lang('laboratorio.video')</code>.
                 </video>
             </div>
             <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar Archivo</a>
+                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">@lang('laboratorio.eliminarArchivo')</a>
             </div>
         </div>
     </div>
-@elseif(($extension == 'pdf') || ($extension == 'PDF'))
-    @php
-        $variable = explode('/' , asset('/hc_ima/'));
-        $d1 = $variable[3];
-        //$d2 = $variable[4];
-        //$d3 = $variable[5];
-        $variable =  env('APP_URL').'/'.$d1.'/'.$imagen->nombre;
-    @endphp
+@elseif($extension == 'pdf')
     <div class="row" >
         <div class="col-md-12">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
         </div>
         <div class="col-md-12">
-            <embed id="miIFrame" src="{{URL::to('/')}}/../storage/app/hc_ima/{{$imagen->nombre}}" width="100%" type='application/pdf'>
+            <embed id="miIFrame" src="{{ asset('hc_ima/'.$imagen->nombre) }}" width="100%" type='application/pdf'>
             <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar Archivo</a>
+                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">@lang('laboratorio.eliminarArchivo')</a>
             </div>
         </div>
     </div>
@@ -100,21 +86,15 @@
             });
         </script>
 @else
-    @php
-        $variable = explode('/' , asset('/hc_ima/'));
-        $d1 = $variable[3];
-        //$d2 = $variable[4];
-        //$d3 = $variable[5];
-        $ruta = "http://ieced.siaam.ec/".$d1."/storage/app/hc_ima/".$imagen->nombre;
-    @endphp
+    @php $ruta = asset('hc_ima/'.$imagen->nombre); @endphp
     <div class="container-fluid" >
         <div class="row">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color:red; font-size: 50px; font-weight: bolder;">×</span></button>
             <br>
             <hr>
-            <iframe id='miIFrame'  src="https://view.officeapps.live.com/op/view.aspx?src={{$ruta}}" width="100%" style="border: none;"></iframe>
+            <iframe id='miIFrame' src="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode($ruta) }}" width="100%" style="border: none;"></iframe>
             <div class="col-md-3 col-md-offset-8" style="margin:20px 0;">
-                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">Eliminar Archivo</a>
+                <a class="btn btn-primary" onclick="eliminar('{{$imagen->id}}');">@lang('laboratorio.eliminarArchivo')</a>
             </div>
         </div>
     </div>
@@ -148,16 +128,23 @@
         $(this).removeData('bs.modal');
     });
     function eliminar(id){
-        var opcion = confirm("¿Estas Seguro que deseas eliminar la foto?");
+        var opcion = confirm(`{{trans('admision.estaseguroeleliminarfoto')}}`);
         if (opcion == true) {
             $.ajax({
-                type: 'get',
+                type: 'DELETE',
                 url:'{{ url("historiaclinica/video/eliminar_foto")}}/'+id,
-                headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
+                headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
                 success: function(data){
-                    //console.log(data);
                     alert(data);
-                    location.reload();
+                    $('#foto').modal('hide');
+                    if (typeof window.odontologiaCapturaRecargar === 'function') {
+                        window.odontologiaCapturaRecargar();
+                    } else {
+                        location.reload();
+                    }
+                },
+                error: function(){
+                    alert('No se pudo eliminar el archivo.');
                 }
             })
         }

@@ -5,7 +5,7 @@
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
-    <form action="{{ route('hospital.costo_alojamiento')}}" method="post">
+    <div>
         <div class="modal-body">
             {{ csrf_field() }}
             <div class="form-group row">
@@ -40,7 +40,7 @@
             </table>
         </div>
         <div class="modal-footer">
-            <button type="submit" class="btn btn-secondary" data-dismiss="modal">{{trans('hospitalizacion.Cerrar')}}</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{trans('hospitalizacion.Cerrar')}}</button>
         </div>
-    </form>
+    </div>
 </div>

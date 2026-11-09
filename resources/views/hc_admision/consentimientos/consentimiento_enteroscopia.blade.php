@@ -130,8 +130,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
                 <td style="font-weight: bold;">13. Gráfico de la exploración endoscópica </td>
             </tr>
             <tr>
-                <td><img style="width: 150px;height:150px;margin:15px" src="{{public_path('/imagenes/enteroscopia1.jpg')}}">
-                    <img style="width: 150px;height:150px;margin:15px" src="{{public_path('/imagenes/enteroscopia2.jpg')}}"></td>
+                <td><img style="width: 150px;height:150px;margin:15px" src="{{base_path('public/imagenes/enteroscopia1.jpg')}}">
+                    <img style="width: 150px;height:150px;margin:15px" src="{{base_path('public/imagenes/enteroscopia2.jpg')}}"></td>
             </tr>
             <tr>
                 <td style="font-weight: bold;">14. DURACIÓN ESTIMADA DE LA EXPLORACIÓN:</td>

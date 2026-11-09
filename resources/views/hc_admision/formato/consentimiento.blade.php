@@ -1,53 +1,50 @@
-@php
-  $id_empresa  = \Session::get('id_empresa');
-  $empresa  =  \Sis_medico\Empresa::find($id_empresa);
-@endphp
+
 <html>
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
- 
+
  /* Font Definitions */
  @font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
+  {font-family:"Cambria Math";
+  panose-1:2 4 5 3 5 4 6 3 2 4;}
 @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
+  {font-family:Calibri;
+  panose-1:2 15 5 2 2 2 4 3 2 4;}
 @font-face
-	{font-family:Harrington;
-	panose-1:4 4 5 5 5 10 2 2 7 2;}
+  {font-family:Harrington;
+  panose-1:4 4 5 5 5 10 2 2 7 2;}
  /* Style Definitions */
  p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin-top:0cm;
-	margin-right:0cm;
-	margin-bottom:10.0pt;
-	margin-left:0cm;
-	line-height:115%;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
+  {margin-top:0cm;
+  margin-right:0cm;
+  margin-bottom:10.0pt;
+  margin-left:0cm;
+  line-height:115%;
+  font-size:11.0pt;
+  font-family:"Calibri",sans-serif;}
 p.MsoNoSpacing, li.MsoNoSpacing, div.MsoNoSpacing
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:9.0pt;
-	font-family:"Calibri",sans-serif;}
+  {margin:0cm;
+  margin-bottom:.0001pt;
+  font-size:9.0pt;
+  font-family:"Calibri",sans-serif;}
 span.apple-converted-space
-	{mso-style-name:apple-converted-space;}
+  {mso-style-name:apple-converted-space;}
 .MsoChpDefault
-	{font-size:10.0pt;
-	font-family:"Calibri",sans-serif;}
+  {font-size:10.0pt;
+  font-family:"Calibri",sans-serif;}
 @page WordSection1
-	{size:595.3pt 841.9pt;
-	margin:42.55pt 49.55pt 7.1pt 70.9pt;}
+  {size:595.3pt 841.9pt;
+  margin:42.55pt 49.55pt 7.1pt 70.9pt;}
 div.WordSection1
-	{page:WordSection1;}
+  {page:WordSection1;}
  /* List Definitions */
  ol
-	{margin-bottom:0cm;}
+  {margin-bottom:0cm;}
 ul
-	{margin-bottom:0cm;}
+  {margin-bottom:0cm;}
 
 </style>
 
@@ -57,10 +54,11 @@ ul
 </head>
 
 <body lang=ES-EC style="margin-top: -10px;">
-	<input type="hidden" name="fecha_nacimiento" id="fecha_nacimiento" value="{{$data->fecha_nacimiento}}">
+  <input type="hidden" name="fecha_nacimiento" id="fecha_nacimiento" value="{{$data->fecha_nacimiento}}">
 
 <div class=WordSection1 >
 
+@if($data->id_seguro!='5')
 @if(!is_null($empresa))
   @if(!is_null($empresa->logo_form))
 <p class=MsoNoSpacing align=center style='text-align:center'><span
@@ -70,6 +68,7 @@ height=46
 src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"
 alt=""></span></span></p>
   @endif
+@endif
 @endif
 
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:3.0pt'>&nbsp;</span></b></p>
@@ -82,18 +81,9 @@ style='font-size:11.0pt'>{{$empresa->nombre_form}}</span></b></p>
 @endif
 
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:3.0pt'>&nbsp;</span></b></p>
-@if($empresa->id == '1793135579001' && $data->id_seguro == 3)  
-<p class=MsoNoSpacing><span lang=ES>{{ucfirst(strtolower($empresa->ciudad))}}, ____________________ </span></p>
-@else
-  @if($data->id_seguro != 6)
-  <p class=MsoNoSpacing><span lang=ES>{{ucfirst(strtolower($empresa->ciudad))}}, ______ de <?php $mes = substr($date, 5, 2); if($mes == 01){ echo "Enero";} if($mes == 02){ echo "Febrero";} if($mes == 03){ echo "Marzo";} if($mes == 04){ echo "Abril";} if($mes == 05){ echo "Mayo";} if($mes == 06){ echo "Junio";} if($mes == 07){ echo "Julio";} if($mes == '08'){ echo "Agosto";}  if($mes == '09'){ echo "Septiembre";} if($mes == '10'){ echo "Octubre";} if($mes == '11'){ echo "Noviembre";} if($mes == '12'){ echo "Diciembre";} ?> del {{substr($date, 0, 4)}}</span></p>
-  @else
-  @php
-      $fecha_ini = date("d/m/Y", strtotime(substr($data->fechaini, 0, 10)));
-  @endphp
-  <p class=MsoNoSpacing><span lang=ES>{{ucfirst(strtolower($empresa->ciudad))}}, @if($data->tipo=='0') @if(strtoupper($data->nombre) == 'ISSPOL') ______ @else ______ @endif @else {{substr($date,8,2)}} @endif de <?php $mes = substr($date, 5, 2); if($mes == 01){ echo "Enero";} if($mes == 02){ echo "Febrero";} if($mes == 03){ echo "Marzo";} if($mes == 04){ echo "Abril";} if($mes == 05){ echo "Mayo";} if($mes == 06){ echo "Junio";} if($mes == 07){ echo "Julio";} if($mes == '08'){ echo "Agosto";}  if($mes == '09'){ echo "Septiembre";} if($mes == '10'){ echo "Octubre";} if($mes == '11'){ echo "Noviembre";} if($mes == '12'){ echo "Diciembre";} ?> del {{substr($date, 0, 4)}}</span></p>
-  @endif
-@endif
+
+<p class=MsoNoSpacing><span lang=ES>Portoviejo, @if($data->tipo=='0')______ @else {{substr($date,8,2)}} @endif de <?php $mes = substr($date, 5, 2);if ($mes == 01) {echo "Enero";}if ($mes == 02) {echo "Febrero";}if ($mes == 03) {echo "Marzo";}if ($mes == 04) {echo "Abril";}if ($mes == 05) {echo "Mayo";}if ($mes == 06) {echo "Junio";}if ($mes == 07) {echo "Julio";}if ($mes == '08') {echo "Agosto";}if ($mes == '09') {echo "Septiembre";}if ($mes == '10') {echo "Octubre";}if ($mes == '11') {echo "Noviembre";}if ($mes == '12') {echo "Diciembre";}?> del {{substr($date, 0, 4)}}</span></p>
+
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
@@ -107,6 +97,8 @@ realizar las operaciones quirúrgicas, procedimientos diagnósticos y
 tratamientos clínicos propuestos y necesarios para el alivio o la recuperación
 de mi enfermedad.</span></p>
 
+<p class=MsoNoSpacing><span lang=ES>&nbsp;</span></p>
+<p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
 <p class=MsoNoSpacing><b><span lang=ES style='font-size:6.0pt'>&nbsp;</span></b></p>
 
 <table border=1 cellspacing=0 cellpadding=0 width=718
@@ -275,69 +267,49 @@ style='font-size:6.0pt'>&nbsp;</span></p>
 
 <p class=MsoNoSpacing align=center style='text-align:center'><span lang=ES
 style='font-size:6.0pt'>&nbsp;</span></p>
-@php
-  $docProcedimiento = Sis_medico\User::where('id',$data->id_doctor1)->first();
-@endphp
+
 <!--nueva validacion broncoscopia 1/8/2018 ** use Sis_medico\Procedimiento_Empresa;-->
  @if(is_null($procedimiento_empresa))
 <table  border=1 cellspacing=0 cellpadding=0 width=718
  style='width:538.7pt;margin-left:0pt;border-collapse:collapse;border:
  none'>
- <tr style='height:13.15pt'>
+ <tr style='height:12.75pt'>
   <td width=290 valign=top style='width:200.7pt;border:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span lang=ES><b>NOMBRE DEL PROFESIONAL DE LA SALUD.</b></span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span lang=ES><b>NOMBRE
+  DEL PROFESIONAL DE LA SALUD</b></span></p>
   </td>
   <td width=60 valign=top style='width:50pt;border:solid windowtext 1.0pt;
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span lang=ES><b>LIBRO</b></span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span lang=ES><b>LIBRO</b></span></p>
   </td>
   <td width=60 valign=top style='width:35.0pt;border:solid windowtext 1.0pt;
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span lang=ES><b>FOLIO</b></span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span lang=ES><b>FOLIO</b></span></p>
   </td>
   <td width=80 valign=top style='width:44.05pt;border:solid windowtext 1.0pt;
-  border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt;'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span lang=ES><b>NÚMERO</b></span></p>
+  border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt;font-size: 10px;'>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span lang=ES><b>NÚMERO</b></span></p>
   </td>
   <td width=90 valign=top style='width:67.55pt;border:solid windowtext 1.0pt;
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span lang=ES><b>TELÉFONOS</b></span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span lang=ES><b>TELÉFONOS</b></span></p>
   </td>
   <td width=138 valign=top style='width:80pt;border:solid windowtext 1.0pt;
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span lang=ES><b>CÉDULA</b></span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span lang=ES><b>CÉDULA</b></span></p>
   </td>
  </tr>
  <tr style='height:13.5pt'>
   <td width=290 valign=top style='width:200.7pt;border:solid windowtext 1.0pt;
   border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
+  <!--p class=MsoNoSpacing align=center style='text-align:center'><span
+  lang=ES >@if($empresa->id=='0992704152001') {{$doctor->nombre1}} {{$doctor->apellido1}} @if($doctor->apellido2!='(N/A)'){{$doctor->apellido2}} @endif @else Carlos Robles Medranda @endif</span></b></p-->
   <p class=MsoNoSpacing align=center style='text-align:center'><span
-  lang=ES > {{$doctor->nombre1}} {{$doctor->apellido1}} @if($doctor->apellido2!='(N/A)'){{$doctor->apellido2}} @endif</span></b></p>
-  <p class=MsoNoSpacing align=center style='text-align:center;'>
-  <span lang=ES > 
-  
-  
-  {{-- @if($data->id_seguro == 6 || $data->id_seguro == 5)
-    @if(!is_null($docProcedimiento))
-      @if(strtoupper($docProcedimiento->nombre1) == 'PENTAX')
-      @else
-      {{$docProcedimiento->nombre1}} {{$docProcedimiento->nombre2}} {{$docProcedimiento->apellido1}} {{$docProcedimiento->apellido2}} 
-      @endif
-    @endif
-  @endif --}}
-  </span></p>
+  lang=ES >@if($empresa->id=='0992704152001') @else Carlos Robles Jara @endif</span></b></p>
   </td>
   @php
     $libro='';$folio='';$numero='';
-    if($data->id_seguro == 6 || $data->id_seguro == 5){
-      if(!is_null($docProcedimiento)){
-        $libro=$docProcedimiento->libro;
-        $folio=$docProcedimiento->folio;
-        $numero=$docProcedimiento->num;
-      }
-    }
-    else{
     $firma = Sis_medico\Firma_Usuario::where('id_usuario',$doctor->id)->first();
     if(!is_null($firma)){
       $libro=$firma->libro;
@@ -345,47 +317,47 @@ style='font-size:6.0pt'>&nbsp;</span></p>
       $numero=$firma->num;
       if($numero==null){
         $folio=null;
-      }  
+      }
     }
-    }
+
   @endphp
   <td width=60 valign=top style='width:50pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
-  <!--p class=MsoNoSpacing align=center style='text-align:center;'><span
+  <!--p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
   lang=ES >@if($empresa->id=='0992704152001') {{$libro}} @else 1 @endif</span></p-->
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) {{$docProcedimiento->libro}} @endif @endif</span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
+  lang=ES >@if($empresa->id=='0992704152001') @else 1 @endif</span></p>
   </td>
   <td width=60 valign=top style='width:35.0pt;border-top:none;border-left:none;
   border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
-  <!--p class=MsoNoSpacing align=center style='text-align:center;'><span
+  <!--p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
   lang=ES >@if($empresa->id=='0992704152001') {{$folio}} @else 3771 @endif</span></p-->
-   <p class=MsoNoSpacing align=center style='text-align:center;'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) {{$docProcedimiento->folio}} @endif @endif</span></p>
+   <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
+  lang=ES >@if($empresa->id=='0992704152001') @else 3771 @endif</span></p>
   </td>
   <td width=80 valign=top style='width:44.05pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
-  <!--p class=MsoNoSpacing align=center style='text-align:center;'><span
+  <!--p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
   lang=ES >@if($empresa->id=='0992704152001') {{$numero}} @else 11003 @endif</span></p-->
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) {{$docProcedimiento->numero}} @endif @endif</span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
+  lang=ES >@if($empresa->id=='0992704152001') @else 11003 @endif</span></p>
   </td>
   <td width=90 valign=top style='width:67.55pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
-  <p class=MsoNoSpacing align=center style='text-align:center;'><span
-  lang=ES >@if($doctor->id != '0912356870')  @endif</span></p>
+  <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
+  lang=ES >2109180</span></p>
   </td>
   <td width=138 valign=top style='width:80pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
-  <!--p class=MsoNoSpacing align=center style='text-align:center;'><span
-  lang=ES >@if($empresa->id=='0992704152001') {{$doctor->id}} @else 1307189140 @endif</span></p-->
-   <p class=MsoNoSpacing align=center style='text-align:center;'><span
-  lang=ES >{{$docProcedimiento->id}}</span></p>
+  <!--p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
+  lang=ES >@if($empresa->id=='0992704152001') {{$doctor->id}} @else 1301656904 @endif</span></p-->
+   <p class=MsoNoSpacing align=center style='text-align:center;font-size: 10px;'><span
+  lang=ES >@if($empresa->id=='0992704152001') @else 1301656904 @endif</span></p>
   </td>
  </tr>
  </table>
@@ -397,7 +369,7 @@ style='font-size:6.0pt'>&nbsp;</span></p>
   <td width=290 valign=top style='width:200.7pt;border:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
   <p class=MsoNoSpacing align=center style='text-align:center'><span lang=ES><b>NOMBRE
-  DEL PROFESIONAL DE LA SALUD.</b></span></p>
+  DEL PROFESIONAL DE LA SALUD</b></span></p>
   </td>
   <td width=60 valign=top style='width:25.05pt;border:solid windowtext 1.0pt;
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:12.75pt'>
@@ -416,25 +388,25 @@ style='font-size:6.0pt'>&nbsp;</span></p>
   <td width=290 valign=top style='width:200.7pt;border:solid windowtext 1.0pt;
   border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
   <p class=MsoNoSpacing align=center style='text-align:center'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) @if(!is_null($docProcedimiento)) Dr. {{$docProcedimiento->nombre1}} {{$doctor->nombre2}} {{$doctor->apellido1}} {{$doctor->apellido2}} @endif @endif @endif</span></b></p>
+  lang=ES >Dr. {{$doctor->nombre1}} {{$doctor->nombre2}} {{$doctor->apellido1}} {{$doctor->apellido2}}</span></b></p>
   </td>
   <td width=60 valign=top style='width:100pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
   <p class=MsoNoSpacing align=center style='text-align:center'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) @if(!is_null($docProcedimiento)) {{$docProcedimiento->registro_doctor}} @endif @endif @endif</span></p>
+  lang=ES >{{$doctor->registro_doctor}}</span></p>
   </td>
   <td width=90 valign=top style='width:80pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
   <p class=MsoNoSpacing align=center style='text-align:center'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) 2109180  @endif @endif</span></p>
+  lang=ES >2109180</span></p>
   </td>
   <td width=138 valign=top style='width:118pt;border-top:none;border-left:
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   padding:0cm 5.4pt 0cm 5.4pt;height:13.5pt'>
   <p class=MsoNoSpacing align=center style='text-align:center'><span
-  lang=ES >@if($doctor->id != '0912356870') @if($data->id_seguro == 6 || $data->id_seguro == 5) @if(!is_null($docProcedimiento)) {{$docProcedimiento->id}} @endif @endif @endif</span></p>
+  lang=ES >{{$doctor->id}}</span></p>
   </td>
  </tr>
 </table>
@@ -635,8 +607,8 @@ style='font-size:6.0pt'>&nbsp;</span></p>
   <td width=688 valign=top style='width:512.3pt;border:solid windowtext 1.0pt;
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:21.05pt'>
   <p class=MsoNoSpacing><span lang=ES style='font-size:7.0pt'>PERMITO EL USO DE
-  LAS IMÁGENES ENDOSCOPICAS Y PATOLOGICAS A {{$empresa->nombrecomercial}} Y SUS PROFESIONALES
-  CON FINES EXCLUSIVOS, CIENTIFICOS Y DE EDUCACION. {{$empresa->nombrecomercial}} GARANTIZA CONFIDENCIALIDAD
+  LAS IMÁGENES ENDOSCOPICAS Y PATOLOGICAS A IECED Y SUS PROFESIONALES
+  CON FINES EXCLUSIVOS, CIENTIFICOS Y DE EDUCACION. IECED GARANTIZA CONFIDENCIALIDAD
   DE MI INFORMACION PARA ESTOS FINES.</span></p>
   </td>
  </tr>
@@ -657,7 +629,7 @@ style='font-size:6.0pt'>&nbsp;</span></p>
   border-left:none;padding:0cm 5.4pt 0cm 5.4pt;height:4.05pt'>
   <p class=MsoNoSpacing><span lang=ES style='font-size:7.0pt'>HE COMPRENDIDO
   QUE LOS VIDEOS E IMÁGENES REALIZADOS POR EL PROFESIONAL TRATANTE DE LA
-  COMPAÑÍA SERÁ DE PERMANENCIA DE {{$empresa->nombrecomercial}} Y SE RESERVA EL DERECHO A
+  COMPAÑÍA SERÁ DE PERMANENCIA DE IECED Y SE RESERVA EL DERECHO A
   HACER USO EN INVESTIGACIONES O CAPACITACIONES MÉDICAS, SIN REVELAR LA
   IDENTIDAD DEL PACIENTE, SALVAGUARDANDO SIEMPRE SU INTEGRIDAD FÍSICA Y MORAL
   DEL PACIENTE</span></p>
@@ -695,11 +667,11 @@ style='font-size:6.0pt'>&nbsp;</span></p>
 
 <p class=MsoNoSpacing><span lang=ES>&nbsp;</span></p>
 
-<p class=MsoNoSpacing><span lang=ES>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_________________                 _______________________            
+<p class=MsoNoSpacing><span lang=ES>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_________________                 _______________________
           ______________                 ______________</span></p>
-  
-<p class=MsoNoSpacing><b><span lang=ES style='font-size:8.0pt;padding-left: 15pt;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PACIENTE                             
-        REPRESENTANTE LEGAL                               TESTIGO                   
+
+<p class=MsoNoSpacing><b><span lang=ES style='font-size:8.0pt;padding-left: 15pt;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PACIENTE
+        REPRESENTANTE LEGAL                               TESTIGO
                 MEDICO</span></b></p>
 
 </div>
@@ -709,29 +681,29 @@ style='font-size:6.0pt'>&nbsp;</span></p>
 $(document).ready(function () {
 
     edad2();
-   
+
 
 });
 
 
 function edad2()
 {
-    
+
     var nacimiento = document.getElementById("fecha_nacimiento").value;
     var edad = calcularEdad(nacimiento);
-    
+
     if(isNaN(edad))
     {
       var jsspan = document.getElementById("xedad");
-      
+
       jsspan.innerHTML = "0";
     }
     else
     {
       var jsspan = document.getElementById("xedad");
       jsspan.innerHTML = edad + " años";
-    }  
-}  	
+    }
+}
 
 </script>
 

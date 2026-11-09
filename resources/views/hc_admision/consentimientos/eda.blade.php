@@ -135,7 +135,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <thead>
                 <tr>
                     <th class="th">
-                        10. ¿EN QUÉ CONSISTE??
+                        10. ¿EN QUÉ CONSISTE?
                     </th>
                     <th class="th">
                         11. GRÁFICO DE LA INTERVENCIÓN
@@ -145,7 +145,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Consiste en el examen del esófago, estómago y primera parte del intestino delgado (duodeno) mediante un tubo flexible con un sistema de iluminación y una cámara (endoscopio), que se introduce a través de la boca que permite observar el interior del tubo digestivo </td>
-                    <td><img style="height:100px;margin:15px" src="{{public_path('/imagenes/eda.jpg')}}" /></td>
+                    <td><img style="height:100px;margin:15px" src="{{base_path('public/imagenes/eda.jpg')}}" /></td>
                 </tr>
             </tbody>
         </table>
@@ -236,8 +236,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
                 </tr>
 
                 <tr>
+                    <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                    <td style="width: 20%;" class="td">&nbsp;</td>
+                    <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+                </tr>
 
+                <tr>
                     <td style="width: 30%;" class="td">Marcapasos</td>
                     <td style="width: 20%;" class="td">&nbsp;</td>
                     <td style="width: 50%;text-align:none" class="td">Especifique:</td>

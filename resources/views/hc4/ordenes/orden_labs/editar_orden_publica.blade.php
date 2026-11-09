@@ -25,13 +25,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
     }
 
     /** Define now the real margins of every page in the PDF **/
-    /* body {
+    body {
         margin-top: 20px;
         margin-left: 20px;
         margin-right: 20px;
         margin-bottom: 1px;
         font-size: 10px;
-    } */
+    }
 
     /** Define the header rules **/
     header {
@@ -265,21 +265,21 @@ $mesNacimiento = $fechaNacimiento->format('m');
     }
 
     .outer-box {
-        width: 33%;
+        width: 30%;
         display: inline-block;
         vertical-align: top;
         /*background-color: red;*/
         
     }
     .outer-box2 {
-        width: 33%;
+        width: 30%;
         display: inline-block;
         vertical-align: top;
         /*background-color: green;*/
         
     }
     .outer-box3 {
-        width: 33%;
+        width: 30%;
         display: inline-block;
         vertical-align: top;
         /*background-color: yellow;*/
@@ -360,8 +360,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
     }
     .contenido1{
-        margin-top: 30px;
-        text-align: center;
+
     }
     .table-footer{
         position: relative;
@@ -544,21 +543,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 @endforeach
               
                 <div class="div_clear"></div>
-                <div class="bg-purple"><b>MARCADORES TUMORALES</b></div>
-                @foreach($tumorales as $tu) 
-                    <div class="inner-box">{{$tu->nombre}}</div>
-                    <div class="inner-box2"><input type="checkbox" id="{{$tu->id}}" value="{{$tu->id}}" onclick="cargar_examen('{{$tu->id}}')" @if($detalles->where('id_examen',$tu->id)->first() != null) checked @endif /></div>
-                    <div class="div_clear"></div>
-                @endforeach
-            
-                <div class="div_clear"></div>
-                <div class="bg-purple"><b>NIVELES DE FÁRMACOS TERAPÉUTICAS</b></div>
-                @foreach($farmacos as $fa) 
-                    <div class="inner-box">{{$fa->nombre}}</div>
-                    <div class="inner-box2"><input type="checkbox" id="{{$fa->id}}" value="{{$fa->id}}" onclick="cargar_examen('{{$fa->id}}')" @if($detalles->where('id_examen',$fa->id)->first() != null) checked @endif /></div>  
-                    <div class="div_clear"></div>
-                @endforeach
-                <div class="div_clear"></div>
                
             </div>
             <div class="outer-box2">
@@ -617,16 +601,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 @endforeach
            
                 <div class="div_clear"></div>
-
-                <div class="bg-purple"><b>SEROLOGÍA</b></div>
-                @foreach($serologia as $se) 
-                    <div class="inner-box">{{$se->nombre}}</div>
-                    <div class="inner-box2"><input type="checkbox" id="{{$se->id}}" value="{{$se->id}}" onclick="cargar_examen('{{$se->id}}')" @if($detalles->where('id_examen',$se->id)->first() != null) checked @endif /></div>
-                    <div class="div_clear"></div>
-                @endforeach
-                <div class="div_clear"></div>
-               
-                
             </div>
 
             <div class="outer-box3">
@@ -645,30 +619,260 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <div class="div_clear"></div>
                 @endforeach
                 <div class="div_clear"></div>
-               
-                <div class="bg-purple"><b>CITOQUÍMICO Y BACTERIOLÓGICO DE LÍQUIDOS</b></div>
+                <div class="bg-purple"><b>MARCADORES TUMORALES</b></div>
+                @foreach($tumorales as $tu) 
+                    <div class="inner-box">{{$tu->nombre}}</div>
+                    <div class="inner-box2"><input type="checkbox" id="{{$tu->id}}" value="{{$tu->id}}" onclick="cargar_examen('{{$tu->id}}')" @if($detalles->where('id_examen',$tu->id)->first() != null) checked @endif /></div>
+                    <div class="div_clear"></div>
+                @endforeach
+            
+                <div class="div_clear"></div><div class="bg-purple"><b>CITOQUÍMICO Y BACTERIOLÓGICO DE LÍQUIDOS</b></div>
                 @foreach($citologia as $ci) 
                     <div class="inner-box">{{$ci->nombre}} </div>
                     <div class="inner-box2"><input type="checkbox" id="{{$ci->id}}" value="{{$ci->id}}" onclick="cargar_examen('{{$ci->id}}')" @if($detalles->where('id_examen',$ci->id)->first() != null) checked @endif /></div>
                     <div class="div_clear"></div>
                 @endforeach
                 <div class="div_clear"></div>
+                <div class="div_clear"></div><div class="bg-purple"><b>NIVELES DE FÁRMACOS TERAPÉUTICAS</b></div>
+                @foreach($farmacos as $fa) 
+                    <div class="inner-box">{{$fa->nombre}}</div>
+                    <div class="inner-box2"><input type="checkbox" id="{{$fa->id}}" value="{{$fa->id}}" onclick="cargar_examen('{{$fa->id}}')" @if($detalles->where('id_examen',$fa->id)->first() != null) checked @endif /></div>  
+                    <div class="div_clear"></div>
+                @endforeach
+                <div class="div_clear"></div>
+                <div class="div_clear"></div><div class="bg-purple"><b>SEROLOGÍA</b></div>
+                @foreach($serologia as $se) 
+                    <div class="inner-box">{{$se->nombre}}</div>
+                    <div class="inner-box2"><input type="checkbox" id="{{$se->id}}" value="{{$se->id}}" onclick="cargar_examen('{{$se->id}}')" @if($detalles->where('id_examen',$se->id)->first() != null) checked @endif /></div>
+                    <div class="div_clear"></div>
+                @endforeach
+                <div class="div_clear"></div>
         
             </div> 
-
-            <div class="bg-purple" style="border-bottom: 1px solid black;"><b>A. VIH / ITS</b></div>
-            <div class="row" style="margin: 0;">
-                @foreach($vih as $val)
-                <div class="col-md-3 bg-green2">{{$val->nombre}}</div>
-                <div class="col-md-1 bg-green3"><input type="checkbox" id="{{$val->id}}" value="{{$val->id}}" onclick="cargar_examen('{{$val->id}}')" @if($detalles->where('id_examen',$val->id)->first() != null) checked @endif /></div>
-                @endforeach
-            </div>
         </div>
 
+        <div class="bg-purple" style="border-bottom: 1px solid black;"><b>A. VIH / ITS</b></div>
+        <div class="row" style="margin: 0;">
+            @foreach($vih as $val)
+            <div class="col-md-3 bg-green2">{{$val->nombre}}</div>
+            <div class="col-md-1 bg-green3"><input type="checkbox" id="{{$val->id}}" value="{{$val->id}}" onclick="cargar_examen('{{$val->id}}')" @if($detalles->where('id_examen',$val->id)->first() != null) checked @endif /></div>
+            @endforeach
+        </div>
+        
+        
+        <!--table cellpadding="0" cellspacing="0" style="width: 100%">
+            <thead>
+                <tr>
+                    <td colspan="10" style="font-size: 14px;" class="bg-blue td-border"><b></b></td>
+                </tr>
+                <tr>
+                    <td class="bg-green td-border">pueba rapida</td>
+                    <td style="width: 4%" ><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-green td-border">Elisa Automatizada</td>
+                    <td style="width: 4%" ><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-blue td-border">CLIA </td>
+                    <td style="width: 4%" ><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-blue td-border">IFI</td>
+                    <td style="width: 4%" ><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-blue td-border">Carga Viral </td>
+                    <td style="width: 5%" ><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                </tr>
+                <tr>
+                    <td class="bg-blue td-border">CD4</td>
+                    <td><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-green td-border">Tamizaje de Sífilis </td>
+                    <td><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-green td-border">VDRL </td>
+                    <td><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td class="bg-blue td-border">Hepatitis B (HBs-Ag)</td>
+                    <td><input type="checkbox" id="hematologia" value="hematologia" onclick="cargar_examen()" /></td>
+                    <td colspan="2"></td>
+                </tr>
+                </tbody>
+        </table-->
+        <!--br>
+        <table cellpadding="0" cellspacing="0" style="width: 100%">
+            <thead>
+                <tr>
+                    <td colspan="31" style="font-size: 14px;" class="bg-blue td-border"><b>B. TUBERCULOSIS</b></td>
+                </tr>
+                <tr>
+                    <td colspan="31" style="font-size: 14px;" class="bg-green text-center td-border"><b>Tipo de
+                            afectado</b></td>
+                </tr>
+                <td>&nbsp;</td>
+            </thead>
+        </table-->
+        <!--table style="width: 100%">
+            <tbody>
+                <tr>
+                    <td style="width: 5%; height: 5px; font-size: 10px" class="text-center">Nuevo </td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 5%; height: 5px; font-size: 10px" class="text-center">Recaída</td>
+                    <td><input type="text" id="hematologia" value=""  style="width: 30px;"/></td>
+                    <td style="width: 5%; height: 5px; font-size: 10px" class="text-center">Fracaso</td>
+                    <td><input type="text" id=hematologia"" value="" style="width: 30px;"/></td>
+                    <td style="width: 25%; height: 5px; font-size: 10px" class="text-center">Pérdida en el seguimiento</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 5%; height: 5px;  font-size: 10px" class="text-centrer">PVV</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 5%; height: 5px;  font-size: 10px" class="text-center">PPL</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 9%; height: 5px;  font-size: 10px" class="text-center">Niño 5 años</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                </tr>
+                <tr>
+                    <td colspan="31">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="width: 14%; height: 5px; font-size: 10px" class="text-center">Sospecha de Meningitis TB </td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="height: 5px; font-size: 10px" class="text-center">Alta sospecha clínica y/o radiológica BK (-) </td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style=" height: 5px; font-size: 10px" class="text-center">Comorbilidad</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                </tr>
+                 <tr>
+                    <td colspan="31">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="width: 12%; height: 5px; font-size: 10px" class="text-center">Contacto TBR</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                </tr>
+                <tr>
+                    <td colspan="31">&nbsp;</td>
+                </tr>  
+                <tr>
+                    <td style="width: 20%;" class="text-center">Sospecha de TB EP</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 20%; height: 5px; font-size: 8px" class="text-center">Talento humanoen salud </td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 20%; height: 5px; font-size: 8px" class="text-center">Irregularida enla toma del Ttos</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="width: 10%; height: 5px; font-size: 8px" class="text-center">Reversión</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                </tr>
+                <tr>
+                    <td colspan="31">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="font-size: 10px" class="text-center">Embarazo</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="font-size: 10px" class="text-center">BK (+) al2do. mes </td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td style="font-size: 10px" class="text-center">Condiciones especiales </td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td><input type="text" id="hematologia" value="" style="width: 80px;"/></td>
+                    <td style="font-size: 10px" class="text-center">otros</td>
+                    <td><input type="text" id="hematologia" value="" style="width: 30px;"/></td>
+                    <td><input type="text" id="hematologia" value="" style="width: 80px;"/></td>
+                </tr>
+                <tr>
+                    <td colspan="31">&nbsp;</td>
+                </tr>
+               
+            </tbody>
+        </table>
        
-        
-        
-     
+        <br-->
+        <!--div class="row">
+            <div class="col-md-6 bg-green text-center" style="font-size: 14px;"> 
+                <b>Antecedentes de tuberculosis</b>
+            </div>
+            <div class="col-md-6 bg-green text-center" style="font-size: 14px;">
+                <b>Tipo de muestra</b>
+            </div>
+            
+            <div class="col-md-12 "><br></div>
+
+            <div class="col-md-6 "> 
+                <b>TIPO DERESISTENCIA</b>TB sensible <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                TB resistente <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                <input type="text" id="hematologia" value="" style="width: 80px;"/>
+            </div>
+            <div class="col-md-6 ">
+                Esputo <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                Otro <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                <input type="text" id="hematologia" value="" style="width: 80px;"/>
+            </div>
+            <div class="col-md-12 "><br></div>
+            <div class="col-md-12 bg-green text-center" style="font-size: 14px;"> <b>Solicitud para diagnóstico</b></div>
+            <div class="col-md-12 "><br></div>
+            <div class="col-md-2 ">
+                <b>Ada</b>
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+            </div>
+            <div class="col-md-5 "><b>Baciloscopia</b></div>
+            <div class="col-md-5 "> <b>Cultivo mediosólido(OK)</b></div>
+            <div class="col-md-12 "><br></div>
+            
+            <div class="col-md-2 "></div>
+            <div class="col-md-5 "> Diagnóstico
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                No.
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+            </div>
+            <div class="col-md-5 ">
+                Diagnóstico
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                No.
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+            </div>
+            <div class="col-md-12 "><br></div>
+
+           
+            <div class="col-md-2 "></div>
+            <div class="col-md-5 ">  Control
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                No. Mes
+                <input type="text" id="hematologia" value="" style="width: 30px;"/>
+            </div>
+            <div class="col-md-5 ">   Control
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                    No. Mes
+            </div>
+            <div style="width: 20%">
+                    <b>PCR tiempo real</b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/></div>
+            <div style="width: 20%">  <b>Nitrato reductasa</b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/></div>
+            <div style="width: 20%">  <b>Cultivo medioliquido<b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/></div>
+            <div style="width: 20%"> <b>Genotipificación</b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/></div>
+            <div style="width: 20%"> <b>Tipificación</b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/></div>
+        </div>
+        <br-->
+        <!--      
+                    (Xpert/MTB/RIF)
+                    (GRIESS)*
+                    Diagnóstico
+                    
+                    
+                    <b>PSD 1ra. Línea</b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                    
+                    
+                    <b>PSD 1ra. Línea</b>
+                    <input type="text" id="hematologia" value="" style="width: 30px;"/>
+
+
+
+                    <b>PSD 2da. Línea<b>
+                        
+                        <input type="text" id="hematologia" value="" style="width: 30px;"/>
+                        <input type="text" id="hematologia" value="" style="width: 30px;"/>
+
+
+                        (Proporciones-Medio sólido)</td>
+                    
+                        (MGIT-Medio líquido)</td>
+                   
+                        (Proporciones-Medio sólido)</td>
+                    
+                        (Proporciones-Medio sólido)
+            -->
 <script type="text/javascript">
 
     function cargar_examen(id_examen){
@@ -684,9 +888,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         $.ajax({
             async: true,
-            type: "GET",
+            type: "POST",
             url: "{{url('vt_ptv_laboratorio_iess/crear')}}/"+"{{$orden->id}}/"+id_examen,
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml){
                 
@@ -703,9 +907,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
         
         $.ajax({
             async: true,
-            type: "GET",
+            type: "DELETE",
             url: "{{url('vt_ptv_laboratorio_iess/eliminar')}}/"+"{{$orden->id}}/"+id_examen,
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml){
                 
@@ -719,4 +923,3 @@ $mesNacimiento = $fechaNacimiento->format('m');
     }
 </script> 
                         
-                     

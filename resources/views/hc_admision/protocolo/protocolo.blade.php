@@ -1,5 +1,5 @@
 
-@extends('hc_admision.anestesiologia.base') 
+@extends('hc_admision.anestesiologia.base')
 
 @section('action-content')
  
@@ -43,7 +43,7 @@
                     </a>
                     <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('historia.historia',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-level-up"></span> Historia Clinica</button>
                     </a>
-                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
+                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['ag' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
                     </a>  
                     @php $especialidad=Sis_medico\Especialidad::find($agenda->espid); @endphp
                     <table class="table table-striped">
@@ -54,23 +54,27 @@
                                 <td><b>Edad:</b></td>
                                 <td><span id="edad"></span></td>
                                 <td><b>Seguro:</b></td>
-                                <td>{{$seguro->nombre}}</td>
+                                <td>{{optional($seguro)->nombre ?: 'No registrado'}}</td>
                             </tr>
 
                             <tr>
                                 <td><b>Procedimientos:</b></td>
-                                <td colspan="3">{{$hc_procedimientos->procedimiento_completo->nombre_general}}</td>
+                                <td colspan="3">{{optional($hc_procedimientos->procedimiento_completo)->nombre_general ?: 'Procedimiento no especificado'}}</td>
                             </tr>                          
                         </tbody>
                     </table>
                     <div class="w3-bar w3-blue">
-                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('epicrisis.diagnostico',['id' => $hc_procedimientos->id])}}' ">DIAGNOSTICO</button>
-                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('anestesiologia.mostrar',['id' => $hc_procedimientos->id])}}'">ANESTESIOLOGÍA</button>
-                        <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('protocolo.mostrar',['id' => $hc_procedimientos->id])}}'">PROTOCOLO</button>
+                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('epicrisis.diagnostico',['hcid' => $hc_procedimientos->id])}}' ">DIAGNOSTICO</button>
+                        <button class="w3-bar-item w3-button tablink"onclick="location.href = '{{route('anestesiologia.mostrar',['ag' => $hc_procedimientos->id])}}'">ANESTESIOLOGÍA</button>
+                        <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('protocolo.mostrar',['ag' => $hc_procedimientos->id])}}'">PROTOCOLO</button>
 
-                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('evolucion.evolucion',['id' => $hc_procedimientos->id])}}'">EVOLUCIÓN</button>
-                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('epicrisis.mostrar',['id' => $hc_procedimientos->id])}}'">EPICRISIS</button>
-                        <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('hc_video.mostrar',['id' => $id])}}'">VIDEO</button>
+                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('evolucion.evolucion',['hcid' => $hc_procedimientos->id])}}'">EVOLUCIÓN</button>
+                        <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('epicrisis.mostrar',['hcid' => $hc_procedimientos->id_hc, 'proc' => $hc_procedimientos->id])}}'">EPICRISIS</button>
+                        @if($protocolo)
+                        <button class="w3-bar-item w3-button tablink " onclick="location.href = '{{route('hc_video.mostrar',['protocolo_id' => $protocolo->id, 'agendas' => $agenda->id, 'ruta' => 1])}}'">VIDEO</button>
+                        @else
+                        <button class="w3-bar-item w3-button tablink " type="button" disabled>VIDEO</button>
+                        @endif
                     </div>
 
                     <div id="tab1" class="w3-container w3-border city" >
@@ -96,8 +100,31 @@
                             <div class="box-body">
                                 
                                 <form class="form-vertical" role="form" method="POST" action="{{ route('protocolo.crea_actualiza') }}" >
-                                    <input type="hidden" name="id_hc_procedimientos" value="{{ $id }}">   
+                                    <input type="hidden" name="id_hc_procedimientos" value="{{ $id }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
+                                    @if($errors->has('clinical_safety'))
+                                        <div class="alert alert-danger col-md-12"><b>Procedimiento bloqueado:</b> {{ $errors->first('clinical_safety') }}</div>
+                                    @endif
+                                    @if($protocolo == '')
+                                    <div class="col-md-12" style="border:1px solid #b9d8e8;background:#f4fbff;padding:14px;margin-bottom:15px;">
+                                        <h4><i class="fa fa-shield"></i> Seguridad antes de iniciar el procedimiento</h4>
+                                        <p class="text-muted">Identidad, indicación, consentimiento vigente y checklist son obligatorios. Toda excepción de emergencia queda auditada.</p>
+                                        <div class="row">
+                                            <div class="form-group col-md-6"><label>Indicación clínica</label><textarea class="form-control" name="procedure_indication" rows="2">{{old('procedure_indication')}}</textarea></div>
+                                            <div class="form-group col-md-3"><label>Formato de consentimiento</label><select class="form-control" name="consent_template_id"><option value="">Seleccione...</option>@foreach($consentFormats as $format)<option value="{{$format->id}}" @if(old('consent_template_id')==$format->id) selected @endif>{{$format->nombre}}</option>@endforeach</select></div>
+                                            <div class="form-group col-md-3"><label>Versión</label><input class="form-control" name="consent_version" value="{{old('consent_version')}}" placeholder="Ej. 1.0"></div>
+                                            <div class="form-group col-md-3"><label>Fecha y hora de firma</label><input type="datetime-local" class="form-control" name="consent_signed_at" value="{{old('consent_signed_at')}}"></div>
+                                            <div class="form-group col-md-3"><label>Firmado por</label><input class="form-control" name="consent_signed_by" value="{{old('consent_signed_by')}}" placeholder="Paciente o representante"></div>
+                                            <div class="form-group col-md-3"><label>Calidad del firmante</label><select class="form-control" name="consent_signer_role"><option value="PATIENT">Paciente</option><option value="REPRESENTATIVE" @if(old('consent_signer_role')=='REPRESENTATIVE') selected @endif>Representante</option></select></div>
+                                            <div class="form-group col-md-3"><label>Relación del representante</label><input class="form-control" name="consent_representative_relationship" value="{{old('consent_representative_relationship')}}"></div>
+                                            <div class="form-group col-md-4"><label><input type="checkbox" name="procedure_identity_verified" value="1" @if(old('procedure_identity_verified')) checked @endif> Identidad del paciente verificada</label></div>
+                                            <div class="form-group col-md-4"><label><input type="checkbox" name="procedure_checklist_complete" value="1" @if(old('procedure_checklist_complete')) checked @endif> Checklist preprocedimiento completo</label></div>
+                                            <div class="form-group col-md-4"><label><input type="checkbox" id="procedure_emergency_exception" name="procedure_emergency_exception" value="1" @if(old('procedure_emergency_exception')) checked @endif> Excepción por emergencia</label></div>
+                                            <div class="form-group col-md-12" id="emergency-reason" style="display:none;"><label>Justificación clínica de emergencia</label><textarea class="form-control" name="procedure_emergency_reason" rows="2">{{old('procedure_emergency_reason')}}</textarea></div>
+                                        </div>
+                                    </div>
+                                    @endif
 
                                     <!--hora_ini-->  
                                     <div class="form-group col-md-12{{ $errors->has('fecha') ? ' has-error' : '' }}">
@@ -219,7 +246,7 @@
 
     </div>
 </div>
-<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script>
   tinymce.init({
     selector: '#hallazgos',
@@ -232,6 +259,13 @@
 </script>  
 <script src="{{asset('plugins/iCheck/icheck.min.js')}}"></script>
 <script>
+    function toggleEmergencySafety(){
+      var emergency=$('#procedure_emergency_exception').is(':checked');
+      $('#emergency-reason').toggle(emergency);
+      $('select[name="consent_template_id"], input[name="consent_version"], input[name="consent_signed_at"], input[name="consent_signed_by"], select[name="consent_signer_role"], input[name="consent_representative_relationship"], input[name="procedure_checklist_complete"]').prop('disabled',emergency);
+    }
+    $('#procedure_emergency_exception').on('change',toggleEmergencySafety);
+    toggleEmergencySafety();
     $('input[type="checkbox"].flat-green').iCheck({
       checkboxClass: 'icheckbox_flat-green',
       radioClass   : 'iradio_flat-green'

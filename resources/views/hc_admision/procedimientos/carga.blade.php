@@ -5,14 +5,12 @@
     
     <div class="box">
         <div class="box-header">
-        	<div class="form-group col-md-6" >
-          		<h4>Estadistico Ordenes de Procedimiento</h4>  
-          	</div>	
-      		<div class="form-group col-md-6" id="xboton">
-       
-      		</div>
+          <h4>Estadistico Ordenes de Procedimiento</h4>  
+          <div class="form-group col-md-12" >
+           
+          </div>
         </div>
-        <div class="box-body" id="div_grafico">
+        <div class="box-body" id="carga_js">
         </div>
     </div>
 </section> 
@@ -23,7 +21,7 @@
 	        url:"{{ url('produccion/estadistico/index_js') }}", 
 	        
 	        success: function(data){
-	          $('#div_grafico').html(data);
+	          $('#carga_js').html(data);
 
 	        },
 

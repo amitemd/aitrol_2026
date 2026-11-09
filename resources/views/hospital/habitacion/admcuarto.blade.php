@@ -36,7 +36,7 @@
           <h3>{{trans('hospitalizacion.GESTI&Oacute;NDECUARTO')}}</h3>
         </div>
         <div class="col-4">
-          <button type="button" class="btn btn-primary btn-sm" onclick="location.href='{{route('hospital.formulario053',['id_cama'=>$id_cama,'id'=>$paciente->id])}}'">
+          <button type="button" class="btn btn-primary btn-sm" onclick="location.href='{{route('hospital.formulario053',['id'=>$id_cama,'id_paciente'=>$paciente->id])}}'">
           {{trans('hospitalizacion.Formulario053')}}
           </button>
           <!--<button type="button" class="btn btn-success btn-sm" onclick="location.href='{{route('hospital.costo',['id'=>$paciente->id,'id_cama'=>$id_cama])}}'">
@@ -58,7 +58,7 @@
   <div class="col-md-12">
     <div class="card">
       <div class="card-header with-border">
-        <h1 class="card-title">{{trans('hospitalizacion.Datosprincipalesdepacientesss')}}</h1>
+        <h1 class="card-title">{{trans('hospitalizacion.Datosprincipalesdepaciente')}}</h1>
         <a data-action="collapse" class=""><svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline>
         </svg></a>
       </div>
@@ -137,11 +137,11 @@
                 <textarea class="form-control" id="antpato" name="antpato" rows="3" value="{{$paciente->antecedentes_pat}}" readonly></textarea>
               </div>
               <div class="form-group col-md-4">
-                <label for="antfami" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEFAMILIARES)}}</label>
+                <label for="antfami" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEFAMILIARES')}}</label>
                 <textarea class = "form-control" name="antfami" id="antfami" rows="3" value="{{$paciente->antecedentes_fam}}" readonly></textarea>
               </div>
               <div class="form-group col-md-4">
-                <label for="antquiru" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEQUIRURGICOS)}}</label>
+                <label for="antquiru" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEQUIRURGICOS')}}</label>
                 <textarea class = "form-control" name="antquiru" id="antquiru" rows="3" value="{{$paciente->antecedentes_quir}}" readonly></textarea>
               </div>
             </div>
@@ -178,47 +178,47 @@
         </div>
         <div class="form-row">
           <div class="form-group col-md-3 col-sm-6">
-              <label for="ciudadpro" class = "col-form-label-sm">{{trans('hospitalizacion.CIUDADDEPROCEDENCIA)}}</label>
+              <label for="ciudadpro" class = "col-form-label-sm">{{trans('hospitalizacion.CIUDADDEPROCEDENCIA')}}</label>
               <input type="text" id = "ciudadpro" class = "form-control form-control-sm" value = "{{$paciente->ciudad}}" placeholder = "Ciudad de procedencia" readonly>
           </div>
           <div class="form-group col-md-3 col-sm-6">
-              <label for="fechadenacimi" class = "col-form-label-sm">{{trans('hospitalizacion.FECHADENACIMIENTO)}}</label>
+              <label for="fechadenacimi" class = "col-form-label-sm">{{trans('hospitalizacion.FECHADENACIMIENTO')}}</label>
               <input type="text" id = "fechadenacimi" class = "form-control form-control-sm" value = "{{$paciente->fecha_nacimiento}}" placeholder = "Fecha de nacimiento" readonly>
           </div>
           <div class="form-group col-md-3 col-sm-6">
-              <label for="ciudadnacimi" class = "col-form-label-sm">{{trans('hospitalizacion.CIUDADDENACIMIENTO)}}</label>
+              <label for="ciudadnacimi" class = "col-form-label-sm">{{trans('hospitalizacion.CIUDADDENACIMIENTO')}}</label>
               <input type="text" id = "ciudadnacimi" class = "form-control form-control-sm" value = "{{$paciente->lugar_nacimiento}}" placeholder = "Ciudad de nacimiento" readonly>
           </div>
           <div class="form-group col-md-2 col-sm-6">
-              <label for="religion" class = "col-form-label-sm">{{trans('hospitalizacion.RELIGIÓN)}}</label>
+              <label for="religion" class = "col-form-label-sm">{{trans('hospitalizacion.RELIGIÓN')}}</label>
               <input type="text" id = "religion" class = "form-control form-control-sm" value = "{{$paciente->religion}}" placeholder = "Religión" readonly>
           </div>
         </div>
         <div class="form-row">
             <div class="form-group col-md-3 col-sm-4">
-                <label for="ocupacion" class = "col-form-label-sm">{{trans('hospitalizacion.OCUPACIÓN)}}</label>
+                <label for="ocupacion" class = "col-form-label-sm">{{trans('hospitalizacion.OCUPACIÓN')}}</label>
                 <input type="text" id = "ocupacion" class = "form-control form-control-sm" value = "{{$paciente->ocupacion}}" placeholder = "Ocupacion" readonly>
             </div>
             <div class="form-group col-md-3 col-sm-4">
-                <label for="trabajo" class = "col-form-label-sm">{{trans('hospitalizacion.TRABAJO)}}</label>
+                <label for="trabajo" class = "col-form-label-sm">{{trans('hospitalizacion.TRABAJO')}}</label>
                 <input type="text" id = "trabajo" class = "form-control form-control-sm" value = "{{$paciente->trabajo}}" placeholder = "Trabajo" readonly>
             </div>
             <div class="form-group col-md-3 col-sm-4">
-                <label for="sanguineo" class = "col-form-label-sm">{{trans('hospitalizacion.GRUPOSANGUINEO)}}</label>
+                <label for="sanguineo" class = "col-form-label-sm">{{trans('hospitalizacion.GRUPOSANGUINEO')}}</label>
                 <input type="text" id = "sanguineo" class = "form-control form-control-sm" value = "{{$paciente->gruposanguineo}}" readonly>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group col-md-3">
-                <label for="email" class = "col-form-label-sm">{{trans('hospitalizacion.}CORREO ELECTR&Oacute;NICO)}</label>
+                <label for="email" class = "col-form-label-sm">{{trans('hospitalizacion.CORREOELECTR&Oacute;NICO')}}</label>
                 <input type="email" id = "email" class = "form-control form-control-sm" placeholder = "Email" readonly>
             </div>
             <div class="form-group col-md-3">
-                <label for="direccion" class = "col-form-label-sm">{{trans('hospitalizacion.DIRECCIÓN}}</label>
+                <label for="direccion" class = "col-form-label-sm">{{trans('hospitalizacion.DIRECCIÓN')}}</label>
                 <input type="text" id = "direccion" class = "form-control form-control-sm" value = "{{$paciente->direccion}}" placeholder = "Dirección" readonly>
             </div>
             <div class="form-group col-md-6">
-                <label for="observaciones" class = "col-form-label-sm">{{trans('hospitalizacion.OBSERVACIONES}}</label>
+                <label for="observaciones" class = "col-form-label-sm">{{trans('hospitalizacion.OBSERVACIONES')}}</label>
                 <textarea class="form-control" id="observaciones" name="observacion" rows="3" value = "{{$paciente->observacion}}"></textarea>
             </div>
         </div>
@@ -227,29 +227,29 @@
                 <input type="text" id = "transfusion" class = "form-control form-control-sm" value = "{{$paciente->transfusion}}" placeholder = "Transfusiones" readonly>
             </div>
             <div class="form-group col-md-3">
-                <label for="habito" class = "col-form-label-sm">{{trans('hospitalizacion.H&Aacute;BITOS}}</label>
+                <label for="habito" class = "col-form-label-sm">{{trans('hospitalizacion.H&Aacute;BITOS')}}</label>
                 <input type="text" id = "habito" class = "form-control form-control-sm" placeholder = "Hábito" readonly>
             </div>
             <div class="form-group col-md-3">
-                <label for="referencia" class = "col-form-label-sm">{{trans('hospitalizacion.REFERENCIA}}</label>
+                <label for="referencia" class = "col-form-label-sm">{{trans('hospitalizacion.REFERENCIA')}}</label>
                 <input type="text" id = "referencia" class = "form-control form-control-sm" placeholder = "Referencia del paciente" readonly>
             </div>
             <div class="form-group col-md-3">
-                <label for="vacuna" class = "col-form-label-sm">{{trans('hospitalizacion.VACUNA}}</label>
+                <label for="vacuna" class = "col-form-label-sm">{{trans('hospitalizacion.VACUNA')}}</label>
                 <input type="text" id = "vacuna" class = "form-control form-control-sm" value = "{{$paciente->vacuna}}" placeholder = "Vacuna" readonly>
             </div>
         </div>
         <div class="form-row">
           <div class="form-group col-md-4">
-              <label for="antpatof" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEPATOLÓGICOS}}</label>
+              <label for="antpatof" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEPATOLÓGICOS')}}</label>
               <textarea class="form-control" id="antpatof" name="antpatof" rows="3" value="{{$paciente->antecedentes_pat}}"></textarea>
           </div>
           <div class="form-group col-md-4">
-              <label for="antfamif" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEFAMILIARES}}</label>
+              <label for="antfamif" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEFAMILIARES')}}</label>
               <textarea class = "form-control" name="antfamif" id="antfamif" rows="3" value="{{$paciente->antecedentes_fam}}"></textarea>
           </div>
           <div class="form-group col-md-4">
-              <label for="antquiruf" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEQUIRURGICOS}}</label>
+              <label for="antquiruf" class = "col-form-label-sm">{{trans('hospitalizacion.ANTECEDENTEQUIRURGICOS')}}</label>
               <textarea class = "form-control" name="antquiruf" id="antquiruf" rows="3" value="{{$paciente->antecedentes_quir}}"></textarea>
           </div>
         </div>

@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>CONSENTIMIENTO INFORMADO - DROGAS ABUSO</title>
+    <meta charset="utf-8">
+    <title>Consentimiento informado pruebas geneticas diagnosticas</title>
     <style>
         @page {
             margin: 15 0;
@@ -184,7 +185,7 @@
 
                 <td rowspan="2" class="text-center td-border" style="height:65px; width: 20%;">
                 @if(!is_null($empresa_nombre->logo))
-                    <img src="{{base_path().'/storage/app/logo/'.$empresa_nombre->logo}}" style="width:150px;height: 75px;">
+                    <img src="{{base_path().'/storage/app/logo/logo0993075000001.jpg'}}" style="width:150px;height: 75px;">
                 @endif
                 </td>
                 <td style="width: 35%; font-size: 15px;" class="text-center td-border"><b>{{$empresa->razonsocial}}</b></td>
@@ -244,6 +245,6 @@
                             @for($count=0; $count<=3;$count++) &nbsp; @endfor FIRMA DEL PACIENTE O 
                             @for($count=0; $count<=20;$count++) &nbsp; @endfor FIRMA DEL REPRESENTANTE DE <br>
                             <div>@for($count=0; $count<=2;$count++) &nbsp; @endfor REPRESENTANTE LEGAL
-                            @for($count=0; $count<=10;$count++) &nbsp; @endfor {{$empresa->razonsocial}}<br></div>
+                            @for($count=0; $count<=15;$count++) &nbsp; @endfor {{$empresa->razonsocial}}<br></div>
                            
-                          
+

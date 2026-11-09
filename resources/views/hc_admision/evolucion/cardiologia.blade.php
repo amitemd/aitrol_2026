@@ -1,4 +1,6 @@
+
 @extends('hc_admision.visita.base')
+
 @section('action-content')
 
 <style type="text/css">
@@ -142,32 +144,20 @@
                             
                             <div class="col-md-6">
                                 <h4>ULTIMAS EVOLUCIONES</h4>
-                                <table class="table table-striped">
+                                <table class="table">
                                     <thead>
                                         <th>Fecha</th>
+                                        <!--th>Evolución</th-->
                                         <th>Doctor</th>
-                                        <th>Especialidad</th>
                                         <th>Acción</th>
                                     </thead>
                                     <tbody>
                                         @foreach($historiaclinica as $h)
                                             <tr>
-                                                <td id="{{$h->id}}-{{$h->proc_consul}}-{{$h->secuencia}}">{{substr($h->created_at,0,10)}}</td>
+                                                <td>{{substr($h->created_at,0,10)}}</td>
+                                                <!--td><?php echo substr($h->cuadro_clinico,0,10) ?></td-->
                                                 <td>{{$h->apellido1}} {{$h->apellido2}} {{$h->nombre1}}</td>
-                                                <td>{{$h->especialidad}}</td>
-                                                <td><button id="btn{{$h->id}}" @if($h->id == $cardio->id_evo_orden ) class="btn btn-danger btn-xs" @else class="btn btn-success btn-xs" @endif onclick="carga_evolucion({{$h->id}})"><i class="glyphicon glyphicon-ok-sign"></i></button></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="4" style="font-size:12px; font-weight:bold;">
-                                                <?php
-                                                    // Eliminar etiquetas HTML
-                                                    $texto_plano = strip_tags($h->cuadro_clinico);                                                
-                                                    // Cortar los primeros 30 caracteres
-                                                    $texto_cortado = substr($texto_plano, 0, 150);
-                                                    // Mostrar el texto cortado
-                                                    echo $texto_cortado;
-                                                ?>
-                                                </td>
+                                                <td><button class="btn btn-success btn-xs" onclick="carga_evolucion({{$h->id}})"><i class="glyphicon glyphicon-ok-sign"></i></button></td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -175,15 +165,6 @@
                                 
                                 <form id="frm_evol1"> 
                                     <input type="hidden" name="cardioid" value="{{$cardio->id}}">  
-                                    <input type="hidden" name="id_evo_orden" id="id_evo_orden" value="{{$cardio->id_evo_orden}}">  
-                                    <div class="col-md-12" style="padding: 1px;">
-                                        <label for="id_doctor_examinador" class="control-label">Medico Examinador</label>
-                                        <select onchange="guardar_cardiologia();"  class="form-control input-sm" style="width: 100%;" name="id_doctor_examinador" id="id_doctor_examinador">
-                                            @foreach($doctores as $value)
-                                                <option @if($cardio->id_drsol == $value->id) selected @endif value="{{$value->id}}" >{{$value->apellido1}} @if($value->apellido2 != "(N/A)"){{ $value->apellido2}}@endif {{ $value->nombre1}} @if($value->nombre2 != "(N/A)"){{ $value->nombre2}}@endif</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
                                     <div class="col-md-12" style="padding: 1px;">
                                         <label for="thistoria_clinica_ev" class="control-label">CUADRO CLÍNICO ACTUAL</label>
                                         <div id="thistoria_clinica_ev" style="border: solid 1px;"><?php echo $cardio->cuadro_actual; ?></div>
@@ -300,15 +281,8 @@
                                     <a class="btn btn-primary" href="{{route('formato007.imprimir',['id' => $evolucion->id])}}" target="_blank">Formato 007</a>
 
                                 </div>    
-                                
-                                <div class="form-group col-md-12" style="padding: 1px;margin-bottom: 0px;">
-
-                                    <a class="btn btn-primary" href="{{route('formulario007.formulario007_unificado',['id' => $evolucion->historiaclinica->hcid])}}" target="_blank">Nuevo Formato 007</a>
-
-                                </div>    
                                
                             </div> 
-
                              
                     </div>
                 </div>    
@@ -340,33 +314,20 @@
             dataType: "json",
             type: 'get',
             success: function(data){
-                let orden_ant = $('#id_evo_orden').val();
-                $('#btn'+ orden_ant).removeClass('btn-danger');
-                $('#btn'+ orden_ant).addClass('btn-success');
+                
                 console.log(data);
-                $('#id_evo_orden').val(data.evolucion.id);
-                $('#btn'+ data.evolucion.id).removeClass('btn-success');
-                $('#btn'+ data.evolucion.id).addClass('btn-danger');
-                console.log($('#id_doctor_examinador'));
-                $('#id_doctor_examinador').val(data.historia.id_doctor1).change();
-                console.log($('#id_doctor_examinador'));
-                /*anterior = tinyMCE.get('thistoria_clinica_ev').getContent();*/
-                anterior = '';
+                anterior = tinyMCE.get('thistoria_clinica_ev').getContent();
                 tinyMCE.get('thistoria_clinica_ev').setContent(anterior+'\n'+data.evolucion.cuadro_clinico);
                 $("#historia_clinica_ev").val(anterior+'\n'+data.evolucion.cuadro_clinico);
 
-                /*anterior = tinyMCE.get('tresultado_ev').getContent();*/
-                if(data.evolucion.resultado != null){
-                    tinyMCE.get('tresultado_ev').setContent(anterior+'\n'+data.evolucion.resultado);
-                    $("#resultado_ev").val(anterior+'\n'+data.evolucion.resultado);
-                }    
+                anterior = tinyMCE.get('tresultado_ev').getContent();
+                tinyMCE.get('tresultado_ev').setContent(anterior+'\n'+data.evolucion.resultado);
+                $("#resultado_ev").val(anterior+'\n'+data.evolucion.resultado);
 
-                if(data.historia.examenes_realizar != null){
-                    /*anterior = $('#examenes_realizar').val();*/
-                    nuevo = anterior+'\n'+data.historia.examenes_realizar;
+                anterior = $('#examenes_realizar').val();
+                nuevo = anterior+'\n'+data.historia.examenes_realizar;
 
-                    $('#examenes_realizar').val(nuevo);
-                }    
+                $('#examenes_realizar').val(nuevo);
                 guardar_cardiologia(); 
 
                 cargar_cie10_cardio();
@@ -561,15 +522,14 @@
 
     
     function cargar_cie10_cardio(){
-        
         $.ajax({
             url:"{{route('cardio.cargar_cie10',['id' => $cardio->id])}}",
             dataType: "json",
             type: 'get',
             success: function(data){
-                //console.log(data);
+                console.log(data);
                 var table = document.getElementById("tdiagnostico_ev");
-                $('#tdiagnostico_ev tr').remove();
+
                 $.each(data, function (iterador, value) {
                     
                     var row = table.insertRow(0);
@@ -643,8 +603,9 @@
         document.getElementById("tdiagnostico").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){
@@ -664,8 +625,9 @@
         document.getElementById("tdiagnostico_ev").deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cardio/cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
           
           success: function(data){
@@ -742,31 +704,9 @@
             })
         },
         minLength: 2,
-        select: function( request, response ) {
-            /*console.log("res");console.log(response);  */  
-            $.ajax({
-                type: 'post',
-                url:"{{route('epicrisis.cie10_nombre2')}}",
-                headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-                datatype: 'json',
-                data: { 'cie10': response.item.value },
-                success: function(data){
-                    //console.log(data);
-                    if(data!='0'){
-                        $('#codigo_ev').val(data.id);
-                        
-                        
-                    }
-                    
-                },
-                error: function(data){
-                        //console.log(data);
-                    }
-            })
-        },
     } );
 
-    /*$("#cie10_ev").change( function(){
+    $("#cie10_ev").change( function(){
         $.ajax({
             type: 'post',
             url:"{{route('epicrisis.cie10_nombre2')}}",
@@ -785,7 +725,7 @@
                     //console.log(data);
                 }
         })
-    });*/
+    });
 
 
     $('#bagregar_ev').click( function(e){
@@ -877,7 +817,7 @@
             datatype: 'json',
             data: { 'codigo': $("#codigo_ev").val(), 'pre_def': $("#pre_def_ev").val(), 'cardio': {{$cardio->id}}, 'in_eg': null },
             success: function(data){
-                //console.log(data);
+                console.log(data);
                 var indexr = data.count-1 
                 var table = document.getElementById("tdiagnostico_ev");
                 var row = table.insertRow(indexr);

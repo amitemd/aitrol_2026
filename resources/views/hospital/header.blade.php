@@ -58,6 +58,21 @@
 
       <div class="navbar-custom-menu" style="">
         <ul class="nav navbar-nav" style="z-index: 9999">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-label="{{ trans('v3/accessibility.language') }}">
+              <i class="fa fa-language" aria-hidden="true"></i>
+              <span class="hidden-xs">{{ strtoupper(App::getLocale()) }}</span>
+            </a>
+            <ul class="dropdown-menu">
+              @foreach (['es' => 'idioma_es', 'en' => 'idioma_en', 'pt' => 'idioma_pt'] as $locale => $label)
+                <li class="{{ App::getLocale() === $locale ? 'active' : '' }}">
+                  <a href="{{ route('change_lang', ['lang' => $locale]) }}" lang="{{ $locale }}" hreflang="{{ $locale }}">
+                    {{ trans('hospital.'.$label) }}
+                  </a>
+                </li>
+              @endforeach
+            </ul>
+          </li>
           <!-- User Account Menu -->
           <li class="dropdown user user-menu" style="color:black;">
             <!-- Menu Toggle Button -->
@@ -74,22 +89,22 @@
                 <img src="{{asset('/avatars').'/'.$imagen}}" class="img-circle" alt="User Image">
 
                 <p style="color:black;">
-                  Hola {{ Auth::user()->nombre1}} {{ Auth::user()->apellido1}}
+                  {{ trans('hospital.saludo_usuario', ['name' => Auth::user()->nombre1.' '.Auth::user()->apellido1]) }}
                 </p>
               </li>
               <!-- Menu Footer-->
               <li class="user-footer">
                @if (Auth::guest())
                   <div class="pull-left">
-                    <a href="{{ route('login') }}" class="btn btn-default btn-flat">Login</a>
+                    <a href="{{ route('login') }}" class="btn btn-default btn-flat">{{ trans('hospital.login') }}</a>
                   </div>
                @else
                 <div class="pull-left">
-                    <a data-toggle="modal" data-target="#perfil" data-remote="{{ route('perfil.editar_nuevo') }}"  class="btn btn-default btn-flat">Perfil</a>
+                    <a data-toggle="modal" data-target="#perfil" data-remote="{{ route('perfil.editar_nuevo') }}"  class="btn btn-default btn-flat">{{ trans('hospital.perfil') }}</a>
                   </div>
                  <div class="pull-right">
                     <a class="btn btn-default btn-flat" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                    Cerrar Sesion
+                    {{ trans('hospital.cerrar_sesión') }}
                     </a>
                  </div>
                 @endif

@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
   
-  <title>ORDEN DE PROCEDIMIENTO.</title>
+  <title>ORDEN DE PROCEDIMIENTO</title>
 
   <style>
    
     @page { margin: 80px 70px; }
     #header { position: fixed; left: 0px; top: -40px; right: 0px; height: 150px; text-align: center; }
-    #footer { position: fixed; left: 0px; bottom: -90px; right: 0px; height: 320px; }
+    #footer { position: fixed; left: 0px; bottom: 0px; right: 0px; height: 320px; }
     #footer1 { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 110px; }
-    #footer2 { position: fixed; left: 0px; bottom: -140px; right: 0px; height: 255px; }
+    #footer2 { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 255px; }
    
     /* Font Definitions */
     @font-face
@@ -42,26 +43,22 @@
   </style>    
 </head>
 <body lang=ES-EC style="margin-top: 5px;">
-  @php
-    $id_empresa= Session::get('id_empresa');
-    $empresa= Sis_medico\Empresa::find($id_empresa);
-  @endphp
     
     <div id="header">
      
       <div style="float: left;width: 10%;text-align: left;">
-        <img style="margin: 0;width: 200px" src="{{public_path().'/imagenes/endoscopynet_gastroquito.png'}}">
+        <img style="margin: 0;width: 200px" src="{{base_path().'/storage/app/logo/logo1391707460001.png'}}">
       </div>
-      <div  style="text-align: center;"> 
-          <img style="margin: 0;width: 190px;">
-          <p style="font-size: 19px;"><b style="text-align: center;">ENDOSCOPYNET <b><br></p>
+      <div  style="text-align: center;">
+          <img style="margin: 0;width: 180px;">
+          <p style="font-size: 19px;"><b style="text-align: center;">INSTITUTO ECUATORIANO <b><br><b>DE ENFERMEDADES DIGESTIVAS</b></p>
       </div>
     </div>
-    <br><br>
+    <br>
     <table  style="border: 1px solid; width: 100%;border-collapse: collapse; font-size: 14px;">
       <tbody>
         <tr>
-          <td style="border-right: 1px solid;width: 103px;text-align: center;font-size: 19px;background-color: #4682B4;"><b style="text-align: center;color: white">ORDEN DE PROCEDIMIENTO ENDOSC&Oacute;PICO</b></td>
+          <td style="border-right: 1px solid;width: 103px;text-align: center;font-size: 19px;background-color: #4682B4;"><b style="text-align: center;color: white">ORDEN DE PROCEDIMIENTO</b></td>
         </tr>
       </tbody>
     </table>
@@ -438,7 +435,6 @@
         </tr>
       </tbody>
     </table>
-    <br>
     
     @php
       $nom = "";
@@ -456,14 +452,19 @@
 
 
     <div id="footer1">
-      <div style="float: left;font-size: 15px;width: 50%;text-align: center;">
-        @php $empresa = Sis_medico\Empresa::where('prioridad', '1')->first(); @endphp
-        <p> @if(!is_null($empresa->direccion)) {{$empresa->direccion}} @endif </p>
-        <p> Telfs: @if(!is_null($empresa->telefono1)) {{$empresa->telefono1}} @endif </p>
+      <div style="float: left;font-size: 14px;width: 50%;text-align: center;">
+          Av.Juan Tanca Marengo, Calle 13E NE <br> 
+          Torre Médico Vitalis 1 - Mezanine 3 <br>
+          Telfs.: 042109180 - 042109180 <br>
+          Celular: 09993066407 - 0959777712 <br>
+          iecedgye@gmail.com / www.ieced.com.ec
       </div>
-      <div style="font-size: 15px;text-align: center;">
-        <p> @if(!is_null($empresa->direccion)) {{$empresa->direccion}} @endif </p>
-        <p> Telfs: @if(!is_null($empresa->telefono1)) {{$empresa->telefono1}} @endif </p>
+      <div style="font-size: 14px;text-align: center;">
+          Av.Juan Tanca Marengo, Calle 13E NE <br> 
+          Torre Médica II - 4to piso # 408-406 <br> 
+          Telfs.: 042109180 - 042109180 <br> 
+          Celular: 09993066407 - 0959777712 <br> 
+          iecedgye@gmail.com / www.ieced.com.ec
       </div>
     </div>
     <div id="footer2">
@@ -474,4 +475,4 @@
       </p>
     </div>
   </body>
-</html>  
+</html>

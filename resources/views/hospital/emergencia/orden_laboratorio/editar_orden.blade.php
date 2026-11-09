@@ -96,7 +96,7 @@
         </div>
     </div>
     <div class="card-body" style="margin-bottom: 1px;padding: 0;">
-        <!--form class="form-vertical" role="form" method="POST" action="{{ route('orden.update',['id' => $orden->id]) }}"-->
+        <!--form class="form-vertical" role="form" method="POST" action="{{ route('orden.update',['orden' => $orden->id]) }}"-->
         <form id="orden_publica{{$orden->id}}" >
                     
             {{ csrf_field() }}
@@ -118,7 +118,7 @@
                 </div>
             </div-->          
 
-            @php $cont=count(old('examen')) @endphp 
+            @php $cont=count((array) old('examen')) @endphp
           
              
             <div class="row" style="padding: 0;"> 
@@ -333,9 +333,9 @@
         //alert("ingreso");
         $.ajax({
             async: true,
-            type: "GET",
+            type: "POST",
             url: "{{url('hospital/emergencia/decimopaso/laboratorio/detalle/solic/crear/pub/agregar/examen')}}/"+id_orden+"/"+id_examen,
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml){
 
@@ -351,9 +351,9 @@
         //alert("quitar");
         $.ajax({
             async: true,
-            type: "GET",
+            type: "DELETE",
             url: "{{url('hospital/emergencia/decimopaso/laboratorio/detalle/solic/crear/pub/quitar/examen')}}/"+id_orden+"/"+id_examen,
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml){
 
@@ -396,9 +396,9 @@
 
         $.ajax({
             async: true,
-            type: "GET",
+            type: "POST",
             url: "{{url('hospital/emergencia/decimopaso/laboratorio/detalle/solic/crear/pub/agregar/examen')}}/{{$orden->id}}/"+id_examen,
-            data: "",
+            data: {'_token': '{{ csrf_token() }}'},
             datatype: "html",
             success: function(datahtml){
 
@@ -416,7 +416,7 @@
         $.ajax({
             async: true,
             type: "GET",
-            url: "{{route('hospital.decimo_laboratorio_listar_otros',[ 'id' => $orden->id])}}",
+            url: "{{route('hospital.decimo_laboratorio_listar_otros',[ 'id_orden' => $orden->id])}}",
             data: "",
             datatype: "html",
             success: function(datahtml){

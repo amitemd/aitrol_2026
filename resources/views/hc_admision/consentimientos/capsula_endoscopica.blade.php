@@ -148,7 +148,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">La técnica a la que va a someterse consiste en la filmación del intestino delgado mediante una micro cámara de vídeo que se traga como un comprimido, y a la que denominamos concretamente video cápsula. Sirve para el diagnóstico de enfermedades del intestino delgado. No sirve para la toma de biopsias ni para hacer tratamientos.</td>
-                    <td><img style="margin:6px;margin-top:10px;height:110px;width:90px;" src="{{public_path('/imagenes/capsula_endoscopica.png')}}" />
+                    <td><img style="margin:6px;margin-top:10px;height:110px;width:90px;" src="{{base_path('public/imagenes/capsula_endoscopica.png')}}" />
                     </td>
 
                 </tr>
@@ -242,8 +242,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

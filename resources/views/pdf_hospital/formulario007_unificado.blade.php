@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html>
+<?php
+ob_start(function ($html) {
+    return preg_replace('/(>\s*)N\/A(\s*<)/i', '$1$2', $html);
+});
+?>
 @php
 $fecha=date('Y-m-d');
 $hora = date('H:i:s');
@@ -17,6 +22,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 ?>
 
 <head>
+    <meta charset="utf-8">
     <title>HCU_007</title>
     <style>
         @page {
@@ -169,8 +175,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
     </header>
     <main>
         @php
-         $empresa = $interconsulta->historia->agenda->empresa;
+        $empresa = $interconsulta->historia->agenda->empresa;
         @endphp
+
         <table style="width: 99%">
             <tr>
                 <td colspan="12" style="text-align: center">
@@ -196,8 +203,8 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td colspan="2" class="bg-green text-center"><b>No. HOJA</b></td>
                 </tr>
                 <tr>
-                    <td class="text-center" colspan="2">@if(!is_null($evolucion_orden)){{$evolucion_orden->historiaclinica->seguro->nombre}} @endif</td>
-                    <td class="text-center" colspan="2">@if(!is_null($evolucion_orden)){{$evolucion_orden->historiaclinica->agenda->empresa->unicodigo}} @endif</td>
+                    <td class="text-center" colspan="2">{{$interconsulta->historia->seguro->nombre}}</td>
+                    <td class="text-center" colspan="2">{{$interconsulta->historia->agenda->empresa->unicodigo}}</td>
                     <td class="text-center" colspan="2">{{$empresa->nombrecomercial}}</td>
                     <td class="text-center" colspan="2">{{$paciente->id}}</td>
                     <td class="text-center" colspan="2"></td>
@@ -225,10 +232,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center" colspan="1">{{$paciente->nombre2}}</td>
                     <td class="text-center" colspan="1">@if($paciente->sexo == 1) Masculino @endif @if($paciente->sexo == 2) Femenino @endif</td>
                     <td class="text-center" colspan="1">{{$edad}}</td>
-                    <td class="text-center" colspan="1">{{$diaNacimiento}}</td>
                     <td class="text-center" colspan="1"></td>
-                    <td class="text-center" colspan="1">{{$mesNacimiento}}</td>
-                    <td class="text-center" colspan="1">{{ date('Y', strtotime($paciente->fecha_nacimiento))}}</td>
+                    <td class="text-center" colspan="1"></td>
+                    <td class="text-center" colspan="1"></td>
+                    <td class="text-center" colspan="1">X</td>
                 </tr>
             </tbody>
         </table>
@@ -370,11 +377,11 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td style="width:15%" class="bg-green text-center"><b>SEGUNDO APELLIDO</b></td>
             </tr>
             <tr>
-                <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($evolucion_orden)){{substr($evolucion_orden->historiaclinica->agenda->fechaini,0,10)}}@endif</td>
-                <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($evolucion_orden)){{substr($evolucion_orden->historiaclinica->agenda->fechaini,11)}}@endif</td>
-                <td class="text-center" style="width:14%; height: 18px;">@if(!is_null($cardio->id_drsol)){{$cardio->doctor->apellido1 }} @endif</td>
+                <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($cardio->fecha_formato)) {{substr($cardio->fecha_formato,0,10)}} @else {{substr($interconsulta->historia->agenda->fechaini,0,10)}}@endif</td>
+                <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($cardio->fecha_formato)) {{substr($cardio->fecha_formato,11)}} @else {{substr($interconsulta->historia->agenda->fechaini,11)}}@endif</td>
+                <td class="text-center" style="width:14%; height: 18px;">@if(!is_null($cardio->id_drsol)){{ $cardio->doctor->nombre1 }} @endif </td>
+                <td class="text-center" style="width:14%; height: 18px;">@if(!is_null($cardio->id_drsol)){{$cardio->doctor->apellido1 }} @endif </td>
                 <td class="text-center" style="width:14%; height: 18px;">@if(!is_null($cardio->id_drsol)){{ $cardio->doctor->apellido2 }} @endif</td>
-                <td class="text-center" style="width:14%; height: 18px;">@if(!is_null($cardio->id_drsol)){{ $cardio->doctor->nombre1 }} @endif</td>
             </tr>
             <tr>
                 <td colspan="2" class="td-border bg-green text-center"><b>NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
@@ -387,31 +394,46 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td colspan="2" class="text-center" style="width:25%; height:60px">
                     @php
                     $firma = null;
-                    if($cardio->id_dcsol != null){
+                    if($cardio->id_drsol != null){
                     $firma = Sis_medico\Firma_Usuario::where('id_usuario',$cardio->doctor->id)->first();
                     }
                     @endphp
                     @if(!is_null($firma))
-                    <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
+                    @if(!is_null($firma->firma))
+                    <img width=130 height=45 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
+                    @else
+                    <br><br><br>
+                    <b style="font-size: 10px;">@if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}}</b><br>
+                    @endif
                     @endif
                 </td>
                 <td class="text-center" style="width:25%; height:60px;">
-                @if(!is_null($firma))
+                    @php
+                    $especialidad = null;
+                    if(!is_null($firma)){
+                    $user_espe = Sis_medico\User_espe::where('usuid',$firma->doctor->id)->first();
+                    if(!is_null($user_espe)){
+                    $especialidad = Sis_medico\Especialidad::find($user_espe->espid);
+                    }
+                    }
+
+                    @endphp
+                    @if(!is_null($firma))
                     @if(!is_null($firma->doctor)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif @endif<br>
-                    @if(!is_null($evolucion_orden)) {{$evolucion_orden->historiaclinica->agenda->especialidad->nombre}} @endif<br>
+                    @if(!is_null($firma)) {{$interconsulta->especialidad_resultado}} @endif<br>
                     @if(!is_null($firma->doctor)) Cedula No. {{$firma->doctor->id}} @endif
-                @endif
+                    @endif
                 </td>
             </tr>
             <tr>
                 <td colspan="2"><b>SNS-MSP/HCU-form.007/2021</b></td>
-                <td colspan="3" class="text-right"><b>INTERCONSULTA - SOLICITUD</b></td>
+                <td colspan="3" class="text-right"><b>INTERCONSULTA - SOLICITUD (1)</b></td>
             </tr>
             </tbody>
         </table>
 
         <div class="page-break-before"></div>
-         
+
         <table style="width: 99%">
             <tr>
                 <td colspan="12" style="text-align: center">
@@ -466,10 +488,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center" colspan="1">{{$paciente->nombre2}}</td>
                     <td class="text-center" colspan="1">@if($paciente->sexo == 1) Masculino @endif @if($paciente->sexo == 2) Femenino @endif</td>
                     <td class="text-center" colspan="1">{{$edad}}</td>
-                    <td class="text-center" colspan="1">{{$diaNacimiento}}</td>
                     <td class="text-center" colspan="1"></td>
-                    <td class="text-center" colspan="1">{{$mesNacimiento}}</td>
-                    <td class="text-center" colspan="1">{{ date('Y', strtotime($paciente->fecha_nacimiento))}}</td>
+                    <td class="text-center" colspan="1"></td>
+                    <td class="text-center" colspan="1"></td>
+                    <td class="text-center" colspan="1">X</td>
                 </tr>
             </tbody>
         </table>
@@ -605,11 +627,11 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td style="width:15%" class="td-border bg-green"><b>SEGUNDO APELLIDO</b></td>
             </tr>
             <tr>
-            <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($cardio->fecha_formato)) {{substr($cardio->fecha_formato,0,10)}} @else {{substr($interconsulta->historia->agenda->fechaini,0,10)}}@endif</td>
-            <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($cardio->fecha_formato)) {{substr($cardio->fecha_formato,11)}} @else {{substr($interconsulta->historia->agenda->fechaini,11)}}@endif</td>
+                <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($cardio->fecha_formato)) {{substr($cardio->fecha_formato,0,10)}} @else {{substr($interconsulta->historia->agenda->fechaini,0,10)}}@endif</td>
+                <td class="text-center" style="width:5%; height: 18px;">@if(!is_null($cardio->fecha_formato)) {{substr($cardio->fecha_formato,11)}} @else {{substr($interconsulta->historia->agenda->fechaini,11)}}@endif</td>
+                <td class="text-center" style="width:14%; height: 18px;">{{ $interconsulta->doctor->nombre1 }} </td>
                 <td class="text-center" style="width:14%; height: 18px;">{{$interconsulta->doctor->apellido1 }} </td>
                 <td class="text-center" style="width:14%; height: 18px;">{{ $interconsulta->doctor->apellido2 }}</td>
-                <td class="text-center" style="width:14%; height: 18px;">{{ $interconsulta->doctor->nombre1 }}</td>
             </tr>
             <tr>
                 <td colspan="2" class="td-border bg-green"><b>NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
@@ -624,20 +646,25 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
                     @endphp
                     @if(!is_null($firma))
-                    <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
+                    @if(!is_null($firma->firma))
+                    <img width=130 height=45 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
+                    @else
+                    <br><br><br>
+                    <b style="font-size: 10px;">@if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}}</b><br>
+                    @endif
                     @endif
                 </td>
-                <td class="td-border" style="width:25%; height:60px;">
-                @if(!is_null($firma))
+                <td class="td-border text-center" style="width:25%; height:60px;">
+                    @if(!is_null($firma))
                     @if(!is_null($firma->doctor)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif @endif<br>
                     @if(!is_null($firma)) {{$interconsulta->especialidad_resultado}} @endif<br>
                     @if(!is_null($firma->doctor)) Cedula No. {{$firma->doctor->id}} @endif
-                @endif
+                    @endif
                 </td>
             </tr>
             <tr>
                 <td colspan="2"><b>SNS-MSP/HCU-form.007/2021</b></td>
-                <td colspan="3" class="text-right"><b>INTERCONSULTA - INFORME</b></td>
+                <td colspan="3" class="text-right"><b>INTERCONSULTA - INFORME (2)</b></td>
             </tr>
             </tbody>
         </table>

@@ -2,9 +2,11 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <title>FORMULARIO 001</title>
     <style>
         @page {
+            size: A4 portrait;
             margin: 0;
         }
 
@@ -28,11 +30,33 @@
 
         /** Define the footer rules **/
         footer {
+            display: table;
             position: fixed;
-            bottom: 0cm;
-            left: 0cm;
-            right: 0cm;
-            height: 2cm;
+            bottom: 30px;
+            left: 2%;
+            right: auto;
+            width: 96%;
+            color: #000;
+            font-family: Helvetica, Arial, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
+        }
+
+        footer > span {
+            display: table-cell;
+            width: 50%;
+        }
+
+        footer .document-name {
+            text-align: right;
+        }
+
+        .page-number:after {
+            content: counter(page);
         }
 
         table {
@@ -173,22 +197,34 @@
         .page-break-after {
             page-break-after: always;
         }
+
+        .discharge-table {
+            table-layout: fixed;
+            font-size: 7px;
+        }
+
+        .discharge-table td {
+            overflow-wrap: break-word;
+            padding: 1px;
+        }
+
+        .discharge-table tbody tr:nth-child(2) td {
+            width: auto !important;
+        }
     </style>
 </head>
 
 <body>
+    <footer>
+        <span><b>SNS-MSP / HCU-form.001 / 2021</b></span>
+        <span class="document-name"><b>ADMISIÓN - ALTA EGRESO (<span class="page-number"></span>)</b></span>
+    </footer>
     <header>
 
     </header>
     <main>
+        @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa])
         <table cellpadding="0" cellspacing="0">
-            <tr>
-                <td style="text-align: center;" colspan="2">
-                    @if(!is_null($empresa))
-                        <center><img src="{{base_path().'/storage/app/logo/'}}/{{$empresa->logo}}" style="width:200px;height: 100px"></center>
-                    @endif
-                </td>
-            </tr>
             <tr>
                 <td colspan="2">
                     <table border="1">
@@ -475,17 +511,11 @@
                     </table>
                 </td>
             </tr>
-            <tr>
-                <td><b>SNS-MSP / HCU-form.001 / 2019</b></td>
-                <td style="text-align: right;"><b>ADMISIÓN</b></td>
-            </tr>
         </table>
-        <br>
-        <br>
-        <table cellpadding="0" cellspacing="0">
+        <table class="page-break-before" cellpadding="0" cellspacing="0">
             <tr>
                 <td>
-                    <table border="1">
+                    <table border="1" class="discharge-table">
                         <thead>
                             <tr>
                                 <td colspan="17" class="bg-purple title1"><b>F. EGRESO HOSPITALARIO</b></td>
@@ -547,8 +577,8 @@
                                         @endif
                                     </td>
                                     <td rowspan="2">
-                                        @if($value['firma_doctor']!='')
-                                            <img src="{{$value['cie10_ingreso']['ruta_firma']}}" style="width: 100px;height: auto;"><br>
+                                        @if($value['firma_doctor']!='' and isset($value['cie10_ingreso']))
+                                            
                                         @endif
                                     </td>
                                 </tr>
@@ -641,12 +671,6 @@
                     <td style="width: 80%;">0. Ninguno. 1. Desarrollo Humano. 2. Joaquín Gallegos. 3. Manuela Espejo. </td>
                 </tr>
             </tbody>
-        </table>
-        <table cellpadding="0" cellspacing="0" style="width: 100%">
-            <tr>
-                <td><b>SNS-MSP / HCU-form.001 / 2019</b></td>
-                <td style="text-align: right;"><b>EGRESO</b></td>
-            </tr>
         </table>
     </main>
 </body>

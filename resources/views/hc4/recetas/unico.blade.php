@@ -12,9 +12,9 @@
                   @php $genericos = $detalle->medicina->genericos; @endphp
                   <p>{{$detalle->nombre}} @foreach($genericos as $gen) ( {{$gen->generico->nombre}} ) @endforeach : {{$detalle->cantidad}} {{ $detalle->detalle_cantidad}}</p>
                 @endforeach
-                @if(!is_null($hist_recetas->rp))
-                <p><?php echo $hist_recetas->rp?>
-                </p>
+              @if(!is_null($hist_recetas->rp))
+              <p><?php echo $hist_recetas->rp?>
+              </p>
                 @endif 
               @endif
           </div>
@@ -28,9 +28,9 @@
                   @php $genericos = $detalle->medicina->genericos; @endphp
                   <p>{{$detalle->nombre}}: {{$detalle->dosis}}</p>
                 @endforeach
-                @if(!is_null($hist_recetas->prescripcion))
-                  <p><?php echo $hist_recetas->prescripcion?></p>
-                @endif
+                  @if(!is_null($hist_recetas->prescripcion))
+                    <p><?php echo $hist_recetas->prescripcion?></p>
+                  @endif
               @endif
             </div>
         </div>

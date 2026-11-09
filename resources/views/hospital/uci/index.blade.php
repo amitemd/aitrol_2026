@@ -54,7 +54,7 @@
 								<label class="col-md-3 control-label">{{trans('hospitalizacion.Salas')}}</label>
 								<div class="col-md-9">
 									<select class="form-control" id="sala" name="sala">
-										<option value=" ">{{trans('hospitalizacion.Seleccione...')}}</option>
+										<option value=" ">{{trans('hospitalizacion.SeleccioneOpcion')}}</option>
 										@foreach($salas as $s)
 											<option  value="{{$s->id}}">{{$s->nombre_sala}}</option>
 										@endforeach

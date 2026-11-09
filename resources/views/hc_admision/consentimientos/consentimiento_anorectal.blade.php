@@ -133,8 +133,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <td style="font-weight: bold;text-transform:uppercase;">13. Gráfico de la exploración </td>
         </tr>
         <tr>
-            <td><img style="width: 150px;height:150px;margin:15px" src="{{public_path('/imagenes/anorectal.jpg')}}">
-                <img style="width: 150px;height:150px;margin:15px" src="{{public_path('/imagenes/anorectal1.jpg')}}">
+            <td><img style="width: 150px;height:150px;margin:15px" src="{{base_path('public/imagenes/anorectal.jpg')}}">
+                <img style="width: 150px;height:150px;margin:15px" src="{{base_path('public/imagenes/anorectal1.jpg')}}">
             </td>
         </tr>
         <tr>

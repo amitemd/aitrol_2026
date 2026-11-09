@@ -144,8 +144,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </thead>
             <tbody>
                 <tr>
-                    <td class="td">Consiste en establecer una comunicación entre el estómago y la pared del abdomen por donde se coloca una sonda de nutrición, cuyo objetivo es proporcionar una vía de alimentación adicional, a personas que, por diferentes motivos, no pueden ingerir alimentos adecuadamente por la vía oral. </td>
-                    <td><img  style="margin:6px;margin-top:10px;height:150px;width:150px" src="{{public_path('/imagenes/gastro.jpg')}}" />
+                    <td class="td">onsiste en establecer una comunicación entre el estómago y la pared del abdomen por donde se coloca una sonda de nutrición, cuyo objetivo es proporcionar una vía de alimentación adicional, a personas que, por diferentes motivos, no pueden ingerir alimentos adecuadamente por la vía oral. </td>
+                    <td><img  style="margin:6px;margin-top:10px;height:150px;width:150px" src="{{base_path('public/imagenes/gastro.jpg')}}" />
                 </tr>
             </tbody>
         </table>
@@ -235,8 +235,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

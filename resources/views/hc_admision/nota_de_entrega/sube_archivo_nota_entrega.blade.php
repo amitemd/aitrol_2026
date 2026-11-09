@@ -2,8 +2,8 @@
 <script src="{{asset('plugins/ajaxform/jquery.form.js')}}"></script>
 
 <div class="modal-header">
-  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-  <h4 class="modal-title" id="myModalLabel"> SUBIR NOTA DE ENTREGA</h4>
+  <button type="button" class="close" data-dismiss="modal" aria-label="{{ trans('nota_entrega_ui.close') }}"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title" id="myModalLabel">{{ trans('nota_entrega_ui.upload_title') }}</h4>
 </div>
 <div class="modal-body">
   <form action="{{ route('receta.update_nota_entrega') }}" enctype="multipart/form-data" method="POST">
@@ -18,11 +18,11 @@
       <input type="file" name="archivo" class="form-control" required>
     </div>
     <br>
-    <center><button class="btn btn-success upload-image" type="submit" >SUBIR</button></center>
+    <center><button class="btn btn-success upload-image" type="submit">{{ trans('nota_entrega_ui.upload') }}</button></center>
   </form> 
 </div>
 <div class="modal-footer">
-  <button type="button" id="bcerrar" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+  <button type="button" id="bcerrar" class="btn btn-default" data-dismiss="modal">{{ trans('nota_entrega_ui.close') }}</button>
 </div>
 
 
@@ -39,7 +39,7 @@
       if(response.statusText=='OK'){
         //$('#index_tb').empty().html(response.responseText);
         //findex_tb();
-        alert('Archivo subido correctamente');
+        alert({!! json_encode(trans('nota_entrega_ui.upload_success')) !!});
         $('#bcerrar').click();
         location.reload();
       }else{

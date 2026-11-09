@@ -170,7 +170,7 @@
 			<div class="col-md-12" style="border: 2px solid #004AC1; margin-left: 0px;margin-right: 0px;margin-left: 4px;padding-right: 0px;padding-left: 0px; background-color: #56ABE3">
 				<h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
 	        <img style="width: 35px; margin-left: 15px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/escudo.png"> 
-	        <b>DETALLES DE FILIACIÓN</b>
+	        <b>@lang('hc4.verDetallesFiliacion')</b>
           @if(!is_null($paciente)) 
             <center> 
               <div class="col-12" style="padding-bottom: 20px;">
@@ -190,22 +190,22 @@
 				    	<div class="col-md-12" style="padding-left: 30px;padding-right: 30px;">
                 <div class="row">
                   <div class="col-md-3" style="padding: 1px;">
-                    <span style="font-family: 'Helvetica general';">Primer Nombre</span>
+                    <span style="font-family: 'Helvetica general';">@lang('hc4.primerNombre')</span>
                     <br>
                     <input id="nombre1" type="text" onchange="guardar();" name="nombre1" required class="form-control input-sm" @if(!is_null($agenda->pnombre1)) value='{{$agenda->pnombre1}}' @endif >
                   </div>
                   <div class="col-md-3" style="padding: 1px;">
-                    <span style="font-family: 'Helvetica general';">Segundo Nombre</span>
+                    <span style="font-family: 'Helvetica general';">@lang('hc4.segundoNombre')</span>
                     <br>
                     <input id="nombre2" type="text" onchange="guardar();" name="nombre2" required class="form-control input-sm" @if(!is_null($agenda->pnombre2)) value='{{$agenda->pnombre2}}' @endif >
                   </div>
                   <div class="col-md-3" style="padding: 1px;">
-                    <span style="font-family: 'Helvetica general';">Primer Apellido</span>
+                    <span style="font-family: 'Helvetica general';">@lang('hc4.primerApellido')</span>
                     <br>
                     <input id="apellido1" type="text" onchange="guardar();" name="apellido1" required class="form-control input-sm" @if(!is_null($agenda->papellido1)) value='{{$agenda->papellido1}}' @endif >
                   </div>
                   <div class="col-md-3" style="padding: 1px;">
-                    <span style="font-family: 'Helvetica general';">Segundo Apellido</span>
+                    <span style="font-family: 'Helvetica general';">@lang('hc4.segundoApellido')</span>
                     <br>
                     <input id="apellido2" type="text" onchange="guardar();" name="apellido2" required class="form-control input-sm" @if(!is_null($agenda->papellido2)) value='{{$agenda->papellido2}}' @endif >
                   </div>
@@ -213,7 +213,7 @@
 				    	  <div class="row">
                 
 				    	  	<div class="col-md-3 {{ $errors->has('cortesia') ? ' has-error' : '' }}" style="padding: 1px;">
-                    <span style="font-family: 'Helvetica general';">Cortesia</span>
+                    <span style="font-family: 'Helvetica general';">@lang('hc4.cortesia')</span>
                     <br>
                     <select id="cortesia_paciente_filiacion" name="cortesia_paciente_filiacion" class="form-control input-sm" required onchange="actualiza_cortesia_filiacion();" style="background-color: #ccffcc; font-size: 11px">
                         
@@ -233,11 +233,11 @@
                 
                 
                   <div class="col-md-3" style="padding: 1px;">
-                    <span style="font-family: 'Helvetica general';">Sexo</span>
+                    <span style="font-family: 'Helvetica general';">@lang('hc4.sexo')</span>
                     <br>
                     @if(!is_null($agenda->sexo))
                     <select name="sexo" id="sexo" onchange="guardar();" class="form-control input-sm" >
-                       <option @if($agenda->sexo == 1) selected @endif value="1">Masculino</option> 
+                       <option @if($agenda->sexo == 1) selected @endif value="1">@lang('hc4.masculino')</option>
                        <option @if($agenda->sexo == 2) selected @endif value="2">Femenino</option> 
                     </select>
                      @endif

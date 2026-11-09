@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 @php
-$fecha = substr($variables->evolucion->historiaclinica->agenda->fechaini,0,10);
-$hora = substr($variables->evolucion->historiaclinica->agenda->fechaini,11);
+$fecha=date('Y-m-d');
 @endphp
 
 <?php
@@ -19,6 +18,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
 <head>
+    <meta charset="utf-8">
     <title>formulario 12A</title>
     <style>
         @page {
@@ -45,18 +45,29 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         /** Define the footer rules **/
         footer {
+            display: table;
             position: fixed;
-            bottom: 0cm;
+            bottom: 30px;
             left: 0cm;
             right: 0cm;
-            height: 2cm;
+            width: 100%;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
         }
 
+        footer > span { display: table-cell; width: 50%; }
+        footer .document-name { text-align: right; }
+        .page-number:after { content: counter(page); }
+
         table {
-            width: 100%;
+            width: 100px;
             border-collapse: collapse;
-            /*table-layout: fixed;
-            /* clave para que no se “mueva” el ancho en PDF */
         }
 
         .table2d {
@@ -169,24 +180,23 @@ $mesNacimiento = $fechaNacimiento->format('m');
 </head>
 
 <body>
+    <footer>
+        <span>SNS-MSP / HCU-form.012A / 2021</span>
+        <span class="document-name">IMAGENOLOGÍA - SOLICITUD (<span class="page-number"></span>)</span>
+    </footer>
     <header>
 
     </header>
     <main>
 
 
-        <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-            @php $empresa = $variables->evolucion->historiaclinica->agenda->empresa; @endphp
-            @if(!is_null($empresa))
-            @if(!is_null($empresa->logo_form))
-            <p><img style="width:150px;height: 50px" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}" hspace=12></p>
-            @else
-            <p style="width:150px;height: 50px"><b>{{$empresa->nombre_form}}</b></p>
-            @endif
-            @endif
-        </div>
-
-        <br>
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 100px;">
+                </td>
+            </tr>
+        </table>
 
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <thead>
@@ -198,45 +208,45 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>
                     <td class="bg-green text-center"><b>INSTITUCION DEL SISTEMA</b></td>
                     <td class="bg-green text-center"><b>UNICODIGO</b></td>
-                    <td colspan="2" class="bg-green text-center"><b>ESTABLECIMIENTO DE SALUD</b></td>
-                    <td colspan="4" class="bg-green text-center"><b>NÚMERO DE HISTORIA CLÍNICA ÚNICA</b></td>
-                    <td colspan="4" class="bg-green"><b>NÚMERO DE ARCHIVO</b></td>
+                    <td class="bg-green text-center"><b>ESTABLECIMIENTO DE SALUD</b></td>
+                    <td colspan="5" class="bg-green text-center"><b>NÚMERO DE HISTORIA CLÍNICA ÚNICA</b></td>
+                    <td colspan="3" class="bg-green"><b>NÚMERO DE ARCHIVO</b></td>
+                    <td class="bg-green"><b>No.HOJA</b></td>
                 </tr>
                 <tr style="height: 15px;">
-                    <td class="text-center" style="font-size: 12px;">@if(!is_null($variables->evolucion->historiaclinica->seguro)){{$variables->evolucion->historiaclinica->seguro->nombre}}@endif</td>
-                    <td class="text-center" style="font-size: 12px;">@if(!is_null($variables->evolucion->historiaclinica->agenda->empresa)){{$variables->evolucion->historiaclinica->agenda->empresa->unicodigo}}@endif</td>
-                    <td colspan="2" class="text-center" style="font-size: 12px;">@if(!is_null($empresa)){{$empresa->nombrecomercial}}@endif</td>
-                    <td class="text-center" colspan="4" style="font-size: 12px;">{{$variables->paciente->id}}</td>
-                    <td colspan="4"></td>
+                    <td class="text-center" style="height: 20; font-size: 14px;"><b>IESS</b></td>
+                    <td class="text-center" style="font-size: 14px;">026247</td>
+                    <td class="text-center" style="font-size: 14px;">{{$variables->empresa->nombre_corto}}</td>
+                    <td class="text-center" colspan="5" style="font-size: 16px;">{{$variables->paciente->id}}</td>
+                    <td colspan="3"></td>
+                    <td class="text-center" style="font-size: 15px;"><b>1</td>
                 </tr>
-                <tr style="height: 300px !important; overflow: hidden;">
+                <tr>
                     <td rowspan="2" colspan="2" class="bg-green text-center"><b>PRIMER APELLIDO</b></td>
                     <td rowspan="2" colspan="1" class="bg-green text-center"><b>SEGUNDO APELLIDO</b></td>
-                    <td rowspan="2" colspan="1" class="bg-green text-center"><b>PRIMER NOMBRE</b></td>
+                    <td rowspan="2" colspan="2" class="bg-green text-center"><b>PRIMER NOMBRE</b></td>
                     <td rowspan="2" colspan="1" class="bg-green text-center"><b>SEGUNDO NOMBRE</b></td>
                     <td rowspan="2" colspan="1" class="bg-green text-center"><b>SEXO</b></td>
-                    <td rowspan="2" colspan="1" class="bg-green text-center"><b>FECHA NACIMIENTO</b></td>
                     <td rowspan="2" colspan="1" class="bg-green text-center"><b>EDAD</b></td>
                     <td colspan="4" class="bg-green text-center"><b>CONDICIÓN EDAD (MARCAR)</b></td>
                 </tr>
-                <tr style="height: 80px !important; overflow: hidden;">
+                <tr>
                     <td class="bg-green text-center">H</td>
                     <td class="bg-green text-center">D</td>
                     <td class="bg-green text-center">M</td>
                     <td class="bg-green text-center" style="width: 5%;">A</td>
                 </tr>
-                <tr style="height: 80px !important; overflow: hidden;">
-                    <td class="text-center" colspan="2">{{$variables->paciente->apellido1}}</td>
+                <tr>
+                    <td class="text-center" style="height: 25px;" colspan="2">{{$variables->paciente->apellido1}}</td>
                     <td class="text-center" colspan="1">{{$variables->paciente->apellido2}}</td>
-                    <td class="text-center" colspan="1">{{$variables->paciente->nombre1}}</td>
+                    <td class="text-center" colspan="2">{{$variables->paciente->nombre1}}</td>
                     <td class="text-center" colspan="1">{{$variables->paciente->nombre2}}</td>
                     <td class="text-center" colspan="1">@if($variables->paciente->sexo == 1) Masculino @endif @if($variables->paciente->sexo == 2) Femenino @endif</td>
-                    <td class="text-center" colspan="1">{{$variables->paciente->fecha_nacimiento}}</td>
                     <td class="text-center" colspan="1">{{$edad}}</td>
                     <td class="text-center" colspan="1"></td>
-                    <td class="text-center" colspan="1"></td>
-                    <td class="text-center" colspan="1"></td>
-                    <td class="text-center" colspan="1">X</td>
+                    <td class="text-center" colspan="1">{{$diaNacimiento}}</td>
+                    <td class="text-center" colspan="1">{{$mesNacimiento}}</td>
+                    <td class="text-center" colspan="1">{{ date('Y', strtotime($variables->paciente->fecha_nacimiento))}}</td>
                 </tr>
             </tbody>
         </table>
@@ -256,14 +266,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="bg-green text-center" style="width: 8%;">SALA</td>
                     <td colspan="6" class="bg-green text-center">PRIORIDAD</td>
                 </tr>
-                <tr>@php $agenda = $variables->evolucion->historiaclinica->agenda; @endphp
-                    <td class="text-center" style="height: 16px;">EMERGENCIA</td>
-                    <td class=" text-center" style="height: 16px;"">@if($variables->servicio == 'EMERGENCIA') X @endif</td>
-                    <td class=" text-center" style="height: 16px;"">CONSULTA EXTERNA</td>
-                    <td class=" text-center" style="height: 16px;"">@if($variables->servicio == 'CONSULTA EXTERNA') X @else @if($variables->servicio == null) X @endif @endif</td>
-                    <td class=" text-center" style="height: 16px;"">HOSPITALIZACION</td>
-                    <td class=" text-center" style="height: 16px;"">@if($variables->servicio == 'HOSPITALIZACION') X @endif</td>
-                    <td class=" text-center" class="text-center">@if(!is_null($agenda)){{$agenda->especialidad->nombre}}@endif</td>
+                <tr>
+                    <td class="text-center" style="height: 18px;" colspan="6">{{$variables->servicio}}</td>
+                    <td class="text-center" class="text-center"> @if(!is_null($variables->doctor)) {{$variables->doctor->ocupacion}} @endif</td>
                     <td class="text-center"></td>
                     <td class="text-center"></td>
                     <td class="text-center">URGENTE</td>
@@ -306,7 +311,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td class="text-center" style="width:4%">@if($variables->sedacion == 0) X @endif</td>
             </tr>
             <tr>
-                <td colspan="2" class="text-center">Descripción</td>
+                <td colspan="2" class="text-center">Texto Otros</td>
                 <td colspan="19" style="height: 20px;">{{$variables->texto_otros}}</td>
             </tr>
             </tbody>
@@ -315,8 +320,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%;">
             <thead>
                 <tr>
-                    <td colspan="6" style="font-size: 14px;" class="bg-blue"><b>D. MOTIVO DE LA SOLICITUD</b></td>
-                    <td colspan="2" style="font-size: 11px;" class="bg-blue"><b>REGISTRAR LAS RAZONES PARA SOLICITAR EL ESTUDIO</b></td>
+                    <td colspan="8" style="font-size: 14px;" class="bg-blue"><b>D. MOTIVO DE LA SOLICITUD</b></td>
                 </tr>
             </thead>
             <tbody>
@@ -334,7 +338,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td style="width: 30%;">{{$variables->descripcion}}</td>
                 </tr>
 
-            </tbody>
+            <tbody>
         </table>
         <br>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%;">
@@ -355,7 +359,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <table style="width: 100%">
             <thead>
                 <tr>
-                    <td colspan="5" style="width: 20%;" class="td-not-border-right bg-blue text-left"><b>F. DIAGNÓSTICO</b></td>
+                    <td colspan="5" style="width: 20%;" class="td-not-border-right bg-blue text-left"><b>D. DIAGNÓSTICO</b></td>
                     <td colspan="5" style="width: 20%;" class="td-not-border-right bg-blue text-left">PRE= PRESUNTIVO <br> DEF= DEFINITIVO</td>
                     <td class="bg-blue td-border text-center" style="width: 5%;"><b>CIE</b></td>
                     <td class="bg-blue td-border text-center" style="width: 5%;"><b>PRE</b></td>
@@ -423,10 +427,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </tr>
             <tr>
                 <td class="td-border text-center" style="width:5%; height: 18px;">{{$fecha}}</td>
-                <td class="td-border text-center" style="width:5%; height: 18px;">{{$hora}}</td>
-                <td class="td-border text-center" style="width:14%; height: 18px;">@if($firma != null) {{$firma->doctor->nombre1}} @endif</td>
-                <td class="td-border text-center" style="width:14%; height: 18px;">@if($firma != null) {{$firma->doctor->apellido1}} @endif</td>
-                <td class="td-border text-center" style="width:14%; height: 18px;">@if($firma != null) @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif @endif</td>
+                <td class="td-border text-center" style="width:5%; height: 18px;">{{date('H:i:s', strtotime($variables->fecha_orden ?: $variables->created_at))}}</td>
+                <td class="td-border text-center" style="width:14%; height: 18px;">@if (! is_null($variables->doctor1)) {{$variables->doctor1->nombre1}} @endif</td>
+                <td class="td-border text-center" style="width:14%; height: 18px;">@if (! is_null($variables->doctor1)) {{$variables->doctor1->apellido1}} @endif</td>
+                <td class="td-border text-center" style="width:14%; height: 18px;">@if (! is_null($variables->doctor1)) {{$variables->doctor1->apellido2}} @endif</td>
             </tr>
             <tr>
                 <td colspan="2" class="td-border bg-green text-center"><b>NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
@@ -434,29 +438,25 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td class="td-border bg-green text-center"><b>SELLO</b></td>
             </tr>
             <tr>
-                <td colspan="2" class="td-border text-center" style="width:12%; height:60px; font-size: 12px;"> @if($firma != null) {{ $firma->doctor->id }} @endif </td>
-                <td colspan="2" class="text-center" style="height: 70px;">
-                    <p style="text-align: center;">
-                        @if(!is_null($firma) and $firma->firma != null)
-                        <img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
-                        @else
-                        <br><br><br>
-                        <b style="font-size: 10px;"> @if($firma != null) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @endif</b><br>
+                <td colspan="2" class="td-border" style="width:12%; height:60px; font-size:15px; text-align:center;">@isset($variables->doctor1) {{$variables->doctor1->id}} @endif</td>
+                <td colspan="2" class="td-border" style="width:25%; height:60px; text-align:center;">
+                        @php
+                            $firma = !empty($variables->id_doctor_solicita)
+                                ? Sis_medico\Firma_Usuario::where('id_usuario', $variables->id_doctor_solicita)->first()
+                                : null;
+                        @endphp
+                        @if(!is_null($firma))
+    					   <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
                         @endif
-                    </p>
                 </td>
-                <td class="text-center" style="height: 50px;">
-                    @if($firma != null) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif <br>
-                    @if(!is_null($agenda->especialidad)) {{$agenda->especialidad->nombre}} @endif<br>
-                    Cedula No. {{$firma->doctor->id}} @endif
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2"><b>SNS-MSP/HCU-form.012A/2021</b></td>
-                <td colspan="3" class="text-right"><b>IMAGENOLOGÍA - SOLICITUD</b></td>
+                <td class="td-border" style="width:25%; height:60px;"></td>
+
             </tr>
             </tbody>
         </table>
+
+
+        @include('pdf_hospital.formulario12B_orden', ['variables' => $variables])
 
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.11.0/sweetalert2.js"></script>

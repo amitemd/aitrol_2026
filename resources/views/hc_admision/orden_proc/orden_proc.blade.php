@@ -424,8 +424,9 @@
             $('input[type="checkbox"]#ch{{$detalle->id}}').on('ifUnchecked', function(){
 
                 $.ajax({
-                  type: 'get',
+                  type: 'delete',
                   url:'{{route('orden_proc.eliminar',['hcid' => $historiaclinica->hcid, 'id_doc' => $detalle->id])}}',
+                  headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                   success: function(data){
                   //alert(data);
                     
@@ -471,8 +472,9 @@
     function crea_detalle(hcid,id){
 
       $.ajax({
-        type: 'get',
+        type: 'post',
         url:'{{url("orden_proc/imprimir_orden/crear_detalle")}}'+'/'+hcid+'/'+id, //controldoc.crea_doc
+        headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
         success: function(data){
             
         }

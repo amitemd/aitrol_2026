@@ -34,13 +34,13 @@
                                 @else
                                 Inactivo
                                 @endif</td>
-                            <td><a class="btn btn-warning" href="{{route('prioridademergencia.editar',['id_tipo' => $tipop->id])}}"><i class="fa fa-edit" aria-hidden="true"></i> Editar
+                            <td><a class="btn btn-warning" href="{{route('prioridademergencia.editar',['id' => $tipop->id])}}"><i class="fa fa-edit" aria-hidden="true"></i> Editar
                                 
                             </a> 
 
                             </td>
 
-                            <td><a class="btn btn-primary btn-danger waves-effect waves-float waves-light" href="{{route('prioridademergencia.eliminar_prioridad',['id_tipo' => $tipop->id])}}"><i class="fa fa-trash" aria-hidden="true"></i></i>Eliminar</a></td>
+                            <td><form method="POST" action="{{route('prioridademergencia.eliminar_prioridad',['id_tipo' => $tipop->id])}}" onsubmit="return confirm('¿Confirma eliminar esta prioridad?');">{{ csrf_field() }}{{ method_field('DELETE') }}<button class="btn btn-primary btn-danger waves-effect waves-float waves-light" type="submit"><i class="fa fa-trash" aria-hidden="true"></i> Eliminar</button></form></td>
 
                         </tr>
                         @endforeach
@@ -58,4 +58,4 @@
         </section>
 
        
-@endsection    
+@endsection

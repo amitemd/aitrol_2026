@@ -23,48 +23,163 @@
         background-color: #FFFFFF;
         margin-left: 0px;
     }
+  .hc4-recipe-content,
+  .hc4-recipe-content * {
+      color: #000000 !important;
+  }
+  #area_trabajo .hc4-recipe-item-header {
+      display: flex !important;
+      position: relative;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 8px 54px 8px 18px !important;
+      border: 0 !important;
+      background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+      text-align: center !important;
+  }
+  #area_trabajo .hc4-recipe-item-date {
+      display: block;
+      width: 100% !important;
+      margin: 0 !important;
+      color: #fff !important;
+      font-family: 'Helvetica', Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      text-align: center;
+  }
+  #area_trabajo .hc4-recipe-item-header .box-tools {
+      position: absolute !important;
+      top: 50%;
+      right: 12px !important;
+      float: none !important;
+      margin: 0 !important;
+      transform: translateY(-50%);
+  }
+  #area_trabajo .hc4-recipe-record,
+  #area_trabajo .hc4-recipe-record > .box-body,
+  #area_trabajo .hc4-recipe-record > .box-body > .col-md-12 {
+      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+  }
+  #area_trabajo .hc4-recipe-record {
+      min-width: 0;
+      overflow: hidden;
+  }
+  #area_trabajo .hc4-recipe-record > .box-body {
+      padding: 12px !important;
+      overflow-x: hidden;
+  }
+  #area_trabajo .hc4-recipe-record > .box-body > .col-md-12 {
+      min-width: 0;
+      padding-right: 0 !important;
+      padding-left: 0 !important;
+  }
+  #area_trabajo .hc4-recipe-record .row {
+      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+  }
+  #area_trabajo .hc4-recipe-print-actions {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 14px;
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 0 10px !important;
+  }
+  #area_trabajo .hc4-recipe-print-action {
+      flex: 0 1 250px;
+      width: auto !important;
+      max-width: 250px;
+      margin: 0 !important;
+      padding: 0 !important;
+  }
+  #area_trabajo .hc4-recipe-print-action .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100% !important;
+      min-height: 38px;
+  }
+  #area_trabajo .hc4-recipe-print-action .btn img {
+      flex: 0 0 18px;
+      width: 18px;
+  }
+  #area_trabajo .hc4-recipe-print-action .btn label {
+      margin: 0 !important;
+      cursor: pointer;
+  }
+  #area_trabajo .hc4-recipe-history {
+      box-sizing: border-box;
+      min-width: 0;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+  }
+  #area_trabajo .hc4-recipe-history .contenedor2 {
+      box-sizing: border-box;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 12px !important;
+      overflow-x: hidden;
+  }
+  @media (max-width: 640px) {
+      #area_trabajo .hc4-recipe-print-actions {
+          flex-direction: column;
+      }
+      #area_trabajo .hc4-recipe-print-action {
+          flex-basis: auto;
+          width: 100% !important;
+          max-width: none;
+      }
+  }
 </style>
-<div id="area_index"  class="container-fluid" style="padding-left: 8px;">
+<div id="area_index" class="container-fluid hc4-recipes-view" style="padding: 0;">
   <div class="row">
-    <div class="col-md-12" style="padding-left: 0.;padding-left: 0px;padding-right: 9px;margin-left: 5px;margin-right: 0px;border-radius: 10px;">
-      <div class="col-md-12" style="border: 2px solid #004AC1;margin-left: 8px;margin-right: 0px;margin-left: 4px;padding-right: 0px;padding-left: 0px;background-color:#56ABE3;">
-          <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;">
-            <img style="width: 35px; margin-left: 15px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/receta.png"> 
-            <b>RECETAS</b>
-            <br>
-            @if(!is_null($paciente)) 
-              <center> 
-                <div class="col-12" style="padding-bottom: 20px;">
-                  <h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-                      <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-                            {{$paciente->nombre1}} {{$paciente->nombre2}}
-                      </b>
-                  </h1>
-                </div> 
-              </center>
-            @endif  
-          </h1>
+    <div class="col-md-12" style="padding: 0; margin: 0; border-radius: 10px;">
+      <div class="col-md-12" style="border: 2px solid #004AC1; margin: 0; padding: 0; background-color:#56ABE3;">
+          @include('hc4.partials.module_header', [
+              'moduleTitle' => __('hc4.recetas-'),
+              'moduleIcon' => asset('/').'hc4/img/iconos/receta.png',
+              'paciente' => $paciente
+          ])
         <div>
-          <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px"  >
+          <div class="hc4-recipes-list-shell" style="padding: 12px 8px 0; background-color: #56ABE3; margin: 0;"  >
           <!--Hacemos el llamado al estilo parent-->
             <div class="parent" style="background-color: #56ABE3">
-              <div style=" margin-right: 30px;" > 
+              <div style="width: 100%; margin: 0;">
               <!-- FOREACH DE LAS RECETAS --> 
               @if($hist_recetas != null)
                 @foreach($hist_recetas as $re_hist)
                 
                 <!--Contenedor de la Fecha-->
-                <div class="box" style="border: 2px solid #004AC1; border-radius: 10px; background-color: white; font-size: 13px; font-family: Helvetica; margin-bottom: 10px;margin-top: 0px;">
-                  <div class="box-header with-border" style=" text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+                <div class="box collapsed-box hc4-recipe-record" style="border: 2px solid #004AC1; border-radius: 10px; background-color: white; font-size: 13px; font-family: Helvetica; margin-bottom: 10px;margin-top: 0px;">
+                  <div class="box-header with-border hc4-recipe-item-header" style="font-family: 'Helvetica general3'; border-bottom: #004AC1;">
                   
                    
-                    @if(!is_null($re_hist->fecha_atencion))
-                      @php 
-                      $dia =  Date('N',strtotime($re_hist->fecha_atencion)); 
-                      $mes =  Date('n',strtotime($re_hist->fecha_atencion)); 
+                    @php
+                      $fechaReceta = !is_null($re_hist->fecha_atencion)
+                        ? $re_hist->fecha_atencion
+                        : $re_hist->fechaini;
+                    @endphp
+                    @if(!is_null($fechaReceta))
+                      @php
+                      $dia = Date('N', strtotime($fechaReceta));
+                      $mes = Date('n', strtotime($fechaReceta));
                       @endphp
                       <b>
-                      <span style="font-family: 'Helvetica'; font-size: 14px" class="box-title" > 
+                      <span class="box-title hc4-recipe-item-date">
                         @if($dia == '1') Lunes 
                            @elseif($dia == '2') Martes
                            @elseif($dia == '3') Miércoles 
@@ -73,7 +188,7 @@
                            @elseif($dia == '6') Sábado 
                            @elseif($dia == '7') Domingo 
                         @endif 
-                          {{substr($re_hist->fecha_atencion,8,2)}} de 
+                          {{substr($fechaReceta,8,2)}} de
                         @if($mes == '1') Enero 
                            @elseif($mes == '2') Febrero 
                            @elseif($mes == '3') Marzo 
@@ -87,18 +202,13 @@
                            @elseif($mes == '11') Noviembre 
                            @elseif($mes == '12') Diciembre 
                         @endif 
-                          del {{substr($re_hist->fecha_atencion,0,4)}}</span></b>
+                          del {{substr($fechaReceta,0,4)}}</span></b>
                     @endif
                 
 
-                    <div style="color: white"> 
-                      @if(!is_null($re_hist->id)) 
-                        {{$re_hist->id}} 
-                      @endif
-                    </div>
                     <div class="pull-right box-tools ">
                       <button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-                        <i class="fa fa-minus"></i>
+                        <i class="fa fa-plus"></i>
                       </button>
                     </div>
                   </div>
@@ -108,7 +218,7 @@
                       <div class="col-12">
                         <div class="row">
                           <div class="col-6" style="text-align: right;" >
-                              <label style="font-family: 'Helvetica general';" >Seguro:</label>
+									<label style="font-family: 'Helvetica general';" >@lang('hc4.seguro'):</label>
                           </div>
                           <div class="col-6">
                             @if(!is_null($re_hist->nombre))
@@ -120,52 +230,38 @@
                       <div class="row">
                         <!--Contenedor Historial de Recetas Rp y Prescripcion-->
                         
-                        <div class="col-md-12" style="padding-left: 110px" >
-                          <div class="row">
-                            <div class="col-md-4 col-sm-4 col-4" style="margin: 10px; padding: 0px">                      
-                              <a target="_blank" class="btn btn-info btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime_hc4', ['id' => $re_hist->id, 'tipo' => '2']) }}"> 
-                              <div class="col-md-12" style="text-align: center; ">
-                                <div class="row" style="padding-left: 0px; padding-right: 0px;">
-                                  <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
-                                    <img style="" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
-                                  </div>
-                                  <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-                                    <label style="font-size: 14px; ">Imprimir Membretada</label>
-                                  </div>  
-                                </div>
+                        <div class="col-md-12 hc4-recipe-print-actions">
+                          <div class="hc4-recipe-print-action">
+                            <div>
+                              <a target="_blank" class="btn btn-info btn_accion" style="width: 100%; height: 100%" href="{{ route('hc_receta.imprime_hc4', ['id' => $re_hist->id, 'tipo' => '2']) }}">
+                                <img src="{{asset('/')}}hc4/img/iconos/descargar.png" alt="">
+								<label style="font-size: 14px; ">@lang('hc4.imprimirMembretada')</label>
+                              </a>
+                            </div>
+                            </div>
+                            <div class="hc4-recipe-print-action">
+                              <div>
+                              <a target="_blank" class="btn btn-info btn_accion" style="width: 100%; height: 100%" href="{{ route('hc_receta.imprime_hc4', ['id' => $re_hist->id, 'tipo' => '1']) }}">
+                                  <img src="{{asset('/')}}hc4/img/iconos/descargar.png" alt="">
+								  <label style="font-size: 14px">@lang('hc4.imprimir')</label>
+                              </a>
                               </div>
-                              </a>
                             </div>
-                            <div class="col-md-4 col-sm-4 col-4" style="margin: 10px; padding: 0px">
-                              <a target="_blank" class="btn btn-info btn_accion"  style=" width: 100%; height: 100%" href="{{ route('hc_receta.imprime_hc4', ['id' => $re_hist->id, 'tipo' => '1']) }}"> 
-                                <div class="col-md-12" style="text-align: center">
-                                  <div class="row" style="padding-left: 0px; padding-right: 0px;">
-                                    <div class="col-md-2" style="padding-left: 0px; padding-right: 5px" >
-                                      <img style="color: black" width="20px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
-                                    </div>
-                                    <div class="col-md-8" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-                                      <label style="font-size: 14px">Imprimir</label>
-                                    </div>  
-                                  </div>
-                                </div>
-                              </a>
-                            </div>
-                          </div>
                         </div>
 
-                        <div class="col-md-11 col-sm-11 col-11" style="border: 2px solid #004AC1;margin-left: 8px;margin-right: 14px;margin-left: 14px;padding-right: 0px;padding-left: 0px;border-radius: 3px;background-color:#004AC1;">
+                        <div class="col-md-12 hc4-recipe-history" style="border: 2px solid #004AC1; border-radius: 3px; background-color:#004AC1;">
                           <!--Contenedor Historial de Recetas-->
                           <div  style="background-color: #004AC1; color: white; font-family: 'Helvetica general'; font-size: 16px; ">
                             <div class="box-title" style="background-color: #004AC1; margin-left: 10px">
                               <div class="row">
                                 <div class="col-md-4 col-sm-4 col-4" style="margin-left: 0px; ">
                                   <div class="btn" style="color: white">
-                                    <a class="fa fa-pencil-square-o " onclick="editarreceta({{$re_hist->id}},'{{$paciente->id}}');"><span style="font-size: 13px">&nbsp;Editar</span>
+						<a class="fa fa-pencil-square-o " onclick="editarreceta({{$re_hist->id}},'{{$paciente->id}}');"><span style="font-size: 13px">&nbsp;@lang('hc4.editar')</span>
                                     </a>
                                   </div>
                                 </div> 
                                 <div class="col-md-8 col-sm-8 col-8" style="padding-top: 4px">
-                                  <span>Historial de Recetas</span>
+								<span>@lang('hc4.historialRecetas')</span>
                                 </div>
                               </div>
                             </div>
@@ -175,7 +271,7 @@
                               <div class="row">
                                 <div class="col-md-6">
                                   <span><b style="font-family: 'Helvetica general';" class="box-title">Rp</b></span>
-                                  <div id="trp" style="border: solid 1px;min-height: 200px;border-radius:3px;margin-bottom: 20 px;border: 2px solid #004AC1; ">
+                                  <div id="trp" class="hc4-recipe-content" style="border: solid 1px;min-height: 200px;border-radius:3px;margin-bottom: 20 px;border: 2px solid #004AC1; ">
                                     @php 
                                       $receta = Sis_medico\hc_receta::find($re_hist->id);
                                     @endphp
@@ -193,8 +289,8 @@
                                   </div>
                                 </div>
                                 <div class="col-md-6" >
-                                  <span><b style="font-family: 'Helvetica general';" class="box-title">@lang('hc4.prescripcion')</b></span>
-                                  <div id="tprescripcion" style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #004AC1;">
+								<span><b style="font-family: 'Helvetica general';" class="box-title">@lang('hc4.prescripcion')</b></span>
+                                  <div id="tprescripcion" class="hc4-recipe-content" style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #004AC1;">
                                   @if(!is_null($receta))
                                     @php $rdetalles = $receta->detalles; @endphp
                                     @foreach($rdetalles as $detalle)

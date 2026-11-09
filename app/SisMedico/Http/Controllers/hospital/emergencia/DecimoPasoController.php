@@ -44,6 +44,9 @@ class DecimoPasoController extends Controller
 
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario     = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
@@ -53,21 +56,22 @@ class DecimoPasoController extends Controller
 
     public function laboratorio($id)
     {
+        return $this->renderLaboratoryIndex($id, null);
+    }
 
-        $solicitud = Ho_Solicitud::find($id);
-
-        $ordenes = Examen_Orden::where('id_paciente', $solicitud->paciente->id)
-            ->where('estado', '<>', '0')
-            ->OrderBy('created_at', 'desc')
-            ->get();
-
-        //dd($ordenes->first()->estado);
-
-        $protocolos  = Protocolo::where('estado', '1')->get();
-        $agrupadores = Examen_Agrupador::where('estado', '1')->get();
-        $examenes    = Examen::where('publico_privado', '0')->orderBy('id_agrupador')->get();
-
-        return view('hospital.emergencia.orden_laboratorio.index', ['solicitud' => $solicitud, 'paciente' => $solicitud->paciente, 'ordenes' => $ordenes, 'id_editar' => null, 'protocolos' => $protocolos, 'agrupadores' => $agrupadores, 'examenes' => $examenes]);
+    private function renderLaboratoryIndex($requestId, $editingOrderId)
+    {
+        $solicitud = Ho_Solicitud::findOrFail($requestId);
+        $ordenes = app(\Sis_medico\Services\HospitalEpisodeLaboratoryService::class)->orders($solicitud);
+        return view('hospital.emergencia.orden_laboratorio.index', array(
+            'solicitud' => $solicitud,
+            'paciente' => $solicitud->paciente,
+            'ordenes' => $ordenes,
+            'id_editar' => $editingOrderId,
+            'protocolos' => Protocolo::where('estado', '1')->get(),
+            'agrupadores' => Examen_Agrupador::where('estado', '1')->get(),
+            'examenes' => Examen::where('publico_privado', '0')->orderBy('id_agrupador')->get(),
+        ));
     }
 
     public function procedimiento($id, $tipo)
@@ -87,132 +91,18 @@ class DecimoPasoController extends Controller
 
     public function procedimiento_crear($id, $tipo)
     {
-
-        $solicitud = Ho_Solicitud::find($id);
-        if ($tipo == 0) {
-            if ($solicitud->estado_paso == '1') {
-                if ($solicitud->form008->count() > 0) {
-                    //dd($solicitud->form008->count());
-                    $solicitud->form008->first()->update(['endoscopia' => 'X']);
-                }
-            }
-        }
-
-        $paciente = $solicitud->paciente;
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $id_doctor = Auth::user()->id;
-        $idusuario = $id_doctor;
-
-        $fecha_orden = Date('Y-m-d H:i:s');
-
-        $arr_log = [
-            'anterior' => 'ORDEN_PROC_ENDOSCOPICOS -> El Dr. creo nueva orden de procedimiento endoscopico',
-            'nuevo' => 'ORDEN_PROC_ENDOSCOPICOS -> El Dr. creo nueva orden de procedimiento endoscopico',
-            'id_paciente' => $paciente->id,
-            'id_usuariocrea' => $id_doctor,
-            'id_usuariomod' => $id_doctor,
-            'ip_creacion' => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-        ];
-
-        Hc_Log::create($arr_log);
-
-        $evoluciones =  DB::table('historiaclinica as h')
-            ->where('h.id_paciente', $paciente->id)
-            ->join('hc_evolucion as hc_evo', 'hc_evo.hcid', 'h.hcid')
-            ->where('hc_evo.secuencia', 0)
-            ->whereNotNull('hc_evo.cuadro_clinico')
-            ->orderby('hc_evo.updated_at', 'desc')
-            ->select('hc_evo.*')
-            ->first();
-
-        $x_diagnosticos = null;
-        $evol_id = null;
-        $evol_motivo = null;
-        $evol_cuadro_clinico = null;
-        $texto = "";
-
-        if (!is_null($evoluciones)) {
-
-            $x_diagnosticos = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $evoluciones->hc_id_procedimiento)->groupBy('cie10')->get();
-
-            $evol_id = $evoluciones->id;
-
-            $evol_motivo = $evoluciones->motivo;
-
-            $evol_cuadro_clinico = $evoluciones->cuadro_clinico;
-        }
-
-        if (!is_null($x_diagnosticos)) {
-
-            $mas = true;
-            foreach ($x_diagnosticos as $value) {
-
-                $c3 = Cie_10_3::find($value->cie10);
-
-                if (!is_null($c3)) {
-                    $descripcion = $c3->descripcion;
-                }
-
-                $c4 = Cie_10_4::find($value->cie10);
-
-                if (!is_null($c4)) {
-                    $descripcion = $c4->descripcion;
-                }
-
-                if ($mas == true) {
-                    $texto = $value->cie10 . ':' . $descripcion . '-' . $value->presuntivo_definitivo;
-                    $mas = false;
-                } else {
-
-                    $texto = $texto . '<br>' . $value->cie10 . ':' . $descripcion . '-' . $value->presuntivo_definitivo;
-                }
-            }
-        }
-
-
-        $input_orden = [
-            'id_paciente'       => $paciente->id,
-            'id_doctor'         => $id_doctor,
-            'id_evolucion'      => $evol_id,
-            'motivo_consulta'   => $evol_motivo,
-            'resumen_clinico'   => $evol_cuadro_clinico,
-            'diagnosticos'      => $texto,
-            'fecha_orden'       => $fecha_orden,
-            'tipo_procedimiento' => $tipo,
-            'anio'              => substr(date('Y-m-d'), 0, 4),
-            'mes'               => substr(date('Y-m-d'), 5, 2),
-            'id_usuariocrea'    => $id_doctor,
-            'id_usuariomod'     => $id_doctor,
-            'ip_creacion'       => $ip_cliente,
-            'ip_modificacion'   => $ip_cliente,
-        ];
-
-        $id_orden = Orden::insertGetId($input_orden);
-
-        $arr_orden_soli = [
-            'clave_tipo'      => $id_orden,
-            'id_ho_solicitud' => $id,
-            'tipo'            => 'PROCEDIMIENTO',
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-        ];
-
-        Ho_Ordenes::create($arr_orden_soli);
-
+        $order = app(\Sis_medico\Services\EndoscopicOrderService::class)->initializeForEmergency(
+            $id, $tipo, Auth::user()->id, request()->ip()
+        );
+        $solicitud = Ho_Solicitud::findOrFail($id);
         $ordenes = Orden::where('tipo_procedimiento', $tipo)
-            ->where('id_paciente', $solicitud->paciente->id)
-            ->where('estado', 1)
-            ->OrderBy('created_at', 'desc')
-            ->get();
-        //dd($ordenes);
-
-        return view('hospital.emergencia.orden_procedimientos.index', ['solicitud' => $solicitud, 'paciente' => $solicitud->paciente, 'ordenes' => $ordenes, 'tipo' => $tipo, 'id_editar' => $id_orden]);
+            ->where('id_paciente', $solicitud->id_paciente)->where('estado', 1)
+            ->orderBy('created_at', 'desc')->get();
+        return view('hospital.emergencia.orden_procedimientos.index', array(
+            'solicitud' => $solicitud, 'paciente' => $solicitud->paciente, 'ordenes' => $ordenes,
+            'tipo' => $tipo, 'id_editar' => $order->id,
+        ));
     }
-
     public function interconsulta($id)
     {
 
@@ -229,457 +119,72 @@ class DecimoPasoController extends Controller
 
     public function laboratorio_orden_crear_pb($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-
-        $solicitud = Ho_Solicitud::find($id);
-        $seguro    = Seguro::find($solicitud->id_seguro);
-        //dd($seguro);
-        if (is_null($seguro)) {
-            $id_seguro = 2;
-        } else {
-            if ($seguro->tipo != 0) {
-                //Si seguro no es publico, asume Iess
-                $id_seguro = 2;
-            } else {
-                $id_seguro = $solicitud->id_seguro;
-            }
+        try {
+            $order = app(\Sis_medico\Services\EmergencyLaboratoryOrderService::class)
+                ->create($id, true, Auth::user()->id, request()->ip());
+            return $this->renderLaboratoryIndex($id, $order->id);
+        } catch (\DomainException $exception) {
+            return response($exception->getMessage(), 422);
         }
-
-        $empresa  = Empresa::where('prioridad', 1)->get()->first();
-        $convenio = Convenio::where('id_empresa', $empresa->id)->where('id_seguro', $id_seguro)->get()->first();
-        $nivel    = $convenio->id_nivel;
-        //CREAR LA ORDEN PUBLICA
-
-        $input_ex = [
-            'id_paciente'     => $solicitud->id_paciente,
-            'anio'            => substr(date('Y-m-d'), 0, 4),
-            'mes'             => substr(date('Y-m-d'), 5, 2),
-            //'id_protocolo'    => $request['id_protocolo'],
-            'id_seguro'       => $id_seguro,
-            'id_nivel'        => $nivel,
-            'est_amb_hos'     => 0,
-            'id_doctor_ieced' => $idusuario,
-            //'doctor_txt'      => $request['doctor_txt'],
-            //'observacion'     => 'INGRE',
-            'id_empresa'      => $empresa->id,
-            'cantidad'        => 0,
-            'valor'           => 0,
-            'total_valor'     => 0,
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'fecha_orden'     => date('Y-m-d H:i:s'),
-            'estado'          => '-1',
-
-        ];
-
-        $id_editar = Examen_Orden::insertGetId($input_ex);
-
-        $arr_orden_soli = [
-            'id_examen_orden' => $id_editar,
-            'id_ho_solicitud' => $id,
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-        ];
-
-        Ho_Orden_Examenes::create($arr_orden_soli);
-
-        $ordenes = Examen_Orden::where('id_paciente', $solicitud->paciente->id)
-            ->where('estado', '<>', '0')
-            ->OrderBy('created_at', 'desc')
-            ->get();
-
-        $protocolos  = Protocolo::where('estado', '1')->get();
-        $agrupadores = Examen_Agrupador::where('estado', '1')->get();
-        $examenes    = Examen::where('publico_privado', '0')->orderBy('id_agrupador')->get();
-
-        return view('hospital.emergencia.orden_laboratorio.index', ['solicitud' => $solicitud, 'paciente' => $solicitud->paciente, 'ordenes' => $ordenes, 'id_editar' => $id_editar, 'protocolos' => $protocolos, 'agrupadores' => $agrupadores, 'examenes' => $examenes]);
     }
-
     public function laboratorio_orden_crear_part($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-
-        $solicitud = Ho_Solicitud::find($id);
-        $seguro    = Seguro::find($solicitud->id_seguro);
-        //dd($seguro);
-        if (is_null($seguro)) {
-            $id_seguro = 1;
-        } else {
-            if ($seguro->tipo == 0) {
-                //Si seguro es publico, asume pARTI
-                $id_seguro = 1;
-            } else {
-                $id_seguro = $solicitud->id_seguro;
-            }
+        try {
+            $order = app(\Sis_medico\Services\EmergencyLaboratoryOrderService::class)
+                ->create($id, false, Auth::user()->id, request()->ip());
+            return $this->renderLaboratoryIndex($id, $order->id);
+        } catch (\DomainException $exception) {
+            return response($exception->getMessage(), 422);
         }
-
-        $empresa = Empresa::where('prioridad', 1)->get()->first();
-
-        //CREAR LA ORDEN PRIVADA
-        $input_ex = [
-            'id_paciente'     => $solicitud->id_paciente,
-            'anio'            => substr(date('Y-m-d'), 0, 4),
-            'mes'             => substr(date('Y-m-d'), 5, 2),
-            'id_seguro'       => $id_seguro,
-            'est_amb_hos'     => 0,
-            'id_doctor_ieced' => $idusuario,
-            'id_empresa'      => $empresa->id,
-            'cantidad'        => 0,
-            'valor'           => 0,
-            'total_valor'     => 0,
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'fecha_orden'     => date('Y-m-d H:i:s'),
-            'estado'          => '-1',
-        ];
-
-        $id_editar = Examen_Orden::insertGetId($input_ex);
-
-        $arr_orden_soli = [
-            'id_examen_orden' => $id_editar,
-            'id_ho_solicitud' => $id,
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-        ];
-
-        Ho_Orden_Examenes::create($arr_orden_soli);
-
-        $ordenes = Examen_Orden::where('id_paciente', $solicitud->paciente->id)
-            ->where('estado', '<>', '0')
-            ->OrderBy('created_at', 'desc')
-            ->get();
-
-        $protocolos  = Protocolo::where('estado', '1')->get();
-        $agrupadores = Examen_Agrupador::where('estado', '1')->get();
-        $examenes    = Examen::where('publico_privado', '0')->orderBy('id_agrupador')->get();
-
-        return view('hospital.emergencia.orden_laboratorio.index', ['solicitud' => $solicitud, 'paciente' => $solicitud->paciente, 'ordenes' => $ordenes, 'id_editar' => $id_editar, 'protocolos' => $protocolos, 'agrupadores' => $agrupadores, 'examenes' => $examenes]);
     }
-
     public function elimar_orden($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-
-        $examen_ordenes = Examen_Orden::find($id);
-        $examen_ordenes->estado = 0;
-        $examen_ordenes->ip_modificacion = $ip_cliente;
-        $examen_ordenes->id_usuariomod = $idusuario;
-        $examen_ordenes->save();
+        app(\Sis_medico\Services\EmergencyLaboratoryOrderService::class)
+            ->cancel($id, Auth::user()->id, request()->ip());
         return 'OK';
     }
-
     public function laboratorio_orden_editar_pb($id)
     {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-
-        $protocolos  = Protocolo::where('estado', '1')->get();
-        $agrupadores = Examen_Agrupador::where('estado', '1')->get();
-        $examenes    = Examen::where('publico_privado', '0')->orderBy('id_agrupador')->get();
-        $orden       = Examen_Orden::find($id);
-        //dd($orden->seguro->tipo);
-
-        if ($orden->seguro->tipo == 0) {
-            return view('hospital.emergencia.orden_laboratorio.editar_orden', ['id_editar' => $id, 'protocolos' => $protocolos, 'agrupadores' => $agrupadores, 'examenes' => $examenes, 'orden' => $orden]);
-        } else {
-            /////
-            $agrupador_labs = DB::table('examen_agrupador_labs')->get();
-            $examenes_labs  = DB::table('examen_agrupador_sabana as sa')->join('examen as e', 'e.id', 'sa.id_examen')->where('e.estado', '1')->select('sa.*', 'e.descripcion', 'e.nombre', 'e.valor', 'e.id as ex_id')->orderBy('sa.id_examen_agrupador_labs')->orderBy('sa.nro_orden')->get();
-
-            $detalles_ch = [];
-            $i           = 0;
-
-            $nuevo_detalles = $orden->detalles;
-
-            $cantidad = count($nuevo_detalles);
-
-            if ($cantidad > 0) {
-                $examenes_labs = DB::table('examen_detalle as ed')->where('id_examen_orden', $id)->join('examen as e', 'e.id', 'ed.id_examen')->join('examen_agrupador_sabana as sa', 'sa.id_examen', 'ed.id_examen')->join('examen_agrupador_labs as l', 'l.id', 'sa.id_examen_agrupador_labs')->select('sa.*', 'e.descripcion', 'e.nombre', 'e.valor', 'e.id as ex_id', 'l.nombre as lnombre')->orderBy('sa.id_examen_agrupador_labs')->orderBy('sa.nro_orden')->get();
-            }
-
-            if (!is_null($nuevo_detalles)) {
-                foreach ($nuevo_detalles as $nuevo_detalle) {
-                    $detalles_ch[$i] = $nuevo_detalle->id_examen;
-                    $i               = $i + 1;
-                }
-            }
-
-            $protocolos = Protocolo::where('estado', '2')->where('id_usuariocrea', $idusuario)->get();
-
-            return view('hospital.emergencia.orden_laboratorio.editar_orden_part', ['agrupador_labs' => $agrupador_labs, 'examenes_labs' => $examenes_labs, 'detalles_ch' => $detalles_ch, 'orden' => $orden, 'protocolos' => $protocolos]);
-            ////
+        $orden = Examen_Orden::findOrFail($id);
+        if ((int) $orden->seguro->tipo === 0) {
+            return view('hospital.emergencia.orden_laboratorio.editar_orden', [
+                'id_editar' => $id, 'protocolos' => Protocolo::where('estado', 1)->get(),
+                'agrupadores' => Examen_Agrupador::where('estado', 1)->get(),
+                'examenes' => Examen::where('publico_privado', 0)->orderBy('id_agrupador')->get(), 'orden' => $orden,
+            ]);
         }
+        $link = Ho_Orden_Examenes::where('id_examen_orden', $id)->firstOrFail();
+        $solicitud = app(\Sis_medico\Services\HospitalDocumentService::class)->obtain($link->id_ho_solicitud);
+        app(\Sis_medico\Services\HospitalEpisodeLaboratoryService::class)->order($solicitud, $id);
+        $data = app(\Sis_medico\Services\HospitalLaboratoryOrderCatalog::class)->data($orden);
+        $data['solicitud'] = $solicitud;
+        $data['protocolos'] = Protocolo::where('estado', 2)->where('id_usuariocrea', Auth::id())->get();
+        return view('hospital.emergencia.orden_laboratorio.editar_orden_part', $data);
     }
 
     public function laboratorio_orden_crear_examen($id_orden, $id_examen)
     {
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-
-        $orden = Examen_Orden::find($id_orden);
-
-
-
-        $detalle = $orden->detalles->where('id_examen', $id_examen)->first();
-
-        if (is_null($detalle)) {
-
-            $examen   = Examen::find($id_examen);
-
-            if ($examen->id == 1184 || $examen->id == 101) {
-                $o_solicitud = Ho_Orden_Examenes::where('id_examen_orden', $orden->id)->first();
-                //dd($o_solicitud);
-                if (!is_null($o_solicitud)) {
-                    $solicitud = Ho_Solicitud::find($o_solicitud->id_ho_solicitud); //dd($solicitud);
-                    if ($solicitud->estado_paso == '1') {
-                        if ($solicitud->form008->count() > 0) {
-                            //dd($solicitud->form008->count());
-                            $solicitud->form008->first()->update(['biometria' => 'X']);
-                        }
-                    }
-                }
-            }
-
-            if ($examen->maquina == 2) {
-                $o_solicitud = Ho_Orden_Examenes::where('id_examen_orden', $orden->id)->first();
-                if (!is_null($o_solicitud)) {
-                    $solicitud = Ho_Solicitud::find($o_solicitud->id_ho_solicitud);
-                    if ($solicitud->estado_paso == '1') {
-                        if ($solicitud->form008->count() > 0) {
-                            $solicitud->form008->first()->update(['quimica_sanguinea' => 'X']);
-                        }
-                    }
-                }
-            }
-
-            if ($examen->id == 758) {
-                $o_solicitud = Ho_Orden_Examenes::where('id_examen_orden', $orden->id)->first();
-                //dd($o_solicitud);
-                if (!is_null($o_solicitud)) {
-                    $solicitud = Ho_Solicitud::find($o_solicitud->id_ho_solicitud); //dd($solicitud);
-                    if ($solicitud->estado_paso == '1') {
-                        if ($solicitud->form008->count() > 0) {
-                            //dd($solicitud->form008->count());
-                            $solicitud->form008->first()->update(['gasometria' => 'X']);
-                        }
-                    }
-                }
-            }
-
-
-            $valor    = $examen->valor;
-            $cubre    = 'NO';
-            $ex_nivel = Examen_Nivel::where('id_examen', $id_examen)->where('nivel', $orden->id_nivel)->first();
-            if (!is_null($ex_nivel)) {
-                if ($ex_nivel->valor1 != 0) {
-
-                    $valor = $ex_nivel->valor1;
-                    $cubre = 'SI';
-                }
-            }
-
-            $cobrar_pac_pct = $orden->cobrar_pac_pct;
-            $valor_con_oda  = 0;
-
-            $input_det = [
-                'id_examen_orden' => $orden->id,
-                'id_examen'       => $id_examen,
-                'valor'           => $valor,
-                'cubre'           => $cubre,
-                'ip_creacion'     => $ip_cliente,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariocrea'  => $idusuario,
-                'id_usuariomod'   => $idusuario,
-                'cobrar_pac_pct'  => $cobrar_pac_pct,
-                'valor_con_oda'   => $valor_con_oda,
-
-            ];
-
-            Examen_detalle::create($input_det);
-
-            /// orden
-            $orden = Examen_Orden::find($id_orden);
-            //$total       = $orden->valor + $valor;
-            $total       = $orden->detalles->sum('valor');
-            $cantidad    = $orden->detalles->count();
-            $total       = round($total, 2);
-            $descuento_p = $orden->descuento_p;
-            $descuento_p = 0;
-
-            $descuento_valor = $orden->detalles->sum('valor_descuento');
-
-            $subtotal_pagar = $total - $descuento_valor;
-
-            $recargo_p = $orden->recargo_p;
-
-            $recargo_valor = $subtotal_pagar * $recargo_p / 100;
-            $recargo_valor = round($recargo_valor, 2);
-            $valor_total   = $subtotal_pagar + $recargo_valor;
-            $valor_total   = round($valor_total, 2);
-            $valor_con_oda = $orden->detalles->sum('valor_con_oda');
-            $valor_con_oda = round($valor_con_oda, 2);
-            $total_con_oda = $valor_con_oda + $recargo_valor;
-
-            //ACTUALIZAR ORDEN
-            $input_ex = [
-
-                'descuento_valor' => $descuento_valor,
-                'recargo_valor'   => $recargo_valor,
-                'total_valor'     => $valor_total,
-                'cantidad'        => $cantidad,
-                'valor'           => $total,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'cobrar_pac_pct'  => $cobrar_pac_pct,
-                'valor_con_oda'   => $valor_con_oda,
-                'total_con_oda'   => $total_con_oda,
-
-            ];
-
-            $orden->update($input_ex);
-
-            Log_usuario::create([
-                'id_usuario'  => $idusuario,
-                'ip_usuario'  => $ip_cliente,
-                'descripcion' => "ACTUALIZA ORDEN PUBLICA",
-                'dato_ant1'   => $orden->id,
-                'dato1'       => $orden->id_paciente,
-                'dato_ant4'   => $id_examen,
-            ]);
-        }
-
-        $ovalor       = $orden->valor;
-        $ototal_valor = $orden->total_valor;
-
-        return ['cantidad' => $orden->cantidad, 'valor' => $ovalor, 'descuento_valor' => $orden->descuento_valor, 'recargo_valor' => $orden->recargo_valor, 'total_valor' => $ototal_valor];
+        return app(\Sis_medico\Services\EmergencyLaboratoryOrderService::class)
+            ->addExam($id_orden, $id_examen, Auth::user()->id, request()->ip());
     }
-
     public function laboratorio_orden_quitar_examen($id_orden, $id_examen)
     {
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
-        $orden = Examen_Orden::find($id_orden);
-
-        $detalle = $orden->detalles->where('id_examen', $id_examen)->first();
-        if (!is_null($detalle)) {
-
-            $detalle->delete();
-
-            $orden = Examen_Orden::find($id_orden);
-
-            $total    = $orden->detalles->sum('valor');
-            $cantidad = $orden->detalles->count();
-            $total    = round($total, 2);
-            if ($total < 0) {
-
-                $total = 0;
-            }
-            $descuento_p     = $orden->descuento_p;
-            $descuento_valor = 0;
-
-            $subtotal_pagar = $total - $descuento_valor;
-
-            $recargo_p = $orden->recargo_p;
-
-            $recargo_valor = $subtotal_pagar * $recargo_p / 100;
-            $recargo_valor = round($recargo_valor, 2);
-            $valor_total   = $subtotal_pagar + $recargo_valor;
-            $valor_total   = round($valor_total, 2);
-
-            //ACTUALIZAR ORDEN
-            $input_ex = [
-
-                'descuento_valor' => $descuento_valor,
-                'recargo_valor'   => $recargo_valor,
-                'total_valor'     => $valor_total,
-                'cantidad'        => $cantidad,
-                'valor'           => $total,
-                'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-
-            ];
-
-            $orden->update($input_ex);
-
-            Log_usuario::create([
-                'id_usuario'  => $idusuario,
-                'ip_usuario'  => $ip_cliente,
-                'descripcion' => "ACTUALIZA ORDEN PUBLICA",
-                'dato_ant1'   => $orden->id,
-                'dato1'       => $orden->id_paciente,
-                'dato_ant4'   => $id_examen,
-            ]);
-            ///
-
-        }
-
-        return ['cantidad' => $orden->cantidad, 'valor' => $orden->valor, 'descuento_valor' => $orden->descuento_valor, 'recargo_valor' => $orden->recargo_valor, 'total_valor' => $orden->total_valor];
+        return app(\Sis_medico\Services\EmergencyLaboratoryOrderService::class)
+            ->removeExam($id_orden, $id_examen, Auth::user()->id, request()->ip());
     }
-
     public function store(Request $request)
     {
-        //dd($request->all());
-        $clinico           = $request->clinicos;
-        $ginecologico      = $request->ginecologico;
-        $traumatologico    = $request->traumatologicos;
-        $antecedentes_quir = $request->antecedentes_quir;
-        $farmacologico     = $request->farmacologico;
-        $psiquiatrico      = $request->psiquiatrico;
-        $antecedentes_fam  = $request->antecedentes_fam;
-        $id_solicitud      = $request->id_solicitud;
-
-        $solicitud      = Ho_Solicitud::find($id_solicitud);
-        $paciente       = $solicitud->paciente;
-        $datos_paciente = $paciente->ho_datos_paciente;
-
-        $datos_paciente->update([
-            'clinico'        => $clinico,
-            'ginecologico'   => $ginecologico,
-            'traumatologico' => $traumatologico,
-            'farmacologico'  => $farmacologico,
-            'psiquiatrico'   => $psiquiatrico,
-
-        ]);
-
-        $paciente->update([
-            'antecedentes_quir' => $antecedentes_quir,
-            'antecedentes_fam'  => $antecedentes_fam,
-
-        ]);
-
+        $solicitud = app(\Sis_medico\Services\EmergencyLaboratoryOrderService::class)
+            ->updatePatientHistory($request->id_solicitud, $request->all());
         $alergias = $solicitud->paciente->a_alergias;
-        $txt_al   = '';
-        $cont     = 0;
+        $nombres = array();
         foreach ($alergias as $alergia) {
-            if ($cont == 0) {
-                $txt_al = $alergia->principio_activo->nombre;
-            } else {
-                $txt_al = $txt_al . ' + ' . $alergia->principio_activo->nombre;
-            }
-            $cont++;
+            $nombres[] = $alergia->principio_activo->nombre;
         }
-
-        return view('hospital.emergencia.cuartopaso', ['solicitud' => $solicitud, 'txt_al' => $txt_al, 'alergias' => $alergias]);
+        return view('hospital.emergencia.cuartopaso', array(
+            'solicitud' => $solicitud, 'txt_al' => implode(' + ', $nombres), 'alergias' => $alergias,
+        ));
     }
-
     public function laboratorio_detalle($id)
     {
 
@@ -1241,51 +746,9 @@ class DecimoPasoController extends Controller
 
     public function buscar_examenes(Request $request, $id_orden)
     {
-
-        /*$opcion = '2';
-        if($this->rol_new($opcion)){
-        return redirect('/');
-        }*/
-
-        $orden = Examen_Orden::find($id_orden);
-
-        $agrupador_labs = DB::table('examen_agrupador_labs')->get();
-
-        $examenes_labs = DB::table('examen_agrupador_sabana as sa')->join('examen as e', 'e.id', 'sa.id_examen')->join('examen_agrupador_labs as l', 'l.id', 'sa.id_examen_agrupador_labs')->where('e.estado', '1')->select('sa.*', 'e.descripcion', 'e.nombre', 'e.valor', 'e.id as ex_id', 'l.nombre as lnombre')->orderBy('sa.id_examen_agrupador_labs')->orderBy('sa.nro_orden');
-
-        if ($request->seleccionados == '1' && $request->buscador == null && $request->buscador2 == null) {
-
-            $examenes_labs = DB::table('examen_detalle as ed')->where('id_examen_orden', $id_orden)->join('examen as e', 'e.id', 'ed.id_examen')->join('examen_agrupador_sabana as sa', 'sa.id_examen', 'ed.id_examen')->join('examen_agrupador_labs as  l', 'l.id', 'sa.id_examen_agrupador_labs')->select('sa.*', 'e.descripcion', 'e.nombre', 'e.valor', 'e.id as ex_id', 'l.nombre as lnombre')->orderBy('sa.id_examen_agrupador_labs')->orderBy('sa.nro_orden');
-        }
-
-        if ($request->buscador != null) {
-            $examenes_labs = $examenes_labs->where('e.descripcion', 'like', '%' . $request->buscador . '%');
-        }
-
-        if ($request->buscador2 != null) {
-            $examenes_labs = $examenes_labs->where('l.nombre', 'like', '%' . $request->buscador2 . '%');
-        }
-
-        if ($request->firma_dr == 1) {
-            $orden->update(['doctor_firma' => '1307189140']);
-        } else {
-            $orden->update(['doctor_firma' => $orden->id_doctor_ieced]);
-        }
-
-        $examenes_labs = $examenes_labs->get();
-
-        $detalles_ch = [];
-        $i           = 0;
-
-        $nuevo_detalles = $orden->detalles;
-        if (!is_null($nuevo_detalles)) {
-            foreach ($nuevo_detalles as $nuevo_detalle) {
-                $detalles_ch[$i] = $nuevo_detalle->id_examen;
-                $i               = $i + 1;
-            }
-        }
-
-        return view('hospital/emergencia/orden_laboratorio/listado', ['agrupador_labs' => $agrupador_labs, 'examenes_labs' => $examenes_labs, 'detalles_ch' => $detalles_ch, 'orden' => $orden]);
+        $link = Ho_Orden_Examenes::where('id_examen_orden', $id_orden)->firstOrFail();
+        return app(\Sis_medico\Http\Controllers\hospital\HospitalEpisodeLaboratoryController::class)
+            ->catalog($request, $link->id_ho_solicitud, $id_orden);
     }
 
     public function crear_interconsulta($id, Request $request)
@@ -1334,6 +797,10 @@ class DecimoPasoController extends Controller
         ];
 
         Ho_Ordenes::create($arr_orden_soli);
+        app(\Sis_medico\Services\ClinicalConsultWorkflowService::class)->sync(
+            Interconsulta::find($id_editar), $request->get('clinical_priority', 'URGENT'),
+            array('actor_id'=>$idusuario,'ip'=>$ip_cliente)
+        );
 
         $interconsultas = Interconsulta::where('id_paciente', $solicitud->paciente->id)
             ->where('estado', 1)
@@ -1389,6 +856,10 @@ class DecimoPasoController extends Controller
                 'id_usuariocrea'  => $idusuario,
                 'id_usuariomod'   => $idusuario,
             ]);
+            app(\Sis_medico\Services\ClinicalConsultWorkflowService::class)->sync(
+                $interconsulta->fresh(), $request->get('clinical_priority', 'URGENT'),
+                array('actor_id'=>$idusuario,'ip'=>$ip_cliente)
+            );
 
             DB::commit();
             return ['respuesta' => 'success', 'msj' => 'Guardado con Exito'];

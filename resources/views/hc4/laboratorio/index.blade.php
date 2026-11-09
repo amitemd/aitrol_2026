@@ -29,23 +29,13 @@
   <div class="row">
     <div class="col-12" style="padding-left: 0.;padding-left: 0px;padding-right: 9px;margin-left: 5px;margin-right: 0px;">
        <!--Agrupamos la fila en 12 columnas-->
-      <div class="col-12" style="border: 2px solid #004AC1;margin-left: 8px;margin-right: 0px;margin-left: 4px;padding-right: 0px;padding-left: 0px;background-color:#56ABE3;">
+      <div class="col-12 box hc4-standard-module-container" style="margin-left: 4px; margin-right: 0px; padding-right: 0px; padding-left: 0px;">
                <!--Titulo-->
-          <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;">
-                  <img style="width: 35px; margin-left: 15px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/lab.png"> 
-                  <b>LABORATORIO</b>
-            @if(!is_null($paciente)) 
-              <center> 
-                <div class="col-12" style="padding-bottom: 20px;">
-                  <h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-                      <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-                          {{$paciente->nombre1}} {{$paciente->nombre2}}
-                      </b>
-                  </h1>
-                </div> 
-              </center>
-            @endif  
-          </h1>
+          @include('hc4.partials.module_header', [
+              'moduleTitle' => __('hc4.laboratory'),
+              'moduleIcon' => asset('/').'hc4/img/iconos/lab.png',
+              'paciente' => $paciente
+          ])
           <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px">
             <!--Hacemos el llamado al estilo parent-->
             <div class="parent" style="background-color: #56ABE3">
@@ -66,35 +56,34 @@
 
                       @if(!is_null($value))
                         @php 
-                        $fecha_orden = $value->fecha_orden;
                         $dia =  Date('N',strtotime($value->fecha_orden)); 
                         $mes =  Date('n',strtotime($value->fecha_orden)); 
                         @endphp
                               
                                 <span> <b style="font-family: 'Helvetica';" class="box-title">
-                                @if($dia == '1') Lunes 
-                                   @elseif($dia == '2') Martes
-                                   @elseif($dia == '3') Miércoles 
-                                   @elseif($dia == '4') Jueves 
-                                   @elseif($dia == '5') Viernes 
-                                   @elseif($dia == '6') Sábado 
-                                   @elseif($dia == '7') Domingo 
+                                @if($dia == '1') @lang('hc4.monday')
+                                   @elseif($dia == '2') @lang('hc4.tuesday')
+                                   @elseif($dia == '3') @lang('hc4.wednesday')
+                                   @elseif($dia == '4') @lang('hc4.thursday')
+                                   @elseif($dia == '5') @lang('hc4.friday')
+                                   @elseif($dia == '6') @lang('hc4.saturday')
+                                   @elseif($dia == '7') @lang('hc4.sunday')
                                 @endif 
-                                  {{substr($value->fecha_orden,8,2)}} de 
-                                @if($mes == '1') Enero 
-                                   @elseif($mes == '2') Febrero 
-                                   @elseif($mes == '3') Marzo 
-                                   @elseif($mes == '4') Abril 
-                                   @elseif($mes == '5') Mayo 
-                                   @elseif($mes == '6') Junio 
-                                   @elseif($mes == '7') Julio 
-                                   @elseif($mes == '8') Agosto 
-                                   @elseif($mes == '9') Septiembre 
-                                   @elseif($mes == '10') Octubre 
-                                   @elseif($mes == '11') Noviembre 
-                                   @elseif($mes == '12') Diciembre 
+                                  {{substr($value->fecha_orden,8,2)}} @lang('hc4.of')
+                                @if($mes == '1') @lang('hc4.january')
+                                   @elseif($mes == '2') @lang('hc4.february')
+                                   @elseif($mes == '3') @lang('hc4.march')
+                                   @elseif($mes == '4') @lang('hc4.april')
+                                   @elseif($mes == '5') @lang('hc4.may')
+                                   @elseif($mes == '6') @lang('hc4.june')
+                                   @elseif($mes == '7') @lang('hc4.july')
+                                   @elseif($mes == '8') @lang('hc4.august')
+                                   @elseif($mes == '9') @lang('hc4.september')
+                                   @elseif($mes == '10') @lang('hc4.october')
+                                   @elseif($mes == '11') @lang('hc4.november')
+                                   @elseif($mes == '12') @lang('hc4.december')
                                 @endif 
-                                  del {{substr($value->fecha_orden,0,4)}}</b></span>
+                                  @lang('hc4.of') {{substr($value->fecha_orden,0,4)}}</b></span>
                       @endif              
 
 
@@ -110,16 +99,16 @@
                         <div class="col-12">
                           <div class="row ">
                             <div class="col-md-8 col-12" style="border: 2px solid #004AC1;margin-left: 10px;margin-right: 10px;padding-right: 0px;padding-left: 0px;border-radius: 10px;background-color: white; height: 100%; margin-bottom: 10px">
-                              <div class="col-12"  style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004ac1; text-align: center ">
-                                  <label class="box-title" style="background-color: #004AC1;  font-size: 16px;">
-                                  Detalle de la Orden de Laboratorio
+                              <div class="col-12" style="background: transparent; color: #334155; font-family: 'Helvetica general3'; text-align: center; padding: 8px 12px 4px;">
+                                  <label class="box-title" style="background: transparent; color: #334155; font-size: 16px; font-weight: 600; margin: 0;">
+                                  @lang('hc4.detalleOrdenLaboratorio')
                                   </label>
                               </div>
                               <br>
                               <div class="row">
                                 <!--Obtenemos el nombre del Doctor de cada Orden de Laboratorio-->
                                 <div class="form-group col-12" style="padding-right: 0px">
-                                  <label style="font-family: 'Helvetica general';" for="id_doctor_ieced" class="col-12" >Médico</label>
+                                  <label style="font-family: 'Helvetica general';" for="id_doctor_ieced" class="col-12" >@lang('hc4.medico')</label>
                                   <div class="col-12">
                                     @foreach ($usuarios as $usuario)
                                         @if($value->id_doctor_ieced==$usuario->id) 
@@ -129,7 +118,7 @@
                                   </div>
                                 </div>
                                 <div class="form-group col-12" style="padding-right: 0px">
-                                  <label style="font-family: 'Helvetica general';" for="id_doctor_ieced" class="col-12" >Seguro</label>
+                                  <label style="font-family: 'Helvetica general';" for="id_doctor_ieced" class="col-12" >@lang('hc4.seguro')</label>
                                   <div class="col-12">
                                     @if(!is_null($value->snombre))
                                       {{$value->snombre}} 
@@ -140,7 +129,7 @@
                             </div>
                             
                             <div class="col-md-3 col-12">
-                                <span>Progreso:</span>
+                                <span>@lang('hc4.progreso'):</span>
                                 <br>
                                 <div class="progress progress">
                                   <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" id="td{{$value->id}}">
@@ -151,13 +140,13 @@
                                 <!--<div>
                                   <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                   <a style="width: 200px; " href="{{ route('descargar.orden', ['id' => $value->id]) }}" class="btn btn-info boton-lab">
-                                  <span class="fa fa-download">&nbsp;&nbsp; </span> Descargar Orden 
+                                  <span class="fa fa-download">&nbsp;&nbsp; </span> @lang('hc4.descargarOrden')
                                   </a>
                                 </div>-->
                                 <center>
                                   <div class="col-md-12 col-8">
                                     <a target="_blank" onclick="descargar({{$value->id}});" style="width: 100%; height: 100%; color: white" class="btn btn-info boton-lab">
-                                      <span style="color: white" class="fa fa-download"></span> Resultados
+                                      <span style="color: white" class="fa fa-download"></span> @lang('hc4.resultados')
                                     </a>
                                   </div>
                                 </center>
@@ -173,7 +162,7 @@
                         <!--Div que contiene el Titulo-->
                           <div class="col-12" class="box-header " style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1; height: 35px; text-align: center;">
                                 <label class="box-title" style="background-color: #004AC1;  font-size: 16px">
-                                  &nbsp;Listado de ex&aacute;menes de laboratorio
+                                  &nbsp;@lang('hc4.listadoExamenesLaboratorio')
                                 </label>
                           </div>
                           <div class="col-12" style="padding: 7px;">
@@ -237,10 +226,10 @@
                                                 $i_agrupador=1;
                                               @endphp  
                                             </div>
-                                              <div style="width: 28%;float:left;color: #004AC1;"><b>NOMBRE</b></div>
-                                              <div style="width: 18%;float:left;color: #004AC1;"><b>RESULTADO</b></div>
-                                              <div style="width: 13%;float:left;color: #004AC1;"><b>UNIDADES</b></div>
-                                              <div style="width: 40%;float:left;color: #004AC1;"><b>REFERENCIA</b></div>
+                                              <div style="width: 28%;float:left;color: #004AC1;"><b>@lang('hc4.nombre')</b></div>
+                                              <div style="width: 18%;float:left;color: #004AC1;"><b>@lang('hc4.resultado')</b></div>
+                                              <div style="width: 13%;float:left;color: #004AC1;"><b>@lang('hc4.unidades')</b></div>
+                                              <div style="width: 40%;float:left;color: #004AC1;"><b>@lang('hc4.referencia')</b></div>
                                             <div style="clear:both;"></div> 
                                             @endif
                                             @if($i == 0)
@@ -249,271 +238,244 @@
                                                   <div class="col-12" style="border-bottom: 1px solid #004AC1;padding: 0px">
                                                     <b >{{$value_detalle->examen->nombre}}</b>
                                                   </div>
-                                                  @if($value_detalle->examen->texto!=null)
-                                                  <div style="border-bottom: 1px solid #009a98;padding: 0px;">
-                                                    <?php echo $value_detalle->examen->texto; ?>
-                                                  </div>
-                                                  @endif 
-                                                @endif
-                                              @endif  
+                                                @endif 
+                                              @endif
                                               @php 
                                                 $i = 1; 
                                               @endphp
                                             @endif
                                             <div style="clear:both;"></div>  
-                                            <div class="col-12" @if($parametro_nuevo->count() == 1) style="padding-left: 10px;" @endif>
+                                          <div class="col-12">
                                               <table id="example2" style="font-size: 12px;  width: 100%">
                                                 <tbody>
                                                   @if($value_detalle->id_examen=='661')
                                                     <tr style="font-size: 12px;">
-                                                        <td style="width: 20%;"><b>GRADO</b></td>
-                                                        <td style="width: 10%;"><b>% CELULAS</b></td>
+                                                        <td style="width: 20%;"><b>@lang('hc4.grado')</b></td>
+                                                        <td style="width: 10%;"><b>% @lang('hc4.celulas')</b></td>
                                                         <td style="width: 8%;"><b>L.A.P. PUNTOS</b></td>
-                                                        <td style="width: 40%;"><b>REFERENCIA</b></td>
+                                                        <td style="width: 40%;"><b>@lang('hc4.referencia')</b></td>
                                                     </tr>
                                                   @endif
-                                                    @if($value_detalle->id_examen=='661')
-                                                      @foreach($parametro_nuevo as $value_agrupador)
-                                                        @if($value_agrupador->unidad1=='L.A.P. PUNTOS')
-                                                          @php
-                                                          $resultado = $orden->resultados->where('id_parametro', $value_agrupador->id)->first();
-                                                          @endphp
-                                                            <tr role="row">
-                                                                <td style="width: 30%;">
-                                                                  {{$value_agrupador->nombre}}
-                                                                </td>
-                                                                @php 
-                                                                  $hermano = DB::table('examen_parametro')->where('id_examen',$value_detalle->id_examen)->where('orden',$value_agrupador->orden)->where('unidad1','% CELULAS')->first();
-                                                                  $resultado_2 = null;
-                                                                  if(!is_null($hermano)){
-                                                                  $resultado_2 = $orden->resultados->where('id_parametro', $hermano->id)->first();
-                                                                  } 
-                                                                @endphp
-                                                                <td style="width: 20%;">
-                                                                    <div style="word-wrap: break-word;">
-                                                                      @if(!is_null($hermano))
-                                                                        @if(!is_null($resultado_2)) 
-                                                                          @if($resultado_2->certificado=='1') 
-                                                                            {{$resultado_2->valor}}
-                                                                          @else
-                                                                            {{"0"}} 
-                                                                          @endif 
-                                                                        @endif
-                                                                      @endif
-                                                                    </div>  
-                                                                </td>
-                                                                <td style="width: 10%;">
-                                                                    @if(!is_null($resultado))
-                                                                      {{$resultado->valor}}
-                                                                    @else
-                                                                      {{"0"}}
-                                                                    @endif
-                                                                </td>
-                                                                <td style="width: 40%;">
-                                                                    @if($value_agrupador->texto_referencia == "")
-                                                                      {{$value_agrupador->valor1}} - {{$value_agrupador->valor1g}}
-                                                                    @else 
-                                                                      <?php echo 
-                                                                      $value_agrupador->texto_referencia; 
-                                                                      ?> 
-                                                                    @endif
-                                                                </td>
-                                                              </tr>
-                                                        @endif    
-                                                      @endforeach  
-                              
-                                                    @elseif($value_detalle->id_examen=='639')
-                                                        <center>
-                                                          <b>ALERGIAS A ALIM. POR IGG - 59</b>
-                                                        </center>  
-                                                        <br>
-                                                        <div class="row">
-                                                          <div class="col-md-4">
-                                                            <div style="background-color: #ACCBEE;font-size: 12px;text-align: center;">Reacción Leve</div> 
-                                                          </div>
-                                                          <div class="col-md-4">
-                                                            <div style="background-color: #8AB0DB;font-size: 12px;text-align: center;">Reacción Moderada</div> 
-                                                          </div>
-                                                          <div class="col-md-4">
-                                                            <div style="background-color: #376EAC;color: white;font-size: 12px;text-align: center;">Reacción Fuerte</div>  
-                                                          </div>
-                                                        </div>
-                                                        <br>  
-                                                        @php $cuenta=0;
+                                                  @if($value_detalle->id_examen=='661')
+                                                    @foreach($parametro_nuevo as $value_agrupador)
+                                                      @if($value_agrupador->unidad1=='L.A.P. PUNTOS')
+                                                        @php
+                                                        $resultado = $orden->resultados->where('id_parametro', $value_agrupador->id)->first();
                                                         @endphp
-                                                        <tr role="row">
-                                                          @foreach($parametro_nuevo as $value_agrupador)
-                                                            @php 
-                                                          
-                                                              $rvalor=0; 
-
-                                                              $resultado = $resultados->where('id_parametro',$value_agrupador->id)->first();
-
-                                                              if(!is_null($resultado)){
-                                                                $rvalor=$resultado->valor;
-
-                                                              }
-                                                            
-
-                                                            @endphp
-                                                          
-                                                            @if($value_agrupador->orden=='46' || $value_agrupador->orden=='48')
-                                                              @if($cuenta == 0) <tr> @endif  
-                                                              <td style="width: 3%; font-size: 10px; padding:0;">
-                                                                {{$value_agrupador->sec}}
-                                                              </td>
-                                                              <td style="width: 12%;  font-size: 10px;padding:0;">
-                                                                {{$value_agrupador->nombre}}
-                                                              </td>
-                                                              <td style="width: 3%;padding:0;" >
-                                                              </td>
-                                                              <td style="width: 3%;padding:0;">
-                                                              </td>
-                                                              <td style="width: 3%; background-color:#A8A8A8; border: 1px solid #FFF;text-align: center; font-size: 13px;padding:0;">@if($value_agrupador->orden=='48')  <span style="color: white">x</span> @else &nbsp; @endif
-                                                              </td>
-                                                              <td style="width: 3%;  font-size: 10px; padding:0;">
-                                                                &nbsp;
-                                                              </td>
-                                                              @php $cuenta++; @endphp
-                                                              @if($cuenta == 2)
-                                                                
-                                                                </tr>
-                                                              @endif  
-                                                            @else
-                                                              @if($cuenta == 0) <tr> @endif 
-                                                              <td style="width: 3%;  font-size: 10px; padding:0;">
-                                                                {{$value_agrupador->sec}}
-                                                              </td>
-                                                              <td style="width: 12%;  font-size: 10px;padding:0;">
-                                                                {{$value_agrupador->nombre}}
-                                                              </td>
-                                                              <td style="width: 3%; background-color:#ACCBEE ; border: 1px solid #FFF;text-align: center;font-size: 13px;padding:0;">
-                                                                @if($rvalor==1) @if($resultado->certificado=='1') X @endif @else &nbsp; @endif
-                                                              </td>
-                                                              <td style="width: 3%; background-color:#8AB0DB; border: 1px solid #FFF;text-align: center; font-size: 13px;padding:0;">
-                                                                @if($rvalor==2) @if($resultado->certificado=='1') X @endif @else &nbsp; @endif
-                                                              </td>
-                                                              <td style="width: 3%; background-color:#376EAC; border: 1px solid #FFF;text-align: center; font-size: 13px;padding:0;">
-                                                                @if($rvalor==3) <span style="color: white">@if($resultado->certificado=='1') X @endif</span> @else &nbsp; @endif
-                                                              </td>
-                                                              <td style="width: 3%;  font-size: 10px; padding:0;">
-                                                                &nbsp;
-                                                              </td>
-                                                              @php $cuenta++; @endphp
-                                                              @if($cuenta == 2)
-                                                                </tr> 
-                                                                @php
-                                                                  $cuenta=0;
-                                                                @endphp
-                                                              @endif 
-                                                            @endif
-                                                          @endforeach
-                                                          
-                                                        </tr>
-                                                        <table>
                                                           <tr role="row">
-                                                            <br>
-                                                            <br>
-                                                            <div>*19 Pescado Blanco Mix: Bacalao y Lenguado.</div>
-                                                            <div>*20 Pescado de Agua Dulce Mix: Salmón y Trucha.</div>
-                                                            <div>*22 Marisco Mix: Camarón, Langostino, Cangrejo, Langosta, Mejillones.</div>
-                                                            <div>*30 Mezclas de pimientos: rojo, verde y amarillo</div>
-                                                            <div>*31 Leguminosas: Arverjas, lentejas, fréjol, habas.</div>
-                                                            <div>*33 Melón Mix: Melón y Sandía</div>
-                                                            <div style="text-align: justify;"> Si sus resultados indican una reacción elevada al gluten, le recomendamos que evite todos los alimentos que contengan gliadina/gluten, aunque estos alimentos no muestren una respuesta positiva como el trigo, el centeno, la cebada, espelta, kamut, malta, esencia de malta, vinagre de malta, salvado, triticale, dextrina.</div>
-                                                            <div>Algunas personas con intolerancia al gluten son sensibles también a la avena. </div>
-                                                          
-                                                            
-                                                          </tr>
-                                                        </table>
-                                                    
-                                                    @else
-                                                      @if(!(($value_detalle->id_examen == '414' || $value_detalle->id_examen == '412' || $value_detalle->id_examen == '680') && $orden->created_at<'2018-12-17' && $orden->id!='1543' && $orden->id!='1291')) 
-                                                      
-                                                      
-                                          
-                                                        @foreach($parametro_nuevo as $value_agrupador)
-                                                          @php
-                                                            $resultado = $orden->resultados
-                                                              ->where('id_parametro', $value_agrupador->id)
-                                                              ->first();
-                                                          @endphp
-                                                          
-                                                          @if(!is_null($resultado))
-                                                            @if($resultado->certificado=='1')
-                                                              <tr role="row">
-                                                                  
-                                                                  <td style="width: 30%;@if($parametro_nuevo->count() == 1) font-weight: 700;padding-left: -3px;font-size: 14px; @endif">
-                                                                    {{$value_agrupador->nombre}}
-                                                                  </td>
-                                                                  
-                                                                  <td style="width: 20%;">
-                                                                    <div style="word-wrap: break-word;">
-                                                                      @if(!is_null($resultado))
-                                                                      {{$resultado->valor}}
+                                                            <td style="width: 30%;">
+                                                              {{$value_agrupador->nombre}}
+                                                            </td>
+                                                            @php 
+                                                              $hermano = DB::table('examen_parametro')->where('id_examen',$value_detalle->id_examen)->where('orden',$value_agrupador->orden)->where('unidad1','% CELULAS')->first();
+                                                              $resultado_2 = null;
+                                                              if(!is_null($hermano)){
+                                                              $resultado_2 = $orden->resultados->where('id_parametro', $hermano->id)->first();
+                                                              } 
+                                                            @endphp
+                                                            <td style="width: 20%;">
+                                                                <div style="word-wrap: break-word;">
+                                                                  @if(!is_null($hermano))
+                                                                    @if(!is_null($resultado_2)) 
+                                                                      @if($resultado_2->certificado=='1') 
+                                                                        {{$resultado_2->valor}}
                                                                       @else
-                                                                      {{"0"}}
-                                                                      @endif
-                                                                    </div>  
-                                                                  </td>
-                                                                  @php
-                                                                    $fl_ref = 0;
-                                                                    $ref_ant = Sis_medico\Examen_Parametro_Referencia_Anterior::where('id_parametro',$value_agrupador->id)->where('fecha_valida','>',$orden->fecha_orden)->orderBy('fecha_valida','asc')->first();
-                                                                    if(!is_null($ref_ant)){
-                                                                      $fl_ref = 1;
-                                                                    }
-                                                                  @endphp
-                                                                  <td style="width: 10%;">  
-                                                                    @if($fl_ref) {{$ref_ant->unidad1}} @else {{$value_agrupador->unidad1}} @endif
-                                                                  </td>
-
-                                                                  <td style="width: 40%;">
-                                                                    @if($fl_ref)
-                                                                      @if($ref_ant->texto_referencia == "")
-                                                                      {{$ref_ant->valor1}} - {{$ref_ant->valor1g}}  
-                                                                      @else
-                                                                        <?php echo $ref_ant->texto_referencia; ?> 
+                                                                        {{"0"}} 
                                                                       @endif 
-                                                                    @else 
-                                                                      @if($value_agrupador->texto_referencia == "")
-                                                                      {{$value_agrupador->valor1}} - {{$value_agrupador->valor1g}} 
-                                                                      @else
-                                                                        <?php echo $value_agrupador->texto_referencia; ?> 
-                                                                      @endif
                                                                     @endif
-                                                                  </td>
-                                                              </tr>
-                                                            @endif    
-                                                          @endif
-                                                        @endforeach
-
-                                                        @if($value_detalle->examen->tiene_detalle=='1')
-                                                          @php
-                                                            $sub_resultados = DB::table('examen_sub_resultado')
-                                                            ->where('id_orden',$orden->id)
-                                                            ->where('estado','1')
-                                                            ->where('id_examen',$value_detalle
-                                                            ->id_examen)->get();
-                                                          @endphp
-                                                          <tr>
-                                                            <td colspan="4" id="sub_tabla">
-                                                              <table class="table table-bordered table-hover dataTable">
-                                                                <tbody>
-                                                                  @foreach($sub_resultados as $sub)
-                                                                  <tr>
-                                                                    <td style="width: 300px !important;padding-top: 1px;padding-bottom: 1px;">{{$sub->campo1}}</td>
-                                                                    <td style="width: 300px !important;padding-top: 1px;padding-bottom: 1px;">{{$sub->campo2}}</td>
-                                                                    <td style="width: 300px !important;padding-top: 1px;padding-bottom: 1px;">{{$sub->campo3}}</td>
-                                                                  </tr>
-                                                                  @endforeach
-                                                                </tbody>
-                                                              </table>  
+                                                                  @endif
+                                                                </div>  
+                                                            </td>
+                                                            <td style="width: 10%;">
+                                                                @if(!is_null($resultado))
+                                                                  {{$resultado->valor}}
+                                                                @else
+                                                                  {{"0"}}
+                                                                @endif
+                                                            </td>
+                                                            <td style="width: 40%;">
+                                                                @if($value_agrupador->texto_referencia == "")
+                                                                  {{$value_agrupador->valor1}} - {{$value_agrupador->valor1g}}
+                                                                @else 
+                                                                  <?php echo 
+                                                                  $value_agrupador->texto_referencia; 
+                                                                  ?> 
+                                                                @endif
                                                             </td>
                                                           </tr>
+                                                      @endif    
+                                                    @endforeach  
+                            
+                                                  @elseif($value_detalle->id_examen=='639')
+                                                      <center>
+                                                        <b>ALERGIAS A ALIM. POR IGG - 59</b>
+                                                      </center>  
+                                                      <br>
+                                                      <div class="row">
+                                                        <div class="col-md-4">
+                                                          <div style="background-color: #ACCBEE;font-size: 12px;text-align: center;">@lang('hc4.reaccionLeve')</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                          <div style="background-color: #8AB0DB;font-size: 12px;text-align: center;">@lang('hc4.reaccionModerada')</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                          <div style="background-color: #376EAC;color: white;font-size: 12px;text-align: center;">@lang('hc4.reaccionFuerte')</div>
+                                                        </div>
+                                                      </div>
+                                                      <br>  
+                                                      @php $cuenta=0;
+                                                      @endphp
+                                                      <tr role="row">
+                                                        @foreach($parametro_nuevo as $value_agrupador)
+                                                          @php 
+                                                        
+                                                            $rvalor=0; 
+
+                                                            $resultado = $resultados->where('id_parametro',$value_agrupador->id)->first();
+
+                                                            if(!is_null($resultado)){
+                                                              $rvalor=$resultado->valor;
+
+                                                            }
+                                                          
+
+                                                          @endphp
+                                                        
+                                                          @if($value_agrupador->orden=='46' || $value_agrupador->orden=='48')
+                                                            @if($cuenta == 0) <tr> @endif  
+                                                            <td style="width: 3%; font-size: 10px; padding:0;">
+                                                              {{$value_agrupador->sec}}
+                                                            </td>
+                                                            <td style="width: 12%;  font-size: 10px;padding:0;">
+                                                              {{$value_agrupador->nombre}}
+                                                            </td>
+                                                            <td style="width: 3%;padding:0;" >
+                                                            </td>
+                                                            <td style="width: 3%;padding:0;">
+                                                            </td>
+                                                            <td style="width: 3%; background-color:#A8A8A8; border: 1px solid #FFF;text-align: center; font-size: 13px;padding:0;">@if($value_agrupador->orden=='48')  <span style="color: white">x</span> @else &nbsp; @endif
+                                                            </td>
+                                                            <td style="width: 3%;  font-size: 10px; padding:0;">
+                                                              &nbsp;
+                                                            </td>
+                                                            @php $cuenta++; @endphp
+                                                            @if($cuenta == 2)
+                                                              </tr>
+                                                            @endif  
+                                                          @else
+                                                            @if($cuenta == 0) <tr> @endif 
+                                                            <td style="width: 3%;  font-size: 10px; padding:0;">
+                                                              {{$value_agrupador->sec}}
+                                                            </td>
+                                                            <td style="width: 12%;  font-size: 10px;padding:0;">
+                                                              {{$value_agrupador->nombre}}
+                                                            </td>
+                                                            <td style="width: 3%; background-color:#ACCBEE ; border: 1px solid #FFF;text-align: center;font-size: 13px;padding:0;">
+                                                              @if($rvalor==1) @if($resultado->certificado=='1') X @endif @else &nbsp; @endif
+                                                            </td>
+                                                            <td style="width: 3%; background-color:#8AB0DB; border: 1px solid #FFF;text-align: center; font-size: 13px;padding:0;">
+                                                              @if($rvalor==2) @if($resultado->certificado=='1') X @endif @else &nbsp; @endif
+                                                            </td>
+                                                            <td style="width: 3%; background-color:#376EAC; border: 1px solid #FFF;text-align: center; font-size: 13px;padding:0;">
+                                                              @if($rvalor==3) <span style="color: white">@if($resultado->certificado=='1') X @endif</span> @else &nbsp; @endif
+                                                            </td>
+                                                            <td style="width: 3%;  font-size: 10px; padding:0;">
+                                                              &nbsp;
+                                                            </td>
+                                                            @php $cuenta++; @endphp
+                                                            @if($cuenta == 2)
+                                                              </tr> 
+                                                              @php
+                                                                $cuenta=0;
+                                                              @endphp
+                                                            @endif 
+                                                          @endif
+                                                        @endforeach
+                                                        
+                                                      </tr>
+                                                      <table>
+                                                        <tr role="row">
+                                                          <br>
+                                                          <br>
+                                                          <div>*19 Pescado Blanco Mix: Bacalao y Lenguado.</div>
+                                                          <div>*20 Pescado de Agua Dulce Mix: Salmón y Trucha.</div>
+                                                          <div>*22 Marisco Mix: Camarón, Langostino, Cangrejo, Langosta, Mejillones.</div>
+                                                          <div>*30 Mezclas de pimientos: rojo, verde y amarillo</div>
+                                                          <div>*31 Leguminosas: Arverjas, lentejas, fréjol, habas.</div>
+                                                          <div>*33 Melón Mix: Melón y Sandía</div>
+                                                          <div style="text-align: justify;"> Si sus resultados indican una reacción elevada al gluten, le recomendamos que evite todos los alimentos que contengan gliadina/gluten, aunque estos alimentos no muestren una respuesta positiva como el trigo, el centeno, la cebada, espelta, kamut, malta, esencia de malta, vinagre de malta, salvado, triticale, dextrina.</div>
+                                                          <div>Algunas personas con intolerancia al gluten son sensibles también a la avena. </div>
+                                                        
+                                                          
+                                                        </tr>
+                                                      </table>
+                                                  
+                                                  @else
+                                                    @if(!(($value_detalle->id_examen == '414' || $value_detalle->id_examen == '412' || $value_detalle->id_examen == '680') && $orden->created_at<'2018-12-17' && $orden->id!='1543' && $orden->id!='1291')) 
+                                                      @foreach($parametro_nuevo as $value_agrupador)
+                                                        @php
+                                                          $resultado = $orden->resultados
+                                                            ->where('id_parametro', $value_agrupador->id)
+                                                            ->first();
+                                                        @endphp
+                                                        @if(!is_null($resultado))
+                                                          @if($resultado->certificado=='1')
+                                                            <tr role="row">
+                                                              <td style="width: 30%;@if($parametro_nuevo->count() == 1) font-weight: 700;padding-left: -3px;font-size: 14px; @endif">
+                                                                {{$value_agrupador->nombre}}
+                                                              </td>
+                                                              <td style="width: 20%;">
+                                                                <div style="word-wrap: break-word;">
+                                                                  @if(!is_null($resultado))
+                                                                  {{$resultado->valor}}
+                                                                  @else
+                                                                  {{"0"}}
+                                                                  @endif
+                                                                </div>  
+                                                              </td>
+                                                              <td style="width: 10%;">  {{$value_agrupador->unidad1}}
+                                                              </td>
+                                                              <td style="width: 40%;">
+                                                                @if($value_agrupador->texto_referencia == "")
+                                                                  {{$value_agrupador->valor1}} - {{$value_agrupador->valor1g}}
+                                                                @else 
+                                                                  <?php 
+                                                                    echo $value_agrupador->texto_referencia; 
+                                                                  ?> 
+                                                                @endif
+                                                              </td>
+                                                            </tr>
+                                                          @endif    
                                                         @endif
+                                                      @endforeach
+
+                                                      @if($value_detalle->id_examen == '610' || $value_detalle->id_examen == '615')
+                                                        @php
+                                                          $sub_resultados = DB::table('examen_sub_resultado')
+                                                          ->where('id_orden',$orden->id)
+                                                          ->where('estado','1')
+                                                          ->where('id_examen',$value_detalle
+                                                          ->id_examen)->get();
+                                                        @endphp
+                                                        <tr>
+                                                          <td colspan="4" id="sub_tabla">
+                                                            <table class="table table-bordered table-hover dataTable">
+                                                              <tbody>
+                                                                @foreach($sub_resultados as $sub)
+                                                                <tr>
+                                                                <td style="width: 300px !important;">{{$sub->campo1}}</td>
+                                                                <td style="width: 300px !important;">{{$sub->campo2}}</td>
+                                                                <td style="width: 300px !important;">{{$sub->campo3}}</td>
+                                                                </tr>
+                                                                @endforeach
+                                                              </tbody>
+                                                            </table>  
+                                                          </td>
+                                                        </tr>
                                                       @endif
+                                                    @endif
                                                   @endif
-                                                  </tbody>
+                                                </tbody>
                                               </table>
                                             </div>
                                         </div>
@@ -641,7 +603,7 @@
      var cert = $('#sp'+id_or).text();
 
       if(cert=='0%'){
-        alert("Sin Exámenes Ingresados");
+        alert({!! json_encode(trans('hc4.sinExamenesIngresados')) !!});
       }else{
         
         window.open('{{url('inicio/laboratorio/hc4resultados/imprimir')}}/'+id_or,'_blank');  
@@ -654,7 +616,7 @@ $(document).ready(function($){
     @foreach ($ordenes as $value)
       $.ajax({
         type: 'get',
-        url:"{{ route('valida.puede_imprimir',['id' => $value->id]) }}", 
+        url:"{{ route('valida.puede_imprimir',['id_orden' => $value->id]) }}",
         success: function(data){
           console.log(data);
           if(data.cant_par==0){

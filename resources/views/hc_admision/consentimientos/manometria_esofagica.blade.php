@@ -149,7 +149,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">La técnica a la que usted va a someterse consiste en la medición de las presiones que producen los movimientos del esófago y del esfínter entre el esófago y estómago. Sirve para conocer la fuerza y coordinación de los músculos que participan en estos movimientos</td>
-                    <td><img style="margin:6px;margin-top:10px;height: 90px;width:80px;" src="{{public_path('/imagenes/manometria_esofagica.jpg')}}" />
+                    <td><img style="margin:6px;margin-top:10px;height: 90px;width:80px;" src="{{base_path('public/imagenes/manometria_esofagica.jpg')}}" />
 
                 </tr>
             </tbody>
@@ -241,8 +241,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

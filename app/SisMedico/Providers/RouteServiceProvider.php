@@ -142,6 +142,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->mapWebRoutes_web_control_temperatura();
 
         $this->mapWebRoutes_webv3();
+        $this->mapWebRoutes_v3Clinical();
         $this->mapWebRoutes_web_preanestesico();
         $this->mapWebRoutes_web_configuracion();
     }
@@ -721,6 +722,13 @@ class RouteServiceProvider extends ServiceProvider
         Route::middleware('web', 'cors')
             ->namespace($this->namespace)
             ->group(base_path('routes/legacy/v3/contable/web.php'));
+    }
+
+    protected function mapWebRoutes_v3Clinical()
+    {
+        Route::middleware('web', 'cors')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/legacy/v3/clinical/web.php'));
     }
 
     protected function mapWebRoutes_web_configuracion()

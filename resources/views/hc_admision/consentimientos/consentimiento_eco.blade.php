@@ -133,8 +133,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
             <tr>
                 <td>
-                    <img style="width: 150px;height:150px;margin:15px" class="centrado" src="{{public_path('/imagenes/imagen1.png')}}">
-                    <img style="width: 150px;height:150px;margin:15px" class="centrado" src="{{public_path('/imagenes/imagen2.png')}}">
+                    <img style="width: 150px;height:150px;margin:15px" class="centrado" src="{{base_path('public/imagenes/imagen1.png')}}">
+                    <img style="width: 150px;height:150px;margin:15px" class="centrado" src="{{base_path('public/imagenes/imagen2.png')}}">
                </td>
 
             </tr>

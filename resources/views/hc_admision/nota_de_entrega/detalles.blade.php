@@ -41,7 +41,7 @@
 }
 
 <?php
-    $porcentajeIva = $porIva->iva * 100;
+    $porcentajeIva = $porIva ? $porIva->iva * 100 : null;
 ?>
 
 </style>
@@ -66,121 +66,22 @@
                         <div class="form-group" style="margin-bottom: 1px;">
                             <label>{{ $detalle->nombre_medicina }}</label><br>
                             
-                                    @php
-                                    $id_empresa = Session::get('id_empresa');
-                                    $ct_productos = null;
-                                    $producto = null;
-                                    $inv_serie = [];
-                                    $cantidad = $detalle->cantidad;
-                                    $id_agenda = $nota_entrega->historia->agenda->id;
-                                    $id_hc_procedimiento = Sis_medico\hc_procedimientos::where('id_hc', $nota_entrega->id_hc)->first()->id;
-
-                                    
-
-                                    //dd($planilla_det);
-
-                                    $cantidad_uso = 1;
-                                    $id_movimiento_paciente = null;
-                                    $medicina_tarifario = Sis_medico\Medicina_tarifario::where('id_medicina', $detalle->id_medicina)->first();
-                                    $ap_procedimiento = $medicina_tarifario->ap_procedimiento;
-                                    @endphp
-
-                                    @if(!is_null($ap_procedimiento))
-                                      @php $ct_productos = Sis_medico\Ct_productos::find($ap_procedimiento->id_producto); @endphp
-                                    @endif
-
-                                    @if(!is_null($ct_productos))
-                                       @php $producto = Sis_medico\Producto::where('codigo', $ct_productos->codigo)->first(); @endphp
-                                    @endif
-
-                                    @if(!is_null($producto))
-                                       @php $inv_serie = Sis_medico\InvInventarioSerie::where('id_producto', $producto->id)
-                                       ->join('producto as p', 'inv_inventario_serie.id_producto', 'p.id')
-                                       ->join('bodega as b', 'inv_inventario_serie.id_bodega', 'b.id')
-                                        ->where('inv_inventario_serie.id_bodega', $bodegas->id)
-                                        ->where('inv_inventario_serie.id_empresa', $id_empresa)
-                                        ->where('inv_inventario_serie.estado', 1)
-                                        ->where('inv_inventario_serie.existencia', '!=', 0)
-                                        ->orderBy('inv_inventario_serie.created_at', 'asc')
-                                        ->select('inv_inventario_serie.*', 'p.nombre as nombre_medicina', 'b.nombre as nombre_bodega','p.codigo', 'b.id as id_bodega')
-                                        ->get(); @endphp
-                                    @endif
-
-                                    @if($inv_serie != [])
-                                        <table class='table' >
-                                            <thead>
-                                             <!-- <tr style='background-color: #637FFF; color: black;'>
-                                                <th colspan='8' style='text-align: center; font-size: 16px;' >Existencias en Inventario</th>
-                                             </tr> -->
-                                             <tr>
-                                                <th class="letra_tabla">Codigo</th>
-                                                <th class="letra_tabla">Nombre</th>
-                                                <th class="letra_tabla">Bodega</th>
-                                                <th class="letra_tabla">Lote</th>
-                                                <th class="letra_tabla">Serie</th>
-                                                <th class="letra_tabla">Fecha Vencimiento</th>
-                                                <th class="letra_tabla">Existencia</th>
-                                                <th class="letra_tabla">Cantidad</th>
-                                                <!-- <th class="letra_tabla">Accion</th> -->
-                                             </tr>
-                                            </thead>
-                                            @php 
-                                                $planilla_cab = Sis_medico\Planilla_Cabecera::where('id_agenda', $id_agenda)->where('id_hc_procedimiento', $id_hc_procedimiento)->where('nota_entrega', 1)->where('estado', 1)->first();
-                                            @endphp
-                                            @foreach($inv_serie as $inv)
-                                                @if(!is_null($planilla_cab))
-                                                    @php 
-                                                        $planilla_det = Sis_medico\Planilla_Detalle::where('id_planilla_cabecera', $planilla_cab->id)->where('codigo', $inv->codigo)->where('id_bodega', $inv->id_bodega)->where('serie', $inv->serie)->where('lote', $inv->lote)->where('check', 1)->where('estado', 1)->first(); 
-                                                    @endphp
-                                                @endif
-                                                <tbody>
-                                                    <input type="hidden" name="codigo{{$inv->id}}" id="codigo{{$inv->id}}" value="{{$inv->codigo}}">
-                                                    <input type="hidden" name="id_bodega{{$inv->id}}" id="id_bodega{{$inv->id}}" value="{{$inv->id_bodega}}">
-                                                    <input type="hidden" name="lote{{$inv->id}}" id="lote{{$inv->id}}" value="{{$inv->lote}}">
-                                                    <input type="hidden" name="serie{{$inv->id}}" id="serie{{$inv->id}}" value="{{$inv->serie}}">
-                                                    <input type="hidden" name="fecha_vence{{$inv->id}}" id="fecha_vence{{$inv->id}}" value="{{$inv->fecha_vence}}">
-                                                    <input type="hidden" name="existencia{{$inv->id}}" id="existencia{{$inv->id}}" value="{{$inv->existencia}}">
-
-                                                 <tr>
-                                                    <td class="letra_tabla">{{$inv->codigo}}</td>
-                                                    <td class="letra_tabla">{{$inv->nombre_medicina}}</td>
-                                                    <td class="letra_tabla">{{$inv->nombre_bodega}}</td>
-                                                    <td class="letra_tabla">{{$inv->lote}}</td>
-                                                    <td class="letra_tabla">{{$inv->serie}}</td>
-                                                    <td class="letra_tabla">{{$inv->fecha_vence}}</td>
-                                                    <td class="letra_tabla">{{$inv->existencia}}</td>
-                                                    <td style="width: 1%">
-                                                     <input  type='text' class='borde letra_tabla' id='cantidad_inv{{$inv->id}}' @if(!is_null($planilla_det)) value='{{$planilla_det->cantidad}}' @else value='0' @endif onkeypress="return soloNumeros(this);" placeholder="Cantidad a descontar" onchange = "agregarDetalle('{{$inv->id}}', '{{$nota_entrega->id}}')" @if($nota_entrega->estado == '1') readonly @endif> 
-                                                    </td>
-                                                 </tr>
-                                                </tbody>
-                                            @endforeach
-                                        </table>
-                                        <center>
-                                           @if($nota_entrega->estado == '-1')
-                                            <a style="padding: 0.5%; border-bottom-width: 5px ; " class="boton " onclick='guardarDetalle("{{$detalle->id}}", "{{$planilla_cab->id}}", "{{$inv->codigo}}", "{{$detalle->cantidad}}")' ><span class="glyphicon glyphicon-arrow-right" style="font-size: 15px"> Agregar</span> </a>
-                                            @endif
-                                        </center> 
-                                    @else
-                                        <label style="color: red">No existe medicina en Inventario</label>
-                                    @endif
-                            
                             <input class="id_producto" type="hidden" name="id_producto" id="id_producto{{$detalle->id}}" value="{{ $detalle->id_medicina}}">
                         </div>
                     </td>
                     <td style="vertical-align: middle;">
                         <div class="form-group">
-                            <input readonly type="text" class="form-control vtdobra" name="cantidad_receta{{$detalle->id}}" id="cantidad_receta{{$detalle->id}}" value="{{$detalle->cantidad_receta}}" onchange="actualizar_valor('{{$detalle->id}}')" onkeypress="return soloNumeros(this);">
+                            <input style="text-align: right;" readonly type="text" class="form-control vtdobra" name="cantidad_receta{{$detalle->id}}" id="cantidad_receta{{$detalle->id}}" value="{{$detalle->cantidad_receta}}" onchange="actualizar_valor('{{$detalle->id}}')" onkeypress="return soloNumeros(this);">
                         </div>
                     </td>
                     <td style="vertical-align: middle;">
                         <div class="form-group">
-                            <input readonly type="text" class="form-control vtdobra" name="cantidad{{$detalle->id}}" id="cantidad{{$detalle->id}}" value="{{$detalle->cantidad}}" onchange="actualizar_valor('{{$detalle->id}}')" onkeypress="return soloNumeros(this);">
+                            <input style="text-align: right;" @if($nota_entrega->estado == 1) readonly @endif type="text" class="form-control vtdobra" name="cantidad{{$detalle->id}}" id="cantidad{{$detalle->id}}" value="{{$detalle->cantidad}}" onchange="actualizar_valor('{{$detalle->id}}')" onkeypress="return soloNumeros(this);">
                         </div>
                     </td>
                     <td style="vertical-align: middle;">
                         <div class="form-group">
-                            <input readonly type="text" class="form-control vtdobra" name="precio{{$detalle->id}}" id="precio{{$detalle->id}}" value="{{number_format($detalle->precio, 4, '.', ' ')}}" onchange="actualizar_valor('{{$detalle->id}}')" onkeypress="return soloNumeros(this);">
+                            <input style="text-align: right;" readonly type="text" class="form-control vtdobra" name="precio{{$detalle->id}}" id="precio{{$detalle->id}}" value="{{number_format($detalle->precio, 4, '.', ' ')}}" onchange="actualizar_valor('{{$detalle->id}}')" onkeypress="return soloNumeros(this);">
                         </div>
                     </td>
 
@@ -197,14 +98,7 @@
                 </tr>
             @endforeach
             <tr>
-                <td>
-                    @if($nota_entrega->estado != 1)
-                    <div class="form-group" style="display: none;">
-                        <select id="producto_nuevo" name="producto_nuevo" class="form-control select2_productos" required placeholder="Seleccione una medicina..." onchange="seleccionar_producto();">
-                        </select>
-                    </div>
-                    @endif
-                </td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -240,7 +134,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td colspan="2" class="text-right">Subtotal {{$porcentajeIva}}%</td>
+                <td colspan="2" class="text-right">Subtotal {{ $porcentajeIva !== null ? $porcentajeIva . '%' : 'IVA no configurado' }}</td>
                 <td id="subtotal_12" class="text-right px-1">${{ number_format($nota_entrega->subtotal_12, 4, ',', ' ') }}</td>
                 <input type="hidden" name="subtotal_121" id="subtotal_121" class="hidden">
             </tr>
@@ -273,7 +167,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td colspan="2" class="text-right">Tarifa Iva {{$porcentajeIva}}%</td>
+                <td colspan="2" class="text-right">Tarifa IVA {{ $porcentajeIva !== null ? $porcentajeIva . '%' : 'no configurada' }}</td>
                 <td id="tarifa_iva" class="text-right px-1">${{ number_format($nota_entrega->iva, 4, ',', ' ') }}</td>
                 <input type="hidden" name="tarifa_iva1" id="tarifa_iva1" class="hidden">
             </tr>
@@ -314,52 +208,6 @@
             }
         }
     });
-
-    function agregarDetalle(id, id_nota_entrega) 
-    {
-        var codigo = $('#codigo'+ id).val();
-        var id_bodega = $('#id_bodega'+ id).val();
-        var fecha_vence = $('#fecha_vence'+ id).val();
-        var lote = $('#lote'+ id).val();
-        var serie = $('#serie'+ id).val();
-        var existencia = $('#existencia'+ id).val();
-        var cantidad_inv = $('#cantidad_inv'+ id).val();
-        if (cantidad_inv == "") {
-            $('#cantidad_inv'+id).val(0);       
-        }
-        var cantidad_inv = parseInt($('#cantidad_inv'+ id).val());
-        if(cantidad_inv > existencia){
-            Swal.fire({
-                title: "Advertencia!",
-                icon: 'info',
-                html: 'La cantidad no debe ser mayor a la existencia'
-            });
-            $('#cantidad_inv'+id).val(0);
-        }else{
-            $.ajax({
-                url: `{{ route('nota_entrega.guardar_planilla_detalle') }}`,
-                type: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': `{{ csrf_token() }}`
-                },
-                data: {
-                    codigo,
-                    id_bodega,
-                    lote,
-                    serie,
-                    cantidad_inv,
-                    id_nota_entrega,
-                    fecha_vence 
-                },
-                success: function(data) { 
-                    console.log(data);
-                },
-                error: function(data) {
-                    console.log(data);
-                }
-            })
-        }
-    }
 
     function guardarDetalle(id, id_planilla, codigo, cantidad)
     {

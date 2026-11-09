@@ -26,7 +26,7 @@
 			<div class="col-md-12" style="border: 2px solid #004AC1; margin-left: 0px;margin-right: 0px;margin-left: 4px;padding-right: 0px;padding-left: 0px; background-color: #56ABE3">
 				<h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
 	            	<img style="width: 35px; margin-left: 15px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/evoluciones.png"> 
-	             	<b>EVOLUCIONES</b>
+						<b>@lang('hc4.evoluciones_')</b>
 			    </h1>   
 			    <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px"  >
 			    	
@@ -39,7 +39,7 @@
 						    			<div class="row" style="margin-top: 6px;background-color: #004AC1;margin-right: 0px; color: white; margin-left: 0px">
 						    				<div class="col-md-5 col-sm-4 col-4" style="margin-left: 0px; ">
 						    					<div class="btn" style="color: white">
-								    				<a class="fa fa-pencil-square-o "  onclick="editar_evoluciones({{$evoluciones->id}}, {{$id_agenda}});" ><span style="font-size: 13px">&nbsp;Editar</span>
+						<a class="fa fa-pencil-square-o "  onclick="editar_evoluciones({{$evoluciones->id}}, {{$id_agenda}});" ><span style="font-size: 13px">&nbsp;@lang('hc4.editar')</span>
 								    				</a>
 							    				</div>
 						    				</div> 
@@ -94,8 +94,8 @@
 					   				<div class="box-body" id="evolucion{{$evoluciones->id}}" >  
 							    		<table style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px; margin-right: 30px;" >
 							    			<tr style="height: 40px" >
-							    				<td style="width: 300px;" ><span style="font-family: 'Helvetica general';">Fecha</span></td>
-							    				<td style="width: 200px"><span style="font-family: 'Helvetica general';">Hora</span></td>
+							<td style="width: 300px;" ><span style="font-family: 'Helvetica general';">@lang('hc4.fecha')</span></td>
+							<td style="width: 200px"><span style="font-family: 'Helvetica general';">@lang('hc4.hora')</span></td>
 							    			</tr>
 							    			<tr>
 							    				<td>
@@ -109,7 +109,7 @@
 							    			</tr>
 							    			<!--
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">Seguro</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.seguro')</span></td>
 							    			</tr>
 							    			@php
 							    				$hc_seguro = \Sis_medico\Seguro::find($evoluciones->id_seguro)->first();
@@ -122,7 +122,7 @@
 
 
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">Procedimiento</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.procedimiento')</span></td>
 							    			</tr>
 							    			@php
 						    					$procedimiento = \Sis_medico\hc_procedimientos::find($evoluciones->hc_id_procedimiento);
@@ -153,14 +153,14 @@
 
 
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">Motivo</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.motivo')</span></td>
 							    			</tr>
 							    			<tr>
 							    				<td style="" colspan="2">@if(!is_null($evoluciones)){{strip_tags($evoluciones->motivo)}}@endif</td>
 							    			</tr>
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">M&eacute;dico Examinador</span></td>
-							    				<td><span style="font-family: 'Helvetica general';">Seguro</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.medicoExaminador')</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.seguro')</span></td>
 							    			</tr>
 							    			<tr>
 							    				@php $procedimiento_3333 = null; @endphp
@@ -179,7 +179,7 @@
 							    				
 							    			</tr>
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">Observaci&oacute;n</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.observacion')</span></td>
 							    			</tr>
 							    			<tr>
 							    				<td colspan="2"> 
@@ -190,7 +190,7 @@
 						                        </td>
 							    			</tr>
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">Evoluci&oacute;n</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.evolucion')</span></td>
 							    			</tr>
 							    			<tr>
 							    				<td colspan="2">
@@ -214,7 +214,7 @@
 							    			</tr>
 
 							    			<tr style="height: 40px">
-							    				<td><span style="font-family: 'Helvetica general';">Diagn&oacute;stico</span></td>
+							<td><span style="font-family: 'Helvetica general';">@lang('hc4.diagnostico')</span></td>
 							    			</tr>
 							    			<tr>
 							    				<td colspan="2">
@@ -275,4 +275,4 @@
 
 
 	
-</script> 
+</script>

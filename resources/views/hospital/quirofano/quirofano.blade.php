@@ -77,7 +77,7 @@
                                             
                                             
                                             <div class="form-group col-md-2" style="padding-left: 0px;padding-right: 0px;">
-                                                <label class="col-md-5 control-label">{{trans('quirofano.Especialidad')}}</label>
+                                                <label class="col-md-5 control-label">{{trans('hospitalizacion.especialidad')}}</label>
                                                 <div class="col-md-9">
                                                     <select id="espid" name="espid" class="form-control input-sm">
                                                         <option value="">Todos</option>
@@ -189,7 +189,7 @@
                                                         <td>
                                                             @if(!is_null($solicitud))
                                                                 <a type="button" class="btn btn-info" id="btn_detalle" href="{{route('quirofano.quirofano_paciente',['tipo' => $tipo,'id_solicitud' => $solicitud->id])}}">Ver Detalle</a>
-                                                                <a href="{{route('hospital.formulario008_pdf', ['id_solicitud' => $solicitud->id])}}" target="_blank"class="btn btn-info btn-xs" ><i class="fa fa-download"></i> {{trans('emergencia.Formulario008')}}</a>
+                                                                <a href="{{route('hospital.formulario008_pdf', ['id' => $solicitud->id])}}" target="_blank"class="btn btn-info btn-xs" ><i class="fa fa-download"></i> {{trans('emergencia.Formulario008')}}</a>
                                                             @endif
                                                         </td>
                                                     </tr>

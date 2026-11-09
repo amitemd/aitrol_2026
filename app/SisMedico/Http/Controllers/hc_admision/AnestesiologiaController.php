@@ -4,26 +4,43 @@ namespace Sis_medico\Http\Controllers\hc_admision;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Sis_medico\Agenda;
-use Sis_medico\Archivo_historico;
-use Sis_medico\Empresa;
-use Sis_medico\Hc_Anestesiologia;
-use Sis_medico\hc_anestesiologia_csv;
-use Sis_medico\hc_procedimientos;
-use Sis_medico\Historiaclinica;
 use Sis_medico\Http\Controllers\Controller;
+use Sis_medico\User;
+use Sis_medico\Bodega;
+use Illuminate\Support\Facades\DB;
+use Sis_medico\tipousuario;
+use Sis_medico\Hospital;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Sis_medico\Agenda;
+use Sis_medico\Empresa;
+use Sis_medico\Subseguro;
+use Sis_medico\Documento;
+use Sis_medico\Archivo_historico;
+use Sis_medico\Historiaclinica;
+use Sis_medico\Procedimiento;
+use Sis_medico\AgendaProcedimiento;
 use Sis_medico\Paciente;
 use Sis_medico\Pentax;
 use Sis_medico\PentaxProc;
+use Sis_medico\Tipo_Anesteciologia;
+
+use Sis_medico\hc_anestesiologia_csv;
+use Sis_medico\Hc_Anestesiologia;
+use Sis_medico\Log_usuario;
 use Sis_medico\Record;
+use Sis_medico\Hc_Evolucion;
 use Sis_medico\record_tecnicas_anestesicas;
 use Sis_medico\Seguro;
 use Sis_medico\TecnicasAnestesicas;
-use Sis_medico\Tipo_Anesteciologia;
-use Sis_medico\User;
+
+use Sis_medico\hc_procedimientos;
+use Sis_medico\Hc_Evolucion_Indicacion;
+use Excel;
+
+
+use Illuminate\Support\Facades\Storage;
 
 class AnestesiologiaController extends Controller
 {
@@ -35,18 +52,25 @@ class AnestesiologiaController extends Controller
 
     private function rol()
     {
-        $rolUsuario = Auth::user()->id_tipo_usuario;
-        if (in_array($rolUsuario, array(1, 3, 6, 11, 7, 9)) == false) {
-            return true;
+        $rolUsuario = Auth::user()->id_tipo_usuario;      
+        if(in_array($rolUsuario, array(1, 3, 6,11,7,20)) == false){
+          return true;
         }
     }
 
     public function mostrar($id)
     {
-        $rolUsuario = Auth::user()->id_tipo_usuario;
         if ($this->rol()) {
             return response()->view('errors.404');
         }
+
+        hc_procedimientos::findOrFail($id);
+        return redirect()->route('rc_pre_anestesica.crear_anestesico', array('id_procedimiento' => $id));
+
+        /* Flujo anestésico histórico conservado temporalmente como referencia.
+         * Todo acceso activo se redirige a los formularios oficiales 018/018A/019.
+         */
+        $rolUsuario = Auth::user()->id_tipo_usuario;
         $idusuario  = Auth::user()->id;
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
 
@@ -99,7 +123,7 @@ class AnestesiologiaController extends Controller
         }
 
         $hcagenda = DB::table('agenda_archivo')->where('id_agenda', '=', $id_agenda)->get();
-        if ($pc == 1) {
+        if (in_array((int) $pc, array(1, 4), true)) {
             $fotos = DB::table('archivo_historico')
                 ->where('id_historia', '=', $hca_id)
                 ->where('tipo_documento', '<>', 'VRF')
@@ -356,14 +380,14 @@ class AnestesiologiaController extends Controller
         $view = \View::make('hc_admision.formato.record-anestesico', compact('data', 'date', 'empresa', 'age', 'empresaxdoc', 'paciente', 'agenda', 'doctor', 'record', 'historia', 'record_tecnicas', 'csv', 'procedimientos_pentax', 'procedimientos_hc'))->render();
         $pdf  = \App::make('dompdf.wrapper');
         $pdf->loadHTML($view) /*->setPaper($paper_size, 'portrait')*/;
-        $pdf->setOptions(['chroot'  => base_path('/')]);
+
         //return view('hc_admision/formato/record',['data' => $data, 'empresa' => $empresa]);
         $vt_name = '';
         if($tipo_usuario == 11 ){
-            $vt_name = 'C_ANESTESIA.pdf';
+            $vt_name = 'HCU_018A.pdf';
             return $pdf->stream($vt_name); 
         }
-        return $pdf->stream('C_ANESTESIA.pdf');
+        return $pdf->stream($historia->id_paciente . '_RECORDANESTESICO_' . $id . '.pdf');
     }
 
     public function eliminar_csv($id){

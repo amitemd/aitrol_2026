@@ -16,8 +16,13 @@ $diaNacimiento = $fechaNacimiento->format('d');
 $fechaNacimiento = new DateTime($paciente->fecha_nacimiento);
 $mesNacimiento = $fechaNacimiento->format('m');
 ?>
+@php
+$historiaInterconsulta = $interconsulta->historia;
+$doctorInterconsulta = $historiaInterconsulta ? $historiaInterconsulta->doctor_1 : null;
+@endphp
 
 <head>
+    <meta charset="utf-8">
     <title>INFORME 007</title>
     <style>
         @page {
@@ -44,12 +49,25 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         /** Define the footer rules **/
         footer {
+            display: table;
             position: fixed;
-            bottom: 0cm;
+            bottom: 30px;
             left: 0cm;
             right: 0cm;
-            height: 2cm;
+            width: 100%;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-top: 1px solid #999;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding-top: 8px;
+            table-layout: fixed;
         }
+
+        footer > span { display: table-cell; width: 50%; }
+        footer .document-name { text-align: right; }
+        .page-number:after { content: counter(page); }
 
         table {
             width: 100px;
@@ -165,6 +183,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
     </style>
 </head>
 <body>
+    <footer>
+        <span>SNS-MSP / HCU-form.007 / 2021</span>
+        <span class="document-name">INTERCONSULTA - INFORME (<span class="page-number"></span>)</span>
+    </footer>
     <header>
 
     </header>
@@ -336,7 +358,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tbody>
                 <tr>
                     <td class="td-border" style="width:14%; height: 40px;">
-                    @foreach($interconsulta->historia->evoluciones as $val)
+                    @foreach($historiaInterconsulta ? $historiaInterconsulta->evoluciones : [] as $val)
 
                         @if(!is_null($val->child_pug))
                         <span><?php echo ($val->child_pug->examen_fisico) ?></span> <br>
@@ -364,9 +386,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
             <td class="text-center" style="width:5%; height: 18px;">{{$fecha}}</td>
                 <td class="text-center" style="width:5%; height: 18px;">{{$hora}}</td>
-                <td class="text-center" style="width:14%; height: 18px;">{{$interconsulta->historia->doctor_1->apellido1 }} </td>
-                <td class="text-center" style="width:14%; height: 18px;">{{ $interconsulta->historia->doctor_1->apellido2 }}</td>
-                <td class="text-center" style="width:14%; height: 18px;">{{ $interconsulta->historia->doctor_1->nombre1 }}</td>
+                <td class="text-center" style="width:14%; height: 18px;">{{ optional($doctorInterconsulta)->apellido1 }}</td>
+                <td class="text-center" style="width:14%; height: 18px;">{{ optional($doctorInterconsulta)->apellido2 }}</td>
+                <td class="text-center" style="width:14%; height: 18px;">{{ optional($doctorInterconsulta)->nombre1 }}</td>
             </tr>
             <tr>
                 <td colspan="2" class="td-border bg-green"><b>NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
@@ -374,10 +396,11 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td class="td-border bg-green text-center"><b>SELLO</b></td>
             </tr>
             <tr>
-                <td colspan="2" class="text-center" style="width:12%; height:60px">{{ $interconsulta->historia->doctor_1->id }}</td>
+                <td colspan="2" class="text-center" style="width:12%; height:60px">{{ optional($doctorInterconsulta)->id }}</td>
                 <td colspan="2" class="td-border" style="width:25%; height:60px">
                     @php
-                    $firma = Sis_medico\Firma_Usuario::where('id_usuario',$interconsulta->historia->procedimiento[0]->id_doctor_examinador)->first();
+                    $idDoctorFirma = data_get($historiaInterconsulta, 'procedimiento.0.id_doctor_examinador');
+                    $firma = $idDoctorFirma ? Sis_medico\Firma_Usuario::where('id_usuario', $idDoctorFirma)->first() : null;
 
                     @endphp
                     @if(!is_null($firma))
@@ -385,10 +408,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     @endif
                 </td>
                 <td class="td-border" style="width:25%; height:60px;"></td>
-            </tr>
-            <tr>
-                <td colspan="2"><b>SNS-MSP/HCU-form.007/2021</b></td>
-                <td colspan="3" class="text-right"><b>INTERCONSULTA - INFORME</b></td>
             </tr>
             </tbody>
         </table>

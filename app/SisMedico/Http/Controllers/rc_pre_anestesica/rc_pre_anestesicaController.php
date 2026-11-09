@@ -2,7 +2,6 @@
 
 namespace Sis_medico\Http\Controllers\Rc_pre_anestesica;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,22 +19,19 @@ use Sis_medico\Hc_Anestesiologia;
 use Sis_medico\Rc_resultados;
 use Sis_medico\Hc_Cie10;
 use Sis_medico\Drogas_administradas;
+use Sis_medico\hc_receta;
+use Sis_medico\hc_receta_detalle;
+use Sis_medico\Services\ClinicalMedicationAdministrationService;
+use Sis_medico\Exceptions\ClinicalMedicationBlockedException;
 use Schema;
 use Sis_medico\Agenda;
 use Sis_medico\analgesia;
 use Sis_medico\Especialidad;
-use Sis_medico\Examen_Orden;
 use Sis_medico\Hc_Procedimiento_Final;
 use Sis_medico\hc_procedimientos;
 use Sis_medico\Http\Controllers\Apis\FirmadorController;
 use Sis_medico\Paciente;
 use Sis_medico\Pentax;
-use Sis_medico\TecnicasAnestesicas;
-use Sis_medico\record_tecnicas_anestesicas;
-use Sis_medico\Aud_Hc_Procedimientos;
-use Sis_medico\Aud_Hc_Protocolo;
-use Sis_medico\Aud_Hc_Cie10;
-use Sis_medico\hc_anestesiologia_csv;
 
 class Rc_pre_anestesicaController extends Controller
 {
@@ -156,7 +152,7 @@ class Rc_pre_anestesicaController extends Controller
 
     // public function rc_preanestesico_store(Request $request)
     // {
-
+        
 
     //     $ip_cliente = $_SERVER["REMOTE_ADDR"];
     //     $idusuario = Auth::user()->id;
@@ -250,13 +246,13 @@ class Rc_pre_anestesicaController extends Controller
 
 
         $pre_anestesico = Rc_pre_anestesica::where('id_hc_anestesiologia', $id_hc_anestesiologia)->where('estado', '1')->first();
-        //dd($pre_anestesico);
-
+       //dd($pre_anestesico);
+       
         $rc_antecedentes = Rc_antecedentes::where('id_rc_pre_anestesica', $id_hc_anestesiologia)->get();
 
         $rc_examen = Rc_resultados::where('id_rc_pre_anestesia', $id_hc_anestesiologia)->get();
 
-        $indicaciones = Rc_indicaciones::where('id_rc_pre_anestesica', $id_hc_anestesiologia)->get();
+        $indicaciones = Rc_indicaciones::where('id_rc_pre_anestesica',$id_hc_anestesiologia)->get();
 
         if (is_null($pre_anestesico)) {
 
@@ -271,10 +267,15 @@ class Rc_pre_anestesicaController extends Controller
             ];
             $id_rc = Rc_pre_anestesica::insertGetId($arr_riesgo_preanestesico);
             $pre_anestesico = Rc_pre_anestesica::find($id_rc);
-        }
-        $this->actualiza_informacion($pre_anestesico->id);
+
+            $this->actualiza_informacion($pre_anestesico->id);
+
+            
+        } 
         //dd($id_hc_anestesiologia);
-        return redirect(route('formato.rc_preanestesico_edit', ['pre_anestesico' => $pre_anestesico, 'id' => $id_hc_anestesiologia, 'rc_antecedentes' => $rc_antecedentes, 'examen' => $rc_examen, 'indicaciones' => $indicaciones]));
+        return redirect(route('formato.rc_preanestesico_edit', ['pre_anestesico' => $pre_anestesico, 'id' => $id_hc_anestesiologia, 'rc_antecedentes' => $rc_antecedentes , 'examen' => $rc_examen , 'indicaciones' => $indicaciones ]));
+        
+       
     }
 
 
@@ -284,195 +285,65 @@ class Rc_pre_anestesicaController extends Controller
 
     {
         $pre_anestesico = Rc_pre_anestesica::where('id_hc_anestesiologia', $id)->first();
-
+   
         $rc_antecedentes = Rc_antecedentes::where('id_hc_anestesiologia', $id)->where('estado', 1)->get();
 
         $rc_examen = Rc_resultados::where('id_hc_anestesiologia', $id)->where('estado', 1)->get();
 
         $indicaciones = Rc_indicaciones::where('id_hc_anestesiologia', $id)->where('estado', 1)->get();
 
-        $hc_anestesiologia = Hc_Anestesiologia::where('id', $pre_anestesico->id_hc_anestesiologia)->first();
+        $hc_anestesiologia = Hc_Anestesiologia::where('id',$pre_anestesico->id_hc_anestesiologia)->first();
         $hc_procedimiento = hc_procedimientos::where('id', $hc_anestesiologia->id_hc_procedimientos)->first();
         $pentax = Pentax::where('hcid', $hc_procedimiento->id_hc)->first();
         //dd($hc_procedimiento);
-
+        
         $this->actualiza_informacion($pre_anestesico->id);
 
-        return view('rc_preanestesico/preanestesico_edit', ['pre_anestesico' => $pre_anestesico, 'id' => $id, 'rc_antecedentes' => $rc_antecedentes, 'examen' => $rc_examen, 'indicaciones' => $indicaciones, 'hc_procedimiento' => $hc_procedimiento, 'pentax' => $pentax]);
+        return view('rc_preanestesico/preanestesico_edit', ['pre_anestesico' => $pre_anestesico, 'id' => $id, 'rc_antecedentes' => $rc_antecedentes , 'examen' => $rc_examen , 'indicaciones' => $indicaciones,'hc_procedimiento' => $hc_procedimiento,'pentax'=> $pentax ]);
     }
 
-    public function actualiza_informacion($id)
-    {
+    public function actualiza_informacion( $id ){
 
-        $pre_anestesico = Rc_pre_anestesica::find($id); //dd($id, $pre_anestesico);
-        $csv_record = hc_anestesiologia_csv::where('id_hc_anestesiologia', $pre_anestesico->id_hc_anestesiologia)->first();
-
-        if (!is_null($pre_anestesico)) {
+        $pre_anestesico = Rc_pre_anestesica::find($id);//dd($id, $pre_anestesico);
+        
+        if(!is_null($pre_anestesico)){
             $cont = 0;
             $anestesiologia = $pre_anestesico->anestesiologia;
             $hc = $anestesiologia->historia;
             $paciente = $hc->paciente;
-            //$post_anestesico = Hc_Evolucion_Anestesiologo::where('id_hc_anestesiologia',$anestesiologia->id)->where('estado','1')->first();
 
-            if ($pre_anestesico->quirurgicos == null) {
-                $cont++;
-                $pre_anestesico->quirurgicos = $paciente->antecedentes_quir;
+            if($pre_anestesico->quirurgicos == null){
+                $cont ++;
+                $pre_anestesico->quirurgicos = $paciente->antecedentes_quir;    
             }
-            if ($pre_anestesico->alergicos == null) {
-                $cont++;
+            if($pre_anestesico->alergicos == null){
+                $cont ++;
                 $alergiasxpac = $paciente->a_alergias;
                 $txt_aler = '';
-                foreach ($alergiasxpac as $ale_pac) {
-                    $txt_aler .= ' + ' . $ale_pac->principio_activo->nombre;
+                foreach($alergiasxpac as $ale_pac){
+                    $txt_aler.= ' + '.$ale_pac->principio_activo->nombre;
                 }
-                $pre_anestesico->alergicos = $txt_aler;
+                $pre_anestesico->alergicos = $txt_aler;                         
+
             }
-            if ($pre_anestesico->habitos == null) {
-                $cont++;
-                $pre_anestesico->habitos = $paciente->alcohol;
+            if($pre_anestesico->habitos == null){
+                $cont ++;
+                $pre_anestesico->habitos = $paciente->alcohol;                         
+
             }
-            if ($pre_anestesico->lactato_ringer == null) {
-                $cont++;
-                $pre_anestesico->lactato_ringer = $anestesiologia->lactato_ringer;
-            }
-            if ($pre_anestesico->expansores == null) {
-                $cont++;
-                $pre_anestesico->expansores = $anestesiologia->expansores;
-            }
-            if ($pre_anestesico->sangre == null) {
-                $cont++;
-                $pre_anestesico->sangre = $anestesiologia->sangre_derivados;
-            }
-            if ($pre_anestesico->observaciones == null) {
-                $cont++;
-                $pre_anestesico->observaciones = $anestesiologia->observaciones;
-            }
-            if (!is_null($csv_record)) {
-                if ($pre_anestesico->presion == null) {
-                    $cont++;
-                    //$pre_anestesico->presion = $hc->presion;
-                    $pre_anestesico->presion = $csv_record->presion_arterial;
-                }
-                if ($pre_anestesico->pulso == null) {
-                    $cont++;
-                    //$pre_anestesico->pulso = $hc->pulso;
-                    $pre_anestesico->pulso = $csv_record->pulso;
-                }
-                if ($pre_anestesico->o2 == null) {
-                    $cont++;
-                    //$pre_anestesico->o2 = $hc->o2;
-                    $pre_anestesico->o2 = $csv_record->o2;
-                }
-                if ($pre_anestesico->temperatura == null) {
-                    $cont++;
-                    //$pre_anestesico->temperatura = $hc->temperatura;
-                    $pre_anestesico->temperatura = $csv_record->temperatura;
-                }
-                if ($pre_anestesico->fecuencia_respiratoria == null) {
-                    $cont++;
-                    $pre_anestesico->fecuencia_respiratoria = $csv_record->respiracion;
-                }
-            }
-            if ($pre_anestesico->sitio_1 == null) {
-                $texto1 = "Miembro superior izquierdo";
-                $texto2 = "Miembro superior derecho";
-                $txt_rnd = '';
-                $indiceAleatorio = random_int(0, 1);
-                if ($indiceAleatorio === 0) {
-                    $txt_rnd = $texto1;
-                } else {
-                    $txt_rnd = $texto2;
-                }
-                $pre_anestesico->sitio_1 = $txt_rnd;
-            }
-            if ($pre_anestesico->calibre_1 == null) {
-                $pre_anestesico->calibre_1 = '20';
-            }
-            if ($pre_anestesico->observaciones == null) {
-                $pre_anestesico->observaciones = 'PACIENTE PASA A SALA DE RECUPERACIÓN EN CONDICIONES ESTABLES';
-            }
-            if ($cont > 0) {
+            if($cont > 0){
                 $pre_anestesico->save();
             }
-            for ($i = 1; $i <= 11; $i++) {
-                $property = 'd' . $i;
-                if (!is_null($anestesiologia->$property)) {
-                    $droga = $anestesiologia->$property;
-                    $droga_ad = Drogas_administradas::where('id_hc_anestesiologia', $anestesiologia->id)
-                        ->where('drogas', $droga)
-                        ->where('estado', '1')
-                        ->first();
-                    if (is_null($droga_ad)) {
-                        $arr_dog_ad = [
-                            'id_hc_anestesiologia' => $anestesiologia->id,
-                            'estado'               => '1',
-                            'drogas'               => $droga,
-                            'id_usuariocrea'       => $anestesiologia->id_usuariocrea,
-                            'id_usuariomod'        => $anestesiologia->id_usuariomod,
-                            'ip_creacion'          => $anestesiologia->ip_creacion,
-                            'ip_modificacion'      => $anestesiologia->ip_modificacion,
-                        ];
-                        Drogas_administradas::create($arr_dog_ad);
-                    }
-                }
-            }
-            $id_paciente = $hc->id_paciente;
-            $fecha_orden = $anestesiologia->fecha;
-            $orden = $this->getLastOrder($id_paciente, $fecha_orden);
-            if (!is_null($orden)) {
-                $resultados = $orden->resultados;
-                if (count($resultados) > 0) {
-
-                    foreach ($resultados as $resul) {
-                        $examen = $resul->examen;
-                        if (!is_null($examen)) {
-                            $id_agrupador = $examen->id_agrupador;
-                            if (!is_null($resul->valor)) {
-                                if ($resul->certificado == '1') {
-                                    if (!is_null($examen)) {
-                                        $rc_resultado = Rc_resultados::where('id_rc_pre_anestesia', $pre_anestesico->id)->where('id_parametro', $resul->id_parametro)->where('id_orden', $resul->id_orden)->first();
-                                        if (is_null($rc_resultado)) {
-                                            if (!is_null($resul->id_agrupador_publico)) {
-                                                $id_agrupador = $resul->id_agrupador_publico;
-                                            }
-                                            $arr_crea_ex_rc = [
-                                                'id_examen'                 => $examen->id,
-                                                'id_rc_pre_anestesia'       => $pre_anestesico->id,
-                                                'id_hc_anestesiologia'      => $anestesiologia->id,
-                                                'nombre'                    => $examen->nombre,
-                                                'resultado'                 => $resul->valor,
-                                                'estado'                    => '1',
-                                                'id_parametro'              => $resul->id_parametro,
-                                                'id_orden'                  => $resul->id_orden,
-                                                'id_usuariocrea'            => $resul->id_usuariocrea,
-                                                'id_usuariomod'             => $resul->id_usuariomod,
-                                                'ip_creacion'               => $resul->ip_creacion,
-                                                'ip_modificacion'           => $resul->ip_modificacion,
-                                                'id_agrupador_publico'      => $id_agrupador,
-
-                                            ];
-                                            Rc_resultados::create($arr_crea_ex_rc);
-                                        } else {
-                                            $arr_upd = [
-                                                'id_agrupador_publico'       => $id_agrupador,
-                                            ];
-                                            $rc_resultado->update($arr_upd);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            
         }
+
     }
 
 
     public function preanestesico_store(Request $request)
     {
         //dd($request->all());
-
+       
 
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
         $idusuario = Auth::user()->id;
@@ -481,7 +352,7 @@ class Rc_pre_anestesicaController extends Controller
         $arr_formato_consentimiento = [
 
             'id_hc_anestesiologia' => $request['id_hc_anestesiologia'],
-            'id_rc_pre_anestesica'   => $request['id_rc_pre_anestesico'],
+            'id_rc_pre_anestesica'   =>$request['id_rc_pre_anestesico'],
             'tratamiento'          => $request['tratamiento'],
             'diagnostico'          => $request['diagnosticos'],
             'tiempo_evolucion'     => $request['tiempoEvolucion'],
@@ -573,6 +444,13 @@ class Rc_pre_anestesicaController extends Controller
 
         ];
         if (!is_null($rc)) {
+            // The legacy form autosaves partial payloads. Do not erase existing
+            // clinical values when a control is absent from that payload.
+            foreach ($arr_rc as $field => $value) {
+                if ($field !== 'id_hc_anestesiologia' && !$request->has($this->requestFieldForPreanesthetic($field)) && array_key_exists($field, $rc->getAttributes())) {
+                    unset($arr_rc[$field]);
+                }
+            }
             $rc->update($arr_rc);
         } else {
             Rc_pre_anestesica::create($arr_rc);
@@ -580,6 +458,22 @@ class Rc_pre_anestesicaController extends Controller
 
 
         return "ok";
+    }
+
+    private function requestFieldForPreanesthetic($field)
+    {
+        return [
+            'transfuciones' => 'transfusiones',
+            'apertura_bucal' => 'apertura',
+            'distancia_tiromentoneana' => 'distancia',
+            'mallanpati' => 'mallampati',
+            'protusion_mandibular' => 'protrusion',
+            'perimetro_cervical' => 'perimetro',
+            'movilidad_cervical' => 'movilidad',
+            'intubacion_dificil' => 'historia',
+            'sistema_nervisoso' => 'sistema',
+            'equivalente_metabolico' => 'equivalente',
+        ][$field] ?? $field;
     }
 
     public function examen_preanestesico_store(Request $request)
@@ -593,7 +487,7 @@ class Rc_pre_anestesicaController extends Controller
         $arr_examen_preanestesico = [
 
             'id_hc_anestesiologia' => $request['id_hc_anestesiologia'],
-            'id_rc_pre_anestesia'   => $request['id_rc_pre_anestesico'],
+            'id_rc_pre_anestesia'   =>$request['id_rc_pre_anestesico'],
             'id_examen'            => $request['id_examen'],
             'nombre'               => $request['buscador'],
             'resultado'            => $request['resultado'],
@@ -605,6 +499,7 @@ class Rc_pre_anestesicaController extends Controller
         ];
         Rc_resultados::create($arr_examen_preanestesico);
         return response()->json(['success' => true, 'msj' => "GUARDADO"]);
+
     }
 
 
@@ -644,8 +539,8 @@ class Rc_pre_anestesicaController extends Controller
 
         $arr_indicaciones = [
 
-            'id_hc_anestesiologia'  => $request['id_hc_anestesiologia'],
-            'id_rc_pre_anestesica'   => $request['id_rc_pre_anestesica'],
+            'id_hc_anestesiologia'  =>$request['id_hc_anestesiologia'],
+            'id_rc_pre_anestesica'   =>$request['id_rc_pre_anestesica'],
             'indicaciones'        => $request['indicaciones'],
             'estado'               => 1,
             'id_usuariocrea'       => $idusuario,
@@ -656,6 +551,7 @@ class Rc_pre_anestesicaController extends Controller
         //dd($arr_indicaciones);
         Rc_indicaciones::create($arr_indicaciones);
         return response()->json(['success' => true, 'msj' => "GUARDADO"]);
+
     }
 
 
@@ -682,29 +578,6 @@ class Rc_pre_anestesicaController extends Controller
         }
     }
 
-    public function drogas_administradas_delete($id)
-    {
-
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-
-        try {
-
-            $drogas_adm = Drogas_administradas::find($id);
-            $arr_drogas = [
-                'estado'               => 0,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-                'ip_modificacion'      => $ip_cliente,
-            ];
-            $drogas_adm->update($arr_drogas);
-            return json_encode(['status' => true, 'msj' => "Eliminado con exito"]);
-        } catch (\Exception $e) {
-            return json_encode(['status' => false, 'msj' => $e->getMessage(), 'line' => $e->getLine()]);
-        }
-    }
-
 
 
 
@@ -717,74 +590,38 @@ class Rc_pre_anestesicaController extends Controller
         $empresa    = Empresa::where('id', $id_empresa)->where('estado', '1')->first();
 
         $pre_anestesico = Rc_pre_anestesica::where('id', $id)->first();
-
-
+       
+       
         $rc_antecedentes = Rc_antecedentes::where('id_rc_pre_anestesica', $id)->where('estado', 1)->get();
 
         $rc_examen = Rc_resultados::where('id_rc_pre_anestesia', $id)->where('estado', 1)->get();
 
         $indicaciones = Rc_indicaciones::where('id_rc_pre_anestesica', $id)->where('estado', 1)->get();
-
-        $hc_anestesiologia = Hc_Anestesiologia::where('id', $pre_anestesico->id_hc_anestesiologia)->first();
+        
+        $hc_anestesiologia = Hc_Anestesiologia::where('id',$pre_anestesico->id_hc_anestesiologia)->first();
         $hc_procedimiento = hc_procedimientos::where('id', $hc_anestesiologia->id_hc_procedimientos)->first();
-
-        $cie10 = Aud_Hc_Cie10::where('hc_id_procedimiento', $hc_procedimiento->id)->where('ingreso_egreso', 'INGRESO')->first();
-        //dd($cie10);
-
 
         $adicionales = Hc_Procedimiento_Final::where('id_hc_procedimientos', $hc_procedimiento->id)->get();
 
         $mas = true;
         $texto = "";
-        foreach ($adicionales as $value2) {
-            if ($mas == true) {
-                $texto = $texto . $value2->procedimiento->nombre;
+        foreach($adicionales as $value2)
+        {
+            if($mas == true){
+                $texto = $texto.$value2->procedimiento->nombre ;
                 $mas = false;
-            } else {
-                $texto = $texto . ' + ' . $value2->procedimiento->nombre;
+            }
+            else{
+                $texto = $texto.' + '. $value2->procedimiento->nombre ;
             }
         }
 
-
-        $agrupados = array();
-        foreach ($rc_examen as $exam) {
-            if (!is_null($exam->examen_parametro) && !is_null($exam->examen_agrupador)) {
-                $agrupados[$exam->examen_agrupador->nombre][] = ['parametro' => $exam->examen_parametro->nombre, 'resultado' => $exam->resultado];
-            }
-        }
-        //dd(count($agrupados));
-        //dd($agrupados);
-        $agrupados1 = $agrupados;
-        $agrupados2 = [];
-        $totalAgrupadores = count($agrupados);
-        if ($totalAgrupadores > 4) {
-            // Calcular el tama�o de cada parte
-            $tamanoParte = ceil($totalAgrupadores / 2);
-
-            // Dividir el array en dos partes iguales
-            $agrupadosDivididos = array_chunk($agrupados, $tamanoParte, true); // 'true' para mantener las claves asociativas
-
-            // Obtener la primera parte
-            $agrupados1 = $agrupadosDivididos[0];
-
-            // Obtener la segunda parte
-            $agrupados2 = $agrupadosDivididos[1];
-        }
-        //dd($agrupados1,$agrupados2);
-        $seguro = $hc_procedimiento->historia->seguro;
-        $view = \View::make('pdf_hospital.formulario018', compact('seguro','cie10', 
-        'hc_procedimiento', 
-        'pre_anestesico', 
-        'rc_antecedentes', 
-        'rc_examen', 
-        'indicaciones', 
-        'empresa', 'texto', 'agrupados1', 'agrupados2'))->render();
-        
+        $view = \View::make('pdf_hospital.formulario018',compact('hc_procedimiento','pre_anestesico','rc_antecedentes','rc_examen','indicaciones','empresa','texto'))->render();
         $pdf  = \App::make('dompdf.wrapper');
         $pdf->setPaper('A4');
         //$pdf->setPaper('A4', 'landscape');
         $pdf->loadHTML($view);
-        return $pdf->stream('HCU_018.pdf');
+        return $pdf->stream('formulario018.pdf');
     }
 
     public function formulario018A($procedimiento_id)
@@ -794,72 +631,134 @@ class Rc_pre_anestesicaController extends Controller
         $empresa    = Empresa::where('id', $id_empresa)->where('estado', '1')->first();
 
         $record = Hc_Anestesiologia::where('id', $procedimiento_id)->first();
-        $pre_anestesico = Rc_pre_anestesica::where('id_hc_anestesiologia', $procedimiento_id)->first();
-        $historia_clinica = Historiaclinica::where('hcid', $record->id_hc)->first();
-
-
+        
+        
+       
         $drogas = Drogas_administradas::where('id_hc_anestesiologia', $procedimiento_id)->where('estado', 1)->get();
 
-
+        $cie10 = DB::table('hc_cie10')->where('hc_cie10.hcid', $record->historia->hcid)->limit(2)->get();
 
         $examen = Rc_resultados::where('id_hc_anestesiologia', $record->id)->where('estado', 1)->get();
 
         $hc_procedimiento = hc_procedimientos::where('id', $record->id_hc_procedimientos)->first();
-        $aud_hc_procedimiento = Aud_Hc_Procedimientos::where('id_procedimientos_org', $hc_procedimiento->id)->first();
-        $aud_protocolo = Aud_Hc_Protocolo::where('id_hc_procedimientos', $hc_procedimiento->id)->first();
-        //$cie10 = DB::table('hc_cie10')->where('hc_cie10.hcid', $record->historia->hcid)->limit(2)->get();
-        $cie10 = Aud_Hc_Cie10::where('hc_id_procedimiento', $hc_procedimiento->id)->where('ingreso_egreso', 'INGRESO')->first();
-        $cie10_eg = Aud_Hc_Cie10::where('hc_id_procedimiento', $hc_procedimiento->id)->where('ingreso_egreso', 'EGRESO')->first();
-
-        $sistemas = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'SISTEMA')->get();
-        $aparatos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'APARATO')->get();
-        $manejos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'MANEJO')->get();
-        $intubuaciones = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'INTUBACION')->get();
-        $tipos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'TIPO')->get();
-        $inducciones = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'INDUCCION')->get();
-        $mantenimientos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'MANTENIMIENTO')->get();
 
 
-        $rc_tecnicas = record_tecnicas_anestesicas::where('id_hc_anestesiologia', $procedimiento_id)->get();
 
-        $agrupados = array();
-        foreach ($examen as $exam) {
-            if (!is_null($exam->examen_parametro) && !is_null($exam->examen_agrupador)) {
-                $agrupados[$exam->examen_agrupador->nombre][] = ['parametro' => $exam->examen_parametro->nombre, 'resultado' => $exam->resultado];
+        $transanestesicoImage = null;
+        if (!empty($record->tran_anastesico_path)) {
+            $imageName = basename($record->tran_anastesico_path);
+            $imagePaths = [
+                public_path('assets/images/trasnanestesico/'.$imageName),
+                storage_path('app/hc_ima/trans/'.$imageName),
+            ];
+            foreach ($imagePaths as $imagePath) {
+                if (is_file($imagePath)) {
+                    $transanestesicoImage = 'data:image/png;base64,'.base64_encode(file_get_contents($imagePath));
+                    break;
+                }
             }
         }
-        //dd(count($agrupados));
-        //dd($agrupados);
-        $agrupados1 = $agrupados;
-        $agrupados2 = [];
-        $totalAgrupadores = count($agrupados);
-        if ($totalAgrupadores > 4) {
-            // Calcular el tama�o de cada parte
-            $tamanoParte = ceil($totalAgrupadores / 2);
 
-            // Dividir el array en dos partes iguales
-            $agrupadosDivididos = array_chunk($agrupados, $tamanoParte, true); // 'true' para mantener las claves asociativas
+        $viewData = compact('hc_procedimiento', 'record', 'empresa', 'cie10', 'drogas', 'examen', 'transanestesicoImage');
 
-            // Obtener la primera parte
-            $agrupados1 = $agrupadosDivididos[0];
+        // Compatibilidad durante despliegues donde Composer todavía no ha
+        // instalado FPDI: se conserva el PDF anterior en vez de responder 500.
+        if (!class_exists(\setasign\Fpdi\Fpdi::class)) {
+            $fallbackView = \View::make('pdf_hospital.formulario018A', array_merge($viewData, [
+                'pdfPage' => 'all',
+                'pdfPageNumber' => 1,
+            ]))->render();
+            $fallbackPdf = \App::make('dompdf.wrapper');
+            $fallbackPdf->setPaper('A4', 'landscape');
+            $fallbackPdf->loadHTML($fallbackView);
 
-            // Obtener la segunda parte
-            $agrupados2 = $agrupadosDivididos[1];
+            return $fallbackPdf->stream('formulario018A.pdf');
         }
-        //dd($agrupados1,$agrupados2);
 
+        // Dompdf mueve tablas completas a una página adicional cuando los
+        // datos ocupan unos píxeles más. Se prueban perfiles progresivamente
+        // compactos hasta garantizar que A-J permanezca en una sola hoja.
+        $landscapeContent = null;
+        $landscapeProfiles = [
+            ['canvas' => 280, 'font' => 5, 'line' => 0.88, 'logo' => 52],
+            ['canvas' => 240, 'font' => 4.7, 'line' => 0.82, 'logo' => 48],
+            ['canvas' => 200, 'font' => 4.4, 'line' => 0.76, 'logo' => 44],
+            ['canvas' => 160, 'font' => 4.1, 'line' => 0.70, 'logo' => 40],
+            ['canvas' => 120, 'font' => 3.8, 'line' => 0.65, 'logo' => 36],
+        ];
 
-        $view = \View::make('pdf_hospital.formulario018A', compact('cie10_eg', 'aud_protocolo', 'aud_hc_procedimiento', 'hc_procedimiento', 'historia_clinica', 'record', 'empresa', 'cie10', 'drogas', 'examen', 'sistemas', 'aparatos', 'manejos', 'intubuaciones', 'tipos', 'rc_tecnicas', 'inducciones', 'mantenimientos', 'pre_anestesico', 'agrupados1', 'agrupados2'))->render();
-        $pdf  = \App::make('dompdf.wrapper');
-        //$pdf->setPaper('A4');
-        $pdf->setPaper('A4', 'landscape');
-        $pdf->loadHTML($view);
-        return $pdf->stream('HCU_018A.pdf');
+        foreach ($landscapeProfiles as $profile) {
+            $landscapeView = \View::make('pdf_hospital.formulario018A', array_merge($viewData, [
+                'pdfPage' => 'first',
+                'pdfPageNumber' => 1,
+                'firstPageCanvasHeight' => $profile['canvas'],
+                'firstPageFontSize' => $profile['font'],
+                'firstPageLineHeight' => $profile['line'],
+                'firstPageLogoHeight' => $profile['logo'],
+            ]))->render();
+            $landscapePdf = \App::make('dompdf.wrapper');
+            $landscapePdf->setPaper('A4', 'landscape');
+            $landscapePdf->loadHTML($landscapeView);
+            $landscapePdf->render();
+            $landscapeContent = $landscapePdf->output();
+
+            if ($landscapePdf->getDomPDF()->getCanvas()->get_page_count() === 1) {
+                break;
+            }
+        }
+
+        $portraitView = \View::make('pdf_hospital.formulario018A', array_merge($viewData, [
+            'pdfPage' => 'second',
+            'pdfPageNumber' => 2,
+        ]))->render();
+        $portraitPdf = \App::make('dompdf.wrapper');
+        $portraitPdf->setPaper('A4', 'portrait');
+        $portraitPdf->loadHTML($portraitView);
+        $portraitPdf->render();
+        $portraitContent = $portraitPdf->output();
+
+        $mergedPdf = new \setasign\Fpdi\Fpdi();
+        $mergedPdf->SetAutoPageBreak(false);
+        foreach ([$landscapeContent, $portraitContent] as $documentIndex => $pdfContent) {
+            $pageCount = $mergedPdf->setSourceFile(
+                \setasign\Fpdi\PdfParser\StreamReader::createByString($pdfContent)
+            );
+
+            for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
+                $template = $mergedPdf->importPage($pageNumber);
+                $size = $mergedPdf->getTemplateSize($template);
+
+                // A-J ya se renderiza en una sola hoja. Se amplía únicamente
+                // en vertical para aprovechar el espacio libre, conservando
+                // las tablas y textos como contenido vectorial del PDF.
+                if ($documentIndex === 0 && $pageNumber === 1) {
+                    $mergedPdf->AddPage('L', 'A4');
+                    $mergedPdf->useTemplate($template, 0, 0, 297, 252);
+                    $mergedPdf->SetDrawColor(153, 153, 153);
+                    $mergedPdf->Line(0, 203, 297, 203);
+                    $mergedPdf->SetFont('Arial', 'B', 6);
+                    $mergedPdf->SetTextColor(0, 0, 0);
+                    $mergedPdf->SetXY(1, 204);
+                    $mergedPdf->Cell(147, 4, 'SNS-MSP / HCU-form.018A / 2021', 0, 0, 'L');
+                    $mergedPdf->Cell(148, 4, iconv('UTF-8', 'windows-1252//TRANSLIT', 'TRANSANESTÉSICO (1)'), 0, 0, 'R');
+                    continue;
+                }
+
+                $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
+                $mergedPdf->AddPage($orientation, [$size['width'], $size['height']]);
+                $mergedPdf->useTemplate($template);
+            }
+        }
+
+        return response($mergedPdf->Output('S'), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="formulario018A.pdf"',
+        ]);
+        
     }
 
     public function transanestesico_crea_registro($id_hc_anestesiologia)
     {
-        //dd($id_hc_anestesiologia);
 
 
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
@@ -867,23 +766,8 @@ class Rc_pre_anestesicaController extends Controller
 
         $hc_anestesiologia = Hc_Anestesiologia::find($id_hc_anestesiologia);
 
-        if (is_null($hc_anestesiologia)) {
-
-            $arr_postanestesico = [
-
-                'id_hc' => $hc_anestesiologia["id_hc"],
-                'hc_id_procedimiento'  => $hc_anestesiologia["id_hc_procedimientos"],
-                'estado'               => 1,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-                'ip_modificacion'      => $ip_cliente,
-            ];
-            $id_rc = Hc_Anestesiologia::insertGetId($arr_postanestesico);
-            $hc_anestesiologia = Hc_Anestesiologia::find($id_rc);
-        }
-        //dd($id_hc_anestesiologia);
-        return redirect(route('formato.transanestesico_edit', ['hc_anestesiologia' => $hc_anestesiologia]));
+        abort_unless($hc_anestesiologia, 404, 'No se encontró el registro de anestesia.');
+        return redirect(route('formato.transanestesico_edit', ['id' => $hc_anestesiologia->id]));
     }
 
 
@@ -891,30 +775,23 @@ class Rc_pre_anestesicaController extends Controller
     public function transanestesico_edit($id)
 
     {
+
         $transanestesico = Hc_Anestesiologia::where('id', $id)->first();
+        abort_unless($transanestesico, 404, 'No se encontró el registro transanestésico.');
 
         $drogas = Drogas_administradas::where('id_hc_anestesiologia', $id)->where('estado', 1)->get();
+        $receta = hc_receta::where('id_hc', $transanestesico->id_hc)->orderBy('id', 'desc')->first();
+        $medicationOrders = $receta ? $receta->detalles : collect();
         //dd($drogas);
 
         $pre_anestesico = Rc_pre_anestesica::where('id_hc_anestesiologia', $id)->first();
-
+        
 
         $examen = Rc_resultados::where('id_hc_anestesiologia', $transanestesico->id)->where('estado', 1)->get();
         //dd($examen);
 
-        $sistemas = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'SISTEMA')->get();
-        $aparatos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'APARATO')->get();
-        $manejos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'MANEJO')->get();
-        $intubuaciones = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'INTUBACION')->get();
-        $tipos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'TIPO')->get();
-        $inducciones = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'INDUCCION')->get();
-        $mantenimientos = TecnicasAnestesicas::where('estado', 1)->where('tipo', 'MANTENIMIENTO')->get();
 
-        $rc_tecnicas = record_tecnicas_anestesicas::where('id_hc_anestesiologia', $id)->get();
-
-
-
-        return view('rc_preanestesico/transanestesico_edit', ['transanestesico' => $transanestesico, 'drogas' => $drogas, 'examen' => $examen, 'pre_anestesico' => $pre_anestesico, 'sistemas' => $sistemas, 'rc_tecnicas' => $rc_tecnicas, 'aparatos' => $aparatos, 'manejos' => $manejos, 'intubuaciones' => $intubuaciones, 'tipos' => $tipos, 'inducciones' => $inducciones, 'mantenimientos' => $mantenimientos]);
+        return view('rc_preanestesico/transanestesico_edit', compact('transanestesico', 'drogas', 'examen', 'pre_anestesico', 'medicationOrders'));
     }
 
 
@@ -924,22 +801,19 @@ class Rc_pre_anestesicaController extends Controller
         //dd($request->all());
 
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario = Auth::user()->id;
-
-
-        $arr_transanestesico = [
-
-            'id_hc_anestesiologia' => $request['id_anestesiologia'],
-            'drogas'               => $request['drogas'],
-            'estado'               => 1,
-            'id_usuariocrea'       => $idusuario,
-            'id_usuariomod'        => $idusuario,
-            'ip_creacion'          => $ip_cliente,
-            'ip_modificacion'      => $ip_cliente,
-        ];
-        Drogas_administradas::create($arr_transanestesico);
-        return response()->json(['success' => true, 'msj' => "GUARDADO"]);
+        try {
+            $anesthesia = Hc_Anestesiologia::with('historia')->find($request->id_anestesiologia);
+            $detail = hc_receta_detalle::with('hc_receta.historia')->find($request->recipe_detail_id);
+            if (!$anesthesia || !$anesthesia->historia || !$detail || !$detail->hc_receta || !$detail->hc_receta->historia
+                || (string) $anesthesia->historia->encounter_id !== (string) $detail->hc_receta->historia->encounter_id) {
+                throw new ClinicalMedicationBlockedException(array('La orden seleccionada no corresponde al episodio quirúrgico.'));
+            }
+            $administration = app(ClinicalMedicationAdministrationService::class)
+                ->registerLegacyRecipeDetail($detail->id, $request->all(), Auth::user()->id, $request->ip());
+            return response()->json(array('success' => true, 'msj' => 'Administración anestésica registrada en eMAR.', 'administration_id' => $administration->id));
+        } catch (ClinicalMedicationBlockedException $exception) {
+            return response()->json(array('success' => false, 'msj' => implode("\n", $exception->errors())), 422);
+        }
     }
 
     public function transanestesico_guardar(Request $request)
@@ -951,11 +825,10 @@ class Rc_pre_anestesicaController extends Controller
 
         $id_hc = $request->input('id_hc');
         //dd($id_hc);
-        $hc_anestesiologia = Hc_Anestesiologia::find($request->id);
+        $hc_anestesiologia = Hc_Anestesiologia::where('id_hc', $id_hc)->first();
 
         if ($hc_anestesiologia) {
-            $valores = $request->except(['id_hc', '_token', 'id', 'id_hc_procedimientos']);
-            //dd($valores);
+            $valores = $request->except(['id_hc', '_token']);
             $updatedData = array_merge($valores, [
                 'id_usuariomod' => $idusuario,
                 'ip_modificacion' => $ip_cliente,
@@ -966,7 +839,6 @@ class Rc_pre_anestesicaController extends Controller
                     $hc_anestesiologia->$nombre = $valor;
                 }
             }
-            //dd($hc_anestesiologia);
 
             $hc_anestesiologia->save();
         } else {
@@ -987,21 +859,27 @@ class Rc_pre_anestesicaController extends Controller
     }
     public function imagen_pre_anestesico(Request $request)
     {
+        //dd($request->all());
         $hc_anes = Hc_Anestesiologia::find($request->id);
-
+        
         return view("canvasimagenes.transanestesico", ["id" => $request["id"], "tipo" => $request["tipo"], 'hc_anes' => $hc_anes]);
     }
-
-    public function saveCanvas(Request $request)
+    
+        public function saveCanvas(Request $request)
     {
         try {
             $id = $request['id'];
             $id_update = Hc_Anestesiologia::find($id);
-            $extension = 'record' . '_' . $id . date('Ymdhis') . '.png';
+            if (!$id_update) {
+                return response()->json('errorRegistro no encontrado');
+            }
 
-            $carpeta = 'trans/'; // Cambiado el nombre de la carpeta
-
-            $rutaArchivo = $carpeta . $extension;
+            $extension = 'record_' . ($request["tipo"] == 0 ? 'trans' : 'post') . '_' . $id . '_' . date('YmdHis') . '.png';
+            $carpeta = $request["tipo"] == 0 ? 'trasnanestesico' : 'postanestesico';
+            $directorio = public_path('assets/images/'.$carpeta);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0775, true);
+            }
 
             if ($request["tipo"] == 0) {
                 $id_update->tran_anastesico_path = $extension;
@@ -1010,11 +888,27 @@ class Rc_pre_anestesicaController extends Controller
             }
             $id_update->save();
 
-            Storage::disk('hc_ima')->put($rutaArchivo, \File::get($request['my-file']));
+            $archivoTemporal = $request->file('my-file')
+                ? $request->file('my-file')->getRealPath()
+                : $request['my-file'];
+            \File::put($directorio.'/'.$extension, \File::get($archivoTemporal));
+
+            // El PNG se mantiene para los PDF. El JSON conserva trazos y
+            // símbolos como objetos editables al volver a abrir el registro.
+            if ($request->filled('canvas_json')) {
+                $canvasJson = $request->input('canvas_json');
+                json_decode($canvasJson, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \RuntimeException('El estado editable del lienzo no es válido.');
+                }
+
+                $jsonName = pathinfo($extension, PATHINFO_FILENAME).'.json';
+                \File::put($directorio.'/'.$jsonName, $canvasJson);
+            }
 
             return response()->json('ok');
         } catch (\Throwable $th) {
-            return response()->json('error' . $th->getMessage());
+            return response()->json('error'. $th->getMessage());
         }
     }
     public function rc_postanestesico_crea_registro($id_hc_anestesiologia)
@@ -1025,12 +919,11 @@ class Rc_pre_anestesicaController extends Controller
         $hc_anestesiologia = Hc_Anestesiologia::find($id_hc_anestesiologia);
         $hc_evolucion_anestesiologo = Hc_Evolucion_Anestesiologo::where('hc_id_procedimiento', $hc_anestesiologia->id_hc_procedimientos)->first();
 
-
         if (!is_null($hc_evolucion_anestesiologo)) {
 
             return redirect(route('formato.rc_postanestesico_edit', [
-                'hc_evolucion_anestesiologo' => $hc_evolucion_anestesiologo,
-                'hc_anestesiologia' => $hc_anestesiologia
+                'id_hc_anesteciologia' => $hc_anestesiologia->id,
+                'id_hc_evolucion_anes' => $hc_evolucion_anestesiologo->id,
             ]));
         } else {
 
@@ -1049,112 +942,61 @@ class Rc_pre_anestesicaController extends Controller
             $hc_evolucion_anestesiologo = Hc_Evolucion_Anestesiologo::find($id_rc);
         }
 
-
         return redirect(route('formato.rc_postanestesico_edit', [
-            'hc_evolucion_anestesiologo' => $hc_evolucion_anestesiologo,
-            'hc_anestesiologia' => $hc_anestesiologia
+            'id_hc_anesteciologia' => $hc_anestesiologia->id,
+            'id_hc_evolucion_anes' => $hc_evolucion_anestesiologo->id,
         ]));
     }
-    public function actualiza_informacion_post($id)
+	public function rc_postanestesico_edit($id_hc_anestesiologia, $id_hc_evolucion_anestesiologo)
     {
+        // La ruta recibe primero el registro anestesiológico y después la
+        // evolución postanestésica. Antes se interpretaban en orden inverso.
+        $post_anestesico = Hc_Evolucion_Anestesiologo::findOrFail($id_hc_evolucion_anestesiologo);
+        $anestesiologia = Hc_Anestesiologia::findOrFail($id_hc_anestesiologia);
 
-        $post_anestesico = Hc_Evolucion_Anestesiologo::find($id); //dd($id, $post_anestesico);
-
-        if (!is_null($post_anestesico)) {
-            $cont = 0;
-            $anestesiologia = $post_anestesico->hc_anestesiologia;
-
-            $hc = $anestesiologia->historia;
-            $pre_anestesico = Rc_pre_anestesica::where('id_hc_anestesiologia', $anestesiologia->id)->where('estado', '1')->first();
-            //$paciente = $hc->paciente;
-
-            if ($post_anestesico->presion == null) {
-                $cont++;
-                $post_anestesico->presion = $pre_anestesico->presion;
-            }
-            if ($post_anestesico->pulso == null) {
-                $cont++;
-                $post_anestesico->pulso = $pre_anestesico->pulso;
-            }
-            if ($post_anestesico->o2 == null) {
-                $cont++;
-                $post_anestesico->o2 = $pre_anestesico->o2;
-            }
-            if ($post_anestesico->temperatura == null) {
-                $cont++;
-                $post_anestesico->temperatura = $pre_anestesico->temperatura;
-            }
-            if ($cont > 0) {
-                $post_anestesico->save();
-            }
-        }
-    }
-    public function rc_postanestesico_edit($id_hc_evolucion_anestesiologo, $hc_anestesiologia)
-    {
-        //dd($id_hc_evolucion_anestesiologo);
-
-        $post_anestesico = Hc_Evolucion_Anestesiologo::find($id_hc_evolucion_anestesiologo);
-        //$pre_anestesico = Rc_pre_anestesica::where('id_hc_anestesiologia',$hc_anestesiologia->id)->where('estado','1')->first();
-        $anestesiologia = Hc_Anestesiologia::find($post_anestesico->id_hc_anestesiologia);
-        $procedimiento_id = hc_procedimientos::where('id', $post_anestesico->procedimiento->id)->first();
-        if (!is_null($procedimiento_id)) {
-            $historia = Historiaclinica::find($procedimiento_id->id_hc);
-
-            if (!is_null($historia)) {
-                $paciente = Paciente::find($historia->id_paciente);
-                $agenda = agenda::find($historia->id_agenda);
-                $especialidad = Especialidad::find($agenda->espid);
-                //dd($especialidad);
-            }
-
-
-            /*$cirugia = '';
-            $hc_procedimiento_final = Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento_id)->get();
-            //$anestesiologia = Hc_Anestesiologia::where('id_hc_procedimientos', $procedimiento_id)->first();
-            //dd($anestesiologia);
-            if (count($hc_procedimiento_final) > 1) {
-                $cirugia = $hc_procedimiento_final[0]->procedimiento->nombre;
-                for ($i = 1; $i < count($hc_procedimiento_final); $i++) {
-                    $cirugia = $cirugia . ' + ' . $hc_procedimiento_final[$i]->procedimiento->nombre;
-                }
-            } elseif (count($hc_procedimiento_final) == 1) {
-                $cirugia = $hc_procedimiento_final[0]->procedimiento->nombre;
-            }*/
-
-            $adicionales = Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento_id)->get();
-
-            $mas = true;
-            $cirugia = "";
-            foreach ($adicionales as $value2) {
-                if ($mas == true) {
-                    $cirugia = $cirugia . $value2->procedimiento->nombre;
-                    $mas = false;
-                } else {
-                    $cirugia = $cirugia . ' + ' . $value2->procedimiento->nombre;
-                }
-            }
+        $procedimientoId = $post_anestesico->hc_id_procedimiento;
+        if (empty($procedimientoId)) {
+            $procedimientoId = $anestesiologia->id_hc_procedimientos;
         }
 
+        $procedimiento = hc_procedimientos::findOrFail($procedimientoId);
+        $historia = Historiaclinica::findOrFail($procedimiento->id_hc);
 
-        $this->actualiza_informacion_post($post_anestesico->id);
+        // Permite abrir registros antiguos con claves de relación vacías sin
+        // modificar silenciosamente la información almacenada.
+        $post_anestesico->hc_id_procedimiento = $procedimiento->id;
+        $post_anestesico->id_hc = $historia->id;
+        $post_anestesico->setRelation('procedimiento', $procedimiento);
+        $post_anestesico->setRelation('historiaclinica', $historia);
+        $post_anestesico->setRelation('hc_anestesiologia', $anestesiologia);
 
-        return view('rc_preanestesico/postanestesico_edit', ['post_anestesico' => $post_anestesico, 'especialidad' => $especialidad, 'cirugia' => $cirugia, 'anestesiologia' => $anestesiologia]);
+        $agenda = Agenda::find($historia->id_agenda);
+        $especialidad = $agenda ? Especialidad::find($agenda->espid) : null;
+
+        $cirugia = Hc_Procedimiento_Final::with('procedimiento')
+            ->where('id_hc_procedimientos', $procedimiento->id)
+            ->get()
+            ->map(function ($procedimientoFinal) {
+                return optional($procedimientoFinal->procedimiento)->nombre;
+            })
+            ->filter()
+            ->implode(' + ');
+
+        return view('rc_preanestesico/postanestesico_edit', compact('post_anestesico', 'especialidad', 'cirugia'));
     }
     public function postanestesico_guardar(Request $request)
     {
-        $this->validate($request, [
-            'id_hc_anestesiologia' => 'required|integer|exists:hc_anestesiologia,id',
-        ]);
+
+        //dd($request->all());
         $idusuario = Auth::user()->id;
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
 
         $id_hc = $request->input('id_hc');
-        $id_hc_anestesiologia = $request->input('id_hc_anestesiologia');
-        $hc_evolucion_anestesiologo = Hc_Evolucion_Anestesiologo::where('id_hc_anestesiologia', $id_hc_anestesiologia)->first();
+        //dd($id_hc);
+        $hc_evolucion_anestesiologo = Hc_Evolucion_Anestesiologo::where('id_hc', $id_hc)->first();
 
         if ($hc_evolucion_anestesiologo) {
-            $valores = $request->except(['id_hc', 'id_hc_anestesiologia', '_token']);
-            //dd($valores);
+            $valores = $request->except(['id_hc', '_token']);
             $updatedData = array_merge($valores, [
                 'id_usuariomod' => $idusuario,
                 'ip_modificacion' => $ip_cliente,
@@ -1169,23 +1011,21 @@ class Rc_pre_anestesicaController extends Controller
             $hc_evolucion_anestesiologo->save();
         } else {
             $valores = $request->except('_token');
-            $anestesiologia = Hc_Anestesiologia::findOrFail($id_hc_anestesiologia);
             $arr_transanestesico = [
-                'id_hc' => $anestesiologia->id_hc,
-                'id_hc_anestesiologia' => $anestesiologia->id,
-                'hc_id_procedimiento' => $anestesiologia->id_hc_procedimientos,
+                'id_hc' => $id_hc,
                 'estado' => 1,
                 'id_usuariocrea' => $idusuario,
                 'id_usuariomod' => $idusuario,
                 'ip_creacion' => $ip_cliente,
                 'ip_modificacion' => $ip_cliente,
             ];
+
             $hc_evolucion_anestesiologo = Hc_Evolucion_Anestesiologo::create(array_merge($valores, $arr_transanestesico));
         }
+
         return response()->json(['success' => true, 'msj' => "GUARDADO"]);
     }
-    public function crear_anestesico($id_procedimiento)
-    {
+    public function crear_anestesico($id_procedimiento){
 
         $idusuario  = Auth::user()->id;
         $ip_cliente = $_SERVER["REMOTE_ADDR"];
@@ -1193,12 +1033,14 @@ class Rc_pre_anestesicaController extends Controller
 
         $record_anestesiologico = Hc_Anestesiologia::where('id_hc_procedimientos', '=', $id_procedimiento)->first();
         $procedimiento = hc_procedimientos::find($id_procedimiento);
+        abort_unless($procedimiento, 404, 'No se encontró el procedimiento clínico.');
 
         if (!is_null($record_anestesiologico)) {
-
+            
             $id = $record_anestesiologico->id;
+        
         } else {
-
+            
             $input1 = [
                 'id_hc'                => $procedimiento->id_hc,
                 'fecha'                => date('Y-m-d H:i:s'),
@@ -1208,37 +1050,40 @@ class Rc_pre_anestesicaController extends Controller
                 'id_usuariocrea'       => $idusuario,
                 'id_usuariomod'        => $idusuario,
             ];
-
+            
             $id_record = Hc_Anestesiologia::insertGetId($input1);
 
             $id = $id_record;
+
         }
 
+        
+        return redirect(route('formato.rc_preanestesico_crear', ['id' => $id ]));
+        
 
-        return redirect(route('formato.rc_preanestesico_crear', ['id' => $id]));
     }
-    public function carga_tabla_indicacion($id_rc)
-    {
-
+    public function carga_tabla_indicacion($id_rc){
+        
         $indicaciones = Rc_indicaciones::where('id_rc_pre_anestesica', $id_rc)->where('estado', 1)->get();
 
-        return view('rc_preanestesico/tabla_indicacion', ['indicaciones' => $indicaciones]);
+        return view('rc_preanestesico/tabla_indicacion', ['indicaciones' => $indicaciones ]);
+
     }
-    public function carga_tabla_examenes($id_rc)
-    {
+    public function carga_tabla_examenes($id_rc){
 
 
         $rc_examen = Rc_resultados::where('id_rc_pre_anestesia', $id_rc)->where('estado', 1)->get();
 
 
-        return view('rc_preanestesico/tabla_examen', ['examen' => $rc_examen]);
-    }
-    public function carga_tabla_diagnosticos($id_rc)
-    {
+        return view('rc_preanestesico/tabla_examen', ['examen' => $rc_examen ]);
+
+    } 
+    public function carga_tabla_diagnosticos($id_rc){
 
         $rc_antecedentes = Rc_antecedentes::where('id_rc_pre_anestesica', $id_rc)->where('estado', 1)->get();
 
-        return view('rc_preanestesico/tabla_diagnostico', ['rc_antecedentes' => $rc_antecedentes]);
+        return view('rc_preanestesico/tabla_diagnostico', ['rc_antecedentes' => $rc_antecedentes ]);
+
     }
     public function load($name)
     {
@@ -1248,68 +1093,5 @@ class Rc_pre_anestesicaController extends Controller
             ob_end_clean();
             return Response::download($path);
         }
-    }
-
-    public function actualiza_tecnicas(Request $request)
-    {
-
-        //dd($request->all());
-        $idusuario  = Auth::user()->id;
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-
-        $rc_tecnica = record_tecnicas_anestesicas::where('id_hc_anestesiologia', $request->id_hc_anestesiologia)->where('id_tecnicas_anestesicas', $request->tecnica)->first();
-
-        if ($request->crear == '0') { // eliminar
-
-            if (!is_null($rc_tecnica)) {
-                $rc_tecnica->delete();
-            }
-        } else { // crear 
-            if (is_null($rc_tecnica)) {
-                $arr = [
-                    'id_tecnicas_anestesicas' => $request->tecnica,
-                    'id_hc_anestesiologia' => $request->id_hc_anestesiologia,
-                    'ip_creacion' => $ip_cliente,
-                    'ip_modificacion' => $ip_cliente,
-                    'id_usuariocrea' => $idusuario,
-                    'id_usuariomod' => $idusuario,
-                ];
-                record_tecnicas_anestesicas::create($arr);
-            }
-        }
-    }
-
-    public function guardar_trans(Request $request)
-    {
-
-        //dd($request->all());
-        $id_trans = $request->id_trans;
-        $pre_anestesico = Rc_pre_anestesica::find($id_trans);
-
-        foreach ($request->all() as $key => $value) {
-            if ($key != 'id_trans' && $key != 'borbotaje' && $key != 'acceso' && $key != 'escala' && $key != 'feto' && $key != 'new_tecnicas_especiales' && $key != 'mantenimiento_temperatura' && $key != 'duracion_anestesia' && $key != 'duracion_operacion' && $key != 'indice' && $key != 'condiciones_al_salir' && $key != 'conducido') {
-                $pre_anestesico->$key = $value;
-            }
-        }
-        $pre_anestesico->save();
-
-        return "ok";
-    }
-
-    public function getLastOrder($id_paciente, $fecha_orden)
-    {
-        $fecha_orden = Carbon::parse($fecha_orden);
-        $order = Examen_Orden::where('id_paciente', $id_paciente)
-            ->where('estado', '1')
-            ->orderByRaw('ABS(TIMESTAMPDIFF(SECOND, created_at, ?)) DESC', [$fecha_orden])
-            ->first();
-        return $order;
-    }
-    public function carga_tabla_drogas($id_rc)
-    {
-
-        $drogas = Drogas_administradas::where('id_hc_anestesiologia', $id_rc)->where('estado', 1)->get();
-
-        return view('rc_preanestesico/tabla_drogas', ['drogas' => $drogas]);
     }
 }

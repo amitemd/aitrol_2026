@@ -1,4 +1,17 @@
 
+<style>
+    #area_trabajo .hc4-procedure-link-editor { display:flex; align-items:center; gap:7px; }
+    #area_trabajo .hc4-procedure-link-editor__field { position:relative; flex:1 1 auto; min-width:0; }
+    #area_trabajo .hc4-procedure-link-editor .form-control {
+        width:100%; height:38px; border:1px solid #cbdde6; border-radius:7px;
+        color:#087fa7; box-shadow:none; text-decoration:underline;
+    }
+    #area_trabajo .hc4-procedure-link-editor__action {
+        display:inline-flex; flex:0 0 36px; align-items:center; justify-content:center;
+        width:36px; height:36px; padding:0; border:1px solid #0b8eaf; border-radius:5px;
+        color:#16778e; background:#fff; font-size:14px;
+    }
+</style>
 <link rel="stylesheet" href="{{asset('plugins/iCheck/all.css')}}">
 <div class="modal fade" id="foto" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-lg" role="document">
@@ -180,6 +193,11 @@
             <input type="hidden" name="conclusion" id="conclusion<?php echo e($procedimiento->id); ?>{{$variable_tiempo}}">
         </div>
 
+        @include('hc4.partials.procedure_image_links_editor', [
+            'uniqueId' => $variable_tiempo,
+            'onChange' => 'autoguardado('.$procedimiento->id.')',
+        ])
+
         <div class="col-12">
             <span style="font-family: 'Helvetica general';">&nbsp;</span>
         </div>
@@ -294,6 +312,68 @@
             });
           }
     });
+    function abrir_link_ecografia(id){
+        var input = document.getElementById(id);
+        var url = input ? $.trim(input.value) : '';
+        if(!url){ return; }
+        if(!/^https?:\/\//i.test(url)){
+            alert('Ingrese un enlace válido que comience con http:// o https://');
+            return;
+        }
+        var nuevaPestana = window.open(url, '_blank');
+        if(nuevaPestana){ nuevaPestana.opener = null; }
+    }
+
+    function pegar_link_ecografia(id){
+        var input = document.getElementById(id);
+        if(!input){ return; }
+        function asignar(texto){ input.value = $.trim(texto); $(input).trigger('change').trigger('focus'); }
+        if(navigator.clipboard && navigator.clipboard.readText){
+            navigator.clipboard.readText().then(asignar).catch(function(){
+                var texto = window.prompt('Pegue el link de imágenes:');
+                if(texto !== null){ asignar(texto); }
+            });
+        }else{
+            var texto = window.prompt('Pegue el link de imágenes:');
+            if(texto !== null){ asignar(texto); }
+        }
+    }
+
+    function copiar_link_ecografia(id){
+        var input = document.getElementById(id);
+        var url = input ? $.trim(input.value) : '';
+        if(!url){ return; }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(url).catch(function(){ input.select(); document.execCommand('copy'); });
+        }else{
+            input.select();
+            document.execCommand('copy');
+        }
+    }
+
+    function sincronizar_link_ecografia(){
+        var urls = [];
+        $('#hc_protocolo{{$procedimiento->id}}').find('input[name="link_imagenes[]"]').each(function(){
+            var url = $.trim($(this).val());
+            if(url && urls.indexOf(url) === -1){ urls.push(url); }
+        });
+        var controles = $('#hc4_ecography_media_{{$protocolo->id}}').find('.hc4-ecography-link-controls');
+        if(!controles.length){ return; }
+        controles.empty();
+        if(!urls.length){
+            controles.append($('<span class="hc4-ecography-link-empty"></span>').text('No hay links de imágenes registrados.'));
+            return;
+        }
+        $.each(urls, function(indice, url){
+            var fila = $('<div class="hc4-ecography-link-row"></div>');
+            fila.append(
+                $('<a class="hc4-ecography-link-view"></a>').attr({href:url, target:'_blank', rel:'noopener noreferrer', title:'Abrir enlace en una nueva pestaña'}).text(url),
+                $('<button type="button" class="hc4-ecography-link-copy" title="Copiar enlace" aria-label="Copiar enlace"><i class="fa fa-copy" aria-hidden="true"></i></button>').on('click', function(){ copiar_link_imagenes_ecografia(this); })
+            );
+            controles.append(fila);
+        });
+    }
+
     function guardar_procedimiento(id){
         var jprocedimientos = $('#id_procedimiento').val();
         //console.log (jprocedimientos);
@@ -307,7 +387,7 @@
                 headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
                 datatype: "html",
                 success: function(datahtml, entra){
-
+                    sincronizar_link_ecografia();
                     $("#procedimiento"+id).html(datahtml);
                     //console.log(datahtml);
                 },
@@ -332,8 +412,9 @@
         $('input[type="checkbox"].flat-orange').on('ifChecked', function(event){
 
             $.ajax({
-              type: 'get',
+              type: 'post',
               url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '1']) }}",
+              data: {'_token': '{{ csrf_token() }}'},
 
 
               datatype: 'json',
@@ -353,8 +434,9 @@
         $('input[type="checkbox"].flat-orange').on('ifUnchecked', function(event){
 
             $.ajax({
-              type: 'get',
+              type: 'post',
               url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '0']) }}",
+              data: {'_token': '{{ csrf_token() }}'},
 
 
               datatype: 'json',
@@ -505,6 +587,7 @@
                     datatype: "html",
                     success: function(){
                         //console.log(datahtml);
+                        sincronizar_link_ecografia();
                         $("#alerta_datos").fadeIn(1000);
                         $("#alerta_datos").fadeOut(3000);
                     },

@@ -4,6 +4,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 xmlns="http://www.w3.org/TR/REC-html40">
 
 <head>
+    <meta charset="utf-8">
 <meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=ProgId content=Excel.Sheet>
 <meta name=Generator content="Microsoft Excel 15">
@@ -3920,13 +3921,11 @@ IQAA+SEAABQAAAAAAAAAAAAAAAAAWwgAAGRycy9tZWRpYS9pbWFnZTEucG5nUEsFBgAAAAAGAAYA
 hAEAAIYqAAAAAA==
 ">
    <v:imagedata src="{{base_path().'/public/img_nuevo_formulario/image001.png'}}" o:title=""/>
-@verbatim
-   <x:ClientData ObjectType="Pict">
-    <x:SizeWithCells/>
-    <x:CF>Bitmap</x:CF>
-    <x:AutoPict/>
-   </x:ClientData>
-@endverbatim
+   {!! '<x'.':ClientData ObjectType="Pict">' !!}
+    {!! '<x'.':SizeWithCells/>' !!}
+    {!! '<x'.':CF>Bitmap</x'.':CF>' !!}
+    {!! '<x'.':AutoPict/>' !!}
+   {!! '</x'.':ClientData>' !!}
   </v:shape><![endif]--><![if !vml]><span style='mso-ignore:vglayout;
   position:absolute;z-index:2;margin-left:114px;margin-top:-30px;width:93px;
   height:57px'><img width=93 height=57 src="{{base_path().'/public/img_nuevo_formulario/image002.png'}}" v:shapes="Imagen_x0020_691"></span><![endif]><span
@@ -4196,13 +4195,11 @@ AEZhHnquLgAAri4AABQAAAAAAAAAAAAAAAAAXQgAAGRycy9tZWRpYS9pbWFnZTEucG5nUEsFBgAA
 AAAGAAYAhAEAAD03AAAAAA==
 ">
    <v:imagedata src="{{base_path().'/public/img_nuevo_formulario/image003.png'}}" o:title=""/>
-@verbatim
-   <x:ClientData ObjectType="Pict">
-    <x:SizeWithCells/>
-    <x:CF>Bitmap</x:CF>
-    <x:AutoPict/>
-   </x:ClientData>
-@endverbatim
+   {!! '<x'.':ClientData ObjectType="Pict">' !!}
+    {!! '<x'.':SizeWithCells/>' !!}
+    {!! '<x'.':CF>Bitmap</x'.':CF>' !!}
+    {!! '<x'.':AutoPict/>' !!}
+   {!! '</x'.':ClientData>' !!}
   </v:shape><![endif]--><![if !vml]><span style='mso-ignore:vglayout;
   position:absolute;z-index:2 !important;margin-left:806px;margin-top:-35px;width:300px;
   height:69px'><img style="z-index:2 !important;" width=156 height=69 src="{{base_path().'/public/img_nuevo_formulario/image004.png'}}" ></span><![endif]><span

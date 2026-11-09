@@ -1,0 +1,24 @@
+@include('v3.clinical.registry._styles')
+<style>
+  .vd-patient{display:flex;align-items:center;gap:14px}.vd-avatar{width:52px;height:52px;border-radius:16px;background:#e4f6fb;color:#087fac;display:grid;place-items:center;font-size:21px}.vd-patient h2{margin:0;color:#063b63;font-size:20px}.vd-patient p{margin:3px 0 0;color:#607d91}.vd-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:20px}.vd-file{border:1px solid #cfe1eb;border-radius:14px;background:#fff;overflow:hidden;display:flex;flex-direction:column;min-width:0}.vd-preview{height:170px;background:linear-gradient(145deg,#eff9fc,#e1f0f6);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#087fac;font-size:54px}.vd-preview img{width:100%;height:100%;object-fit:cover;transition:transform .2s}.vd-preview:hover img{transform:scale(1.03)}.vd-info{padding:14px;display:flex;flex-direction:column;gap:5px;flex:1}.vd-info strong{color:#083e65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vd-info span{font-size:12px;color:#688296}.vd-actions{display:flex;gap:7px;padding:0 14px 14px}.vd-actions .btn{flex:1}.vd-extension{position:absolute;margin:10px;align-self:flex-start;background:#fff;color:#087fac;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;box-shadow:0 2px 8px rgba(0,50,80,.12)}@media(max-width:1100px){.vd-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:780px){.vd-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.vd-grid{grid-template-columns:1fr}}
+</style>
+<?php $patientName=trim($patient->apellido1.' '.$patient->apellido2.' '.$patient->nombre1.' '.$patient->nombre2); ?>
+<div class="co-page">
+  <section class="co-hero"><div class="co-hero__main"><div class="co-hero__icon"><i class="fas fa-folder-open"></i></div><div><div class="co-eyebrow">HISTORIA CLÍNICA · V3</div><h1>Historial de documentos</h1><p>Consulta y descarga los documentos asociados a las atenciones del paciente.</p></div></div><a class="btn btn-outline-light" href="{{route('v3.patients.index')}}"><i class="fas fa-arrow-left mr-1"></i> Pacientes</a></section>
+  <section class="co-card"><header class="co-head"><div class="vd-patient"><div class="vd-avatar"><i class="fas fa-user"></i></div><div><h2>{{$patientName?:'Paciente sin nombre registrado'}}</h2><p>Identificación: {{$patient->id}} · {{$documents->total()}} documento(s)</p></div></div></header></section>
+  <section class="co-card"><header class="co-head"><div class="co-heading"><i class="fas fa-file-medical"></i><div><h2>Biblioteca documental</h2><p>Informes y archivos clínicos ordenados desde el más reciente.</p></div></div><span class="co-count">{{$documents->total()}} documento(s)</span></header>
+    <div class="vd-grid">
+      @forelse($documents as $document)
+        <?php
+          $extension=strtolower(pathinfo($document->nombre,PATHINFO_EXTENSION));
+          $isImage=in_array($extension,array('jpg','jpeg','png','gif','webp'),true);
+          $icon=$extension==='pdf'?'fa-file-pdf':(in_array($extension,array('doc','docx'),true)?'fa-file-word':(in_array($extension,array('xls','xlsx'),true)?'fa-file-excel':(in_array($extension,array('ppt','pptx'),true)?'fa-file-powerpoint':'fa-file-alt')));
+          $date=$document->created_at?:$document->fechaini;
+          $doctor=trim($document->doctor_lastname.' '.$document->doctor_name);
+        ?>
+        <article class="vd-file"><span class="vd-extension">{{strtoupper($extension?:'ARCHIVO')}}</span>@if($isImage)<a class="vd-preview" target="_blank" rel="noopener" href="{{asset('hc_ima/'.$document->nombre)}}"><img loading="lazy" src="{{asset('hc_ima/'.$document->nombre)}}" alt="Vista previa del documento"></a>@else<div class="vd-preview"><i class="fas {{$icon}}"></i></div>@endif<div class="vd-info"><strong title="{{$document->nombre}}">{{$document->nombre}}</strong><span><i class="far fa-calendar mr-1"></i>{{$date?date('d/m/Y H:i',strtotime($date)):'Fecha no registrada'}}</span><span><i class="fas fa-user-md mr-1"></i>{{$doctor?:'Profesional no identificado'}}</span></div><div class="vd-actions">@if($isImage)<a class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener" href="{{asset('hc_ima/'.$document->nombre)}}"><i class="fas fa-eye mr-1"></i> Ver</a>@endif<a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="{{url('hc_ima_nombre/'.$document->id)}}"><i class="fas fa-download mr-1"></i> Descargar</a></div></article>
+      @empty<div class="co-empty" style="grid-column:1/-1"><i class="fas fa-folder-open fa-2x d-block mb-2"></i><strong>No hay documentos registrados</strong><div>El paciente todavía no tiene documentos clínicos en la empresa activa.</div></div>@endforelse
+    </div>
+    @if($documents->hasPages())<footer class="co-footer"><span>Mostrando {{$documents->firstItem()}} a {{$documents->lastItem()}} de {{$documents->total()}}</span>{{$documents->links()}}</footer>@endif
+  </section>
+</div>

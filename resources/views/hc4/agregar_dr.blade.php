@@ -19,7 +19,7 @@
 <div class="modal-header" >
     <div class="col-12">
         <center>
-            <h4 class="modal-title" id="myModalLabel">@lang('hc4.agregar-') @if($i=='1') @lang('hc4.nuevoProcedimiento-') @else @lang('hc4.nuevaConsulta-') @endif @lang('hc4.paraDoctor-') {{ $doctor->apellido1}}</h4> 
+            <h4 class="modal-title" id="myModalLabel">AGREGAR @if($i=='1') NUEVO PROCEDIMIENTO @else NUEVA CONSULTA @endif PARA EL DR(A). {{ $doctor->apellido1}}</h4> 
         </center>
     </div>
 </div>
@@ -36,9 +36,9 @@
             <span style="color: blue;" class="col-md-offset-4" id="mensaje"></span>
             <div class="form-group col-md-12 cl_nombre1 {{ $errors->has('nombre1') ? ' has-error' : '' }}" id="cambio5">
                 <div class="row">
-                <label for="nombre1" class="col-md-2 control-label">@lang('hc4.nombrePaciente')</label>
+                <label for="nombre1" class="col-md-2 control-label">Nombre Paciente</label>
                 <div class="col-md-8">
-                    <input id="nombre1" type="text" class="form-control"  name="nombre1" value="{{old('nombre1')}}" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();" required placeholder="@lang('hc4.nombreApellido')">
+                    <input id="nombre1" type="text" class="form-control"  name="nombre1" value="{{old('nombre1')}}" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();" required placeholder="Nombre y Apellido">
                     <span class="help-block">
                         <strong id="str_nombre1"></strong>
                     </span>
@@ -57,7 +57,7 @@
                         <div class="row">
                             <div class="form-group col-12 cl_inicio {{ $errors->has('inicio_dr') ? ' has-error' : '' }} {{ $errors->has('id_doctor1') ? ' has-error' : '' }}" >
                                 <div class="row">
-                                    <label class="col-md-4 control-label">@lang('hc4.inicio')</label>
+                                    <label class="col-md-4 control-label">Inicio</label>
                                     <div class="col-md-7">
                                         <div class="input-group date">
                                             <div class="input-group-addon">
@@ -78,7 +78,7 @@
                         <div class="row">
                             <div class="form-group col-12 cl_fin {{ $errors->has('fin') ? ' has-error' : '' }}  {{ $errors->has('id_doctor1') ? ' has-error' : '' }}">
                                 <div class="row">
-                                    <label class="col-md-4 control-label">@lang('hc4.fin')</label>
+                                    <label class="col-md-4 control-label">Fin</label>
                                     <div class="col-md-7">
                                         <div class="input-group date">
                                             <div class="input-group-addon">
@@ -99,11 +99,11 @@
 
             <div class="col-12" style="padding-left: 0px">
                 <div id="cambio15a" class="form-group col-md-6 cl_cortesia {{ $errors->has('cortesia') ? ' has-error' : '' }} " style="padding-left: 0px">
-                    <label for="cortesia" class="col-md-4 control-label">@lang('hc4.cortesia')</label>
+                    <label for="cortesia" class="col-md-4 control-label">Cortesia</label>
                     <div class="col-md-7">
                         <select id="cortesia" class="form-control" name="cortesia">
-                            <option value="NO" @if(old('cortesia')=="NO"){{"selected"}}@endif>@lang('hc4.no')</option>
-                            <option value="SI" @if(old('cortesia')=="SI"){{"selected"}}@endif>@lang('hc4.si')</option>        
+                            <option value="NO" @if(old('cortesia')=="NO"){{"selected"}}@endif>NO</option>
+                            <option value="SI" @if(old('cortesia')=="SI"){{"selected"}}@endif>SI</option>        
                         </select>
                     </div>
                     <span class="help-block">
@@ -114,7 +114,7 @@
 
             <!--telefono1-->
             <div class="form-group col-md-6 cl_telefono1 {{ $errors->has('telefono1') ? ' has-error' : '' }} oculto">
-                <label for="telefono1" class="col-md-4 control-label">@lang('hc4.telefonoContacto')</label>
+                <label for="telefono1" class="col-md-4 control-label">Teléfono Contacto</label>
                 <div class="col-md-7">
                     <input id="telefono1" type="text" class="form-control" name="telefono1" value="{{ old('telefono1') }}" required>
                     <span class="help-block">
@@ -126,7 +126,7 @@
             @if($i=='1')    
             @php $cont=count(old('procedimiento')) @endphp 
             <div id="cambio3" class="form-group col-12 cl_procedimiento {{ $errors->has('id_procedimiento') ? ' has-error' : '' }}">
-                <label for="id_procedimiento" class="col-md-2 col-12 control-label">@lang('hc4.procedimientos') </label>
+                <label for="id_procedimiento" class="col-md-2 col-12 control-label">Procedimientos </label>
                 <div class="col-12" style="padding-left: 10px;">
                     <select id="id_procedimiento" class="form-control select2" name="procedimiento[]" multiple="multiple" data-placeholder="Seleccione" style="width: 100%;" >
                         @foreach($procedimiento as $procedimiento)
@@ -143,7 +143,7 @@
                 <center>
                     <div class="form-group">
                         <div class="col-md-6 col-md-offset-4">
-                            <a href="#" id="confirme" class="btn btn-primary">@lang('hc4.guardar')</a>
+                            <a href="#" id="confirme" class="btn btn-primary">Guardar</a>
                         </div>
                     </div>
                 </center>
@@ -158,7 +158,7 @@
 </div>
 
 <div class="modal-footer">
-  <button type="button" id="bcerrar" class="btn btn-default" data-dismiss="modal" >@lang('hc4.cerrar')</button>
+  <button type="button" id="bcerrar" class="btn btn-default" data-dismiss="modal" >Cerrar</button>
 </div>
 
 

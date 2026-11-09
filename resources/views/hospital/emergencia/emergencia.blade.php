@@ -114,8 +114,8 @@
                   <td>{{$ho_s->id_paciente}}</td>
                   <td>{{$ho_s->apellido1}} {{$ho_s->apellido2}} {{$ho_s->nombre1}} {{$ho_s->nombre2}}</td>
                   <td>
-                    <a href="{{route('hospital.detallep',['id_paciente' => $ho_s->id])}}" class="btn btn-sm btn-primary"><i class="far fa-file-alt"></i> {{trans('emergencia.Atencion')}}</a>
-                    <a href="{{route('hospital.formulario008_pdf', ['id_paciente' => $ho_s->id])}}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-download"></i> {{trans('emergencia.Formulario008')}}</a>
+                    <a href="{{route('hospital.detallep',['id' => $ho_s->id])}}" class="btn btn-sm btn-primary"><i class="far fa-file-alt"></i> {{trans('emergencia.Atencion')}}</a>
+                    <a href="{{route('hospital.formulario008_pdf', ['id' => $ho_s->id])}}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-download"></i> {{trans('emergencia.Formulario008')}}</a>
                   </td>
                 </tr>
                 @endforeach

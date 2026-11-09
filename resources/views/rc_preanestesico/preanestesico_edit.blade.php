@@ -2,6 +2,246 @@
 @section('action-content')
 
 <style type="text/css">
+    /* V3 visual layer: the legacy form markup and its field contracts stay intact. */
+    .content-wrapper { background: #eef6fa; }
+    .preanestesico-v3 {
+        --v3-navy: #0b4166;
+        --v3-blue: #087fbd;
+        --v3-cyan: #20b7c7;
+        --v3-ink: #123b5d;
+        --v3-muted: #67829a;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0 0 24px;
+        color: var(--v3-ink);
+    }
+
+    .preanestesico-v3 .v3-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 22px;
+        padding: 24px 28px;
+        border-radius: 14px;
+        color: #fff;
+        background: linear-gradient(110deg, var(--v3-navy), #087ea6 68%, #159f91);
+        box-shadow: 0 10px 24px rgba(11, 65, 102, .16);
+    }
+
+    .preanestesico-v3 .v3-hero h1 { margin: 0 0 6px; font-size: 25px; font-weight: 700; }
+    .preanestesico-v3 .v3-hero p { margin: 0; opacity: .9; font-size: 14px; }
+    .preanestesico-v3 .v3-hero-icon {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 54px; height: 54px; margin-right: 14px; border: 1px solid rgba(255,255,255,.35);
+        border-radius: 12px; background: rgba(255,255,255,.12); font-size: 25px;
+    }
+    .preanestesico-v3 .v3-hero-copy { display: flex; align-items: center; }
+    .preanestesico-v3 .v3-status {
+        min-width: 150px; padding: 10px 16px; border: 1px solid rgba(255,255,255,.35);
+        border-radius: 10px; text-align: center; font-size: 11px; text-transform: uppercase;
+        letter-spacing: .4px; background: rgba(255,255,255,.1);
+    }
+    .preanestesico-v3 .v3-status strong { display: block; margin-top: 4px; font-size: 14px; }
+    .preanestesico-v3 .v3-jump-nav {
+        position: sticky; top: 64px; z-index: 20; display: flex; align-items: center; gap: 8px;
+        margin: 0 0 20px; padding: 9px; overflow-x: auto; border: 1px solid #d5e5ed;
+        border-radius: 12px; background: rgba(255,255,255,.95); box-shadow: 0 6px 18px rgba(23,78,111,.07);
+        backdrop-filter: blur(8px);
+    }
+    .preanestesico-v3 .v3-jump-nav button {
+        display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 8px;
+        border: 0; color: #315b71; background: transparent; font-family: inherit; font-size: 12px;
+        font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer;
+    }
+    .preanestesico-v3 .v3-jump-nav button:hover, .preanestesico-v3 .v3-jump-nav button:focus {
+        color: #08799c; background: #eaf7f9; outline: 0;
+    }
+    .preanestesico-v3 .v3-section {
+        margin: 18px 0; padding: 20px; border: 1px solid #cde1ed; border-radius: 12px;
+        background: #fff; box-shadow: 0 5px 18px rgba(23, 78, 111, .07);
+        scroll-margin-top: 128px;
+    }
+    .content-wrapper > .w3-bar.w3-blue-light {
+        display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 28px;
+        border-bottom: 1px solid #cde1ed; background: #fff !important;
+    }
+    .content-wrapper > .w3-bar.w3-blue-light .btn {
+        padding: 10px 16px; border: 1px solid #b9d9e9; border-radius: 8px;
+        color: #123b5d !important; background: #fff !important; font-weight: 600;
+    }
+    .content-wrapper > .w3-bar.w3-blue-light .btn:first-child,
+    .content-wrapper > .w3-bar.w3-blue-light .btn:hover { color: #fff !important; border-color: #087fbd; background: #087fbd !important; }
+    .content-wrapper > .text-right { margin: 16px 28px 0 !important; }
+    .content-wrapper > .text-right .btn { padding: 9px 16px; border-radius: 8px; border: 0; background: #e85d67; }
+    .preanestesico-v3 #frm { margin: 18px 0; padding: 20px; border: 1px solid #cde1ed;
+        border-radius: 12px; background: #fff; box-shadow: 0 5px 18px rgba(23, 78, 111, .07);
+        scroll-margin-top: 128px; }
+    .preanestesico-v3 #frm { background: #f9fcfd; }
+    .preanestesico-v3 #tabla_diagnostico > table:first-child,
+    .preanestesico-v3 #tabla_indicacion > table, .preanestesico-v3 #tabla_examen > table { overflow: hidden; border-radius: 8px; }
+    .preanestesico-v3 #tabla_diagnostico input:disabled,.preanestesico-v3 #tabla_indicacion input:disabled,.preanestesico-v3 #tabla_examen input:disabled { color:#315b71; background:#f6fafc; opacity:1; }
+    .preanestesico-v3 .v3-section-title {
+        display: flex; align-items: center; gap: 9px; margin: -20px -20px 18px; padding: 14px 18px;
+        border-radius: 12px 12px 0 0; color: #fff; background: linear-gradient(100deg, var(--v3-navy), var(--v3-cyan));
+        font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .2px;
+    }
+    .preanestesico-v3 table { width: 100% !important; border: 0 !important; border-collapse: separate !important; border-spacing: 0 !important; }
+    .preanestesico-v3 td { border-color: #d7e7ef !important; color: var(--v3-ink); }
+    .preanestesico-v3 .bg-blue, .preanestesico-v3 .bg-purple, .preanestesico-v3 .bg-green {
+        color: #fff !important; background: linear-gradient(100deg, var(--v3-navy), var(--v3-cyan)) !important;
+    }
+    .preanestesico-v3 .bg-blue b, .preanestesico-v3 .bg-purple b, .preanestesico-v3 .bg-green b { color: #fff !important; }
+    .preanestesico-v3 input.form-control, .preanestesico-v3 select.form-control,
+    .preanestesico-v3 textarea.form-control, .preanestesico-v3 input:not([type="hidden"]),
+    .preanestesico-v3 select, .preanestesico-v3 textarea {
+        max-width: 100%; min-height: 38px; border: 1px solid #c9dce9; border-radius: 8px;
+        color: var(--v3-ink); background: #fff; box-shadow: none;
+    }
+    .preanestesico-v3 input:focus, .preanestesico-v3 select:focus, .preanestesico-v3 textarea:focus {
+        border-color: var(--v3-cyan); box-shadow: 0 0 0 3px rgba(32,183,199,.13); outline: 0;
+    }
+    .preanestesico-v3 label, .preanestesico-v3 b { color: var(--v3-ink); }
+    .preanestesico-v3 .btn { border-radius: 8px; font-weight: 600; }
+    .preanestesico-v3 .btn-primary { border-color: var(--v3-blue); background: var(--v3-blue); }
+    .preanestesico-v3 .btn-success, .preanestesico-v3 .bg-green { background: #1fc77a !important; border-color: #1fc77a !important; }
+    .preanestesico-v3 .btn-danger { background: #e85d67; border-color: #e85d67; }
+    .preanestesico-v3 .box-body { padding: 14px 0; }
+    .preanestesico-v3 #frm > table, .preanestesico-v3 #frm > div, .preanestesico-v3 #frm > .box-body { margin-bottom: 14px; }
+    .preanestesico-v3 > br, .preanestesico-v3 #frm > br { display: none; }
+    .preanestesico-v3 #frm > div[style*="display: flex"] {
+        align-items: center; flex-wrap: wrap; gap: 12px 16px !important; margin: 0 0 12px;
+        padding: 14px; border: 1px solid #e0edf3; border-radius: 10px; background: #fff;
+    }
+    .preanestesico-v3 #frm > div[style*="display: flex"] > div[style*="margin-right"] { display: none; }
+    .preanestesico-v3 #frm > div[style*="display: flex"] > label { flex: 0 1 190px; margin: 0; }
+    .preanestesico-v3 #frm > div[style*="display: flex"] > input,
+    .preanestesico-v3 #frm > div[style*="display: flex"] > select { flex: 1 1 190px; width: auto !important; }
+    .preanestesico-v3 #frm > div[style*="display: flex"] > .select2-container {
+        flex: 1 1 190px; width: auto !important; min-width: 190px;
+    }
+    .preanestesico-v3 #frm > div[style*="display: flex"] > .form-group {
+        flex: 1 1 360px; width: auto !important; margin: 0 !important; padding: 0 !important;
+    }
+    .preanestesico-v3 .v3-entry-row { display: flex; align-items: flex-end; gap: 12px; }
+    .preanestesico-v3 .v3-entry-row .v3-entry-control { flex: 1 1 auto; }
+    .preanestesico-v3 .v3-entry-row .btn { flex: 0 0 42px; min-height: 40px; }
+    .preanestesico-v3 .v3-helper { margin: -8px 0 16px; color: var(--v3-muted); font-size: 12px; }
+    .preanestesico-v3 .v3-hero-actions { display:flex; align-items:center; gap:12px; }
+    .preanestesico-v3 .v3-save-status {
+        display:inline-flex; align-items:center; gap:7px; min-width:104px; padding:9px 12px;
+        border:1px solid rgba(255,255,255,.3); border-radius:9px; color:#fff;
+        background:rgba(255,255,255,.1); font-size:12px; font-weight:700;
+    }
+    .preanestesico-v3 .v3-save-status.is-saving i { animation:v3-spin .8s linear infinite; }
+    .preanestesico-v3 .v3-save-status.is-error { border-color:#ffd5d8; color:#fff; background:#c94652; }
+    @keyframes v3-spin { to { transform:rotate(360deg); } }
+    .preanestesico-v3 .v3-jump-nav button.is-active { color:#08799c; background:#e4f5f8; }
+    .preanestesico-v3 .v3-summary-section { padding-bottom:16px; }
+    .preanestesico-v3 .v3-patient-grid {
+        display:grid; grid-template-columns:minmax(230px,1.2fr) minmax(150px,.65fr) minmax(300px,1.7fr) minmax(210px,1fr);
+        gap:10px;
+    }
+    .preanestesico-v3 .v3-summary-item {
+        display:flex; flex-direction:column; justify-content:center; min-height:74px; padding:12px 14px;
+        border:1px solid #d9e8ef; border-radius:10px; background:#f8fbfd;
+    }
+    .preanestesico-v3 .v3-summary-item span { margin-bottom:4px; color:var(--v3-muted); font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+    .preanestesico-v3 .v3-summary-item strong { color:var(--v3-ink); font-size:13px; line-height:1.35; }
+    .preanestesico-v3 .v3-summary-item small { margin-top:3px; color:var(--v3-muted); }
+    .preanestesico-v3 .v3-summary-item--alert { border-color:#f2b7bc; background:#fff3f4; }
+    .preanestesico-v3 .v3-summary-item--alert span,.preanestesico-v3 .v3-summary-item--alert strong { color:#a32e39; }
+    .preanestesico-v3 .v3-diagnosis-list { display:flex; align-items:center; gap:8px; margin-top:10px; padding:10px 12px; overflow-x:auto; border-top:1px solid #e2edf3; }
+    .preanestesico-v3 .v3-diagnosis-heading { flex:0 0 auto; color:var(--v3-muted); font-size:11px; font-weight:800; text-transform:uppercase; }
+    .preanestesico-v3 .v3-diagnosis-chip { flex:0 0 auto; padding:6px 9px; border:1px solid #cfe3ec; border-radius:999px; color:#315b71; background:#f1f8fb; font-size:11px; }
+    .preanestesico-v3 .v3-diagnosis-chip b { margin-right:5px; color:#08799c; }
+    .preanestesico-v3 .v3-form-block {
+        margin:12px 0; border:1px solid #d7e7ef; border-radius:11px; background:#fff; overflow:visible;
+        scroll-margin-top:128px;
+    }
+    .preanestesico-v3 .v3-form-block > summary {
+        display:flex; align-items:center; gap:11px; min-height:50px; padding:11px 15px; cursor:pointer;
+        color:#174761; background:#f2f8fa; font-weight:800; list-style:none; user-select:none;
+    }
+    .preanestesico-v3 .v3-form-block > summary::-webkit-details-marker { display:none; }
+    .preanestesico-v3 .v3-form-block > summary .v3-block-icon {
+        display:inline-flex; align-items:center; justify-content:center; flex:0 0 32px; width:32px; height:32px;
+        border-radius:8px; color:#087fbd; background:#dff2f6;
+    }
+    .preanestesico-v3 .v3-form-block > summary .v3-block-copy { display:flex; flex:1; flex-direction:column; min-width:0; }
+    .preanestesico-v3 .v3-form-block > summary small { margin-top:2px; color:#71899a; font-size:11px; font-weight:500; }
+    .preanestesico-v3 .v3-form-block > summary::after { content:none; }
+    .preanestesico-v3 .v3-form-block > summary .v3-block-chevron { flex:0 0 auto; color:#628094; font-size:11px; transition:transform .18s ease; }
+    .preanestesico-v3 .v3-form-block[open] > summary { border-bottom:1px solid #dceaf0; background:#eaf6f8; }
+    .preanestesico-v3 .v3-form-block[open] > summary .v3-block-chevron { transform:rotate(180deg); }
+    .preanestesico-v3 .v3-form-block-body { padding:16px; }
+    .preanestesico-v3 .v3-form-block-body > br { display:none; }
+    .preanestesico-v3 .v3-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px 16px; }
+    .preanestesico-v3 .v3-form-grid--3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .preanestesico-v3 .v3-field { min-width:0; }
+    .preanestesico-v3 .v3-field--wide { grid-column:1/-1; }
+    .preanestesico-v3 .v3-field label { display:block; margin:0 0 6px; color:#315b71; font-size:11px; font-weight:800; text-transform:uppercase; }
+    .preanestesico-v3 .v3-field input,.preanestesico-v3 .v3-field select,.preanestesico-v3 .v3-field textarea { width:100%!important; }
+    .preanestesico-v3 .v3-field textarea { min-height:86px; padding:10px 12px; resize:vertical; }
+    .preanestesico-v3 .v3-field--allergy input { border-color:#efb8bd; background:#fff8f8; }
+    .preanestesico-v3 .v3-pair-row {
+        display:grid!important; grid-template-columns:minmax(130px,.55fr) minmax(180px,1fr) minmax(130px,.55fr) minmax(180px,1fr);
+        align-items:center!important; gap:10px 14px!important; margin:0 0 12px!important; padding:0!important;
+        border:0!important; border-radius:0!important; background:transparent!important;
+    }
+    .preanestesico-v3 .v3-pair-row > label { margin:0; color:#315b71; font-size:11px; font-weight:800; text-transform:uppercase; }
+    .preanestesico-v3 .v3-pair-row > input,.preanestesico-v3 .v3-pair-row > select,.preanestesico-v3 .v3-pair-row > .select2-container { width:100%!important; min-width:0; }
+    .preanestesico-v3 .v3-pair-row > div[style*="margin-right"] { display:none; }
+    .preanestesico-v3 .v3-pair-row > .form-group { grid-column:span 2; width:auto!important; margin:0!important; padding:0!important; }
+    .preanestesico-v3 .v3-form-block-body > .box-body { padding:0; }
+    .preanestesico-v3 .v3-form-block-body > .box-body .form-group { width:100%; margin:0; padding:0; }
+    .preanestesico-v3 .v3-form-block-body > .box-body input { width:100%!important; }
+    .preanestesico-v3 .v3-form-block-body > table { margin:0 0 12px; }
+    .preanestesico-v3 .v3-action-label { display:inline; margin-left:6px; }
+    .preanestesico-v3 .v3-entry-row .btn { flex-basis:auto; padding:8px 14px; white-space:nowrap; }
+    .preanestesico-v3 #examen .form-group { margin-bottom:0; }
+    .preanestesico-v3 #examen .form-group:last-child { display:flex; align-items:flex-end; }
+    .preanestesico-v3 #examen .form-group:last-child .btn { width:100%; }
+    .preanestesico-v3 .v3-section-title,.preanestesico-v3 td.bg-blue,.preanestesico-v3 td.bg-purple,.preanestesico-v3 td.bg-green {
+        background:#0e6485!important;
+    }
+    .preanestesico-v3 hr { border-color: #e2edf3; }
+    .preanestesico-v3 .ui-autocomplete { z-index: 2000; }
+    .dark-mode .preanestesico-v3 { --v3-ink:#dcebf1; --v3-muted:#9db4bf; }
+    .dark-mode .preanestesico-v3 .v3-section, .dark-mode .preanestesico-v3 #frm,
+    .dark-mode .preanestesico-v3 .v3-jump-nav { border-color:#34515f; background:#172d38; box-shadow:none; }
+    .dark-mode .preanestesico-v3 #frm > div[style*="display: flex"] { border-color:#34515f; background:#203946; }
+    .dark-mode .preanestesico-v3 input:not([type="hidden"]), .dark-mode .preanestesico-v3 select,
+    .dark-mode .preanestesico-v3 textarea { border-color:#426171; color:#e4f0f4; background:#132934; }
+    .dark-mode .preanestesico-v3 .v3-jump-nav button { color:#cce0e8; }
+    .dark-mode .preanestesico-v3 .v3-summary-item,.dark-mode .preanestesico-v3 .v3-form-block { border-color:#34515f; background:#172d38; }
+    .dark-mode .preanestesico-v3 .v3-form-block > summary { color:#dcebf1; background:#203946; }
+    .dark-mode .preanestesico-v3 .v3-form-block[open] > summary { border-color:#34515f; background:#254653; }
+    @media (max-width: 768px) {
+        .content-wrapper > .w3-bar.w3-blue-light { flex-wrap: wrap; padding: 10px; }
+        .content-wrapper > .text-right { margin: 12px 10px 0 !important; }
+        .preanestesico-v3 { padding: 0 0 24px; }
+        .preanestesico-v3 .v3-hero { align-items: flex-start; flex-direction: column; padding: 18px; }
+        .preanestesico-v3 .v3-hero-actions { align-items:stretch; flex-direction:column; width:100%; }
+        .preanestesico-v3 .v3-status { width: 100%; }
+        .preanestesico-v3 .v3-jump-nav { position: static; }
+        .preanestesico-v3 .v3-section { padding: 12px; }
+        .preanestesico-v3 .v3-section-title { margin: -12px -12px 14px; }
+        .preanestesico-v3 table { display: block; overflow-x: auto; }
+        .preanestesico-v3 #frm > div[style*="display: flex"] { flex-wrap: wrap; gap: 8px !important; }
+        .preanestesico-v3 #frm > div[style*="display: flex"] label { width: 100%; margin-top: 8px; }
+        .preanestesico-v3 #frm > div[style*="display: flex"] select,
+        .preanestesico-v3 #frm > div[style*="display: flex"] input,
+        .preanestesico-v3 #frm > div[style*="display: flex"] > .select2-container { width: 100% !important; }
+        .preanestesico-v3 .v3-entry-row { align-items: stretch; flex-direction: column; }
+        .preanestesico-v3 .v3-entry-row .btn { width: 100%; }
+        .preanestesico-v3 .v3-patient-grid,.preanestesico-v3 .v3-form-grid,.preanestesico-v3 .v3-form-grid--3 { grid-template-columns:1fr; }
+        .preanestesico-v3 .v3-pair-row { grid-template-columns:1fr!important; }
+        .preanestesico-v3 .v3-pair-row > .form-group { grid-column:auto; }
+        .preanestesico-v3 .v3-field--wide { grid-column:auto; }
+    }
+
     .icheckbox_flat-orange.checked.disabled {
         background-position: -22px 0 !important;
         cursor: default;
@@ -101,119 +341,112 @@
 <?php
 //dd($pre_anestesico);
 
-$fechaNacimiento = new DateTime($pre_anestesico->anestesiologia->historia->paciente->fecha_nacimiento);
-$hoy = new DateTime();
-$edad = $hoy->diff($fechaNacimiento)->y;
+$fechaNacimientoValor = trim((string) optional($pre_anestesico->anestesiologia->historia->paciente)->fecha_nacimiento);
+$fechaNacimiento = null;
 
-$fechaNacimiento = new DateTime($pre_anestesico->anestesiologia->historia->paciente->fecha_nacimiento);
-$diaNacimiento = $fechaNacimiento->format('d');
+if ($fechaNacimientoValor !== '' && $fechaNacimientoValor !== '0000-00-00') {
+    try {
+        $fechaNacimiento = \Carbon\Carbon::parse($fechaNacimientoValor);
+        if ($fechaNacimiento->isFuture()) {
+            $fechaNacimiento = null;
+        }
+    } catch (\Throwable $exception) {
+        $fechaNacimiento = null;
+    }
+}
 
-$fechaNacimiento = new DateTime($pre_anestesico->anestesiologia->historia->paciente->fecha_nacimiento);
-$mesNacimiento = $fechaNacimiento->format('m');
+$edad = $fechaNacimiento ? $fechaNacimiento->age : '';
+$diaNacimiento = $fechaNacimiento ? $fechaNacimiento->format('d') : '';
+$mesNacimiento = $fechaNacimiento ? $fechaNacimiento->format('m') : '';
+
+$procedimientosPropuestos = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $hc_procedimiento->id)
+    ->with('procedimiento')
+    ->get()
+    ->map(function ($detalle) {
+        return optional($detalle->procedimiento)->nombre;
+    })
+    ->filter()
+    ->implode(' + ');
+
+$paciente = $pre_anestesico->anestesiologia->historia->paciente;
+$nombrePaciente = trim($paciente->apellido1 . ' ' . $paciente->apellido2 . ' ' . $paciente->nombre1 . ' ' . $paciente->nombre2);
+$sexoPaciente = $paciente->sexo == 1 ? 'Masculino' : 'Femenino';
+$alergiasPaciente = trim((string) $pre_anestesico->alergicos);
 
 ?>
 
 
-<section class="content">
+<section class="content preanestesico-v3">
 <input type="hidden" value="{{$pre_anestesico->id}}" name="id_pre" id="id_pre" />
 
-    <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-        <thead>
-            <tr>
-                <td colspan="14" style="font-size: 14px;" class="bg-blue"><b>A. DATOS DEL ESTABLECIMIENTO Y USUARIO / PACIENTE</b></td>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="bg-green text-center"><b>CEDULA</b></td>
-                <td class="bg-green text-center"><b>PRIMER APELLIDO</b></td>
-                <td class="bg-green text-center"><b>SEGUNDO APELLIDO</b></td>
-                <td class="bg-green text-center"><b>PRIMER NOMBRE</b></td>
-                <td class="bg-green text-center" style="width: 15%;"><b>SEGUNDO NOMBRE</b></td>
-                <td class="bg-green text-center"><b>SEXO</b></td>
-                <td class="bg-green text-center"><b>EDAD</b></td>
-            </tr>
-            <tr>
-                <td class="text-center" style="height: 20px;">{{$pre_anestesico->anestesiologia->historia->paciente->id}}</td>
-                <td class="text-center" style="height: 20px;">{{$pre_anestesico->anestesiologia->historia->paciente->apellido1}}</td>
-                <td class="text-center">{{$pre_anestesico->anestesiologia->historia->paciente->apellido2}}</td>
-                <td class="text-center">{{$pre_anestesico->anestesiologia->historia->paciente->nombre1}}</td>
-                <td class="text-center" >{{$pre_anestesico->anestesiologia->historia->paciente->nombre2}}</td>
-                <td class="text-center" >@if($pre_anestesico->anestesiologia->historia->paciente->sexo == 1) Masculino @else Femenino @endif</td>
-                <td class="text-center" >{{$edad}}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="v3-hero">
+        <div class="v3-hero-copy">
+            <span class="v3-hero-icon"><i class="fa fa-heartbeat" aria-hidden="true"></i></span>
+            <div>
+                <h1>Valoración preanestésica</h1>
+                <p>Evaluación clínica y preparación segura para el procedimiento</p>
+            </div>
+        </div>
+        <div class="v3-hero-actions">
+            <div class="v3-save-status is-saved" id="preanestesico-save-status" role="status" aria-live="polite">
+                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                <span>Guardado</span>
+            </div>
+            <div class="v3-status">Paciente<strong>{{ strtoupper(trim($paciente->apellido1 . ' ' . $paciente->nombre1)) }}</strong></div>
+        </div>
+    </div>
 
-    <br>
+    <nav class="v3-jump-nav" aria-label="Secciones de la valoración preanestésica">
+        <button type="button" data-scroll-target="resumen-clinico"><i class="fa fa-id-card-o" aria-hidden="true"></i> Resumen</button>
+        <button type="button" data-scroll-target="antecedentes-personales"><i class="fa fa-history" aria-hidden="true"></i> Antecedentes</button>
+        <button type="button" data-scroll-target="bloque-via-aerea"><i class="fa fa-stethoscope" aria-hidden="true"></i> Vía aérea</button>
+        <button type="button" data-scroll-target="bloque-examen-fisico"><i class="fa fa-user-md" aria-hidden="true"></i> Examen físico</button>
+        <button type="button" data-scroll-target="bloque-riesgos"><i class="fa fa-line-chart" aria-hidden="true"></i> Riesgos</button>
+        <button type="button" data-scroll-target="bloque-ayuno"><i class="fa fa-clock-o" aria-hidden="true"></i> Ayuno</button>
+        <button type="button" data-scroll-target="bloque-plan"><i class="fa fa-file-text-o" aria-hidden="true"></i> Plan</button>
+        <button type="button" data-scroll-target="seccion-indicaciones"><i class="fa fa-list-alt" aria-hidden="true"></i> Indicaciones</button>
+        <button type="button" data-scroll-target="seccion-examenes"><i class="fa fa-flask" aria-hidden="true"></i> Exámenes</button>
+    </nav>
 
-    <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-        <tbody>
-            <tr>
-                <td colspan="14" style="font-size: 14px;" class="bg-purple"><b>B. REGISTRO DE VALORACIÓN PREANESTÉSIA</b></td>
-            </tr>
-            <tr>
-                <td style="width: 2%;"></td>
-                <td class="text-center" colspan="7"><b> DIAGNOSTICOS </b></td>
-                <td class="text-center" colspan="7"> <b> Cie10 </b></td>
-            </tr>
-
-            @php
-            $cie10 = Sis_medico\Aud_Hc_Cie10::where('hc_id_procedimiento', $hc_procedimiento->id)->where('ingreso_egreso', 'INGRESO')->first();
-            @endphp
-            @if(!is_null($cie10))
+    <div class="v3-section v3-summary-section" id="resumen-clinico">
+        <div class="v3-section-title"><i class="fa fa-id-card-o" aria-hidden="true"></i> Resumen clínico</div>
+        <div class="v3-patient-grid">
+            <div class="v3-summary-item v3-summary-item--patient">
+                <span>Paciente</span>
+                <strong>{{ strtoupper($nombrePaciente) }}</strong>
+                <small>{{ $paciente->id }}</small>
+            </div>
+            <div class="v3-summary-item">
+                <span>Edad y sexo</span>
+                <strong>{{ $edad !== '' ? $edad . ' años' : 'Edad no registrada' }}</strong>
+                <small>{{ $sexoPaciente }}</small>
+            </div>
+            <div class="v3-summary-item v3-summary-item--procedure">
+                <span>Procedimiento propuesto</span>
+                <strong>{{ $procedimientosPropuestos !== '' ? $procedimientosPropuestos : 'No registrado' }}</strong>
+            </div>
+            <div class="v3-summary-item {{ $alergiasPaciente !== '' ? 'v3-summary-item--alert' : '' }}" id="resumen-alergias">
+                <span><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Alergias</span>
+                <strong>{{ $alergiasPaciente !== '' ? $alergiasPaciente : 'No registradas' }}</strong>
+            </div>
+        </div>
+        <div class="v3-diagnosis-list" aria-label="Diagnósticos registrados">
+            <span class="v3-diagnosis-heading">Diagnósticos</span>
+            @forelse($pre_anestesico->anestesiologia->historia->diagnosticos as $diagnostico)
                 @php
-                $c3 = Sis_medico\Cie_10_3::find($cie10->cie10);
-                $c4 = Sis_medico\Cie_10_4::find($cie10->cie10);
-                $texto = '';
-                if(!is_null($c3)){
-                $texto = $c3->descripcion;
-                $ciePre = $cie10->cie10;
-                }
-                if(!is_null($c4)){
-                $texto = $c4->descripcion;
-                $ciePre = $cie10->cie10;
-                }
-
+                    $c3 = Sis_medico\Cie_10_3::find($diagnostico->cie10);
+                    $c4 = Sis_medico\Cie_10_4::find($diagnostico->cie10);
+                    $descripcionDiagnostico = optional($c4)->descripcion ?: optional($c3)->descripcion ?: 'Diagnóstico sin descripción';
                 @endphp
-                <tr>
-                    <td class="text-center" style="width: 1%;">1</td>
-                    <td colspan="9">{{ $texto }}</td>
-                    <td colspan="4" class="text-center">
-                        {{ $ciePre }}
-                    </td>
-                </tr>
-            @endif
-                <td colspan="3" rowspan="2" style="width: 15%; height: 35px;" class="text-center"><b>PROCEDIMIENTOS/S PROPUESTO/S</b></td>
-                @php
-                    
-                        $adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $hc_procedimiento->id)->get();
-
-                        $mas = true;
-                        $texto = "";
-                        foreach($adicionales as $value2)
-                        {
-                            if($mas == true){
-                                $texto = $texto.$value2->procedimiento->nombre ;
-                                $mas = false;
-                            }
-                            else{
-                                $texto = $texto.' + '. $value2->procedimiento->nombre ;
-                            }
-                        }
-                    @endphp
-                <td colspan="11"> {{$texto}}</td>
-            </tr>
-            <!--tr>
-                <td colspan="11"></td>
-            </tr-->
-        </tbody>
-    </table>
-    <br>
-
-
-    <br>
-    <br>
+                <span class="v3-diagnosis-chip"><b>{{ $diagnostico->cie10 }}</b> {{ $descripcionDiagnostico }}</span>
+            @empty
+                <span class="v3-empty-state">No hay diagnósticos registrados.</span>
+            @endforelse
+        </div>
+    </div>
+    <div class="v3-section" id="antecedentes-personales">
+    <div class="v3-section-title"><i class="fa fa-history" aria-hidden="true"></i> Antecedentes patológicos personales</div>
+    <p class="v3-helper">Registre diagnósticos previos, su tiempo de evolución y el tratamiento recibido.</p>
     <div id="tabla_diagnostico">
     <table style="width: 100%;">
         <tbody>
@@ -240,6 +473,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <td style="text-align: center;">
                     <button class="btn btn-primary bg-green" id="boton_enviar" onclick="guardar();" type="button">
                         <i class="fa fa-plus" aria-hidden="true"></i>
+                        <span class="v3-action-label">Agregar antecedente</span>
                     </button>
                 </td>
             </tr>
@@ -278,67 +512,45 @@ $mesNacimiento = $fechaNacimiento->format('m');
         </tbody>
     </table>
     </div>
-    <br>
+    </div>
 
-
-    <br>
-
-    <form id="frm">
+    <form id="frm" class="v3-clinical-form">
+        <div class="v3-section-title"><i class="fa fa-stethoscope" aria-hidden="true"></i> Evaluación preanestésica</div>
+        <p class="v3-helper">Los cambios realizados en los campos clínicos se guardan automáticamente.</p>
 
         <input type="hidden" value="{{$id}}" name="id_cab" id="id_cab" />
-        
-        
 
-        <table style="width: 100%;">
-            <tbody>
-                <tr>
-                    <td><b> ANESTÉSICO </b></td>
-                </tr>
-                <tr>
-                    <td>
-                        <input style="width: 98%; height: 40px;" type="text" name="anestesico" id="anestesico" value="{{$pre_anestesico->anestesico}}" onchange="actualizar();">
-                    </td>
-                </tr>
-                <tr>
-                    <td><b> QUIRÚRGICOS </b></td>
-                </tr>
-                <tr>
-                    <td>
-                        <input style="width: 98%; height: 40px;" type="text" name="quirurgicos" id="quirurgicos" value="{{$pre_anestesico->quirurgicos}}" onchange="actualizar();">
-                    </td>
-                </tr>
-                <tr>
-                    <td><b> ALÉRGICOS </b></td>
-                </tr>
-                <tr>
-                    <td>
-                        <input style="width: 98%; height: 40px;" type="text" name="alergicos" id="alergicos" value="{{$pre_anestesico->alergicos}}" onchange="actualizar();">
-                    </td>
-                </tr>
-                <tr>
-                    <td><b> TRANSFUSIONES </b></td>
-                </tr>
-                <tr>
-                    <td>
-                        <input style="width: 98%; height: 40px;" type="text" name="transfusiones" id="transfusiones" value="{{$pre_anestesico->transfuciones}}" onchange="actualizar();">
-                    </td>
-                </tr>
-                <tr>
-                    <td><b> HÁBITOS </b></td>
-                </tr>
-                <tr>
-                    <td>
-                        <input style="width: 98%; height: 40px;" type="text" name="habitos" id="habitos" value="{{$pre_anestesico->habitos}}" onchange="actualizar();">
-                    </td>
-                </tr>
+        <details class="v3-form-block" id="bloque-antecedentes-clinicos" open>
+            <summary>
+                <span class="v3-block-icon"><i class="fa fa-history" aria-hidden="true"></i></span>
+                <span class="v3-block-copy">Antecedentes y contexto clínico<small>Antecedentes anestésicos, quirúrgicos, alergias y tipo de atención.</small></span>
+                <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="v3-form-block-body">
+                <div class="v3-form-grid">
+                    <div class="v3-field">
+                        <label for="anestesico">Antecedentes anestésicos</label>
+                        <input type="text" name="anestesico" id="anestesico" value="{{$pre_anestesico->anestesico}}" onchange="actualizar();">
+                    </div>
+                    <div class="v3-field">
+                        <label for="quirurgicos">Antecedentes quirúrgicos</label>
+                        <input type="text" name="quirurgicos" id="quirurgicos" value="{{$pre_anestesico->quirurgicos}}" onchange="actualizar();">
+                    </div>
+                    <div class="v3-field v3-field--allergy">
+                        <label for="alergicos"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Alergias</label>
+                        <input type="text" name="alergicos" id="alergicos" value="{{$pre_anestesico->alergicos}}" onchange="actualizar();">
+                    </div>
+                    <div class="v3-field">
+                        <label for="transfusiones">Transfusiones</label>
+                        <input type="text" name="transfusiones" id="transfusiones" value="{{$pre_anestesico->transfuciones}}" onchange="actualizar();">
+                    </div>
+                    <div class="v3-field v3-field--wide">
+                        <label for="habitos">Hábitos</label>
+                        <input type="text" name="habitos" id="habitos" value="{{$pre_anestesico->habitos}}" onchange="actualizar();">
+                    </div>
+                </div>
 
-            </tbody>
-
-        </table>
-        <br>
-
-
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <label>Tipo</label>
             <select style="width: 25%;" class="form-control input-sm" name="tipo" id="tipo" onchange="actualizar();">
                 <option value="">Seleccione</option>
@@ -357,10 +569,18 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <option {{$pre_anestesico->riesgo_quirurgico == 'ALTO' ? 'selected' : '' }} value="ALTO">ALTO</option>
             </select>
         </div>
+            </div>
+        </details>
 
-        <br>
+        <details class="v3-form-block" id="bloque-via-aerea" open>
+            <summary>
+                <span class="v3-block-icon"><i class="fa fa-stethoscope" aria-hidden="true"></i></span>
+                <span class="v3-block-copy">Evaluación de vía aérea<small>Mediciones y antecedentes relacionados con intubación difícil.</small></span>
+                <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="v3-form-block-body">
 
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <label>APERTURA BUCAL(cm) </label>
             <select style="width: 20%;" class="form-control input-sm" name="apertura" id="apertura" onchange="actualizar();">
                 <option value="">Seleccione</option>
@@ -386,7 +606,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <br>
 
 
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <label> MALLAMPATI </label>
             <select style="width: 20%;" class="form-control input-sm" name="mallampati" id="mallampati" onchange="actualizar();">
                 <option value="">Seleccione</option>
@@ -409,7 +629,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         </div>
         <br>
 
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <label>PERIMETRO CERVICAL(cm) </label>
             <select style="width: 20%;" class="form-control input-sm" name="perimetro" id="peimetro" onchange="actualizar();">
                 <option value="">Seleccione</option>
@@ -429,7 +649,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <br>
 
 
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <label>HISTORIA DEINTUBACIÓN DIFICIL </label>
             <select style="width: 20%;" class="form-control input-sm" name="historia" id="historia" onchange="actualizar();">
                 <option value="">Seleccione</option>
@@ -447,12 +667,18 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <option {{ $pre_anestesico->patologia == "NO" ? 'selected' : '' }} value="NO">NO</option>
             </select>
         </div>
-        <br>
-        <br>
+            </div>
+        </details>
 
+        <details class="v3-form-block" id="bloque-examen-fisico" open>
+            <summary>
+                <span class="v3-block-icon"><i class="fa fa-user-md" aria-hidden="true"></i></span>
+                <span class="v3-block-copy">Examen físico<small>Evaluación por sistemas y capacidad metabólica.</small></span>
+                <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="v3-form-block-body">
 
-
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <div class="form-group col-xs-6{{ $errors->has('torax') ? ' has-error' : '' }}">
                 <label for="torax" class="col-md-20 control-label">TÓRAX</label>
                 <input type="text" name="torax" id="torax" size="20" class="form-control" required value="{{$pre_anestesico->torax}}" onchange="actualizar();">
@@ -465,7 +691,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </div>
         </div>
         <br>
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <div class="form-group col-xs-6{{ $errors->has('pulmones') ? ' has-error' : '' }}">
                 <label for="pulmones" class="col-md-20 control-label">PULMONES</label>
                 <input type="text" name="pulmones" id="pulmones" size="20" class="form-control" required value="{{$pre_anestesico->pulmones}}" onchange="actualizar();">
@@ -477,7 +703,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </div>
         </div>
         <br>
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <div class="form-group col-xs-6{{ $errors->has('extremidades') ? ' has-error' : '' }}">
                 <label for="extremidades" class="col-md-20 control-label"> EXTREMIDADES</label>
                 <input type="text" name="extremidades" id="extremidades" size="20" class="form-control" required value="{{$pre_anestesico->extremidades}}" onchange="actualizar();">
@@ -496,19 +722,18 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <input type="text" name="equivalente" id="equivalente" size="20" class="form-control" value="{{$pre_anestesico->equivalente_metabolico}}" required onchange="actualizar();">
             </div>
         </div>
+            </div>
+        </details>
 
+        <details class="v3-form-block" id="bloque-riesgos" open>
+            <summary>
+                <span class="v3-block-icon"><i class="fa fa-line-chart" aria-hidden="true"></i></span>
+                <span class="v3-block-copy">Escalas y riesgos<small>Clasificación ASA y riesgos perioperatorios.</small></span>
+                <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="v3-form-block-body">
 
-
-        <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-            <tbody>
-                <tr>
-                    <td style="font-size: 12px;" class="bg-purple"><b>ESCALA E ÍNDICES</b></td>
-                </tr>
-            </tbody>
-        </table>
-        <br>
-
-        <div style="width: 100%; display: flex; gap: 10px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <label>ESTADO FISICO ASA </label>
             <select style="width: 20%;" class="form-control input-sm" name="estado_fisico" id="estado_fisico" onchange="actualizar();">
                 <option value="">Seleccione</option>
@@ -533,7 +758,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
 
-        <div style="width: 100%; display: flex; gap: 5px">
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 5px">
 
             <label for="riesgo_pulmonar" class="col-md-20 control-label">RIESGO PULMONAR</label>
             <input style="width: 35%;" type="text" name="riesgo_pulmonar" id="riesgo_pulmonar" size="20" class="form-control input-sm" value="{{$pre_anestesico->riesgo_pulmonar}}" required onchange="actualizar();">
@@ -545,16 +770,18 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         </div>
 
-        <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-            <tbody>
-                <tr>
-                    <td style="font-size: 12px;" class="bg-purple"><b>TIEMPO DE ULTIMA INGESTA</b></td>
-                </tr>
-            </tbody>
-        </table>
-        <br>
+            </div>
+        </details>
 
-        <div style="width: 100%; display: flex; gap: 5px">
+        <details class="v3-form-block" id="bloque-ayuno" open>
+            <summary>
+                <span class="v3-block-icon"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+                <span class="v3-block-copy">Tiempo de última ingesta<small>Registre los tiempos de ayuno por tipo de alimento.</small></span>
+                <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="v3-form-block-body">
+
+        <div class="v3-pair-row" style="width: 100%; display: flex; gap: 5px">
 
             <label for="liquidos_claros" class="col-md-20 control-label">LIQUIDOS CLAROS</label>
             <input style="width: 35%;" type="text" name="liquidos_claros" id="liquidos_claros" size="20" class="form-control input-sm" value="{{$pre_anestesico->liquidos_claros}}" required onchange="actualizar();">
@@ -572,23 +799,33 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <label for="solidos" class="col-md-20 control-label">SOLIDOS</label>
             <input style="width: 35%;" type="text" name="solidos" id="solidos" size="20" class="form-control input-sm" value="{{$pre_anestesico->solidos}}" required onchange="actualizar();">
         </div>
-        <br>
+            </div>
+        </details>
 
-        <div class="box-body">
+        <details class="v3-form-block" id="bloque-plan" open>
+            <summary>
+                <span class="v3-block-icon"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
+                <span class="v3-block-copy">Plan anestésico y observaciones<small>Conducta planificada e información clínica complementaria.</small></span>
+                <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="v3-form-block-body v3-form-grid">
+
+        <div class="v3-field v3-field--wide">
             <label for="plan_anestesico" class="col-md-20 control-label">PLAN ANESTÉSICO</label>
-            <input type="text" name="plan_anestesico" id="plan_anestesico" size="20" class="form-control input-sm" value="{{$pre_anestesico->plan_anestesico}}" required onchange="actualizar();">
-
+            <textarea name="plan_anestesico" id="plan_anestesico" class="form-control input-sm" required onchange="actualizar();">{{$pre_anestesico->plan_anestesico}}</textarea>
         </div>
-        <br>
 
-        <div class="box-body">
+        <div class="v3-field v3-field--wide">
             <label for="observaciones" class="col-md-20 control-label">OBSERVACIONES</label>
-            <input type="text" name="observaciones" id="observaciones" size="20" class="form-control input-sm" value="{{$pre_anestesico->observaciones}}" required onchange="actualizar();">
+            <textarea name="observaciones" id="observaciones" class="form-control input-sm" required onchange="actualizar();">{{$pre_anestesico->observaciones}}</textarea>
         </div>
+            </div>
+        </details>
 
     </form>
-    <br>
-
+    <div class="v3-section" id="seccion-indicaciones">
+    <div class="v3-section-title"><i class="fa fa-list-alt" aria-hidden="true"></i> Indicaciones</div>
+    <p class="v3-helper">Añada las instrucciones que deben cumplirse antes del procedimiento.</p>
     <table style="width: 100%;">
         <tbody>
             <tr>
@@ -596,10 +833,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </tr>
             <tr>
                 <td>
-                    <input style="width: 95%; height: 75px" type="text" name="indicaciones" id="indicaciones">
-                    <button class="btn btn-primary bg-green" id="indicaciones" onclick="guardar_indicaciones();" type="button">
-                        <i class="fa fa-plus" aria-hidden="true"></i>
-                    </button>
+                    <div class="v3-entry-row">
+                        <input class="v3-entry-control" type="text" name="indicaciones" id="indicaciones" aria-label="Nueva indicación">
+                        <button class="btn btn-primary bg-green" id="agregar-indicacion" onclick="guardar_indicaciones();" type="button" aria-label="Agregar indicación">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                            <span class="v3-action-label">Agregar indicación</span>
+                        </button>
+                    </div>
                 </td>
             </tr>
         </tbody>
@@ -629,9 +869,11 @@ $mesNacimiento = $fechaNacimiento->format('m');
         </tbody>
     </table>
     </div>
+    </div>
 
-    <br>
-
+    <div class="v3-section" id="seccion-examenes">
+    <div class="v3-section-title"><i class="fa fa-flask" aria-hidden="true"></i> Exámenes y resultados</div>
+    <p class="v3-helper">Busque el examen por nombre, registre el resultado y agréguelo al expediente.</p>
     <div class="box-body">
         <form id="examen" class="row">
             <input type="hidden" id="id_examen_buscador" />
@@ -639,17 +881,17 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <div class="form-group col-md-5{{ $errors->has('buscador') ? ' has-error' : '' }}">
                 <label for="buscador" class="control-label">Nombre Examen</label>
                 <div class="input-group">
-                    <input id="buscador" class="form-control input-sm" type="text" name="buscador" value="" required autofocus onchange="cargar_buscador();" style="background-color: #fff0e6;">
+                    <input id="buscador" class="form-control input-sm" type="text" name="buscador" value="" required placeholder="Buscar examen por nombre">
                     @if ($errors->has('buscador'))
                     <span class="help-block">
                         <strong>{{ $errors->first('buscador') }}</strong>
                     </span>
                     @endif
-                    <div class="input-group-addon">
-                        <i class="glyphicon glyphicon-remove-circle" onclick="document.getElementById('buscador').value = '';cargar_buscador()"></i>
-                    </div>
-                    <div class="input-group-addon">
-                        <i style="cursor: pointer" class="fa fa-search" aria-hidden="true"></i>
+                    <div class="input-group-append">
+                        <button class="btn btn-default" type="button" title="Limpiar examen" onclick="document.getElementById('buscador').value = ''; document.getElementById('id_examen_buscador').value = '';">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                        <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
                     </div>
                 </div>
             </div>
@@ -659,9 +901,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <input type="text" name="resultado" id="resultado" size="20" class="form-control" value="" required maxlength="255">
             </div>
 
-            <!--div class="form-group col-md-2">
-                <button type="button" class="btn btn-primary" onclick="agregarExamen()">Agregar</button>
-            </div-->
+            <div class="form-group col-md-2">
+                <button type="button" class="btn btn-primary" onclick="agregarExamen()"><i class="fa fa-plus" aria-hidden="true"></i> Agregar examen</button>
+            </div>
 
         </form>
     </div>
@@ -678,7 +920,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
                 <td>{{ $contador++ }}</td>
                 <td>
-                    <input style="width: 98%;" type="text" value="{{ $ex->nombre }} - @if(!is_null($ex->examen_parametro)) {{$ex->examen_parametro->nombre}} @endif" disabled>
+                    <input style="width: 98%;" type="text" value="{{ $ex->nombre }}" disabled>
                 </td>
                 <td>
                     <input style="width: 98%;" type="text" value="{{$ex->resultado}}" disabled>
@@ -694,6 +936,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         </tbody>
     </table>
         </div>
+    </div>
 
 
 
@@ -704,6 +947,65 @@ $mesNacimiento = $fechaNacimiento->format('m');
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="{{ asset ('/js/jquery-ui.js')}}"></script>
     <script>
+        var jumpButtons = document.querySelectorAll('.v3-jump-nav [data-scroll-target]');
+
+        jumpButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var target = document.getElementById(button.getAttribute('data-scroll-target'));
+
+                if (target) {
+                    if (target.tagName === 'DETAILS') {
+                        target.open = true;
+                    } else {
+                        var parentDetails = target.closest('details');
+                        if (parentDetails) parentDetails.open = true;
+                    }
+
+                    jumpButtons.forEach(function (item) { item.classList.remove('is-active'); });
+                    button.classList.add('is-active');
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        if ('IntersectionObserver' in window) {
+            var jumpObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+
+                    jumpButtons.forEach(function (button) {
+                        button.classList.toggle('is-active', button.getAttribute('data-scroll-target') === entry.target.id);
+                    });
+                });
+            }, { rootMargin: '-145px 0px -65% 0px', threshold: 0 });
+
+            jumpButtons.forEach(function (button) {
+                var observedTarget = document.getElementById(button.getAttribute('data-scroll-target'));
+                if (observedTarget) jumpObserver.observe(observedTarget);
+            });
+        }
+
+        function actualizarEstadoGuardado(estado) {
+            var status = document.getElementById('preanestesico-save-status');
+            if (!status) return;
+
+            var icon = status.querySelector('i');
+            var label = status.querySelector('span');
+            status.classList.remove('is-saving', 'is-saved', 'is-error');
+            status.classList.add('is-' + estado);
+
+            if (estado === 'saving') {
+                icon.className = 'fa fa-circle-o-notch';
+                label.textContent = 'Guardando...';
+            } else if (estado === 'error') {
+                icon.className = 'fa fa-exclamation-circle';
+                label.textContent = 'Error al guardar';
+            } else {
+                icon.className = 'fa fa-check-circle';
+                label.textContent = 'Guardado';
+            }
+        }
+
         function guardar() {
 
             $.ajax({
@@ -764,7 +1066,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         function actualizar() {
 
-            //alert("ok");
+            actualizarEstadoGuardado('saving');
             $.ajax({
                 type: 'post',
                 url: "{{route('formato.rc_preanestesico_update')}}",
@@ -775,12 +1077,17 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 datatype: 'json',
                 data: $("#frm").serialize(),
                 success: function(data) {
-                    //console.log(data);
-                    //alert(data);
+                    actualizarEstadoGuardado('saved');
 
+                    var allergySummary = document.getElementById('resumen-alergias');
+                    var allergyValue = document.getElementById('alergicos').value.trim();
+                    if (allergySummary) {
+                        allergySummary.classList.toggle('v3-summary-item--alert', allergyValue !== '');
+                        allergySummary.querySelector('strong').textContent = allergyValue || 'No registradas';
+                    }
                 },
                 error: function(data) {
-
+                    actualizarEstadoGuardado('error');
                 }
             });
         }
@@ -837,7 +1144,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
-                        //window.location.reload();
+                        $('#buscador, #resultado, #id_examen_buscador').val('');
                         tabla_examen();
                     }
 
@@ -894,9 +1201,8 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
-                        //window.location.reload();
+                        $('#indicaciones').val('');
                         tabla_indicacion();
-                        $('#indicaciones').val("");
                     }
                     
 

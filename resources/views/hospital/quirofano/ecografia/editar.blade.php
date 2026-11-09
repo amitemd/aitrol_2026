@@ -254,8 +254,9 @@
         $('input[type="checkbox"].flat-orange').on('ifChecked', function(event){
 
             $.ajax({
-              type: 'get',
+              type: 'post',
               url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '1']) }}",
+              data: {'_token': '{{ csrf_token() }}'},
 
 
               datatype: 'json',
@@ -275,8 +276,9 @@
         $('input[type="checkbox"].flat-orange').on('ifUnchecked', function(event){
 
             $.ajax({
-              type: 'get',
+              type: 'post',
               url:"{{ route('protocolo_training.crear_training', ['training' => $dr_training->id,'protocolo' => $protocolo->id, 'n' => '0']) }}",
+              data: {'_token': '{{ csrf_token() }}'},
 
 
               datatype: 'json',

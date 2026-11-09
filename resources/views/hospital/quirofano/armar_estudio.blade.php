@@ -348,7 +348,7 @@
 						                                            	$extension == "TIF" )
 									                                <div  class="col-sm-4 col-12" >
 										                                    <label class="image-checkbox{{$value->id_protocolo}}" onclick="seleccion_imagen({{$imagen->id}})" style=" min-width: 110px; min-height: 70px">
-										                                        <img src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="100%" >
+										                                        <img src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="100%" >
 										                                        <input   type="checkbox" name="image[]" value="{{$imagen->id}}" @if($imagen->seleccionado == 1){{"checked"}} @endif/>
 										                                    </label>
 																			 
@@ -678,7 +678,7 @@ function cargar_imagenes_paciente(){
 	<?php foreach ($procedimientos2 as $value): ?>
 		$('#recortar_todas_1{{$value->id_protocolo}}').on('click', function(event, value){
 	        $.ajax({
-	            url:"{{route('seleccionar_todas.recortar', ['id_protocolo' => $value->id_protocolo])}}",
+	            url:"{{route('seleccionar_todas.recortar', ['id_paciente' => $value->id_protocolo])}}",
 	            dataType: "json",
 	            type: 'get',
 	            success: function(data){
@@ -697,7 +697,7 @@ function cargar_imagenes_paciente(){
 	<?php foreach ($procedimientos1 as $value): ?>
 		    $('#recortar_todas_2{{$value->id_protocolo}}').on('click', function(event, value){
 	        $.ajax({
-	            url:"{{route('seleccionar_todas.recortar', ['id_protocolo' => $value->id_protocolo])}}",
+	            url:"{{route('seleccionar_todas.recortar', ['id_paciente' => $value->id_protocolo])}}",
 	            dataType: "json",
 	            type: 'get',
 	            success: function(data){

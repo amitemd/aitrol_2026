@@ -50,7 +50,7 @@
                     </table>
                     <div class="w3-bar w3-blue">
                         
-                        <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('procedimientos_historia.mostrar',['id' => $agenda->id])}}'">PROCEDIMIENTOS</button>
+                        <button class="w3-bar-item w3-button tablink w3-red" onclick="location.href = '{{route('procedimientos_historia.mostrar',['ag' => $agenda->id])}}'">PROCEDIMIENTOS</button>
                         <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('preparacion.mostrar',['id' => $agenda->id])}}'">PREPARACIÓN</button>
                         <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('cardiologia.mostrar',['id' => $agenda->id])}}'">CARDIOLOGIA</button>
                         <button class="w3-bar-item w3-button tablink" onclick="location.href = '{{route('receta.mostrar',['id' => $agenda->id])}}'">RECETA</button>
@@ -90,7 +90,7 @@
                                               <td >{{ $value->procedimiento_completo->nombre_general}}</td>
                                               <td>
                                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <a  href="{{ route('anestesiologia.mostrar', ['id' => $value->id]) }}" class="btn btn-warning col-md-6 col-xs-6 btn-margin">
+                                                    <a  href="{{ route('anestesiologia.mostrar', ['ag' => $value->id]) }}" class="btn btn-warning col-md-6 col-xs-6 btn-margin">
                                                     Ingresar Informacion
                                                     </a>
                                                     <button  onclick="confirmardatos('{{$value->id}}')" class="btn btn-danger col-md-6 col-xs-6 btn-margin">
@@ -131,7 +131,13 @@
     function confirmardatos(id) {
         var r = confirm("Esta Seguro que desea eliminar el procedimiento");
         if (r == true) {
-            window.location.href = "{{route('procedimientos_hc.eliminar')}}/"+id;
+            $.ajax({
+                type: 'DELETE',
+                url: "{{route('procedimientos_hc.eliminar')}}/"+id,
+                data: {'_token': '{{ csrf_token() }}'},
+                success: function(){ location.reload(); },
+                error: function(){ alert('No fue posible eliminar el procedimiento.'); }
+            });
         } 
     }
     $(document).ready(function() {

@@ -13,13 +13,20 @@ use Sis_medico\hc_protocolo;
 use Sis_medico\Historiaclinica;
 use Sis_medico\Ho_Solicitud;
 use Sis_medico\Opcion_Usuario;
+use Sis_medico\Services\DicomConverter;
 class ImagenesController extends Controller
 {
-    public function __construct()
+    private $dicomConverter;
+
+    public function __construct(DicomConverter $dicomConverter)
     {
+        $this->dicomConverter = $dicomConverter;
         $this->middleware('auth');
     }
-    private function rol_new($opcion){ 
+    private function rol_new($opcion){
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion',$opcion)->where('id_tipo_usuario',$rolUsuario)->first();
         if(is_null($opcion_usuario)){
@@ -35,10 +42,14 @@ class ImagenesController extends Controller
 
     public function viewImagenes($id_solicitud){
         $ho_solicitud = Ho_Solicitud::find($id_solicitud);
+        abort_if(is_null($ho_solicitud), 404, 'No se encontró la solicitud hospitalaria.');
         $agenda = agenda::find($ho_solicitud->id_agenda);
-        $hclinica = Historiaclinica::where('id_agenda',$agenda->id)->first();
-        $hc_protocolo = hc_protocolo::where('hcid',$hclinica->hcid)->first();
-        $imagenes = hc_imagenes_protocolo::where('id_hc_protocolo',$hc_protocolo->id)->orderBy('id','desc')->get();
+        $hclinica = $agenda ? Historiaclinica::where('id_agenda',$agenda->id)->first() : null;
+        if (is_null($hclinica)) {
+            $hclinica = Historiaclinica::where('id_paciente', $ho_solicitud->id_paciente)->orderBy('created_at', 'desc')->first();
+        }
+        $hc_protocolo = $hclinica ? hc_protocolo::where('hcid',$hclinica->hcid)->first() : null;
+        $imagenes = $hc_protocolo ? hc_imagenes_protocolo::where('id_hc_protocolo',$hc_protocolo->id)->orderBy('id','desc')->get() : collect();
         return view('hospital/imagenes/index', ['id_solicitud' => $id_solicitud, 'imagenes' => $imagenes]);
     }
 
@@ -182,11 +193,8 @@ class ImagenesController extends Controller
             //ingresar la foto
             Storage::disk('hc_ima')->put($fileName, \File::get($file));
             if ($extension == 'dcm') {
-                $ubicacion = public_path() . '/storage/app/hc_ima/';
                 $fileName2 = 'hc_ima_' . $id_paciente . '_' . $idhc . '_' . date('Ymd') . '_' . $id_archivo . '.jpg';
-                $original  = base64_encode($fileName);
-                $final     = base64_encode($fileName2);
-                $restante  = json_decode(file_get_contents(asset('../storage/app/hc_ima/dicom.php?original=') . $original . '&final=' . $final), true);
+                $this->dicomConverter->convert($fileName, $fileName2);
                 $fileName  = $fileName2;
             }
             //ACTUALIZAR LOS DATOS

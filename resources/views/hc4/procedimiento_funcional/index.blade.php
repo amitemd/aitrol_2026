@@ -145,8 +145,149 @@
     }
 
     .btn_agregar_diag{
-    	color: white;
-    	background-color: green;
+        color: white;
+        background-color: green;
+    }
+
+    .hc4-evolution-section-header,
+    .hc4-evolution-item-header {
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    .hc4-evolution-section-header {
+        grid-template-columns: minmax(170px, 210px) minmax(0, 1fr) 48px;
+        min-height: 76px;
+        padding: 10px 14px !important;
+        color: #fff !important;
+        background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+        border-bottom: 0 !important;
+    }
+
+    .hc4-evolution-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 8px 12px;
+        border: 1px solid rgba(255,255,255,.4);
+        border-radius: 9px;
+        color: #fff;
+        background: rgba(255,255,255,.13);
+        font-family: 'Helvetica general3';
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.15;
+        white-space: nowrap;
+    }
+
+    .hc4-evolution-add img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+    }
+
+    .hc4-evolution-section-title,
+    .hc4-evolution-item-title {
+        min-width: 0;
+        text-align: center;
+        font-family: 'Helvetica general3';
+        font-weight: 700;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .hc4-evolution-section-title {
+        font-size: 16px;
+        color: #fff;
+    }
+
+    .hc4-evolution-collapse {
+        position: static !important;
+        float: none !important;
+        justify-self: end;
+        margin: 0 !important;
+    }
+
+    .hc4-evolution-collapse .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        margin: 0 !important;
+        border-radius: 9px;
+    }
+
+    .hc4-evolution-item-header {
+        grid-template-columns: 96px minmax(0, 1fr) 96px;
+        min-height: 60px;
+        padding: 8px 14px !important;
+        color: #fff !important;
+        background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+        border-bottom: 0 !important;
+    }
+
+    .hc4-evolution-item-header .hc4-functional-action-wrap,
+    .hc4-evolution-item-header .hc4-endoscopy-action-wrap {
+        position: static !important;
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+    }
+
+    .hc4-evolution-item-header .hc4-functional-inline-action,
+    .hc4-evolution-item-header .hc4-endoscopy-inline-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-width: 82px;
+        min-height: 36px;
+        padding: 7px 10px;
+        border: 1px solid rgba(255,255,255,.38);
+        border-radius: 8px;
+        color: #fff !important;
+        background: rgba(255,255,255,.13) !important;
+        white-space: nowrap;
+    }
+
+    .hc4-evolution-item-title {
+        grid-column: 2;
+        font-size: 14px;
+        color: #fff;
+    }
+
+    .hc4-evolution-item-spacer {
+        width: 82px;
+    }
+
+    @media (max-width: 640px) {
+        .hc4-evolution-section-header {
+            grid-template-columns: minmax(130px, 165px) minmax(0, 1fr) 44px;
+            gap: 8px;
+            padding: 9px !important;
+        }
+
+        .hc4-evolution-section-title {
+            font-size: 13px;
+        }
+
+        .hc4-evolution-add {
+            white-space: normal;
+        }
+
+        .hc4-evolution-item-header {
+            grid-template-columns: 86px minmax(0, 1fr) 86px;
+            gap: 8px;
+        }
     }
 </style>
 @php
@@ -166,27 +307,28 @@
 </div>
 
 
-<div id="area_index_pf" class="container-fluid" style="padding-left: 5px">
-	<div class="row">
-		<div class="col-12" style="padding-left: 0px;padding-right: 9px;margin-left: 5px;margin-right: 0px;">
-			<div class="col-12" style="border: 2px solid #004AC1; margin-left: 0px;margin-right: 0px;margin-left: 4px;padding-right: 0px;padding-left: 0px; background-color: #56ABE3">
-				<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004ac1; ">
-				  	<div class="row">
-					  	<div class="col-md-9 col-sm-8 col-12">
-						     <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
+
+<div id="area_index_pf" class="container-fluid hc4-functional-view" style="padding-left: 5px">
+		<div class="row">
+			<div class="col-12" style="padding-left: 0px;padding-right: 9px;margin-left: 5px;margin-right: 0px;">
+				<div class="col-12 hc4-functional-shell" style="border: 2px solid #004AC1; margin-left: 0px;margin-right: 0px;margin-left: 4px;padding-right: 0px;padding-left: 0px; background-color: #56ABE3">
+					<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004ac1; ">
+            <div class="row hc4-functional-header-row">
+            <div class="col-md-9 col-sm-8 col-12 hc4-functional-title-wrap">
+							     <h1 class="hc4-functional-title" style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
 				            	<img style="width: 35px; margin-left: 5px; margin-bottom: 5px; margin-right: 5px" src="{{asset('/')}}hc4/img/iconos/procedimientos_funcionales.png">
-				             	<b>PROCEDIMIENTOS FUNCIONALES</b>
+							<b>@lang('hc4.procedimientosFuncionales-')</b>
 				            </h1>
 						</div>
-						<div class="col-md-3 col-sm-4 col-12" style="padding-left: 0px">
-						    <div style="margin-bottom: 5px;text-align: left; margin-left: 10px">
-								<a class="btn btn-primary btn-block" style="color: white;padding-left: 0px;padding-right: 0px; border: 2px solid white;" onClick="agregar_procedimiento_funcional();" >
+							<div class="col-md-3 col-sm-4 col-12 hc4-functional-add-wrap" style="padding-left: 0px">
+							    <div style="margin-bottom: 5px;text-align: left; margin-left: 10px">
+									<a class="btn btn-primary btn-block hc4-functional-add" style="color: white;padding-left: 0px;padding-right: 0px; border: 2px solid white;" onClick="agregar_procedimiento_funcional();" >
 					                <div class="row" style="margin-left: 0px; margin-right: 0px; ">
 										<div class="col-2" style="margin-right: 0px; text-align: center; height: 20px; font-size: 10px;padding-left: 0px;padding-right: 0px;" >
 											<img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
 										</div>
 						            	<div class="col-9" style="padding-left: 0px;padding-right: 0px;">
-						            		<label style="font-size: 10px">AGREGAR PROCEDIMIENTO</label>
+									<label style="font-size: 10px">@lang('hc4.agregarProcedimiento')</label>
 						            	</div>
 									</div>
 								</a>
@@ -196,17 +338,18 @@
 					@if(!is_null($paciente))
 						<center>
 						    <div class="col-12" style="padding-top: 15px">
-								<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-						            <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
+									<h1 class="hc4-functional-patient" style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
+						    <b>@lang('hc4.paciente') : {{$paciente->apellido1}} {{$paciente->apellido2}}
 						            	{{$paciente->nombre1}} {{$paciente->nombre2}}
 					                </b>
 								</h1>
 							</div>
 			            </center>
-		            @endif
-  				</div>
+					@endif
+				</div>
+				<div id="hc4-functional-selector-slot" style="display:none;"></div>
 
-			    <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px"  >
+				    <div class="hc4-functional-list-shell" style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px"  >
 
 				    <div class="parent" id="style-1"  style="margin-left: 0px;   margin-bottom: 10px ; height: 450px " >
 				    	<div style=" margin-right: 30px;" >
@@ -277,13 +420,12 @@
 					  				}
 					  				$contador2 = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', 1)->orderBy('secuencia', 'DESC')->count();
 					  				if($contador2 == 0){
-										$cuadro_clinico ="PACIENTE EGRESA ESTABLE HEMODINAMICAMENTE LUEGO DE LA REALIZACION DE ESTUDIOS FUNCIONALES. PACIENTE EVOLUCIONA FAVORABLEMENTE DESPUES DEL PROCEDIMIENTO. SE MANTIENE ESTABLE HEMODINAMICAMENTE. CLINICAMENTE BIEN. SE DA DE ALTA, SE EXPLICAN LOS RESULTADOS A PACIENTE Y ACOMPAÑANTE.";
 						                $input = [
 						                    'hc_id_procedimiento' => $value->id_procedimiento,
 						                    'hcid' => $value->id_hc,
 						                    'motivo' => 'Evolucion Post-Operatoria',
 						                    'secuencia' => 1,
-						                    'cuadro_clinico' => $cuadro_clinico,
+						                    'cuadro_clinico' => ' ',
 						                    'fecha_ingreso' => ' ',
 						                    'ip_creacion' => $ip_cliente,
 						                    'ip_modificacion' => $ip_cliente,
@@ -294,7 +436,7 @@
 					  				}
 					  			@endphp
 						    	<div class="col-12" style="padding-left: 0px; padding-right: 0px">
-						    		<div class="box collapse-box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
+            <div class="box collapsed-box hc4-functional-record" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
 										<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
 											@php
 						  						$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_procedimiento)->get();
@@ -319,7 +461,7 @@
 
 	  						                   //dd($hc_seguro);
 	  					                    @endphp
-										    <div class="row">
+											    <div class="row hc4-functional-summary">
 										    	<div class="col-4">
 												    @if(!is_null($value->f_operacion))
 								                        @php
@@ -405,23 +547,14 @@
 
 										  				<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
 										  					<div class="row">
-											  					<div class="col-3" >
-											    					<div class="btn" style="color: white">
-													    				<a class="fa fa-pencil-square-o "  onclick="editar_procedimiento_funcional({{$value->id_procedimiento}}, '{{$paciente->id}}');"><span style="font-size: 13px">&nbsp;Editar</span>
-													    				</a>
-												    				</div>
-											    				</div>
-											  					<div class="col-6" style="text-align: center">
+            <div class="col-3 hc4-functional-action-wrap" >
+            <button type="button" class="btn hc4-functional-inline-action" onclick="editar_procedimiento_funcional({{$value->id_procedimiento}}, '{{$paciente->id}}');">
+            <i class="fa fa-pencil-square-o"></i><span>Editar</span>
+            </button>
+            </div>
+											  					<div class="col-8" style="text-align: center">
 											  						<span >Detalles del Procedimientos</span>
 											  					</div>
-											  					
-											  					<div class="col-3" >
-											    					<div class="btn" style="color: white">
-													    				<a class="glyphicon glyphicon-file" onclick="crear_receta_fun('{{$paciente->id}}', {{$value->id_hc}});"><span style="font-size: 13px">&nbsp;Crear Receta</span>
-													    				</a>
-												    				</div>
-											    				</div>
-											    				
 										  					</div>
 										  				</div>
 										  				<div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="procedimiento{{$value->id_procedimiento}}">
@@ -478,24 +611,14 @@
 										  		</div>
 										  		<div class="col-12" style="padding-top: 15px">
 										  			<div class="box box-primary " style=" border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-										  				<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-										  					<div class="row">
-										  						<div class="col-md-3 col-sm-3 col-4">
-											  						<a class="btn btn-info btn-block" style="color: white; width: 100%; height: 100%; padding-left: 0px;padding-right: 0px; border: 2px solid white;" onClick="agregar_evolucion({{$value->id_procedimiento}});" >
-														                <div class="row" style="margin-left: 0px; margin-right: 0px; ">
-															            	<div class="col-12" style="padding-left: 5px;padding-right: 5px;">
-															            		<img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
-															            		<label style="font-size: 10px; ">AGREGAR EVOLUCION</label>
-															            	</div>
-																		</div>
-																	</a>
-											  					</div>
-											  					<div class="col-md-6 col-sm-6 col-7" style="padding-left: 5px">
-											  						<span> <b>Historial de Evoluciones del Procedimiento</b></span>
-											  					</div>
-										  					</div>
-														    <div class="pull-right box-tools">
-										                        <button style="margin-top: 8px"   type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
+<div class="box-header with-border hc4-evolution-section-header">
+															<button type="button" class="hc4-evolution-add" onclick="agregar_evolucion({{$value->id_procedimiento}});">
+																<img src="{{asset('/')}}hc4/img/iconos/agregar.png" alt="">
+																<span>AGREGAR EVOLUCIÓN</span>
+															</button>
+															<div class="hc4-evolution-section-title">HISTORIAL DE EVOLUCIONES DEL PROCEDIMIENTO</div>
+															<div class="box-tools hc4-evolution-collapse">
+										                        <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="Expandir o contraer">
 										                            <i class="fa fa-plus"></i></button>
 										                    </div>
 														    <!-- /.box-tools -->
@@ -505,19 +628,15 @@
 										  						$evoluciones = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->orderBy('secuencia', 'DESC')->get();
 										  					@endphp
 										  					@foreach($evoluciones as $evolucion)
-										  					<div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
-												  				<div class="box-header with-border" style="background-color: #004AC1; color: white;  font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-												  					<div class="row">
-												  						<div class="col-2" style="margin-right: 10px" >
-													    					<div class="btn" style="color: white">
-															    				<a class="fa fa-pencil-square-o "  onclick="editar_evolucion({{$evolucion->id}}, '{{$paciente->id}}');" ><span style="font-size: 13px">&nbsp;Editar</span>
-															    				</a>
-														    				</div>
-													    				</div>
-													    				<div class="col-9" style="text-align: center;">
-													  						<span style="padding-top: 5px;">Detalles de la Evolucion</span>
-													  					</div>
-												  					</div>
+<div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
+<div class="box-header with-border hc4-evolution-item-header">
+            <div class="hc4-functional-action-wrap">
+            <button type="button" class="btn hc4-functional-inline-action" onclick="editar_evolucion({{$evolucion->id}}, '{{$paciente->id}}');">
+            <i class="fa fa-pencil-square-o"></i><span>Editar</span>
+            </button>
+            </div>
+<div class="hc4-evolution-item-title">DETALLES DE LA EVOLUCIÓN</div>
+<div class="hc4-evolution-item-spacer" aria-hidden="true"></div>
 												  				</div>
 												  				<div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="evolucion{{$evolucion->id}}">
 													  				<div class="row">
@@ -853,7 +972,7 @@
 								                                                        $variable = explode('/' , asset('/hc_ima/'));
 								                                                        $d1 = $variable[3];
 								                                                        $d2 = $variable[4];
-								                                                       
+								                                                        
 
 								                                                    @endphp
 								                                                    <div class="row">
@@ -1004,13 +1123,12 @@
 					  				}
 					  				$contador2 = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->where('secuencia', 1)->orderBy('secuencia', 'DESC')->count();
 					  				if($contador2 == 0){
-										$cuadro_clinico ="PACIENTE EGRESA ESTABLE HEMODINAMICAMENTE LUEGO DE LA REALIZACION DE ESTUDIOS FUNCIONALES. PACIENTE EVOLUCIONA FAVORABLEMENTE DESPUES DEL PROCEDIMIENTO. SE MANTIENE ESTABLE HEMODINAMICAMENTE. CLINICAMENTE BIEN. SE DA DE ALTA, SE EXPLICAN LOS RESULTADOS A PACIENTE Y ACOMPAÑANTE.";
 						                $input = [
 						                    'hc_id_procedimiento' => $value->id_procedimiento,
 						                    'hcid' => $value->id_hc,
 						                    'motivo' => 'Evolucion Post-Operatoria',
 						                    'secuencia' => 1,
-						                    'cuadro_clinico' => $cuadro_clinico,
+						                    'cuadro_clinico' => ' ',
 						                    'fecha_ingreso' => ' ',
 						                    'ip_creacion' => $ip_cliente,
 						                    'ip_modificacion' => $ip_cliente,
@@ -1021,9 +1139,9 @@
 					  				}
 					  			@endphp
 						    	<div class="col-12" style="padding-left: 0px; padding-right: 0px">
-						    		<div class="box collapsed-box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
+            <div class="box collapsed-box hc4-functional-record" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
 										<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-											<div class="row">
+											<div class="row hc4-functional-summary">
 												<div class="col-4">
 												    @if(!is_null($value->f_operacion))
 								                        @php
@@ -1109,12 +1227,11 @@
 
 										  				<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
 										  					<div class="row">
-											  					<div class="col-3" >
-											    					<div class="btn" style="color: white">
-													    				<a class="fa fa-pencil-square-o "  onclick="editar_procedimiento_funcional({{$value->id_procedimiento}}, '{{$paciente->id}}');" ><span style="font-size: 13px">&nbsp;Editar</span>
-													    				</a>
-												    				</div>
-											    				</div>
+            <div class="col-3 hc4-functional-action-wrap" >
+            <button type="button" class="btn hc4-functional-inline-action" onclick="editar_procedimiento_funcional({{$value->id_procedimiento}}, '{{$paciente->id}}');">
+            <i class="fa fa-pencil-square-o"></i><span>Editar</span>
+            </button>
+            </div>
 											    				<div class="col-8" style="text-align: center">
 											  					  <span style="padding-top: 8px">Detalles del Procedimientos</span>
 											  				    </div>
@@ -1179,24 +1296,14 @@
 
 										  		<div class="col-12" style="padding-top: 15px">
 										  			<div class="box box-primary " style=" border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-										  				<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-										  					<div class="row">
-										  						<div class="col-md-3 col-sm-3 col-4">
-											  						<a class="btn btn-info btn-block" style="color: white; width: 100%; height: 100%; padding-left: 0px;padding-right: 0px; border: 2px solid white;" onClick="agregar_evolucion({{$value->id_procedimiento}});" >
-														                <div class="row" style="margin-left: 0px; margin-right: 0px; ">
-															            	<div class="col-12" style="padding-left: 5px;padding-right: 5px;">
-															            		<img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
-															            		<label style="font-size: 10px; ">AGREGAR EVOLUCION</label>
-															            	</div>
-																		</div>
-																	</a>
-											  					</div>
-											  					<div class="col-md-6 col-sm-6 col-7" style="padding-left: 5px">
-											  						<span> <b>Historial de Evoluciones del Procedimiento</b></span>
-											  					</div>
-										  					</div>
-														    <div class="pull-right box-tools">
-										                        <button style="margin-top: 8px"   type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
+<div class="box-header with-border hc4-evolution-section-header">
+															<button type="button" class="hc4-evolution-add" onclick="agregar_evolucion({{$value->id_procedimiento}});">
+																<img src="{{asset('/')}}hc4/img/iconos/agregar.png" alt="">
+																<span>AGREGAR EVOLUCIÓN</span>
+															</button>
+															<div class="hc4-evolution-section-title">HISTORIAL DE EVOLUCIONES DEL PROCEDIMIENTO</div>
+															<div class="box-tools hc4-evolution-collapse">
+										                        <button type="button" class="btn btn-info btn-sm" data-widget="collapse" title="Expandir o contraer">
 										                            <i class="fa fa-plus"></i></button>
 										                    </div>
 														    <!-- /.box-tools -->
@@ -1206,19 +1313,15 @@
 										  						$evoluciones = \Sis_medico\Hc_Evolucion::where('hc_id_procedimiento', $value->id_procedimiento)->orderBy('secuencia', 'DESC')->get();
 										  					@endphp
 										  					@foreach($evoluciones as $evolucion)
-										  					<div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
-												  				<div class="box-header with-border" style="background-color: #004AC1; color: white;  font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-												  					<div class="row">
-												  						<div class="col-2" style="margin-right: 10px" >
-													    					<div class="btn" style="color: white">
-															    				<a class="fa fa-pencil-square-o "  onclick="editar_evolucion({{$evolucion->id}}, '{{$paciente->id}}');" ><span style="font-size: 13px">&nbsp;Editar</span>
-															    				</a>
-														    				</div>
-													    				</div>
-													    				<div class="col-9" style="text-align: center;">
-													  						<span style="padding-top: 5px;">Detalles de la Evolucion</span>
-													  					</div>
-												  					</div>
+<div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
+<div class="box-header with-border hc4-evolution-item-header">
+            <div class="hc4-functional-action-wrap">
+            <button type="button" class="btn hc4-functional-inline-action" onclick="editar_evolucion({{$evolucion->id}}, '{{$paciente->id}}');">
+            <i class="fa fa-pencil-square-o"></i><span>Editar</span>
+            </button>
+            </div>
+<div class="hc4-evolution-item-title">DETALLES DE LA EVOLUCIÓN</div>
+<div class="hc4-evolution-item-spacer" aria-hidden="true"></div>
 												  				</div>
 												  				<div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="evolucion{{$evolucion->id}}">
 													  				<div class="row">
@@ -1586,16 +1689,31 @@
 </div>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="{{ asset ("/js/jquery-ui.js")}}"></script>
-<script type="text/javascript">
-	function editar_evolucion(id, id_paciente){
+	<script type="text/javascript">
+		function activar_detalle_funcional(){
+			if(typeof hc4NavegacionClinica !== 'undefined'){
+				hc4NavegacionClinica.proximoNivel = 'detalle';
+				hc4NavegacionClinica.nivelActual = 'detalle';
+			}
+
+			$('.hc4-patient-detail-page')
+				.removeClass('hc4-clinical-list')
+				.addClass('hc4-clinical-detail');
+		}
+
+		function editar_evolucion(id, id_paciente){
+			activar_detalle_funcional();
     	var entra = id;
 			$.ajax({
 			type: "GET",
 			url: "{{route('editar.procedimiento_evolucion')}}/"+id+'/'+id_paciente,
 			data: "",
 			datatype: "html",
-			success: function(datahtml, entra){
-				$("#evolucion"+id).html(datahtml);
+				success: function(datahtml, entra){
+					$("#evolucion"+id).html(datahtml);
+					if(typeof activarVistaClinica === 'function'){
+						activarVistaClinica();
+					}
 			},
 			error:  function(){
 				alert('error al cargar');
@@ -1605,9 +1723,9 @@
 	function agregar_evolucion(id, id_evolucion){
     	var entra = id;
 		$.ajax({
-			type: "GET",
+			type: "POST",
 			url: "{{route('agregar.procedimiento_evolucion')}}/"+id,
-			data: "",
+			data: {'_token': '{{ csrf_token() }}'},
 			datatype: "html",
 			success: function(datahtml, entra){
 				anterior  = $("#evolucion_agregar"+id).html();
@@ -1632,15 +1750,19 @@
       }
     };
 
-	function editar_procedimiento_funcional(id, id_paciente){
+		function editar_procedimiento_funcional(id, id_paciente){
+			activar_detalle_funcional();
     	var entra = id;
 			$.ajax({
 			type: "GET",
 			url: "{{route('editar.procedimiento_funcional')}}/"+id+'/'+id_paciente,
 			data: "",
 			datatype: "html",
-			success: function(datahtml, entra){
-				$("#procedimiento"+id).html(datahtml);
+				success: function(datahtml, entra){
+					$("#procedimiento"+id).html(datahtml);
+					if(typeof activarVistaClinica === 'function'){
+						activarVistaClinica();
+					}
 			},
 			error:  function(){
 				alert('error al cargar');
@@ -1649,14 +1771,20 @@
 	}
 
 	function agregar_procedimiento_funcional(){
-    	//alert("agregar");
-    	contador = parseInt($('#contador_funcionales').val());
+		//alert("agregar");
+		var $selectorSlot = $('#hc4-functional-selector-slot');
+		if ($selectorSlot.children().length) {
+			$selectorSlot.stop(true, true).slideToggle(160);
+			return;
+		}
+
+		contador = parseInt($('#contador_funcionales').val());
     	hc_endoscopico = parseInt($('#id_endoscopico').val());
     	hc_funcional = parseInt($('#id_funcional').val());
     	if(contador>0){
 	    	agregar_procedimiento_hc('funcional_id');
         }else if (hc_funcional >0) {
-        	url_datos = "{{asset('/procedimiento2/selecciona2/')}}/1/{{$paciente->id}}/"+hc_funcional;
+            url_datos = "{{asset('/procedimiento2/selecciona2/')}}/1/{{$paciente->id}}/"+hc_funcional;
         	agregar_procedimiento_tipo(url_datos);
         }else if (hc_endoscopico >0) {
         	url_datos = "{{asset('/procedimiento2/selecciona2/')}}/1/{{$paciente->id}}/"+hc_endoscopico;
@@ -1670,10 +1798,10 @@
 				data: "",
 				datatype: "html",
 				success: function(datahtml){
-					$("#area_trabajo").html(datahtml);
+					$selectorSlot.hide().html(datahtml).slideDown(160);
 				},
 				error:  function(){
-					alert('error al cargar');
+					$selectorSlot.html('<div class="alert alert-danger" style="margin:12px;">No se pudo cargar el selector.</div>').show();
 				}
 			});
         }
@@ -1735,8 +1863,9 @@
         document.getElementById("tdiagnostico"+id).deleteRow(i);
 
         $.ajax({
-          type: 'get',
+          type: 'delete',
           url:"{{url('cie10/eliminar')}}/"+id_h,  //epicrisis.eliminar
+          data: {'_token': '{{ csrf_token() }}'},
           datatype: 'json',
 
           success: function(data){
@@ -1833,21 +1962,6 @@
 
                 }
         })
-    } 
-    function crear_receta_fun(id_paciente, id_hc){
-		$.ajax({
-			type: "GET",
-			url:"{{url('inicio/nueva/recetas/funcional')}}/"+id_paciente+"/"+id_hc,
-			data: "",
-			datatype: "html",
-			success: function(datahtml){
-				scroll_datos("#area_trabajo");
-				$("#area_trabajo").html(datahtml);
-			},
-			error:  function(){
-				alert('error al cargar');
-			}
-		});
     }
 </script>
 

@@ -10,7 +10,7 @@ $fecha = date("Y-m-d");
                 <div class="d-flex align-items-center col-md-12">
                    <span class="sradio">5</span>
                     <h4 class="card-title ml-25 colorbasic">
-                        {{trans('pasos.EnfermedadActualyRevisiondeSistemas')}}
+                        {{trans('pasos.EnfermedadActualyRevisióndeSistemas')}}
                     </h4>
                 </div>
             </div>

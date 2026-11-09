@@ -1,7 +1,9 @@
 <style type="text/css">
     .parent{
-	  	overflow-y:scroll;
-     	height: 600px;
+		overflow-y:auto;
+		overflow-x:hidden;
+		max-height:600px;
+		min-height:0;
 	}
 	.parent::-webkit-scrollbar {
 	    width: 8px;
@@ -28,65 +30,362 @@
 	      background-color: none;
 	}
 
+	#area_trabajo .hc4-image-orders > .hc4-image-orders__header {
+		display: grid !important;
+		grid-template-areas: "title patient action";
+		grid-template-columns: minmax(260px, 1fr) minmax(380px, 1.4fr) auto;
+		align-items: center;
+		gap: 18px;
+		min-height: 86px;
+		padding: 14px 20px !important;
+		background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+	}
+
+	#area_trabajo .hc4-image-orders__header::before,
+	#area_trabajo .hc4-image-orders__header::after,
+	#area_trabajo .hc4-image-order-summary::before,
+	#area_trabajo .hc4-image-order-summary::after,
+	#area_trabajo .hc4-image-order-detail__header::before,
+	#area_trabajo .hc4-image-order-detail__header::after {
+		display: none !important;
+		content: none !important;
+	}
+
+	.hc4-image-orders__title {
+		grid-area: title;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		font-size: 16px;
+		font-weight: 700;
+		line-height: 1.25;
+	}
+
+	.hc4-image-orders__title-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 40px;
+		width: 40px;
+		height: 40px;
+		border: 1px solid rgba(255,255,255,.35);
+		border-radius: 10px;
+		background: rgba(255,255,255,.12);
+		font-size: 18px;
+	}
+
+	#area_trabajo .hc4-image-orders__action {
+		grid-area: action;
+		justify-self: end;
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		width: max-content !important;
+		max-width: 290px;
+		height: auto !important;
+		min-height: 40px;
+		margin: 0 !important;
+		padding: 8px 13px !important;
+		border: 1px solid rgba(255,255,255,.38) !important;
+		border-radius: 9px !important;
+		background: rgba(255,255,255,.13) !important;
+		color: #fff !important;
+		box-shadow: none !important;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.2;
+		white-space: nowrap;
+		cursor: pointer;
+		appearance: none;
+	}
+
+	#area_trabajo .hc4-image-orders__action:hover,
+	#area_trabajo .hc4-image-orders__action:focus {
+		background: rgba(255,255,255,.23) !important;
+		color: #fff !important;
+		text-decoration: none;
+	}
+
+	#area_trabajo .hc4-image-orders__action img {
+		position: static !important;
+		width: 19px !important;
+		height: 19px !important;
+		margin: 0 !important;
+	}
+
+	.hc4-image-orders__patient {
+		grid-area: patient;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 18px;
+		min-width: 0;
+		font-size: 14px;
+		line-height: 1.35;
+	}
+
+	.hc4-image-orders__patient-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.hc4-image-orders__age {
+		flex: 0 0 auto;
+		white-space: nowrap;
+	}
+
+	.hc4-image-orders__empty {
+		padding: 32px 18px;
+		border: 1px dashed #b9d8e3;
+		border-radius: 11px;
+		background: #fff;
+		color: #587080;
+		font-size: 14px;
+		text-align: center;
+	}
+
+	.hc4-image-order-card {
+		overflow: hidden;
+		margin-bottom: 18px !important;
+		border: 1px solid #1aa4b0 !important;
+		border-radius: 15px !important;
+		background: #fff !important;
+		box-shadow: 0 8px 22px rgba(5,84,126,.09);
+	}
+
+	#area_trabajo .hc4-image-order-card > .hc4-image-order-summary {
+		display: grid !important;
+		grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) minmax(360px, 1.25fr);
+		align-items: center;
+		gap: 18px;
+		min-height: 72px;
+		padding: 12px 18px !important;
+		background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+		color: #fff !important;
+	}
+
+	.hc4-image-order-summary__date,
+	.hc4-image-order-summary__doctor,
+	.hc4-image-order-summary__procedures {
+		min-width: 0;
+		font-size: 13px;
+		line-height: 1.4;
+	}
+
+	.hc4-image-order-summary__doctor { text-align: center; }
+
+	.hc4-image-order-summary__procedures span {
+		display: block;
+		overflow: hidden;
+		margin-top: 3px;
+		color: #fff;
+		font-size: 11px;
+		font-weight: 400;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.hc4-image-order-summary__tools {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+	}
+
+	.hc4-image-order-summary__right {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 14px;
+		min-width: 0;
+	}
+
+	.hc4-image-order-summary__right .hc4-image-order-summary__procedures {
+		min-width: 0;
+		text-align: right;
+	}
+
+	.hc4-image-order-summary__id {
+		padding: 7px 10px;
+		border-radius: 8px;
+		background: rgba(0,61,105,.25);
+		font-size: 12px;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	#area_trabajo .hc4-image-order-summary__toggle {
+		width: 38px !important;
+		height: 38px !important;
+		min-height: 38px !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: 1px solid rgba(255,255,255,.4) !important;
+		border-radius: 9px !important;
+		background: rgba(255,255,255,.13) !important;
+		color: #fff !important;
+	}
+
+	.hc4-image-order-card > .box-body { padding: 18px !important; }
+
+	.hc4-image-order-detail {
+		overflow: hidden;
+		margin: 0 !important;
+		border: 1px solid #25a7b4 !important;
+		border-radius: 13px !important;
+		background: #fff !important;
+	}
+
+	#area_trabajo .hc4-image-order-detail > .hc4-image-order-detail__header {
+		display: grid !important;
+		grid-template-columns: minmax(150px, 1fr) minmax(220px, 2fr) minmax(180px, 1fr);
+		align-items: center;
+		gap: 14px;
+		min-height: 64px;
+		padding: 10px 16px !important;
+		background: linear-gradient(105deg, #07547e 0%, #087eae 68%, #16aaa5 100%) !important;
+		color: #fff !important;
+	}
+
+	.hc4-image-order-detail__title {
+		text-align: center;
+		font-size: 16px;
+		font-weight: 700;
+	}
+
+	.hc4-image-order-detail__action--right { text-align: right; }
+
+	#area_trabajo .hc4-image-order-detail__button {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		width: auto !important;
+		height: auto !important;
+		min-height: 40px;
+		margin: 0 !important;
+		padding: 8px 13px !important;
+		border: 1px solid rgba(255,255,255,.42) !important;
+		border-radius: 9px !important;
+		background: rgba(255,255,255,.13) !important;
+		color: #fff !important;
+		box-shadow: none !important;
+		font-size: 13px;
+		line-height: 1.2 !important;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+
+	#area_trabajo .hc4-image-order-detail__button:hover,
+	#area_trabajo .hc4-image-order-detail__button:focus {
+		background: rgba(255,255,255,.24) !important;
+		color: #fff !important;
+		text-decoration: none;
+	}
+
+	#area_trabajo .hc4-image-order-detail__button > i {
+		position: static !important;
+		display: inline-block !important;
+		width: auto !important;
+		height: auto !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		background: transparent !important;
+		font-size: 15px !important;
+	}
+
+	@media (max-width: 1100px) {
+		#area_trabajo .hc4-image-orders > .hc4-image-orders__header {
+			grid-template-areas: "title action" "patient patient";
+			grid-template-columns: 1fr auto;
+		}
+		.hc4-image-orders__patient {
+			grid-column: 1 / -1;
+			justify-content: flex-start;
+		}
+		#area_trabajo .hc4-image-order-card > .hc4-image-order-summary {
+			grid-template-columns: 1fr 1fr;
+		}
+		.hc4-image-order-summary__right { grid-column: 1 / -1; }
+	}
+
+	@media (max-width: 700px) {
+		#area_trabajo .hc4-image-orders > .hc4-image-orders__header {
+			display: flex !important;
+			flex-direction: column;
+			align-items: stretch;
+		}
+		#area_trabajo .hc4-image-orders__action { width: 100% !important; }
+		.hc4-image-orders__patient {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 5px;
+		}
+		.hc4-image-orders__patient-name { white-space: normal; }
+		#area_trabajo .hc4-image-order-card > .hc4-image-order-summary,
+		#area_trabajo .hc4-image-order-detail > .hc4-image-order-detail__header {
+			display: flex !important;
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.hc4-image-order-summary__procedures span { white-space: normal; }
+		.hc4-image-order-summary__right {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+		.hc4-image-order-summary__right .hc4-image-order-summary__procedures { text-align: left; }
+		.hc4-image-order-detail__title { text-align: left; }
+		.hc4-image-order-detail__action--right { text-align: left; }
+		#area_trabajo .hc4-image-order-detail__button { width: 100% !important; }
+	}
+
 </style>
 
-<div class="box " style="border: 2px solid #004AC1; background-color: white;">
-	<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-		<div class="row">
-			<div class="col-md-8 col-sm-8 col-12">
-			    <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;padding-top: 10px">
-                    <b>HISTORIAL ORDENES DE IMAGENES</b>
-				</h1>   
-		    </div>
-		    <div class="col-md-4 col-sm-4 col-12" style="padding-left: 0px">
-			    <div style="margin-bottom: 5px;text-align: left; margin-left: 5px; margin-right: 5px">
-					<a class="btn btn-info btn-block" style="color: white;padding-left: 0px;padding-right: 0px; border: 2px solid white; margin-left: 10px" onClick="agregar_orden_proimagenes('{{$paciente->id}}');">
-		                <div class="row" style="margin-left: 0px; margin-right: 0px; ">
-			            	<div class="col-12" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-			            		<img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
-			            		<label style="font-size: 10px">AGREGAR ORDEN PROCEDIMIENTO</label>
-			            	</div>
-						</div>
-					</a>
-				</div>
-	        </div>
+@php
+	$xedad = isset($edad) ? (int) $edad : 0;
+@endphp
+<div class="box hc4-image-orders" style="background-color: white;">
+	<div class="box-header with-border hc4-image-orders__header">
+		<div class="hc4-image-orders__title">
+			<span class="hc4-image-orders__title-icon"><i class="fa fa-picture-o" aria-hidden="true"></i></span>
+			<span>@lang('hc4.historialOrdenesImagenes')</span>
 		</div>
+		<button type="button" class="hc4-image-orders__action" onClick="agregar_orden_proimagenes('{{$paciente->id}}');">
+			<img src="{{asset('/')}}hc4/img/iconos/agregar.png" alt="">
+			<span>@lang('hc4.agregarOrdenProcedimiento')</span>
+		</button>
 		@if(!is_null($paciente))
-			@php
-	   			$xedad = Carbon\Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age; 
-			@endphp 
-		<div class="row">	
-			<div class="col-md-9" style="padding-top: 15px">
-				<center>
-				<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			        <b>PACIENTE : {{$paciente->apellido1}} @if($paciente->apellido2!='(N/A)'){{$paciente->apellido2}}@endif 
-			        	{{$paciente->nombre1}} @if($paciente->nombre2!='(N/A)'){{$paciente->nombre2}}@endif
-	                </b>
-				</h1>
-				</center>
-		    </div>
-		    <div class="col-md-3" style="padding-top: 15px">
-				<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			        <b>
-			        	EDAD: {{$xedad}} AÑOS
-	                </b>
-				</h1>
-		    </div> 
-		</div>	
-	    @endif        
+			<div class="hc4-image-orders__patient">
+				<div class="hc4-image-orders__patient-name">
+					<strong>@lang('hc4.paciente'):</strong>
+					{{$paciente->apellido1}} @if($paciente->apellido2!='(N/A)'){{$paciente->apellido2}}@endif
+					{{$paciente->nombre1}} @if($paciente->nombre2!='(N/A)'){{$paciente->nombre2}}@endif
+				</div>
+				<div class="hc4-image-orders__age"><strong>@lang('hc4.edad'):</strong> {{$xedad}} @lang('hc4.anios')</div>
+			</div>
+		@endif
 	</div>
 	<div class="box-body" style="background-color: #56ABE3;">
         <div class="col-md-12">
 	      	<div class="row parent">
-	      		<div class="col-md-12" id="nueva_orden" style="padding: 0">
-            	</div>
-	            @foreach($listado_ordImagenes as $ordimag)
+				<div class="col-md-12" id="nueva_orden" style="padding: 0">
+				</div>
+				@if(count($listado_ordImagenes) === 0)
+					<div class="col-md-12">
+						<div class="hc4-image-orders__empty">No existen órdenes de imágenes registradas para este paciente.</div>
+					</div>
+				@endif
+		            @foreach($listado_ordImagenes as $ordimag)
 
 	                @php  $seguro = Sis_medico\Seguro::find($paciente->id_seguro); @endphp
-		            
+
 		            <div class="col-md-12">
-		            	@php
-		   	  			    if(!is_null($ordimag->fecha_orden)){
+					@php
+						$fecha_r = null;
+						$xdoctor = null;
+						if(!is_null($ordimag->fecha_orden)){
 				    		   $fecha_r =  Date('Y-m-d',strtotime($ordimag->fecha_orden));
 				    	    }
 
@@ -100,38 +399,30 @@
 			                $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0]; 
 						@endphp
 						@php
-	  		                if(!is_null($ordimag->id)){
-   	  			  				$procedimiento_orden_tipo = \Sis_medico\Orden_Tipo::where('id_orden', $ordimag->id)->where('id_grupo_procedimiento','20')
-                                ->first();
-   	  			            }
+							$procedimiento_orden_tipo = null;
+							if (!is_null($ordimag->id)) {
+								$procedimiento_orden_tipo = \Sis_medico\Orden_Tipo::where('id_orden', $ordimag->id)
+									->where('id_grupo_procedimiento', '20')
+									->first();
+							}
 
-                            $texto = ""; 
-   	  			            if(!is_null($procedimiento_orden_tipo)){ 
+							$nombresProcedimientos = [];
+							if (!is_null($procedimiento_orden_tipo)) {
+								$procedimiento_orden_proced = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo', $procedimiento_orden_tipo->id)->get();
 
-   	  			                $procedimiento_orden_proced = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo', $procedimiento_orden_tipo->id)->get();
+								foreach ($procedimiento_orden_proced as $value2) {
+									$nombre_procedimiento = \Sis_medico\Procedimiento::find($value2->id_procedimiento);
+									if (!is_null($nombre_procedimiento)) {
+										$nombresProcedimientos[] = $nombre_procedimiento->nombre;
+									}
+								}
+							}
 
-	 	                        $mas = true;
-	 	                        foreach($procedimiento_orden_proced as $value2)
-          		                {
-          		                  	$nombre_procedimiento = \Sis_medico\Procedimiento::where('id', $value2->id_procedimiento)->first();
-
-                                    if($mas == true){
-		  							 $texto = $nombre_procedimiento->nombre;
-		  							 $mas = false; 
-                                    }
-  							        else{
-  						  	         $texto = $texto.' + '.$nombre_procedimiento->nombre;
-  						  	        }
-
-  						  	    }
-
-                            }
-                        
-                        @endphp
-						<div class="box @if($fecha_r != date('Y-m-d')) collapsed-box @endif" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px;">
-							<div class="box-header with-border" style="background-color: white; color: black;font-family: 'Helvetica general3';border-bottom: #004AC1;">
-								<div class="row">
-									<div class="col-md-5">
+							$texto = implode(' + ', $nombresProcedimientos);
+						@endphp
+						<div class="box hc4-image-order-card @if($fecha_r != date('Y-m-d')) collapsed-box @endif">
+							<div class="box-header with-border hc4-image-order-summary">
+								<div class="hc4-image-order-summary__date">
                                         @if(!is_null($ordimag->fecha_orden))
                                             @php 
 					                         $dia =  Date('N',strtotime($ordimag->fecha_orden)); 
@@ -163,50 +454,41 @@
 	                                        del {{substr($ordimag->fecha_orden,0,4)}}</b>  
                                         @endif
 		                            </div>
-		                            <div class="col-md-5">
-		                            	<div>
-											<span style="font-family: 'Helvetica general'; font-size: 12px">Dr (a):</span> 
-											<span style="font-size: 12px">@if(!is_null($xdoctor->nombre1)) {{$xdoctor->nombre1}} {{$xdoctor->apellido1}} @endif</span>
-									    </div>
+		                            <div class="hc4-image-order-summary__doctor">
+									<strong>Dr (a):</strong>
+									@if(!is_null($xdoctor)) {{$xdoctor->nombre1}} {{$xdoctor->apellido1}} @else No asignado @endif
                                     </div>
-                                    <div class="col-md-1" style="color: white"> 
-						                  @if(!is_null($ordimag->id)) 
-						                    {{$ordimag->id}}
-						                  @endif
-                                    </div>
-                                    <div class="pull-right box-tools" style="padding-top: 4px;">
-			                        	<button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-			                            <i class="fa fa-plus"></i></button>
-		                    	    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                  	   <span style="font-family: 'Helvetica general'; font-size: 12px">Procedimientos:</span>
+                                    <div class="hc4-image-order-summary__right">
+									<div class="hc4-image-order-summary__procedures">
+										<strong>Procedimientos:</strong>
+										<span>{{trim($texto) !== '' ? $texto : 'Sin procedimientos seleccionados'}}</span>
 									</div>
-                                    <div class="col-md-12">
-                                  	   <span style="font-size: 10px;margin-right: 5px;border-radius: 2px;" class="badge badge-primary">@if(!is_null($texto)) {{$texto}} @endif</span>
-                                    </div>
-                                </div>
+									<div class="hc4-image-order-summary__tools box-tools">
+										<span class="hc4-image-order-summary__id">Orden #{{$ordimag->id}}</span>
+										<button type="button" class="btn btn-sm hc4-image-order-summary__toggle" data-widget="collapse" title="Mostrar u ocultar orden">
+											<i class="fa fa-plus"></i>
+										</button>
+									</div>
+								</div>
                             </div>
                             <div class="box-body" style="background: white;">
                                 <div class="col-md-12 col-sm-12 col-12" style="padding-left: 10px; padding-right: 5px; margin-bottom: 5px">
-	                            	<div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
-                                        <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-						  					<div class="row">
-							  					<div class="col-3" style="margin-right: 10px">
-							    					<div class="btn" style="color: white">
-									    				<a class="fa fa-pencil-square-o " onclick="editar_orden_proimagenes({{$ordimag->id}},'{{$paciente->id}}');"><span style="font-size: 13px">&nbsp;Editar</span>
-									    				</a>
-								    				</div>
-							    				</div>
-							    				<div class="col-4" style="text-align: center"> 
-							  						<span >Detalle de Orden</span>
-							  					</div>
-							  					<div class="col-4" style="text-align: right;padding-top: 6px">
-									               <a class="btn btn-danger" onclick="descargar_orden_imagenes({{$ordimag->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Orden</a>
-									            </div>
-                                            </div>
-						  		        </div>
+								<div class="box hc4-image-order-detail">
+                                        <div class="box-header with-border hc4-image-order-detail__header">
+										<div>
+											<button type="button" class="hc4-image-order-detail__button" onclick="editar_orden_proimagenes({{$ordimag->id}},'{{$paciente->id}}');">
+												<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+												<span>@lang('hc4.editar')</span>
+											</button>
+										</div>
+										<div class="hc4-image-order-detail__title">@lang('hc4.detalleOrden')</div>
+										<div class="hc4-image-order-detail__action--right">
+											<button type="button" class="hc4-image-order-detail__button" onclick="descargar_orden_imagenes({{$ordimag->id}});">
+												<i class="glyphicon glyphicon-download-alt" aria-hidden="true"></i>
+												<span>@lang('hc4.descargarOrden')</span>
+											</button>
+										</div>
+										</div>
 						  		        <div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="xorden{{$ordimag->id}}">
                                             <div class="col-md-12" style="padding: 1px;">
 							   	  			    <div class="row">
@@ -244,44 +526,6 @@
 			                                        </div>
 			                                    </div>
                                             </div>
-                                            <div class="col-12" style="padding-top: 5px"></div>
-                                            <div class="col-md-12" style="padding: 1px;">
-                                            	<div class="row">
-                                            		<div class="col-md-12">
-					                                	<div class="row">
-					                                		<div class="col-md-12">
-											                  <span style="font-family: 'Helvetica general';font-size: 12px">ANTECEDENTES PATOLOGICOS</span>
-											                </div>
-											                <div class="col-12">
-											                  <span><?php echo $paciente->antecedentes_pat?></span>
-											                </div>
-									   	  			    </div>
-				   	  		                        </div>
-				   	  		                        <div class="col-12" style="padding-top: 5px"></div>
-													<div class="col-md-12">
-					                                	<div class="row">
-					                                		<div class="col-md-12">
-											                  <span style="font-family: 'Helvetica general';font-size: 12px">ANTECEDENTES FAMILIARES</span>
-											                </div>
-											                <div class="col-12">
-											                  <span><?php echo $paciente->antecedentes_fam?></span>
-											                </div>
-									   	  			    </div>
-				   	  		                        </div>
-				   	  		                        <div class="col-12" style="padding-top: 5px"></div>
-													<div class="col-md-12">
-					                                	<div class="row">
-					                                		<div class="col-md-12">
-											                  <span style="font-family: 'Helvetica general';font-size: 12px">ANTECEDENTES QUIRURGICOS</span>
-											                </div>
-											                <div class="col-12">
-											                  <span><?php echo $paciente->antecedentes_quir?></span>
-											                </div>
-									   	  			    </div>
-				   	  		                        </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-12" style="padding-top: 5px"></div>
                                             <div class="col-md-12" style="padding: 1px;">
 			                                	<div class="row">
 			                                		<div class="col-md-12">
@@ -302,8 +546,7 @@
 										  			</div>
 									            </div>
 				   	  		                </div>
-				   	  		                @if(!is_null($ordimag->diagnosticos))
-                                            <div class="col-md-12" style="padding: 1px;">
+				   	  		                <div class="col-md-12" style="padding: 1px;">
 			                                	<div class="row">
 			                                		<div class="col-md-12">
 									                  <span style="font-family: 'Helvetica general';font-size: 12px">DIAGNOSTICO:</span>
@@ -313,7 +556,6 @@
 										  			</div>
 									            </div>
 									        </div>
-									        @endif
 				   	  		                <div class="col-md-12" style="padding: 1px;">
 				                                @if($texto != "")
 					                                <div class="row">
@@ -383,9 +625,15 @@
     	
         $.ajax({
 			//async: true,
-			type: "GET",
-			url: "{{route('hc4_orden_proc_imagenes',['tipo' => '2', 'paciente' => $paciente->id])}}", 
-			data: "",
+				@if(!empty($contextoOdontologia))
+				type: "GET",
+				url: "{{route('odontologia.ordenes.imagenes.crear',['id_paciente' => $paciente->id])}}",
+				data: "",
+				@else
+				type: "POST",
+				url: "{{route('hc4_orden_proc_imagenes',['tipo' => '2', 'paciente' => $paciente->id])}}",
+				data: {'_token': '{{ csrf_token() }}'},
+				@endif
 			datatype: "html",
 			success: function(datahtml){
                
@@ -404,7 +652,11 @@
     function editar_orden_proimagenes(id_orden,id_paciente){
     	$.ajax({
 			type: "GET",
-			url: "{{route('editar.orden_procedimiento_imagenes')}}/"+id_orden+'/'+id_paciente, 
+				@if(!empty($contextoOdontologia))
+				url: "{{url('odontologia/ordenes/imagenes/editar')}}/"+id_orden+'/'+id_paciente,
+				@else
+				url: "{{route('editar.orden_procedimiento_imagenes')}}/"+id_orden+'/'+id_paciente,
+				@endif
 			data: "",
 			datatype: "html",
 			success: function(datahtml){
@@ -423,42 +675,4 @@
 
 
 
-</script>
-
-<script type="text/javascript">
-	function formato_012(id, id_orden, div) {
-	  $.ajax({
-	    type: 'GET',
-	    url:"{{url('hc4/formato012')}}/"+id+"/"+id_orden,
-	    headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-	    datatype: 'json',
-	    data: $("#edit_orden").serialize(),
-	    success: function(data){
-	      $("#"+div).empty().html(data);
-	      //console.log(data);
-	    },
-	    error: function(data){
-	      console.log(data);
-	    }
-	  });
-	}
-
-	function guardar_orden_012(div){
-
-        $.ajax({
-        type: 'post',
-        url:"{{route('actualizar.orden_012')}}",
-        headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-        datatype: 'json',
-        data: $("#"+div).serialize(),
-            success: function(data){
-                console.log(data);
-                
-            },
-            error: function(data){
-
-            }
-        });
-    }
-  
 </script>

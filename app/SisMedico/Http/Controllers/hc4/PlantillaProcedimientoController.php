@@ -19,6 +19,18 @@ use Response;
 
 class PlantillaProcedimientoController extends Controller
 {
+    private function autorizarPlantillasClinicas()
+    {
+        if ($this->rol_new('2')) {
+            abort(403, 'No tiene autorización para administrar plantillas clínicas.');
+        }
+    }
+
+    private function sanitizarTextoClinico($contenido)
+    {
+        return trim(strip_tags((string) $contenido));
+    }
+
     //NUEVA FUNCION ROL CON TABLA OPCION_USUARIO
     private function rol_new($opcion){ 
         $rolUsuario = Auth::user()->id_tipo_usuario;
@@ -47,8 +59,8 @@ class PlantillaProcedimientoController extends Controller
      */
     public function index(){
 
-       $tecnicas_quirurgicas = procedimiento_completo::OrderBy('nombre_general', 'ASC')->paginate(250);
-        $proc_completo = procedimiento_completo::all();
+       $tecnicas_quirurgicas = procedimiento_completo::OrderBy('nombre_general', 'ASC')->paginate(20);
+        $proc_completo = procedimiento_completo::orderBy('nombre_general', 'ASC')->get();
         return view('hc4/plantillas_procedimientos/index', ['tecnicas_quirurgicas' => $tecnicas_quirurgicas, 'proc_completo' => $proc_completo, 'procedimiento_completo' => null]);
 
     }
@@ -70,23 +82,26 @@ class PlantillaProcedimientoController extends Controller
 
         $tecnicas_quirurgicas = $tecnicas_quirurgicas->paginate(20);
 
-        $proc_completo = procedimiento_completo::all();
+        $proc_completo = procedimiento_completo::orderBy('nombre_general', 'ASC')->get();
         return view('hc4/plantillas_procedimientos/index', ['tecnicas_quirurgicas' => $tecnicas_quirurgicas, 'proc_completo' => $proc_completo, 'procedimiento_completo' => $procedimiento_completo]);
     }
 
     public function edit($id){
-        $procedimiento_completo =  procedimiento_completo::find($id);
+        $this->autorizarPlantillasClinicas();
+        $procedimiento_completo = procedimiento_completo::findOrFail($id);
         $grupo_procedimiento = grupo_procedimiento::all();
         return view('hc4/plantillas_procedimientos/editar', ['procedimiento_completo' => $procedimiento_completo, 'grupo_procedimiento' => $grupo_procedimiento]);
     }
 
       public function create(){
+        $this->autorizarPlantillasClinicas();
         $grupo_procedimiento = grupo_procedimiento::all();
         return view('hc4/plantillas_procedimientos/crear',['grupo_procedimiento' => $grupo_procedimiento]);
 
     }
 
      public function store(Request $request){
+        $this->autorizarPlantillasClinicas();
         //return $request['nombre_general'];
        if(is_null($request['nombre_general']))
        {
@@ -155,6 +170,7 @@ class PlantillaProcedimientoController extends Controller
 
 
     public function update(Request $request){
+        $this->autorizarPlantillasClinicas();
         //return $request->all();
         $procedimiento_completo = procedimiento_completo::findOrFail($request['id']);
         $ip_cliente= $_SERVER["REMOTE_ADDR"];
@@ -166,7 +182,7 @@ class PlantillaProcedimientoController extends Controller
             'nombre_completo' => $request['nombre_completo'],
             'estado' => $request['estado'],
             'estado_anestesia' => $request['estado_anestesia'], 
-            'tecnica_quirurgica' => $request['tecnica_quirurgica'],
+            'tecnica_quirurgica' => $this->sanitizarTextoClinico($request['tecnica_quirurgica']),
             'id_grupo_procedimiento' => $request['id_grupo_procedimiento'], 
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario
@@ -219,4 +235,3 @@ class PlantillaProcedimientoController extends Controller
 
    
 }
- 

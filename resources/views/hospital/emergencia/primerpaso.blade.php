@@ -72,8 +72,8 @@
 
                     <tr>
                         <td>{{ $solicitud->paciente->telefono2 }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->barrio }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->parroquia }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->barrio ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->parroquia ?: 'No registrado' }}</td>
                         <td>{{ $solicitud->paciente->direccion }}</td>
                     </tr>
 
@@ -85,10 +85,10 @@
                     </tr>
 
                     <tr>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->canton }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->provincia }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->canton ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->provincia ?: 'No registrado' }}</td>
                         <td>{{ $solicitud->paciente->fecha_nacimiento }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->nacionalidad }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->nacionalidad ?: 'No registrado' }}</td>
                     </tr>
 
                     <tr>
@@ -99,9 +99,9 @@
                     </tr>
 
                     <tr>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->calle_principal }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->calle_secundaria }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->referencia }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->calle_principal ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->calle_secundaria ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->referencia ?: 'No registrado' }}</td>
                         <td></td>
                     </tr>
 
@@ -118,11 +118,11 @@
                             @if($solicitud->paciente->sexo =='1') HOMBRE @else MUJER @endif
                         </td>
                         <td>
-                            @if($solicitud->paciente->estadocivil == 1)<span> SOLTERO(A)</span>
-                            @elseif($solicitud->paciente->estadocivil == 2)<span> CASADO(A)</span>
-                            @elseif($solicitud->paciente->estadocivil == 3)<span> VIUDO(A)</span>
-                            @elseif($solicitud->paciente->estadocivil == 4)<span> DIVORCIADO(A)</span>
-                            @elseif($solicitud->paciente->estadocivil == 5)<span> UNION LIBRE</span>
+                            @if($solicitud->paciente->estadocivil == 1)<span>{{trans('emergencia.Soltero')}}</span>
+                            @elseif($solicitud->paciente->estadocivil == 2)<span>{{trans('emergencia.Casado')}}</span>
+                            @elseif($solicitud->paciente->estadocivil == 3)<span>{{trans('emergencia.Viudo')}}</span>
+                            @elseif($solicitud->paciente->estadocivil == 4)<span>{{trans('emergencia.Divorciado')}}</span>
+                            @elseif($solicitud->paciente->estadocivil == 5)<span>{{trans('emergencia.UnionLibre')}}</span>
                             @endif
                         </td>
                         <td>{{ $solicitud->paciente->ocupacion }}</td>
@@ -137,9 +137,9 @@
 
                     <tr>
                         <td>{{ $solicitud->paciente->lugar_nacimiento }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->grupo_prioritario}}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->especifique_grupo}}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->autoidentificacion_etnica}}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->grupo_prioritario ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->especifique_grupo ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->autoidentificacion_etnica ?: 'No registrado' }}</td>
                     </tr>
                     
 
@@ -151,10 +151,10 @@
                     </tr>
 
                     <tr>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->nacionalidad_etnica}}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->pueblos}}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->nivel_educacion}}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->estado_nivel_educacion}}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->nacionalidad_etnica ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->pueblos ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->nivel_educacion ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->estado_nivel_educacion ?: 'No registrado' }}</td>
                     </tr>
 
                     <tr>
@@ -165,9 +165,9 @@
                     </tr>
 
                     <tr>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->empresa_trabajo }} </td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->empresa_trabajo ?: 'No registrado' }} </td>
                         <td>{{ $solicitud->paciente->referido }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->llamar_a }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->llamar_a ?: 'No registrado' }}</td>
                         <td></td>
                     </tr>
 
@@ -179,10 +179,10 @@
                     </tr>
 
                     <tr>
-                        <td></td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->telefono_inst_per_paci }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->direccion_familiar }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->forma_llegada }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->parentesco_afinidad ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->telefono_inst_per_paci ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->direccion_familiar ?: 'No registrado' }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->forma_llegada ?: 'No registrado' }}</td>
                     </tr>
 
                     <tr>
@@ -193,9 +193,9 @@
                     </tr>
 
                     <tr>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->direccion_familiar }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->fuente_informacion ?: 'No registrado' }}</td>
                         <td>{{ $solicitud->paciente->telefono3 }}</td>
-                        <td>{{ $solicitud->paciente->ho_datos_paciente->inst_per_paci_entrega }}</td>
+                        <td>{{ optional($solicitud->paciente->ho_datos_paciente)->inst_per_paci_entrega ?: 'No registrado' }}</td>
                         <td></td>
                     </tr>
 

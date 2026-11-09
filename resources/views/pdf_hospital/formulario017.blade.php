@@ -2,19 +2,10 @@
 <html>
 
 @php
-//$fecha=date('d');
-//$fecha = substr($hc_procedimiento->historia->agenda->fechaini,8,2);
-$fecha = substr($protocolo->fecha_operacion,8,2);
-//$fecha1=date('m');
-
-//$fecha1=substr($hc_procedimiento->historia->agenda->fechaini,5,2);
-$fecha1=substr($protocolo->fecha_operacion,5,2);
-//$fecha2=date('y');
-//$fecha2=substr($hc_procedimiento->historia->agenda->fechaini,0,4);
-$fecha2=substr($protocolo->fecha_operacion,0,4);
-//$hora = date('H:i:s');
-//$hora = substr($hc_procedimiento->historia->agenda->fechaini,11);
-$hora = substr($protocolo->fecha_operacion,11);
+$fecha=date('d');
+$fecha1=date('m');
+$fecha2=date('y');
+$hora = date('H:i:s');
 @endphp
 
 
@@ -53,6 +44,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 
 <head>
+    <meta charset="utf-8">
     <title>HCU_017</title>
     <style>
         @page {
@@ -230,22 +222,13 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
 <body>
     <main>
-        <!--div class="box-body card" style="text-align: center">
-			@if(!is_null($empresa))
-				<img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:250px;height: 75px">
-			@endif
-		</div><br-->
-
-        <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-        @if(!is_null($hc_procedimiento->empresa))
-            @if(!is_null($hc_procedimiento->empresa->logo_form))
-            <p><img style="width:150px;height: 50px" src="{{base_path().'/storage/app/logo/'.$hc_procedimiento->empresa->logo_form}}" hspace=12></p>
-            @else
-            <p style="width:150px;height: 50px"><b>{{$hc_procedimiento->empresa->nombre_form}}</b></p>
-            @endif
-        @endif    
-        </div>
-
+        <table border="1" style="width: 99%">
+            <tr>
+                <td colspan="12">
+                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                </td>
+            </tr>
+        </table>
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <thead>
                 <tr>
@@ -261,10 +244,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td colspan="5" class="bg-green text-center"><b>NÚMERO DE ARCHIVO</b></td>
                 </tr>
                 <tr>
-                    <td class="text-center" style="font-size: 14px;">{{$hc_procedimiento->historia->seguro->nombre}}</td>
-                    <td class="text-center" colspan="2" style="font-size: 14px;">@isset($hc_procedimiento->empresa){{$hc_procedimiento->empresa->unicodigo}}@endif</td>
-                    <td colspan="2" class="text-center" style="font-size: 14px;">@isset($hc_procedimiento->empresa){{$hc_procedimiento->empresa->nombrecomercial}}@endif</td>
-                    <td class="text-center" colspan="4" style="font-size: 16px;">{{$hc_procedimiento->historia->paciente->id}}</td>
+                    <td class="text-center" style="font-size: 12px;">{{$hc_procedimiento->historia->seguro->nombre}}</td>
+                    <td class="text-center" colspan="2" style="font-size: 12px;">026247</td>
+                    <td colspan="2" class="text-center" style="font-size: 12px;">@isset($hc_procedimiento->empresa){{$hc_procedimiento->empresa->nombrecomercial}}@endif</td>
+                    <td class="text-center" colspan="4" style="font-size: 12px;">{{$hc_procedimiento->historia->paciente->id}}</td>
                     <td colspan="5"></td>
                 </tr>
                 <tr>
@@ -287,7 +270,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center" colspan="2">{{$hc_procedimiento->historia->paciente->apellido2}}</td>
                     <td class="text-center" colspan="2">{{$hc_procedimiento->historia->paciente->nombre1}}</td>
                     <td class="text-center" colspan="1">{{$hc_procedimiento->historia->paciente->nombre2}}</td>
-                    <td class="text-center" colspan="1">@if($hc_procedimiento->historia->paciente->sexo == 1) Masculino @else Femenino @endif</td>
+                    <td class="text-center" colspan="1">@if($hc_procedimiento->historia->paciente->sexo == 1) Maculino @else Femenino @endif</td>
                     </td>
                     <td class="text-center" colspan="2">{{$edad}}</td>
                     <td class="text-center" colspan="1"></td>
@@ -330,29 +313,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     </tr>
                 
                 @endforeach
-                @foreach ($cie10_eg as $key=>$val)
-                    @php
-                        $cont ++;
-                        $c3 = Sis_medico\Cie_10_3::find($val->cie10);
-                        $c4 = Sis_medico\Cie_10_4::find($val->cie10);
-                        $texto = '';
-                        if(!is_null($c3)){
-                            $texto = $c3->descripcion;
-                        }
-                        if(!is_null($c4)){
-                            $texto = $c4->descripcion;
-                        }
-                    @endphp
-               
-                    <tr>
-                        <td style="width: 12%; font-size: 8;" class="bg-green"><b>Post Operatorio:</b></td>
-                        <td class="text-center" style="width: 3%;">{{ $cont }}</td>
-                        <td>{{$texto}}</td>
-                        <td class="text-center td-border">{{$val->cie10}}</td>
-                    </tr>
-                
-                @endforeach
-
             </tbody>
         </table>
 
@@ -391,10 +351,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
                             }
                         }
                         if($texto == ""){
-                            {{--$procedimiento_nombre_2 = \Sis_medico\procedimiento_completo::find($procedimiento->id_procedimiento_completo);
+                            /* $procedimiento_nombre_2 = \Sis_medico\procedimiento_completo::find($procedimiento->id_procedimiento_completo);
                             if(!is_null($procedimiento_nombre_2)){
                                 $texto = $procedimiento_nombre_2->nombre_general;
-                            }--}}
+                            } */
                         }
                     @endphp
 
@@ -434,39 +394,21 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>
                     <td style="width: 12%;" class="bg-green"><b>Cirujano 1:</b></td>
 
-                    <td>
-                        @if(!is_null($firma)) 
-                            @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A') {{$firma->doctor->apellido2}} @endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A') {{$firma->doctor->nombre2}} @endif 
-                        @endif
-                    </td>
+                    <td>Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif</td>
                     <td class="bg-green" style="width: 15%;"><b>Instrumentista: </b></td>
                     <td></td>
                 </tr>
-                @if($xtipo == 'auditoria') 
-                    @php 
-                        $cirujano2 = $protocolo->auditoria_procedimiento->doctor_ayudante; 
-                        $doctor_ayudante = $protocolo->auditoria_procedimiento->doctor_ayudante;
-                    @endphp
-                @else 
-                    @php 
-                        $cirujano2 = $protocolo->procedimiento->doctor_ayudante;
-                        $doctor_ayudante = $protocolo->procedimiento->doctor_ayudante; 
-                    @endphp 
-                @endif 
-                
-                <tr> 
+                <tr>
                     <td class="bg-green"><b>Cirujano 2:</b></td>
-                    <td>  
-                         </td>
+                    <td></td>
                     <td class="bg-green"><b>Circulante:</b></td>
                     <td></td>
                 </tr>
                 <tr>
                     <td class="bg-green"><b>Primer Ayudante:</b></td>
-                    
+                    @php $doctor_ayudante = $protocolo->procedimiento->doctor_ayudante; @endphp
                     <td>@if($doctor_ayudante != null) Dr(a). {{$doctor_ayudante->apellido1}} @if($doctor_ayudante->apellido2!='N/A'){{$doctor_ayudante->apellido2}}@endif {{$doctor_ayudante->nombre1}} @if($doctor_ayudante->nombre2!='N/A'){{$doctor_ayudante->nombre2}}@endif @endif</td>
-                    
-                       
+
                     <td class="bg-green"><b>Anestesiologo/a:</b></td>
                     @if(!is_null($protocolo->usuario_anestesiologo))
                     <td>Dr(a). {{$protocolo->usuario_anestesiologo->apellido1}} @if($protocolo->usuario_anestesiologo->apellido2!='N/A'){{$protocolo->usuario_anestesiologo->apellido2}}@endif {{$protocolo->usuario_anestesiologo->nombre1}} @if($protocolo->usuario_anestesiologo->nombre2!='N/A'){{$protocolo->usuario_anestesiologo->nombre2}}@endif</td>
@@ -509,7 +451,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         @php
         $fecha = $protocolo->fecha_operacion;
-        //$fecha = substr($hc_procedimiento->historia->agenda->fechaini,0,10);
         $fechaObj = new DateTime($fecha);
         $anio = $fechaObj->format('Y');
         $mes = $fechaObj->format('m');
@@ -557,20 +498,20 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td colspan="6"></td>
                 </tr>
                 <tr>
-                    <td colspan="7" style="font-size: 9px !important">@if(!is_null($protocolo))<?php echo $protocolo->conclusion ?>@endif</td>
+                    <td colspan="7" style="height: 7%; font-size: 10">@if(!is_null($protocolo))<?php echo $protocolo->conclusion ?>@endif</td>
                 </tr>
                 <tr>
                     <td style="height: 18px; width: 12%;  font-size: 10;" class="bg-green"><b>Procedimiento Quirúrgico:</b></td>
                     <td colspan="6"></td>
                 </tr>
                 <tr>
-                    <td colspan="7" style="font-size: 9px !important;"><?php echo $protocolo->hallazgos ?></td>
+                    <td colspan="7" style="height: 7%; font-size: 10"><?php echo $protocolo->hallazgos ?></td>
                 </tr>
             </tbody>
         </table>
         <div>
             <footer>
-                <p>@for($count=0; $count<=10;$count++) &nbsp; @endfor SNS-MSP/HCU-form. 017/2021 @for($count=0; $count<=54;$count++) &nbsp; <b> @endfor PROTOCOLO QUIRÚRGICO (1) </b></p>
+                <p>@for($count=0; $count<=10;$count++) &nbsp; @endfor <b> SNS-MSP/HCU-form. 017/2021 </b> @for($count=0; $count<=50;$count++) &nbsp; <b> @endfor PROTOCOLO QUIRÚRGICO (1) </b></p>
                 <footer>
         </div>
 
@@ -696,8 +637,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td style="font-size: 8;" class="text-center bg-green"><b>SELLO Y NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
                 </tr>
                 <tr>
+
                     @php $especialidad = Sis_medico\Especialidad::find($hc_procedimiento->historia->agenda->espid) @endphp
-                    <td style="height: 50px;" class="text-center"> @if(!is_null($firma)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif @endif</td>
+                    <td style="height: 50px;" class="text-center">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif</td>
                     <td style="height: 50px;" class="text-center">@if(!is_null($especialidad)) {{$especialidad->nombre}} @endif</td>
                     <td class="text-center" style="height: 50px;">
                         <p style="text-align: center;">
@@ -705,14 +647,14 @@ $mesNacimiento = $fechaNacimiento->format('m');
                             <img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
                             @else
                             <br><br><br>
-                            <b style="font-size: 10px;">@if(!is_null($firma)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @endif</b><br>
+                            <b style="font-size: 10px;">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}}</b><br>
                             @endif
                         </p>
                     </td>
                     <td class="text-center" style="height: 50px;">
-                        @if(!is_null($firma)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif<br>
-                        @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif <br>
-                        cedula No. {{$firma->doctor->id}} @endif
+                        Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif<br>
+                        @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
+                        MSP No. {{$protocolo->procedimiento->doctor_firma->id}}
                     </td>
                 </tr>
             </tbody>
@@ -720,6 +662,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         <div>
             <footer>
-                <p>@for($count=0; $count<=10;$count++) &nbsp; @endfor SNS-MSP/HCU-form. 017/2021 @for($count=0; $count<=80;$count++) &nbsp; @endfor <b> PROTOCOLO QUIRÚRGICO (2) <b></b></p>
+                <p>@for($count=0; $count<=10;$count++) &nbsp; @endfor <b> SNS-MSP/HCU-form. 017/2021 </b> @for($count=0; $count<=75;$count++) &nbsp; @endfor <b> PROTOCOLO QUIRÚRGICO (2) <b></b></p>
                 <footer>
         </div>

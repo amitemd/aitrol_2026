@@ -4,26 +4,17 @@ $fecha = date("Y-m-d");
 ?>
 
 
-<div class="card">
-    <div class="card-header bg bg-primary">
-        <div class="col-md-12">
-            <div class="row">
-                <div class="d-flex align-items-center col-md-12">
-                    <h4 class="card-title ml-25 colorbasic">
-                        {{trans('pasos.AntecedentesPersonalesyFamiliares')}}
-                    </h4>
-                </div>
-            </div>
-        </div>
+@include('hospital.emergencia.partials.clinical-step-styles')
+
+<div class="card clinical-step-card">
+    <div class="card-header clinical-step-primary-header">
+        <h4 class="card-title clinical-step-primary-title">{{trans('pasos.AntecedentesPersonalesyFamiliares')}}</h4>
     </div>
-    <div class="card-body">
+    <div class="card-body clinical-step-body">
         <form id="frm_cuartopaso">
             <input type="hidden" name="id_paciente" value="{{$solicitud->paciente->id}}">
             <input type="hidden" name="id_solicitud" value="{{$solicitud->id}}">
-            <div class="row" style="padding-top: 10px;">
-                <div class="col-md-12">
-                    <h4>{{trans('pasos.AntecedentesPersonales')}}</h4>
-                </div>
+            <div class="clinical-exam-grid">
                 <div class="col-md-12">
                     <b>1. {{trans('pasos.Alergias')}}</b>
                 </div>
@@ -162,8 +153,10 @@ $fecha = date("Y-m-d");
                         <span role="button" class="input-group-addon dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></span>
                     </div>
                 </div>
-                <div class="col-md-12" style="text-align: center; margin-top: 10px;">
-                    <button class="btn btn-primary" onclick="guardar_paso4();" type="button"> <i class="fa fa-save"></i> </button>
+                <div class="col-md-12 clinical-form-actions">
+                    <button class="btn btn-primary clinical-save-button" onclick="guardar_paso4();" type="button">
+                        <i class="fa fa-save"></i> Guardar
+                    </button>
                 </div>
             </div>
         </form>
@@ -181,7 +174,7 @@ $fecha = date("Y-m-d");
 <!--script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script-->
 <script type="text/javascript">
     $('#ale_list').select2({
-        placeholder: "Seleccione Medicamento...",
+        placeholder: "{{trans('pasos.SeleccioneMedicamento')}}",
         minimumInputLength: 2,
         ajax: {
             url: "{{route('generico.find')}}",
@@ -254,7 +247,7 @@ $fecha = date("Y-m-d");
                 return Swal.fire(`{{trans('proforma.GuardadoCorrectamente')}}`);
             },
             error: function() {
-                alert('error al cargar');
+                alert("{{trans('pasos.ErrorCargar')}}");
             }
         });
 

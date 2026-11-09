@@ -8,7 +8,7 @@
             <tr>
                 <td>{{ $contador++ }}</td>
                 <td>
-                    <input style="width: 98%;" type="text" value="{{ $ex->nombre }} - @if(!is_null($ex->examen_parametro)) {{$ex->examen_parametro->nombre}} @endif" disabled>
+                    <input style="width: 98%;" type="text" value="{{ $ex->nombre }}" disabled>
                 </td>
                 <td>
                     <input style="width: 98%;" type="text" value="{{$ex->resultado}}" disabled>

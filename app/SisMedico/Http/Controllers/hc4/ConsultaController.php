@@ -28,6 +28,12 @@ use Sis_medico\Empresa;
 use Sis_medico\Ap_Procedimiento;
 use Sis_medico\Interconsulta_Diagnostico;
 use Carbon\Carbon;
+use Sis_medico\Ho_Solicitud;
+use Sis_medico\Ho_Log_Solicitud;
+use Sis_medico\Ho_Form008;
+use Sis_medico\Exceptions\ClinicalEncounterConflictException;
+use Sis_medico\Services\ClinicalEncounterService;
+
 
 class ConsultaController extends Controller
 {
@@ -63,7 +69,10 @@ class ConsultaController extends Controller
             return redirect('/');
         }
 
-        $paciente = Paciente::find($id_paciente);
+        $paciente = Paciente::findOrFail($id_paciente);
+        $recordOnly = request()->boolean('record_only');
+        $procedureId = request()->integer('procedure_id');
+        abort_if($recordOnly && $procedureId < 1, 422);
 
         //Obtengo el id_doctor visita
         $id_doctor_visita = Auth::user()->id;
@@ -79,9 +88,15 @@ class ConsultaController extends Controller
             ->join('procedimiento_completo as pc', 'pc.id', 'hc_p.id_procedimiento_completo')
             ->where('hc_p.id_procedimiento_completo', '40')
             ->where('a.estado_cita', '<>', '3')
-            ->select('h.*', 'a.*', 'hc_proto.*', 'hc_p.*', 'e.nombre as espe_nombre')
+            ->when($recordOnly, function ($query) use ($procedureId) {
+                $query->where('hc_p.id', $procedureId);
+            })
+            ->select('h.*', 'a.*', 'hc_proto.*', 'hc_p.*', 'e.nombre as espe_nombre', 'a.estado as agenda_estado')
             ->OrderBy('h.created_at', 'desc')
-            ->paginate(7);
+            ->orderBy('hc_p.id', 'desc')
+            ->get();
+
+        abort_if($recordOnly && $pro_completo_0->isEmpty(), 404);
 
         //dd($pro_completo_0);
 
@@ -90,144 +105,144 @@ class ConsultaController extends Controller
         $doctores     = User::where('id_tipo_usuario', '3')->where('estado', '1')->OrderBy('apellido1')->get();
         $seguros      = Seguro::where('inactivo', '1')->get();
         $alergiasxpac = Paciente_Alergia::where('id_paciente', $id_paciente)->get();
-        if (isset($_REQUEST['page'])) {
-            return view('hc4/consulta/paginador', ['paciente' => $paciente, 'procedimientos2' => $pro_completo_0, 'doctores' => $doctores, 'seguros' => $seguros, 'alergiasxpac' => $alergiasxpac, 'id_doctor_visita' => $id_doctor_visita]);
+
+        return view($recordOnly ? 'hc4/consulta/records' : 'hc4/consulta/index', ['paciente' => $paciente, 'procedimientos2' => $pro_completo_0, 'doctores' => $doctores, 'seguros' => $seguros, 'alergiasxpac' => $alergiasxpac, 'id_doctor_visita' => $id_doctor_visita]);
+    }
+
+    /**
+     * Completa, sin duplicar la agenda ni la historia clínica, los registros
+     * necesarios para abrir una consulta que ya fue admitida.
+     */
+    public function abrirConsultaAdmitida($idPaciente, $idAgenda)
+    {
+        if ($this->rol_new('2')) {
+            return response()->json(array('message' => 'No tiene permiso para atender esta consulta.'), 403);
         }
-        return view('hc4/consulta/index', ['paciente' => $paciente, 'procedimientos2' => $pro_completo_0, 'doctores' => $doctores, 'seguros' => $seguros, 'alergiasxpac' => $alergiasxpac, 'id_doctor_visita' => $id_doctor_visita]);
+
+        try {
+            $procedureId = DB::transaction(function () use ($idPaciente, $idAgenda) {
+                $inicioHoy = Carbon::today()->startOfDay();
+                $finHoy = Carbon::today()->endOfDay();
+                $agenda = Agenda::where('id', $idAgenda)
+                    ->where('id_paciente', $idPaciente)
+                    ->where('proc_consul', 0)
+                    ->where('estado_cita', 4)
+                    ->where('estado', 1)
+                    ->whereBetween('fechaini', array($inicioHoy, $finHoy))
+                    ->lockForUpdate()
+                    ->first();
+
+                if (is_null($agenda)) {
+                    throw new \RuntimeException('La agenda ya no cumple las condiciones para ser atendida.');
+                }
+
+                $history = Historiaclinica::where('id_agenda', $agenda->id)
+                    ->where('id_paciente', $idPaciente)
+                    ->lockForUpdate()
+                    ->first();
+                if (is_null($history)) {
+                    throw new \RuntimeException('La agenda no tiene una historia clínica asociada.');
+                }
+
+                $procedure = hc_procedimientos::where('id_hc', $history->hcid)
+                    ->where('id_procedimiento_completo', 40)
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if (is_null($procedure)) {
+                    $procedure = hc_procedimientos::create(array(
+                        'id_hc' => $history->hcid,
+                        'id_seguro' => $history->id_seguro ?: $agenda->id_seguro,
+                        'id_empresa' => $agenda->id_empresa,
+                        'id_procedimiento_completo' => 40,
+                        'id_doctor_examinador' => $agenda->id_doctor1,
+                        'fecha' => Carbon::today()->format('Y-m-d'),
+                        'estado' => 1,
+                        'id_usuariocrea' => Auth::id(),
+                        'id_usuariomod' => Auth::id(),
+                        'ip_creacion' => request()->ip(),
+                        'ip_modificacion' => request()->ip(),
+                    ));
+                }
+
+                if (!Hc_Evolucion::where('hcid', $history->hcid)
+                    ->where('hc_id_procedimiento', $procedure->id)->exists()) {
+                    Hc_Evolucion::create(array(
+                        'hcid' => $history->hcid,
+                        'hc_id_procedimiento' => $procedure->id,
+                        'secuencia' => 0,
+                        'fecha_ingreso' => ' ',
+                        'id_usuariocrea' => Auth::id(),
+                        'id_usuariomod' => Auth::id(),
+                        'ip_creacion' => request()->ip(),
+                        'ip_modificacion' => request()->ip(),
+                    ));
+                }
+
+                if (!hc_receta::where('id_hc', $history->hcid)->exists()) {
+                    hc_receta::create(array(
+                        'id_hc' => $history->hcid,
+                        'id_usuariocrea' => Auth::id(),
+                        'id_usuariomod' => Auth::id(),
+                        'ip_creacion' => request()->ip(),
+                        'ip_modificacion' => request()->ip(),
+                    ));
+                }
+
+                return $procedure->id;
+            }, 3);
+        } catch (\RuntimeException $exception) {
+            return response()->json(array('message' => $exception->getMessage()), 422);
+        } catch (\Exception $exception) {
+            \Log::error('No se pudo preparar la consulta admitida.', array(
+                'id_agenda' => $idAgenda,
+                'id_paciente' => $idPaciente,
+                'exception' => $exception,
+            ));
+            return response()->json(array(
+                'message' => 'Ocurrió un error al preparar el formulario clínico de la consulta.'
+            ), 500);
+        }
+
+        return response()->json(array(
+            'ok' => true,
+            'procedure_id' => $procedureId,
+        ));
     }
 
     public function crear_evolucion($id, $ag)
     {
-        //dd($id);
-
-        //1. crear agenda y log proc_consul='4' estado='2'
-        $paciente = Paciente::find($id);
-        $empresa = Empresa::where('prioridad', 1)->first();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-
-        $id_doctor = Auth::user()->id;
-
-        $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
-
-        if (!is_null($especialidad)) {
-            $espid = $especialidad->espid;
-        } else {
-            $espid = '4';
+        try {
+            $created = app(\Sis_medico\Services\ClinicalEvolutionInitializationService::class)->initialize(
+                $id, $ag, Auth::user()->id, request()->ip(), array(
+                    'mode' => 'consultation',
+                    'override' => request()->input('clinical_override'),
+                    'override_reason' => request()->input('clinical_override_reason'),
+                )
+            );
+        } catch (ClinicalEncounterConflictException $exception) {
+            $payload = array(
+                'estado' => 'conflicto_clinico',
+                'codigo' => 'R-01',
+                'msn' => $exception->getMessage(),
+                'episodio_activo' => $exception->conflictingEncounterId(),
+                'requiere_autorizacion' => true,
+                'puede_autorizar' => in_array((int) Auth::user()->id_tipo_usuario, array(1, 3), true),
+            );
+            if (request()->ajax() || request()->expectsJson()) return response()->json($payload, 409);
+            return back()->withErrors(array('consulta' => $exception->getMessage()));
         }
 
-        $input_agenda = [
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'id_paciente'     => $id,
-            'id_doctor1'      => $id_doctor,
-            'proc_consul'     => '4',
-            'estado_cita'     => '4',
-            'id_empresa'      => $empresa->id,
-            'espid'           => $espid,
-            'observaciones'   => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_seguro'       => $paciente->id_seguro,
-            'estado'          => '4',
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $id_doctor,
-            'id_usuariomod'   => $id_doctor,
-        ];
-
-        $id_agenda = agenda::insertGetId($input_agenda);
-
-        if ($ag == 'no') {
-            $ag = $id_agenda;
+        if (request()->ajax() || request()->expectsJson()) {
+            return response()->json(array(
+                'ok' => true,
+                'procedure_id' => $created['procedure_id'],
+                'message' => 'La consulta fue agregada correctamente.',
+            ));
         }
-
-        $consulta_crear_new = [
-            'anterior'        => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'nuevo'           => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'id_paciente'     => $id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($consulta_crear_new);
-
-        $input_log = [
-            'id_agenda'       => $id_agenda,
-            'estado_cita_ant' => '0',
-            'estado_cita'     => '0',
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'estado'          => '4',
-            'observaciones'   => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_doctor1'      => $id_doctor,
-            'descripcion'     => 'EVOLUCION CREADA POR EL DOCTOR',
-
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        $idusuario = $id_doctor;
-
-        Log_agenda::create($input_log);
-
-        $input_historia = [
-
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $id,
-            'id_seguro'       => $paciente->id_seguro,
-
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_procedimiento_completo = '40';
-
-        $id_historia = Historiaclinica::insertGetId($input_historia);
-
-        $input_hc_procedimiento = [
-            'id_hc'                     => $id_historia,
-            'id_seguro'                 => $paciente->id_seguro,
-            'id_procedimiento_completo' => $id_procedimiento_completo,
-            'ip_modificacion'           => $ip_cliente,
-            'id_usuariocrea'            => $idusuario,
-            'id_usuariomod'             => $idusuario,
-            'ip_creacion'               => $ip_cliente,
-
-        ];
-
-        $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-        $input_hc_evolucion = [
-            'hc_id_procedimiento' => $id_hc_procedimiento,
-            'hcid'                => $id_historia,
-            'secuencia'           => '0',
-            'fecha_ingreso'       => ' ',
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariomod'       => $idusuario,
-            'id_usuariocrea'      => $idusuario,
-            'ip_creacion'         => $ip_cliente,
-
-        ];
-        $id_evolucion    = Hc_Evolucion::insertGetId($input_hc_evolucion);
-        $input_hc_receta = [
-            'id_hc'           => $id_historia,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-        hc_receta::insert($input_hc_receta);
 
         return redirect()->route('paciente.consulta', ['id_paciente' => $id]);
     }
-
     public function actualizar_consulta(Request $request)
     {
 
@@ -270,6 +285,8 @@ class ConsultaController extends Controller
                 'ip_creacion'      => $ip_cliente,
             ];
             Hc_Log::create($consulta_preparacion_new);
+
+            
         }
 
         $receta = hc_receta::where('id_hc', $request['hcid'])->OrderBy('created_at', 'desc')->first();
@@ -387,11 +404,11 @@ class ConsultaController extends Controller
 
         if (($request['id_doctor_examinador'] == '9666666666') || ($request['id_doctor_examinador'] == 'GASTRO')) {
             $input_hc_procedimiento = [
-                'id_doctor_examinador' => $idusuario,
-                'id_seguro'            => $request["id_seguro"],
-                'observaciones'        => $request["observaciones"],
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariomod'        => $idusuario,
+                'id_doctor_examinador' => $request["id_doctor_examinador"],
+                'id_seguro' => $request["id_seguro"],
+                'observaciones' => $request["observaciones"],
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariomod' => $idusuario,
             ];
         } else {
             $input_hc_procedimiento = [
@@ -446,8 +463,126 @@ class ConsultaController extends Controller
 
         }
 
+        //BLOQUE EMERGENCIA
+        $solicitud = Ho_Solicitud::where('id_agenda',$hist_clinica->id_agenda)->where('estado','1')->first();
+        if(!is_null($solicitud)){
+
+        }else{
+            $encounterResult = $this->crea_solic_ambulatoria($hist_clinica->id_agenda);
+            if (isset($encounterResult['estado']) && $encounterResult['estado'] === 'conflicto_clinico') {
+                return response()->json($encounterResult, 409);
+            }
+        } 
+
         return "ok";
 
+    }
+
+    public function crea_solic_ambulatoria($id_agenda){
+
+        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $idusuario  = Auth::user()->id;
+
+        $agenda = Agenda::find($id_agenda);
+        if(!is_null($agenda)){
+            $encounterService = app(ClinicalEncounterService::class);
+            try {
+                $encounter = $encounterService->openOrReuse(
+                    $agenda->id_paciente,
+                    ClinicalEncounterService::AMBULATORY,
+                    array(
+                        'id_empresa' => $agenda->id_empresa,
+                        'started_at' => $agenda->fechaini,
+                        'actor_id' => $idusuario,
+                        'ip' => $ip_cliente,
+                        'override' => request()->input('clinical_override'),
+                        'override_reason' => request()->input('clinical_override_reason'),
+                    )
+                );
+                $encounterService->link($encounter, array('agenda' => $agenda->id));
+            } catch (ClinicalEncounterConflictException $exception) {
+                return array(
+                    'estado' => 'conflicto_clinico',
+                    'codigo' => 'R-01',
+                    'msn' => $exception->getMessage(),
+                    'episodio_activo' => $exception->conflictingEncounterId(),
+                    'requiere_autorizacion' => true,
+                    'puede_autorizar' => in_array((int) Auth::user()->id_tipo_usuario, array(1, 3), true),
+                );
+            }
+            $solicitud = Ho_Solicitud::where('id_agenda',$id_agenda)->where('estado',1)->first();
+            if(is_null($solicitud)){
+                //CREAR SOLICITUD / FORM008 Y LOG 
+                $arr_solic = [
+                    'id_paciente'       => $agenda->id_paciente,
+                    'id_seguro'         => $agenda->id_seguro,
+                    'id_agenda'         => $agenda->id,
+                    'fecha_ingreso'     => $agenda->fechaini,
+                    'fecha_salida'      => $agenda->fechaini,
+                    'estado_paso'       => '0',
+                    'estado'            => '1',
+                    'id_usuariocrea'    => $idusuario,
+                    'id_usuariomod'     => $idusuario, 
+                    'ip_creacion'       => $ip_cliente,
+                    'ip_modificacion'   => $ip_cliente,
+                ];
+
+                $id_solicitud = Ho_Solicitud::insertGetId($arr_solic);
+
+                $sol_log = [
+                    'id_ho_solicitud'       => $id_solicitud,
+                    'estado_paso'           => '0',
+                    'id_agenda'             => $id_agenda,
+                    'fecha_ingreso'         => $agenda->fechaini,
+                    'fecha_salida'          => $agenda->fechaini,
+                    'ip_creacion'           => $ip_cliente,
+                    'ip_modificacion'       => $ip_cliente,
+                    'id_usuariocrea'        => $idusuario, 
+                ];
+    
+                Ho_Log_Solicitud::create($sol_log);
+                $encounterService->link($encounter, array('ho_solicitud' => $id_solicitud));
+
+                $this->crea_form_008($id_solicitud);
+                //$this->crea_datos_paciente($agenda->id_paciente);
+                
+                return [ 'estado' => 'ok', 'id_solicitud' => $id_solicitud ];
+            }else{
+
+                $encounterService->link($encounter, array('ho_solicitud' => $solicitud->id));
+
+                $this->crea_form_008($solicitud->id);
+                //$this->crea_datos_paciente($agenda->id_paciente);
+                return [ 'estado' => 'ok', 'id_solicitud' => $solicitud->id ];   
+            }
+                
+        }else{
+
+            return ['estado' => 'err', 'msn' => 'Sin Agenda'];
+        }
+
+    }
+
+    public function crea_form_008($id_solic){
+
+        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $idusuario  = Auth::user()->id;
+
+        $solicitud = Ho_Solicitud::find($id_solic);
+        if(!is_null($solicitud)){
+            $form008 = app(\Sis_medico\Services\ClinicalEmergencyFormService::class)->ensure($solicitud, [
+                'fecha_creacion'    => $solicitud->fecha_ingreso,
+                'id_usuariocrea'    => $idusuario,
+                'id_usuariomod'     => $idusuario,
+                'ip_creacion'       => $ip_cliente,
+                'ip_modificacion'   => $ip_cliente,
+                'id_agenda'         => $solicitud->id_agenda,
+            ]);
+            return [ 'estado' => 'ok', 'id_form' => $form008->id ];
+        }else{
+
+            return ['estado' => 'err', 'msn' => 'Sin Solicitud'];    
+        }
     }
 
     public function actualizar_receta(Request $request)
@@ -556,176 +691,46 @@ class ConsultaController extends Controller
     //Agregar Visita HC4
     public function crear_visita($id, $ag)
     {
+        app(\Sis_medico\Services\ClinicalEvolutionInitializationService::class)->initialize(
+            $id, $ag, Auth::user()->id, request()->ip(), array('mode' => 'hospital_visit')
+        );
 
-        $paciente = Paciente::find($id);
-        $empresa = Empresa::where('prioridad', 1)->first();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-
-        $id_doctor = Auth::user()->id;
-
-        $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
-
-        if (!is_null($especialidad)) {
-            $espid = $especialidad->espid;
-        } else {
-            $espid = '4';
-        }
-
-        //Version HC3
-        $input_agenda = [
-
-            //Visita Omni Hospital
-            'fechaini'        => Date('Y-m-d H:i:s'), //Campo Ingreso de seleccion Hc3
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'id_paciente'     => $id,
-            'id_doctor1'      => $id_doctor,
-            'procedencia'     => 'OMNI HOSPITAL', //  ONNI HOSPITAL $request['procedencia'] Campo Ubicacion Hc3 de Ingreso
-            'sala_hospital'   => '', // $request['sala_hospital']Campo Sala Hc3
-            'omni'            => 'OM',
-            'proc_consul'     => '4', //3:hospitalizados, 4:evoluciones'-->3
-            'estado_cita'     => '4', //'0: por confirmar,  1: confirmada, 2: reagendado, 3:suspendido, 4:admisionado'-->0
-            'observaciones'   => 'EVOLUCION CREADA POR EL DOCTOR', //CAMPO OBSERVACION HC3 de Ingreso
-            'est_amb_hos'     => '1',
-            'id_seguro'       => $paciente->id_seguro, //Campo Tipo Seguro HC3 Seleccion
-            'estado'          => '4', //Campo Estado HC3 -->1
-            'ip_creacion'     => $ip_cliente,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $id_doctor,
-            'id_usuariomod'   => $id_doctor,
-            'cortesia'        => 'NO',
-            //Fin Visita
-
-            //HC4 ADICIONALES
-            'id_empresa'      => $empresa->id,
-            'espid'           => $espid,
-
-        ];
-
-        $id_agenda = agenda::insertGetId($input_agenda);
-        // Fin Version HC3
-
-        //Version HC4
-        if ($ag == 'no') {
-            $ag = $id_agenda;
-        }
-
-        $visita_crear_new = [
-            'anterior'        => 'VISITA: -> El Dr. creo nueva visita -> id_agenda: ' . $id_agenda,
-            'nuevo'           => 'VISITA: -> El Dr. creo nueva visita -> id_agenda: ' . $id_agenda,
-            'id_paciente'     => $id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        Hc_Log::create($visita_crear_new);
-        //Fin Version HC4
-
-        //Version HC3
-        $input_log = [
-            'id_agenda'       => $id_agenda,
-            'estado_cita_ant' => '0',
-            'estado_cita'     => '0',
-            'fechaini'        => Date('Y-m-d H:i:s'), //Campo Ingreso HC3
-            'fechafin'        => Date('Y-m-d H:i:s'), //Campo Ingreso HC3
-            'estado'          => '4', //Version Hc3 -->1
-            'observaciones'   => 'VISITA CREADA POR EL DOCTOR', //Campo Observacion Hc3
-            'id_doctor1'      => $id_doctor,
-            'descripcion'     => 'HOSPITALIZADO', //'VISITA CREADA POR EL DOCTOR',
-            'descripcion2'    => 'INGRESO',
-            'descripcion3'    => '',
-            /*
-            'descripcion' => 'HOSPITALIZADO',
-            'descripcion2' => 'INGRESO',
-            'descripcion3' => '',*/
-
-            /* 'campos' => "UBICACION:".$request['procedencia']." SALA:".$request['sala_hospital']." SEGURO:".$request['id_seguro']."-".$seguro->nombre,*/
-
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-        $idusuario = $id_doctor;
-
-        Log_agenda::create($input_log);
-        // Fin Version HC3
-
-        //Version HC4
-        $input_historia = [
-
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $id,
-            'id_seguro'       => $paciente->id_seguro,
-
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_procedimiento_completo = '40';
-
-        $id_historia = Historiaclinica::insertGetId($input_historia);
-
-        $input_hc_procedimiento = [
-            'id_hc'                     => $id_historia,
-            'id_seguro'                 => $paciente->id_seguro,
-            'id_procedimiento_completo' => $id_procedimiento_completo,
-            'ip_modificacion'           => $ip_cliente,
-            'id_usuariocrea'            => $idusuario,
-            'id_usuariomod'             => $idusuario,
-            'ip_creacion'               => $ip_cliente,
-
-        ];
-
-        $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-        $input_hc_evolucion = [
-            'hc_id_procedimiento' => $id_hc_procedimiento,
-            'hcid'                => $id_historia,
-            'secuencia'           => '0',
-            'fecha_ingreso'       => ' ',
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariomod'       => $idusuario,
-            'id_usuariocrea'      => $idusuario,
-            'ip_creacion'         => $ip_cliente,
-
-        ];
-        $id_evolucion    = Hc_Evolucion::insertGetId($input_hc_evolucion);
-        $input_hc_receta = [
-            'id_hc'           => $id_historia,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-        hc_receta::insert($input_hc_receta);
-        //Fin Version HC4
-
-        //return redirect()->route('paciente.visita',['id_paciente' => $id]);
         return redirect()->route('paciente.consulta', ['id_paciente' => $id]);
     }
-
     public function vademecun(Request $request)
     {
         $variable = $request['variable'];
-        $texto    = '%' . $request['texto'] . '%';
-        $nombre   = Medicina::WhereRaw("CONCAT(nombre, ' ', presentacion) LIKE '" . $texto . "'")->where('estado', 1)->orderBy('nombre', 'asc')->get();
-        return view('hc4/consulta/vademecum', ['nombre' => $nombre, 'variable' => $variable, 'texto' => $request['texto']]);
+        $texto    = trim((string) $request->input('texto', ''));
+        $nombre   = $this->consultaVademecum($texto);
+
+        return view('hc4/consulta/vademecum', compact('nombre', 'variable', 'texto'));
     }
 
     public function vademecun2(Request $request)
     {
-        $texto  = '%' . $request['texto'] . '%';
-        $nombre = Medicina::WhereRaw("CONCAT(nombre, ' ', presentacion) LIKE '" . $texto . "'")->where('estado', 1)->orderBy('nombre', 'asc')->get();
-        return view('hc4/consulta/vademecum_interno', ['nombre' => $nombre]);
+        $texto  = trim((string) $request->input('texto', ''));
+        $nombre = $this->consultaVademecum($texto);
+
+        return view('hc4/consulta/vademecum_interno', compact('nombre', 'texto'));
     }
+
+    private function consultaVademecum($texto)
+    {
+        $consulta = Medicina::where('estado', 1);
+
+        if ($texto !== '') {
+            $consulta->whereRaw(
+                "CONCAT(COALESCE(nombre, ''), ' ', COALESCE(presentacion, '')) LIKE ?",
+                array('%' . $texto . '%')
+            );
+        }
+
+        return $consulta
+            ->orderBy('nombre', 'asc')
+            ->orderBy('presentacion', 'asc')
+            ->paginate(8);
+    }
+
 
     public function carga_hora_inicio($hcid)
     {
@@ -790,6 +795,9 @@ class ConsultaController extends Controller
                 'id_hc' => $hcid,  
             ];   
             $id_editar = Interconsulta::insertGetId($input_ex);
+            app(\Sis_medico\Services\ClinicalConsultWorkflowService::class)->sync(
+                Interconsulta::find($id_editar), 'ROUTINE', array('actor_id'=>$id_doctor,'ip'=>$ip_cliente)
+            );
         }else{
             /*if($interconsulta->evolucion == null){
                 $tevolucion=$evolucion->cuadro_clinico;
@@ -813,7 +821,6 @@ class ConsultaController extends Controller
                 );
         }
         $dxs=$historia->diagnosticos;
-
         foreach ($dxs as $dx){
             $i_diagnostico = Interconsulta_Diagnostico::where('cie10', $dx->cie10)->where('id_interconsulta', $id_editar)->first();
             if(is_null($i_diagnostico)){
@@ -831,6 +838,47 @@ class ConsultaController extends Controller
         }
         $interconsulta = Interconsulta::find($id_editar);
         return view('hc4.consulta.interconsulta', ['interconsulta' => $interconsulta, 'tarifario' => $tarifario]);
+    }
+
+    public function agregar_cie10_007(Request $request)
+    {
+        //dd($request->all());
+        //return $request->all();
+        $ip_cliente = $_SERVER["REMOTE_ADDR"];
+        $idusuario  = Auth::user()->id;
+        date_default_timezone_set('America/Guayaquil');
+
+        if ($request['codigo'] == null) {
+            return ['estado' => 'err', 'msn' => 'Seleccione un CIE10'];
+        }
+
+        $input2 = [
+            'id_interconsulta'          => $request['id_orden'],
+            'cie10'                 => $request['codigo'],
+            'presuntivo_definitivo' => $request['pre_def'],
+            'ip_creacion'           => $ip_cliente,
+            'ip_modificacion'       => $ip_cliente,
+            'id_usuariocrea'        => $idusuario,
+            'id_usuariomod'         => $idusuario,
+
+        ];
+        $id = Interconsulta_Diagnostico::insertGetId($input2);
+
+        $count = Interconsulta_Diagnostico::where('id_interconsulta', $request['id_orden'])->get()->count();
+
+        $cie10 = Interconsulta_Diagnostico::find($id);
+        $descripcion = '';
+        $c3 = Cie_10_3::find($cie10->cie10);
+        if (!is_null($c3)) {
+            $descripcion = $c3->descripcion;
+        }
+        $c4 = Cie_10_4::find($cie10->cie10);
+        if (!is_null($c4)) {
+            $descripcion = $c4->descripcion;
+        }
+        //dd($cie10->cie10);
+
+        return ['count' => $count, 'id' => $id, 'cie10' => $cie10->cie10, 'descripcion' => $descripcion, 'pre_def' => $request['pre_def'], 'in_eg' => $request['in_eg']];
     }
     public function hc4_guardar(Request $request)
     {
@@ -851,6 +899,10 @@ class ConsultaController extends Controller
             'id_usuariocrea'  => $idusuario,
             'id_usuariomod'   => $idusuario,
         ]);
+        app(\Sis_medico\Services\ClinicalConsultWorkflowService::class)->sync(
+            $interconsulta->fresh(), $request->get('clinical_priority', 'ROUTINE'),
+            array('actor_id'=>$idusuario,'ip'=>$ip_cliente)
+        );
         return "ok";
     }
     public function hc4_imprimir($id)
@@ -869,17 +921,13 @@ class ConsultaController extends Controller
         return $pdf->stream('007-' . $interconsulta->paciente->apellido1 . '.pdf', array("Attachment" => false));
         exit(0);
     }
-
     public function examenes_buscar_publicos_otros(Request $request)
     {
         $examenes = Examen::where('estado', 1)->where('id_agrupador', 7)->where('publico_privado', 0)->where('no_orden_pub', 0)->where('nombre', 'like', '%' . $request->term . '%')->get();
-
         $arr = null;
-
         foreach ($examenes as $value) {
             $arr[] = array('value' => $value->nombre, 'id' => $value->id);
         }
-
         return $arr;
     }
 }

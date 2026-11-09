@@ -27,6 +27,7 @@ use Sis_medico\Cortesia_Paciente;
 use Sis_medico\Paciente_Alergia;
 use Sis_medico\Opcion_Usuario;
 use Sis_medico\hc_protocolo;
+use Sis_medico\HcProtocoloImagenLink;
 use Sis_medico\Hc_Evolucion;
 use Sis_medico\Hc_Procedimiento_Final;
 use Sis_medico\Principio_Activo;
@@ -77,8 +78,7 @@ class ProcedimientosEcografiaController extends Controller
                             ->join('procedimiento_completo as pc', 'pc.id', 'hc_p.id_procedimiento_completo')
                             ->join('grupo_procedimiento as gp', 'gp.id', 'pc.id_grupo_procedimiento')
                             ->where('gp.tipo_procedimiento', '2')
-                            ->where('hc_p.estado', '1')
-                            ->select('pc.nombre_general as nombre', 'u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'gp.tipo_procedimiento', 'h.hcid', 'hc_proto.fecha_operacion as f_operacion', 'h.id_agenda as id_agenda', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento','h.hcid as id_hc', 'hc_p.id_seguro as seguro_final')
+                            ->select('pc.nombre_general as nombre', 'u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'gp.tipo_procedimiento', 'h.hcid', 'hc_proto.fecha_operacion as f_operacion', 'h.id_agenda as id_agenda', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.link_imagenes', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento','h.hcid as id_hc', 'hc_p.id_seguro as seguro_final')
                             ->OrderBy('a.fechaini', 'desc')->get();
 
         //dd($pro_completo_0);
@@ -90,16 +90,15 @@ class ProcedimientosEcografiaController extends Controller
                             ->join('hc_procedimientos as hc_p', 'hc_p.id', 'hc_proto.id_hc_procedimientos')
                             ->join('users as u', 'u.id', 'hc_p.id_doctor_examinador')
                             ->where('hc_proto.tipo_procedimiento', '2')
-                            ->where('hc_p.estado', '1')
-                            ->select( 'u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento','h.hcid as id_hc', 'hc_proto.fecha_operacion as f_operacion' , 'h.id_agenda as id_agenda', 'h.id_seguro as hc_id_seguro', 'hc_p.id_seguro as seguro_final')->OrderBy('a.fechaini', 'desc')->get();
+                            ->select( 'u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.link_imagenes', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento','h.hcid as id_hc', 'hc_proto.fecha_operacion as f_operacion' , 'h.id_agenda as id_agenda', 'h.id_seguro as hc_id_seguro', 'hc_p.id_seguro as seguro_final')->OrderBy('a.fechaini', 'desc')->get();
 
        // dd($pro_completo_0);
      //dd($pro_final_0);
-     if(Auth::user()->id == '9666666666'){
-        //dd($pro_completo_0); 
-     }
 
      
+
+        HcProtocoloImagenLink::adjuntarAProcedimientos($pro_completo_0);
+        HcProtocoloImagenLink::adjuntarAProcedimientos($pro_final_0);
 
        	return view('hc4/procedimiento_ecografia/index', ['paciente' => $paciente, 'procedimientos1' => $pro_completo_0, 'procedimientos2' => $pro_final_0]);
     }
@@ -109,6 +108,9 @@ class ProcedimientosEcografiaController extends Controller
 
         //dd($proto_hcid);
         $protocolo = hc_protocolo::where('id_hc_procedimientos',$id_procedimiento)->first();
+        if ($protocolo && HcProtocoloImagenLink::tablaDisponible()) {
+            $protocolo->load('imagenLinks');
+        }
         //dd($protocolo->hcid);
         $id_seguro_pro = hc_procedimientos::where('id', $id_procedimiento)->first();
         //dd($id_seguro_pro);
@@ -127,6 +129,9 @@ class ProcedimientosEcografiaController extends Controller
 
     public function editar2($id_procedimiento){
         $protocolo = hc_protocolo::where('id_hc_procedimientos',$id_procedimiento)->first();
+        if ($protocolo && HcProtocoloImagenLink::tablaDisponible()) {
+            $protocolo->load('imagenLinks');
+        }
         $procedimiento = hc_procedimientos::find($id_procedimiento);
         $tipo = 2;
         return "hola";
@@ -138,6 +143,11 @@ class ProcedimientosEcografiaController extends Controller
     }
 
     public function guardar(Request $request){
+
+        $request->validate([
+            'link_imagenes' => 'nullable|array',
+            'link_imagenes.*' => 'nullable|url|max:2048',
+        ]);
 
         $ip_cliente= $_SERVER["REMOTE_ADDR"];
         $idusuario = Auth::user()->id;
@@ -152,6 +162,7 @@ class ProcedimientosEcografiaController extends Controller
 
         $protocolo = hc_protocolo::find($request['id_protocolo']);
         $procedimiento = hc_procedimientos::find($request['id_procedimiento']);
+        $linksImagenes = HcProtocoloImagenLink::normalizarUrls($request->input('link_imagenes', []));
 
         $protocolo_new = $protocolo;
         $procedimiento_new = $procedimiento;
@@ -176,6 +187,7 @@ class ProcedimientosEcografiaController extends Controller
         $input = [
             'conclusion' => $request['conclusion'],
             'hallazgos' => $request['hallazgos'],
+            'link_imagenes' => $linksImagenes[0] ?? null,
             'tipo_procedimiento' => '2',
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario
@@ -198,6 +210,7 @@ class ProcedimientosEcografiaController extends Controller
             
         $procedimiento->update($input2);
         $protocolo->update($input);
+        HcProtocoloImagenLink::sincronizar($protocolo->id, $linksImagenes, $idusuario, $ip_cliente);
         $anteriores = Hc_Procedimiento_Final::where('id_hc_procedimientos', $request['id_procedimiento']);
         
         //dd($procedimientos);
@@ -221,6 +234,11 @@ class ProcedimientosEcografiaController extends Controller
 
     public function guardar_2(Request $request){
 
+        $request->validate([
+            'link_imagenes' => 'nullable|array',
+            'link_imagenes.*' => 'nullable|url|max:2048',
+        ]);
+
         $ip_cliente= $_SERVER["REMOTE_ADDR"];
         $idusuario = Auth::user()->id;
 
@@ -228,6 +246,7 @@ class ProcedimientosEcografiaController extends Controller
 
         $procedimientos = $request['procedimiento']; 
         $protocolo = hc_protocolo::find($request['id_protocolo']);
+        $linksImagenes = HcProtocoloImagenLink::normalizarUrls($request->input('link_imagenes', []));
         $procedimiento = hc_procedimientos::find($request['id_procedimiento']);
         $id_seguro_pro = hc_procedimientos::where('id', $request['id_procedimiento'])->first();
         $procedimientos = $request['procedimiento']; 
@@ -238,6 +257,7 @@ class ProcedimientosEcografiaController extends Controller
         $input = [
             'conclusion' => $request['conclusion'],
             'hallazgos' => $request['hallazgos'],
+            'link_imagenes' => $linksImagenes[0] ?? null,
             'ip_modificacion' => $ip_cliente,
             'id_usuariomod' => $idusuario
         ];
@@ -257,6 +277,7 @@ class ProcedimientosEcografiaController extends Controller
             
         $procedimiento->update($input2);
         $protocolo->update($input);
+        HcProtocoloImagenLink::sincronizar($protocolo->id, $linksImagenes, $idusuario, $ip_cliente);
         $anteriores = Hc_Procedimiento_Final::where('id_hc_procedimientos', $request['id_procedimiento']);
         
         //dd($procedimientos);
@@ -348,9 +369,10 @@ class ProcedimientosEcografiaController extends Controller
        //return $request->all();
         $proc_com = $request['proc_com'];
         
-        $procedimiento = procedimiento_completo::find($proc_com);
+        $procedimiento = procedimiento_completo::findOrFail($proc_com);
+        $procedimiento->tecnica_quirurgica = strip_tags((string) $procedimiento->tecnica_quirurgica);
     
-        return $procedimiento;
+        return response()->json($procedimiento);
 
         
     }
@@ -569,6 +591,9 @@ class ProcedimientosEcografiaController extends Controller
                             ->select( 'u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento','h.hcid as id_hc', 'hc_proto.fecha_operacion as f_operacion' , 'h.id_agenda as id_agenda', 'h.id_seguro as hc_id_seguro', 'hc_p.id_seguro as seguro_final')->OrderBy('hc_proto.created_at', 'desc')->get();
 
         //dd($pro_final_0);
+        HcProtocoloImagenLink::adjuntarAProcedimientos($pro_completo_0);
+        HcProtocoloImagenLink::adjuntarAProcedimientos($pro_final_0);
+
         return view('hc4/procedimiento_ecografia/unico_regresar_proc', ['paciente' => $paciente, 'procedimientos1' => $pro_completo_0, 'procedimientos2' => $pro_final_0]);
     }
 

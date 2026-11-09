@@ -14,6 +14,7 @@ use Sis_medico\Archivo_historico;
 use Sis_medico\Empresa;
 use Sis_medico\Excel_Valores;
 use Sis_medico\Firma_Usuario;
+use Sis_medico\Formato_consentimiento;
 use Sis_medico\Hc_Anestesiologia;
 use Sis_medico\hc_child_pugh;
 use Sis_medico\Hc_cpre_eco;
@@ -38,14 +39,8 @@ use Sis_medico\Pentax_log;
 use Sis_medico\Procedimiento;
 use Sis_medico\Record;
 use Sis_medico\Seguro;
-use Sis_medico\Ct_Factura_Procedimiento;
 use Sis_medico\Tipo_Anesteciologia;
 use Sis_medico\User;
-use Sis_medico\Ct_Detalle_Venta_Omni;
-use Sis_medico\Http\Controllers\Insumos\PlantillaController;
-use Sis_medico\Planilla_Cabecera;
-use Sis_medico\Planilla_Detalle;
-use Sis_medico\Procedimiento_Detalle_Honorario;
 
 class ProtocoloController extends Controller
 {
@@ -131,15 +126,19 @@ class ProtocoloController extends Controller
 
             if ($protocolo == "") {
 
-                $hallazgos = $hc_procedimientos->procedimiento_completo->tecnica_quirurgica;
+                $hallazgos = optional($hc_procedimientos->procedimiento_completo)->tecnica_quirurgica ?: '';
 
             } else {
 
                 $hallazgos = $protocolo->hallazgos;
             }
             $anestesiologia = Hc_Anestesiologia::where('id_hc_procedimientos', '=', $id_procedimiento)->first();
+            $consentFormats = Formato_consentimiento::where('estado', 1)
+                ->where(function ($query) use ($agenda) {
+                    $query->whereNull('id_empresa')->orWhere('id_empresa', $agenda->id_empresa);
+                })->orderBy('nombre')->get();
 
-            return view('hc_admision/protocolo/protocolo', ['agenda' => $agenda, 'paciente' => $paciente, 'usuarios' => $usuarios, 'enfermeros' => $enfermeros, 'salas' => $salas, 'hca' => $hca, 'hcp' => $hcp, 'seguro' => $seguro, 'fotos' => $fotos, 'archivo_vrf' => $archivo_vrf, 'hcagenda' => $hcagenda, 'records' => $records, 'hc_procedimientos' => $hc_procedimientos, 'protocolo' => $protocolo, 'hallazgos' => $hallazgos, 'id' => $id_procedimiento, 'anestesiologia' => $anestesiologia]);
+            return view('hc_admision/protocolo/protocolo', ['agenda' => $agenda, 'paciente' => $paciente, 'usuarios' => $usuarios, 'enfermeros' => $enfermeros, 'salas' => $salas, 'hca' => $hca, 'hcp' => $hcp, 'seguro' => $seguro, 'fotos' => $fotos, 'archivo_vrf' => $archivo_vrf, 'hcagenda' => $hcagenda, 'records' => $records, 'hc_procedimientos' => $hc_procedimientos, 'protocolo' => $protocolo, 'hallazgos' => $hallazgos, 'id' => $id_procedimiento, 'anestesiologia' => $anestesiologia, 'consentFormats' => $consentFormats]);
         }
     }
 
@@ -166,7 +165,23 @@ class ProtocoloController extends Controller
                 'id_usuariomod'        => $idusuario,
             ];
 
-            hc_protocolo::insert($input1);
+            try {
+                DB::beginTransaction();
+                $context = array('actor_id' => $idusuario, 'ip' => $ip_cliente);
+                $authorization = app(\Sis_medico\Services\ClinicalProcedureSafetyService::class)
+                    ->authorizeForProcedure($request["id_hc_procedimientos"], $request->all(), $context);
+                $protocolId = hc_protocolo::insertGetId($input1);
+                app(\Sis_medico\Services\ClinicalProcedureSafetyService::class)
+                    ->consume($authorization, 'hc_protocolo', $protocolId, $context);
+                app(\Sis_medico\Services\ClinicalOrderService::class)->syncProcedureProtocol(hc_protocolo::find($protocolId));
+                DB::commit();
+            } catch (\Sis_medico\Exceptions\ClinicalProcedureBlockedException $exception) {
+                DB::rollBack();
+                return redirect()->back()->withInput()->withErrors(array('clinical_safety' => $exception->getMessage()));
+            } catch (\Exception $exception) {
+                DB::rollBack();
+                throw $exception;
+            }
         } else {
             $id     = $protocolo->id;
             $input1 = [
@@ -182,6 +197,7 @@ class ProtocoloController extends Controller
             ];
             hc_protocolo::where('id', $id)
                 ->update($input1);
+            app(\Sis_medico\Services\ClinicalOrderService::class)->syncProcedureProtocol(hc_protocolo::find($id));
         }
         return redirect()->intended('historiaclinica/protocolo/' . $request["id_hc_procedimientos"]);
     }
@@ -260,6 +276,7 @@ class ProtocoloController extends Controller
 
     public function masterhc(Request $request)
     {
+
         $fecha       = $request['fecha'];
         $fecha_hasta = $request['fecha_hasta'];
 
@@ -313,7 +330,7 @@ class ProtocoloController extends Controller
 
         $procedimientos = $procedimientos->where('a.espid', '<>', '10')->paginate(50);
 
-        // dd($procedimientos);
+        //dd($procedimientos);
         $consultas = DB::table('hc_evolucion as he')->join('historiaclinica as h', 'h.hcid', 'he.hcid')->join('users as hd', 'hd.id', 'h.id_doctor1')->join('agenda as a', 'a.id', 'h.id_agenda')->join('paciente as p', 'p.id', 'h.id_paciente')->join('hc_procedimientos as hp', 'hp.id', 'he.hc_id_procedimiento')->leftjoin('procedimiento_completo as pc', 'pc.id', 'hp.id_procedimiento_completo')->leftjoin('seguros as hs', 'hs.id', 'hp.id_seguro')->leftjoin('users as hu', 'hu.id', 'hp.id_doctor_examinador')->select('he.*', 'p.apellido1', 'p.apellido2', 'p.nombre1', 'p.nombre2', 'p.id as id_paciente', 'pc.nombre_general', 'a.fechaini', 'p.id as id_paciente', 'hp.id_seguro', 'hp.id_doctor_examinador', 'hs.nombre as hsnombre', 'hu.apellido1 as huapellido', 'hu.nombre1 as hunombre', 'pc.nombre_general', 'hd.apellido1 as hdapellido', 'hd.nombre1 as hdnombre', 'a.proc_consul')->where('pc.id', '40');
 
         $nombres_sql = '';
@@ -363,9 +380,6 @@ class ProtocoloController extends Controller
 
         $protocolo     = hc_protocolo::find($id);
         $procedimiento = hc_procedimientos::find($protocolo->id_hc_procedimientos);
-
-        $detalle_pdf = Procedimiento_Detalle_Honorario::where('id_hc_procedimientos', $protocolo->id_hc_procedimientos)->where('estado', '1')->get();
-
         //dd($procedimiento->id);
         $evoluciones_proc = DB::table('hc_evolucion as e')->join('historiaclinica as h', 'e.hcid', 'h.hcid')->join('agenda as a', 'a.id', 'h.id_agenda')->orderBy('a.fechaini', 'desc')->select('e.*', 'a.fechaini', 'a.proc_consul', 'a.espid')->where('e.hc_id_procedimiento', $procedimiento->id)->get();
 
@@ -390,7 +404,7 @@ class ProtocoloController extends Controller
             ->select('r.*', 'a.fechaini', 's.nombre')
             ->get();
 
-        $insumos = array();
+        //$insumos = array();
         if (!is_null($procedimiento)) {
             $insumos = DB::table('movimiento_paciente as mp')
                 ->where('mp.id_hc_procedimientos', $procedimiento->id)
@@ -398,6 +412,7 @@ class ProtocoloController extends Controller
                 ->join('producto as p', 'p.id', 'm.id_producto')
                 ->get();
         }
+
         $equipos = array();
         if (!is_null($procedimiento)) {
             $equipos = DB::table('equipo_historia as eh')
@@ -407,28 +422,8 @@ class ProtocoloController extends Controller
                 ->get();
         }
 
-        $planilla   = PlantillaController::planillaProcedimiento($protocolo->id_hc_procedimientos);
-
-        if (!isset($planilla->id)) {
-            $detalles = '[]';
-        } else {
-            $detalles = $planilla->detalles_validos;
-        }
-
-        $equipos2 = DB::table('equipo_historia as eh')->join('equipo as e', 'e.id', 'eh.id_equipo')->where('hcid', $procedimiento->id_hc)->select('e.*', 'eh.*')->get();
-
-
-        // facturado 
-        $insufac = Ct_Detalle_Venta_Omni::where('id_hc_procedimiento', $protocolo->id_hc_procedimientos)->get();
-        $planilla_cabecera = Planilla_Cabecera::where('id_hc_procedimiento',$procedimiento->id)->first();
-        $detalles = array();
-        if(!is_null($planilla_cabecera)){
-            $detalles = Planilla_Detalle::where('id_planilla_cabecera',$planilla_cabecera->id)->where('check',1)->where('estado',1)->get();
-        }
-        return view('hc_admision/procedimientos/procedimiento_det', ['procedimiento' => $procedimiento, 'evoluciones_proc' => $evoluciones_proc, 
-        'imagenes' => $imagenes, 'protocolo' => $protocolo, 'documentos' => $documentos, 'estudios' => $estudios, 'biopsias' => $biopsias, 
-        'hc_receta' => $hc_receta, 'alergiasxpac' => $alergiasxpac, 'epicrisis' => $epicrisis, 'hist_recetas' => $hist_recetas, 'insumos' => $insumos, 
-        'equipos' => $equipos, 'insufac' => $insufac, "detalle_pdf" => $detalle_pdf, 'detalles'=> $detalles,'equipos2'=> $equipos2,'detalles' => $detalles]);
+        // dd($insumos);
+        return view('hc_admision/procedimientos/procedimiento_det', ['procedimiento' => $procedimiento, 'evoluciones_proc' => $evoluciones_proc, 'imagenes' => $imagenes, 'protocolo' => $protocolo, 'documentos' => $documentos, 'estudios' => $estudios, 'biopsias' => $biopsias, 'hc_receta' => $hc_receta, 'alergiasxpac' => $alergiasxpac, 'epicrisis' => $epicrisis, 'hist_recetas' => $hist_recetas, 'insumos' => $insumos, 'equipos' => $equipos]);
     }
 
     public function detalle_consulta($id)
@@ -692,7 +687,7 @@ class ProtocoloController extends Controller
 
     public function guardar_op_cpre_eco(Request $request)
     {
-        //dd($request->all());
+
         $protocolo = hc_protocolo::find($request->protocolo);
         $cpre_eco  = Hc_cpre_eco::where('hcid', $protocolo->hcid)->first();
 
@@ -859,432 +854,30 @@ class ProtocoloController extends Controller
 
     public function crear_procedimiento(Request $request)
     {
+        $created = app(\Sis_medico\Services\ClinicalProtocolProcedureService::class)
+            ->create($request, Auth::user()->id, $request->ip());
 
-        //return $request->all();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $id_doctor  = Auth::user()->id;
-
-        $procedimientos = $request['procedimiento'];
-        $procedimientop = $procedimientos[0];
-        $paciente       = Paciente::find($request->paciente);
-
-        $input_agenda = [
-            'fechaini'         => Date('Y-m-d H:i:s'),
-            'fechafin'         => Date('Y-m-d H:i:s'),
-            'id_paciente'      => $paciente->id,
-            'id_doctor1'       => $id_doctor,
-            'proc_consul'      => '4',
-            'estado_cita'      => '4',
-            'espid'            => '4',
-            'observaciones'    => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-            'id_seguro'        => $paciente->id_seguro,
-            'estado'           => '4',
-            'ip_creacion'      => $ip_cliente,
-            'ip_modificacion'  => $ip_cliente,
-            'id_usuariocrea'   => $id_doctor,
-            'id_usuariomod'    => $id_doctor,
-            'id_procedimiento' => $procedimientop,
-            'id_sala'          => '10',
-        ];
-
-        $id_agenda = agenda::insertGetId($input_agenda);
-        //return $id_agenda;
-
-        $txt_pro = '';
-        foreach ($procedimientos as $value) {
-
-            if ($procedimientop != $value) {
-                $txt_pro = $txt_pro . '+' . $value;
-                AgendaProcedimiento::create([
-                    'id_agenda'        => $id_agenda,
-                    'id_procedimiento' => $value,
-                    'ip_creacion'      => $ip_cliente,
-                    'ip_modificacion'  => $ip_cliente,
-                    'id_usuariocrea'   => $id_doctor,
-                    'id_usuariomod'    => $id_doctor,
-                ]);
-            }
-
+        if ($request->expectsJson()) {
+            return response()->json(array(
+                'status' => 'ok',
+                'message' => 'Procedimiento creado correctamente.',
+                'data' => $created,
+            ));
         }
 
-        $input_log = [
-            'id_agenda'       => $id_agenda,
-            'estado_cita_ant' => '0',
-            'estado_cita'     => '0',
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'estado'          => '4',
-            'observaciones'   => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-            'id_doctor1'      => $id_doctor,
-            'descripcion'     => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
-            'campos_ant'      => 'PRO: ' . $procedimientop . $txt_pro,
-
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-        ];
-
-        $idusuario = $id_doctor;
-
-        Log_agenda::create($input_log);
-
-        $input_historia = [
-
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $paciente->id,
-            'id_seguro'       => $paciente->id_seguro,
-
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_historia = Historiaclinica::insertGetId($input_historia);
-
-        $input_pentax = [
-            'id_agenda'       => $id_agenda,
-            'hcid'            => $id_historia,
-            'id_sala'         => '10',
-            'id_doctor1'      => $idusuario,
-            'id_seguro'       => $paciente->id_seguro,
-            'observacion'     => "PROCEDIMIENTO CREADO POR EL DOCTOR",
-            'id_usuariocrea'  => $idusuario,
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_pentax = Pentax::insertGetId($input_pentax);
-
-        $list_proc = '';
-        foreach ($procedimientos as $value) {
-            $input_pentax_pro2 = [
-                'id_pentax'        => $id_pentax,
-                'id_procedimiento' => $value,
-                'id_usuariocrea'   => $idusuario,
-                'ip_modificacion'  => $ip_cliente,
-                'id_usuariomod'    => $idusuario,
-                'ip_creacion'      => $ip_cliente,
-            ];
-
-            PentaxProc::create($input_pentax_pro2);
-            $list_proc = $list_proc . "+" . $value;
-        }
-
-        $input_log_px = [
-            'id_pentax'       => $id_pentax,
-            'tipo_cambio'     => "CREADO POR EL DOCTOR",
-            'descripcion'     => "EN ESPERA",
-            'estado_pentax'   => '0',
-            'procedimientos'  => $list_proc,
-            'id_doctor1'      => $idusuario,
-            'observacion'     => "CREADO POR EL DOCTOR",
-            'id_sala'         => '10',
-            'id_seguro'       => $paciente->id_seguro,
-
-            'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
-            'id_usuariomod'   => $idusuario,
-            'id_usuariocrea'  => $idusuario,
-        ];
-
-        Pentax_log::create($input_log_px);
-
-        $input_hc_procedimiento = [
-            'id_hc'           => $id_historia,
-            'id_seguro'       => $paciente->id_seguro,
-
-            'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
-
-        ];
-
-        $id_hc_procedimiento = hc_procedimientos::insertGetId($input_hc_procedimiento);
-
-        $input_hc_protocolo = [
-            'id_hc_procedimientos' => $id_hc_procedimiento,
-            'hora_inicio'          => date('H:i:s'),
-            'hora_fin'             => date('H:i:s'),
-            'estado_final'         => ' ',
-            'ip_modificacion'      => $ip_cliente,
-            'hcid'                 => $id_historia,
-            'id_usuariocrea'       => $idusuario,
-            'id_usuariomod'        => $idusuario,
-            'ip_creacion'          => $ip_cliente,
-            'created_at'           => date('Y-m-d H:i:s'),
-            'updated_at'           => date('Y-m-d H:i:s'),
-        ];
-        hc_protocolo::insert($input_hc_protocolo);
-
-        foreach ($procedimientos as $value) {
-            $input_pro_final = [
-                'id_hc_procedimientos' => $id_hc_procedimiento,
-                'id_procedimiento'     => $value,
-                'id_usuariocrea'       => $idusuario,
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-            ];
-
-            Hc_Procedimiento_Final::create($input_pro_final);
-        }
-
-        return "ok";
-
+        // Compatibilidad con las pantallas antiguas que todavía comparan la
+        // respuesta de texto directamente contra "ok".
+        return 'ok';
     }
 
     public function produccion_mes()
     {
-
-        $doctores       = User::where('id_tipo_usuario', '3')->where('estado', '1')->orderBy('nombre1')->get();
-        $seguros        = DB::table('seguros as s')->where('s.inactivo', '1')->get();
-        $procedimientos = DB::table('hc_procedimientos as hp')->join('historiaclinica as h', 'h.hcid', 'hp.id_hc')->join('agenda as a', 'a.id', 'h.id_agenda')->join('paciente as p', 'p.id', 'h.id_paciente')->wherenull('id_procedimiento_completo')->where('hp.estado', '1')->whereYear('a.fechaini', '2019')->whereMonth('a.fechaini', '09')->select(DB::raw('YEAR(a.fechaini) as year, MONTH(a.fechaini) as month'), 'a.fechaini', 'h.id_paciente', 'p.apellido1', 'p.apellido2', 'p.nombre1', 'p.nombre2', 'hp.id as hpid', 'hp.id_seguro', 'a.id_empresa as aempresa', 'hp.id_empresa as hpempresa', 'a.id as agenda', 'hp.estimado_minimo')->orderBy('a.id')->get();
-
-        //MARCA QUIEN NO TIENE PROCEDIMIENTO FINAL
-        /*foreach ($procedimientos as $val) {
-        $px = Hc_Procedimiento_Final::where('id_hc_procedimientos',$val->hpid)->get();
-        if($px->count()==0){
-        $arr=[
-        'estado' => '0',
-        'ip_creacion' => 'SIN_PROC'
-        ];
-        hc_procedimientos::find($val->hpid)->update($arr);
-        }
-        }*/
-        //ACTUALIZA EMPRESA
-        /*foreach ($procedimientos as $val) {
-        $px = Hc_Procedimiento_Final::where('id_hc_procedimientos',$val->hpid)->get();
-        if($px->count()>0){
-        $arr=[
-        'id_empresa' => $val->aempresa,
-        ];
-        hc_procedimientos::find($val->hpid)->update($arr);
-        }
-        } */
-        //carga valores estimados
-        /*foreach ($procedimientos as $val) {
-
-        $px = Hc_Procedimiento_Final::where('id_hc_procedimientos',$val->hpid)->get();
-        if($px->count()=='1'){
-        if($val->id_seguro=='1'){
-
-        $valor = DB::table('estimado_procedimientos_convenios')->where('id_seguro','1')->where('id_procedimiento',$px['0']->id_procedimiento)->first();//particulares
-
-        if(!is_null($valor)){
-        $arr=[
-        'estimado_minimo' => $valor->valor,
-        ];
-        hc_procedimientos::find($val->hpid)->update($arr);
-        }
-        }else{
-        $seguro = Seguro::find($val->id_seguro);
-        if($seguro->tipo=='0'){
-        $valor = DB::table('estimado_procedimientos_convenios')->where('id_seguro','2')->where('id_procedimiento',$px['0']->id_procedimiento)->first();
-
-        if(!is_null($valor)){
-        $arr=[
-        'estimado_minimo' => $valor->valor,
-        ];
-        hc_procedimientos::find($val->hpid)->update($arr);
-        }
-
-        }
-        }
-
-        }
-        if($px->count()>'1'){
-        if($val->id_seguro=='1'){
-        $arr=[
-        'estimado_minimo' => '999',
-        ];
-        hc_procedimientos::find($val->hpid)->update($arr);
-
-        }else{
-        $seguro = Seguro::find($val->id_seguro);
-        if($seguro->tipo=='0'){
-        $txt_pro = '';$cont = 0;
-        foreach ($px as $pt) {
-        if($cont == 0){
-        $txt_pro = $pt->id_procedimiento;
-        $cont ++;
-        }else{
-        $txt_pro = $txt_pro.'+'.$pt->id_procedimiento;
-        }
-        }
-        //dd($txt_pro);
-        $valor = DB::table('estimado_procedimientos_convenios')->where('id_seguro','2')->where('id_procedimiento',$txt_pro)->first();
-
-        if(!is_null($valor)){
-        $arr=[
-        'estimado_minimo' => $valor->valor,
-        ];
-        hc_procedimientos::find($val->hpid)->update($arr);
-        }
-
-        }
-        }
-
-        }
-        else{
-
-        }
-        }*/
-
-        /*
-        foreach ($procedimientos as $val){//AGREGA PROCEDIMIENTOS SECUNDARIOS
-        $pentax = Pentax::where('id_agenda', $val->agenda)->first();
-        if(!is_null($pentax)){
-        $id_principal=0;$id_secundario = 0;
-        $pproc = PentaxProc::where('id_pentax',$pentax->id)->get();
-        //dd($pproc);
-        foreach($pproc as $p1){
-
-        if($p1->procedimiento->id_grupo_procedimiento != null){
-        $id_principal=$p1->id_procedimiento;
-        }
-        if($id_principal != 0){
-        $id_secundario=$p1->id_procedimiento;
-        if($id_secundario!=0 && $id_principal!=0){
-
-        $px_sec = Hc_Procedimiento_Final::where('id_hc_procedimientos',$val->hpid)->where('id_procedimiento',$id_secundario)->first();
-        if(is_null($px_sec)){
-        $px_pri = Hc_Procedimiento_Final::where('id_hc_procedimientos',$val->hpid)->where('id_procedimiento',$id_principal)->first();
-        if(!is_null($px_pri)){
-        //dd($id_secundario,$id_principal);
-        $input_pro_final = [
-        'id_hc_procedimientos' => $val->hpid,
-        'id_procedimiento' => $id_secundario,
-        'id_usuariocrea' => '0922290697',
-        'ip_modificacion' => 'SISTEMAS',
-        'id_usuariomod' => '0922290697',
-        'ip_creacion' => 'SISTEMAS',
-        ];
-
-        Hc_Procedimiento_Final::create($input_pro_final);
-
-        }
-        }
-        }
-        }
-
-        }
-
-        }
-        } */
-
-        return view('hc_admision.procedimientos.estadisticos', ['procedimientos' => $procedimientos, 'nombres' => null, 'doctores' => $doctores, 'seguros' => $seguros, 'id_doctor1' => null, 'id_seguro' => null]);
+        return app(\Sis_medico\Services\ClinicalProtocolStatisticsService::class)->monthlyProduction();
     }
 
     public function subir_excel()
     {
-
-        ini_set('max_execution_time', 100);
-
-        Excel::filter('chunk')->load('subevalor.xlsx')->chunk(250, function ($reader) {
-
-            foreach ($reader as $book) {
-
-                //dd($book);
-                //$anio = date("Y",strtotime($book->fecha_proced));
-                //$mes = date("d",strtotime($book->fecha_proced));
-                $anio = $book->anio;
-                $mes  = $book->mes;
-
-                $arrf = explode('/', $book->fecha_proced);
-
-                $nombre = ltrim($book->paciente);
-                $nombre = rtrim($nombre);
-                $nombre = trim($nombre, " \t\n\r");
-                $nombre = str_replace('_x000D_', '', $nombre);
-
-                /*if($book->id == 8058){
-                dd($book, $arrf);
-                }*/
-                $array = [
-                    'anio'                => $anio,
-                    'mes'                 => $mes,
-                    'id_subida'           => $book->id,
-                    'fecha_procedimiento' => $arrf[2] . '/' . $arrf[1] . '/' . $arrf[0],
-                    'fecha'               => $arrf[2] . '/' . $arrf[1] . '/' . $arrf[0],
-                    'procedimiento'       => $book->proced,
-                    'tipo'                => $book->tipo,
-                    'paciente'            => $nombre,
-                    'seguro'              => $book->seguro,
-                    'id_seguro'           => $book->id_seguro,
-                    'valor'               => $book->valor,
-                    'grupo'               => $book->proc,
-                    'id_usuariocrea'      => '0922290697',
-                    'id_usuariomod'       => '0922290697',
-                    'ip_creacion'         => 'SISTEMAS',
-                    'ip_modificacion'     => 'SISTEMAS',
-
-                ];
-
-                //dd($array);
-
-                $excel = Excel_Valores::where('anio', $anio)->where('mes', $mes)->where('id_subida', $book->id)->first();
-                //dd($excel);
-                if (is_null($excel)) {
-
-                    Excel_Valores::create($array);
-                } else {
-
-                    $nombre      = ltrim($book->paciente);
-                    $nombre      = rtrim($nombre);
-                    $nombre      = trim($nombre, " \t\n\r");
-                    $nombre      = str_replace('_x000D_', '', $nombre);
-                    $e_nombre    = explode(' ', $nombre);
-                    $nombres_sql = '';
-                    $cantidad    = count($e_nombre);
-                    foreach ($e_nombre as $n) {
-                        $nombres_sql = $nombres_sql . '%' . $n;
-                    }
-                    $nombres_sql = $nombres_sql . '%';
-                    //dd($nombres_sql);
-
-                    if ($cantidad == '2' || $cantidad == '3') {
-                        $paciente = Paciente::where(function ($jq1) use ($nombres_sql) {
-                            $jq1->orwhereraw('CONCAT(apellido1," ",apellido2," ",nombre1," ",nombre2) LIKE ?', [$nombres_sql])
-                                ->orwhereraw('CONCAT(nombre1," ",nombre2," ",apellido1," ",apellido2) LIKE ?', [$nombres_sql])
-                                ->orwhereraw('CONCAT(nombre1," ",apellido1," ",apellido2) LIKE ?', [$nombres_sql])
-                                ->orwhereraw('CONCAT(apellido1," ",apellido2," ",nombre1) LIKE ?', [$nombres_sql]);
-                        })->get();
-
-                    } else {
-
-                        $paciente = Paciente::where(function ($jq1) use ($nombres_sql) {
-                            $jq1->orwhereraw('CONCAT(apellido1," ",apellido2," ",nombre1," ",nombre2) LIKE ?', [$nombres_sql])
-                                ->orwhereraw('CONCAT(nombre1," ",nombre2," ",apellido1," ",apellido2) LIKE ?', [$nombres_sql]);
-                        })->get();
-                    }
-
-                    if ($paciente->count() == 1) {
-                        $id_cedula = $paciente[0]->id;
-
-                        $arr2 = [
-
-                            'paciente'    => $nombre,
-                            'id_paciente' => $id_cedula,
-                            'ip_creacion' => 'SISTEMAS2',
-                        ];
-
-                        $excel->update($arr2);
-                    }
-
-                }
-            }
-        });
-
-        return "ok";
+        return app(\Sis_medico\Services\ClinicalProtocolImportService::class)->import();
     }
 
     public function cargar_empresa($id_proc, $id_agenda, $id_seguro)
@@ -1660,8 +1253,7 @@ class ProtocoloController extends Controller
 
     public function produccion_estad()
     {
-
-        return view('hc_admision.procedimientos.carga');
+        return redirect()->route('v3.procedure-production.index');
     }
 
     public function estad_index()

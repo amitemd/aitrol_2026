@@ -76,7 +76,7 @@ $minu = strtolower($empresa->razonsocial);
                     SI COMPRENDÍ EL CONTENIDO
                 </th>
                 <th class="th">
-                    NO COMPRENDÍ EL CONTENIDO
+                    NO COMPENDÍ EL CONTENIDO
                 </th>
             </tr>
             <tr>

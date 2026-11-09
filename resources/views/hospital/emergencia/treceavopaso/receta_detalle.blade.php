@@ -1,13 +1,12 @@
-<table role="table" aria-busy="false" aria-colcount="4" class="table b-table">
+<table role="table" aria-busy="false" aria-colcount="5" class="table b-table">
 	<thead role="rowgroup" class="">
-		<thead role="rowgroup" class="">
       <tr role="row" class="">
-        <th width="20%" role="columnheader" scope="col" aria-colindex="1" class=""><div>{{trans('paso2.MEDICAMENTO')}}</div></th>
+        <th width="15%" role="columnheader" scope="col" aria-colindex="1" class=""><div>{{trans('paso2.MEDICAMENTO')}}</div></th>
         <th width="10%" role="columnheader" scope="col" aria-colindex="2" class=""><div>{{trans('paso2.Cantidad')}}</div></th>
-        <th width="55%" role="columnheader" scope="col" aria-colindex="3" class=""><div>{{trans('paso2.POSOLOGIA')}}</div></th>
-        <th width="15%" role="columnheader" scope="col" aria-colindex="4" class=""><div>{{trans('paso2.ACCION')}}</div></th>
+        <th width="40%" role="columnheader" scope="col" aria-colindex="3" class=""><div>{{trans('paso2.POSOLOGIA')}}</div></th>
+        <th width="10%" role="columnheader" scope="col" aria-colindex="4" class=""><div>{{trans('paso2.ACCION')}}</div></th>
+        <th width="25%" role="columnheader" scope="col" aria-colindex="5" class=""><div>Administración eMAR</div></th>
       </tr>
-    </thead>
 	</thead>
 	<tbody role="rowgroup">
 		@foreach($detalles as $detalle)
@@ -24,6 +23,9 @@
               <button id="del{{$detalle->id}}" type="button" class="btn btn-danger btn-sm" onclick="eliminar_medicina('{{$detalle->id}}');">
                 <i class="fa fa-trash"></i>
               </button>
+            </td>
+            <td aria-colindex="5" role="cell" class="">
+              @include('hospital.medication._emar_fields', ['detalle' => $detalle])
             </td>
           </tr>
     @endforeach      

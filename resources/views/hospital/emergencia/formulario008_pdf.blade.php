@@ -3,6 +3,7 @@
 
 
 <head>
+    <meta charset="utf-8">
     <style>
         @page {
             margin-top: 60px;
@@ -593,7 +594,7 @@
                     <tr class="alinear">
                         <td colspan="16" width="10%" class="texto altura2">
                             <textarea float="right" name="" id="" cols="30" rows="10">
-                            {{$form008->observacion_quintop}}
+                            {{ trim((string) $form008->observacion_quintop) !== '' ? $form008->observacion_quintop : ($emergencySource['suggestions']['motivo'] ?? '') }}
                             </textarea>
 
                         </td>
@@ -1193,7 +1194,7 @@
                         <td colspan="2" width="5%" class="texto">{{trans('transformularios.Código')}}</td>
                         <td colspan="2" width="5%" class="texto">{{$form008->codigo}}</td>
                         <td width="5%" class="texto">{{trans('transformularios.FIRMA')}}</td>
-                        <td width="5%" class="texto">{{$usuario->nombre1}} {{$usuario->nombre2}} {{$usuario->apellido1}} {{$usuario->apellido2}} </td>
+                        <td width="5%" class="texto">{{ $usuario ? trim($usuario->nombre1.' '.$usuario->nombre2.' '.$usuario->apellido1.' '.$usuario->apellido2) : '' }}</td>
                         <td width="5%" class="texto">{{trans('transformularios.NUMERODEHOJA')}}</td>
                         <td width="5%" class="texto">1</td>
 
@@ -1207,7 +1208,17 @@
             <div style="width: 50%;  display: inline-block;">
                 SNS-MSP / HCU-form.008 /2008 EMERGENCIAS (1)
         </footer>
+@if(!empty($emergencySource['records']))
+    <div style="page-break-before: always; font-family: DejaVu Sans, sans-serif; font-size: 10px; padding: 16px;">
+        <h2>Registros clínicos de emergencia · episodio {{ $solicitudemer->id }}</h2>
+        <p>Transcripción de notas registradas en la atención. Cada entrada conserva su fecha y autor; no sustituye una firma clínica.</p>
+        @foreach($emergencySource['records'] as $sourceRecord)
+            <div style="border: 1px solid #aaa; margin: 10px 0; padding: 8px; page-break-inside: avoid;">
+                <strong>{{ $sourceRecord['title'] }}</strong> · {{ $sourceRecord['recorded_at'] }} · {{ $sourceRecord['recorded_by'] }}
+                <p style="white-space: pre-wrap;">{{ $sourceRecord['content'] }}</p>
+            </div>
+        @endforeach
+    </div>
+@endif
 </body>
-
-
 </html>

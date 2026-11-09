@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
 
@@ -135,7 +135,7 @@ hspace=12></p>
   border-top:none;padding:0cm 5.4pt 0cm 5.4pt;height:14.95pt'>
   <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
   normal'><span style='font-size:9.0pt'><b>PERSONA DE CONTACTO:</b> DR. CARLOS
-  ROBLES MEDRANDA </span></p>
+  ROBLES JARA </span></p>
   </td>
  </tr>
  <tr style='height:14.0pt'>
@@ -223,7 +223,7 @@ text-align:center'><b><u>ACUSE ENTREGA DEL SERVICIO</u></b></p>
 text-align:justify;text-indent:-18.0pt'><span style='font-size:9.0pt;
 line-height:115%;font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
 </span></span><b><span style='font-size:9.0pt;line-height:115%'>Como prestador
-de la RPIS. Conozco obligatoriamente del TSNS. y sus procedimientos que están
+de la RPIS. Conozco obligatoriamente del TPSNS. y sus procedimientos que están
 regulado en la Normativa Legal.</span></b></p>
 
 <p class=MsoListParagraphCxSpLast style='margin-bottom:0cm;margin-bottom:.0001pt;
@@ -271,7 +271,7 @@ text-align:center;line-height:normal'><b><u>ACUSE RECEPCION DEL SERVICIO</u></b>
 normal'>&nbsp;</p>
 
 <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-normal'><span style="font-size: 10;">Ciudad: Guayaquil, a los ______ Días del mes de <b><?php $mes = substr($date, 5, 2); if($mes == 01){ echo "Enero";} if($mes == 02){ echo "Febrero";} if($mes == 03){ echo "Marzo";} if($mes == 04){ echo "Abril";} if($mes == 05){ echo "Mayo";} if($mes == 06){ echo "Junio";} if($mes == 07){ echo "Julio";} if($mes == '08'){ echo "Agosto";}  if($mes == '09'){ echo "Septiembre";} if($mes == '10'){ echo "Octubre";} if($mes == '11'){ echo "Noviembre";} if($mes == '12'){ echo "Diciembre";} ?></b> del año <b>{{substr($date, 0, 4)}}</b></span></p>
+normal'><span style="font-size: 10;">Ciudad: Portoviejo, a los ______ Días del mes de <b><?php $mes = substr($date, 5, 2); if($mes == 01){ echo "Enero";} if($mes == 02){ echo "Febrero";} if($mes == 03){ echo "Marzo";} if($mes == 04){ echo "Abril";} if($mes == 05){ echo "Mayo";} if($mes == 06){ echo "Junio";} if($mes == 07){ echo "Julio";} if($mes == '08'){ echo "Agosto";}  if($mes == '09'){ echo "Septiembre";} if($mes == '10'){ echo "Octubre";} if($mes == '11'){ echo "Noviembre";} if($mes == '12'){ echo "Diciembre";} ?></b> del año <b>{{substr($date, 0, 4)}}</b></span></p>
 
 <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
 normal'><b>&nbsp;</b></p>

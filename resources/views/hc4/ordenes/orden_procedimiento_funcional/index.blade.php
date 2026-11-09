@@ -29,54 +29,28 @@
 	}
 
 </style>
-@php
-$doctor = auth()->user();
-$idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
-@endphp
-<div class="box " style="border: 2px solid #004AC1; background-color: white;">
-	<div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-		<div class="row">
-			<div class="col-md84 col-sm-8 col-12">
-			    <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;padding-top: 10px">
-                    <b>HISTORIAL ORDENES DE PROCEDIMIENTOS FUNCIONALES</b>
-				</h1>   
-		    </div>
-		    <div class="col-md-4 col-sm-4 col-12" style="padding-left: 0px">
-			    <div style="margin-bottom: 5px;text-align: left; margin-left: 5px; margin-right: 5px">
-					<a class="btn btn-info btn-block" style="color: white;padding-left: 0px;padding-right: 0px; border: 2px solid white; margin-left: 10px" onClick="agregar_orden_profuncional();">
-		                <div class="row" style="margin-left: 0px; margin-right: 0px; ">
-			            	<div class="col-12" style="padding-left: 5px; padding-right: 0px; margin-right: 10px">
-			            		<img width="20px" src="{{asset('/')}}hc4/img/iconos/agregar.png">
-			            		<label style="font-size: 10px">AGREGAR ORDEN PROCEDIMIENTO</label>
-			            	</div>
-						</div>
-					</a>
-				</div>
-	        </div>
+@include('hc4.ordenes.partials.procedure_history_header_styles')
+@php $xedad = isset($edad) ? (int) $edad : 0; @endphp
+<div class="box hc4-procedure-orders" id="hc4-functional-orders">
+	<div class="box-header with-border hc4-procedure-orders__header">
+		<div class="hc4-procedure-orders__title">
+			<span class="hc4-procedure-orders__icon"><i class="fa fa-list-alt" aria-hidden="true"></i></span>
+			<span>@lang('hc4.historialOrdenesProcedimientosFuncionales')</span>
 		</div>
-	    @if(!is_null($paciente))
-			@php
-	   			$xedad = Carbon\Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age; 
-			@endphp 
-		<div class="row">	
-			<div class="col-md-9" style="padding-top: 15px">
-				<center>
-				<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			        <b>PACIENTE : {{$paciente->apellido1}} @if($paciente->apellido2!='(N/A)'){{$paciente->apellido2}}@endif 
-			        	{{$paciente->nombre1}} @if($paciente->nombre2!='(N/A)'){{$paciente->nombre2}}@endif
-	                </b>
-				</h1>
-				</center>
-		    </div>
-		    <div class="col-md-3" style="padding-top: 15px">
-				<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			        <b>
-			        	EDAD: {{$xedad}} AÑOS
-	                </b>
-				</h1>
-		    </div> 
-		</div>	
-	    @endif      
+		<a class="btn btn-info hc4-procedure-orders__action" onClick="agregar_orden_profuncional();">
+			<img src="{{asset('/')}}hc4/img/iconos/agregar.png" alt="">
+			<span>@lang('hc4.agregarOrdenProcedimiento')</span>
+		</a>
+		@if(!is_null($paciente))
+			<div class="hc4-procedure-orders__patient">
+				<div class="hc4-procedure-orders__patient-name">
+					<strong>@lang('hc4.paciente'):</strong>
+					{{$paciente->apellido1}} @if($paciente->apellido2!='(N/A)'){{$paciente->apellido2}}@endif
+					{{$paciente->nombre1}} @if($paciente->nombre2!='(N/A)'){{$paciente->nombre2}}@endif
+				</div>
+				<div class="hc4-procedure-orders__age"><strong>@lang('hc4.edad'):</strong> {{$xedad}} @lang('hc4.anios')</div>
+			</div>
+		@endif
 	</div>
 	<div class="box-body" style="background-color: #56ABE3;">
         <div class="col-md-12">
@@ -87,10 +61,11 @@ $idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
 
 	                @php  $seguro = Sis_medico\Seguro::find($paciente->id_seguro); @endphp
 		            
-		            <div class="col-md-12">
-		            	@php
-		   	  			    
-                            if(!is_null($ordfun->fecha_orden)){
+			            <div class="col-md-12">
+						@php
+								$fecha_r = null;
+								$xdoctor = null;
+	                            if(!is_null($ordfun->fecha_orden)){
 				    		   $fecha_r =  Date('Y-m-d',strtotime($ordfun->fecha_orden));
 				    	    }
 
@@ -104,121 +79,71 @@ $idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
 			                $invert = explode( '-',$fecha);
 			                $fecha_invert = $invert[2]."/".$invert[1]."/".$invert[0]; 
 						@endphp
-						@php
-	  		                
-	  		                if(!is_null($ordfun->id)){
-   	  			  				$procedimiento_orden_tipo = \Sis_medico\Orden_Tipo::where('id_orden', $ordfun->id) ->where('id_grupo_procedimiento','18')
-                                ->first();
-   	  			            }
+							@php
+								$procedimiento_orden_tipo = null;
+								if (!is_null($ordfun->id)) {
+									$procedimiento_orden_tipo = \Sis_medico\Orden_Tipo::where('id_orden', $ordfun->id)
+										->where('id_grupo_procedimiento', '18')
+										->first();
+								}
 
-                            $texto = ""; 
-   	  			            if(!is_null($procedimiento_orden_tipo)){ 
-
-	   	  			            $procedimiento_orden_proced = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo', $procedimiento_orden_tipo->id)->get();
-
-	 	                        $mas = true;
-	 	              
-                                foreach($procedimiento_orden_proced as $value2)
-          		                {
-          		                  	$nombre_procedimiento = \Sis_medico\Procedimiento::where('id', $value2->id_procedimiento)->first();
-
-                                    if($mas == true){
-		  							 $texto = $nombre_procedimiento->nombre;
-		  							 $mas = false; 
-                                    }
-  							        else{
-  						  	         $texto = $texto.' + '.$nombre_procedimiento->nombre;
-  						  	        }
-
-  						  	    }
-
-                            }
-                        @endphp
-						<div class="box @if($fecha_r != date('Y-m-d')) collapsed-box  @endif" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px;">
-							<div class="box-header with-border" style="background-color: white; color: black; font-family: 'Helvetica general3';border-bottom: #004AC1;">
-								<div class="row">
-									<div class="col-md-5">
-                                        @if(!is_null($ordfun->fecha_orden))
-                                            @php 
-					                         $dia =  Date('N',strtotime($ordfun->fecha_orden)); 
-					                         $mes =  Date('n',strtotime($ordfun->fecha_orden)); 
-					                        @endphp
-					                        <b>
-					                        @if($dia == '1') Lunes 
-			                                 @elseif($dia == '2') Martes
-			                                 @elseif($dia == '3') Miércoles 
-			                                 @elseif($dia == '4') Jueves 
-			                                 @elseif($dia == '5') Viernes 
-			                                 @elseif($dia == '6') Sábado 
-			                                 @elseif($dia == '7') Domingo 
-	                                        @endif
-	                                         {{substr($ordfun->fecha_orden,8,2)}} de
-	                                        @if($mes == '1') Enero 
-				                                 @elseif($mes == '2') Febrero 
-				                                 @elseif($mes == '3') Marzo 
-				                                 @elseif($mes == '4') Abril 
-				                                 @elseif($mes == '5') Mayo 
-				                                 @elseif($mes == '6') Junio 
-				                                 @elseif($mes == '7') Julio 
-				                                 @elseif($mes == '8') Agosto 
-				                                 @elseif($mes == '9') Septiembre 
-				                                 @elseif($mes == '10') Octubre 
-				                                 @elseif($mes == '11') Noviembre 
-				                                 @elseif($mes == '12') Diciembre 
-	                                        @endif
-	                                        del {{substr($ordfun->fecha_orden,0,4)}}</b>  
-                                        @endif
-		                            </div>
-		                            <div class="col-md-5">
-		                            	<div>
-											<span style="font-family: 'Helvetica general'; font-size: 12px">Dr (a): </span> 
-											<span style="font-size: 12px">@if(!is_null($xdoctor->nombre1)){{$xdoctor->nombre1}} {{$xdoctor->apellido1}} @endif</span>
-									    </div>
-                                    </div>
-                                    <div class="col-md-1" style="color: white"> 
-						                  @if(!is_null($ordfun->id)) 
-						                    {{$ordfun->id}}
-						                  @endif
-                                    </div>
-                                    <div class="pull-right box-tools" style="padding-top: 4px;">
-			                        	<button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
-			                            <i class="fa fa-plus"></i></button>
-		                    	    </div>
-                                </div>
-                                <div class="row">
-                                  <div class="col-md-12">
-                                  	<span style="font-family: 'Helvetica general'; font-size: 12px">Procedimientos:</span>
-								  </div>
-                                  <div class="col-md-12">
-                                    <span style="font-size: 10px;margin-right: 5px;border-radius: 2px;" class="badge badge-primary">@if(!is_null($texto)) {{$texto}} @endif</span>
-                                  </div>
-                                </div>
-                            </div>
+								$nombresProcedimientos = [];
+								if (!is_null($procedimiento_orden_tipo)) {
+									$procedimiento_orden_proced = \Sis_medico\Orden_Procedimiento::where('id_orden_tipo', $procedimiento_orden_tipo->id)->get();
+									foreach ($procedimiento_orden_proced as $value2) {
+										$nombre_procedimiento = \Sis_medico\Procedimiento::find($value2->id_procedimiento);
+										if (!is_null($nombre_procedimiento)) {
+											$nombresProcedimientos[] = $nombre_procedimiento->nombre;
+										}
+									}
+								}
+								$texto = implode(' + ', $nombresProcedimientos);
+							@endphp
+							<div class="box hc4-procedure-order-card @if($fecha_r != date('Y-m-d')) collapsed-box @endif">
+								@php
+									$diasOrden = [1 => 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+									$mesesOrden = [1 => 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+									$fechaOrdenTexto = '';
+									if (!is_null($ordfun->fecha_orden)) {
+										$fechaOrdenTimestamp = strtotime($ordfun->fecha_orden);
+										$fechaOrdenTexto = $diasOrden[(int) date('N', $fechaOrdenTimestamp)].' '.date('d', $fechaOrdenTimestamp).' de '.$mesesOrden[(int) date('n', $fechaOrdenTimestamp)].' del '.date('Y', $fechaOrdenTimestamp);
+									}
+								@endphp
+								<div class="box-header with-border hc4-procedure-order-summary hc4-procedure-order-summary--grid">
+									<div class="hc4-procedure-order-summary__date">{{$fechaOrdenTexto}}</div>
+									<div class="hc4-procedure-order-summary__doctor">
+										<strong>Dr (a):</strong>
+										@if(!is_null($xdoctor)) {{$xdoctor->nombre1}} {{$xdoctor->apellido1}} @else No asignado @endif
+									</div>
+									<div class="hc4-procedure-order-summary__right">
+										<div class="hc4-procedure-order-summary__procedures">
+											<span>{{trim($texto) !== '' ? $texto : 'Sin procedimientos seleccionados'}}</span>
+										</div>
+										<div class="hc4-procedure-order-summary__tools box-tools">
+											<span class="hc4-procedure-order-summary__id">Orden #{{$ordfun->id}}</span>
+											<button type="button" class="btn btn-sm hc4-procedure-order-summary__toggle" data-widget="collapse" title="Mostrar u ocultar orden">
+												<i class="fa fa-plus"></i>
+											</button>
+										</div>
+									</div>
+								</div>
                             <div class="box-body" style="background: white;">
                                 <div class="col-md-12 col-sm-12 col-12" style="padding-left: 10px; padding-right: 5px; margin-bottom: 5px">
-	                            	<div class="box" style="border: 2px solid #004AC1; background-color: white; border-radius: 3px; margin-bottom: 0;">
-                                        <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1;padding: 2px;">
-						  					<div class="row">
-							  					<div class="col-sm" style="margin-right: 10px">
+								<div class="box hc4-procedure-order-detail">
+									<div class="box-header with-border hc4-procedure-order-detail__header">
+										<div class="row hc4-procedure-order-detail__header-row">
+							  					<div class="col-3" style="margin-right: 10px">
 							    					<div class="btn" style="color: white">
-									    				<a class="fa fa-pencil-square-o " onclick="editar_orden_profuncional({{$ordfun->id}},'{{$paciente->id}}');" ><span style="font-size: 13px">&nbsp;Editar</span>
+											<a class="fa fa-pencil-square-o " onclick="editar_orden_profuncional({{$ordfun->id}},'{{$paciente->id}}', this);" ><span style="font-size: 13px">&nbsp;@lang('hc4.editar')</span>
 									    				</a>
 								    				</div>
 							    				</div>
-							    				<div class="col-sm" style="text-align: center"> 
-							  						<span >Detalle de Orden</span>
+							    				<div class="col-4" style="text-align: center"> 
+											<span class="sr-only">@lang('hc4.detalleOrden')</span>
 							  					</div>
-							  					<div class="col-sm" style="text-align: right;padding-top: 6px">
-									               <a class="btn btn-danger" onclick="descargar_orden_funcional({{$ordfun->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Orden</a>
+							  					<div class="col-4" style="text-align: right;padding-top: 6px">
+											<a class="btn btn-danger" onclick="descargar_orden_funcional({{$ordfun->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> @lang('hc4.descargarOrden')</a>
 									            </div>
-									            <?php //dd($idTipoDoctor); ?>
-												@if(!is_null($idTipoDoctor))
-													@if($idTipoDoctor->espid == 5)
-														<div class="col-sm" style="text-align: center;padding-top: 6px">
-															<a class="btn btn-danger" id="{{$ordfun->id}}" onclick="imprimirCir({{$ordfun->id}});" style="color:white; background-color:#004AC1 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> CIR</a>
-														</div>
-													@endif
-												@endif
                                             </div>
 						  		        </div>
 						  		        <div class="box-body" style="font-size: 11px;font-family: 'Helvetica general3';" id="xorden{{$ordfun->id}}">
@@ -258,44 +183,6 @@ $idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
 			                                        </div>
 			                                    </div>
                                             </div>
-                                            <div class="col-12" style="padding-top: 5px"></div>
-                                            <div class="col-md-12" style="padding: 1px;">
-                                            	<div class="row">
-                                            		<div class="col-md-12">
-					                                	<div class="row">
-					                                		<div class="col-md-12">
-											                  <span style="font-family: 'Helvetica general';font-size: 12px">ANTECEDENTES PATOLOGICOS</span>
-											                </div>
-											                <div class="col-12">
-											                  <span><?php echo $paciente->antecedentes_pat?></span>
-											                </div>
-									   	  			    </div>
-				   	  		                        </div>
-				   	  		                        <div class="col-12" style="padding-top: 5px"></div>
-													<div class="col-md-12">
-					                                	<div class="row">
-					                                		<div class="col-md-12">
-											                  <span style="font-family: 'Helvetica general';font-size: 12px">ANTECEDENTES FAMILIARES</span>
-											                </div>
-											                <div class="col-12">
-											                  <span><?php echo $paciente->antecedentes_fam?></span>
-											                </div>
-									   	  			    </div>
-				   	  		                        </div>
-				   	  		                        <div class="col-12" style="padding-top: 5px"></div>
-													<div class="col-md-12">
-					                                	<div class="row">
-					                                		<div class="col-md-12">
-											                  <span style="font-family: 'Helvetica general';font-size: 12px">ANTECEDENTES QUIRURGICOS</span>
-											                </div>
-											                <div class="col-12">
-											                  <span><?php echo $paciente->antecedentes_quir?></span>
-											                </div>
-									   	  			    </div>
-				   	  		                        </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-12" style="padding-top: 5px"></div>
                                             <div class="col-md-12" style="padding: 1px;">
 			                                	<div class="row">
 			                                		<div class="col-md-12">
@@ -316,7 +203,6 @@ $idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
 										  			</div>
 									            </div>
 				   	  		                </div>
-				   	  		                @if(!is_null($ordfun->diagnosticos))
                                             <div class="col-md-12" style="padding: 1px;">
                                                 <div class="row">
 				                            		<div class="col-md-12">
@@ -327,12 +213,11 @@ $idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
 										  			</div>
 									            </div>
 									        </div>
-									        @endif
                                             <div class="col-md-12" style="padding: 1px;">
 				                                @if($texto != "")
 					                                <div class="row">
 					                                  	<div class="col-md-12">
-					                                       <div style="background-color: #004AC1; color: white">
+													<div class="hc4-procedure-section-title">
 											                   <label style="font-family: 'Helvetica general';" for="id_procedimiento" class="col-md-12 control-label">PROCEDIMIENTOS FUNCIONALES 
 											                    </label>
 											                </div>
@@ -390,35 +275,51 @@ $idTipoDoctor = Sis_medico\User_espe::where('usuid',$doctor->id)->first();
 </div>
 
 <script type="text/javascript">
-function imprimirCir(cedula) {
-		window.open('{{url('imprimir/orden_hc4/funcional/cir')}}/'+cedula,'_blank');  
-	}
 
-function descargar_orden_funcional(id_or){
-       window.open('{{url('imprimir/orden_hc4/funcional')}}/'+id_or,'_blank');  
-    }
-    //Funcion para crear una Orden de Procedimiento Funcional
-    function agregar_orden_profuncional(){
-    	$.ajax({
-			async: true,
-			type: "GET",
-			url: "{{route('hc4_orden_proc_funcional',['tipo' => '1', 'paciente' => $paciente->id ])}}", 
-			data: "",
-			datatype: "html",
-			success: function(datahtml){
-				
-                $("#nueva_orden").html(datahtml);
-			
-			},
-			error:  function(){
-				alert('error al cargar');
+
+	    //Funcion para crear una Orden de Procedimiento Funcional
+	    function agregar_orden_profuncional(){
+			var $contenedor = $("#nueva_orden");
+			if ($contenedor.children().length) {
+				$contenedor.stop(true, true).slideToggle(160);
+				return;
 			}
-		});
-    }
+
+			var $accion = $("#hc4-functional-orders .hc4-procedure-orders__action").first();
+			var contenidoOriginal = $accion.html();
+			$accion.addClass('disabled').css('pointer-events', 'none').html('<i class="fa fa-spinner fa-spin"></i><span>Cargando...</span>');
+			$.ajax({
+			async: true,
+			type: "POST",
+			url: "{{route('hc4_orden_proc_funcional',['tipo' => '1', 'paciente' => $paciente->id ])}}", 
+			data: {'_token': '{{ csrf_token() }}'},
+			datatype: "html",
+				success: function(datahtml){
+					$contenedor.hide().html(datahtml).slideDown(160);
+
+				},
+				error:  function(){
+					$contenedor.html('<div class="alert alert-danger">No se pudo abrir el selector de procedimientos.</div>');
+				},
+				complete: function(){
+					$accion.removeClass('disabled').css('pointer-events', '').html(contenidoOriginal);
+				}
+			});
+	    }
 
     //Funcion para editar Orden de Porcedimiento Funcional
-    function editar_orden_profuncional(id_orden,id_paciente){
-    	$.ajax({
+	function editar_orden_profuncional(id_orden,id_paciente,boton){
+		var $boton = $(boton);
+		var contenidoOriginal = $boton.html();
+		if (window.tinymce) {
+			$("#xorden"+id_orden).find('[id]').each(function() {
+				var editor = tinymce.get(this.id);
+				if (editor) { editor.remove(); }
+			});
+		}
+		$boton.addClass('disabled').css('pointer-events', 'none').html('<i class="fa fa-spinner fa-spin"></i> Cargando');
+		$("#xorden"+id_orden).html('<div style="padding:25px;text-align:center;color:#087eae"><i class="fa fa-spinner fa-spin"></i> Cargando edición...</div>');
+		$.ajax({
 			type: "GET",
 			url: "{{route('editar.orden_procedimiento_funcional')}}/"+id_orden+'/'+id_paciente, 
 			data: "",
@@ -427,34 +328,20 @@ function descargar_orden_funcional(id_or){
 				$("#xorden"+id_orden).html(datahtml);
 			},
 			error:  function(){
-				alert('error al cargar');
+				$("#xorden"+id_orden).html('<div class="alert alert-danger">No se pudo cargar la edición.</div>');
+			},
+			complete: function(){
+				$boton.removeClass('disabled').css('pointer-events', '').html(contenidoOriginal);
 			}
 		});	
 	}
-	
 
 
-</script>
+	//Descarga Orden de Procedimiento Funcional
+	function descargar_orden_funcional(id_or){
+       window.open('{{url('imprimir/orden_hc4/funcional')}}/'+id_or,'_blank');  
+    }
 
-<script type="text/javascript">
 
-function formato_012(id, id_orden, div) {
 
-$.ajax({
-  type: 'GET',
-  url:"{{url('hc4/formato012')}}/"+id+"/"+id_orden,
-  headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
-  datatype: 'json',
-  data: $("#edit_orden").serialize(),
-  success: function(data){
-    $("#"+div).empty().html(data);
-    //console.log(data);
-  },
-  error: function(data){
-    console.log(data);
-  }
-});
-
-}
-  
 </script>

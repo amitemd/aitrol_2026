@@ -4,7 +4,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            {{trans('bitacora.mantenimiento_bitacora')}}
+            Solicitud de Patología F.013A
         </h1>
         <ol class="breadcrumb">
             

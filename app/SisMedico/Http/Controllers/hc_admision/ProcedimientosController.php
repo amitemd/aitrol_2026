@@ -3,7 +3,6 @@
 namespace Sis_medico\Http\Controllers\hc_admision;
 
 use Carbon\Carbon;
-use Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +18,6 @@ use Sis_medico\hc_protocolo;
 use Sis_medico\hc_receta;
 use Sis_medico\Historiaclinica;
 use Sis_medico\Http\Controllers\Controller;
-use Sis_medico\Log_agenda;
 use Sis_medico\Paciente;
 use Sis_medico\Paciente_Alergia;
 use Sis_medico\Paciente_Biopsia;
@@ -27,8 +25,7 @@ use Sis_medico\Pentax;
 use Sis_medico\PentaxProc;
 use Sis_medico\Procedimiento;
 use Sis_medico\procedimiento_completo;
-use Sis_medico\Seguro;
-use Sis_medico\User;
+use Sis_medico\Seguro;use Sis_medico\User;
 
 class ProcedimientosController extends Controller
 {
@@ -40,9 +37,25 @@ class ProcedimientosController extends Controller
     private function rol()
     {
         $rolUsuario = Auth::user()->id_tipo_usuario;
-        if (in_array($rolUsuario, array(1, 3, 6, 11, 5, 7, 20)) == false) {
+        if (in_array($rolUsuario, array(1, 3, 6, 11, 5, 7,20)) == false) {
             return true;
         }
+    }
+
+    /**
+     * Obtiene las imagenes activas que pertenecen exclusivamente al protocolo.
+     * Si el usuario no marco ninguna, conserva el orden habitual del modulo y
+     * permite que cada formato tome las primeras que necesita.
+     */
+    private function imagenesParaResumen($idProtocolo)
+    {
+        $consulta = hc_imagenes_protocolo::where('id_hc_protocolo', $idProtocolo)
+            ->where('estado', '1')
+            ->orderBy('id', 'desc');
+
+        $seleccionadas = (clone $consulta)->where('seleccionado', '1')->get();
+
+        return $seleccionadas->isEmpty() ? $consulta->get() : $seleccionadas;
     }
     public function mostrar($id)
     {
@@ -115,7 +128,7 @@ class ProcedimientosController extends Controller
         ];
 
         hc_procedimientos::insert($input1);
-        return redirect()->route('procedimientos_historia.mostrar', ['id' => $id_agenda]);
+        return redirect()->route('procedimientos_historia.mostrar', ['ag' => $id_agenda]);
     }
 
     public function eliminar($hc_id)
@@ -132,7 +145,7 @@ class ProcedimientosController extends Controller
             ->update($input);
         $hc_procedimiento = hc_procedimientos::find($hc_id);
         $id_agenda        = $hc_procedimiento->historia->id_agenda;
-        return redirect()->route('procedimientos_historia.mostrar', ['id' => $id_agenda]);
+            return redirect()->route('procedimientos_historia.mostrar', ['ag' => $id_agenda]);
     }
 
     public function estudio_agregar($id)
@@ -308,8 +321,6 @@ class ProcedimientosController extends Controller
 
         $protocolo = DB::table('hc_protocolo as p')->where('p.id', $id)->join('hc_procedimientos as hp', 'hp.id', 'p.id_hc_procedimientos')->join('pentax as px', 'px.hcid', 'p.hcid')->leftjoin('procedimiento_completo as pc', 'pc.id', 'hp.id_procedimiento_completo')->select('p.*', 'px.estado_pentax', 'px.id as pxid', 'hp.id_procedimiento_completo', 'px.id_doctor1', 'px.id_doctor2', 'px.id_doctor3', 'px.id_agenda')->orderBy('p.created_at', 'desc')->first();
 
-
-
         $agenda = DB::table('agenda')
             ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
             ->join('seguros', 'paciente.id_seguro', '=', 'seguros.id')
@@ -366,18 +377,6 @@ class ProcedimientosController extends Controller
         $enfermeros = User::where('estado', '1')->where('id_tipo_usuario', '6')->get();
 
         $seguros = Seguro::where('inactivo', '1')->get();
-
-        if($agenda->pxid!=null){
-            $pentax = Pentax::find($agenda->pxid); 
-            if(!is_null($pentax)){
-                if($protocolo->id_anestesiologo==null){
-                    $vhprot = hc_protocolo::find($protocolo->id);
-                    $vhprot->update(['id_anestesiologo' => $pentax->id_anestesiologo]);
-                    $protocolo = DB::table('hc_protocolo as p')->where('p.id', $id)->join('hc_procedimientos as hp', 'hp.id', 'p.id_hc_procedimientos')->join('pentax as px', 'px.hcid', 'p.hcid')->leftjoin('procedimiento_completo as pc', 'pc.id', 'hp.id_procedimiento_completo')->select('p.*', 'px.estado_pentax', 'px.id as pxid', 'hp.id_procedimiento_completo', 'px.id_doctor1', 'px.id_doctor2', 'px.id_doctor3', 'px.id_agenda')->orderBy('p.created_at', 'desc')->first();
-                }
-                //dd($pentax->id_anestesiologo,$protocolo);
-            }   
-        }
 
         return $this->Crear_Editar($agenda, $cant_cortesias, $proc_completo, $protocolo, $doctores, $anestesiologos, $enfermeros, $seguros, $procedimientos_pentax, $imagenes, $id_agenda, $documentos, $estudios, $biopsias, $hc_receta);
 
@@ -446,6 +445,7 @@ class ProcedimientosController extends Controller
             $imagen->update($input);
         }
     }
+
     public function imagen_cambio2($id_imagen)
     {
         $imagen = hc_imagenes_protocolo::find($id_imagen);
@@ -471,6 +471,32 @@ class ProcedimientosController extends Controller
             $imagen->update($input);
         }
     }
+
+    public function imagen_cambio3($id_imagen)
+    {
+        $imagen = hc_imagenes_protocolo::find($id_imagen);
+        if ($imagen->seleccion_rx == 1) {
+            $idusuario  = Auth::user()->id;
+            $ip_cliente = $_SERVER["REMOTE_ADDR"];
+            date_default_timezone_set('America/Guayaquil');
+            $input = [
+                'seleccion_rx'    => 0,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariomod'   => $idusuario,
+            ];
+            $imagen->update($input);
+        } else {
+            $idusuario  = Auth::user()->id;
+            $ip_cliente = $_SERVER["REMOTE_ADDR"];
+            date_default_timezone_set('America/Guayaquil');
+            $input = [
+                'seleccion_rx'    => 1,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariomod'   => $idusuario,
+            ];
+            $imagen->update($input);
+        }
+    }
     //cargar de images de grupo_procedimientos
     public function load2($name)
     {
@@ -482,6 +508,59 @@ class ProcedimientosController extends Controller
         }
     }
 
+    /**
+     * DomPDF no resuelve de forma consistente las rutas absolutas de las
+     * fotografias clinicas. Las incrustamos para que el PDF sea autocontenido.
+     * El antiguo header.jpg ya no existe, por lo que se reemplaza por el logo
+     * real de la empresa que atendio al paciente.
+     */
+    private function prepararImagenesResumenPdf($html, $logoEmpresaPath = null)
+    {
+        return preg_replace_callback('/<img\b[^>]*\bsrc\s*=\s*(["\'])(.*?)\1[^>]*>/is', function ($coincidencia) use ($logoEmpresaPath) {
+            $rutaOriginal = html_entity_decode($coincidencia[2], ENT_QUOTES, 'UTF-8');
+            $esCabeceraAntigua = stripos(str_replace('\\', '/', $rutaOriginal), '/public/formato/header.jpg') !== false;
+            $ruta = $esCabeceraAntigua ? $logoEmpresaPath : $rutaOriginal;
+
+            if (is_null($ruta) || $ruta === '') {
+                return '';
+            }
+            if (strpos($ruta, 'data:image/') === 0) {
+                return $coincidencia[0];
+            }
+            if (strpos($ruta, 'file://') === 0) {
+                $ruta = substr($ruta, 7);
+            }
+            if (!is_file($ruta) || !is_readable($ruta)) {
+                // Las imagenes cargadas desde el modulo hospitalario antiguo se
+                // guardaron directamente en public/, no en storage/app/hc_ima/.
+                // Solo se intenta este respaldo para ese directorio clinico.
+                $rutaNormalizada = str_replace('\\', '/', $ruta);
+                if (strpos($rutaNormalizada, '/storage/app/hc_ima/') !== false) {
+                    $rutaPublicaAntigua = public_path(basename($rutaNormalizada));
+                    if (is_file($rutaPublicaAntigua) && is_readable($rutaPublicaAntigua)) {
+                        $ruta = $rutaPublicaAntigua;
+                    }
+                }
+            }
+            if (!is_file($ruta) || !is_readable($ruta)) {
+                // No dejamos que DomPDF dibuje la X de una imagen inexistente.
+                return preg_match('/^(?:https?:)?\/\//i', $ruta) ? $coincidencia[0] : '';
+            }
+
+            $mime = function_exists('mime_content_type') ? mime_content_type($ruta) : null;
+            if (!in_array($mime, array('image/png', 'image/jpeg', 'image/gif'), true)) {
+                return '';
+            }
+            $imagen = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($ruta));
+
+            if ($esCabeceraAntigua) {
+                return '<img src="' . $imagen . '" alt="Logo de la empresa" style="display:block;max-width:180px;max-height:70px;width:auto;height:auto;margin:0 auto;">';
+            }
+
+            return str_replace($coincidencia[2], $imagen, $coincidencia[0]);
+        }, $html);
+    }
+
     //descargar el resumen del procedimiento
     public function descarga_resumen($id_protocolo, $tipo)
     {
@@ -491,75 +570,121 @@ class ProcedimientosController extends Controller
         if ($this->rol()) {
             return response()->view('errors.404');
         }
-        $protocolo = hc_protocolo::find($id_protocolo);
+        $protocolo = hc_protocolo::with(array('historiaclinica', 'procedimiento'))->find($id_protocolo);
+        if (is_null($protocolo) || is_null($protocolo->historiaclinica) || is_null($protocolo->procedimiento)) {
+            return response()->view('errors.404', array(), 404);
+        }
+
+        $procedimiento = $protocolo->procedimiento;
+        $ayudante= User::find($protocolo->id_ayudante);
+        $anestesiologo= User::find($protocolo->id_anestesiologo);
         //dd($protocolo);
-        $imagenes = hc_imagenes_protocolo::where('id_hc_protocolo', $id_protocolo)->where('seleccionado', '1')->where('estado', '1')->orderBy('id', 'desc')->get();
+        $imagenes = $this->imagenesParaResumen($id_protocolo);
 
         $paciente = paciente::find($protocolo->historiaclinica->id_paciente);
-        $seguro   = Seguro::find($protocolo->procedimiento->id_seguro);
+        if (is_null($paciente)) {
+            return response()->view('errors.404', array(), 404);
+        }
+        $seguro   = Seguro::find($procedimiento->id_seguro);
 
-        if (!is_null($protocolo->procedimiento->id_doctor_examinador2)) {
-            $firma = Firma_Usuario::where('id_usuario', $protocolo->procedimiento->doctor_firma->id)->get();
+        // Los procedimientos antiguos no siempre tienen id_doctor_examinador2.
+        // Usamos la misma cadena de respaldo del protocolo para que el resumen
+        // pueda generarse sin intentar leer la relacion doctor_firma en null.
+        $idDoctorFirma = $procedimiento->id_doctor_examinador2;
+        if (!is_null($procedimiento->id_doctor_responsable)) {
+            $idDoctorFirma = $procedimiento->id_doctor_responsable;
+        }
+        if (is_null($idDoctorFirma)) {
+            $idDoctorFirma = $procedimiento->id_doctor_examinador;
+        }
+        if (is_null($idDoctorFirma)) {
+            $idDoctorFirma = $protocolo->historiaclinica->id_doctor1;
+        }
+
+        if (!is_null($idDoctorFirma)) {
+            $firma = Firma_Usuario::where('id_usuario', $idDoctorFirma)->get();
             if (!is_null($seguro)) {
                 if ($seguro->tipo == '0') {
-                    if ($protocolo->procedimiento->id_empresa == '0992704152001') {
-                        if ($protocolo->procedimiento->id_doctor_examinador2 == '0924611882') {
+                    if ($procedimiento->id_empresa == '0992704152001') {
+                        if ($idDoctorFirma == '0924611882') {
                             $firma = Firma_Usuario::where('id_usuario', '094346835')->get();
                         }
                     }
                 }
             }
         } else {
-            $firma = null;
+            $firma = collect();
         }
         //dd($firma);
         $edad                   = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
-        $procedimiento_completo = procedimiento_completo::find($protocolo->procedimiento->id_procedimiento_completo);
+        $procedimiento_completo = procedimiento_completo::find($procedimiento->id_procedimiento_completo);
         $historia               = Historiaclinica::find($protocolo->hcid);
-
+        $doctor1                = !is_null($idDoctorFirma) ? User::find($idDoctorFirma) : null;
+        $agendaPdf              = !is_null($historia) ? Agenda::find($historia->id_agenda) : null;
+        $empresaPdf             = !is_null($agendaPdf) ? $agendaPdf->empresa : null;
+        $logoEmpresaPath        = !is_null($empresaPdf)
+            ? app(\Sis_medico\Services\PdfBrandingService::class)->companyLogoPath($empresaPdf->id)
+            : null;
+        if (is_null($logoEmpresaPath)) {
+            $logoEmpresaPath = public_path('assets/images/aitrol-logo.png');
+        }
+       
         //$elasto = $protocolo->procedimiento->hc_procedimiento_final->where('id_procedimiento','26')->first();
         $elasto = Hc_Procedimiento_Final::where('id_hc_procedimientos', $protocolo->procedimiento->id)->where('id_procedimiento', '26')->first();
-
+        //dd($elasto);
         if (!is_null($elasto)) {
+            //dd('entra');
             $view = \View::make('hc_admision.formato.resumen_elasto', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma', 'elasto'))->render();
         } else {
+            ///d('entra22');
             if ($tipo == 0) {
-                $view = \View::make('hc_admision.formato.resumen_procedimiento', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_procedimiento', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 1) {
-                //return "asdsad12312";
-                $view = \View::make('hc_admision.formato.resumen_procedimiento_sin_recorte', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_procedimiento_sin_recorte', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 2) {
-                $view = \View::make('hc_admision.formato.resumen_2_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_2_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 3) {
-                $view = \View::make('hc_admision.formato.resumen_3_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_3_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 4) {
-                $view = \View::make('hc_admision.formato.resumen_4_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_4_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 5) {
-                $view = \View::make('hc_admision.formato.resumen_5_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_5_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 6) {
                 //return view('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma' ));
-                $view = \View::make('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 7) {
                 //return view('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma' ));
-                $view = \View::make('hc_admision.formato.resumen_7_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_7_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 8) {
                 //return view('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma' ));
-                $view = \View::make('hc_admision.formato.resumen_8_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_8_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             } elseif ($tipo == 9) {
                 //return view('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma' ));
-                $view = \View::make('hc_admision.formato.resumen_9_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
+                $view = \View::make('hc_admision.formato.resumen_9_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
+            } elseif ($tipo == 'rx') {
+                $imagenes = hc_imagenes_protocolo::where('id_hc_protocolo', $id_protocolo)->where('seleccion_rx', '1')->where('estado', '1')->orderBy('id', 'desc')->get();
+                //return view('hc_admision.formato.resumen_6_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma' ));
+                $view = \View::make('hc_admision.formato.resumen_rx', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
+            }elseif ($tipo==11){
+                $view = \View::make('hc_admision.formato.resumen_11_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
+            }elseif  ($tipo==10){
+                $view = \View::make('hc_admision.formato.resumen_10_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
+            }elseif  ($tipo==12){
+                $view = \View::make('hc_admision.formato.resumen_12_fotos', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma','anestesiologo','doctor1','ayudante'))->render();
             }
         }
+
+        if (!isset($view)) {
+            return response()->view('errors.404', array(), 404);
+        }
+        $view = $this->prepararImagenesResumenPdf($view, $logoEmpresaPath);
 
         //return view('hc_admision.formato.resumen_procedimiento', ['protocolo' => $protocolo, 'imagenes' => $imagenes, 'edad'=> $edad, 'paciente' => $paciente, 'procedimiento_completo' => $procedimiento_completo, 'historia' => $historia]);
         $pdf = \App::make('dompdf.wrapper');
         $pdf->setPaper('A4');
-        $pdf->setOptions(['chroot'  => base_path('/')]);
+
         $pdf->loadHTML($view);
-        $agenda = $historia->agenda;
-        $txt_fecha = substr($agenda->fechaini,8,2).'_'.substr($agenda->fechaini,5,2).'_'.substr($agenda->fechaini,0,4);//dd($txt_fecha);
-        
-        return $pdf->stream('Estudio_' . $paciente->id . '_' . $paciente->apellido1 . '_' . $paciente->nombre1 .'_' . $txt_fecha . '.pdf');
+        return $pdf->stream('Resumen_procedimiento_' . $protocolo->historiaclinica->id_paciente . '_' . $protocolo->hcid . '.pdf');
     }
 
     //modal para cambiar fecha
@@ -605,13 +730,21 @@ class ProcedimientosController extends Controller
             return response()->view('errors.404');
         }
         $protocolo = hc_protocolo::find($id_protocolo);
-        $imagenes  = hc_imagenes_protocolo::where('id_hc_protocolo', $id_protocolo)->where('seleccionado', '1')->where('estado', '1')->orderBy('id', 'desc')->get();
+        $imagenes  = $this->imagenesParaResumen($id_protocolo);
 
         $paciente               = paciente::find($protocolo->historiaclinica->id_paciente);
         $firma                  = Firma_Usuario::where('id_usuario', $protocolo->procedimiento->doctor_firma->id)->get();
         $edad                   = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
         $procedimiento_completo = procedimiento_completo::find($protocolo->procedimiento->id_procedimiento_completo);
         $historia               = Historiaclinica::find($protocolo->hcid);
+        $agendaPdf              = !is_null($historia) ? Agenda::find($historia->id_agenda) : null;
+        $empresaPdf             = !is_null($agendaPdf) ? $agendaPdf->empresa : null;
+        $logoEmpresaPath        = !is_null($empresaPdf)
+            ? app(\Sis_medico\Services\PdfBrandingService::class)->companyLogoPath($empresaPdf->id)
+            : null;
+        if (is_null($logoEmpresaPath)) {
+            $logoEmpresaPath = public_path('assets/images/aitrol-logo.png');
+        }
 
         if ($tipo == 0) {
             $view = \View::make('hc_admision.formato.resumen_procedimiento', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
@@ -619,10 +752,12 @@ class ProcedimientosController extends Controller
             $view = \View::make('hc_admision.formato.resumen_procedimiento_sin_recorte', compact('protocolo', 'imagenes', 'paciente', 'edad', 'procedimiento_completo', 'historia', 'firma'))->render();
         }
 
+        $view = $this->prepararImagenesResumenPdf($view, $logoEmpresaPath);
+
         //return view('hc_admision.formato.resumen_procedimiento', ['protocolo' => $protocolo, 'imagenes' => $imagenes, 'edad'=> $edad, 'paciente' => $paciente, 'procedimiento_completo' => $procedimiento_completo, 'historia' => $historia]);
         $pdf = \App::make('dompdf.wrapper');
         $pdf->setPaper('A4');
-        $pdf->setOptions(['chroot'  => base_path('/')]);
+
         $pdf->loadHTML($view);
         return $pdf->stream('Resumen_procedimiento_' . $protocolo->historiaclinica->id_paciente . '_' . $protocolo->hcid . '.pdf');
     }
@@ -648,32 +783,6 @@ class ProcedimientosController extends Controller
         //return $input_evo;
         hc_procedimientos::where('id', $id_hc_procedimiento)
             ->update($input_hc_procedimiento);
-        Log_agenda::create([
-            'id_agenda'          => $agenda->id,
-            'estado_cita_ant'    => $agenda->estado_cita,
-            'fechaini_ant'       => $agenda->fechaini,
-            'fechafin_ant'       => $agenda->fechafin,
-            'estado_ant'         => $agenda->estado,
-            'cortesia_ant'       => $agenda->cortesia,
-            'id_doctor1_ant'     => $agenda->id_doctor1,
-            'id_doctor2_ant'     => $agenda->id_doctor2,
-            'id_doctor3_ant'     => $agenda->id_doctor3,
-            'id_sala_ant'        => $agenda->id_sala,
-            'fechaini'           => $agenda->fechaini,
-            'fechafin'           => $agenda->fechafin,
-            'estado'             => $agenda->estado,
-            'observaciones_ant'  => "SEGURO ANTERIOR ".$agenda->id_seguro,
-            'observaciones'      => "SEGURO ACTUAL ".$request["id_seguro"],
-            'id_doctor1'         => $agenda->id_doctor1,
-            'id_doctor2'         => $agenda->id_doctor2,
-            'id_doctor3'         => $agenda->id_doctor3,
-            'descripcion'        => "CAMBIO DE SEGURO",
-            'id_usuariomod'      => $idusuario,
-            'id_usuariocrea'     => $idusuario,
-            'ip_modificacion'    => $ip_cliente,
-            'ip_creacion'        => $ip_cliente,
-
-        ]);
         return "ok";
     }
 
@@ -687,10 +796,8 @@ class ProcedimientosController extends Controller
         $evoluciones_proc    = DB::table('hc_evolucion as e')->join('historiaclinica as h', 'e.hcid', 'h.hcid')->join('agenda as a', 'a.id', 'h.id_agenda')->orderBy('a.fechaini', 'desc')->select('e.*', 'a.fechaini', 'a.proc_consul', 'a.espid')->where('e.hc_id_procedimiento', $protocolo->id_hc_procedimientos)->get();
         $id_hc_procedimiento = $protocolo->id_hc_procedimientos;
         $hc_procedimiento    = null;
-        //dd($protocolo);
-        
+        //dd($agenda);
         $historia         = historiaclinica::find($agenda->hcid);
-
         $hc_procedimiento = hc_procedimientos::find($id_hc_procedimiento);
         if ($hc_procedimiento->id_seguro == null) {
             $input_procedimiento = [
@@ -732,17 +839,7 @@ class ProcedimientosController extends Controller
             ->where('id_paciente', $agenda->id_paciente)
             ->where('hc_imagenes_protocolo.estado', '4')->get();
 
-        //Historial de Recetas Nueva Funcionalidad creada 18-6-2020
-        $hist_recetas = DB::table('hc_receta as r')
-            ->join('historiaclinica as h', 'r.id_hc', 'h.hcid')
-            ->where('h.id_paciente', $agenda->id_paciente)
-            ->join('agenda as a', 'a.id', 'h.id_agenda')
-            ->join('seguros as s', 's.id', 'h.id_seguro')
-            ->orderBy('r.created_at', 'desc')
-            ->select('r.*', 'a.fechaini', 's.nombre')
-            ->get();
-
-        return view('hc_admision/procedimientos/procedimiento', ['agenda' => $agenda, 'cant_cortesias' => $cant_cortesias, 'proc_completo' => $proc_completo, 'protocolo' => $protocolo, 'doctores' => $doctores, 'anestesiologos' => $anestesiologos, 'enfermeros' => $enfermeros, 'seguros' => $seguros, 'procedimientos_pentax' => $procedimientos_pentax, 'imagenes' => $imagenes, 'documentos' => $documentos, 'biopsias' => $biopsias, 'estudios' => $estudios, 'id_agenda' => $id_agenda, 'hc_receta' => $hc_receta, 'alergiasxpac' => $alergiasxpac, 'evoluciones_proc' => $evoluciones_proc, 'hc_procedimiento' => $hc_procedimiento, 'laboratorio_externo' => $examenes_externos, 'biopsias_1' => $biopsias_1, 'biopsias_2' => $biopsias_2, 'hist_recetas' => $hist_recetas]);
+        return view('hc_admision/procedimientos/procedimiento', ['agenda' => $agenda, 'cant_cortesias' => $cant_cortesias, 'proc_completo' => $proc_completo, 'protocolo' => $protocolo, 'doctores' => $doctores, 'anestesiologos' => $anestesiologos, 'enfermeros' => $enfermeros, 'seguros' => $seguros, 'procedimientos_pentax' => $procedimientos_pentax, 'imagenes' => $imagenes, 'documentos' => $documentos, 'biopsias' => $biopsias, 'estudios' => $estudios, 'id_agenda' => $id_agenda, 'hc_receta' => $hc_receta, 'alergiasxpac' => $alergiasxpac, 'evoluciones_proc' => $evoluciones_proc, 'hc_procedimiento' => $hc_procedimiento, 'laboratorio_externo' => $examenes_externos, 'biopsias_1' => $biopsias_1, 'biopsias_2' => $biopsias_2]);
 
     }
 
@@ -808,7 +905,7 @@ class ProcedimientosController extends Controller
 
         } else {
 
-            return redirect()->route('estudio.agregar', ['id' => $id]); //crear
+            return $this->estudio_agregar($id); //crear
 
         }
 
@@ -983,177 +1080,6 @@ class ProcedimientosController extends Controller
     public function seleccion_descargar($id_protocolo)
     {
         return view('hc_admision/video/modal_seleccion', ['id_protocolo' => $id_protocolo]);
-    }
-
-    public function reporte_procedimientos()
-    {
-        $procedimientos = hc_procedimientos::all();
-
-        $fecha_d = date('Y-m-d');
-
-        Excel::create('Procedimientos-' . $fecha_d, function ($excel) use ($fecha_d, $procedimientos) {
-
-            $excel->sheet('Procedimientos', function ($sheet) use ($fecha_d, $procedimientos) {
-
-                $sheet->cell('A1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('ID');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('B1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('CEDULA');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('C1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('PACIENTE');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('D1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('FECHA');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('E1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('AÑO');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('F1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('MES');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('G1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('SEGURO');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('H1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('PROCEDIMIENTOS');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-                $sheet->cell('I1', function ($cell) {
-                    // manipulate the cel
-                    $cell->setValue('ESTADO');
-                    $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                    $cell->setFontWeight('bold');
-                });
-
-                $i = 2;
-                foreach ($procedimientos as $procedimiento) {
-                    $procedimientos_finales = Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento->id)->join('procedimiento as p', 'p.id', 'hc_procedimiento_final.id_procedimiento')->select('p.nombre', 'p.id_grupo_procedimiento')->groupBy('p.nombre', 'p.id_grupo_procedimiento')->orderBy('p.nombre', 'p.id_grupo_procedimiento')->get();
-                    $nombre_seguro          = '';
-                    $seguro                 = $procedimiento->seguro;
-                    if (!is_null($seguro)) {
-                        $nombre_seguro = $seguro->nombre;
-                    }
-
-                    if ($procedimientos_finales->count() > 0) {
-                        //dd($procedimientos_finales);
-                        $historia = $procedimiento->historia;
-                        $paciente = $historia->paciente;
-                        $agenda   = $historia->agenda;
-                        //dd($historia);
-
-                        $sheet->cell('A' . $i, function ($cell) use ($procedimiento) {
-                            // manipulate the cel
-                            $cell->setValue($procedimiento->id);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $sheet->cell('B' . $i, function ($cell) use ($historia) {
-                            // manipulate the cel
-                            $cell->setValue($historia->id_paciente);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $sheet->cell('C' . $i, function ($cell) use ($paciente) {
-                            // manipulate the cel
-                            $cell->setValue($paciente->apellido1 . ' ' . $paciente->nombre1 . ' ' . $paciente->apellido2 . ' ' . $paciente->nombre2);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $sheet->cell('D' . $i, function ($cell) use ($agenda) {
-                            // manipulate the cel
-                            $cell->setValue(substr($agenda->fechaini, 0, 10));
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $texto = '';
-
-                        //dd($procedimientos_finales);
-                        foreach ($procedimientos_finales as $procedimiento_final) {
-                            //(dd($procedimiento_final);
-
-                            if ($texto == '') {
-                                $texto = $procedimiento_final->nombre;
-                            } else {
-                                $texto = $texto . '+' . $procedimiento_final->nombre;
-                            }
-
-                        }
-                        //dd($texto);
-
-                        $sheet->cell('E' . $i, function ($cell) use ($agenda) {
-                            // manipulate the cel
-                            $cell->setValue(substr($agenda->fechaini, 0, 4));
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-                        $sheet->cell('F' . $i, function ($cell) use ($agenda) {
-                            // manipulate the cel
-                            $cell->setValue(substr($agenda->fechaini, 5, 2));
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $sheet->cell('G' . $i, function ($cell) use ($nombre_seguro) {
-                            // manipulate the cel
-                            $cell->setValue($nombre_seguro);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $sheet->cell('H' . $i, function ($cell) use ($procedimiento, $texto) {
-                            // manipulate the cel
-                            $cell->setValue($texto);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $txt_est = 'NO ASISTIO';
-                        if ($agenda->estado == '4') {
-                            $txt_est = 'ASISTIO';
-                        } elseif ($agenda->estado == '0') {
-                            $txt_est = 'POR CONFIRMAR';
-                        } elseif ($agenda->estado == '1') {
-                            $txt_est = 'CONFIRMADO';
-                        } elseif ($agenda->estado == '2') {
-                            $txt_est = 'REAGENDAR';
-                        } elseif ($agenda->estado == '3') {
-                            $txt_est = 'SUSPENDIDO';
-                        }
-
-                        $sheet->cell('I' . $i, function ($cell) use ($procedimiento, $txt_est) {
-                            // manipulate the cel
-                            $cell->setValue($txt_est);
-                            $cell->setBorder('thin', 'thin', 'thin', 'thin');
-                        });
-
-                        $i = $i + 1;
-                    }
-
-                }
-            });
-
-        })->export('xlsx');
     }
 
 }

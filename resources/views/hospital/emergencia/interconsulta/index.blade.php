@@ -121,9 +121,9 @@
 
 		$.ajax({
 			async: true,
-			type: "GET",
+			type: "POST",
 			url: "{{route('decimo.crear_interconsulta',[ 'id' => $solicitud->id ])}}",
-			data: "",
+			data: {'_token': '{{ csrf_token() }}'},
 			datatype: "html",
 			success: function(datahtml){
 

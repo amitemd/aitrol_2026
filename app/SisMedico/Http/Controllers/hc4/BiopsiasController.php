@@ -12,7 +12,6 @@ use Sis_medico\Historiaclinica;
 use Sis_medico\hc_protocolo;
 use Sis_medico\hc_imagenes_protocolo;
 use Sis_medico\Paciente;
-use Sis_medico\Hc_informe_biopsia;
 use Response;
 
 
@@ -59,10 +58,8 @@ class BiopsiasController extends Controller
                     ->where('id_paciente', $id_paciente)
                     ->where('hc_imagenes_protocolo.estado', '4')
                     ->OrderBy('hc_imagenes_protocolo.created_at', 'desc')->get();
-      
-      $biopsias_3 = Hc_informe_biopsia::where('id_paciente', $id_paciente)->OrderBy('created_at', 'desc')->get();
-      
-      return view('hc4/biopsias/index',['biopsias_1' => $biopsias_1,'biopsias_2' => $biopsias_2, 'biopsias_3' => $biopsias_3,'paciente' => $paciente]);
+
+      return view('hc4/biopsias/index',['biopsias_1' => $biopsias_1,'biopsias_2' => $biopsias_2,'paciente' => $paciente]);
     
     }
 }

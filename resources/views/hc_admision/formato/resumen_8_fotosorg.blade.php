@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
 
 	<title>Resumen Procedimiento</title>
 	<style type="text/css">
@@ -44,7 +45,7 @@
 		<table>
 			<tr>
 				@if($historia->id_seguro != 5)
-				<td style="width: 130px;"><img style="margin: 0;width: 150px;" src="{{base_path().'/storage/app/logo/logo1391707460001.png'}}"	></td>
+				<td style="width: 150px;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/logo1391707460001.png'}}"	></td>
 				@endif
 				<td colspan="2">
 					<p  style="font-size: 19px; text-align: center; width: 350px;@if($historia->id_seguro != 5) margin-left:50px; @else margin-left:180px; @endif"><b style="text-align: center;">INSTITUTO ECUATORIANO <b><br><b>DE ENFERMEDADES DIGESTIVAS</b></p>
@@ -78,16 +79,15 @@
 		<table style="margin-left: -23px;padding: 0;table-layout:fixed; width:710px; margin-top: -15px;" >
 
 			@php  $i = 0;   $j = 0;@endphp
-			@if($protocolo->procedimiento->procedimiento_completo != "") 
-				@if($protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen != "")
+			@php $imagenGrupoProcedimiento = optional(optional($protocolo->procedimiento->procedimiento_completo)->grupo_procedimiento)->imagen; @endphp
+			@if(!empty($imagenGrupoProcedimiento))
 					<tr style="padding: 0; margin:0;">
 						<td style="margin: 0;padding: 0 0px 0px 0px;width: 252px;">
 							<div style="position:relative;overflow: hidden; width: 252px; height: 242px; margin: 0; padding: 0;  ">
-								<img style="width: 252px; height: 242px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$protocolo->procedimiento->procedimiento_completo->grupo_procedimiento->imagen}}" hspace=12>
+								<img style="width: 252px; height: 242px;" src="{{base_path().'/storage/app/procedimiento_completo/'.$imagenGrupoProcedimiento}}" hspace=12>
 							</div>
 						</td>
 						@php $i = $i+1;$j = $j+1; @endphp
-				@endif
 			@endif
 			@foreach($imagenes as $value)
 				@if($i < 6)
@@ -119,14 +119,7 @@
 			</tr>
 		</table>
 		<hr>
-		<!--table width="716px;" class="final">
-			<tr>
-				<td >Hallazgos</td>
-			</tr>
-			<tr>
-				<td style="font-size: 12px !important;"><?php echo $protocolo->hallazgos; ?></td>
-			</tr>
-		</table-->
+		
 		<div style="width: 107%;margin-left: -17px;border: 1px black solid;">
 			<span>Hallazgos</span>
 		</div>

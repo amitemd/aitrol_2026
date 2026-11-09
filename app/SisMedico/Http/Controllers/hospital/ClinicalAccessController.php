@@ -1,0 +1,11 @@
+<?php
+namespace Sis_medico\Http\Controllers\hospital;
+use Illuminate\Http\Request;use Sis_medico\ClinicalBreakGlassAccess;use Sis_medico\Exceptions\ClinicalAccessDeniedException;use Sis_medico\Http\Controllers\Controller;use Sis_medico\Services\ClinicalAccessControlService;
+class ClinicalAccessController extends Controller
+{
+ private $service;public function __construct(ClinicalAccessControlService $service){$this->middleware('auth');$this->service=$service;}
+ public function index(Request $request){return redirect()->route('v3.clinical-access.index',array_filter(array('encounter_id'=>$request->input('encounter_id')),function($value){return $value!==null&&$value!=='';}));}
+ public function activate(Request $request){$this->validate($request,array('encounter_id'=>'required|string|max:36','action'=>'required|in:ORDER_VIEW,ORDER_TRANSITION,RESULT_CREATE,CRITICAL_RESULT_NOTIFY,CRITICAL_RESULT_ACK,medication.administer,medication.emergency,medication.regularize,procedure.authorize,CONSULT_VIEW,consult.update,encounter.close,SAFETY_EVENT_VIEW,SAFETY_EVENT_CREATE,SAFETY_EVENT_NOTIFY,SAFETY_EVENT_TRANSITION','reason'=>'required|string|min:20|max:2000'));try{$this->service->activateBreakGlass($request->encounter_id,$request->action,$request->reason,$this->context($request));return back()->with('success','Acceso excepcional activo durante 60 minutos y enviado a revisión.');}catch(ClinicalAccessDeniedException $e){return back()->with('error',$e->getMessage());}}
+ public function review(Request $request,$id){$this->validate($request,array('decision'=>'required|in:APPROVED,REJECTED','notes'=>'required|string|min:10|max:2000'));if(!auth()->user()||!auth()->user()->hasAnyUserTypeName(array('SISTEMAS','DOCTORES','DOCTOR')))return back()->with('error','Solo un responsable clínico o administrador puede revisar este acceso.');try{$this->service->review(ClinicalBreakGlassAccess::findOrFail($id),$request->decision,$request->notes,$this->context($request));return back()->with('success','Revisión registrada sin alterar la trazabilidad.');}catch(ClinicalAccessDeniedException $e){return back()->with('error',$e->getMessage());}}
+ private function context(Request $request){return array('user'=>auth()->user(),'ip'=>$request->ip());}
+}

@@ -31,7 +31,7 @@
                                 Inactivo
                                 @endif</td>
                             <td><a  class="btn btn-primary btn-success waves-effect waves-float waves-light" href="{{route('tipoemergencia.editar',['id'=>$tipoe->id])}}"><i class="fa fa-edit" aria-hidden="true"></i> Editar</a></td>
-                            <td><a class="btn btn-primary btn-danger waves-effect waves-float waves-light" href="{{route('tipoemergencia.eliminar_tipoe',['id_tipo' => $tipoe->id])}}"><i class="fa fa-trash" aria-hidden="true"></i></i>Eliminar</a></td>
+                            <td><form method="POST" action="{{route('tipoemergencia.eliminar_tipoe',['id_tipo' => $tipoe->id])}}" onsubmit="return confirm('¿Confirma eliminar este tipo de emergencia?');">{{ csrf_field() }}{{ method_field('DELETE') }}<button class="btn btn-primary btn-danger waves-effect waves-float waves-light" type="submit"><i class="fa fa-trash" aria-hidden="true"></i> Eliminar</button></form></td>
 
                         </tr>
                         @endforeach
@@ -47,4 +47,4 @@
         </div>
         </form>
         </section>
-@endsection    
+@endsection

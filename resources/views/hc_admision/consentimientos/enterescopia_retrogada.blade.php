@@ -145,7 +145,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Consiste en el diagnóstico y tratamiento de enfermedades del intestino delgado habitualmente en ileon o yeyuno distal, Se introduce por el ano (retrógrada) y se avanza progresivamente a través del colon hasta el intestino delgado y encontrar la zona de estudio. Es posible que, a pesar de todo, no se consiga una exploración completa de todo el intestino delgado, requiriendo utilizar la vía anterógrada (a través de la boca) en determinadas ocasiones. </td>
-                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:100px;" src="{{public_path('/imagenes/retrogada.png')}}" />
+                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:100px;" src="{{base_path('public/imagenes/retrogada.png')}}" />
                 </tr>
             </tbody>
         </table>
@@ -235,8 +235,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

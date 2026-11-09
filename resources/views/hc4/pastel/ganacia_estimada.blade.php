@@ -38,7 +38,7 @@
     </div>
     <!-- /.box-body -->
   </div>
-  <!-- <div class="box box-primary">
+  <div class="box box-primary">
     <div class="box-header">
       <div class="row">
           <div class="col-md-9">
@@ -47,7 +47,7 @@
           </div>
       </div>
     </div>
-   
+    <!-- /.box-header -->
     <div class="box-body">
       
       <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
@@ -101,6 +101,46 @@
               <h3 id="tituloc"></h3>
               <canvas id="canvasc" style="max-width: 100%;"></canvas>
           </div> 
+          <!--div class="col-md-12">
+            <div class="table-responsive col-md-10">
+              <table id="tabla_consultas2" class="table table-bordered table-hover dataTable" role="grid" aria-describedby="example1_info" style="font-size: 12px;">
+                <thead>
+                  <tr role="row">
+                    <th >No.</th>
+                    <th >ID</th> 
+                    <th >Paciente</th>
+                    <th >Orden</th>
+                  </tr>
+                </thead>
+                <tbody>
+                @php $total_cantidad = 0; $total_valor = 0; $cont = 1; @endphp  
+                @foreach($orden_venta_tipo_total as $value)
+                  @if($value->orden!=null && $value->estado=='1')
+                  <tr role="row" >
+                    <td><b>{{$cont}}</b></td>
+                    <td><b>{{$value->id}}</b></td>
+                    <td><b>{{$value->id_paciente}}</b></td>
+                    <td><b>{{$value->orden}}</b></td>
+                  </tr>
+
+                  @php $total_cantidad = $total_cantidad + $value->cantidad; $total_valor = $total_valor + $value->total; $cont++;@endphp
+                  @endif
+                  @if($value->orden==null)
+                  <tr role="row" >
+                    <td><b>{{$cont}}</b></td>
+                    <td><b>{{$value->id}}</b></td>
+                    <td><b>{{$value->id_paciente}}</b></td>
+                    <td><b>{{$value->orden}}</b></td>
+                  </tr>
+                  @php $total_cantidad = $total_cantidad + $value->cantidad; $total_valor = $total_valor + $value->total; $cont++;@endphp
+                  @endif
+                @endforeach
+                  
+                </tbody>
+              </table>
+            </div>
+          </div-->  
+             
          
         </div>
 
@@ -143,10 +183,10 @@
         </div>
       </div>
     </div>
-    
-  </div> -->
+    <!-- /.box-body -->
+  </div>
 </section>
-    
+    <!-- /.content -->
 
 <script src="{{ asset ("/plugins/datetimepicker/bootstrap-material-datetimepicker.js") }}"></script>
 

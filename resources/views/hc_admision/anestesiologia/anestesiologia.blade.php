@@ -20,7 +20,7 @@
  <div class="modal fade" id="favoritesModal2" tabindex="-1" role="dialog" aria-labelledby="favoritesModalLabel">
   <div class="modal-dialog" role="document" style="width:1350px; " >
     <div class="modal-content"  id="imprimir3">
-       <p>Hola Mundo</p>
+       
     </div>
   </div>
 </div>
@@ -40,7 +40,7 @@
                     </a>
                     <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('historia.historia',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-level-up"></span> Historia Clinica</button>
                     </a>
-                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['id' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
+                    <a class="form-group col-md-3 col-sm-3 col-xs-3" href="{{route('procedimientos_historia.mostrar',['ag' => $agenda->id])}}"><button type="button" class="btn btn-primary" ><span class="glyphicon glyphicon-triangle-left"></span> Procedimientos</button>
                     </a>
                     @php $especialidad=Sis_medico\Especialidad::find($agenda->espid); @endphp
                     <table class="table table-striped">
@@ -53,10 +53,15 @@
                             <td><b>Seguro:</b></td>
                             <td>{{$seguro->nombre}}</td>
                         </tr>
-                        <tr>
-                            <td><b>Procedimientos:</b></td>
+                           <tr>
+                
+                                <td><b>Procedimientos:</b></td>
+                            
+                                
                             <td colspan="3">{{$hc_procedimientos->procedimiento_completo->nombre_general}}</td>
-                        </tr>
+                               
+                               
+                            </tr>
                         </tbody>
                     </table>
                     <div class="w3-bar w3-blue">

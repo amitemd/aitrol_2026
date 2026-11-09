@@ -45,7 +45,7 @@ $fecha = date("Y-m-d");
                 <input class="form-control" type="text" name="examen_fisico_obs" id="examen_fisico_obs" value="{{$form008->examen_fisico_obs}}">
             </div>
             <div class="col-md-12" style="text-align: center; margin-top: 10px;">
-                <button class="btn btn-primary" onclick="guardar_paso8();" type="button"> <i class="fa fa-save"></i> </button>
+                <button class="btn btn-primary" onclick="guardar_paso8();" type="button"><i class="fa fa-save"></i> Guardar</button>
             </div>
         </form>
 
@@ -76,7 +76,7 @@ $fecha = date("Y-m-d");
                 return Swal.fire(`{{trans('proforma.GuardadoCorrectamente')}}`);
             },
             error: function() {
-                alert('error al cargar');
+                alert("{{trans('pasos.ErrorCargar')}}");
             }
         });
 

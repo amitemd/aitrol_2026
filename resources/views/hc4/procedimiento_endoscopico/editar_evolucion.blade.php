@@ -18,35 +18,8 @@
 			<span style="font-family: 'Helvetica general';">Detalle</span>
 		</div>
 		<div class="col-12">
-			<div id="tcuadro_clinico{{ $evolucion->id }}{{ $variable_tiempo }}" style="border: solid 1px;">
-				@php
-					$texto = trim(str_replace('&nbsp;', '', strip_tags($evolucion->cuadro_clinico ?? '')));
-			
-					$id_grupo_procedimiento = null;
-			
-					if (
-						!is_null($evolucion->historiaclinica) &&
-						!is_null($evolucion->historiaclinica->agenda) &&
-						!is_null($evolucion->historiaclinica->agenda->procedimiento)
-					) {
-						$id_grupo_procedimiento = $evolucion->historiaclinica->agenda->procedimiento->id_grupo_procedimiento;
-					}
-			
-					$texto_egreso_quirofano = 'PACIENTE EGRESA DE QUIROFANO ESTABLE HEMODINAMICAMENTE LUEGO DE LA REALIZACION DE ESTUDIOS ENDOSCOPICOS. PACIENTE EVOLUCIONA FAVORABLEMENTE DESPUES DEL PROCEDIMIENTO. SE MANTIENE ESTABLE HEMODINAMICAMENTE. CLINICAMENTE BIEN. SE DA DE ALTA, SE EXPLICAN LOS RESULTADOS A PACIENTE Y ACOMPAÑANTE. SE ENTREGAN INDICACIONES AL ALTA.';
-			
-					if ($id_grupo_procedimiento == 18) {
-						$contenido_cuadro_clinico = !empty($texto) ? $evolucion->cuadro_clinico : 'PACIENTE EGRESA ESTABLE HEMODINAMICAMENTE LUEGO DE LA REALIZACION DE ESTUDIOS FUNCIONALES. PACIENTE EVOLUCIONA FAVORABLEMENTE DESPUES DEL PROCEDIMIENTO. SE MANTIENE ESTABLE HEMODINAMICAMENTE. CLINICAMENTE BIEN. SE DA DE ALTA, SE EXPLICAN LOS RESULTADOS A PACIENTE Y ACOMPAÑANTE.';
-					} else {
-						$contenido_cuadro_clinico = !empty($texto) ? $evolucion->cuadro_clinico : $texto_egreso_quirofano;
-					}
-				@endphp
-			
-				{!! $contenido_cuadro_clinico !!}
-			</div>
-		
-			<input type="hidden" 
-				   name="cuadro_clinico" 
-				   id="cuadro_clinico{{ $evolucion->id }}{{ $variable_tiempo }}">
+			<div id="tcuadro_clinico<?php echo e($evolucion->id); ?>{{$variable_tiempo}}" style="border: solid 1px;"><?php if (!is_null($evolucion)): ?><?php echo $evolucion->cuadro_clinico ?><?php endif;?></div>
+            <input type="hidden" name="cuadro_clinico" id="cuadro_clinico<?php echo e($evolucion->id); ?>{{$variable_tiempo}}">
 		</div>
 		<div class="col-12">
 		<center>
@@ -57,7 +30,90 @@
         </center>
         </div>
 	</form>
+	@if(!is_null($solicitud) and $evolucion->secuencia == 0)
+	
+		<div class="col-12">
+			<b>{{trans('pasos.ExamenFisicoyDiagnostico')}}</b>
+		</div>
+	
+		<form id="form_paso7{{$solicitud->id}}" style="width: 100%;">
+			@php
+				$form008 = $solicitud->form008->first();
+			@endphp
+			<input type="hidden" name="solicitud_id" value="{{$solicitud->id}}">
+
+			<div class="col-12">
+				<b> 1.{{trans('pasos.PielFaneras')}}</b>
+				<input class="form-control" type="text" name="piel_faneras" id="piel_faneras" value="{{$form008->piel_faneras}}">
+			</div>
+			<div class="col-12">
+				<b> 2.{{trans('pasos.Cabeza')}}</b>
+				<input class="form-control" type="text" name="cabeza" id="cabeza" value="{{$form008->cabeza}}">
+			</div>
+			<div class="col-12">
+				<b> 3.{{trans('pasos.Ojos')}}</b>
+				<input class="form-control" type="text" name="ojos" id="ojos" value="{{$form008->ojos}}">
+			</div>
+			<div class="col-12">
+				<b> 4.{{trans('pasos.Oidos')}}</b>
+				<input class="form-control" type="text" name="oidos" id="oidos" value="{{$form008->oidos}}">
+			</div>
+			<div class="col-12">
+				<b> 5.{{trans('pasos.Nariz')}}</b>
+				<input class="form-control" type="text" name="nariz" id="nariz" value="{{$form008->nariz}}">
+			</div>
+			<div class="col-12">
+				<b> 6.{{trans('pasos.Boca')}}</b>
+				<input class="form-control" type="text" name="boca" id="boca" value="{{$form008->boca}}">
+			</div>
+			<div class="col-12">
+				<b> 7.{{trans('pasos.OroFaringe')}}</b>
+				<input class="form-control" type="text" name="oro_faringe" id="oro_faringe" value="{{$form008->oro_faringe}}">
+			</div>
+			<div class="col-12">
+				<b> 8.{{trans('pasos.Cuello')}}</b>
+				<input class="form-control" type="text" name="cuello" id="cuello" value="{{$form008->cuello}}">
+			</div>
+			<div class="col-12">
+				<b> 9.{{trans('pasos.AxilasMamas')}}</b>
+				<input class="form-control" type="text" name="axilas_mamas" id="axilas_mamas" value="{{$form008->axilas_mamas}}">
+			</div>
+			<div class="col-12">
+				<b> 10.{{trans('pasos.Torax')}}</b>
+				<input class="form-control" type="text" name="torax" id="torax" value="{{$form008->torax}}">
+			</div>
+
+			<div class="col-12">
+				<b> 11.{{trans('pasos.Abdomen')}}</b>
+				<input class="form-control" type="text" name="abdomen" id="abdomen" value="{{$form008->abdomen}}">
+			</div>
+			<div class="col-12">
+				<b> 12.{{trans('pasos.Columna')}}</b>
+				<input class="form-control" type="text" name="columna" id="columna" value="{{$form008->columna}}">
+			</div>
+			<div class="col-12">
+				<b> 13.{{trans('pasos.InglePerine')}}</b>
+				<input class="form-control" type="text" name="ingle_perine" id="ingle_perine" value="{{$form008->ingle_perine}}">
+			</div>
+			<div class="col-12">
+				<b> 14.{{trans('pasos.MiembrosSuperiores')}}</b>
+				<input class="form-control" type="text" name="miembros_superiores" id="miembros_superiores" value="{{$form008->miembros_superiores}}">
+			</div>
+			<div class="col-12">
+				<b> 15.{{trans('pasos.MiembrosInferiores')}}</b>
+				<input class="form-control" type="text" name="miembros_inferiores" id="miembros_inferiores" value="{{$form008->miembros_inferiores}}">
+			</div>
+			<div class="col-12" style="text-align: center; margin-top: 10px;">
+				<button class="btn btn-primary" onclick="guardar_paso7('{{$solicitud->id}}');" type="button"> <i class="fa fa-save"></i> </button>
+			</div>
+				
+		</form>
+
+	
+	@endif
+	
 </div>
+
 <script type="text/javascript">
 
 
@@ -104,4 +160,27 @@
 			}
 		});
 	};
+	function guardar_paso7(id) {
+
+		$.ajax({
+			type: "post",
+			url: "{{route('hospital.septimopaso_store')}}",
+			headers: {
+				'X-CSRF-TOKEN': $('input[name=_token]').val()
+			},
+			datatype: 'json',
+			data: $("#form_paso7"+id).serialize(),
+
+			success: function(datahtml, data) {
+				//$("#content").html(datahtml);
+				//return Swal.fire(`{{trans('proforma.GuardadoCorrectamente')}}`);
+			},
+			error: function() {
+				alert('error al cargar');
+			}
+		});
+
+	}
+
+	
 </script>

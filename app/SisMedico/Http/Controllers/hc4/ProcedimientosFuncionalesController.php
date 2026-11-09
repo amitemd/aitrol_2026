@@ -12,7 +12,6 @@ use Sis_medico\hc_protocolo;
 use Sis_medico\Historiaclinica;
 use Sis_medico\Pentax;
 use Sis_medico\PentaxProc;
-use Sis_medico\Empresa;
 use Sis_medico\Pentax_log;
 use Sis_medico\Hc_Procedimiento_Final;
 use Illuminate\Support\Facades\DB;
@@ -32,9 +31,9 @@ use Sis_medico\Paciente;
 use Sis_medico\Cortesia_Paciente;
 use Sis_medico\Paciente_Alergia;
 use Sis_medico\Opcion_Usuario;
+use Sis_medico\Empresa;
 use Sis_medico\Principio_Activo;
 use Sis_medico\AgendaProcedimiento;
-use Sis_medico\Sala;
 use Response;
 
 class ProcedimientosFuncionalesController extends Controller
@@ -110,9 +109,16 @@ class ProcedimientosFuncionalesController extends Controller
         $procedimiento = hc_procedimientos::find($id_procedimiento);
         $hc_seguro = Seguro::where('id', $procedimiento->id_seguro)->OrderBy('created_at', 'desc')->first();
         $tipo = 1;
-        $px = Procedimiento::where('procedimiento.estado','1')->get();
+        $px = Procedimiento::where('procedimiento.estado', '1')
+            ->orderBy('procedimiento.nombre')
+            ->get();
         $doctores = DB::table('users')->where('id_tipo_usuario', '=', 3)->where('estado','1')->get();
-        return view('hc4/procedimiento_funcional/editar', ['protocolo'=> $protocolo, 'procedimiento' => $procedimiento, 'tipo' => $tipo, 'id_paciente' => $id_paciente,'hc_seguro' => $hc_seguro, 'px' => $px, 'doctores' => $doctores]);
+        $history = $procedimiento ? $procedimiento->historia : null;
+        $companyId = $history && $history->agenda ? $history->agenda->id_empresa : null;
+        $consentFormats = \Sis_medico\Formato_consentimiento::where('estado', 1)->where(function ($query) use ($companyId) {
+            $query->whereNull('id_empresa')->orWhere('id_empresa', $companyId);
+        })->orderBy('nombre')->get();
+        return view('hc4/procedimiento_funcional/editar', ['protocolo'=> $protocolo, 'procedimiento' => $procedimiento, 'tipo' => $tipo, 'id_paciente' => $id_paciente,'hc_seguro' => $hc_seguro, 'px' => $px, 'doctores' => $doctores, 'consentFormats' => $consentFormats]);
     }
 
      public function guardar_proc_fun(Request $request){
@@ -122,6 +128,13 @@ class ProcedimientosFuncionalesController extends Controller
 
         $protocolo = hc_protocolo::find($request['id_protocolo']);
         $procedimiento = hc_procedimientos::find($request['id_procedimiento']);
+        try {
+            app(\Sis_medico\Services\ClinicalProcedureSafetyService::class)->authorizeExistingProtocol(
+                $procedimiento->id, $protocolo->id, $request->all(), array('actor_id' => $idusuario, 'ip' => $ip_cliente)
+            );
+        } catch (\Sis_medico\Exceptions\ClinicalProcedureBlockedException $exception) {
+            return $exception->getMessage();
+        }
         $hc_seguro = Seguro::where('id', $procedimiento->id_seguro)->OrderBy('created_at', 'desc')->first();
 
 
@@ -207,13 +220,13 @@ class ProcedimientosFuncionalesController extends Controller
         //return $request->all();
         $ip_cliente= $_SERVER["REMOTE_ADDR"];
         $id_doctor = Auth::user()->id; 
-        $id_empresa = Empresa::where('prioridad', '1')->first()->id;
+        
         $procedimientos =  $request['procedimiento'];
         //$tipo_procedimiento = $request['procedimiento'];
         $procedimientop = $procedimientos[0];
         $paciente = Paciente::find($request->paciente);
 
-        $sala_proc_fun = Sala::where('nombre_sala', 'like', '%FUNCIONALES%')->where('estado', 1)->first();
+        $empresa = Empresa::where('prioridad',1)->first();
 
 
         $procedimiento_fun_crear_new = [
@@ -236,7 +249,7 @@ class ProcedimientosFuncionalesController extends Controller
               'id_doctor1' => $id_doctor,
               'proc_consul' => '4',
               'estado_cita' => '4',
-              'id_empresa'  => $id_empresa,
+              'id_empresa'  => $empresa->id,
               'espid' => '4',
               'observaciones' => 'PROCEDIMIENTO CREADO POR EL DOCTOR',
               'id_seguro' => $paciente->id_seguro,
@@ -246,7 +259,7 @@ class ProcedimientosFuncionalesController extends Controller
               'id_usuariocrea' => $id_doctor,
               'id_usuariomod' => $id_doctor,
               'id_procedimiento' => $procedimientop,
-              'id_sala' => $sala_proc_fun->id,
+              'id_sala' => '46',
           ];
 
           $id_agenda = agenda::insertGetId($input_agenda);
@@ -313,7 +326,7 @@ class ProcedimientosFuncionalesController extends Controller
           $input_pentax = [
               'id_agenda' => $id_agenda,
               'hcid' => $id_historia,
-              'id_sala' => $sala_proc_fun->id,
+              'id_sala' => '30',
               'id_doctor1' => $idusuario,
               'id_seguro' => $paciente->id_seguro,
               'observacion' => "PROCEDIMIENTO CREADO POR EL DOCTOR",
@@ -350,7 +363,7 @@ class ProcedimientosFuncionalesController extends Controller
               'procedimientos' => $list_proc,
               'id_doctor1' => $idusuario,
               'observacion' => "CREADO POR EL DOCTOR",
-              'id_sala' => $sala_proc_fun->id,
+              'id_sala' => '30',
               'id_seguro' => $paciente->id_seguro,
              
               'ip_modificacion' => $ip_cliente,

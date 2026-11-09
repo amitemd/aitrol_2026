@@ -54,7 +54,7 @@
 								<label class="col-md-3 control-label">{{trans('hospitalizacion.Salas')}}</label>
 								<div class="col-md-9">
 									<select class="form-control" id="sala" name="sala">
-										<option value=" ">{{trans('hospitalizacion.Seleccione...')}}</option>
+										<option value=" ">{{trans('hospitalizacion.SeleccioneOpcion')}}</option>
 										@foreach($salas as $s)
 											<option @if($s->id == $sala) selected @endif value="{{$s->id}}">{{$s->nombre_sala}}</option>
 										@endforeach
@@ -90,20 +90,23 @@
 								<tr>
 									<td>{{$h->fecha}}</td>
 									<td>{{$h->id_paciente}}</td>
-									<td>{{$h->paciente->apellido1}} {{$h->paciente->apellido2}} {{$h->paciente->nombre1}} {{$h->paciente->nombre2}}</td>
+									<td>{{$h->apellido1}} {{$h->apellido2}} {{$h->nombre1}} {{$h->nombre2}}</td>
 									<td>{{$h->causa}}</td>
 									<td>{{$h->id_doctor}}</td>
 									<td>{{$h->nombre_sala}}</td>
 									<td>@if($h->estado == 2) {{trans('emergencia.EnHabitación')}} @endif</td>
 									<td>
 										<a class="btn btn-info btn-xs" id="btn_form005" name="btn_form005" href="{{route('formulario005.index_005',['id_solicitud' => $h->id_solicitud])}}"><i class="fa fa-file-alt"> </i> {{trans('emergencia.Atención')}}</a>
-										<a href="{{route('habitacion.formulario005_pdf', ['id_solicitud' => $h->id_solicitud])}}" target="_blank"class="btn btn-info btn-xs" ><i class="fa fa-download"></i>{{trans('emergencia.Formualrio005')}}</a>
-										<a href="{{route('hospital.formulario008_pdf', ['id_paciente' => $h->id_solicitud])}}" target="_blank"class="btn btn-info btn-xs" ><i class="fa fa-download"></i> {{trans('emergencia.Formulario008')}}</a>
+										<a href="{{route('habitacion.formulario005_pdf', ['id' => $h->id_solicitud])}}" target="_blank"class="btn btn-info btn-xs" ><i class="fa fa-download"></i>{{trans('emergencia.Formualrio005')}}</a>
+										<a href="{{route('hospital.formulario008_pdf', ['id' => $h->id_solicitud])}}" target="_blank"class="btn btn-info btn-xs" ><i class="fa fa-download"></i> {{trans('emergencia.Formulario008')}}</a>
 									</td>
 								</tr>
 								@endforeach
 							</tbody>
 						</table>
+						@if(method_exists($en_habitacion, 'links'))
+							{{ $en_habitacion->appends(Request::except('page'))->links() }}
+						@endif
 					</div>
 				
 				

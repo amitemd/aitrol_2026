@@ -13,7 +13,7 @@
 
 //consulta máster
 
-Route::match(['get', 'post'], 'historiaclinica/full_control', 'hc_admision\FullcontrolController@index')->name('historia_clinica.fullcontrol');
+Route::match(['get', 'post'], 'historiaclinica/full_control', 'v3\clinical\ClinicalOperationsController@legacyDaily')->name('historia_clinica.fullcontrol');
 //Taylor//
 //Route::get('contable\Porcentaje_renta\index', 'PorcentajeRentaController.phper@index');
 //Route::match(['get', 'post'], 'contable/acreedores/informes/cartera/pagar', 'contable\InformesAcreedorController@index_cartera')->name('carterap.index');

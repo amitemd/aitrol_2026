@@ -125,7 +125,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
                 <td style="font-weight: bold;">13.GRÁFICO DE LA INTERVENCIÓN (Incluya un gráfico previamente seleccionado que facilite la comprensión al paciente)</td>
             </tr>
             <tr>
-                <td><img class="centrado" src="{{public_path('/imagenes/colono.jpg')}}"></td>
+                <td><img class="centrado" src="{{base_path('public/imagenes/colono.jpg')}}"></td>
             </tr>
             <tr>
                 <td style="font-weight: bold;">14. DURACIÓN ESTIMADA DE LA EXPLORACIÓN:</td>

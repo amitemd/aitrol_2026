@@ -7,7 +7,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 
 <head>
     <meta charset="utf-8" />
-    <title>CRM - CONSENTIMIENTO ECO-rev02</title>
+    <title>CRM - CONSENTIMIENTO ECO-rev02 </title>
     <style>
         * {
             font-size: 12px;
@@ -145,8 +145,8 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">Es una técnica mixta que utiliza la imagen endoscópica (introducción de un cable con luz y cámara) y ecográfica. La prueba permite el examen ecográfico, toma de biopsias y algunos tratamientos de lesiones en la pared del esófago, estómago y primera parte del intestino delgado (duodeno) así como de algunos órganos vecinos, como páncreas, vías biliares o ganglios linfáticos, directamente desde el interior del tubo digestivo.</td>
-                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{public_path('/imagenes/cprm.png')}}" />
-                        <img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{public_path('/imagenes/imagen1.png')}}" /></td>
+                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{base_path('/public/imagenes/cprm.png')}}" />
+                        <img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{base_path('/public/imagenes/imagen1.png')}}" /></td>
                 </tr>
             </tbody>
         </table>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
 
 	<title>Resumen Procedimiento</title>
 	<style type="text/css">
@@ -107,14 +108,7 @@
 			</tr>
 		</table>
 		<hr>
-		<!--table width="716px;" class="final">
-			<tr>
-				<td >Hallazgos</td>
-			</tr>
-			<tr>
-				<td style="font-size: 12px !important;"><?php echo $protocolo->hallazgos; ?></td>
-			</tr>
-		</table-->
+		
 		<div style="width: 107%;margin-left: -17px;border: 1px black solid;">
 			<span>Hallazgos</span>
 		</div>

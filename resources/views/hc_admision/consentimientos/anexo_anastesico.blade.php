@@ -59,7 +59,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td>
-                        <img style="margin:6px;margin-top:10px;height: 100px;width:280px;" src="{{public_path('/imagenes/anexo_anestesico.png')}}" />
+                        <img style="margin:6px;margin-top:10px;height: 100px;width:280px;" src="{{base_path('public/imagenes/anexo_anestesico.png')}}" />
                     </td>
                 </tr>
             </tbody>

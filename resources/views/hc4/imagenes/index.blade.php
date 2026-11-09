@@ -567,32 +567,6 @@
 						            ->count();
 						    	$ffuncional  = $pfuncional  - $rfuncional - $rfuncional2;
 						    @endphp
-						    <div class="col-md-12">
-						    	@if($fendoscopicos > 0)
-						    		<a onclick="agregar_procedimiento_hc('endoscopico_id');"  class="btn-danger boton_burbuja">
-						    			<span >El paciente tiene {{$fendoscopicos}} @if ($fendoscopicos > 1) procedimientos endoscopicos @else procedimiento endoscopico @endif por crear el dia de hoy, presiones aqui para atender</span>
-						    		</a>
-						    		<input type="hidden" id="endoscopico_id" value="{{route('hc4_procedimiento.selecciona_procedimiento2',['tipo' => '0', 'paciente' => $paciente->id, 'hcid' => $hc->hcid ])}}">
-						    		<br>
-						    	@endif
-						    	@if($ffuncional > 0)
-						    		<a onclick="agregar_procedimiento_hc('funcional_id');"  class="btn-danger boton_burbuja">
-						    			<span>El paciente tiene {{$ffuncional}} @if ($ffuncional > 1) procedimientos funcionales @else procedimiento funcional @endif por crear el dia de hoy , presiones aqui para atender</span>
-						    		</a>
-						    		<input type="hidden" id="funcional_id" value="{{route('hc4_procedimiento.selecciona_procedimiento2',['tipo' => '0', 'paciente' => $paciente->id, 'hcid' => $hc_funcional->hcid ])}}">
-						    		<br>
-						    	@endif
-						    	@if(!is_null($hc))
-						    		<input type="hidden" id="id_endoscopico" value="{{$hc->hcid}}">
-								@else
-									<input type="hidden" id="id_endoscopico" value="0">
-								@endif
-						    	@if(!is_null($hc_funcional))
-						    		<input type="hidden" id="id_funcional" value="{{$hc_funcional->hcid}}">
-						    	@else
-									<input type="hidden" id="id_funcional" value="0">
-								@endif
-						    </div>
 						    <br>
 						    @php
                                $xagenda = DB::table('agenda as a')
@@ -800,9 +774,9 @@
 								                                    $explotar = explode( '.', $imagen->nombre);
 								                                    $extension = end($explotar);
 								                                @endphp
-								                                @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG')|| ($extension == 'bmp') || ($extension == 'BMP'))
+								                                @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
 								                                    <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-								                                        <img  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" style='width:100%;'>
+								                                        <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" style='width:100%;'>
 								                                    </a>
 								                                @elseif(($extension == 'pdf') || ($extension == 'PDF'))
 								                                    <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
@@ -813,7 +787,13 @@
 								                                        <img  src="{{asset('imagenes/video.png')}}" style='width:100%;'>
 								                                    </a>
 								                                @else
-								                                    
+								                                    @php
+								                                        $variable = explode('/' , asset('/hc_ima/'));
+								                                        $d1 = $variable[3];
+								                                        $d2 = $variable[4];
+								                                        $d3 = $variable[5];
+								                                        $ruta = "http%3A%2F%2F186.68.76.210%3A86%2F".$d1."%2Fstorage%2Fapp%2Fhc_ima%2F".$imagen->nombre;
+								                                    @endphp
 								                                    <a data-toggle="modal" data-target="#foto" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
 								                                        <img  src="{{asset('imagenes/office.png')}}" width="70%">
 								                                    </a>
@@ -868,8 +848,8 @@
 								                                            $explotar = explode( '.', $imagen->nombre);
 								                                            $extension = end($explotar);
 								                                        @endphp
-								                                        @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPEG') || ($extension == 'PNG')|| ($extension == 'JPG') || ($extension == 'bmp') || ($extension == 'BMP'))
-								                                            <img  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="90%" style="max-height: 84px;">
+								                                        @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPEG') || ($extension == 'PNG')|| ($extension == 'JPG'))
+								                                            <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="90%" style="max-height: 84px;">
 								                                        @elseif(($extension == 'pdf'))
 								                                            <img  src="{{asset('imagenes/pdf.png')}}" width="90%" style="max-height: 84px;">
 								                                        @elseif(($extension == 'mp4'))
@@ -1139,12 +1119,12 @@
                 								</div>
 
 					                        	<div>
-					                        		<h3 class="box-title" style="font-size: 12px; color: white"> PROCEDIMIENTOS <br> ENDOSC&Oacute;PICOS</h3>
+												<h3 class="box-title" style="font-size: 12px; color: white">PROCEDIMIENTOS</h3>
 					                        	</div>
 				                        	</div>
 
 					                        <div class="box-tools">
-						                        <button type="button" class="btn btn-box-tool"  onclick="cargar_procedimiento_endoscopico();"
+							                        <button type="button" class="btn btn-box-tool"  onclick="cargar_procedimientos();"
 						                               style="color: white"><i class="fa fa-plus"></i>
 						                        </button>
 					                        </div>
@@ -1339,13 +1319,6 @@
 					                        	</div>
 		                               		</a>
 
-		                               		<a class="btn btn-info btn_ordenes" style="color: white; height: 33px" onClick="carga_ordenes_profuncional();">
-					                        	<div class="col-12" style="padding: 0px; margin-right: 10px">
-					                        		<img style="padding-bottom: 20px" width="16px" src="{{asset('/')}}hc4/img/iconos/procedimientos_funcionales.png">
-					                        		<label style="font-size: 10px">PROCEDIMIENTOS <br> FUNCIONALES</label>
-					                        	</div>
-		                               		</a>
-
 		                               		<a class="btn btn-info btn_ordenes" style="color: white; " onClick="alert('¡COMPRAR LICENCIA COMPLETA!')" >
 					                        	<div class="col-12" style="padding: 0px; margin-right: 10px">
 					                        		<img width="16px" src="{{asset('/')}}hc4/img/iconos/biopsias.png">
@@ -1356,6 +1329,7 @@
            							</div>
 							</div>
 
+							@if(false)
 							<div class="col-lg-4 col-md-6" style="padding: 3px;left: 0px;">
 										<div class="box box-solid box-primary recuadro" >
 											<div class="fila2">
@@ -1370,7 +1344,7 @@
 							                        		</div>
 									                        <div class="box-tools">
 									                           	<button type="button" class="btn btn-box-tool"
-									                           	onclick="cargar_procedimiento_funcional();"
+									                           	onclick="cargar_procedimientos();"
 									                           style="color: white"><i class="fa fa-plus"></i>
 									                            </button>
 									                        </div>
@@ -1483,6 +1457,7 @@
 					                  	    </div>
 	           							</div>
 							</div>
+							@endif
 
 							<div class="col-lg-4 col-md-6" style="padding: 3px;left: 0px;z-index: 998;">
 								<div class="box box-solid box-primary recuadro" >
@@ -1639,7 +1614,7 @@
 					                                            @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
 					                                            <div class="col-6">
 					                                            	<a style="" data-toggle="modal" data-target="#foto2" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-					                                            	<img style="margin-bottom: 4px; max-width: 50px; max-height: 50px"   src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}"   >
+					                                            	<img style="margin-bottom: 4px; max-width: 50px; max-height: 50px"   src="{{asset('hc_ima')}}/{{$imagen->nombre}}"   >
 					                                            	</a>
 					                                            </div>
 					                                            @endif
@@ -2187,7 +2162,7 @@
 					                                            @if(($extension == 'jpg') || ($extension == 'jpeg') || ($extension == 'png') || ($extension == 'JPG') || ($extension == 'JPEG') || ($extension == 'PNG'))
 					                                            <div class="col-6">
 					                                            	<a style="" data-toggle="modal" data-target="#foto2" data-remote="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
-					                                            	<img style="margin-bottom: 4px; max-width: 50px; max-height: 50px"   src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}"   >
+					                                            	<img style="margin-bottom: 4px; max-width: 50px; max-height: 50px"   src="{{asset('hc_ima')}}/{{$imagen->nombre}}"   >
 					                                            	</a>
 					                                            </div>
 					                                            @endif
@@ -2243,7 +2218,7 @@
        						 					<td>@if(!is_null($laboratorio_externo)) {{substr($laboratorio_externo->created_at,0,10)}} @endif
        						 					</td>
        						 					<td>
-           						 					<a class="btn btn-info btn_accion" href="{{asset('laboratorio_externo_descarga')}}/{{$laboratorio_externo->id}}" >
+												<a class="btn btn-info btn_accion" href="{{url('laboratorio_externo_descarga/'.$laboratorio_externo->id)}}" target="_blank" rel="noopener">
            						 						<div class="row" style="margin-left: 0px; margin-right: 0px">
 			                								<div style="margin-right: 0px">
 			                									<img width="16px" src="{{asset('/')}}hc4/img/iconos/descargar.png">
@@ -2708,7 +2683,7 @@
 
 
 
-  	function cargar_procedimiento_endoscopico(mensaje){
+	function cargar_procedimientos(mensaje){
 		$.ajax({
 			type: "GET",
 			url: "{{route('paciente.procedimiento_endoscopico', ['id_paciente' => $paciente->id])}}",
@@ -2762,23 +2737,6 @@
 		});
 	}
 
-
-
-	function cargar_procedimiento_funcional(){
-		$.ajax({
-			type: "GET",
-			url: "{{route('paciente.procedimiento_funcional', ['id_paciente' => $paciente->id])}}",
-			data: "",
-			datatype: "html",
-			success: function(datahtml){
-				$("#area_trabajo").html(datahtml);
-				scroll_datos("#area_trabajo");
-			},
-			error:  function(){
-				alert('error al cargar');
-			}
-		});
-	}
 
 
 	function cargar_resultados_externos(){
@@ -2888,10 +2846,11 @@
 
     function cargar_nueva_receta(){
 		$.ajax({
-			type: "GET",
+			type: "POST",
 			url: "{{route('paciente_nueva.receta', ['id_paciente' => $paciente->id])}}",
-			data: "",
-			datatype: "html",
+			headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+			data: {_token: '{{ csrf_token() }}'},
+			dataType: "html",
 			success: function(datahtml){
 				scroll_datos("#area_trabajo");
 				$("#area_trabajo").html(datahtml);
@@ -3068,25 +3027,12 @@
                 imgBase64: dataURL
             },
             success: function (result) {
-
-				//nuevo
-				// Agrega la imagen al principio del contenido existente
-				$("#fotos_agregar").prepend("<div class='col-md-3' style='margin: 10px 0;padding: 2px;'><a data-toggle='modal' data-target='#foto' data-remote='{{route('hc_video.mostrar_foto2')}}/"+result.id+"'><img src='{{asset('imagenes/descarga/thumb')}}/"+result.archivo+"' style='width:100%;'></div>");
-
-				// Incrementa el contador de imágenes
-				var canterior = parseInt($('#cimagenes').text());
-				canterior = canterior + 1;
-				$("#cimagenes").text(canterior);
-
-				console.log(result);
-
-				/* Anterior
                 anterior = $("#fotos_agregar").html();
                 canterior = parseInt($('#cimagenes').text());
                 canterior = canterior+1;
                 $("#cimagenes").html(canterior);
                  $("#fotos_agregar").html("<div class='col-md-3' style='margin: 10px 0;padding: 2px;'><a data-toggle='modal' data-target='#foto' data-remote='{{route('hc_video.mostrar_foto2')}}/"+result.id+"'><img src='{{asset('hc_ima')}}/"+result.archivo+"' style='width:100%;'></div>"+anterior);
-                console.log(result);*/
+                console.log(result);
             }
         });
     });
@@ -3845,7 +3791,7 @@
     function carga_ordenes_proendospico(){
     	$.ajax({
 		    type: "GET",
-			url: "{{route('paciente.orden_proc_endoscopico',['paciente' => $paciente->id ])}}",
+			url: "{{route('paciente.orden_proc_endoscopico',['id_paciente' => $paciente->id ])}}",
 			data: "",
 			datatype: "html",
 			success: function(datahtml){
@@ -3864,7 +3810,7 @@
     function carga_ordenes_profuncional(){
     	$.ajax({
 		    type: "GET",
-			url: "{{route('paciente.orden_proc_funcional',['paciente' => $paciente->id ])}}",
+			url: "{{route('paciente.orden_proc_funcional',['id_paciente' => $paciente->id ])}}",
 			data: "",
 			datatype: "html",
 			success: function(datahtml){
@@ -3883,7 +3829,7 @@
     function carga_ordenes_imagenes(){
     	$.ajax({
 		    type: "GET",
-			url: "{{route('paciente.orden_proc_imagenes',['paciente' => $paciente->id ])}}",
+			url: "{{route('paciente.orden_proc_imagenes',['id_paciente' => $paciente->id ])}}",
 			data: "",
 			datatype: "html",
 			success: function(datahtml){

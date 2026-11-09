@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
 
 	<title>Resumen Procedimiento</title>
 	<style type="text/css">
@@ -59,7 +60,13 @@
 						$empresa = $agenda->empresa;
 					}
 				@endphp
-				<td style="width: 150px;"><img style="margin: 0;width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></td>
+				@if($historia->id_seguro != 5)
+					@if(!is_null($empresa->logo_form))
+					<td style="width: 150px;"><img style="width: 180px;" src="{{base_path().'/storage/app/logo/'.$empresa->logo_form}}"	></td>
+					@else
+					<!--td style="width: 150px;font-size: 12px;"><b>{{$empresa->nombre_form}}</b></td-->
+					@endif
+				@endif
 
 				@if($historia->id_seguro != 5)
 					@if(!is_null($empresa->logo_form))
@@ -73,9 +80,11 @@
 						</td>
 					@endif
 				@else
-				<td colspan="2">
-					<p  style="font-size: 18px; text-align: center; width: 500px; margin-left:0px; "><b style="text-align: center;">{{$empresa->nombre_form}}</b></p>
-				</td>
+					<td colspan="2">
+						<p  style="font-size: 19px; text-align: center; width: 500px; margin-left:110px; ">
+							<b style="text-align: center;">INSTITUTO ECUATORIANO DE ENFERMEDADES DIGESTIVAS GASTROCLINICA S.A.</b>
+						</p>
+					</td>
 				@endif
 			</tr>
 		</table>
@@ -151,7 +160,7 @@
 							@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
 								@if($firma != "[]")
 
-								<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+								<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 								<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
 								@else
 									<br><br><br><br><br>
@@ -167,7 +176,7 @@
 						<p style="text-align: center;">
 							@if((!is_null($protocolo->procedimiento->id_doctor_responsable)))
 								@if($firma_2 != "[]")
-								<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
+								<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
 								<b>DR. {{$responsable->nombre1}} {{$responsable->apellido1}} {{$responsable->apellido2}} (RESPONSABLE)</b><br>
 								@else
 									<br><br><br><br><br>
@@ -181,7 +190,7 @@
 					<p style="text-align: center;">
 						@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
 							@if($firma != "[]")
-							<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 							<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
 							@else
 								<br><br><br><br><br>
@@ -247,7 +256,7 @@
 						@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
 							@if($firma != "[]")
 
-							<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 							<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}</b><br>
 							@else
 								<br><br><br><br><br>
@@ -263,7 +272,7 @@
 					<p style="text-align: center;">
 						@if((!is_null($protocolo->procedimiento->id_doctor_responsable)))
 							@if($firma_2 != "[]")
-							<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
+							<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma_2[0]->nombre}}" style="" align=center hspace=12><br>
 							<b>DR. {{$responsable->nombre1}} {{$responsable->apellido1}} {{$responsable->apellido2}} (RESPONSABLE)</b><br>
 							@else
 								<br><br><br><br><br>
@@ -277,7 +286,7 @@
 				<p style="text-align: center;">
 					@if((!is_null($protocolo->procedimiento->id_doctor_examinador2)))
 						@if($firma != "[]")
-						<img width=150 height=100 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
+						<img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma[0]->nombre}}" style="" align=center hspace=12><br>
 						<b>DR. {{$protocolo->procedimiento->doctor_firma->nombre1}} {{$protocolo->procedimiento->doctor_firma->apellido1}} {{$protocolo->procedimiento->doctor_firma->apellido2}}.</b><br>
 						@else
 							<br><br><br><br><br>

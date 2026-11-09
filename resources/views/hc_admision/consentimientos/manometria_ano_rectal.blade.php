@@ -145,7 +145,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">LLa técnica a la que usted va a someterse consiste en la medición de las presiones del esfínter anal y su respuesta a diversos estímulos. Sirve para conocer la fuerza y coordinación de los músculos a este nivel.</td>
-                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{public_path('/imagenes/manometriaanorectal.jpg')}}" />
+                    <td><img style="margin:6px;margin-top:10px;height: 60px;width:60px;" src="{{base_path('public/imagenes/manometriaanorectal.jpg')}}" />
                     </td>
                 </tr>
             </tbody>
@@ -245,7 +245,12 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
 
             </tr>
 
+            <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
             <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>

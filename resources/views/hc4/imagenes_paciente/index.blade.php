@@ -29,12 +29,7 @@
 <link rel="stylesheet" href="{{ asset("/css/bootstrap-datetimepicker.css")}}">
 
 <link rel="stylesheet" href="{{asset('plugins/iCheck/all.css')}}">
-<link
-      type="text/css"
-      href="https://uicdn.toast.com/tui-color-picker/v2.2.6/tui-color-picker.css"
-      rel="stylesheet"
-    />
-    <style>
+<style>
       .tui-image-editor-header-logo{
         display: none;
       }
@@ -42,7 +37,6 @@
 		display: none;
 	  }
     </style>
-
 <style type="text/css">
 
   .icheckbox_flat-green.checked.disabled {
@@ -127,7 +121,85 @@
 	.image-checkbox-checked .fa {
       display: block !important;
     }
+
+    .assemble-study-card {
+        overflow: hidden;
+        border-radius: 14px !important;
+    }
+
+    .assemble-study-card > .assemble-study-card__header {
+        display: grid !important;
+        grid-template-columns: max-content minmax(0, 1fr) 48px;
+        align-items: center;
+        gap: 24px;
+        min-height: 100px;
+        padding: 16px 18px !important;
+        color: #fff !important;
+        background: linear-gradient(110deg, #08658f 0%, #0784ad 52%, #17aaa8 100%) !important;
+        border-bottom: 0 !important;
+        text-align: left !important;
+    }
+
+    .assemble-study-card__header > b {
+        grid-column: 1;
+        grid-row: 1;
+        margin: 0;
+        white-space: nowrap;
+        font-size: 15px;
+        line-height: 1.35;
+        text-align: left;
+    }
+
+    .assemble-study-card__procedure {
+        grid-column: 2;
+        grid-row: 1;
+        width: auto !important;
+        min-width: 0;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 8px !important;
+        color: #fff !important;
+        background: transparent !important;
+        font-size: 16px;
+        line-height: 1.4;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .assemble-study-card__header > .box-tools {
+        position: static !important;
+        float: none !important;
+        grid-column: 3;
+        grid-row: 1;
+        margin: 0 !important;
+        text-align: right;
+    }
+
+    @media (max-width: 767px) {
+        .assemble-study-card > .assemble-study-card__header {
+            grid-template-columns: max-content minmax(0, 1fr) 42px;
+            gap: 10px;
+            padding: 12px !important;
+        }
+
+        .assemble-study-card__header > b {
+            font-size: 12px;
+        }
+
+        .assemble-study-card__procedure {
+            font-size: 13px;
+        }
+    }
 </style>
+<script type="text/javascript">
+	function cambio_premedicacion(div, elemento){
+		var e = document.getElementById(elemento);
+		var id = e.value;
+		elemento_d = $("#se"+id).val();
+		$("#"+div).val(elemento_d);
+	}
+</script>
 
 <div class="modal fade" id="foto" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-lg" role="document" style="width: 80%;">
@@ -137,46 +209,32 @@
     </div>
 </div>
 <div class="modal fade bd-example-modal-xl" id="editimage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog modal-xl" role="document" style="width: 80%;">
+    <div class="modal-dialog modal-xl" role="document" style="width: 90%;">
       <div class="modal-content" id="imagecontent" >
 
       </div>
     </div>
 </div>
 <div class="box" style="border: 2px solid#004AC1; background-color: #56ABE3; ">
-	<div class="box-header " style="background-color:#004AC1; color: white; font-family: 'Helvetica general3'; padding-top: 0px; padding-bottom: 0px; ">
-	  	<div class="row">
-		  	<div class="col-md-12">
-			    <h1 style="font-size: 15px; background-color:#004AC1; color: white; margin-top: 0px; margin-bottom: 0px" >
-	            	<img style="width: 35px; margin-left: 5px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/imagenes.png">
-	             	<b>ARMAR ESTUDIOS</b>
-				</h1>
-			</div>
-		</div>
-        @if(!is_null($paciente))
-			<center>
-			    <div class="col-12" style="padding-bottom: 20px;">
-					<h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-			            <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-			            	{{$paciente->nombre1}} {{$paciente->nombre2}}
-		                </b>
-					</h1>
-				</div>
-			</center>
-		@endif
-	    <!-- /.box-tools -->
-	</div>
+	@include('hc4.partials.module_header', [
+		'moduleTitle' => __('hc4.armarEstudios'),
+		'moduleIcon' => asset('/').'hc4/img/iconos/imagenes.png',
+		'paciente' => $paciente
+	])
   <!-- /.box-header -->
   <div class="box-body" style="padding-left: 0px">
   	<div class="col-12">
 		  	<div class="row parent" >
 		  		<span id="msn1" style="color: white;"></span>
+		  		@foreach($sedaciones as $seda)
+			  		<textarea id="se{{$seda->id}}" style="display:none;">{{$seda->contenido}}</textarea>
+		  		@endforeach
 		  		@foreach($procedimientos2 as $value)
 
 
 			    	<div class="col-12 {{$value->id_protocolo}}">
-			    		<div class="box" style="border: 2px solid #004AC1; background-color: #004AC1; ">
-						  	<div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+<div class="box assemble-study-card" style="border: 2px solid #004AC1; background-color: #004AC1; ">
+<div class="box-header with-border assemble-study-card__header" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
 							    			@if(!is_null($value->f_operacion))
 						                        @php
 						                        $dia =  Date('N',strtotime($value->f_operacion));
@@ -239,8 +297,10 @@
 			                            <i class="fa fa-minus"></i>
 			                        </button>
 			                    </div>
-		                        <div class="col-12" style="margin-top: 20px; background-color: #004AC1; color: white; width: 100%; height: 100%">
-			                    	@if(!is_null($value))
+		                        <div class="col-12 assemble-study-card__procedure" style="margin-top: 20px; color: white; width: 100%; height: 100%">
+                            @if(!empty($value->odont_nombre))
+                            @php $texto = $value->odont_nombre; @endphp
+                            @elseif(!is_null($value))
 				                    	@php
 									  		$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $value->id_procedimiento)->get();
 							  					$mas = true;
@@ -338,6 +398,50 @@
 						                            	<span style="font-family: 'Helvetica general">Referido por:</span>
 						                                <input class="form-control" onchange="cambio_fecha({{$value->id_protocolo}});" type="text" name="referido" id="referido1{{$value->id_protocolo}}" value="@if(!is_null($referido)){{$referido}} @endif" style="border: 2px solid #004AC1; ">
 						                            </div>
+													@php
+													  $prd= DB::table('hc_protocolo')->where('id',$value->id_protocolo)->first();
+													@endphp
+						                            <div  class="col-md-4 col-sm-12 col-12" style="padding-left: 25px; padding-right: 25px">
+														<span style="font-family: 'Helvetica general">Anestesiologo :</span>
+							                             <select style="border: 2px solid #004AC1;" onchange="cambio_fecha({{$value->id_protocolo}})" class="form-control" name="anestesiologonew" id="anestesiologonew{{$value->id_protocolo}}">
+							                             	 <option value="">Seleccione...</option>
+															  @if(count($anestesiologo)>0)
+															  @foreach($anestesiologo as $anestesiologos)
+															  	<option @if(!is_null($prd)) @if($prd->id_anestesiologo==$anestesiologos->id) selected='selected' @endif @endif value="{{$anestesiologos->id}}">{{$anestesiologos->apellido1}} {{$anestesiologos->nombre1}}</option>
+															  @endforeach
+															  @endif
+							                             </select>
+						                            </div>
+													<div  class="col-md-4 col-sm-12 col-12" style="padding-left: 25px; padding-right: 25px">
+														<span style="font-family: 'Helvetica general">Instrumento :</span>
+							                             <input  style="border: 2px solid #004AC1;" type="text" class="form-control" onchange="cambio_fecha({{$value->id_protocolo}})" name="instrumento" id="instrumento{{$value->id_protocolo}}" aria-placeholder="Ingrese instrumento" value="@if(!is_null($prd)){{$prd->instrumento}}  @endif">
+						                            </div>
+													<div  class="col-md-4 col-sm-12 col-12" style="padding-left: 25px; padding-right: 25px">
+														<span style="font-family: 'Helvetica general">Ayudante :</span>
+							                            <select style="border: 2px solid #004AC1;" onchange="cambio_fecha({{$value->id_protocolo}})" class="form-control" name="ayudantenew" id="ayudantenew{{$value->id_protocolo}}">
+							                             	 <option value="">Seleccione...</option>
+															  @if(count($doctores)>0)
+															  @foreach($doctores as $ayudantes)
+															  	<option @if(!is_null($prd)) @if($prd->id_ayudante==$ayudantes->id) selected='selected' @endif @endif value="{{$ayudantes->id}}">{{$ayudantes->apellido1}} {{$ayudantes->nombre1}}</option>
+															  @endforeach
+															  @endif
+							                             </select>
+						                            </div>
+													<div  class="col-md-12 col-sm-12 col-12" style="padding-left: 25px; padding-right: 25px">
+														<span style="font-family: 'Helvetica general">Premedicación :</span>
+
+						                            </div>
+													<div  class="col-md-12 col-sm-12 col-12" style="padding-left: 25px; padding-right: 25px">
+														<select id="select{{$value->id_protocolo}}" onchange="cambio_premedicacion('premedicacion{{$value->id_protocolo}}', 'select{{$value->id_protocolo}}')">
+															<option value="">Seleccione</option>
+															@foreach($sedaciones as $seda2)
+																<option value="{{$seda2->id}}">{{$seda2->contenido}}</option>
+															@endforeach
+														</select>
+
+														<textarea  style="border: 2px solid #004AC1;"  name="premedicacion" onchange="cambio_fecha({{$value->id_protocolo}})" id="premedicacion{{$value->id_protocolo}}" cols="20" rows="5">@if(!is_null($prd)){{$prd->premedicacion}} @endif</textarea>
+						                            </div>
+
 						                        </div>
 					                        </form>
 					                        @endif
@@ -372,12 +476,18 @@
 				                                            	$extension == "TIF" )
 							                                <div  class="col-sm-4 col-12" >
 								                                    <label class="image-checkbox{{$value->id_protocolo}}" onclick="seleccion_imagen({{$imagen->id}})" style=" min-width: 110px; min-height: 70px">
-								                                        <img src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="100%" >
+								                                        <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="100%" >
 								                                        <input   type="checkbox" name="image[]" value="{{$imagen->id}}" @if($imagen->seleccionado == 1){{"checked"}} @endif/>
 								                                    </label>
+								                                    <div>
+									                                     <input class="imagen_recortada" type="checkbox" value="{{$imagen->id}}" @if($imagen->seleccionado_recortada == 1){{"checked"}} @endif  >
+									                                     <span style="font-size: 12px">Recortar Imagen</span>
+									                                 </div>
 																	 
-								                                     <input class="imagen_recortada" type="checkbox" value="{{$imagen->id}}" @if($imagen->seleccionado_recortada == 1){{"checked"}} @endif  ><span style="font-size: 12px">Recortar Imagen</span>
-
+								                                    <div>
+									                                     <input class="seleccion_rx" type="checkbox" value="{{$imagen->id}}" @if($imagen->seleccion_rx == 1){{"checked"}} @endif  >
+									                                     <span style="font-size: 12px">Seleccion RX</span>
+									                                 </div>
 																	 <div>
 																	 <button type="button" class="btn btn-info btn_accion" style="color: white;"  onclick="modal_image({{$imagen->id}})"> Editar &nbsp; &nbsp;  <i class="fa fa-edit"></i> </button>
 																	 </div>
@@ -401,7 +511,7 @@
 								  			<div class="col-12">
 								  				<div class="row">
 								  					<div class="col-md-12 col-6" style="padding-left: 5px; padding-right: 5px; margin-bottom: 10px">
-									  					<a type="button" class="btn btn-info" id="" style="width: 100%; height: 100%; font-size: 12px; background-color: green " onclick="regresar_proc_endoscopico({{$value->id_protocolo}}, '{{$paciente->id}}');">
+															<a type="button" class="btn btn-info" id="" style="width: 100%; height: 100%; font-size: 12px; background-color: green " onclick="regresar_proc_endoscopico({{$value->id_protocolo}}, '{{$paciente->id}}', {{ !empty($value->odont_procedimiento_id) ? (int) $value->odont_procedimiento_id : 'null' }});">
 									  						<i style="color: white" class="fa fa-reply" aria-hidden="true"></i>
 				                        					<span style=" color: white" >Revisar Procedimiento</span>
 				                    					</a>
@@ -433,8 +543,8 @@
 		    	@foreach($procedimientos1 as $value)
 
 			    	<div class="col-12 {{$value->id_protocolo}}">
-			    		<div class="box" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
-						  <div class="box-header with-border" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
+<div class="box assemble-study-card" style="border: 2px solid #004AC1; background-color: #004AC1; border-radius: 3px; ">
+						  <div class="box-header with-border assemble-study-card__header" style="background-color: white; color: black; text-align: center; font-family: 'Helvetica general3';border-bottom: #004AC1;">
 						    	@if(!is_null($value->f_operacion))
 						                        @php
 						                        $dia =  Date('N',strtotime($value->f_operacion));
@@ -496,7 +606,7 @@
 		                        <button  type="button" class="btn btn-info btn-sm" data-widget="collapse" title="" data-original-title="Collapse" id="fili">
 		                            <i class="fa fa-minus"></i></button>
 		                    </div>
-		                        <div class="col-12" style="margin-top: 20px; background-color: #004AC1; color: white">
+		                        <div class="col-12 assemble-study-card__procedure" style="margin-top: 20px; color: white">
 			                    	@php
 			                    		$procedimiento =  \Sis_medico\hc_procedimientos::find($value->id_procedimiento);
 			                    		$procedimiento_completo = \Sis_medico\procedimiento_completo::find($procedimiento->id_procedimiento_completo);
@@ -607,13 +717,16 @@
 			                                            		$extension == "tiff" ||
 			                                            		$extension == "tif" )
 						                                	<div   class="col-sm-4 col-12"  >
-							                                    <label  class="image-checkbox2{{$value->id_protocolo}}"  style=" min-width: 110px; min-height: 70px">
-							                                        <img  src="{{asset('imagenes/descarga/thumb')}}/{{$imagen->nombre}}" width="100%" >
+							                                    <label  class="image-checkbox2{{$value->id_protocolo}}" onclick="seleccion_imagen({{$imagen->id}})" style=" min-width: 110px; min-height: 70px">
+							                                        <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="100%" >
 							                                        <input  type="checkbox" name="image[]" value="{{$imagen->id}}" @if($imagen->seleccionado == 1){{"checked"}} @endif/>
 
 							                                    </label>
-																 <button class="btn btn-info btn-xs" type="button" onclick="seleccion_imagen({{$imagen->id}})"> <i class="fa fa-edit"></i></button>
+																
 							                                     <input class="imagen_recortada" type="checkbox" value="{{$imagen->id}}" @if($imagen->seleccionado_recortada == 1){{"checked"}} @endif  ><span style="font-size: 10px">Recortar Imagen</span>
+																 <div>
+																<button type="button" class="btn btn-info btn_accion " onclick="modal_image({{$imagen->id}})">  Editar &nbsp; &nbsp;  <i class="fa fa-edit"></i> </button>
+																</div>
 						                                	</div>
 						                                @endif
 						  							@endforeach
@@ -689,23 +802,7 @@
 <script src="{{ asset ("/js/bootstrap-datetimepicker.js") }}"></script>
 <script src="{{asset('plugins/iCheck/icheck.min.js')}}"></script>
 <script>
-function modal_image(seq){
-	$.ajax({
-      type: 'get',
-      url:"{{url('modalimage/edit/')}}/"+seq,
-      datatype: 'json',
-      success: function(data){
-        $('#imagecontent').empty().html(data);
-        $('#editimage').modal();
-      },
-      error: function(data){
-        //console.log(data);
-      }
-    });  
-}
-$('#editimage').on('hidden.bs.modal', function(){
-      $(this).removeData('bs.modal');
-  });
+
 function cargar_imagenes_paciente(){
 		$.ajax({
 			type: "GET",
@@ -720,7 +817,20 @@ function cargar_imagenes_paciente(){
 			}
 		});
 	}
-
+function modal_image(seq){
+	$.ajax({
+      type: 'get',
+      url:"{{url('modalimage/edit/')}}/"+seq,
+      datatype: 'json',
+      success: function(data){
+        $('#imagecontent').empty().html(data);
+        $('#editimage').modal();
+      },
+      error: function(data){
+        //console.log(data);
+      }
+    });  
+}
 
 
 	 $('#foto').on('hidden.bs.modal', function(){
@@ -731,7 +841,7 @@ function cargar_imagenes_paciente(){
 	<?php foreach ($procedimientos2 as $value): ?>
 		$('#recortar_todas_1{{$value->id_protocolo}}').on('click', function(event, value){
 	        $.ajax({
-	            url:"{{route('seleccionar_todas.recortar', ['id_protocolo' => $value->id_protocolo])}}",
+	            url:"{{route('seleccionar_todas.recortar', ['id_paciente' => $value->id_protocolo])}}",
 	            dataType: "json",
 	            type: 'get',
 	            success: function(data){
@@ -750,7 +860,7 @@ function cargar_imagenes_paciente(){
 	<?php foreach ($procedimientos1 as $value): ?>
 		    $('#recortar_todas_2{{$value->id_protocolo}}').on('click', function(event, value){
 	        $.ajax({
-	            url:"{{route('seleccionar_todas.recortar', ['id_protocolo' => $value->id_protocolo])}}",
+	            url:"{{route('seleccionar_todas.recortar', ['id_paciente' => $value->id_protocolo])}}",
 	            dataType: "json",
 	            type: 'get',
 	            success: function(data){
@@ -844,6 +954,41 @@ function cargar_imagenes_paciente(){
             var val = this.checked ? this.value : '';
             $.ajax({
                 url:"{{route('hc_reporte.cambio_seleccion2')}}/"+val,
+                dataType: "json",
+                type: 'get',
+                success: function(data){
+                    alert(data);
+                },
+                error: function(data){
+                    console.log(data);
+                }
+            });
+        });
+
+        $('.seleccion_rx').iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%' // optional
+        });
+
+        $('.seleccion_rx').on('ifChecked', function(event, value){
+            var val = this.checked ? this.value : '';
+            $.ajax({
+                url:"{{route('hc_reporte.cambio_seleccion3')}}/"+val,
+                dataType: "json",
+                type: 'get',
+                success: function(data){
+                    alert(data);
+                },
+                error: function(data){
+                    console.log(data);
+                }
+            });
+        });
+        $('.seleccion_rx').on('ifClicked', function(event, value){
+            var val = this.checked ? this.value : '';
+            $.ajax({
+                url:"{{route('hc_reporte.cambio_seleccion3')}}/"+val,
                 dataType: "json",
                 type: 'get',
                 success: function(data){
@@ -971,20 +1116,54 @@ function cargar_imagenes_paciente(){
     });
 <?php endforeach?>
 
-		 function regresar_proc_endoscopico(id, id_paciente){
+		 function regresar_proc_endoscopico(id, id_paciente, id_odont_procedimiento){
+			var url = "{{route('hc4/regresar_proc_endo')}}/"+id+'/'+id_paciente;
+			if (id_odont_procedimiento) {
+				url = "{{ url('odontologia/procedimientos/paciente') }}/"+id_paciente+'?abrir='+id_odont_procedimiento;
+			}
 			$.ajax({
 				type: "GET",
-	            url: "{{route('hc4/regresar_proc_endo')}}/"+id+'/'+id_paciente,
+	            url: url,
 	            datatype: 'json',
 				success: function(data){
 				$("#area_trabajo").html(data);
 				},
-				error:  function(){
-					alert('error al cargar');
+				error:  function(xhr){
+					Swal.fire('Error', 'No se pudo abrir el procedimiento (error '+xhr.status+').', 'error');
 				}
 			});
 
 		}
+
+		window.editar_evolucion = function(id, id_paciente) {
+			$.ajax({
+				type: 'GET',
+				url: "{{route('editar.procedimiento_evolucion')}}/"+id+'/'+id_paciente,
+				dataType: 'html',
+				success: function(datahtml) {
+					$('#evolucion'+id).html(datahtml);
+				},
+				error: function(xhr) {
+					Swal.fire('Error', 'No se pudo editar la evolución (error '+xhr.status+').', 'error');
+				}
+			});
+		};
+
+		window.agregar_evolucion = function(id) {
+			$.ajax({
+				type: 'POST',
+				url: "{{route('agregar.procedimiento_evolucion')}}/"+id,
+				data: {'_token': '{{ csrf_token() }}'},
+				dataType: 'html',
+				success: function(datahtml) {
+					var $historial = $('#evolucion_agregar'+id);
+					$historial.prepend(datahtml);
+				},
+				error: function(xhr) {
+					Swal.fire('Error', 'No se pudo agregar la evolución (error '+xhr.status+').', 'error');
+				}
+			});
+		};
 
 
 </script>

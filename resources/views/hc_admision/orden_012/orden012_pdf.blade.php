@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+	    <meta charset="utf-8">
 	  
 	    <title>ORDEN 012 {{$paciente->id_paciente}}</title>
 
@@ -438,4 +439,4 @@
 			
 		</div> 	
 	</body>
-</html>		
+</html>

@@ -6,7 +6,11 @@
     </div>
     <div class="modal-body">
         <div class="box-body">
-            <embed type="text/html" src="{{route('hospitalizacion.imprimir',['id' =>$id])}}" style="width: 100%;height: 80vh;">
+            <iframe
+                title="Resultados de laboratorio"
+                src="{{route('hospitalizacion.imprimir',['id_orden' =>$id])}}"
+                style="display:block;width:100%;height:80vh;border:0;"
+            ></iframe>
         </div>
     </div>
 </div>

@@ -74,7 +74,7 @@
 	                  @endif
 									</td>
 									<td>
-										<a href="{{ route('agenda.edit2', ['id' => $agenda->id, 'doctor' => $agenda->id_doctor1])}}" class="btn btn-warning btn-xs">Editar</a>
+										<a href="{{ route('agenda.edit2', ['agenda' => $agenda->id, 'doctor' => $agenda->id_doctor1])}}" class="btn btn-warning btn-xs">Editar</a>
 									</td>
 								</tr>
 								@endforeach	

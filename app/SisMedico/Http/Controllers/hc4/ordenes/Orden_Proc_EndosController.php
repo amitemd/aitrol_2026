@@ -7,9 +7,11 @@ use Sis_medico\Http\Controllers\Controller;
 use Sis_medico\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Sis_medico\Opcion_Usuario;
 use Sis_medico\Procedimiento;
 use Sis_medico\Paciente;
+use Sis_medico\Seguro;
 use Sis_medico\Orden;
 use Sis_medico\Orden_Tipo;
 use Sis_medico\Orden_Procedimiento;
@@ -19,10 +21,8 @@ use Sis_medico\Hc_Cie10;
 use Sis_medico\Cie_10_3;
 use Sis_medico\Cie_10_4;
 use Sis_medico\Firma_Usuario;
+use Sis_medico\Empresa;
 use Response;
-use Sis_medico\Hc_Evolucion;
-use Sis_medico\Historiaclinica;
-use Sis_medico\Orden_012;
 
 class Orden_Proc_EndosController extends Controller
 {
@@ -48,6 +48,25 @@ class Orden_Proc_EndosController extends Controller
         $this->middleware('auth');
     }
 
+    private function calcularEdadPaciente($paciente)
+    {
+        if (is_null($paciente) || empty($paciente->fecha_nacimiento)) {
+            return 0;
+        }
+
+        try {
+            $nacimiento = Carbon::createFromFormat(
+                '!Y-m-d',
+                substr((string) $paciente->fecha_nacimiento, 0, 10),
+                'America/Guayaquil'
+            );
+
+            return (int) $nacimiento->diffInYears(Carbon::now('America/Guayaquil'));
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -62,28 +81,9 @@ class Orden_Proc_EndosController extends Controller
         if($this->rol_new($opcion)){
             return redirect('/');
         }
-         $cedUsuario = Auth::user()->id;
-         //dd($rolUsuario);
 
-         $validar = DB::table('users as u')
-           ->join('user_espe as ue', 'u.id','ue.usuid')
-           ->join ('tipousuario as tu', 'u.id_tipo_usuario' , 'tu.id')
-           ->join('especialidad as e','ue.espid','e.id')
-           ->where('u.id', $cedUsuario)
-           ->where('id_tipo_usuario', '3')
-           ->where('e.id', '5')
-           ->first();
-
-         //dd($validar);
-         $mostrar = false;
-         if(count($validar)==0|| $validar==null){
-          $mostrar = false;
-         }else{
-          $mostrar= true;
-         }
-
-
-        $paciente = Paciente::find($id_paciente);
+        $paciente = Paciente::findOrFail($id_paciente);
+        $edad = $this->calcularEdadPaciente($paciente);
 
         /*if($paciente->fecha_nacimiento!=null){
             $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
@@ -98,207 +98,30 @@ class Orden_Proc_EndosController extends Controller
                           ->get();
 
 
-        return view('hc4/ordenes/orden_procedimiento_endoscopico/index',['paciente' => $paciente,'listado' => $listado, 'mostrar'=>$mostrar]);
+        return view('hc4/ordenes/orden_procedimiento_endoscopico/index', ['paciente' => $paciente,'listado' => $listado,'edad' => $edad]);
     }
 
     
     //AGREGAR PROCEDIMIENTO
     //funcion solo para los doctores
-    /*public function crear_orden_endoscopico($tipo, $id_paciente){
-
-        $opcion = '2';
-        if($this->rol_new($opcion)){
-            return redirect('/');
-        }
-        
-        //Obtenemos el nombre del doctor y el seguro
-        $data = DB::table('agenda as a')
-                    ->where('a.id_paciente',$id_paciente)
-                    ->join('historiaclinica as h','h.id_agenda','a.id')
-                    //->join('users as u','u.id','h.id_doctor1')
-                    ->join('seguros as s','s.id','h.id_seguro')
-                    ->join('empresa as em','em.id','a.id_empresa')
-                    ->where('a.espid','<>','10')
-                    ->select('h.*','s.nombre','em.nombre_corto')
-                    ->first();
-
-        $paciente = Paciente::find($id_paciente);
-
-        if($paciente->fecha_nacimiento!=null){
-            $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
-        }
-
-
-        $id_doctor = Auth::user()->id; 
-        $doctor_solicitante = DB::table('users as us')
-                              ->where('us.id',$id_doctor)
-                              ->first();
-
-        //Obtengo fecha de la Orden
-        $fecha_orden = Date('Y-m-d h:i:s');
-
-        
-        
-        
-        $px = Procedimiento::where('procedimiento.estado','1')->get();
-        
-        $tipo_eda_diagnostica = 1;
-        $tipo_colonoscopia_diagnostica = 2;
-        $tipo_broncoscopia = 14;
-        $tipo_enteroscopia = 3;
-        $tipo_ecoendoscopia = 9;
-        $tipo_cpre = 10;
-     
-        $evoluciones =  DB::table('historiaclinica as h')
-                        ->where('h.id_paciente', $id_paciente)
-                        ->join('hc_evolucion as hc_evo', 'hc_evo.hcid', 'h.hcid')
-                        ->where('hc_evo.secuencia',0)
-                        ->whereNotNull('hc_evo.cuadro_clinico')
-                        ->orderby('h.hcid','desc')
-                        
-                        ->select('hc_evo.*')
-                        ->first();
-  
- 
-      
-     
-
-        return view('hc4/ordenes/orden_procedimiento_endoscopico/orden_procedendoscopico',['px' => $px, 'paciente' => $paciente,'fecha_orden' => $fecha_orden,'data' => $data,'edad' => $edad,'evoluciones' =>  $evoluciones,'doctor_solicitante' =>  $doctor_solicitante,'tipo_eda_diagnostica' => $tipo_eda_diagnostica,'tipo_colonoscopia_diagnostica' => $tipo_colonoscopia_diagnostica,'tipo_broncoscopia' => $tipo_broncoscopia ,'tipo_enteroscopia' => $tipo_enteroscopia,'tipo_ecoendoscopia' => $tipo_ecoendoscopia,'tipo_cpre' => $tipo_cpre]);
-
-    }*/
 
      //AGREGAR PROCEDIMIENTO
     //funcion solo para los doctores
-    public function crear_orden_endoscopico($tipo, $id_paciente){
-
+    public function crear_orden_endoscopico($tipo, $id_paciente)
+    {
         $opcion = '2';
-        if($this->rol_new($opcion)){
+        if ($this->rol_new($opcion)) {
             return redirect('/');
         }
-        
-        $ip_cliente= $_SERVER["REMOTE_ADDR"];
 
-        $id_doctor = Auth::user()->id; 
+        $order = app(\Sis_medico\Services\EndoscopicOrderService::class)->initialize(
+            $id_paciente,
+            Auth::user()->id,
+            request()->ip()
+        );
 
-        //Obtengo fecha de la Orden
-        $fecha_orden = Date('Y-m-d H:i:s');
-        //dd($fecha_orden);
-
-
-        //$paciente = Paciente::find($id_paciente);
-
-        
-        $orden_endoscopica_crear_new = [
-              
-              'anterior' => 'ORDEN_PROC_ENDOSCOPICOS -> El Dr. creo nueva orden de procedimiento endoscopico',
-              'nuevo' => 'ORDEN_PROC_ENDOSCOPICOS -> El Dr. creo nueva orden de procedimiento endoscopico',
-              'id_paciente' => $id_paciente,
-              'id_usuariocrea' => $id_doctor,
-              'id_usuariomod' => $id_doctor,
-              'ip_creacion' => $ip_cliente,
-              'ip_modificacion' => $ip_cliente,
-
-      ];
-
-      Hc_Log::create($orden_endoscopica_crear_new);
-
-     
-      $evoluciones =  DB::table('historiaclinica as h')
-                        ->where('h.id_paciente', $id_paciente)
-                        ->join('hc_evolucion as hc_evo', 'hc_evo.hcid', 'h.hcid')
-                        ->where('hc_evo.secuencia',0)
-                        ->whereNotNull('hc_evo.cuadro_clinico')
-                        ->orderby('hc_evo.updated_at','desc')
-                        //->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'h.hcid')
-                        //->where('hc_proto.tipo_procedimiento', '0')
-                        ->select('hc_evo.*')
-                        ->first();
-      
-
-      $x_diagnosticos = null;
-      $evol_id = null;
-      $evol_motivo = null;
-      $evol_cuadro_clinico = null;  
-      $texto = ""; 
-                  
-        if(!is_null($evoluciones)){
-          
-          $x_diagnosticos = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento',$evoluciones->hc_id_procedimiento)->groupBy('cie10')->get();
-
-          $evol_id = $evoluciones->id; 
-          
-          $evol_motivo = $evoluciones->motivo;
-          
-          $evol_cuadro_clinico = $evoluciones->cuadro_clinico;
-
-        }
-
-        if(!is_null($x_diagnosticos)){ 
-            
-            $mas = true;
-            foreach($x_diagnosticos as $value)
-            {
-               
-              $c3 = Cie_10_3::find($value->cie10);
-              
-              if(!is_null($c3)){
-                $descripcion = $c3->descripcion;
-              }
-
-              $c4 = Cie_10_4::find($value->cie10);
-           
-              if(!is_null($c4)){
-                $descripcion = $c4->descripcion;
-              }    
-
-              if($mas == true){
-                $texto = $value->cie10. ':' . $descripcion. '-' . $value->presuntivo_definitivo;
-                $mas = false;
-                 
-              }
-              else{
-
-                $texto = $texto.'<br>'.$value->cie10. ':' . $descripcion. '-' . $value->presuntivo_definitivo;
-              }
-            }
-          
-        }
-
-        
-        $input_orden = [
-                  'id_paciente' => $id_paciente,
-                  'id_doctor' => $id_doctor,
-                  'id_evolucion' => $evol_id,
-                  'motivo_consulta' => $evol_motivo,
-                  'resumen_clinico' => $evol_cuadro_clinico,
-                  //'observacion_medica' => $request["observacion_medica"],
-                  //'observacion_recepcion' => $request["observacion_recepcion"],
-                  'diagnosticos' => $texto,
-                  'fecha_orden' => $fecha_orden,
-                  'tipo_procedimiento' => '0',
-                  'anio' => substr(date('Y-m-d'),0,4),
-                  'mes' => substr(date('Y-m-d'),5,2),
-                  'id_usuariocrea' => $id_doctor,
-                  'id_usuariomod' => $id_doctor,
-                  'ip_creacion' => $ip_cliente,
-                  'ip_modificacion' => $ip_cliente,
-        ];
-
-        $id_orden = Orden::insertGetId($input_orden);
-
-        $n_orden = Orden::find($id_orden);
-        
-        /////AQUI VA LA NUEVA FUNCION PARA CREAR 012
-        if(!is_null($n_orden)){
-          $this->crear_orden_012($n_orden);
-        }
-        //return "hola";
-        return view('hc4/ordenes/orden_procedimiento_endoscopico/nuevo_editar', ['ordend' => $n_orden]);
-      
-    
-
+        return view('hc4/ordenes/orden_procedimiento_endoscopico/nuevo_editar', ['ordend' => $order]);
     }
-
     //FUNCION GUARDAR ORDEN DE PROCEDIMIENTO ENDOSCOPICO
     //SOLO PARA DOCTORES
     public function guardar_orden_endoscopico(Request $request){
@@ -376,7 +199,7 @@ class Orden_Proc_EndosController extends Controller
             ];
 
             $id_orden = Orden::insertGetId($input_orden);
-            //dd($id_orden);
+            
 
             //$txt_pro = '';
 
@@ -589,9 +412,7 @@ class Orden_Proc_EndosController extends Controller
         }
 
 
-        if($paciente->fecha_nacimiento!=null){
-            $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
-        }
+        $edad = $this->calcularEdadPaciente($paciente);
 
         
         $listado = DB::table('orden as o')
@@ -637,14 +458,11 @@ class Orden_Proc_EndosController extends Controller
       
       $paciente = Paciente::find($id_paciente);
 
-      if($paciente->fecha_nacimiento!=null){
-        $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
-      }
+      $edad = $this->calcularEdadPaciente($paciente);
 
       $data_orden = Orden::find($id_orden);
       
-      //$ndoctor = DB::table('users as us')->where('us.id',$data_orden->id_doctor)->first();
-      $ndoctor = User::find($data_orden->id_doctor);
+      $ndoctor = DB::table('users as us')->where('us.id',$data_orden->id_doctor)->first();
 
       
       //$tipo_eda_diagnostica = 1;
@@ -653,21 +471,58 @@ class Orden_Proc_EndosController extends Controller
       //$tipo_ecoendoscopia = 9;
       //$tipo_cpre = 10;
       
-      $px = Procedimiento::where('estado','1')->whereNull('id_grupo_procedimiento');
+      $grupos = [1, 2, 3, 9, 10, 14];
+      $procedimientos_seleccionados = DB::table('orden_tipo as ot')
+          ->join('orden_procedimiento as op', 'op.id_orden_tipo', '=', 'ot.id')
+          ->join('procedimiento as p', 'p.id', '=', 'op.id_procedimiento')
+          ->where('ot.id_orden', $id_orden)
+          ->whereIn('ot.id_grupo_procedimiento', $grupos)
+          ->select('ot.id_grupo_procedimiento', 'p.id', 'p.nombre')
+          ->orderBy('p.nombre')
+          ->get()
+          ->groupBy('id_grupo_procedimiento');
+      $seguro = $paciente ? Seguro::find($paciente->id_seguro) : null;
 
+      return view('hc4/ordenes/orden_procedimiento_endoscopico/editar_orden', compact(
+          'data_orden',
+          'ndoctor',
+          'edad',
+          'paciente',
+          'seguro',
+          'procedimientos_seleccionados'
+      ));
 
-      $px1 = Procedimiento::where('estado','1')->where('id_grupo_procedimiento','<>','18')->where('id_grupo_procedimiento','<>','20')->where('id_grupo_procedimiento','<>','11');
+    }
 
+    public function buscar_procedimientos(Request $request)
+    {
+        $grupo = (int) $request->get('grupo');
+        if (!in_array($grupo, [1, 2, 3, 9, 10, 14, 18], true)) {
+            return response()->json(['results' => []]);
+        }
 
-      $px = $px->union($px1)->get();
+        $termino = trim((string) $request->get('q', ''));
+        $cacheKey = 'hc4:procedimientos:' . $grupo . ':' . sha1(mb_strtoupper($termino, 'UTF-8'));
+        $resultados = Cache::remember($cacheKey, Carbon::now()->addMinutes(2), function () use ($grupo, $termino) {
+            $consulta = Procedimiento::query()
+                ->where('estado', '1')
+                ->where(function ($query) use ($grupo) {
+                    $query->where('id_grupo_procedimiento', $grupo)
+                        ->orWhereNull('id_grupo_procedimiento');
+                })
+                ->select('id', 'nombre')
+                ->orderBy('nombre');
 
-      //dd($px);
+            if ($termino !== '') {
+                $consulta->where('nombre', 'like', '%' . $termino . '%');
+            }
 
+            return $consulta->limit(30)->get()->map(function ($procedimiento) {
+                return ['id' => (string) $procedimiento->id, 'text' => $procedimiento->nombre];
+            })->values();
+        });
 
-      /*return view('hc4/ordenes/orden_procedimiento_endoscopico/editar_orden',['data_orden'=> $data_orden,'ndoctor'=> $ndoctor,'edad'=> $edad,'paciente' => $paciente,'px' => $px,'tipo_eda_diagnostica' => $tipo_eda_diagnostica,'tipo_colonoscopia_diagnostica' => $tipo_colonoscopia_diagnostica,'tipo_enteroscopia' => $tipo_enteroscopia,'tipo_ecoendoscopia' => $tipo_ecoendoscopia,'tipo_cpre' => $tipo_cpre]);*/
-      //return "hola";
-      return view('hc4/ordenes/orden_procedimiento_endoscopico/editar_orden',['data_orden'=> $data_orden,'ndoctor'=> $ndoctor,'edad'=> $edad,'paciente' => $paciente,'px' => $px]);
-    
+        return response()->json(['results' => $resultados]);
     }
 
     //FUNCION PARA ACTUALIZAR LA ORDEN DE PROCEDIMIENTO ENDOSCOPICO
@@ -683,19 +538,19 @@ class Orden_Proc_EndosController extends Controller
           return redirect('/');
         }
 
-        $check_selec =  $request['firma_doctor_rob_end'];
+        $check_selec = $request->input('firma_doctor_rob_end', '0');
 
-        $procedimientos_endo_digest =  $request['x_procedimiento'];
+        $procedimientos_endo_digest = (array) $request->input('x_procedimiento', []);
         $count_pro_endo_digest = count($procedimientos_endo_digest);
-        $procedimientos_colono =  $request['x_procedimiento_colono'];
+        $procedimientos_colono = (array) $request->input('x_procedimiento_colono', []);
         $count_pro_colono = count($procedimientos_colono);
-        $procedimientos_enter =  $request['x_procedimiento_entero'];
+        $procedimientos_enter = (array) $request->input('x_procedimiento_entero', []);
         $count_pro_enter = count($procedimientos_enter);
-        $procedimientos_ecoend =  $request['x_procedimiento_ecoend'];
+        $procedimientos_ecoend = (array) $request->input('x_procedimiento_ecoend', []);
         $count_pro_ecoend = count($procedimientos_ecoend);
-        $procedimientos_cpre =  $request['x_procedimiento_cpre'];
+        $procedimientos_cpre = (array) $request->input('x_procedimiento_cpre', []);
         $count_pro_cpre = count($procedimientos_cpre);
-        $procedimientos_bronc =  $request['x_procedimiento_bronc'];
+        $procedimientos_bronc = (array) $request->input('x_procedimiento_bronc', []);
         $count_pro_bronc = count($procedimientos_bronc);
 
 
@@ -717,9 +572,7 @@ class Orden_Proc_EndosController extends Controller
         
         $paciente = Paciente::find($request['id_pacient']);
 
-        if($paciente->fecha_nacimiento!=null){
-            $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
-        }
+        $edad = $this->calcularEdadPaciente($paciente);
 
         
         
@@ -1000,7 +853,6 @@ class Orden_Proc_EndosController extends Controller
             'id_usuariomod' => $idusuario,
             'updated_at' => $fecha_actualizacion, 
             'necesita_valoracion' => $request->necesita_valoracion, 
-            'otros' => $request['xotros'], 
         
         ];
 
@@ -1042,96 +894,111 @@ class Orden_Proc_EndosController extends Controller
     //FUNCION IMPRIMIR ORDEN DE PROCEDIMIENTO ENDOSCOPICO
     //SOLO PARA DOCTORES
     public function imprimir_orden_endoscopica($id){
-      
-        
-        $orden_proc_endoscopico = Orden::find($id);
+        $orden_proc_endoscopico = Orden::findOrFail($id);
 
-        if((is_null($orden_proc_endoscopico->check_doctor))&&(is_null($orden_proc_endoscopico->id_doctor_firma))){
-
-          $doctor_firma = $orden_proc_endoscopico->id_doctor; 
-        
-        }else{
-       
-          $doctor_firma = $orden_proc_endoscopico->id_doctor_firma;
-        
-        }
+        $doctor_firma = !empty($orden_proc_endoscopico->id_doctor_firma)
+            ? $orden_proc_endoscopico->id_doctor_firma
+            : $orden_proc_endoscopico->id_doctor;
        
         /*if (!is_null($orden_proc_endoscopico)) {
                 $firma = Firma_Usuario::where('id_usuario', $orden_proc_endoscopico->id_doctor)->first();
         }*/
         
-        if (!is_null($orden_proc_endoscopico)) {
-                $firma = Firma_Usuario::where('id_usuario',$doctor_firma)->first();
-        }
+        $firma = Firma_Usuario::where('id_usuario', $doctor_firma)
+            ->whereNotNull('nombre')
+            ->orderBy('id', 'desc')
+            ->first();
 
-        $paciente = Paciente::find($orden_proc_endoscopico->id_paciente);
+        $paciente = Paciente::findOrFail($orden_proc_endoscopico->id_paciente);
 
-        if($paciente->fecha_nacimiento!=null){
-            $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
-        }
+        $edad = $this->calcularEdadPaciente($paciente);
+        $seguro = Seguro::find($orden_proc_endoscopico->id_seguro ?: $paciente->id_seguro);
 
         //$id_doctor = Auth::user()->id; 
         $doctor_solicitante = DB::table('users as us')
                               ->where('us.id',$orden_proc_endoscopico->id_doctor)
                               ->first();
-        
+
+        $idsTiposOrden = Orden_Tipo::where('id_orden', $orden_proc_endoscopico->id)->pluck('id');
+        $idsProcedimientos = $idsTiposOrden->isEmpty()
+            ? array()
+            : Orden_Procedimiento::whereIn('id_orden_tipo', $idsTiposOrden)
+                ->pluck('id_procedimiento')
+                ->unique()
+                ->values()
+                ->all();
+
+        $procedimientosEndoscopicos = empty($idsProcedimientos)
+            ? collect()
+            : Procedimiento::with('grupo_procedimiento')
+                ->whereIn('id', $idsProcedimientos)
+                ->orderBy('nombre')
+                ->get()
+                ->groupBy('id_grupo_procedimiento')
+                ->sortBy(function ($procedimientosGrupo) {
+                    $grupo = optional($procedimientosGrupo->first())->grupo_procedimiento;
+
+                    return $grupo ? $grupo->nombre : '';
+                });
+
+        $empresa = Empresa::find(session()->get('id_empresa'));
+        $pdfImageData = function ($path) {
+            if (!is_file($path) || !is_readable($path)) {
+                return null;
+            }
+
+            $contents = file_get_contents($path);
+            if ($contents === false) {
+                return null;
+            }
+
+            $mime = function_exists('mime_content_type') ? mime_content_type($path) : 'image/png';
+
+            return 'data:' . ($mime ?: 'image/png') . ';base64,' . base64_encode($contents);
+        };
+        $recipeLogo = $pdfImageData(public_path('assets/images/logo_receta_borja.png'));
+        $recipeWatermark = $pdfImageData(public_path('assets/images/fondo_receta_borja.png'));
+        $recipeFooter = $pdfImageData(public_path('assets/images/pie_receta_borja.png'));
+        $firmaImagen = null;
+        if (!is_null($firma) && !empty($firma->nombre)) {
+            $nombreFirma = ltrim((string) $firma->nombre, '/');
+            $rutasFirma = array_unique(array(
+                storage_path('app/avatars/' . basename($nombreFirma)),
+                public_path('storage/avatars/' . basename($nombreFirma)),
+                base_path($nombreFirma),
+            ));
+
+            foreach ($rutasFirma as $rutaFirma) {
+                $firmaImagen = $pdfImageData($rutaFirma);
+                if (!is_null($firmaImagen)) {
+                    break;
+                }
+            }
+        }
+
         $vistaurl="hc4.ordenes.orden_procedimiento_endoscopico.pdf_orden_endoscopica";
-        $view =  \View::make($vistaurl, compact('orden_proc_endoscopico','paciente','edad','doctor_solicitante','firma'))->render();
-
-        /*$view =  \View::make($vistaurl, compact('orden','pct','detalle', 'resultados', 'agrupador', 'parametros', 'age', 'ucreador'))->render();*/
-
-        $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
-        $pdf->setPaper('A4', 'portrait');
-        //return $pdf->stream('resultado-'+"ORDEN"+'.pdf');
-        return $pdf->stream('resultado-'.$id.'.pdf');
-
-        //return $pdf->stream('epicrisis-'.$historiaclinica->id_paciente.'-'.$historiaclinica->hcid.'.pdf');
-    }
-
-    //PARA IMPRIMIR EL PDF EN CIR
-    public function imprimir_orden_endoscopica_cir($id){
-
-        $orden_proc_endoscopico = Orden::find($id);
-
-        if((is_null($orden_proc_endoscopico->check_doctor))&&(is_null($orden_proc_endoscopico->id_doctor_firma))){
-
-          $doctor_firma = $orden_proc_endoscopico->id_doctor; 
-        
-        }else{
-       
-          $doctor_firma = $orden_proc_endoscopico->id_doctor_firma;
-        
-        }
-       
-        
-        if (!is_null($orden_proc_endoscopico)) {
-                $firma = Firma_Usuario::where('id_usuario',$doctor_firma)->first();
-        }
-
-        $paciente = Paciente::find($orden_proc_endoscopico->id_paciente);
-
-        if($paciente->fecha_nacimiento!=null){
-            $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;    
-        }
-
-        //$id_doctor = Auth::user()->id; 
-        $doctor_solicitante = DB::table('users as us')
-                              ->where('us.id',$orden_proc_endoscopico->id_doctor)
-                              ->first();
-        
-        $vistaurl="hc4.ordenes.orden_procedimiento_endoscopico.pdf_orden_endoscopica_cir";
-        $view =  \View::make($vistaurl, compact('orden_proc_endoscopico','paciente','edad','doctor_solicitante','firma'))->render();
-
-        /*$view =  \View::make($vistaurl, compact('orden','pct','detalle', 'resultados', 'agrupador', 'parametros', 'age', 'ucreador'))->render();*/
+        $pdfData = compact(
+            'orden_proc_endoscopico',
+            'paciente',
+            'edad',
+            'doctor_solicitante',
+            'seguro',
+            'procedimientosEndoscopicos',
+            'empresa',
+            'recipeLogo',
+            'recipeWatermark',
+            'recipeFooter',
+            'firmaImagen'
+        );
+        $pdfData['_pdf_branding_view'] = 'hc_admision.receta.menbretadaor';
+        $pdfData['_pdf_branding_company_id'] = optional($empresa)->id ?: session()->get('id_empresa');
 
         $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHTML($view);
-        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot'  => base_path('/')]);
+        $pdf->loadView($vistaurl, $pdfData);
+        $pdf->setOptions(['dpi' => 150, 'isPhpEnabled' => true, 'chroot' => base_path('/')]);
         $pdf->setPaper('A4', 'portrait');
-        //return $pdf->stream('resultado-'+"ORDEN"+'.pdf');
-        return $pdf->stream('resultado_cir-'.$id.'.pdf');
+
+        return $pdf->stream($paciente->id . '_Orden_Procedimiento_' . $id . '.pdf');
     }
 
 
@@ -1262,76 +1129,19 @@ class Orden_Proc_EndosController extends Controller
       return view('hc4/contador_ordenes_procedimientos',['array' => $array]); 
   
     }
-   
+
     public function eliminar_orden_procedimiento($id)
     {
-      DB::beginTransaction();
-      try {
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario = Auth::user()->id;
-        $orden = orden::find($id);
-        $orden->estado = 0;
-        $orden->id_usuariomod = $idusuario;
-        $orden->save();
-
-        $orden_endoscopica_crear_new = [
-          'anterior' => "ORDEN_PROC_ENDOSCOPICOS -> El Dr. eliminó la orden del procedimiento endoscópico #$id",
-          'nuevo' => "ORDEN_PROC_ENDOSCOPICOS -> El Dr. eliminó la orden del procedimiento endoscópico #$id",
-          'id_paciente' => $orden->id_paciente,
-          'id_usuariocrea' => $idusuario,
-          'id_usuariomod' => $idusuario,
-          'ip_creacion' => $ip_cliente,
-          'ip_modificacion' => $ip_cliente,
-        ];
-
-        Hc_Log::create($orden_endoscopica_crear_new);
-        DB::commit();
-        return ['status' => 'success', 'msj' => 'Guardado con exito'];
-      } catch (\Exception $e) {
-        DB::rollback();
-        return ['status' => 'error', 'msj' => $e->getMessage()];
-      }
-    }
-    public function crear_orden_012($n_orden){
-      
-      $ip_cliente= $_SERVER["REMOTE_ADDR"];
-      
-        $id_empresa = "";
-        if(!is_null($n_orden->id_evolucion)){
-          $evolucion = Hc_Evolucion::find($n_orden->id_evolucion);
-          $hcid            = $evolucion->hcid;
-          $historiaclinica = Historiaclinica::find($hcid);
-          $agenda = $historiaclinica->agenda;
-          $id_empresa = $agenda->id_empresa;
+        try {
+            app(\Sis_medico\Services\EndoscopicOrderService::class)->cancel(
+                $id,
+                Auth::user()->id,
+                request()->ip()
+            );
+            return ['status' => 'success', 'msj' => 'Guardado con exito'];
+        } catch (\Exception $e) {
+            return ['status' => 'error', 'msj' => $e->getMessage()];
         }
-
-          $arr = [
-            'id_paciente'        => $n_orden->id_paciente,
-            'id_doctor_solicita' => $n_orden->id_doctor,
-            'id_doctor_firma'    => $n_orden->id_doctor,
-            'fecha_orden'        => $n_orden->fecha_orden,
-            'id_hc_evolucion'    => $n_orden->id_evolucion,
-            'id_orden'           => $n_orden->id,
-            'estado'             => '1',
-            'rutina'             => '1',
-            'puede_mover'        => '1',
-            //'descripcion' => $ordenes->descripcion,  Esta mal la Definicion
-            'motivo'             => $n_orden->motivo_consulta, //Evolucion Motivo
-            'id_empresa'         => $id_empresa,
-            'cuadro_clinico'     => $n_orden->resumen_clinico, //Evolucion Cuadro Clinico
-            'id_usuariocrea'     => $n_orden->id_doctor,
-            'id_usuariomod'      => $n_orden->id_doctor,
-            'ip_creacion'        => $ip_cliente,
-            'ip_modificacion'    => $ip_cliente,
-
-        ];
-
-        //Insertamos en la Tabla Orden_012 y Obtenemos el id de la Tabla
-        //$id_012 = Orden_012::insertGetId($arr);
-        $orden_012 = Orden_012::create($arr);
-      
-
     }
+   
 }
-
-

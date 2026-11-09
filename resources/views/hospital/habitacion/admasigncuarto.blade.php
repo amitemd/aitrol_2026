@@ -144,7 +144,7 @@
                                 </div>
                             </div>
                             <div class="col-md-8">
-                                <form method="GET" action="{{route('hospital.cuartog')}}" id="enviar2">
+                                <form method="POST" action="{{route('hospital.cuartog')}}" id="enviar2">
                                     {{ csrf_field() }}
                                     <div class="form-row">
                                         <?php /*-- @php
@@ -246,72 +246,72 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-3 col-sm-6">
-                            <label for="ciudad" class="col-form-label-sm">{{trans('hospitalizacion.CIUDAD)}}</label>
+                            <label for="ciudad" class="col-form-label-sm">{{trans('hospitalizacion.CIUDAD')}}</label>
                             <input readonly type="text" id="ciudad" class="form-control form-control-sm" placeholder="Ciudad de procedencia">
                         </div>
                         <div class="form-group col-md-3 col-sm-6">
-                            <label for="fechadenacimi" class="col-form-label-sm">{{trans('hospitalizacion.FECHADENACIMIENTO)}}</label>
+                            <label for="fechadenacimi" class="col-form-label-sm">{{trans('hospitalizacion.FECHADENACIMIENTO')}}</label>
                             <input readonly type="text" id="fechadenacimi" class="form-control form-control-sm" placeholder="Fecha de nacimiento">
                         </div>
                         <div class="form-group col-md-3 col-sm-6">
-                            <label for="ciudadpro" class="col-form-label-sm">{{trans('hospitalizacion.CIUDADDENACIMIENTO)}}</label>
+                            <label for="ciudadpro" class="col-form-label-sm">{{trans('hospitalizacion.CIUDADDENACIMIENTO')}}</label>
                             <input readonly type="text" id="ciudadpro" class="form-control form-control-sm" placeholder="Ciudad de nacimiento">
                         </div>
                         <div class="form-group col-md-2 col-sm-6">
-                            <label for="religion" class="col-form-label-sm">{{trans('hospitalizacion.RELIGIÓN)}}</label>
+                            <label for="religion" class="col-form-label-sm">{{trans('hospitalizacion.RELIGIÓN')}}</label>
                             <input readonly type="text" id="religion" class="form-control form-control-sm" placeholder="Religi&oacute;n">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-3 col-sm-4">
-                            <label for="ocupacion" class="col-form-label-sm">{{trans('hospitalizacion.OCUPACIÓN)}}</label>
+                            <label for="ocupacion" class="col-form-label-sm">{{trans('hospitalizacion.OCUPACIÓN')}}</label>
                             <input readonly type="text" id="ocupacion" class="form-control form-control-sm" placeholder="Ocupacion">
                         </div>
                         <div class="form-group col-md-3 col-sm-4">
-                            <label for="trabajo" class="col-form-label-sm">{{trans('hospitalizacion.TRABAJO)}}</label>
+                            <label for="trabajo" class="col-form-label-sm">{{trans('hospitalizacion.TRABAJO')}}</label>
                             <input readonly type="text" id="trabajo" class="form-control form-control-sm" placeholder="Trabajo">
                         </div>
                         <div class="form-group col-md-3 col-sm-4">
-                            <label for="sanguineo" class="col-form-label-sm">{{trans('hospitalizacion.GRUPOSANGUINEO)}}</label>
+                            <label for="sanguineo" class="col-form-label-sm">{{trans('hospitalizacion.GRUPOSANGUINEO')}}</label>
                             <input readonly type="text" id="gruposa" class="form-control form-control-sm" placeholder="GRUPO SANGUINEO">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-3">
-                            <label for="email" class="col-form-label-sm">{{trans('hospitalizacion.CORREOELECTR&Oacute;NICO)}}</label>
+                            <label for="email" class="col-form-label-sm">{{trans('hospitalizacion.CORREOELECTR&Oacute;NICO')}}</label>
                             <input readonly type="email" id="email" class="form-control form-control-sm" placeholder="Email">
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="direccion" class="col-form-label-sm">{{trans('hospitalizacion.DIRECCIÓN)}}</label>
+                            <label for="direccion" class="col-form-label-sm">{{trans('hospitalizacion.DIRECCIÓN')}}</label>
                             <input readonly type="text" id="direccion" class="form-control form-control-sm" placeholder="Direcci&oacute;n">
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="observaciones" class="col-form-label-sm">{{trans('hospitalizacion.OBSERVACIONES)}}</label>
+                            <label for="observaciones" class="col-form-label-sm">{{trans('hospitalizacion.OBSERVACIONES')}}</label>
                             <textarea class="form-control" id="observaciones" name="observacion" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-3">
-                            <label for="transfusion" class="col-form-label-sm">{{trans('hospitalizacion.TRANSFUSIONES)}}</label>
+                            <label for="transfusion" class="col-form-label-sm">{{trans('hospitalizacion.TRANSFUSIONES')}}</label>
                             <input type="text" id="transfusion" class="form-control form-control-sm" placeholder="Transfusiones">
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="habito" class="col-form-label-sm">{{trans('hospitalizacion.H&Aacute;BITOS)}}</label>
+                            <label for="habito" class="col-form-label-sm">{{trans('hospitalizacion.H&Aacute;BITOS')}}</label>
                             <input type="text" id="habito" class="form-control form-control-sm" placeholder="H&aacute;bito">
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="referencia" class="col-form-label-sm">{{trans('hospitalizacion.REFERENCIA)}}</label>
+                            <label for="referencia" class="col-form-label-sm">{{trans('hospitalizacion.REFERENCIA')}}</label>
                             <input type="text" id="referencia" class="form-control form-control-sm" placeholder="Referencia del paciente">
                         </div>
                         <div class="form-group col-md-3">
-                            <label for="vacuna" class="col-form-label-sm">{{trans('hospitalizacion.VACUNA)}}</label>
+                            <label for="vacuna" class="col-form-label-sm">{{trans('hospitalizacion.VACUNA')}}</label>
                             <input type="text" id="vacuna" class="form-control form-control-sm" placeholder="Vacuna">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="col-12" style="text-align: center;">
                             <button class="btn btn-primary" type="button" id="btnFetch">
-                            {{trans('hospitalizacion.ASIGNAR)}}  
+                            {{trans('hospitalizacion.ASIGNAR')}}
                             </button>
                         </div>
                     </div>
@@ -336,7 +336,7 @@
                         term: request.term
                     },
                     dataType: "json",
-                    type: 'get',
+                    type: 'post',
                     success: function(data) {
                         response(data);
                         console.log(data);

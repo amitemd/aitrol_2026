@@ -277,35 +277,35 @@
                               @endphp
                               <b>
                               <span style="font-family: 'Helvetica'; font-size: 14px" class="box-title" >    
-                              @if($dia == '1') {{trans('ehistorialexam.Lunes')}}  
-                                @elseif($dia == '2') {{trans('ehistorialexam.Martes')}}
-                                @elseif($dia == '3') {{trans('ehistorialexam.Miércoles')}} 
-                                @elseif($dia == '4') {{trans('ehistorialexam.Jueves')}} 
-                                @elseif($dia == '5') {{trans('ehistorialexam.Viernes')}} 
-                                @elseif($dia == '6') {{trans('ehistorialexam.Sábado')}} 
-                                @elseif($dia == '7') {{trans('ehistorialexam.Domingo')}} 
+                              @if($dia == '1') Lunes 
+                                @elseif($dia == '2') Martes
+                                @elseif($dia == '3') Miércoles 
+                                @elseif($dia == '4') Jueves 
+                                @elseif($dia == '5') Viernes 
+                                @elseif($dia == '6') Sábado 
+                                @elseif($dia == '7') Domingo 
                               @endif
-                              {{substr($list_ord->fecha_orden,8,2)}} {{trans('ehistorialexam.de')}}
-                              @if($mes == '1') {{trans('ehistorialexam.Enero')}} 
-                                 @elseif($mes == '2') {{trans('ehistorialexam.Febrero')}}  
-                                 @elseif($mes == '3') {{trans('ehistorialexam.Marzo')}} 
-                                 @elseif($mes == '4') {{trans('ehistorialexam.Abril')}} 
-                                 @elseif($mes == '5') {{trans('ehistorialexam.Mayo')}} 
-                                 @elseif($mes == '6') {{trans('ehistorialexam.Junio')}} 
-                                 @elseif($mes == '7') {{trans('ehistorialexam.Julio')}} 
-                                 @elseif($mes == '8') {{trans('ehistorialexam.Agosto')}} 
-                                 @elseif($mes == '9') {{trans('ehistorialexam.Septiembre')}} 
-                                 @elseif($mes == '10') {{trans('ehistorialexam.Octubre')}} 
-                                 @elseif($mes == '11') {{trans('ehistorialexam.Noviembre')}} 
-                                 @elseif($mes == '12') {{trans('ehistorialexam.Diciembre')}} 
+                              {{substr($list_ord->fecha_orden,8,2)}} de
+                              @if($mes == '1') Enero 
+                                 @elseif($mes == '2') Febrero 
+                                 @elseif($mes == '3') Marzo 
+                                 @elseif($mes == '4') Abril 
+                                 @elseif($mes == '5') Mayo 
+                                 @elseif($mes == '6') Junio 
+                                 @elseif($mes == '7') Julio 
+                                 @elseif($mes == '8') Agosto 
+                                 @elseif($mes == '9') Septiembre 
+                                 @elseif($mes == '10') Octubre 
+                                 @elseif($mes == '11') Noviembre 
+                                 @elseif($mes == '12') Diciembre 
                               @endif
-                              {{trans('ehistorialexam.del')}} {{substr($list_ord->fecha_orden,0,4)}}</span></b>  
+                              del {{substr($list_ord->fecha_orden,0,4)}}</span></b>  
                             @endif
                             </div>
                             <div  class="col-md-4"> 
                               <div>
                                   <b>
-                                    <span style="font-family: 'Helvetica general'; font-size: 12px" class="box-title">{{trans('ehistorialexam.Dr(a):')}}</span> 
+                                    <span style="font-family: 'Helvetica general'; font-size: 12px" class="box-title">Dr (a):</span> 
                                     <span style="font-size: 12px" class="box-title">@if(!is_null($xdoctor->nombre1)) {{$xdoctor->apellido1}} {{$xdoctor->apellido2}} {{$xdoctor->nombre1}} {{$xdoctor->nombre2}}@endif</span></b>
                               </div>
                             </div>  
@@ -314,42 +314,20 @@
                                 {{$list_ord->id}}
                               @endif
                             </div>
-                            <br>
-                            @php 
-                              $orden_012 = \Sis_medico\Orden_012::where('id_orden', $list_ord->id)->first();
-                            @endphp
-                            @if(!is_null($orden_012))
-                            <div class="col-md-4">
-                              <a class="btn btn-danger" target="_blank" href="{{route('formulario.12A')}}?id={{$orden_012->id}}" style="color:white; border-radius: 5px; border: 1px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Orden 012</a>
-                            </div>
-                            @else
-                            <div class="col-md-4">
-                              <button class="btn btn-danger" style="color:white; border-radius: 5px; border: 1px solid white;" onclick="cargar_012('{{$list_ord->id_evolucion}}','{{$list_ord->id}}')" ><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Orden 012</button>
-                            </div>
-                            @endif
-                            @php 
-                              $form_053 = Sis_medico\Formulario_053::where('id_orden', $list_ord->id)->first();
-                            @endphp
-                            @if(!is_null($form_053))
-                            <div class="col-md-4">
-                              <a class="btn btn-danger" target="_blank" href="{{route('orden_012.pdf_053', ['id_orden' => $list_ord->id])}}" style="color:white; background-color:#4682B4 ; border-radius: 5px; border: 1px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Formulario 053</a>
-                            </div>
-                            @endif
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                          <a class="btn btn-danger" onclick="descargar_orden({{$list_ord->id}});" style="color:white; background-color:#4682B4 ; border-radius: 5px; border: 2px solid white;"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Descargar Orden</a>
                             </div>
-                            <br>
                             @if($list_ord->tipo_procedimiento == 0)
                               <div class="col-md-1">
-                                <span style="font-size: 14px;padding-top: 8px;" class="box-title">{{trans('ehistorialexam.ENDOSCOPICO')}}</span>
+                                <span style="font-size: 14px;padding-top: 8px;" class="box-title">ENDOSCOPICO</span>
                               </div>
                             @elseif($list_ord->tipo_procedimiento == 1)
                               <div class="col-md-1">
-                                <span style="font-size: 14px;padding-top: 8px;" class="box-title">{{trans('ehistorialexam.FUNCIONAL')}}</span>
+                                <span style="font-size: 14px;padding-top: 8px;" class="box-title">FUNCIONAL</span>
                               </div>
                             @elseif($list_ord->tipo_procedimiento == 2)
                               <div class="col-md-1">
-                                <span style="font-size: 14px;padding-top: 8px;" class="box-title">{{trans('ehistorialexam.IMAGENES')}}</span>
+                                <span style="font-size: 14px;padding-top: 8px;" class="box-title">IMAGENES</span>
                               </div>
                             @endif
                             <div class="pull-right box-tools ">
@@ -360,7 +338,7 @@
                           </div>
                           <div class="row">
                             <div class="col-md-12">
-                              <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.Procedimientos:')}}</label>
+                              <label style="font-family: 'Helvetica general';">Procedimientos:</label>
                             </div>
                             @if($list_ord->tipo_procedimiento == 0)
                               <div class="col-md-12">
@@ -396,7 +374,7 @@
                           @if(!is_null($list_ord->observacion_recepcion))
                             <div class="row">
                                 <div class="col-md-6">
-                                  <label style="font-family: 'Helvetica general';"> {{trans('ehistorialexam.ObservacionRecepcion')}}</label>
+                                  <label style="font-family: 'Helvetica general';">Observaci&oacute;n Recepci&oacute;n:</label>
                                   <span><?php echo $list_ord->observacion_recepcion?></span>
                                 </div>
                             </div>
@@ -430,7 +408,7 @@
                                   <div class="row">
                                     <div class="col-md-8">
                                       @if(!is_null($fecha_invert))
-                                        <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.FECHA:')}}</label>
+                                        <label style="font-family: 'Helvetica general';">FECHA:</label>
                                         <span>
                                           {{$fecha_invert}}
                                         </span>
@@ -443,7 +421,7 @@
                                     <div class="col-md-8">
                                       <div>
                                         @if(!is_null($xdoctor)) 
-                                          <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.DOCTORSOLICITANTE:')}}</label> 
+                                          <label style="font-family: 'Helvetica general';">DOCTOR SOLICITANTE:</label> 
                                           <span>
                                             {{$xdoctor->apellido1}} {{$xdoctor->apellido2}}
                                             {{$xdoctor->nombre1}} {{$xdoctor->nombre2}}
@@ -453,7 +431,7 @@
                                     </div>
                                     <div class="col-md-4">
                                       @if(!is_null($seguro)) 
-                                        <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.SEGURO:')}}</label> 
+                                        <label style="font-family: 'Helvetica general';">SEGURO:</label> 
                                         <span>
                                           {{$seguro->nombre}}
                                         </span>
@@ -461,11 +439,11 @@
                                     </div>
                                   </div>
                                 </div>
-                                @if($list_ord->necesita_valoracion=='SI')<span style="color: red;"> {{trans('ehistorialexam.REQUIEREVALORACIONCARDIOLÓGICA')}}</span>@endif
+                                @if($list_ord->necesita_valoracion=='SI')<span style="color: red;">REQUIERE VALORACION CARDIOLÓGICA</span>@endif
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.ANTECEDENTESPATOLOGICOS:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">ANTECEDENTES PATOLOGICOS:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <span><?php echo $paciente->antecedentes_pat?></span>
@@ -475,7 +453,7 @@
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.ANTECEDENTESFAMILIARES:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">ANTECEDENTES FAMILIARES:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <span><?php echo $paciente->antecedentes_fam?></span>
@@ -485,7 +463,7 @@
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.ANTECEDENTESQUIRURGICOS:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">ANTECEDENTES QUIRURGICOS:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <span><?php echo $paciente->antecedentes_quir?></span>
@@ -495,7 +473,7 @@
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.MOTIVO:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">MOTIVO:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <span><?php echo $list_ord->motivo_consulta?></span>
@@ -506,7 +484,7 @@
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.RESUMENDELAHISTORIACLINICA:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">RESUMEN DE LA HISTORIA CL&IacuteNICA:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <?php echo $list_ord->resumen_clinico?>
@@ -517,7 +495,7 @@
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.DIAGNOSTICO:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">DIAGNOSTICO:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <span><?php echo $list_ord->diagnosticos?></span>
@@ -530,7 +508,7 @@
                                   <div class="row">
                                     <div class="col-md-12">
                                       <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                        <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.PROCEDIMIENTOSFUNCIONALES')}}</label>
+                                        <label style="font-family: 'Helvetica general';">PROCEDIMIENTOS FUNCIONALES</label>
                                       </div>
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
@@ -546,7 +524,7 @@
                                   <div class="row">
                                     <div class="col-md-12">
                                       <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                        <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.PROCEDIMIENTOSIMAGENES')}}</label>
+                                        <label style="font-family: 'Helvetica general';">PROCEDIMIENTOS IMAGENES</label>
                                       </div>
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
@@ -562,7 +540,7 @@
                                   <div class="row">
                                     <div class="col-md-12">
                                       <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                        <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.ENDOSCOPIASDIGESTIVAS')}}</label>
+                                        <label style="font-family: 'Helvetica general';">ENDOSCOPIAS DIGESTIVAS</label>
                                       </div>
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
@@ -578,7 +556,7 @@
                                   <div class="row">
                                       <div class="col-md-12">
                                         <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                          <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.COLONOSCOPIA-PROCTOLOGIA')}}</label>
+                                          <label style="font-family: 'Helvetica general';">COLONOSCOPIA-PROCTOLOGIA</label>
                                         </div>
                                       </div>
                                       <div class="col-12" style="padding: 15px;">
@@ -594,7 +572,7 @@
                                   <div class="row">
                                       <div class="col-md-12">
                                         <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                          <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.INTESTINODELGADO')}}</label>
+                                          <label style="font-family: 'Helvetica general';">INTESTINO DELGADO</label>
                                         </div>
                                       </div>
                                       <div class="col-12" style="padding: 15px;">
@@ -610,7 +588,7 @@
                                   <div class="row">
                                       <div class="col-md-12">
                                         <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                          <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.ECOENDOSCOPIAS')}}</label>
+                                          <label style="font-family: 'Helvetica general';">ECOENDOSCOPIAS</label>
                                         </div>
                                       </div>
                                       <div class="col-12" style="padding: 15px;">
@@ -626,7 +604,7 @@
                                   <div class="row">
                                       <div class="col-md-12">
                                         <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                          <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.CPRE')}}</label>
+                                          <label style="font-family: 'Helvetica general';">CPRE</label>
                                         </div>
                                       </div>
                                       <div class="col-12" style="padding: 15px;">
@@ -642,7 +620,7 @@
                                   <div class="row">
                                       <div class="col-md-12">
                                         <div style="background-color: #4682B4; color: white;padding: 3px;">
-                                          <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.BRONCOSCOPIA')}}</label>
+                                          <label style="font-family: 'Helvetica general';">BRONCOSCOPIA</label>
                                         </div>
                                       </div>
                                       <div class="col-12" style="padding: 15px;">
@@ -657,7 +635,7 @@
                                 <div class="col-md-12" style="padding: 1px;">
                                   <div class="row">
                                     <div class="col-md-12">
-                                      <label style="font-family: 'Helvetica general';">{{trans('ehistorialexam.OBSERVACIONMEDICA:')}}</label> 
+                                      <label style="font-family: 'Helvetica general';">OBSERVACI&Oacute;N M&Eacute;DICA:</label> 
                                     </div>
                                     <div class="col-12" style="padding: 15px;">
                                       <span><?php echo $list_ord->observacion_medica?></span>
@@ -684,8 +662,10 @@
 
 
 <script type="text/javascript">
+
   //Descarga Orden de Procedimiento 
   function descargar_orden(id_or){
      window.open('{{url('imprimir/orden_hc3/general')}}/'+id_or,'_blank');  
   }
+
 </script>

@@ -55,7 +55,7 @@ class QuirofanoController extends Controller
 
         $especialidades = Especialidad::where('estado', '1')->get();
         $seguros        = Seguro::where('inactivo', '1')->get();
-        $doctores       = User::where('id_tipo_usuario', 3)->where('estado', 1)->orderby('apellido1')->get();
+        $doctores       = User::where('id_tipo_usuario', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->where('estado', 1)->orderby('apellido1')->get();
 
         $fecha_desde = date('Y-m-d');
         $fecha_hasta = date('Y-m-d');
@@ -128,7 +128,7 @@ class QuirofanoController extends Controller
 
         $especialidades = Especialidad::where('estado', '1')->get();
         $seguros        = Seguro::where('inactivo', '1')->get();
-        $doctores       = User::where('id_tipo_usuario', 3)->where('estado', 1)->orderby('apellido1')->get();
+        $doctores       = User::where('id_tipo_usuario', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->where('estado', 1)->orderby('apellido1')->get();
 
 
         $agendas_pac = Agenda::where('agenda.estado', '1')
@@ -190,15 +190,30 @@ class QuirofanoController extends Controller
         //tipo 1: cirugia, 0: imagenes
 
         $solicitud = Ho_Solicitud::find($id_solicitud);
+        if (is_null($solicitud)) {
+            abort(404, 'La solicitud hospitalaria no existe.');
+        }
         $pro_final = [];
         $edad = 0;
         $alergias = [];
         $evolucion = [];
         $historia = [];
-        if(!is_null($solicitud)){
-            $historia = $solicitud->agenda->historia_clinica;
-            $evolucion = $historia->evoluciones->last();
-            $paciente = Paciente::find($solicitud->id_paciente);
+        $notas = null;
+        $evolucion_enfermeria = null;
+        $log = $solicitud->log->last();
+        $paciente = $solicitud->paciente;
+        $agenda = $solicitud->agenda;
+        $historia = $agenda ? $agenda->historia_clinica : null;
+
+        // Algunas solicitudes de emergencia no conservan la agenda original.
+        // En ese caso usamos la historia clínica del mismo paciente como respaldo.
+        if (is_null($historia) && $paciente) {
+            $historia = Historiaclinica::where('id_paciente', $paciente->id)
+                ->orderBy('created_at', 'desc')->first();
+        }
+
+        if ($paciente) {
+            $evolucion = $historia ? $historia->evoluciones->last() : null;
            
             if ($paciente->fecha_nacimiento != null) {
                 $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
@@ -215,7 +230,9 @@ class QuirofanoController extends Controller
                 }
                 $cont++;
             }
-            $log = $solicitud->log->last();
+            if (is_null($historia)) {
+                $evolucion = null;
+            } else {
             $pro_final = Historiaclinica::where('historiaclinica.hcid', $historia->hcid)
                 ->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'historiaclinica.hcid')
                 ->join('hc_procedimientos as hc_p', 'hc_p.id', 'hc_proto.id_hc_procedimientos')
@@ -224,10 +241,9 @@ class QuirofanoController extends Controller
                 ->select('u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'historiaclinica.created_at', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento', 'hc_proto.fecha as fecha', 'hc_proto.created_at as created_at_proto', 'hc_p.id_doctor_examinador2', 'hc_proto.fecha_operacion as f_operacion', 'historiaclinica.id_agenda as id_agenda', 'hc_p.id_doctor_responsable')
                 ->OrderBy('hc_proto.created_at', 'desc')->first();
 
-            $notas = Hc_Evolucion_Indicacion::where('id_hc', $historia->hcid)->latest()->first();
-            $evolucion_enfermeria = Ho_Evoluciones_Enfermeria::where('hcid', $historia->hcid)->latest()->first();
-
-            $epicrisis = Hc_Epicrisis::where('hcid', $historia->hcid)->get()->last();
+                $notas = Hc_Evolucion_Indicacion::where('id_hc', $historia->hcid)->latest()->first();
+                $evolucion_enfermeria = Ho_Evoluciones_Enfermeria::where('hcid', $historia->hcid)->latest()->first();
+            }
         }
        
         //nuevo cambio
@@ -240,11 +256,19 @@ class QuirofanoController extends Controller
         if(p.antecedentes_quir is null,'No tiene antecedentes quirurgicos',p.antecedentes_quir) as ante_quirurgicos from ho_solicitud sol
         join agenda a on a.id = sol.id_agenda
         join paciente p on p.id = a.id_paciente 
-        join users u on u.id = a.id_doctor1
-        join seguros seg on seg.id = a.id_seguro and sol.id = $id_solicitud";
+        left join users u on u.id = a.id_doctor1
+        left join seguros seg on seg.id = a.id_seguro
+        where sol.id = $id_solicitud";
         $data = DB::select($sql);
+        $data = count($data) ? $data[0] : (object) [
+            'fecha_ingreso' => $solicitud->fecha_ingreso,
+            'id_paciente' => $solicitud->id_paciente,
+            'nombre_paciente' => $paciente ? trim($paciente->apellido1.' '.$paciente->apellido2.' '.$paciente->nombre1.' '.$paciente->nombre2) : '',
+            'nombre_doctor' => null,
+            'seguro' => null,
+        ];
 
-        $paciente = Paciente::find($solicitud->id_paciente);
+        $paciente = $paciente ?: Paciente::find($solicitud->id_paciente);
         $alergiasDB = Paciente_Alergia::where('id_paciente',$paciente->id)
         ->join('principio_activo as pa','pa.id','paciente_alergia.id_principio_activo')
         ->where('paciente_alergia.id_paciente', $paciente->id)->select('pa.nombre')->get();
@@ -273,7 +297,7 @@ class QuirofanoController extends Controller
         if(!is_null($consulta)){
             $arr_listado[2] = [$consulta->fechaini,$consulta->nombre, $consulta->id_hc_evolucion];
         }
-        return view('hospital/quirofano/quirofano_paciente', ['arr_listado'=>$arr_listado,'solicitud' => $solicitud, 'edad' => $edad, 'alergias' => $alergias, 'tipo' => $tipo, 'evolucion' => $evolucion, 'historia' => $historia, 'pro_final' => $pro_final, 'notas' => $notas, 'evolucion_enfermeria' => $evolucion_enfermeria, 'log' => $log, 'data' => $data[0], 'str_alergias' => $str_alergias, 'epicrisis' => $epicrisis]);
+        return view('hospital/quirofano/quirofano_paciente', ['arr_listado'=>$arr_listado,'solicitud' => $solicitud, 'edad' => $edad, 'alergias' => $alergias, 'tipo' => $tipo, 'evolucion' => $evolucion, 'historia' => $historia, 'pro_final' => $pro_final, 'notas' => $notas, 'evolucion_enfermeria' => $evolucion_enfermeria, 'log' => $log, 'data' => $data, 'str_alergias' => $str_alergias]);
     }
 
     public function index_funcionales($id_solicitud)
@@ -281,32 +305,46 @@ class QuirofanoController extends Controller
 
         $solicitud = Ho_Solicitud::find($id_solicitud);
 
-        $historia = $solicitud->agenda->historia_clinica;
-        //dd($historia);
-
-        /*$pro_completo_1 = Historiaclinica::where('historiaclinica.hcid',$historia->hcid)
-            ->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'historiaclinica.hcid')
-            ->join('hc_procedimientos as hc_p', 'hc_p.id', 'hc_proto.id_hc_procedimientos')
-            ->leftjoin('users as u', 'u.id', 'hc_p.id_doctor_examinador')
-            ->join('procedimiento_completo as pc', 'pc.id', 'hc_p.id_procedimiento_completo')
-            ->join('grupo_procedimiento as gp', 'gp.id', 'pc.id_grupo_procedimiento')
-            ->where('gp.tipo_procedimiento', '1')
-            ->select('pc.nombre_general as nombre', 'u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'gp.tipo_procedimiento', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento', 'historiaclinica.hcid as id_hc', 'hc_proto.fecha_operacion as f_operacion', 'historiaclinica.id_agenda as id_agenda','hc_p.id_seguro as hc_p_id_seguro')
-            ->OrderBy('historiaclinica.created_at', 'desc')
-            ->get();*/
-
-
-        $pro_final1 = Historiaclinica::where('historiaclinica.hcid', $historia->hcid)
-            ->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'historiaclinica.hcid')
+        // Conserva el mismo criterio del módulo ambulatorio: historial completo de
+        // cirugías activas del paciente, no solamente los protocolos de este ingreso.
+        $pro_final1 = DB::table('historiaclinica as h')
+            ->where('h.id_paciente', $solicitud->id_paciente)
+            ->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'h.hcid')
+            ->join('agenda as a', 'a.id', 'h.id_agenda')
             ->join('hc_procedimientos as hc_p', 'hc_p.id', 'hc_proto.id_hc_procedimientos')
             ->join('users as u', 'u.id', 'hc_p.id_doctor_examinador')
-            //->where('hc_proto.tipo_procedimiento', '1')
-            ->select('u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento', 'historiaclinica.hcid as id_hc', 'hc_proto.fecha_operacion as f_operacion', 'historiaclinica.id_agenda as id_agenda', 'hc_p.id_seguro as hc_p_id_seguro')->OrderBy('historiaclinica.created_at', 'desc')->get();
+            ->where('hc_proto.tipo_procedimiento', '5')
+            ->where('hc_p.estado', '1')
+            ->select(
+                'u.nombre1',
+                'u.apellido1',
+                'u.id',
+                'hc_p.id_doctor_examinador',
+                'hc_proto.hallazgos',
+                'hc_proto.conclusion',
+                'hc_proto.id as id_protocolo',
+                'hc_proto.id_hc_procedimientos as id_procedimiento',
+                'h.hcid',
+                'h.hcid as id_hc',
+                'hc_proto.fecha_operacion as f_operacion',
+                'h.id_agenda as id_agenda',
+                'h.id_seguro as hc_id_seguro',
+                'hc_p.id_seguro as seguro_final',
+                'hc_p.id_seguro as hc_p_id_seguro',
+                'hc_p.cuadro_clinico_bp as cuadro_clinico',
+                'hc_p.diagnosticos_bp as diagnosticos'
+            )
+            ->orderBy('a.fechaini', 'desc')
+            ->get();
 
-        //dd($pro_final1);
-
-
-        return view('hospital.quirofano.index_funcionales', ['procedimientos1' => $pro_final1, 'historia' => $historia, 'solicitud' => $solicitud]);
+        return view('hc4.procedimiento_quirurgicos.index1', [
+            'paciente' => $solicitud->paciente,
+            'procedimientos2' => $pro_final1,
+            'moduleTitle' => 'Historial de cirugías',
+            'moduleActionLabel' => 'Agregar cirugía',
+            'moduleWorkAreaSelector' => '#pasos',
+            'moduleReloadUrl' => route('quirofano.index_funcionales', ['id_solicitud' => $solicitud->id]),
+        ]);
     }
 
     public function crear_funcionales($id)
@@ -358,18 +396,22 @@ class QuirofanoController extends Controller
     {
 
         $solicitud = Ho_Solicitud::find($id_solicitud);
-
-        $historia = $solicitud->agenda->historia_clinica;
+        abort_if(is_null($solicitud), 404, 'No se encontró la solicitud hospitalaria.');
+        $agenda = $solicitud->agenda;
+        $historia = $agenda ? $agenda->historia_clinica : null;
+        if (is_null($historia)) {
+            $historia = Historiaclinica::where('id_paciente', $solicitud->id_paciente)->orderBy('created_at', 'desc')->first();
+        }
         $pro_completo_0 = [];
-        $pro_final_0 = Historiaclinica::where('historiaclinica.hcid', $historia->hcid)
+        $pro_final_0 = $historia ? Historiaclinica::where('historiaclinica.hcid', $historia->hcid)
             ->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'historiaclinica.hcid')
             ->join('hc_procedimientos as hc_p', 'hc_p.id', 'hc_proto.id_hc_procedimientos')
             ->join('users as u', 'u.id', 'hc_p.id_doctor_examinador')
             ->where('hc_p.estado', '1')
             ->select('u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'historiaclinica.created_at', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento', 'hc_proto.fecha as fecha', 'hc_proto.created_at as created_at_proto', 'hc_p.id_doctor_examinador2', 'hc_proto.fecha_operacion as f_operacion', 'historiaclinica.id_agenda as id_agenda', 'hc_p.id_doctor_responsable')
-            ->OrderBy('hc_proto.created_at', 'desc')->get();
+            ->OrderBy('hc_proto.created_at', 'desc')->get() : collect();
 
-        $doctores = User::where('id_tipo_usuario', 3)->get();
+        $doctores = User::where('id_tipo_usuario', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->get();
 
         return view('hospital.quirofano.armar_estudio', ['solicitud' => $solicitud, 'procedimientos1' => $pro_completo_0, 'procedimientos2' => $pro_final_0, 'doctores' => $doctores]);
     }
@@ -378,13 +420,18 @@ class QuirofanoController extends Controller
     {
 
         $solicitud = Ho_Solicitud::find($id_solicitud);
-        $historia = $solicitud->agenda->historia_clinica;
+        abort_if(is_null($solicitud), 404, 'No se encontró la solicitud hospitalaria.');
+        $agenda = $solicitud->agenda;
+        $historia = $agenda ? $agenda->historia_clinica : null;
+        if (is_null($historia)) {
+            $historia = Historiaclinica::where('id_paciente', $solicitud->id_paciente)->orderBy('created_at', 'desc')->first();
+        }
 
         $pro_completo_0 = [];
 
 
 
-        $pro_final_0 = Historiaclinica::where('historiaclinica.hcid', $historia->hcid)
+        $pro_final_0 = $historia ? Historiaclinica::where('historiaclinica.hcid', $historia->hcid)
             ->join('hc_protocolo as hc_proto', 'hc_proto.hcid', 'historiaclinica.hcid')
             ->join('hc_procedimientos as hc_p', 'hc_p.id', 'hc_proto.id_hc_procedimientos')
             ->join('users as u', 'u.id', 'hc_p.id_doctor_examinador')
@@ -395,7 +442,7 @@ class QuirofanoController extends Controller
             })*/
             ->where('hc_p.estado', '1')
             ->select('u.nombre1', 'u.apellido1', 'u.id', 'hc_p.id_doctor_examinador', 'historiaclinica.created_at', 'hc_proto.hallazgos', 'hc_proto.conclusion', 'hc_proto.id as id_protocolo', 'hc_proto.id_hc_procedimientos as id_procedimiento', 'hc_proto.fecha as fecha', 'hc_proto.created_at as created_at_proto', 'hc_p.id_doctor_examinador2', 'hc_proto.fecha_operacion as f_operacion', 'historiaclinica.id_agenda as id_agenda')
-            ->OrderBy('hc_proto.created_at', 'desc')->get();
+            ->OrderBy('hc_proto.created_at', 'desc')->get() : collect();
 
 
         return view('hospital/quirofano/ver_estudios', ['solicitud' => $solicitud, 'procedimientos1' => $pro_completo_0, 'procedimientos2' => $pro_final_0]);
@@ -450,7 +497,7 @@ class QuirofanoController extends Controller
 
         $procedimiento = hc_procedimientos::find($id_procedimiento);
         $tipo = 2;
-        $doctores = User::where('id_tipo_usuario', '=', 3)->where('estado', '1')->get();
+        $doctores = User::where('id_tipo_usuario', '=', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->where('estado', '1')->get();
 
         $proc_completo = procedimiento_completo::all();
         //dd($protocolo);
@@ -493,7 +540,11 @@ class QuirofanoController extends Controller
         ];
         $id_evolucion = hc_evolucion::insertGetId($input_hc_evolucion_pos);
         $evolucion    = hc_evolucion::find($id_evolucion);
-        return view('hospital/quirofano/agregar_evolucion', ['evolucion' => $evolucion]);
+        $historia     = Historiaclinica::find($id_historia);
+        return view('hospital/quirofano/agregar_evolucion', [
+            'evolucion' => $evolucion,
+            'id_paciente' => $historia ? $historia->id_paciente : null,
+        ]);
     }
 
 
@@ -506,7 +557,7 @@ class QuirofanoController extends Controller
         $hc_seguro = Seguro::where('id', $procedimiento->id_seguro)->OrderBy('created_at', 'desc')->first();
         $tipo = 1;
         $px = Procedimiento::where('procedimiento.estado', '1')->get();
-        $doctores = DB::table('users')->where('id_tipo_usuario', '=', 3)->where('estado', '1')->get();
+        $doctores = DB::table('users')->where('id_tipo_usuario', '=', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->where('estado', '1')->get();
         return view('hospital/quirofano/cirugia/editar_funcional', ['protocolo' => $protocolo, 'procedimiento' => $procedimiento, 'tipo' => $tipo, 'id_paciente' => $id_paciente, 'hc_seguro' => $hc_seguro, 'px' => $px, 'doctores' => $doctores]);
     }
 
@@ -527,15 +578,32 @@ class QuirofanoController extends Controller
     }
       public function epicrisis($id)
     {
-
-        $solicitud = Ho_Solicitud::where('ho_solicitud.id', $id)
+        $base = Ho_Solicitud::find($id);
+        abort_if(is_null($base), 404, 'No se encontró la solicitud hospitalaria.');
+        $agenda = $base->agenda;
+        $historia = $agenda ? $agenda->historia_clinica : null;
+        if (is_null($historia)) {
+            $historia = Historiaclinica::where('id_paciente', $base->id_paciente)->orderBy('created_at', 'desc')->first();
+        }
+        $hcProc = $historia ? hc_procedimientos::where('id_hc', $historia->hcid)->orderBy('id', 'desc')->first() : null;
+        $linkedSolicitud = $hcProc ? Ho_Solicitud::where('ho_solicitud.id', $id)
             ->join('agenda as ag', 'ag.id', 'ho_solicitud.id_agenda')
             ->join('historiaclinica as h', 'h.id_agenda', 'ag.id')
             ->join('hc_procedimientos as hc_proc', 'hc_proc.id_hc', 'h.hcid')
             ->select('ag.id as id_agenda', 'h.hcid', 'hc_proc.id as id_hcproc', 'ho_solicitud.id_paciente', 'ho_solicitud.id')
-            ->first();
+            ->first() : null;
+        $solicitud = $linkedSolicitud ?: (object) [
+            'id' => $base->id,
+            'id_paciente' => $base->id_paciente,
+            'hcid' => $historia ? $historia->hcid : null,
+            'id_hcproc' => $hcProc ? $hcProc->id : null,
+        ];
         //dd($solicitud);
-        $epicrisis = Hc_Epicrisis::where('hc_id_procedimiento', $solicitud->id_hcproc)->Orderby('created_at', 'DESC')->get();
+        $idHcProcedimiento = is_object($solicitud) && !empty($solicitud->id_hcproc)
+            ? $solicitud->id_hcproc : null;
+        $epicrisis = $idHcProcedimiento
+            ? Hc_Epicrisis::where('hc_id_procedimiento', $idHcProcedimiento)->orderBy('created_at', 'DESC')->get()
+            : collect();
 
         return view('hospital.quirofano.epicrisis.ver_epicrisis', ['epicrisis' => $epicrisis,'solicitud' => $solicitud]);
     }
@@ -556,9 +624,6 @@ class QuirofanoController extends Controller
             $arr_epicrisis = [
                // 'motivo'            => $request['motivo'],
                 'cuadro_clinico'    => $request['n_epicrisis'],
-                'favorable_des'     => $request['favorable_des'],
-                'complicacion'      => $request['complicacion'],
-                'hallazgo'          => $request['hallazgo'],
                 'id_usuariomod'     => $idusuario,
                 'ip_modificacion'   => $ip_cliente,
             ];
@@ -619,8 +684,7 @@ class QuirofanoController extends Controller
 
         $epicrisis = Hc_Epicrisis::where('hc_id_procedimiento', $solicitud->id_hcproc)->Orderby('created_at', 'DESC')->get();
        // return view('hospital/quirofano/epicrisis/nueva_epicrisis', ['solicitud' => $solicitud, 'epicrisis' => $epicrisis, 'epicrisis_a' => $epicrisis_a]);
-       //return redirect("hospital/quirofano/epicrisis/{$id}");
-       return ['id' => $epicrisis_a];
+       return redirect("hospital/quirofano/epicrisis/{$id}");
 
     }
   
@@ -645,7 +709,7 @@ class QuirofanoController extends Controller
 
         $procedimiento = hc_procedimientos::find($id_procedimiento);
         $tipo = 2;
-        $doctores = User::where('id_tipo_usuario', '=', 3)->where('estado', '1')->get();
+        $doctores = User::where('id_tipo_usuario', '=', User::roleIdForName(array('DOCTORES', 'DOCTOR')))->where('estado', '1')->get();
 
         $proc_completo = procedimiento_completo::all();
 

@@ -115,31 +115,77 @@
      background-color: red !important;
      border-color: red !important;
     }
-  
+
+    .hc4-recipe-editor-section {
+      clear: both;
+      float: none;
+      width: 100%;
+      padding-top: 24px;
+    }
+
+    .hc4-recipe-editor-row {
+      display: flex;
+      align-items: stretch;
+      margin-right: -8px;
+      margin-left: -8px;
+    }
+
+    .hc4-recipe-editor-column {
+      display: flex;
+      flex-direction: column;
+      padding-right: 8px;
+      padding-left: 8px;
+    }
+
+    .hc4-recipe-editor-label {
+      display: block;
+      min-height: 20px;
+      margin: 0 0 6px;
+      color: #000000 !important;
+      font-family: 'Helvetica general';
+      font-weight: 700;
+    }
+
+    .hc4-recipe-editor-box {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 200px;
+      padding: 8px;
+      border: 2px solid #004AC1;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .hc4-recipe-save {
+      clear: both;
+      margin: 28px 0 12px;
+      padding-top: 8px;
+      text-align: center;
+    }
+    .hc4-recipe-save .btn {
+      display: inline-flex !important;
+      width: 195px !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 6px 12px !important;
+      line-height: 1 !important;
+    }
+
+    @media (max-width: 767px) {
+      .hc4-recipe-editor-row { display: block; }
+      .hc4-recipe-editor-column + .hc4-recipe-editor-column { margin-top: 16px; }
+    }
 </style>
 
-<div class="box " style="border: 2px solid #004AC1; background-color: white;">
-  <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1; ">
-    <div class="row">
-      <div class="col-md-9">
-        <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
-              <img style="width: 35px; margin-left: 5px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/receta.png"> 
-              <b>NUEVA RECETA</b>
-        </h1>   
-      </div>
-    </div>
-    @if(!is_null($paciente)) 
-      <center> 
-        <div class="col-12" style="padding-bottom: 10px;">
-          <h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-          <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-                    {{$paciente->nombre1}} {{$paciente->nombre2}}
-          </b>
-          </h1>
-        </div> 
-      </center>
-    @endif  
-  </div>
+<div class="box hc4-standard-module-container hc4-new-recipe">
+  @include('hc4.partials.module_header', [
+      'moduleTitle' => __('hc4.nuevaReceta'),
+      'moduleIcon' => asset('/').'hc4/img/iconos/receta.png',
+      'paciente' => $paciente
+  ])
 
   <div class="box-body" style="background-color: #56ABE3" >
     <div class="box" style="border: 2px solid #004AC1;border-radius: 10px;background-color: white;font-size: 13px;font-family: Helvetica;margin-bottom: 10px;margin-top: 0px;padding-left: 20px;padding-right: 20px;padding-top: 20px;padding-bottom: 20px;">
@@ -149,7 +195,7 @@
           <div class="col-9">
             <div class="row">
               <div class="col-6" style="text-align: right;" >
-                  <label style="font-family: 'Helvetica general';" >Seguro:</label>
+                  <label style="font-family: 'Helvetica general';" >@lang('hc4.seguro'):</label>
               </div>
               <div class="col-6">
                 @if(!is_null($hc_receta->nombre_seguro))
@@ -160,10 +206,10 @@
           </div>
 
           <div class="form-group">
-            <label style="font-family: 'Helvetica general';" for="inputid" class="control-label">Medicina</label>
+            <label style="font-family: 'Helvetica general';" for="inputid" class="control-label">@lang('hc4.medicina')</label>
             <div class="row"> 
               <div class="col-10">
-                <input value="" type="text" class="form-control" name="nombre_generico" id="nombre_generico" placeholder="Nombre">
+                <input value="" type="text" class="form-control" name="nombre_generico" id="nombre_generico" placeholder="@lang('hc4.nombre')">
               </div>&nbsp;&nbsp;&nbsp;
               <div class="centered">
                 <button id="limpiar" class="btn btn-primary" style="background-color: #004AC1;"
@@ -188,20 +234,20 @@
       <form id="final_receta" method="POST">
       <input type="hidden" name="id_receta" value="{{$hc_receta->id}}"> 
       <input type="hidden" name="id_paciente" value="{{$paciente->id}}"> 
-        <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-6">
-              <span><b style="font-family: 'Helvetica general';" class="box-title">Rp</b></span>
-              <div id="trp<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>" style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #004AC1;"> 
+        <div class="col-md-12 hc4-recipe-editor-section">
+          <div class="row hc4-recipe-editor-row">
+            <div class="col-md-6 hc4-recipe-editor-column">
+              <span class="hc4-recipe-editor-label">Rp</span>
+              <div class="hc4-recipe-editor-box" id="trp<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>">
                 <?php if(!is_null($hc_receta)): ?>
                   <?php echo $hc_receta->rp ?>
                 <?php endif; ?>
               </div>
               <input type="hidden" name="rp" id="rp<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>">
             </div>
-            <div class="col-md-6" >
-              <span><b style="font-family: 'Helvetica general';" class="box-title">Prescripcion</b></span>
-              <div id="tprescripcion<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>" style="border: solid 1px;min-height: 200px;border-radius:3px;border: 2px solid #004AC1;">
+            <div class="col-md-6 hc4-recipe-editor-column">
+              <span class="hc4-recipe-editor-label">Prescripción</span>
+              <div class="hc4-recipe-editor-box" id="tprescripcion<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>">
                   <?php if(!is_null($hc_receta)): ?>        
                     <?php echo $hc_receta->prescripcion ?>
                   <?php endif; ?>
@@ -209,8 +255,7 @@
               <input type="hidden" name="prescripcion" id="prescripcion<?php echo e($hc_receta->id); ?><?php echo e(date('his')); ?>"> 
             </div>
           </div>
-          <br>
-          <div class="centered">
+          <div class="hc4-recipe-save">
             <button type="button" class="btn btn-primary" onClick="ingresar_recetas('{{$id_paciente}}')" style="background-color: #004AC1;">
               <span class="fa fa-floppy-o"></span>&nbsp;&nbsp;Guardar
             </button>
@@ -306,14 +351,27 @@
     minLength:2,
   });
 
+  @include('hc4.recetas._medicine_search_alert_js')
   function buscar_nombre_medicina(){
+      var medicineField = $("#nombre_generico");
+      var medicineName = $.trim(medicineField.val());
+      if (!medicineName) {
+        window.hc4MedicineNotFound('');
+        medicineField.focus();
+        return;
+      }
       $.ajax({
         type: 'post',
         url:"{{route('buscar_nombre2.receta')}}",
         headers:{'X-CSRF-TOKEN':$('input[name=_token]').val()},
         datatype: 'json',
-        data: $("#nombre_generico"),
+        data: medicineField,
           success: function(data){
+            if(data == '0'){
+              window.hc4MedicineNotFound(medicineName);
+              medicineField.focus();
+              return;
+            }
             if(data!='0'){
               if(data.dieta == 1 ){
                 var dosis = data.dosis;
@@ -333,6 +391,7 @@
               }                
             },
             error: function(data){
+              window.hc4MedicineSearchError(data);
             }
         })
   }
@@ -368,8 +427,9 @@
   function Crear_detalle(med){
     var js_cedula = document.getElementById("id_paciente").value;
       $.ajax({
-        type: 'get',
-        url:"{{url('detalle_receta/detalle_crear')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula, 
+        type: 'post',
+        url:"{{url('detalle_receta/detalle_crear')}}"+"/"+{{$hc_receta->id}}+"/"+med.id+"/"+js_cedula,
+        headers:{'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')},
         datatype: 'json',
         success: function(data){
           //console.log(data);

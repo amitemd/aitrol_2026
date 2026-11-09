@@ -148,7 +148,7 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             <tbody>
                 <tr>
                     <td class="td">La técnica a la que usted va a someterse consiste en medir la acidez en el esófago durante un día completo mediante un sistema de registro portátil. Sirve para cuantificar el ácido que existe en el esófago, el cual produce síntomas como ardor, subida de contenido líquido hacia la garganta (regurgitación) o dolor torácico de causa no cardiológica.</td>
-                    <td><img style="margin:6px;margin-top:10px;height:60px;width:60px;" src="{{public_path('/imagenes/ph_esofagica.png')}}" />
+                    <td><img style="margin:6px;margin-top:10px;height:60px;width:60px;" src="{{base_path('public/imagenes/ph_esofagica.png')}}" />
                     </td>
 
                 </tr>
@@ -246,8 +246,13 @@ $edad = Carbon::parse($paciente->fecha_nacimiento)->age;
             </tr>
 
             <tr>
+                <td style="width: 30%;" class="td">Enfermedades respiratorias</td>
+                <td style="width: 20%;" class="td">&nbsp;</td>
+                <td style="width: 50%;text-align:none" class="td">Especifique:</td>
 
+            </tr>
 
+            <tr>
                 <td style="width: 30%;" class="td">Marcapasos</td>
                 <td style="width: 20%;" class="td">&nbsp;</td>
                 <td style="width: 50%;text-align:none" class="td">Especifique:</td>

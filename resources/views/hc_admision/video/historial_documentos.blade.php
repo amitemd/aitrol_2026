@@ -62,9 +62,9 @@
                                         @else
                                             @php
                                                 $variable = explode('/' , asset('/hc_ima/'));
-                                                /*$d1 = $variable[3];
+                                                $d1 = $variable[3];
                                                 $d2 = $variable[4];
-                                                $d3 = $variable[5];*/ 
+                                                $d3 = $variable[5];
                                                 
                                             @endphp 
                                             <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">

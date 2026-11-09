@@ -1,26 +1,26 @@
 
 <div class="row">
-		<div class="col-12">&nbsp;</div> 
+		<div class="col-12">&nbsp;</div>
 		<div class="col-12">
 			<span style="font-family: 'Helvetica general';">Procedimiento</span>
 		</div>
-		<?php 
-			$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento->id)->get();
-		?>
+		<?php
+$adicionales = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_procedimientos', $procedimiento->id)->get();
+?>
 		@if(!is_null($adicionales->last()))
-		@php 
-			$mas = true; 
+		@php
+			$mas = true;
 			$texto = "";
 
 			foreach($adicionales as $value2)
 			{
 				if($mas == true){
 				 $texto = $texto.$value2->procedimiento->nombre  ;
-				 $mas = false; 
+				 $mas = false;
 				 }
 				else{
 			  	 $texto = $texto.' + '.  $value2->procedimiento->nombre  ;
-			  	 }					  						
+			  	 }
 			}
 		@endphp
 		<div class="col-12">
@@ -45,6 +45,12 @@
 		<br>
 
 		<div class="col-12">
+			<span style="font-family: 'Helvetica general';">Motivo</span>
+		</div>
+		<div class="col-12">
+			<span><?php echo strip_tags($protocolo->motivo); ?></span>
+		</div>
+		<div class="col-12">
 			<span style="font-family: 'Helvetica general';">Hallazgos</span>
 		</div>
 		<div class="col-12">
@@ -53,9 +59,9 @@
 		<div class="col-12">&nbsp;</div>
 		<div class="col-12">
 			<span style="font-family: 'Helvetica general';">Conclusiones</span>
-		</div>					  						
+		</div>
 		<div class="col-12">
-			<span><?php if(!is_null($protocolo->conclusion)){echo strip_tags($protocolo->conclusion);}else{ echo ' &nbsp;&nbsp;';} ?></span>
+			<span><?php if (!is_null($protocolo->conclusion)) {echo strip_tags($protocolo->conclusion);} else {echo ' &nbsp;&nbsp;';}?></span>
 		</div>
 
 		<div class="col-12">

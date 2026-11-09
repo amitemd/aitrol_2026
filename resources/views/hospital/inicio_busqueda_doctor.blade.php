@@ -182,7 +182,7 @@
                     <td class="color">@if(!is_null($verificar)) Admisionado @else @if($nueva_agenda->estado_cita == 0) Por Confirmar @elseif($nueva_agenda->estado_cita == 1) Confirmada @elseif($nueva_agenda->estado_cita == 2) Reagendado @endif @endif</td>
 
                     <td>@if(!is_null($verificar))
-                      <a class="btn btn-info btn-detalle" style="color: white; padding-right: 0px; padding-left: 0px" href="{{route('nd.buscador', ['id_paciente' => $pac->id])}}">
+                      <a class="btn btn-info btn-detalle" style="color: white; padding-right: 0px; padding-left: 0px" href="{{route('nd.buscador', ['id_paciente' => $pac->id, 'id_agenda' => $pac->id_agenda])}}">
                       Ver Detalle Completo</a>@endif
                     </td>  
 
@@ -298,7 +298,7 @@
                     <td class="color">@if(!is_null($verificar)) Admisionado @else @if($nueva_agenda->estado_cita == 0) Por Confirmar @elseif($nueva_agenda->estado_cita == 1) Confirmada @elseif($nueva_agenda->estado_cita == 2) Reagendado @endif @endif</td>
 
                     <td>@if(!is_null($verificar))
-                      <a class="btn btn-info btn-detalle" style="color: white; padding-right: 0px; padding-left: 0px" href="{{route('nd.buscador', ['id_paciente' => $pac->id])}}">
+                      <a class="btn btn-info btn-detalle" style="color: white; padding-right: 0px; padding-left: 0px" href="{{route('nd.buscador', ['id_paciente' => $pac->id, 'id_agenda' => $pac->id_agenda])}}">
                       Ver Detalle Completo</a>@endif
                     </td>  
 

@@ -15,24 +15,29 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span></button>
-    @if($historia->id_doctor1 == '4444444444')
-      <h4 class="modal-title" id="myModalLabel">Certificado de Asistencia</h4>
-    @else
-      <h4 class="modal-title" id="myModalLabel">Certificado Médico</h4>
-    @endif
+    
+    <h4 class="modal-title" id="myModalLabel">Certificado Médico</h4>
 </div>
 <div class="modal-body">
   <form method="post" action="{{route('controldoc.generar_cert')}}">
     {{csrf_field()}}
 
     <input type="hidden" name="id" value="{{$id}}">
+        
     <div class="form-group col-md-12">
       <label for="id_doctor1" class="col-md-6 control-label">Doctor</label>
       <div class="col-md-5">
         <select class="form-control input-sm" id="id_doctor1" name="id_doctor1" required>
-          @foreach($users as $val)
-            <option @if($historia->id_doctor1==$val->id) selected @endif value="{{$val->id}}">{{$val->apellido1}} @if($val->apellido2!='(N/A)') {{$val->apellido2}} @endif {{$val->nombre1}}</option>
-          @endforeach  
+
+          @if($historia->id_doctor1 == '4444444444' )
+              <option value="1311575177">VELEZ ARTEAGA DIEGO ARMANDO</option>
+          @else
+            @foreach($users as $val)
+              
+                <option @if($historia->id_doctor1==$val->id) selected @endif value="{{$val->id}}">{{$val->apellido1}} @if($val->apellido2!='(N/A)') {{$val->apellido2}} @endif {{$val->nombre1}}</option>
+              
+            @endforeach  
+          @endif
         </select>
       </div>  
     </div>
@@ -112,20 +117,10 @@
       </div>
       <input type="hidden" name="diagnostico" id="diagnostico">  
     </div>  
-		@if($historia->id_doctor1 != '4444444444')
-      <div class="form-group col-md-12">
-        <label>Presenta Sintomas: &nbsp;&nbsp;&nbsp;&nbsp; </label> SI <input id="si" value="si" type="radio" name="sintoma"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NO <input id="no" value="no" type="radio"  name="sintoma">
-      </div>
-      <div class="form-group col-md-12">
-        Aislamiento <input value="aislamiento"  type="radio" name="reposo"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reposo Absoluto <input value="reposo_absoluto" type="radio"  name="reposo"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Teletrabajo <input value="teletrabajo" type="radio"  name="reposo"> 
-      </div>
-      <div class="form-group col-md-12">
-        <label>Causa: &nbsp;&nbsp;&nbsp;&nbsp; </label> Enfermedad General <input value="enfermedad_general" type="radio" name="causa"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Accidente de Trabajo <input value="a_trabajo" type="radio"  name="causa"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Accidente de Transito <input value="a_transito" type="radio"  name="causa"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Maternidad <input value="maternidad" type="radio"  name="causa"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Enf. Catastrofica <input value="e_catastrofica" type="radio"  name="causa">
-      </div>
-    @endif
-    <div class="form-group col-md-12" style="text-align: center;">
+    
+                           
     <button type="submit" class="btn btn-primary" formtarget="_blank">Generar</button>
-    </div>
+
 
   </form>
 </div>

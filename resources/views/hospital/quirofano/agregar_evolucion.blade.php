@@ -1,34 +1,19 @@
-<br>
-<div class="card">
-	<div class="card-header bg bg-primary colorbasic">
-		
-		<div class="col-md-2" >
-			<a class="btn btn-warning btn-xs waves-effect waves-float waves-light" type="button"  onclick="editar_evolucion({{$evolucion->id}});"><span class="fa fa-pencil-square-o"></span>
-            </a>
-    	</div>
-    	<div class="col-md-9">
-    		<span style="padding-top: 5px;">Detalles de la Evolucion</span>
-    	</div>
-		
-	</div>
-		
-	</div>
-	<div class="card-body" id="evolucion{{$evolucion->id}}">
-		<div class="row">
-			<div class="col-12">
-				<span>Motivo</span>
-			</div>
-			<div class="col-12">
-				<span>{{strip_tags($evolucion->motivo)}}</span>
-			</div>
-			<div class="col-12">&nbsp;</div>
-			<div class="col-12">
-				<span>Detalle</span>
-			</div>
-			<div class="col-12">
-				<span><?php echo strip_tags($evolucion->cuadro_clinico); ?></span>
-			</div>
-		</div>
-	</div>
+<div class="surgery-evolution-card">
+    <div class="evolution-card-header">
+        <button class="btn btn-warning btn-xs" type="button" onclick="editar_evolucion({{$evolucion->id}}, '{{(string) $id_paciente}}');" aria-label="Editar evolución">
+            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+        </button>
+        <strong>{{trim(strip_tags($evolucion->motivo)) ?: 'Nueva evolución'}}</strong>
+        <button class="btn btn-info btn-xs" type="button" data-toggle="collapse" data-target="#surgeryEvolution{{$evolucion->id}}" aria-expanded="true" aria-controls="surgeryEvolution{{$evolucion->id}}" title="Mostrar u ocultar evolución">
+            <i class="fa fa-minus" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="collapse show evolution-card-body" id="surgeryEvolution{{$evolucion->id}}">
+        <div id="evolucion{{$evolucion->id}}">
+            <div><strong>Motivo</strong></div>
+            <div>{{strip_tags($evolucion->motivo)}}</div>
+            <div class="mt-1"><strong>Detalle</strong></div>
+            <div>{!! strip_tags($evolucion->cuadro_clinico, '<p><br><strong><b><em><i><ul><ol><li>') !!}</div>
+        </div>
+    </div>
 </div>
-<div class="col-md-12" style="height: 5px;"></div>

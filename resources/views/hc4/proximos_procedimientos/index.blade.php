@@ -185,26 +185,11 @@
 <link rel="stylesheet" href="{{ asset ("/librerias/tempusdominus-bootstrap-4.min.css")}}" />
 
 <div class="box " style="border: 2px solid #004AC1; background-color: white; ">
-    <div class="box-header with-border" style="background-color: #004AC1; color: white; font-family: 'Helvetica general3';border-bottom: #004AC1; ">
-        <div class="row">
-            <div class="col-4">
-                <h1 style="font-size: 15px; margin:0; background-color: #004AC1; color: white;" >
-                    <img style="width: 35px; margin-left: 5px; margin-bottom: 5px" src="{{asset('/')}}hc4/img/iconos/pendo.png"> <b>PROXIMOS PROCEDIMIENTOS</b>
-                </h1>
-            </div>
-        </div>
-        @if(!is_null($paciente))
-            <center>
-                <div class="col-12" style="padding-top: 15px">
-                    <h1 style="font-size: 14px; margin:0; background-color: #004AC1; color: white;padding-left: 20px" >
-                        <b>PACIENTE : {{$paciente->apellido1}} {{$paciente->apellido2}}
-                            {{$paciente->nombre1}} {{$paciente->nombre2}}
-                        </b>
-                    </h1>
-                </div>
-            </center>
-        @endif
-    </div>
+    @include('hc4.partials.module_header', [
+        'moduleTitle' => __('hc4.proximosprocedimientos-'),
+        'moduleIcon' => asset('/').'hc4/img/iconos/pendo.png',
+        'paciente' => $paciente
+    ])
     <div style="border-left-width: 20px; padding-left: 15px; padding-right: 10px; padding-top: 20px;padding-bottom: 0px; background-color: #56ABE3; margin-left: 0px"  >
         <div class="parent" style="margin-left: 0px; height: 450px " >
             <div style=" margin-right: 30px;" >
@@ -261,11 +246,11 @@
                                                 <span style="font-family: 'Helvetica general'; font-size: 14px">Estado Cita:</span>
                                                 <span style="font-size: 13px">
                                                     @if(!is_null($value->estado_cita)) 
-                                                        @if($value->estado_cita == '0') <span style="color: red;"> Por confirmar </span> @endif
-                                                        @if($value->estado_cita == '1') <span style="color: red;"> Confirmada </span> @endif
-                                                        @if($value->estado_cita == '2') <span style="color: red;"> Reagendado </span> @endif
-                                                        @if($value->estado_cita == '3') <span style="color: red;"> Suspendido </span> @endif
-                                                        @if($value->estado_cita == '4') <span style="color: red;"> Admisionado </span> @endif
+                                                        @if($value->estado_cita == '0') Por confirmar @endif
+                                                        @if($value->estado_cita == '1') Confirmada @endif
+                                                        @if($value->estado_cita == '2') Reagendado @endif
+                                                        @if($value->estado_cita == '3') Suspendido @endif
+                                                        @if($value->estado_cita == '4') Admisionado @endif
                                                     @endif
                                                 </span>
                                            </div>
@@ -286,7 +271,7 @@
                                         <div class="col-4">
                                             <div>
                                                 <span style="font-family: 'Helvetica general'; font-size: 14px">Procedimiento: </span>
-                                                <span style="font-size: 13px"> @if($texto != "") {{$texto}} @else CONSULTA @endif </span>
+                                                <span style="font-size: 13px"> @if(!is_null($texto)) {{$texto}} @endif </span>
                                             </div>
                                         </div>
                                         <div class="col-2">
@@ -309,33 +294,33 @@
                             <div class="row">
                                 <div class="col-6">
                                    <div>
-                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> @lang('hc4.tipo'):</span>
+                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> Tipo:</span>
                                         <span style="font-size: 13px"> @if($texto != "") PROCEDIMIENTO @else CONSULTA @endif </span>
                                    </div>
                                 </div>
                                 <div class="col-6">
                                    <div>
-                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> @lang('hc4.hora'):</span>
+                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> Hora:</span>
                                         <span style="font-size: 13px"> {{substr($value->fechaini,-8)}} - {{substr($value->fechafin,-8)}} </span>
                                    </div>
                                 </div>
                                 <div class="col-12">
                                    <div>
-                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> @lang('hc4.observacion'):</span>
+                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> Observacion:</span>
                                         <span style="font-size: 13px"> @if(!is_null($value->observaciones)) {{$value->observaciones}} @endif </span>
                                    </div>
                                 </div>
                                 <div class="col-6">
                                    <div>
-                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> @lang('hc4.creada'):</span>
+                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> Creada:</span>
                                         <span style="font-size: 13px"> {{$value->created_at}} - {{substr($value->ucnombre,0,1)}}.{{$value->ucapellido}}</span>
                                    </div>
                                 </div>
                                 <div class="col-6">
                                    <div>
-                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> @lang('hc4.modificada'):</span>
+                                        <span style="font-family: 'Helvetica general'; font-size: 14px"> Modificada:</span>
                                         <span style="font-size: 13px"> {{$value->updated_at}} - {{substr($value->umnombre,0,1)}}.{{$value->umapellido}} </span>
-                                    </div>
+                                   </div>
                                 </div>
                             </div>
                         </div>

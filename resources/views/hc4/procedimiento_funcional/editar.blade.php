@@ -107,6 +107,8 @@
                 @endforeach
             </select>
         </div>
+		@include('hc4.partials.procedure_safety')
+
 		<div  style="text-align: center;">
             <button style="font-size: 15px; margin-bottom: 15px; height: 30px; width: 125px;"  type="button" class="btn btn-info btn_ordenes" onclick="guardar_procedimiento_func(<?php echo e($procedimiento->id); ?>)"  ><span class="fa fa-floppy-o"></span>&nbsp;&nbsp;Guardar
             </button>

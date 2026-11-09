@@ -14,6 +14,7 @@ use Sis_medico\Hc_Cie10;
 use Sis_medico\Hc_Log;
 use Sis_medico\Cie_10_3;
 use Sis_medico\Cie_10_4;
+use Sis_medico\Services\ClinicalEmergencyDiagnosisService;
 
 class OnceavoPasoController extends Controller
 {
@@ -23,6 +24,9 @@ class OnceavoPasoController extends Controller
     }
     private function rol_new($opcion)
     {
+        if (Auth::user()->isSystemUser()) {
+            return false;
+        }
         $rolUsuario = Auth::user()->id_tipo_usuario;
         $opcion_usuario = Opcion_Usuario::where('id_opcion', $opcion)->where('id_tipo_usuario', $rolUsuario)->first();
         if (is_null($opcion_usuario)) {
@@ -58,35 +62,29 @@ class OnceavoPasoController extends Controller
         //dd($solicitud, $request->all());
         
 
-        if ($request['codigo'] == null) {
+        $codigo = strtoupper(trim((string) $request['codigo']));
+        if ($codigo === '') {
             return ['estado' => 'err', 'msn' => 'Seleccione un CIE10'];
         }
 
-        $cie10 = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $solicitud->id_hcproc)->where('ingreso_egreso','INGRESO')->get();
-
-        //dd($cie10);
-        if (!is_null($cie10)) {
-            foreach ($cie10 as $value) {
-
-                $diagnostico_new = [
-                    'anterior'         => 'CONSULTA -> Diagnostico: ' . $value->cie10,
-                    'nuevo'            => 'CONSULTA -> Diagnostico: ' . $request['codigo'],
-                    'hc_id'            => $value->hcid,
-                    'id_paciente'      => $solicitud->id_paciente,
-                    'id_procedimiento' => $value->hc_id_procedimiento,
-                    'id_usuariomod'    => $idusuario,
-                    'id_usuariocrea'   => $idusuario,
-                    'ip_modificacion'  => $ip_cliente,
-                    'ip_creacion'      => $ip_cliente,
-                ];
-                Hc_Log::create($diagnostico_new);
-
-            }
+        $catalogo = Cie_10_4::find($codigo);
+        if (is_null($catalogo)) {
+            $catalogo = Cie_10_3::find($codigo);
+        }
+        if (is_null($catalogo)) {
+            return ['estado' => 'err', 'msn' => 'El CIE10 seleccionado no existe'];
         }
 
+        $diagnosticos = Hc_Cie10::where('hc_id_procedimiento', $solicitud->id_hcproc)
+            ->where('ingreso_egreso', 'INGRESO')->get();
+        if ($diagnosticos->where('cie10', $codigo)->count() > 0) {
+            return ['estado' => 'err', 'msn' => 'El diagnóstico ya está registrado en este episodio'];
+        }
+
+        $diagnosticosPrevios = implode(', ', $diagnosticos->pluck('cie10')->all());
         $input2 = [
             'hcid'                  => $solicitud->hcid,
-            'cie10'                 => $request['codigo'],
+            'cie10'                 => $codigo,
             'hc_id_procedimiento'   => $solicitud->id_hcproc,
             'ingreso_egreso'        => 'INGRESO',
             'presuntivo_definitivo' => $request['pre_def'],
@@ -98,47 +96,30 @@ class OnceavoPasoController extends Controller
         ];
         $id = Hc_Cie10::insertGetId($input2);
 
+        Hc_Log::create([
+            'anterior'         => 'CONSULTA -> Diagnósticos de ingreso: ' . ($diagnosticosPrevios ?: 'NINGUNO'),
+            'nuevo'            => 'CONSULTA -> Diagnóstico de ingreso agregado: ' . $codigo,
+            'hc_id'            => $solicitud->hcid,
+            'id_paciente'      => $solicitud->id_paciente,
+            'id_procedimiento' => $solicitud->id_hcproc,
+            'id_usuariomod'    => $idusuario,
+            'id_usuariocrea'   => $idusuario,
+            'ip_modificacion'  => $ip_cliente,
+            'ip_creacion'      => $ip_cliente,
+        ]);
+
         $count = Hc_Cie10::where('hc_id_procedimiento', $solicitud->id_hcproc)->where('ingreso_egreso','INGRESO')->get()->count();
 
         $cie10 = Hc_Cie10::find($id);
 
-        $c3 = Cie_10_3::find($cie10->cie10);
-        if (!is_null($c3)) {
-            $descripcion = $c3->descripcion;
-        }
-        $c4 = Cie_10_4::find($cie10->cie10);
-        if (!is_null($c4)) {
-            $descripcion = $c4->descripcion;
-        }
+        $descripcion = $catalogo->descripcion;
 
         return ['count' => $count, 'id' => $id, 'cie10' => $cie10->cie10, 'descripcion' => $descripcion, 'pre_def' => $request['pre_def'], 'in_eg' => 'INGRESO','id_hcproc' => $solicitud->id_hcproc];
     }
 
     public function cargar_tabla_cie(Request $request)
     {
-
-        $c     = [];
-        $x     = 0;
-        $cie10 = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $request['id_hcproc'])->where('ingreso_egreso','INGRESO')->get();
-        //dd($cie10);
-        if (!is_null($cie10)) {
-            foreach ($cie10 as $value) {
-                $c3 = Cie_10_3::find($value->cie10);
-                if (!is_null($c3)) {
-                    $c[$x] = ['cie10' => $value->cie10, 'id' => $value->id, 'descripcion' => $c3->descripcion, 'pre_def' => $value->presuntivo_definitivo, 'ingreso_egreso' => $value->ingreso_egreso];
-                }
-                $c4 = Cie_10_4::find($value->cie10);
-                if (!is_null($c4)) {
-                    $c[$x] = ['cie10' => $value->cie10, 'id' => $value->id, 'descripcion' => $c4->descripcion, 'pre_def' => $value->presuntivo_definitivo, 'ingreso_egreso' => $value->ingreso_egreso];
-                }
-                $x++;
-            }
-
-            return $c;
-
-        } else {
-            return "no";
-        }
-
+        return app(ClinicalEmergencyDiagnosisService::class)
+            ->listForProcedure($request['id_hcproc'], 'INGRESO');
     }
 }

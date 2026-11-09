@@ -2,7 +2,7 @@
 
 <head>
   <title>Evolución</title>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta charset="utf-8">
 <meta name=Generator content="Microsoft Word 15 (filtered)">
 <style>
 <!--
@@ -45,13 +45,8 @@ div.WordSection1
 
 <body lang=ES-EC link="#0563C1" vlink="#954F72">
 @php
-  if($procedimiento->id_empresa!=null){
-    $empresa = $procedimiento->empresa;
-  }else{
-    $agenda = Sis_medico\Agenda::find($data->id_agenda);
-    $empresa = $agenda->empresa;
-  }
-  
+  $agenda = Sis_medico\Agenda::find($data->id_agenda);
+  $empresa = $agenda->empresa;
 @endphp
 <div class=WordSection1>
 

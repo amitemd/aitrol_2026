@@ -137,7 +137,7 @@
                                         <img  src="{{asset('hc_ima')}}/{{$imagen->nombre}}" width="90%">
                                     </a> 
                                 @elseif(($extension == 'pdf'))
-                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc4_mostrar_foto_eliminar', ['id' => $imagen->id]) }}">
+                                    <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
                                         <img  src="{{asset('imagenes/pdf.png')}}" width="70%">  
                                         <span>{{$imagen->nombre_anterior}}</span>  
                                     </a> 
@@ -145,8 +145,8 @@
                                     @php
                                         $variable = explode('/' , asset('/hc_ima/'));
                                         $d1 = $variable[3];
-                                        //$d2 = $variable[4];
-                                        
+                                        $d2 = $variable[4];
+                                        $d3 = $variable[5];
                                         $ruta = "http%3A%2F%2F186.70.157.2%2F".$d1."%2Fstorage%2Fapp%2Fhc_ima%2F".$imagen->nombre;
                                     @endphp 
                                     <a data-toggle="modal" data-target="#foto" href="{{ route('hc_video.mostrar_foto', ['id' => $imagen->id]) }}">
