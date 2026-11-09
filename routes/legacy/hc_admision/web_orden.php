@@ -53,3 +53,6 @@ Route::match(['get', 'post'], 'orden_biopsias/historial_orden/biopsia/nueva/impr
 
 // IMPRIMIR ORDEN DE BIOPSIA
 Route::get('orden_biopsia/imprimir/biopsias/{id}/{id_hcid}/{id_doct}', 'hc_admision\Orden_ProcController@imprime_orden_biopsia')->name('imprimir.orden_biopsias_recepcion');
+
+Route::get('legacy-unavailable/orden-biopsia/modal/{id_orden?}', 'RouteCompatibilityController@unavailable')->name('orden_proc.modal_biopsia');
+Route::match(['get', 'post'], 'legacy-unavailable/ordenes-biopsia', 'RouteCompatibilityController@unavailable')->name('ordenes_biopsia.orden_biopsia');

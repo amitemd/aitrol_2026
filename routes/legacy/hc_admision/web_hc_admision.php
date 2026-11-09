@@ -11,7 +11,7 @@
 |
  */
 
-//consulta máster
+// consulta máster
 
 Route::match(['get', 'post'], 'controldoc/archivo/re/oi/s/a/update', 'hc_admision\ControlDocController@update2')->name('controldoc.update2');
 Route::match(['get', 'post'], 'controldoc/search', 'hc_admision\ControlDocController@search')->name('controldoc.search');
@@ -46,7 +46,7 @@ Route::get('historia/drogasadministradas/{id_record}', 'hc_admision\HistoriaCont
 
 Route::get('admisiones/cie_10/{cie}', 'AdmisionController@busca_cie_10')->name('admision.busca_cie_10');
 
-//rutas de tecnicas anestesicas
+// rutas de tecnicas anestesicas
 Route::resource('tecnicas_anestesicas', 'hc_admision\TecnicasAnestesicasController');
 
 Route::get('convenios/admision/{seg}/{cita}/{old}', 'AdmisionController@valida_convenio')->name('admision.valida_convenio');
@@ -58,7 +58,7 @@ Route::get('historiaclinica/anestesiologia/{ag}', 'hc_admision\AnestesiologiaCon
 Route::post('anestesiologia/crea_actualiza/{hc_id}', 'hc_admision\AnestesiologiaController@crea_actualiza')->name('anestesiologia.crea_actualiza');
 Route::match(['get', 'post'], 'anestesiologia/canvas', 'hc_admision\AnestesiologiaController@saveCanvas')->name('anestesiologia.saveCanvas');
 
-//nueva ruta para agregar los csv de anestesiologia
+// nueva ruta para agregar los csv de anestesiologia
 Route::get('historiaclinica/anestesiologia/csv/{id}/{agenda}', 'hc_admision\AnestesiologiaController@mostrarcsv')->name('anestesiologia.mostrarcsv');
 Route::post('anestesiologia/crea_actualizacsv/', 'hc_admision\AnestesiologiaController@creacsv')->name('anestesiologia.creacsv');
 Route::get('historiaclinica/anestesiologia/imprime/{id}', 'hc_admision\AnestesiologiaController@imprime')->name('anestesiologia.imprime');
@@ -75,10 +75,10 @@ Route::match(['get', 'post'], 'reporte_hc_iess', 'hc_admision\HistoriaController
 Route::post('historiaclinica/procedimiento/cambio_doctor_seguro/', 'hc_admision\ProcedimientosController@actualizar_doctor_seguro')->name('hc_procedimientos.actualizar_doctor_seguro');
 
 Route::get('formato/actadeentrega/imprime/{id}', 'hc_admision\ControlDocController@imprime_actadeentrega')->name('actadeentraga.imprime');
-//registro planilla iees
+// registro planilla iees
 Route::get('historiaclinica/planilla_iess/', 'hc_admision\HistoriaController@planilla_iess')->name('historiaclinica.planilla_iess');
 
-//consentimientos
+// consentimientos
 
 Route::get('consentimiento/imprimir_consentimiento', 'hc_admision\FullcontrolController@imprimir_consentimiento')->name('consentimiento.imprimir_consentimiento');
 
@@ -130,7 +130,10 @@ Route::match(['get', 'post'], 'adelantado/search', 'v3\clinical\AdvancedIntegral
 Route::match(['get', 'post'], 'adelantado/index/reporte', 'v3\clinical\AdvancedIntegralController@legacyReport')->name('adelantado.reporte');
 Route::match(['get', 'post'], 'adelantado/log_agenda/{id}', 'AdelantadoController@log_agenda')->name('adelantado.log_agenda');
 Route::delete('nuevo_record/csv/eliminar/{id}', 'hc_admision\AnestesiologiaController@eliminar_csv')->name('anestesiologia.eliminar_csv');
-//4/4/2022
+// 4/4/2022
 Route::get('nuevo_record/csv/editar', 'hc_admision\AnestesiologiaController@editar_csv')->name('anestesiologia.editar_csv');
 
 Route::post('n_agenda/cie10/fval/cval/faut', 'AgendaController@guardar_nuevos_campos')->name('agenda.nuevos_campos');
+
+Route::match(['get', 'post'], 'listado/muestras_biopsia', 'hc_admision\MuestraBiopiasController@index_muestras')->name('muestrabiopsias.index');
+Route::match(['get', 'post'], 'muestras_biopsia/update', 'hc_admision\MuestraBiopiasController@update')->name('muestrabiopsias.update');

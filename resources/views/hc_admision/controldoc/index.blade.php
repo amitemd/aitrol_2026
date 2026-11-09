@@ -19,7 +19,7 @@
         <div class="col-sm-6"></div>
         <div class="col-sm-6"></div>
       </div>
-      <form method="POST" action="{{route('controldoc.search')}}">
+      <form method="POST" action="{{route('record.anestesiologo')}}">
         {{ csrf_field() }}
         <!--proc/consulta-->
         <div class="form-group col-md-4 {{ $errors->has('proc_consul') ? ' has-error' : '' }}">

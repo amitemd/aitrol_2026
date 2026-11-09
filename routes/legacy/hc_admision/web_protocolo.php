@@ -47,6 +47,7 @@ Route::post('protocolo_training/{training}/{protocolo}/{n}', 'hc_admision\Protoc
 // PARA HC4
 Route::get('procedimiento/selecciona/{tipo}/{paciente}', 'hc_admision\ProtocoloController@selecciona_procedimiento')->name('hc4_procedimiento.selecciona_procedimiento');
 Route::post('procedimiento/crear', 'hc_admision\ProtocoloController@crear_procedimiento')->name('hc_admision.procedimiento.crear');
+Route::post('biopsias_paciente/actualizar', 'Paciente_BiopsiaController@guardar_actualizar')->name('ciudad.guardar_actualizar');
 
 Route::get('empresa/historiaclinica/cargar/{id_proc}/{id_agenda}/{id_seguro}', 'hc_admision\ProtocoloController@cargar_empresa')->name('historia.cargar_empresa');
 

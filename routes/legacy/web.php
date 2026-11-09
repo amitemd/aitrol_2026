@@ -608,3 +608,5 @@ Route::get(
     '/dashboard/buscar-productos-ventas',
     'DashboardController@buscarProductosVentasProducto'
 )->name('dashboard.buscar_productos_ventas');
+
+Route::get('odontologia/ordenes/imagenes/crear/{id_paciente}', 'odontologia\Formulario033Controller@crearOrdenImagenesPaciente')->name('odontologia.ordenes.imagenes.crear');

@@ -10,10 +10,8 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-  
-//consulta máster
 
-
+// consulta máster
 
 Route::get('historiaclinica/receta2/{hcid}', 'hc_admision\RecetaController@receta')->name('receta.receta');
 Route::post('historiaclinica/receta3/', 'hc_admision\RecetaController@guardarpaciente')->name('receta.paciente');
@@ -22,27 +20,26 @@ Route::post('historiaclinica/receta4/', 'hc_admision\RecetaController@guardar2')
 Route::post('historiaclinica/buscar_nombre/', 'hc_admision\RecetaController@buscar_nombre')->name('receta.buscar_nombre');
 Route::post('historiaclinica/buscar_nombre2/', 'hc_admision\RecetaController@buscar_nombre2')->name('receta.buscar_nombre2');
 
-//ingreso de receta
+// ingreso de receta
 Route::get('historiaclinica/receta/{ag}', 'hc_admision\RecetaController@mostrar')->name('receta.mostrar');
 Route::post('receta/crea_actualiza/', 'hc_admision\RecetaController@crear_actualizar')->name('receta.update_crea');
 Route::get('historiaclinica/receta/imprime/{id}/{tipo}', 'hc_admision\RecetaController@imprime')->name('hc_receta.imprime');
 
-Route::match(['get', 'post'],'medicina/{ag}/search', 'hc_admision\MedicinaController@search')->name('medicina.search');
-//Route::resource('medicina', 'hc_admision\MedicinaController');
-Route::get('medicina/{ag}','hc_admision\MedicinaController@index')->name('medicina.index');
-Route::get('medicina/{ag}/create','hc_admision\MedicinaController@create')->name('medicina.create');
-Route::get('medicina/{ag}/{id}/edit','hc_admision\MedicinaController@edit')->name('medicina.edit');
-Route::post('medicina/store','hc_admision\MedicinaController@store')->name('medicina.store');
-Route::match(['put', 'patch'],'medicina/{id}/update', 'hc_admision\MedicinaController@update')->name('medicina.update');
+Route::match(['get', 'post'], 'medicina/{ag}/search', 'hc_admision\MedicinaController@search')->name('medicina.search');
+// Route::resource('medicina', 'hc_admision\MedicinaController');
+Route::get('medicina/{ag}', 'hc_admision\MedicinaController@index')->name('medicina.index');
+Route::get('medicina/{ag}/create', 'hc_admision\MedicinaController@create')->name('medicina.create');
+Route::get('medicina/{ag}/{id}/edit', 'hc_admision\MedicinaController@edit')->name('medicina.edit');
+Route::post('medicina/store', 'hc_admision\MedicinaController@store')->name('medicina.store');
+Route::match(['put', 'patch'], 'medicina/{id}/update', 'hc_admision\MedicinaController@update')->name('medicina.update');
 
-Route::match(['get', 'post'],'generico/{ag}/search', 'hc_admision\GenericoController@search')->name('generico.search');
-//Route::resource('generico', 'hc_admision\GenericoController');
-Route::get('generico/{ag}','hc_admision\GenericoController@index')->name('generico.index');
-Route::get('generico/{ag}/create','hc_admision\GenericoController@create')->name('generico.create');
-Route::get('generico/{ag}/{id}/edit','hc_admision\GenericoController@edit')->name('generico.edit');
-Route::post('generico/store','hc_admision\GenericoController@store')->name('generico.store');
-Route::match(['put', 'patch'],'generico/{id}/update', 'hc_admision\GenericoController@update')->name('generico.update');
-
+Route::match(['get', 'post'], 'generico/{ag}/search', 'hc_admision\GenericoController@search')->name('generico.search');
+// Route::resource('generico', 'hc_admision\GenericoController');
+Route::get('generico/{ag}', 'hc_admision\GenericoController@index')->name('generico.index');
+Route::get('generico/{ag}/create', 'hc_admision\GenericoController@create')->name('generico.create');
+Route::get('generico/{ag}/{id}/edit', 'hc_admision\GenericoController@edit')->name('generico.edit');
+Route::post('generico/store', 'hc_admision\GenericoController@store')->name('generico.store');
+Route::match(['put', 'patch'], 'generico/{id}/update', 'hc_admision\GenericoController@update')->name('generico.update');
 
 Route::get('generico/admision/find', 'hc_admision\GenericoController@find')->name('generico.find');
 Route::post('receta_detalle/crear_detalle/{receta}/{medicina}/{pac}', 'hc_admision\RecetaController@crear_detalle')->name('receta.crear_detalle');
@@ -51,32 +48,32 @@ Route::post('receta_detalle/editar_detalle/{receta}/{id}', 'hc_admision\RecetaCo
 Route::delete('receta_detalle/eliminar_detalle/{receta}/{id}', 'hc_admision\RecetaController@eliminar_detalle')->name('receta.eliminar_detalle');
 Route::post('receta_modificada/modificar_detalle/', 'hc_admision\RecetaController@update_receta_2')->name('receta.update_receta_2');
 
-Route::get('medicina2/{ag}/{ruta}/create','hc_admision\MedicinaController@create2')->name('medicina2.create2');
-Route::post('medicina2/store','hc_admision\MedicinaController@store2')->name('medicina2.store2');
+Route::get('medicina2/{ag}/{ruta}/create', 'hc_admision\MedicinaController@create2')->name('medicina2.create2');
+Route::post('medicina2/store', 'hc_admision\MedicinaController@store2')->name('medicina2.store2');
 
-Route::post('generico2/store','hc_admision\GenericoController@store2')->name('generico2.store2');
+Route::post('generico2/store', 'hc_admision\GenericoController@store2')->name('generico2.store2');
 
-Route::get('reporte/medicinas','hc_admision\MedicinaController@reporte')->name('medicina.reporte');
+Route::get('reporte/medicinas', 'hc_admision\MedicinaController@reporte')->name('medicina.reporte');
 
-//Nuevas Rutas Receta
+// Nuevas Rutas Receta
 
-//Ruta para Historial de Recetas
+// Ruta para Historial de Recetas
 Route::get('paciente/historial/recetas/{id_paciente}', 'v3\clinical\ClinicalRegistryController@patientPrescriptions')->name('paciente.historial_recetas');
 
-//Ruta para actualizar recetas
+// Ruta para actualizar recetas
 Route::get('historiaclinica/actualiza/recetas', 'hc_admision\RecetaController@editar_receta')->name('historial.actualiza_receta');
 Route::get('historiaclinica/actualiza/recetas/{id}/{idpaciente}', 'hc_admision\RecetaController@editar_receta');
 
-//Ruta para volver a la vista historial recetas
+// Ruta para volver a la vista historial recetas
 Route::post('historiaclinica/retorna/vista/receta', 'hc_admision\RecetaController@retorna_vista_historial_recetas')->name('historiaclin_paciente.receta_act');
 
-//Ruta para crea una nueva receta al paciente
+// Ruta para crea una nueva receta al paciente
 Route::post('paciente/nueva/receta/{id_paciente}', 'hc_admision\RecetaController@agregar_nueva_receta')->name('historiaclinica_paciente_nueva.receta');
 
-//para actualizar los campos rp y prescripcion
+// para actualizar los campos rp y prescripcion
 Route::post('historiaclinicahc4/modificar_detalle/recetas', 'hc_admision\RecetaController@updatehc4_receta_2')->name('update_receta_2.recetahc4');
 
-//Para actualizar fecha_doctor
+// Para actualizar fecha_doctor
 Route::post('actualiza/fecha/doctor', 'hc_admision\RecetaController@update_fech_doct')->name('update_fecha.iddoctor');
 
 // Nota de entrega migrada desde la versión clínica original.
@@ -106,4 +103,7 @@ Route::match(['get', 'post'], 'nota_entrega/agregar_stock_medicina', 'nota_entre
 Route::get('nota_entrega/medicinas/devolver_nota/{id}', 'nota_entrega\Nota_EntregaController@devolver_nota_entrega')->name('nota_entrega.devolver_nota_entrega');
 Route::match(['get', 'post'], 'nota_entrega/nuevo/cargar_medicina/{id}/{tipo}', 'nota_entrega\Nota_EntregaController@cargar_medicina_nota_entrega')->name('nota_entrega.cargar_medicina_nota_entrega');
 
-
+Route::post('hc-admision/generico/store', 'hc_admision\GenericoController@store')->name('generico.store');
+Route::match(['get', 'post'], 'nota_entrega/aprobacion/planilla/index', 'nota_entrega\Nota_EntregaController@planilla_index')->name('nota_entrega.planilla_index');
+Route::get('nota_entrega/medicinas/comparative/edit/{id}', 'nota_entrega\Nota_EntregaController@edit_comparar')->name('nota_entrega.edit_comparar');
+Route::post('nota_entrega/medicinas/storeAprobado', 'nota_entrega\Nota_EntregaController@storeAprobado')->name('nota_entrega.storeAprobado');
