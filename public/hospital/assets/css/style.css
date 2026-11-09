@@ -1,0 +1,66 @@
+*{
+    margin:0px;
+    padding:0px;
+    font-size: 1em;
+}
+body{
+    background:#EEEEEE;
+}
+h2{
+    padding-top:20px;
+    padding-bottom:20px;
+}
+.wrapper-creditcard{
+    background:#FFFFFF;
+    margin-top: 30px;
+    padding-top: 20px;
+    padding-bottom: 50px;
+}
+.has-cc span img{
+    width:2.775rem;
+}
+.has-cc .form-control-cc {
+    z-index: 2;
+    display: block;
+    width: 2.375rem;
+    height: 2.375rem;
+    line-height: 1.8rem;
+    text-align: center;
+    pointer-events: none;
+    color: #444;
+    font-size: 1.5em;
+    float: right;
+    margin-top: -38px;
+    margin-right: 10px;
+}
+.cvc_help{
+    cursor: pointer;
+}
+.modal-content {
+    background-color: #000;
+    color: #BBBBBB;
+    font-size: 0.8em;
+}
+.modal-header .close {
+    padding: 1rem;
+    margin: -1rem -1rem -1rem auto;
+    color: #FFF;
+    font-size: 1em;
+}
+.modal-header{
+    border-bottom:none;
+    color: #FFF;
+    font-size: 3em;
+    padding-top: 5px;
+    padding-bottom: 0px;
+}
+.modal-backdrop.show{
+    background-color: '#000'; 
+    opacity: 0.9;
+}
+#messageSuccess{
+    display: none;
+}
+#messageError{
+    display: none;
+}
