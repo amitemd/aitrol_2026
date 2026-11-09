@@ -15,7 +15,7 @@ class V3ClinicalAgendaService
 
     public function directory($companyId, array $filters = array())
     {
-        $specialties = $this->specialties($companyId);
+        $specialties = $this->specialties();
         $doctors = $this->doctors($companyId, $filters);
         $doctorIds = $doctors->pluck('id')->all();
         $doctorSpecialties = collect();
@@ -90,13 +90,12 @@ class V3ClinicalAgendaService
             ->distinct()->orderBy('u.apellido1')->orderBy('u.nombre1')->get();
     }
 
-    private function specialties($companyId)
+    private function specialties()
     {
-        // El catálogo de la agenda pertenece a la empresa, no al directorio
-        // de médicos. Una especialidad recién creada debe poder seleccionarse
-        // de inmediato, aunque todavía no tenga profesionales asociados.
+        // `especialidad` es un catálogo global en el esquema heredado. La
+        // empresa se aplica al directorio de médicos mediante usuario_empresa.
         return \Sis_medico\Especialidad::query()->from('especialidad as e')
-            ->where('e.id_empresa', (string) $companyId)->where('e.estado', 1)
+            ->where('e.estado', 1)
             ->select('e.id', 'e.nombre')->orderBy('e.nombre')->get();
     }
 
