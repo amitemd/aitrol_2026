@@ -2,15 +2,16 @@
 
 namespace Sis_medico;
 
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Sis_medico\Notifications\MyResetPassword;
 use Sis_medico\Services\PersonIdentityService;
-use Sis_medico\Services\PersonRoleTenantService;
-use Illuminate\Support\Facades\DB;
-use Sis_medico\Support\RequestSchema as Schema;
 use Sis_medico\Support\RequestQueryCache;
-use Illuminate\Support\Str;
+use Sis_medico\Support\RequestSchema as Schema;
+use Sis_medico\v3\contable\Menu;
+use Sis_medico\v3\contable\PermisosUsuario;
 
 class User extends Authenticatable
 {
@@ -26,12 +27,12 @@ class User extends Authenticatable
      * Identifier used by the existing user catalog for the Doctor profile.
      */
     const DOCTOR_ROLE_ID = 3;
-    
+
     /**
-    * The attributes that aren't mass assignable.
-    *
-    * @var array
-    */
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
     protected $guarded = ['remember_token'];
 
     /**
@@ -53,10 +54,14 @@ class User extends Authenticatable
     {
         parent::boot();
         static::saving(function ($user) {
-            if (!$user->isDirty('password') || empty($user->password)) return;
+            if (! $user->isDirty('password') || empty($user->password)) {
+                return;
+            }
 
             try {
-                if (!Schema::hasColumn($user->getTable(), 'password_changed_at')) return;
+                if (! Schema::hasColumn($user->getTable(), 'password_changed_at')) {
+                    return;
+                }
             } catch (\Exception $exception) {
                 return;
             }
@@ -64,9 +69,6 @@ class User extends Authenticatable
             $user->password_changed_at = date('Y-m-d H:i:s');
             // También invalida cookies persistentes de "recordarme".
             $user->setRememberToken(Str::random(60));
-        });
-        static::addGlobalScope('active_company', function ($query) {
-            app(PersonRoleTenantService::class)->constrainEloquent($query, 'USUARIO');
         });
         static::saved(function ($user) {
             app(PersonIdentityService::class)->sync($user, 'USUARIO', 'id');
@@ -80,22 +82,24 @@ class User extends Authenticatable
 
     public function hasTwoFactorEnabled()
     {
-        return !empty($this->two_factor_secret) && !empty($this->two_factor_confirmed_at);
+        return ! empty($this->two_factor_secret) && ! empty($this->two_factor_confirmed_at);
     }
 
     public function isTwoFactorExempt()
     {
-        return !empty($this->two_factor_exempted_at);
+        return ! empty($this->two_factor_exempted_at);
     }
 
     public function requiresTwoFactorEnrollment()
     {
-        return !$this->hasTwoFactorEnabled() && !$this->isTwoFactorExempt();
+        return ! $this->hasTwoFactorEnabled() && ! $this->isTwoFactorExempt();
     }
 
     public function passwordHasExpired($now = null)
     {
-        if (empty($this->password_changed_at)) return true;
+        if (empty($this->password_changed_at)) {
+            return true;
+        }
 
         $maximumAgeDays = max(1, (int) config('password_policy.max_age_days', 72));
         $reference = $now instanceof \DateTimeInterface
@@ -115,7 +119,7 @@ class User extends Authenticatable
     {
         $this->notify(new MyResetPassword((string) $token));
     }
-    
+
     public function usuario()
     {
         return $this->belongsTo('Sis_medico\Ct_Nomina', 'id_user');
@@ -133,7 +137,7 @@ class User extends Authenticatable
      */
     public function isDoctor()
     {
-        return $this->hasUserTypeName(array('DOCTORES', 'DOCTOR'));
+        return $this->hasUserTypeName(['DOCTORES', 'DOCTOR']);
     }
 
     /**
@@ -143,7 +147,7 @@ class User extends Authenticatable
      */
     public function isSystemUser()
     {
-        return $this->hasUserTypeName(array('SISTEMAS', 'SISTEMA'));
+        return $this->hasUserTypeName(['SISTEMAS', 'SISTEMA']);
     }
 
     /**
@@ -152,7 +156,7 @@ class User extends Authenticatable
      */
     public function isNursingUser()
     {
-        return $this->hasUserTypeName(array('ENFERMERIA', 'ENFERMERÍA'));
+        return $this->hasUserTypeName(['ENFERMERIA', 'ENFERMERÍA']);
     }
 
     public function tipoUsuario()
@@ -167,11 +171,11 @@ class User extends Authenticatable
     public static function roleIdForName($names)
     {
         try {
-            if (!Schema::hasTable('tipousuario')) {
+            if (! Schema::hasTable('tipousuario')) {
                 return null;
             }
 
-            $names = is_array($names) ? $names : array($names);
+            $names = is_array($names) ? $names : [$names];
             $names = array_values(array_filter(array_map(function ($name) {
                 return strtoupper(trim((string) $name));
             }, $names)));
@@ -182,7 +186,7 @@ class User extends Authenticatable
             $ids = DB::table('tipousuario')->where(function ($query) use ($names) {
                 foreach ($names as $index => $name) {
                     $method = $index === 0 ? 'whereRaw' : 'orWhereRaw';
-                    $query->{$method}('UPPER(TRIM(nombre)) = ?', array($name));
+                    $query->{$method}('UPPER(TRIM(nombre)) = ?', [$name]);
                 }
             })->pluck('id')->map(function ($id) {
                 return (int) $id;
@@ -210,11 +214,11 @@ class User extends Authenticatable
     public function hasUserTypeName($names)
     {
         try {
-            if (!Schema::hasTable('tipousuario')) {
+            if (! Schema::hasTable('tipousuario')) {
                 return false;
             }
 
-            $names = is_array($names) ? $names : array($names);
+            $names = is_array($names) ? $names : [$names];
             $names = array_values(array_filter(array_map(function ($name) {
                 return strtoupper(trim((string) $name));
             }, $names)));
@@ -224,13 +228,14 @@ class User extends Authenticatable
 
             $names = array_values(array_unique($names));
             sort($names);
+
             return RequestQueryCache::remember(__METHOD__.json_encode([$this->id_tipo_usuario, $names]), function () use ($names) {
                 return DB::table('tipousuario')
                     ->where('id', $this->id_tipo_usuario)
                     ->where(function ($query) use ($names) {
                         foreach ($names as $index => $name) {
                             $method = $index === 0 ? 'whereRaw' : 'orWhereRaw';
-                            $query->{$method}('UPPER(TRIM(nombre)) = ?', array($name));
+                            $query->{$method}('UPPER(TRIM(nombre)) = ?', [$name]);
                         }
                     })
                     ->exists();
@@ -271,18 +276,18 @@ class User extends Authenticatable
         if ($this->isSystemUser()) {
             return true;
         }
-        if (!$this->isDoctor()) {
+        if (! $this->isDoctor()) {
             return false;
         }
 
-        $permission = \Sis_medico\v3\contable\PermisosUsuario::getEffectivePermisos($this);
-        $ids = $permission ? json_decode($permission->id_submenu_permiso, true) : array();
-        $ids = is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : array();
+        $permission = PermisosUsuario::getEffectivePermisos($this);
+        $ids = $permission ? json_decode($permission->id_submenu_permiso, true) : [];
+        $ids = is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : [];
         if (empty($ids)) {
             return false;
         }
 
-        return \Sis_medico\v3\contable\Menu::whereIn('id_menu', $ids)
+        return Menu::whereIn('id_menu', $ids)
             ->where('estado_menu', 1)
             ->whereNotNull('funcion_menu')
             ->exists();
@@ -294,10 +299,12 @@ class User extends Authenticatable
      */
     public function canSwitchToHospitalWorkspace()
     {
-        if ($this->isSystemUser()) return true;
+        if ($this->isSystemUser()) {
+            return true;
+        }
 
         try {
-            return \Sis_medico\Opcion_Usuario::where('id_opcion', 1)
+            return Opcion_Usuario::where('id_opcion', 1)
                 ->where('id_tipo_usuario', $this->id_tipo_usuario)
                 ->exists();
         } catch (\Exception $exception) {
@@ -308,12 +315,11 @@ class User extends Authenticatable
     public function canSwitchToAmbulatoryWorkspace()
     {
         try {
-            return \Sis_medico\Opcion_Usuario::where('id_opcion', 2)
+            return Opcion_Usuario::where('id_opcion', 2)
                 ->where('id_tipo_usuario', $this->id_tipo_usuario)
                 ->exists();
         } catch (\Exception $exception) {
             return false;
         }
     }
-
 }
