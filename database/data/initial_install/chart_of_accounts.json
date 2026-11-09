@@ -1,0 +1,1638 @@
+[
+  {
+    "code": "1",
+    "name": "ACTIVO"
+  },
+  {
+    "code": "1.01",
+    "name": "ACTIVO CORRIENTE"
+  },
+  {
+    "code": "1.01.01",
+    "name": "EFECTIVO Y EQUIVALENTES AL EFECTIVO"
+  },
+  {
+    "code": "1.01.01.01",
+    "name": "FONDOS DE CAJA"
+  },
+  {
+    "code": "1.01.01.01.01",
+    "name": "CAJA GENERAL PISO 3"
+  },
+  {
+    "code": "1.01.01.01.02",
+    "name": "CAJA CHICA PLANTA BAJA"
+  },
+  {
+    "code": "1.01.01.02",
+    "name": "BANCOS"
+  },
+  {
+    "code": "1.01.01.02.01",
+    "name": "BANCO AUSTRO"
+  },
+  {
+    "code": "1.01.01.02.02",
+    "name": "BANCO PICHINCHA"
+  },
+  {
+    "code": "1.01.01.02.03",
+    "name": "BANCO GUAYAQUIL"
+  },
+  {
+    "code": "1.01.01.03",
+    "name": "INVERSIONES FINANCIERAS"
+  },
+  {
+    "code": "1.01.02",
+    "name": "ACTIVOS FINANCIEROS"
+  },
+  {
+    "code": "1.01.02.01",
+    "name": "ACTIVOS FINANCIEROS A VALOR RAZONABLE CON CAMBIO E"
+  },
+  {
+    "code": "1.01.02.02",
+    "name": "ACTIVOS FINANCIEROS DISPONIBLES PARA LA VENTA"
+  },
+  {
+    "code": "1.01.02.03",
+    "name": "ACTIVOS FINANCIEROS MANTENIDOS HASTA EL VENCIMIENT"
+  },
+  {
+    "code": "1.01.02.04",
+    "name": "(-) PROVISION POR DETERIORO"
+  },
+  {
+    "code": "1.01.02.05",
+    "name": "DOCUMENTOS Y CUENTAS POR COBRAR CLIENTES NO RELACI"
+  },
+  {
+    "code": "1.01.02.05.01",
+    "name": "CUENTAS POR COBRAR CLIENTES"
+  },
+  {
+    "code": "1.01.02.05.02",
+    "name": "CHEQUES POR COBRAR"
+  },
+  {
+    "code": "1.01.02.05.03",
+    "name": "CUENTAS POR COBRAR VARIOS"
+  },
+  {
+    "code": "1.01.02.05.04",
+    "name": "VALORES EN GARANTIA"
+  },
+  {
+    "code": "1.01.02.06",
+    "name": "DOCUMENTOS Y CUENTAS POR COBRAR CLIENTES RELACIONA"
+  },
+  {
+    "code": "1.01.02.07",
+    "name": "OTRAS CUENTAS POR COBRAR RELACIONADAS"
+  },
+  {
+    "code": "1.01.02.08",
+    "name": "OTRAS CUENTAS POR COBRAR"
+  },
+  {
+    "code": "1.01.02.08.01",
+    "name": "ANTICIPO EMPLEADOS"
+  },
+  {
+    "code": "1.01.02.08.02",
+    "name": "CUENTAS POR COBRAR EMPLEADOS"
+  },
+  {
+    "code": "1.01.02.08.03",
+    "name": "ANTICIPOS A MAESTROS"
+  },
+  {
+    "code": "1.01.02.08.04",
+    "name": "RELACIONADAS"
+  },
+  {
+    "code": "1.01.02.08.05",
+    "name": "ANTICIPO A REEMBOLSOS CAJA CHICA OBRAS"
+  },
+  {
+    "code": "1.01.02.09",
+    "name": "(-) PROVISION CUENTAS INCOBRABLES"
+  },
+  {
+    "code": "1.01.02.09.01",
+    "name": "(-) PROVISION CUENTAS INCOBRABLES"
+  },
+  {
+    "code": "1.01.03",
+    "name": "INVENTARIOS"
+  },
+  {
+    "code": "1.01.03.01",
+    "name": "INVENTARIOS DE MERCADERIA"
+  },
+  {
+    "code": "1.01.03.01.01",
+    "name": "INVENTARIO SUMINISTRO MEDICOS"
+  },
+  {
+    "code": "1.01.03.01.02",
+    "name": "INVENTARIO MEDICINAS"
+  },
+  {
+    "code": "1.01.03.01.03",
+    "name": "INVENTARIO OBRA CIVIL"
+  },
+  {
+    "code": "1.01.03.01.04",
+    "name": "INVENTARIO SISTEMA CONTRAINCEDIO"
+  },
+  {
+    "code": "1.01.03.02",
+    "name": "INVENTARIOS DE PRODUCTOS EN PROCESO"
+  },
+  {
+    "code": "1.01.03.03",
+    "name": "INVENTARIOS DE MATERIALES A SER CONSUMIDOS EN PROD"
+  },
+  {
+    "code": "1.01.03.04",
+    "name": "INVENTARIOS DE MATERIALES A SER CONSUMIDOS EN SERV"
+  },
+  {
+    "code": "1.01.03.05",
+    "name": "INVENTARIOS EN ALMACEN PRODUCIDOS POR LA COMPAÑÍA"
+  },
+  {
+    "code": "1.01.03.05.01",
+    "name": "PRODUCTOS TERMINADOS"
+  },
+  {
+    "code": "1.01.03.06",
+    "name": "INVENTARIOS EN ALMACEN COMPRADOS A TERCEROS"
+  },
+  {
+    "code": "1.01.03.07",
+    "name": "MERCADERIAS EN TRANSITO"
+  },
+  {
+    "code": "1.01.03.07.01",
+    "name": "INVENTARIO EN TRANSITO"
+  },
+  {
+    "code": "1.01.03.07.02",
+    "name": "IMPORTACIONES  EN TRANSITO"
+  },
+  {
+    "code": "1.01.03.08",
+    "name": "OBRAS EN CONSTRUCCION"
+  },
+  {
+    "code": "1.01.03.09",
+    "name": "INVENTARIOS DE REPUESTOS, HERRAMIENTAS Y ACCESORIO"
+  },
+  {
+    "code": "1.01.03.10",
+    "name": "OTROS INVENTARIOS"
+  },
+  {
+    "code": "1.01.03.11",
+    "name": "(-) PROVISION DE INVENTARIOS POR VALOR NETO DE REA"
+  },
+  {
+    "code": "1.01.03.12",
+    "name": "(-) PROVISION DE INVENTARIOS POR DETERIORO"
+  },
+  {
+    "code": "1.01.04",
+    "name": "SERVICIOS Y OTROS PAGOS ANTICIPADOS"
+  },
+  {
+    "code": "1.01.04.01",
+    "name": "SEGUROS PAGADOS POR ANTICIPADO"
+  },
+  {
+    "code": "1.01.04.02",
+    "name": "ARRIENDOS PAGADOS POR ANTICIPADO"
+  },
+  {
+    "code": "1.01.04.03",
+    "name": "ANTICIPOS A PROVEEDORES"
+  },
+  {
+    "code": "1.01.04.03.01",
+    "name": "ANTICIPOS A PROVEEDORES LOCALES"
+  },
+  {
+    "code": "1.01.04.03.02",
+    "name": "ANTICIPO SERVICIOS PRESTADOS"
+  },
+  {
+    "code": "1.01.04.03.03",
+    "name": "ANTICIPOS A PROVEEDORES DEL EXTERIOR"
+  },
+  {
+    "code": "1.01.05",
+    "name": "ACTIVOS POR IMPUESTOS CORRIENTES"
+  },
+  {
+    "code": "1.01.05.01",
+    "name": "CREDITO TRIBUTARIO A FAVOR DE LA EMPRESA (IMPUESTO"
+  },
+  {
+    "code": "1.01.05.01.01",
+    "name": "CREDITO TRIBUTARIO IVA"
+  },
+  {
+    "code": "1.01.05.01.02",
+    "name": "IVA PAGADO 15% EN COMPRAS"
+  },
+  {
+    "code": "1.01.05.01.03",
+    "name": "IVA PAGADO 15% - ACTIVOS FIJOS"
+  },
+  {
+    "code": "1.01.05.01.04",
+    "name": "IVA PAGADO - IMPORTACIONES"
+  },
+  {
+    "code": "1.01.05.01.05",
+    "name": "RETENCION I.V.A 30% CLIENTES"
+  },
+  {
+    "code": "1.01.05.01.06",
+    "name": "RETENCION I.V.A 70% CLIENTES"
+  },
+  {
+    "code": "1.01.05.01.07",
+    "name": "RETENCION I.V.A 100% CLIENTES"
+  },
+  {
+    "code": "1.01.05.01.08",
+    "name": "IVA PAGADO 5% EN COMPRAS"
+  },
+  {
+    "code": "1.01.05.02",
+    "name": "CREDITO TRIBUTARIO A FAVOR DE LA EMPRESA (IMPUESTO A LA RENTA"
+  },
+  {
+    "code": "1.01.05.02.01",
+    "name": "CREDITO TRIBUTARIO AÑOS ANTERIORES"
+  },
+  {
+    "code": "1.01.05.02.02",
+    "name": "ANTICIPO DE IMPUESTO A LA RENTA"
+  },
+  {
+    "code": "1.01.05.02.03",
+    "name": "RETENCION EN LA FUENTE 1.75% CLIENTES"
+  },
+  {
+    "code": "1.01.05.02.04",
+    "name": "RETENCION EN LA FUENTE 2.75% CLIENTES"
+  },
+  {
+    "code": "1.01.05.02.05",
+    "name": "RETENCION EN LA FUENTE 3% CLIENTES"
+  },
+  {
+    "code": "1.01.05.03",
+    "name": "ANTICIPO DE IMPUESTO A LA RENTA"
+  },
+  {
+    "code": "1.01.05.03.01",
+    "name": "ANTICIPO DE IMPUESTO A LA RENTA"
+  },
+  {
+    "code": "1.01.06",
+    "name": "ACTIVOS NO CORRIENTES MANTENIDOS PARA LA VENTA Y O"
+  },
+  {
+    "code": "1.01.06.01",
+    "name": "ANTIVOS NO CORRIENTES MANTENIDOS PARA LA VENTA"
+  },
+  {
+    "code": "1.01.06.03",
+    "name": "OTROS ACTIVOS NO CORRIENTES DISPONIBLES PARA LA VENTA"
+  },
+  {
+    "code": "1.01.06.03.01",
+    "name": "DISPONIBLES PARA LA VENTA"
+  },
+  {
+    "code": "1.01.07",
+    "name": "OTROS ACTIVOS CORRIENTES"
+  },
+  {
+    "code": "1.02",
+    "name": "ACTIVO NO CORRIENTE"
+  },
+  {
+    "code": "1.02.01",
+    "name": "PROPIEDAD, PLANTA Y EQUIPO"
+  },
+  {
+    "code": "1.02.01.01",
+    "name": "ACTIVO NO DEPRECIABLE"
+  },
+  {
+    "code": "1.02.01.01.01",
+    "name": "TERRENOS"
+  },
+  {
+    "code": "1.02.01.02",
+    "name": "ACTIVO DEPRECIABLE"
+  },
+  {
+    "code": "1.02.01.02.01",
+    "name": "EDIFICIOS"
+  },
+  {
+    "code": "1.02.01.02.02",
+    "name": "PROYECTOS EN CURSO"
+  },
+  {
+    "code": "1.02.01.02.03",
+    "name": "INSTALACIONES"
+  },
+  {
+    "code": "1.02.01.02.04",
+    "name": "MUEBLES Y ENSERES"
+  },
+  {
+    "code": "1.02.01.02.05",
+    "name": "MAQUINARIA Y EQUIPOS"
+  },
+  {
+    "code": "1.02.01.02.06",
+    "name": "EQUIPO DE COMPUTACION Y SOFTWARE"
+  },
+  {
+    "code": "1.02.01.02.07",
+    "name": "VEHICULOS, EQUIPOS DE TRANSPORTE Y EQUIPO CAMINERO"
+  },
+  {
+    "code": "1.02.01.03",
+    "name": "(-) DEPRECIACION ACUMULADA PROPIEDAD, PLANTA Y EQU"
+  },
+  {
+    "code": "1.02.01.03.01",
+    "name": "(-) DEP. ACUM. EDIFICIOS"
+  },
+  {
+    "code": "1.02.01.03.02",
+    "name": "(-) DEP. ACUM. COSNTRUCCIONES EN CURSO"
+  },
+  {
+    "code": "1.02.01.03.03",
+    "name": "(-) DEP. ACUM. INSTALACIONES"
+  },
+  {
+    "code": "1.02.01.03.04",
+    "name": "(-) DEP. ACUM. MUEBLES Y ENSERES"
+  },
+  {
+    "code": "1.02.01.03.05",
+    "name": "(-) DEP. ACUM. MAQUINARIA Y EQUIPOS"
+  },
+  {
+    "code": "1.02.01.03.06",
+    "name": "(-) DEP. ACUM. EQUIPOS DE COMPUTACION Y SOFTWARE"
+  },
+  {
+    "code": "1.02.01.03.07",
+    "name": "(-) DEP. ACUM. VEHICULOS, EQUIPOS DE TRANSPORTE Y"
+  },
+  {
+    "code": "1.02.02",
+    "name": "PROPIEDADES DE INVERSION"
+  },
+  {
+    "code": "1.02.02.01",
+    "name": "TERRENOS"
+  },
+  {
+    "code": "1.02.02.02",
+    "name": "EDIFICIOS"
+  },
+  {
+    "code": "1.02.02.03",
+    "name": "DEPRECIACION ACUMULADA DE PROPIEDADES DE INVERSION"
+  },
+  {
+    "code": "1.02.02.04",
+    "name": "DETERIORO ACUMULADO DE PROPIEDADES DE INVERSION"
+  },
+  {
+    "code": "1.02.03",
+    "name": "ACTIVOS BIOLOGICOS"
+  },
+  {
+    "code": "1.02.04",
+    "name": "ACTIVO FIJO"
+  },
+  {
+    "code": "1.02.04.01",
+    "name": "PLUSVALIAS"
+  },
+  {
+    "code": "1.02.04.02",
+    "name": "MARCAS, PATENTES, DERECHOS DE LLAVE Y OTROS SIMILA"
+  },
+  {
+    "code": "1.02.04.04",
+    "name": "AMORTIZACION ACUMULADA DE ACTIVOS INTANGIBLES"
+  },
+  {
+    "code": "1.02.04.05",
+    "name": "DETERIORO ACUMULADO DE ACTIVOS INTANGIBLES"
+  },
+  {
+    "code": "1.02.04.06",
+    "name": "OTROS INTANGIBLES"
+  },
+  {
+    "code": "1.02.04.06.01",
+    "name": "FRANQUICIAS"
+  },
+  {
+    "code": "1.02.05",
+    "name": "ACTIVOS POR IMPUESTOS DIFERIDOS"
+  },
+  {
+    "code": "1.02.06",
+    "name": "ACTIVOS FINANCIEROS NO CORRIENTES"
+  },
+  {
+    "code": "1.02.06.01",
+    "name": "ACTIVOS FINANCIEROS NO CORRIENTES DISPONIBLES PARA LA VENTA"
+  },
+  {
+    "code": "1.02.06.01.01",
+    "name": "ACTIVOS NO CORRIENTES DISPONIBLES PARA LA VENTA"
+  },
+  {
+    "code": "1.02.07",
+    "name": "OTROS ACTIVOS NO CORRIENTES"
+  },
+  {
+    "code": "1.02.07.01",
+    "name": "INVERSIONES SUBSIDIARIAS"
+  },
+  {
+    "code": "1.02.07.02",
+    "name": "INVERSIONES ASOCIADAS"
+  },
+  {
+    "code": "1.02.07.03",
+    "name": "INVERSIONES NEGOCIOS CONJUNTOS"
+  },
+  {
+    "code": "1.02.07.04",
+    "name": "OTRAS INVERSIONES"
+  },
+  {
+    "code": "1.02.07.05",
+    "name": "(-) PROVISION VALUACION DE INVERSIONES"
+  },
+  {
+    "code": "1.02.07.06",
+    "name": "OTROS ACTIVOS NO CORRIENTES"
+  },
+  {
+    "code": "2",
+    "name": "PASIVO"
+  },
+  {
+    "code": "2.01",
+    "name": "PASIVO CORRIENTE"
+  },
+  {
+    "code": "2.01.01",
+    "name": "PASIVOS FINANCIEROS A VALOR RAZONABLE CON CAMBIOS"
+  },
+  {
+    "code": "2.01.02",
+    "name": "PASIVOS POR CONTRATOS DE ARRENDAMIENTO FINANCIERO"
+  },
+  {
+    "code": "2.01.03",
+    "name": "CUENTAS Y DOCUMENTOS POR PAGAR"
+  },
+  {
+    "code": "2.01.03.01",
+    "name": "CUENTAS Y DOCUMENTOS POR PAGAR LOCALES"
+  },
+  {
+    "code": "2.01.03.01.01",
+    "name": "CUENTAS POR PAGAR PROVEEDORES LOCALES (MODULO)"
+  },
+  {
+    "code": "2.01.03.01.02",
+    "name": "CUENTAS POR PAGAR TERCEROS"
+  },
+  {
+    "code": "2.01.03.01.03",
+    "name": "OTRAS CUENTAS POR PAGAR"
+  },
+  {
+    "code": "2.01.03.01.04",
+    "name": "TARJETA DE CREDITO POR PAGAR"
+  },
+  {
+    "code": "2.01.03.02",
+    "name": "OTRAS CUENTAS POR PAGAR"
+  },
+  {
+    "code": "2.01.04",
+    "name": "OBLIGACIONES CON INSTITUCIONES FINANCIERAS"
+  },
+  {
+    "code": "2.01.04.01",
+    "name": "OBLIGACIONES CON INSTITUCIONES FINANCIERAS LOCALES"
+  },
+  {
+    "code": "2.01.04.01.01",
+    "name": "OBLIGACIONES CON INSTITUCIONES FINANCIERAS LOCALES"
+  },
+  {
+    "code": "2.01.04.01.10",
+    "name": "SOBREGIRO BANCARIO BCO GUAYAQUIL"
+  },
+  {
+    "code": "2.01.04.02",
+    "name": "OBLIGACIONES CON INSTITUCIONES FINANCIERAS EXTERIO"
+  },
+  {
+    "code": "2.01.05",
+    "name": "PROVISIONES"
+  },
+  {
+    "code": "2.01.05.01",
+    "name": "PROVISIONES LOCALES"
+  },
+  {
+    "code": "2.01.05.01.01",
+    "name": "PROVISION NOMINAS POR PAGAR"
+  },
+  {
+    "code": "2.01.05.01.02",
+    "name": "PROVISION DECIMO TERCERO"
+  },
+  {
+    "code": "2.01.05.01.03",
+    "name": "PROVISION DECIMO CUARTO"
+  },
+  {
+    "code": "2.01.05.01.04",
+    "name": "PROVISION VACACIONES"
+  },
+  {
+    "code": "2.01.05.02",
+    "name": "PROVISIONES EXTERIOR"
+  },
+  {
+    "code": "2.01.06",
+    "name": "PORCION CORRIENTE OBLIGACIONES EMITIDAS"
+  },
+  {
+    "code": "2.01.07",
+    "name": "OTRAS OBLIGACIONES CORRIENTES"
+  },
+  {
+    "code": "2.01.07.01",
+    "name": "IVA POR PAGAR"
+  },
+  {
+    "code": "2.01.07.01.01",
+    "name": "IVA COBRADO - BIENES Y SERVICIOS"
+  },
+  {
+    "code": "2.01.07.01.02",
+    "name": "IVA COBRADO - ACTIVOS FIJOS"
+  },
+  {
+    "code": "2.01.07.01.03",
+    "name": "RETENCION IVA - 30% BIENES"
+  },
+  {
+    "code": "2.01.07.01.04",
+    "name": "RETENCION IVA - 70% SERVICIOS"
+  },
+  {
+    "code": "2.01.07.01.05",
+    "name": "RETENCION IVA - 100% PERSONAS NATURALES"
+  },
+  {
+    "code": "2.01.07.02",
+    "name": "RETENCIONES EN LA FUENTE I.R. POR PAGAR"
+  },
+  {
+    "code": "2.01.07.02.01",
+    "name": "302 EN RELACION DE DEPENDENCIA"
+  },
+  {
+    "code": "2.01.07.02.02",
+    "name": "303 10% SERVICIOS HONORARIOS PROFESIONALES"
+  },
+  {
+    "code": "2.01.07.02.03",
+    "name": "304 8% SERVICIOS PREDOMINA EL INTELECTO"
+  },
+  {
+    "code": "2.01.07.02.04",
+    "name": "307 2% SERVICIOS PREDOMINA LA MANO DE OBRA"
+  },
+  {
+    "code": "2.01.07.02.05",
+    "name": "308 2.75 % SERVICIO ENTRE SOCIEDADES"
+  },
+  {
+    "code": "2.01.07.02.06",
+    "name": "309 1% SERVICIOS PUBLICIDAD Y COMUNICACION"
+  },
+  {
+    "code": "2.01.07.02.07",
+    "name": "310 1% SERVICIO TRANSPORTE PRIVADO DE PASAJEROS O"
+  },
+  {
+    "code": "2.01.07.02.08",
+    "name": "312 1.75 % TRANSFERENCIA DE BIENES MUEBLES DE NATURALE"
+  },
+  {
+    "code": "2.01.07.02.09",
+    "name": "319 1% ARRENDAMIENTO MERCANTIL"
+  },
+  {
+    "code": "2.01.07.02.10",
+    "name": "320 8% ARRENDAMIENTOS  BIENES INMUEBLES"
+  },
+  {
+    "code": "2.01.07.02.11",
+    "name": "322 1.75% SEGUROS Y REASEGUROS (PRIMAS Y CESIONES)"
+  },
+  {
+    "code": "2.01.07.02.12",
+    "name": "3440  2.75%  OTRAS RETENCIONES APLICABLES"
+  },
+  {
+    "code": "2.01.07.02.13",
+    "name": "332 PAGO DE BIENES O SERVICIOS NO SUJETOS A RETENC"
+  },
+  {
+    "code": "2.01.07.02.14",
+    "name": "340 OTRAS RETENCIONES APLICABLES 1%"
+  },
+  {
+    "code": "2.01.07.02.15",
+    "name": "341 OTRAS RETENCIONES APLICABLES 2%"
+  },
+  {
+    "code": "2.01.07.02.16",
+    "name": "342 OTRAS RETENCIONES APLICABLES 8%"
+  },
+  {
+    "code": "2.01.07.02.17",
+    "name": "344 OTRAS RETENCIONES APLICABLES A OTROS PORCENTAJ"
+  },
+  {
+    "code": "2.01.07.02.18",
+    "name": "324 DIVIDENDOS"
+  },
+  {
+    "code": "2.01.07.03",
+    "name": "IMPUESTO A LA RENTA POR PAGAR DEL EJERCICIO"
+  },
+  {
+    "code": "2.01.07.03.01",
+    "name": "IMPUESTO A LA RENTA ANUAL"
+  },
+  {
+    "code": "2.01.07.03.02",
+    "name": "IMPUESTOS FISCALES POR PAGAR"
+  },
+  {
+    "code": "2.01.07.04",
+    "name": "OBLIGACIONES CORRIENTES CON EL IESS"
+  },
+  {
+    "code": "2.01.07.04.01",
+    "name": "APORTE PERSONAL 9.45% I.E.S.S."
+  },
+  {
+    "code": "2.01.07.04.02",
+    "name": "APORTE PATRONAL 12.15% I.E.S.S."
+  },
+  {
+    "code": "2.01.07.04.03",
+    "name": "PRESTAMOS QUIROGRAFARIOS IESS"
+  },
+  {
+    "code": "2.01.07.04.04",
+    "name": "PRESTAMOS HIPOTECARIOS IESS"
+  },
+  {
+    "code": "2.01.07.04.05",
+    "name": "FONDOS DE RESERVA POR PAGAR"
+  },
+  {
+    "code": "2.01.07.05",
+    "name": "OBLIGACIONES CORRIENTES POR BENEFICIOS DE LEY"
+  },
+  {
+    "code": "2.01.07.05.01",
+    "name": "REMUNERACIONES POR PAGAR"
+  },
+  {
+    "code": "2.01.07.05.02",
+    "name": "DECIMO TERCER SUELDO X PAGAR"
+  },
+  {
+    "code": "2.01.07.05.03",
+    "name": "DECIMO CUARTO SUELDO X PAGAR"
+  },
+  {
+    "code": "2.01.07.05.04",
+    "name": "VACACIONES POR PAGAR"
+  },
+  {
+    "code": "2.01.07.06",
+    "name": "PARTICIPACION TRABAJADORES  DEL EJERCICIO"
+  },
+  {
+    "code": "2.01.07.06.01",
+    "name": "15% PARTICIPACION UTILIDADES TRABAJADORES"
+  },
+  {
+    "code": "2.01.07.07",
+    "name": "DIVIDENDOS POR PAGAR ACCIONISTAS"
+  },
+  {
+    "code": "2.01.07.07.01",
+    "name": "DIVIDENDOS POR PAGAR ACCIONISTAS"
+  },
+  {
+    "code": "2.01.08",
+    "name": "CUENTAS POR PAGAR DIVERSAS - RELACIONADAS"
+  },
+  {
+    "code": "2.01.08.01",
+    "name": "OBLIGACIONES NO COMERCIALES POR PAGAR RELACIONADAS"
+  },
+  {
+    "code": "2.01.08.01.01",
+    "name": "PRESTAMOS POR PAGAR ACCIONISTAS"
+  },
+  {
+    "code": "2.01.08.01.02",
+    "name": "PRESTAMOS POR PAGAR VARIOS"
+  },
+  {
+    "code": "2.01.08.02",
+    "name": "CUENTAS POR PAGAR COMPAÑIAS RELACIONADAS"
+  },
+  {
+    "code": "2.01.09",
+    "name": "OTROS PASIVOS FINANCIEROS"
+  },
+  {
+    "code": "2.01.10",
+    "name": "ANTICIPOS DE CLIENTES"
+  },
+  {
+    "code": "2.01.10.01",
+    "name": "ANTICIPOS DE CLIENTES"
+  },
+  {
+    "code": "2.01.10.01.01",
+    "name": "ANTICIPOS DE CLIENTES (MODULO)"
+  },
+  {
+    "code": "2.01.11",
+    "name": "PASIVOS DIRECTAMENTE ASOCIADOS CON LOS ACTIVOS  NO"
+  },
+  {
+    "code": "2.01.12",
+    "name": "PORCION CORRIENTE DE PROVISIONES POR BENEFICIOS A"
+  },
+  {
+    "code": "2.01.12.01",
+    "name": "BENEFICIOS SOCIALES TRABAJADORES POR PAGAR"
+  },
+  {
+    "code": "2.01.12.01.01",
+    "name": "PROVISION JUBILACION PATRONAL"
+  },
+  {
+    "code": "2.01.12.01.02",
+    "name": "PROVISION DESAHUCIO"
+  },
+  {
+    "code": "2.01.13",
+    "name": "OTROS PASIVOS CORRIENTES"
+  },
+  {
+    "code": "2.02",
+    "name": "PASIVO NO CORRIENTE"
+  },
+  {
+    "code": "2.02.01",
+    "name": "PASIVOS POR CONTRATOS DE ARRENDAMIENTO FINANCIERO"
+  },
+  {
+    "code": "2.02.01.01",
+    "name": "CUENTAS Y DOCUMENTOS POR PAGAR LOCALES"
+  },
+  {
+    "code": "2.02.01.02",
+    "name": "CUENTAS Y DOCUMENTOS POR PAGAR DEL EXTERIOR"
+  },
+  {
+    "code": "2.02.02",
+    "name": "CUENTAS Y DOCUMENTOS POR PAGAR"
+  },
+  {
+    "code": "2.02.03",
+    "name": "OBIGACIONES CON INSTITUCIONES FINANCIERAS"
+  },
+  {
+    "code": "2.02.03.01",
+    "name": "OBIGACIONES CON INSTITUCIONES FINANCIERAS LOCALES NO CORR"
+  },
+  {
+    "code": "2.02.03.01.01",
+    "name": "PRESTAMO BANCARIO BANCO GUAYAQUIL"
+  },
+  {
+    "code": "2.02.03.02",
+    "name": "OBIGACIONES CON INSTITUCIONES FINANCIERAS DEL EXTE"
+  },
+  {
+    "code": "2.02.04",
+    "name": "CUENTAS POR PAGAR DIVERSAS - RELACIONADAS"
+  },
+  {
+    "code": "2.02.04.01",
+    "name": "CUENTAS POR PAGAR DIVERSAS - RELACIONADAS LOCALES"
+  },
+  {
+    "code": "2.02.04.01.01",
+    "name": "CUENTAS POR PAGAR RELACIONADAS"
+  },
+  {
+    "code": "2.02.04.02",
+    "name": "CUENTAS POR PAGAR DIVERSAS - RELACIONADAS DEL EXTE"
+  },
+  {
+    "code": "2.02.05",
+    "name": "OBLIGACIONES EMITIDAS"
+  },
+  {
+    "code": "2.02.05.01",
+    "name": "CONVENIOS DE PAGO"
+  },
+  {
+    "code": "2.02.05.01.01",
+    "name": "CONVENIO IESS"
+  },
+  {
+    "code": "2.02.05.01.02",
+    "name": "CONVENIO MUNICIPIO DE GUAYAQUIL"
+  },
+  {
+    "code": "2.02.07",
+    "name": "PROVISIONES POR BENEFICIOS A EMPLEADOS"
+  },
+  {
+    "code": "2.02.07.01",
+    "name": "JUBILACION PATRONAL"
+  },
+  {
+    "code": "2.02.07.02",
+    "name": "OTROS BENEFICIOS NO CORRIENTES PARA LOS EMPLEADOS"
+  },
+  {
+    "code": "2.02.08",
+    "name": "OTRAS PROVISIONES"
+  },
+  {
+    "code": "2.02.09",
+    "name": "PASIVO DIFERIDO"
+  },
+  {
+    "code": "2.02.09.01",
+    "name": "INGRESOS DIFERIDOS"
+  },
+  {
+    "code": "2.02.09.01.01",
+    "name": "INGRESOS DIFERIDOS"
+  },
+  {
+    "code": "2.02.09.02",
+    "name": "PASIVOS POR IMPUESTOS DIFERIDOS"
+  },
+  {
+    "code": "2.02.10",
+    "name": "OTROS PASIVOS NO CORRIENTES"
+  },
+  {
+    "code": "3",
+    "name": "PATRIMONIO NETO"
+  },
+  {
+    "code": "3.01",
+    "name": "CAPITAL Y RESERVAS"
+  },
+  {
+    "code": "3.01.01",
+    "name": "CAPITAL SUSCRITO O ASIGNADO"
+  },
+  {
+    "code": "3.01.01.01",
+    "name": "CAPITAL SUSCRITO O ASIGNADO"
+  },
+  {
+    "code": "3.01.01.01.01",
+    "name": "CAPITAL SOCIAL"
+  },
+  {
+    "code": "3.01.01.02",
+    "name": "(-) CAPITAL SUSCRITO NO PAGADO, ACCIONES EN TESORE"
+  },
+  {
+    "code": "3.02",
+    "name": "APORTES DE SOCIOS O ACCIONISTAS PARA FUTURA CAPITA"
+  },
+  {
+    "code": "3.02.01",
+    "name": "APORTES DE SOCIOS O ACCIONISTAS PARA FUTURA CAPITA"
+  },
+  {
+    "code": "3.02.01.01",
+    "name": "APORTES DE SOCIOS O ACCIONISTAS PARA FUTURA CAPITA"
+  },
+  {
+    "code": "3.04",
+    "name": "RESERVAS"
+  },
+  {
+    "code": "3.04.01",
+    "name": "RESERVA LEGAL"
+  },
+  {
+    "code": "3.04.01.01",
+    "name": "RESERVA LEGAL"
+  },
+  {
+    "code": "3.04.01.01.01",
+    "name": "RESERVA LEGAL"
+  },
+  {
+    "code": "3.04.02",
+    "name": "RESERVA FACULTATIVA Y ESTATUTARIA"
+  },
+  {
+    "code": "3.04.03",
+    "name": "RESERVA DE CAPITAL"
+  },
+  {
+    "code": "3.04.04",
+    "name": "OTRAS RESERVAS"
+  },
+  {
+    "code": "3.05",
+    "name": "OTROS RESULTADOS INTEGRALES"
+  },
+  {
+    "code": "3.05.01",
+    "name": "SUPERAVIT DE ACTIVOS FINANCIEROS DISPONIBLES PARA"
+  },
+  {
+    "code": "3.05.02",
+    "name": "SUPERAVIT POR REVALUACION DE PROPIEDADES, PLANTA Y"
+  },
+  {
+    "code": "3.05.02.01",
+    "name": "SUPERAVIT"
+  },
+  {
+    "code": "3.05.03",
+    "name": "SUPERAVIT POR REVALUACION DE ACTIVOS INTANGIBLES"
+  },
+  {
+    "code": "3.05.04",
+    "name": "OTROS SUPERAVIT POR REVALUACION"
+  },
+  {
+    "code": "3.06",
+    "name": "RESULTADOS ACUMULADOS"
+  },
+  {
+    "code": "3.06.01",
+    "name": "UTILIDADES ACUMULADAS"
+  },
+  {
+    "code": "3.06.01.01",
+    "name": "UTILIDADES ACUMULADAS"
+  },
+  {
+    "code": "3.06.01.01.01",
+    "name": "UTILIDADES ACUMULADAS"
+  },
+  {
+    "code": "3.06.01.01.02",
+    "name": "UTILIDADES JULIO 2025"
+  },
+  {
+    "code": "3.06.02",
+    "name": "(-) PERDIDAS ACUMULADAS"
+  },
+  {
+    "code": "3.06.02.01",
+    "name": "(-) PERDIDAS ACUMULADAS"
+  },
+  {
+    "code": "3.06.02.01.01",
+    "name": "(-) PERDIDAS ACUMULADAS"
+  },
+  {
+    "code": "3.06.03",
+    "name": "RESULTADOS ACUMULADOS POR ADOPCION PRIMERA VEZ NII"
+  },
+  {
+    "code": "3.06.03.01",
+    "name": "RESULTADOS ACUMULADOS POR ADOPCION PRIMERA VEZ NII"
+  },
+  {
+    "code": "3.06.03.01.01",
+    "name": "RESULTADOS ACUMULADOS POR ADOPCION PRIMERA VEZ NII"
+  },
+  {
+    "code": "3.06.04",
+    "name": "CUENTAS TRANSITORIAS DE APERTURA"
+  },
+  {
+    "code": "3.06.04.01",
+    "name": "CUENTA PUENTE – SALDOS INICIALES PROVEEDORES"
+  },
+  {
+    "code": "3.06.04.02",
+    "name": "CUENTA PUENTE – SALDOS INICIALES CLIENTES"
+  },
+  {
+    "code": "3.07",
+    "name": "RESULTADOS DEL EJERCICIO"
+  },
+  {
+    "code": "3.07.01",
+    "name": "UTILIDAD NETA DEL PERIODO"
+  },
+  {
+    "code": "3.07.01.01",
+    "name": "UTILIDAD DEL EJERCICIO CORRIENTE"
+  },
+  {
+    "code": "3.07.01.01.01",
+    "name": "UTILIDAD DEL EJERCICIO"
+  },
+  {
+    "code": "3.07.02",
+    "name": "(-) PERDIDA NETA DEL PERIODO"
+  },
+  {
+    "code": "3.07.02.01",
+    "name": "(-) PERDIDA DEL EJERCICIO CORRIENTE"
+  },
+  {
+    "code": "3.07.02.01.01",
+    "name": "(-) PERDIDA DEL EJERCICIO"
+  },
+  {
+    "code": "4",
+    "name": "INGRESOS"
+  },
+  {
+    "code": "4.01",
+    "name": "INGRESOS DE ACTIVIDADES ORDINARIAS"
+  },
+  {
+    "code": "4.01.01",
+    "name": "INGRESOS DE ACTIVIDADES ORDINARIAS"
+  },
+  {
+    "code": "4.01.01.01",
+    "name": "VENTAS"
+  },
+  {
+    "code": "4.01.01.01.01",
+    "name": "CIRUGIAS"
+  },
+  {
+    "code": "4.01.01.01.02",
+    "name": "INSUMOS MEDICOS"
+  },
+  {
+    "code": "4.01.01.01.03",
+    "name": "RESONANCIAS"
+  },
+  {
+    "code": "4.01.01.01.04",
+    "name": "CONSULTA MEDICOS EXTERNOS"
+  },
+  {
+    "code": "4.01.01.01.05",
+    "name": "COMISION USO DE CONSULTORIO"
+  },
+  {
+    "code": "4.01.01.01.06",
+    "name": "IMÁGENES"
+  },
+  {
+    "code": "4.01.01.01.07",
+    "name": "LABORATORIO"
+  },
+  {
+    "code": "4.01.01.01.08",
+    "name": "CAMARA HIPERBARICA"
+  },
+  {
+    "code": "4.01.01.01.09",
+    "name": "ALQUILER EQUIPO MEDICO"
+  },
+  {
+    "code": "4.01.01.01.10",
+    "name": "CONVENIOS"
+  },
+  {
+    "code": "4.01.01.01.11",
+    "name": "EXPENSAS"
+  },
+  {
+    "code": "4.01.01.01.12",
+    "name": "(-) DCTOS. EN VENTA OBRAS"
+  },
+  {
+    "code": "4.01.01.01.13",
+    "name": "USO DE HABITACIONES Y ALIMENTACION"
+  },
+  {
+    "code": "4.01.01.01.14",
+    "name": "CONSULTAS"
+  },
+  {
+    "code": "4.01.01.01.15",
+    "name": "HONORARIOS (CIRUGIA)"
+  },
+  {
+    "code": "4.01.01.01.16",
+    "name": "CONSULTAS EMERGENCIAS"
+  },
+  {
+    "code": "4.01.01.01.17",
+    "name": "PROCEDIMIENTOS"
+  },
+  {
+    "code": "4.01.01.01.18",
+    "name": "VENTAS CON TARIFA DIFERENTE DE 0%"
+  },
+  {
+    "code": "4.01.01.02",
+    "name": "VENTA POR DISEÑO"
+  },
+  {
+    "code": "4.01.01.02.01",
+    "name": "VENTA POR DISEÑO"
+  },
+  {
+    "code": "4.01.01.02.02",
+    "name": "(-) DCTOS. EN VENTA DE BIENES (LOCALES) -"
+  },
+  {
+    "code": "4.01.06",
+    "name": "INTERESES"
+  },
+  {
+    "code": "4.01.06.01",
+    "name": "INTERESES GANADOS POR FINANCIAMIENTO"
+  },
+  {
+    "code": "4.01.06.02",
+    "name": "INTERESES GANADOS POR MORA"
+  },
+  {
+    "code": "4.01.07",
+    "name": "DIVIDENDOS"
+  },
+  {
+    "code": "4.01.08",
+    "name": "OTROS INGRESOS DE ACTIVIDADES ORDINARIAS"
+  },
+  {
+    "code": "4.02",
+    "name": "GANANCIA BRUTA"
+  },
+  {
+    "code": "4.03",
+    "name": "OTROS INGRESOS"
+  },
+  {
+    "code": "4.03.01",
+    "name": "OTROS INGRESOS DE ACTIVIDADES EXTRAORDINARIAS"
+  },
+  {
+    "code": "4.03.01.01",
+    "name": "OTROS INGRESOS POR DIVIDENDOS"
+  },
+  {
+    "code": "4.03.01.02",
+    "name": "OTROS INGRESOS POR RENDIMIENTOS FINANCIEROS"
+  },
+  {
+    "code": "4.03.01.02.01",
+    "name": "INTERESES GANADOS EN INSTITUCIONES FINANCIERAS"
+  },
+  {
+    "code": "4.03.01.03",
+    "name": "OTROS INGRESOS POR GANANCIAS EN INVERSIONES/ EN AS"
+  },
+  {
+    "code": "4.03.01.04",
+    "name": "VALUACION DE INSTRUMENTOS FINANCIEROS A VALOR RAZO"
+  },
+  {
+    "code": "4.03.01.05",
+    "name": "OTRAS RENTAS"
+  },
+  {
+    "code": "4.03.01.05.01",
+    "name": "UTILIDAD EN VENTA DE PROPIEDAD, PLANTA Y EQUIPO"
+  },
+  {
+    "code": "4.03.01.05.02",
+    "name": "OTROS INGRESOS"
+  },
+  {
+    "code": "4.03.01.05.03",
+    "name": "INGRESO POR MULTAS"
+  },
+  {
+    "code": "4.03.01.05.04",
+    "name": "SOBRANTES DE INVENTARIO FISICO"
+  },
+  {
+    "code": "5",
+    "name": "EGRESOS"
+  },
+  {
+    "code": "5.01",
+    "name": "COSTO DE VENTAS"
+  },
+  {
+    "code": "5.01.01",
+    "name": "COSTOS DE VENTAS"
+  },
+  {
+    "code": "5.01.01.01",
+    "name": "MATERIALES"
+  },
+  {
+    "code": "5.01.01.01.01",
+    "name": "COSTO INSUMOS MEDICOS"
+  },
+  {
+    "code": "5.01.01.01.02",
+    "name": "BIENES NO PRODUCIDOS POR LA EMPRESA"
+  },
+  {
+    "code": "5.01.01.01.03",
+    "name": "ALIMENTACION PACIENTES"
+  },
+  {
+    "code": "5.01.01.03",
+    "name": "MANO DE OBRA EMPRESA"
+  },
+  {
+    "code": "5.01.01.03.01",
+    "name": "HONORARIOS PROFESIONALES MEDICOS"
+  },
+  {
+    "code": "5.02",
+    "name": "GASTOS"
+  },
+  {
+    "code": "5.02.01",
+    "name": "GASTOS ADMINISTRATIVOS IESS"
+  },
+  {
+    "code": "5.02.01.01",
+    "name": "COSTOS DE PERSONAL ADMINISTRATIVO"
+  },
+  {
+    "code": "5.02.01.01.01",
+    "name": "SUELDOS Y SALARIOS"
+  },
+  {
+    "code": "5.02.01.01.02",
+    "name": "HORAS EXTRAS"
+  },
+  {
+    "code": "5.02.01.01.03",
+    "name": "BONOS E INCENTIVOS AP"
+  },
+  {
+    "code": "5.02.01.01.04",
+    "name": "COMISIONES EMPLEADOS"
+  },
+  {
+    "code": "5.02.02",
+    "name": "APORTES A LA SEGURIDAD SOCIAL"
+  },
+  {
+    "code": "5.02.02.01",
+    "name": "APORTES A LA SEGURIDAD SOCIAL"
+  },
+  {
+    "code": "5.02.02.01.01",
+    "name": "APORTES PATRONAL AL IESS"
+  },
+  {
+    "code": "5.02.02.01.02",
+    "name": "FONDO DE RESERVA"
+  },
+  {
+    "code": "5.02.03",
+    "name": "BENEFICIOS SOCIALES DE LEY"
+  },
+  {
+    "code": "5.02.03.01",
+    "name": "BENEFICIOS SOCIALES DE LEY"
+  },
+  {
+    "code": "5.02.03.01.01",
+    "name": "DECIMO TERCER SUELDO"
+  },
+  {
+    "code": "5.02.03.01.02",
+    "name": "DECIMO CUARTO SUELDO"
+  },
+  {
+    "code": "5.02.03.01.03",
+    "name": "VACACIONES"
+  },
+  {
+    "code": "5.02.03.01.04",
+    "name": "BONIFICACION DESAHUCIO"
+  },
+  {
+    "code": "5.02.03.01.05",
+    "name": "INDEMNIZACIONES"
+  },
+  {
+    "code": "5.02.03.01.06",
+    "name": "JUBILACION PATRONAL"
+  },
+  {
+    "code": "5.02.03.01.07",
+    "name": "GASTO POR PARTICIPACION DE TRABAJADORES"
+  },
+  {
+    "code": "5.02.04",
+    "name": "OTROS BENEFICIOS PERSONAL"
+  },
+  {
+    "code": "5.02.04.01",
+    "name": "OTROS BENEFICIOS PERSONAL"
+  },
+  {
+    "code": "5.02.04.01.01",
+    "name": "ALIMENTACION"
+  },
+  {
+    "code": "5.02.04.01.02",
+    "name": "ATENCIONES MEDICAS"
+  },
+  {
+    "code": "5.02.04.01.03",
+    "name": "SEGURO MEDICO"
+  },
+  {
+    "code": "5.02.04.01.04",
+    "name": "CAPACITACION PERSONAL"
+  },
+  {
+    "code": "5.02.04.01.05",
+    "name": "UNIFORMES"
+  },
+  {
+    "code": "5.02.05",
+    "name": "GASTOS GENERALES"
+  },
+  {
+    "code": "5.02.05.01",
+    "name": "MANTENIMIENTO"
+  },
+  {
+    "code": "5.02.05.01.01",
+    "name": "EQUIPOS MEDICOS Y DE COMPUTO"
+  },
+  {
+    "code": "5.02.05.01.02",
+    "name": "GENERAL EDIFICIO"
+  },
+  {
+    "code": "5.02.05.01.03",
+    "name": "REPUESTOS MEDICOS"
+  },
+  {
+    "code": "5.02.05.01.04",
+    "name": "GENERAL"
+  },
+  {
+    "code": "5.02.05.02",
+    "name": "SERVICIOS"
+  },
+  {
+    "code": "5.02.05.02.01",
+    "name": "CONECTIVIDAD, SERVICIOS DIGITALES E INTERNET"
+  },
+  {
+    "code": "5.02.05.02.02",
+    "name": "GASTOS LEGALES"
+  },
+  {
+    "code": "5.02.05.02.03",
+    "name": "ENERGIA ELECTRICA"
+  },
+  {
+    "code": "5.02.05.02.04",
+    "name": "SERVICIOS PRESTADOS"
+  },
+  {
+    "code": "5.02.05.02.05",
+    "name": "SERVICIOS MEDICOS"
+  },
+  {
+    "code": "5.02.05.02.06",
+    "name": "SERVICIOS ADMINISTRATIVOS"
+  },
+  {
+    "code": "5.02.05.03",
+    "name": "ADMINISTRATIVOS Y DIRECTIVA"
+  },
+  {
+    "code": "5.02.05.03.01",
+    "name": "AGASAJOS"
+  },
+  {
+    "code": "5.02.05.03.02",
+    "name": "ALIMENTACION Y REFRIGERIOS DIRECTIVA"
+  },
+  {
+    "code": "5.02.05.03.03",
+    "name": "SUMINISTROS DE LIMPIEZA"
+  },
+  {
+    "code": "5.02.05.03.04",
+    "name": "SUMINISTROS DE OFICINA"
+  },
+  {
+    "code": "5.02.05.03.05",
+    "name": "EQUIPO DE COMPUTO"
+  },
+  {
+    "code": "5.02.05.03.06",
+    "name": "GUIAS, COURIERS Y CORREOS."
+  },
+  {
+    "code": "5.02.05.03.07",
+    "name": "ARRENDAMIENTO OPERATIVO"
+  },
+  {
+    "code": "5.02.05.03.08",
+    "name": "PUBLICIDAD"
+  },
+  {
+    "code": "5.02.05.03.09",
+    "name": "MUEBLES Y ENSERES"
+  },
+  {
+    "code": "5.02.05.03.10",
+    "name": "SEGURO DEL EDIFICIO"
+  },
+  {
+    "code": "5.02.05.03.11",
+    "name": "SEGURO DOCTORES BORJA"
+  },
+  {
+    "code": "5.02.05.03.12",
+    "name": "SEGURO PACIENTES"
+  },
+  {
+    "code": "5.02.05.04",
+    "name": "GASTOS DEPRECIACION"
+  },
+  {
+    "code": "5.02.05.04.01",
+    "name": "DEPRECIACION MAQUINARIAS Y EQUIPO DE OFICINA"
+  },
+  {
+    "code": "5.02.05.05",
+    "name": "IMPUESTOS TASAS Y CONTRIBUCIONES"
+  },
+  {
+    "code": "5.02.05.05.01",
+    "name": "IMPUESTOS SRI"
+  },
+  {
+    "code": "5.02.05.05.02",
+    "name": "MULTAS"
+  },
+  {
+    "code": "5.02.05.05.03",
+    "name": "IMPUESTOS MUNICIPALES"
+  },
+  {
+    "code": "5.02.05.05.04",
+    "name": "SUPER DE COMPAÑIAS"
+  },
+  {
+    "code": "5.02.06",
+    "name": "GASTOS FINANCIEROS"
+  },
+  {
+    "code": "5.02.06.01",
+    "name": "BANCARIOS"
+  },
+  {
+    "code": "5.02.06.01.01",
+    "name": "INTERESES PAGADOS"
+  },
+  {
+    "code": "5.02.06.01.02",
+    "name": "COMISIONES BANCARIAS"
+  },
+  {
+    "code": "5.02.07",
+    "name": "OTROS GASTOS"
+  },
+  {
+    "code": "5.02.07.01",
+    "name": "OTROS GASTOS"
+  },
+  {
+    "code": "5.02.07.01.01",
+    "name": "GASTOS VARIOS"
+  },
+  {
+    "code": "5.02.07.01.02",
+    "name": "GASTOS NO DEDUCIBLES"
+  },
+  {
+    "code": "5.02.08",
+    "name": "IMPUESTO A LA RENTA ANUAL"
+  },
+  {
+    "code": "5.02.08.01",
+    "name": "IMPUESTO A LA RENTA ANUAL"
+  },
+  {
+    "code": "5.02.08.01.01",
+    "name": "IMPUESTO A LA RENTA ANUAL"
+  },
+  {
+    "code": "6",
+    "name": "GASTOS"
+  },
+  {
+    "code": "6.01",
+    "name": "GASTOS OPERACIONALES"
+  },
+  {
+    "code": "6.01.01",
+    "name": "GASTOS ADMINISTRATIVOS"
+  },
+  {
+    "code": "6.01.02",
+    "name": "SUELDOS Y HORAS EXTRA"
+  },
+  {
+    "code": "6.01.03",
+    "name": "APORTE PATRONAL IESS"
+  },
+  {
+    "code": "6.01.04",
+    "name": "GASTO DÉCIMO TERCERO"
+  },
+  {
+    "code": "6.01.05",
+    "name": "GASTO DÉCIMO CUARTO"
+  },
+  {
+    "code": "6.01.06",
+    "name": "GASTO VACACIONES"
+  },
+  {
+    "code": "6.01.07",
+    "name": "GASTO FONDO DE RESERVA"
+  }
+]

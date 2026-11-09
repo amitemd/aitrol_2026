@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 @php
 $c=DB::table('ho_parametros')->where('id_usuario',Auth::user()->id)->first();
-$class="dark-layout";
-$classicon="sun";
+$class="light-layout";
+$classicon="moon";
 if(!is_null($c)){
 $class= $c->class;
 $classicon=$c->noclass;
@@ -15,6 +15,18 @@ $classicon="moon";
 }
 @endphp
 <html class="{{$class}} loading" lang="en" data-textdirection="ltr">
+<script>
+    (function () {
+        try {
+            var savedHospitalTheme = window.localStorage.getItem('hospital-theme') || 'light-layout';
+            window.localStorage.setItem('hospital-theme', savedHospitalTheme);
+            if (savedHospitalTheme === 'dark-layout' || savedHospitalTheme === 'light-layout') {
+                document.documentElement.classList.remove('dark-layout', 'light-layout', 'semi-dark-layout', 'bordered-layout');
+                document.documentElement.classList.add(savedHospitalTheme);
+            }
+        } catch (error) {}
+    })();
+</script>
 <!-- BEGIN: Head-->
 
 <head>
@@ -25,8 +37,8 @@ $classicon="moon";
     <meta name="keywords" content="admin template, Vuexy admin template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="">  
     <title>SIAM- HOSPITAL</title>
-    <link rel="apple-touch-icon" href="{{asset('ho/app-assets/images/ico/apple-icon-120.png')}}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{asset('/hc4/img/logo.png')}}">
+    <link rel="apple-touch-icon" href="{{ asset('ho/app-assets/images/ico/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="128x128" href="{{ asset('assets/images/aitrol-favicon.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600" rel="stylesheet">
 
     <!-- BEGIN: Vendor CSS-->
@@ -65,11 +77,16 @@ $classicon="moon";
     <!-- END: Page CSS-->
     <link rel="stylesheet" type="text/css" href="{{asset('ho/app-assets/css/pages/app-calendar.css')}}">
     <!-- BEGIN: Custom CSS-->
-    <link type="text/html" href="{{asset('ho/app-assets/css/custom.css')}}">
     <link rel="stylesheet" type="text/css" href="{{asset('ho/assets/css/style.css')}}">
+    @include('layouts.hospital-modern-styles')
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+    {{--
+        La ficha de emergencia carga sus secciones mediante JavaScript desde el
+        mismo servidor. No debe depender de un CDN: si el servidor no tiene
+        salida a Internet, los botones clínicos quedarían visibles pero sin
+        ninguna acción.
+    --}}
+    <script src="{{ asset('/bower_components/jquery/dist/jquery.min.js') }}"></script>
     
 
     <!-- BEGIN: Page Vendor JS-->
@@ -84,13 +101,41 @@ $classicon="moon";
         }
     .modal-open{
         zoom: 100%!important;
-    }  
+    }
+    .hospital-theme-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        margin: 0;
+        padding: 0 !important;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        appearance: none;
+        transition: background-color .2s ease, color .2s ease;
+    }
+    .hospital-theme-toggle:hover,
+    .hospital-theme-toggle:focus {
+        background: rgba(8, 119, 190, .1);
+        color: #0877be;
+        outline: none;
+    }
+    .hospital-theme-toggle .ficon,
+    .hospital-theme-toggle svg {
+        width: 20px;
+        height: 20px;
+        pointer-events: none;
+    }
 </style>
 <!-- END: Head-->
 
 <!-- BEGIN: Body-->
 
-<body class="horizontal-layout horizontal-menu  navbar-floating footer-static  " data-open="hover" data-menu="horizontal-menu" data-col="">
+<body class="horizontal-layout horizontal-menu navbar-floating footer-static hospital-modern-ui {{ Request::is('hospital/inicio') ? 'hospital-home-route' : 'hospital-internal-route' }} {{ isset($data) ? 'hospital-patient-route' : '' }}" data-open="hover" data-menu="horizontal-menu" data-col="" data-framework="laravel" data-asset-path="{{ asset('ho/app-assets') }}/">
 
     <!-- BEGIN: Header-->
 
@@ -101,7 +146,10 @@ $classicon="moon";
     <div class="app-content content">
         <div class="content-overlay"></div>
         <div class="header-navbar-shadow"></div>
-        <div class="content-wrapper" @if(isset($data)) style="margin-top: 10%" @endif>
+        <div class="content-wrapper">
+            @if(!Request::is('hospital/inicio'))
+                @include('layouts.hospital-breadcrumb')
+            @endif
             @yield('content')
         </div>
 
@@ -144,6 +192,7 @@ $classicon="moon";
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jscroll/2.3.7/jquery.jscroll.min.js"></script>
+    @include('layouts.select2-global')
 
     <!-- END: Page Vendor JS-->
 
@@ -162,40 +211,6 @@ $classicon="moon";
             }
 
         });
-        var isMobile = {
-            Android: function() {
-                return navigator.userAgent.match(/Android/i);
-            },
-            BlackBerry: function() {
-                return navigator.userAgent.match(/BlackBerry/i);
-            },
-            iOS: function() {
-                return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-            },
-            Opera: function() {
-                return navigator.userAgent.match(/Opera Mini/i);
-            },
-            Windows: function() {
-                return navigator.userAgent.match(/IEMobile/i) || navigator.userAgent.match(/WPDesktop/i);
-            },
-            any: function() {
-                return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
-            }
-        };
-
-        $(document).ready(function() {
-          
-           //console.log('ss');
-           if(!isMobile.any()){
-                if ($(window).width() > 1440) {
-                document.body.style.zoom = "80%";
-                }
-                else {
-                document.body.style.zoom = "60%";
-                }
-           }
-
-        });
         function getLoader(data){
             $.ajax({
             type: 'get',
@@ -210,6 +225,64 @@ $classicon="moon";
             }
             }); 
         }
+
+        (function () {
+            var toggle = document.getElementById('hospital-theme-toggle');
+            var root = document.documentElement;
+            if (!toggle || !root) {
+                return;
+            }
+
+            function currentTheme() {
+                return root.classList.contains('dark-layout') ? 'dark-layout' : 'light-layout';
+            }
+
+            function renderTheme(theme) {
+                var dark = theme === 'dark-layout';
+                root.classList.remove('dark-layout', 'light-layout', 'semi-dark-layout', 'bordered-layout');
+                root.classList.add(dark ? 'dark-layout' : 'light-layout');
+
+                document.querySelectorAll('.header-navbar').forEach(function (navbar) {
+                    navbar.classList.toggle('navbar-dark', dark);
+                    navbar.classList.toggle('navbar-light', !dark);
+                });
+
+                toggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+                toggle.setAttribute('aria-label', dark ? 'Activar modo claro' : 'Activar modo oscuro');
+                toggle.setAttribute('title', dark ? 'Activar modo claro' : 'Activar modo oscuro');
+                toggle.innerHTML = '<i class="ficon" data-feather="' + (dark ? 'sun' : 'moon') + '"></i>';
+                if (window.feather) {
+                    window.feather.replace({ width: 18, height: 18 });
+                }
+            }
+
+            function persistTheme(theme) {
+                try {
+                    window.localStorage.setItem('hospital-theme', theme);
+                    window.localStorage.setItem('light-layout-current-skin', theme);
+                } catch (error) {}
+
+                if (window.fetch) {
+                    window.fetch('{{ route('hospital.enableDark') }}?class=' + encodeURIComponent(theme), {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                    }).catch(function () {});
+                } else if (window.jQuery) {
+                    window.jQuery.get('{{ route('hospital.enableDark') }}', { class: theme });
+                }
+            }
+
+            renderTheme(currentTheme());
+            toggle.onclick = function (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                var nextTheme = currentTheme() === 'dark-layout' ? 'light-layout' : 'dark-layout';
+                renderTheme(nextTheme);
+                persistTheme(nextTheme);
+                return false;
+            };
+        })();
 
         function alertas(icon, title, msj) {
             Swal.fire({
@@ -237,6 +310,8 @@ $classicon="moon";
             return validar;
         }
     </script>
+    @include('layouts.medical-tour', ['medicalTourArea' => 'hospital'])
+    @include('layouts.patient-library-floating')
 </body>
 <!-- END: Body 
         <div>

@@ -1,0 +1,8768 @@
+{
+  "fuente": {
+    "institucion": "Instituto Nacional de Estadistica y Censos (INEC)",
+    "catalogo": "Codigos de la Division Politico Administrativa 2026",
+    "actualizado_al": "2025-12-31",
+    "url": "https://aplicaciones2.ecuadorencifras.gob.ec/SIN/descargas/cdpa2026.xlsx"
+  },
+  "provincias": [
+    {
+      "codigo": "01",
+      "nombre": "AZUAY"
+    },
+    {
+      "codigo": "02",
+      "nombre": "BOLÍVAR"
+    },
+    {
+      "codigo": "03",
+      "nombre": "CAÑAR"
+    },
+    {
+      "codigo": "04",
+      "nombre": "CARCHI"
+    },
+    {
+      "codigo": "05",
+      "nombre": "COTOPAXI"
+    },
+    {
+      "codigo": "06",
+      "nombre": "CHIMBORAZO"
+    },
+    {
+      "codigo": "07",
+      "nombre": "EL ORO"
+    },
+    {
+      "codigo": "08",
+      "nombre": "ESMERALDAS"
+    },
+    {
+      "codigo": "09",
+      "nombre": "GUAYAS"
+    },
+    {
+      "codigo": "10",
+      "nombre": "IMBABURA"
+    },
+    {
+      "codigo": "11",
+      "nombre": "LOJA"
+    },
+    {
+      "codigo": "12",
+      "nombre": "LOS RÍOS"
+    },
+    {
+      "codigo": "13",
+      "nombre": "MANABÍ"
+    },
+    {
+      "codigo": "14",
+      "nombre": "MORONA SANTIAGO"
+    },
+    {
+      "codigo": "15",
+      "nombre": "NAPO"
+    },
+    {
+      "codigo": "16",
+      "nombre": "PASTAZA"
+    },
+    {
+      "codigo": "17",
+      "nombre": "PICHINCHA"
+    },
+    {
+      "codigo": "18",
+      "nombre": "TUNGURAHUA"
+    },
+    {
+      "codigo": "19",
+      "nombre": "ZAMORA CHINCHIPE"
+    },
+    {
+      "codigo": "20",
+      "nombre": "GALÁPAGOS"
+    },
+    {
+      "codigo": "21",
+      "nombre": "SUCUMBÍOS"
+    },
+    {
+      "codigo": "22",
+      "nombre": "ORELLANA"
+    },
+    {
+      "codigo": "23",
+      "nombre": "SANTO DOMINGO DE LOS TSÁCHILAS"
+    },
+    {
+      "codigo": "24",
+      "nombre": "SANTA ELENA"
+    }
+  ],
+  "cantones": [
+    {
+      "codigo": "0101",
+      "provincia_codigo": "01",
+      "nombre": "CUENCA"
+    },
+    {
+      "codigo": "0102",
+      "provincia_codigo": "01",
+      "nombre": "GIRÓN"
+    },
+    {
+      "codigo": "0103",
+      "provincia_codigo": "01",
+      "nombre": "GUALACEO"
+    },
+    {
+      "codigo": "0104",
+      "provincia_codigo": "01",
+      "nombre": "NABÓN"
+    },
+    {
+      "codigo": "0105",
+      "provincia_codigo": "01",
+      "nombre": "PAUTE"
+    },
+    {
+      "codigo": "0106",
+      "provincia_codigo": "01",
+      "nombre": "PUCARÁ"
+    },
+    {
+      "codigo": "0107",
+      "provincia_codigo": "01",
+      "nombre": "SAN FERNANDO"
+    },
+    {
+      "codigo": "0108",
+      "provincia_codigo": "01",
+      "nombre": "SANTA ISABEL"
+    },
+    {
+      "codigo": "0109",
+      "provincia_codigo": "01",
+      "nombre": "SÍGSIG"
+    },
+    {
+      "codigo": "0110",
+      "provincia_codigo": "01",
+      "nombre": "OÑA"
+    },
+    {
+      "codigo": "0111",
+      "provincia_codigo": "01",
+      "nombre": "CHORDELEG"
+    },
+    {
+      "codigo": "0112",
+      "provincia_codigo": "01",
+      "nombre": "EL PAN"
+    },
+    {
+      "codigo": "0113",
+      "provincia_codigo": "01",
+      "nombre": "SEVILLA DE ORO"
+    },
+    {
+      "codigo": "0114",
+      "provincia_codigo": "01",
+      "nombre": "GUACHAPALA"
+    },
+    {
+      "codigo": "0115",
+      "provincia_codigo": "01",
+      "nombre": "CAMILO PONCE ENRÍQUEZ"
+    },
+    {
+      "codigo": "0201",
+      "provincia_codigo": "02",
+      "nombre": "GUARANDA"
+    },
+    {
+      "codigo": "0202",
+      "provincia_codigo": "02",
+      "nombre": "CHILLANES"
+    },
+    {
+      "codigo": "0203",
+      "provincia_codigo": "02",
+      "nombre": "CHIMBO"
+    },
+    {
+      "codigo": "0204",
+      "provincia_codigo": "02",
+      "nombre": "ECHEANDÍA"
+    },
+    {
+      "codigo": "0205",
+      "provincia_codigo": "02",
+      "nombre": "SAN MIGUEL"
+    },
+    {
+      "codigo": "0206",
+      "provincia_codigo": "02",
+      "nombre": "CALUMA"
+    },
+    {
+      "codigo": "0207",
+      "provincia_codigo": "02",
+      "nombre": "LAS NAVES"
+    },
+    {
+      "codigo": "0301",
+      "provincia_codigo": "03",
+      "nombre": "AZOGUES"
+    },
+    {
+      "codigo": "0302",
+      "provincia_codigo": "03",
+      "nombre": "BIBLIÁN"
+    },
+    {
+      "codigo": "0303",
+      "provincia_codigo": "03",
+      "nombre": "CAÑAR"
+    },
+    {
+      "codigo": "0304",
+      "provincia_codigo": "03",
+      "nombre": "LA TRONCAL"
+    },
+    {
+      "codigo": "0305",
+      "provincia_codigo": "03",
+      "nombre": "EL TAMBO"
+    },
+    {
+      "codigo": "0306",
+      "provincia_codigo": "03",
+      "nombre": "DÉLEG"
+    },
+    {
+      "codigo": "0307",
+      "provincia_codigo": "03",
+      "nombre": "SUSCAL"
+    },
+    {
+      "codigo": "0401",
+      "provincia_codigo": "04",
+      "nombre": "TULCÁN"
+    },
+    {
+      "codigo": "0402",
+      "provincia_codigo": "04",
+      "nombre": "BOLÍVAR"
+    },
+    {
+      "codigo": "0403",
+      "provincia_codigo": "04",
+      "nombre": "ESPEJO"
+    },
+    {
+      "codigo": "0404",
+      "provincia_codigo": "04",
+      "nombre": "MIRA"
+    },
+    {
+      "codigo": "0405",
+      "provincia_codigo": "04",
+      "nombre": "MONTÚFAR"
+    },
+    {
+      "codigo": "0406",
+      "provincia_codigo": "04",
+      "nombre": "SAN PEDRO DE HUACA"
+    },
+    {
+      "codigo": "0501",
+      "provincia_codigo": "05",
+      "nombre": "LATACUNGA"
+    },
+    {
+      "codigo": "0502",
+      "provincia_codigo": "05",
+      "nombre": "LA MANÁ"
+    },
+    {
+      "codigo": "0503",
+      "provincia_codigo": "05",
+      "nombre": "PANGUA"
+    },
+    {
+      "codigo": "0504",
+      "provincia_codigo": "05",
+      "nombre": "PUJILÍ"
+    },
+    {
+      "codigo": "0505",
+      "provincia_codigo": "05",
+      "nombre": "SALCEDO"
+    },
+    {
+      "codigo": "0506",
+      "provincia_codigo": "05",
+      "nombre": "SAQUISILÍ"
+    },
+    {
+      "codigo": "0507",
+      "provincia_codigo": "05",
+      "nombre": "SIGCHOS"
+    },
+    {
+      "codigo": "0601",
+      "provincia_codigo": "06",
+      "nombre": "RIOBAMBA"
+    },
+    {
+      "codigo": "0602",
+      "provincia_codigo": "06",
+      "nombre": "ALAUSÍ"
+    },
+    {
+      "codigo": "0603",
+      "provincia_codigo": "06",
+      "nombre": "COLTA"
+    },
+    {
+      "codigo": "0604",
+      "provincia_codigo": "06",
+      "nombre": "CHAMBO"
+    },
+    {
+      "codigo": "0605",
+      "provincia_codigo": "06",
+      "nombre": "CHUNCHI"
+    },
+    {
+      "codigo": "0606",
+      "provincia_codigo": "06",
+      "nombre": "GUAMOTE"
+    },
+    {
+      "codigo": "0607",
+      "provincia_codigo": "06",
+      "nombre": "GUANO"
+    },
+    {
+      "codigo": "0608",
+      "provincia_codigo": "06",
+      "nombre": "PALLATANGA"
+    },
+    {
+      "codigo": "0609",
+      "provincia_codigo": "06",
+      "nombre": "PENIPE"
+    },
+    {
+      "codigo": "0610",
+      "provincia_codigo": "06",
+      "nombre": "CUMANDÁ"
+    },
+    {
+      "codigo": "0701",
+      "provincia_codigo": "07",
+      "nombre": "MACHALA"
+    },
+    {
+      "codigo": "0702",
+      "provincia_codigo": "07",
+      "nombre": "ARENILLAS"
+    },
+    {
+      "codigo": "0703",
+      "provincia_codigo": "07",
+      "nombre": "ATAHUALPA"
+    },
+    {
+      "codigo": "0704",
+      "provincia_codigo": "07",
+      "nombre": "BALSAS"
+    },
+    {
+      "codigo": "0705",
+      "provincia_codigo": "07",
+      "nombre": "CHILLA"
+    },
+    {
+      "codigo": "0706",
+      "provincia_codigo": "07",
+      "nombre": "EL GUABO"
+    },
+    {
+      "codigo": "0707",
+      "provincia_codigo": "07",
+      "nombre": "HUAQUILLAS"
+    },
+    {
+      "codigo": "0708",
+      "provincia_codigo": "07",
+      "nombre": "MARCABELÍ"
+    },
+    {
+      "codigo": "0709",
+      "provincia_codigo": "07",
+      "nombre": "PASAJE"
+    },
+    {
+      "codigo": "0710",
+      "provincia_codigo": "07",
+      "nombre": "PIÑAS"
+    },
+    {
+      "codigo": "0711",
+      "provincia_codigo": "07",
+      "nombre": "PORTOVELO"
+    },
+    {
+      "codigo": "0712",
+      "provincia_codigo": "07",
+      "nombre": "SANTA ROSA"
+    },
+    {
+      "codigo": "0713",
+      "provincia_codigo": "07",
+      "nombre": "ZARUMA"
+    },
+    {
+      "codigo": "0714",
+      "provincia_codigo": "07",
+      "nombre": "LAS LAJAS"
+    },
+    {
+      "codigo": "0801",
+      "provincia_codigo": "08",
+      "nombre": "ESMERALDAS"
+    },
+    {
+      "codigo": "0802",
+      "provincia_codigo": "08",
+      "nombre": "ELOY ALFARO"
+    },
+    {
+      "codigo": "0803",
+      "provincia_codigo": "08",
+      "nombre": "MUISNE"
+    },
+    {
+      "codigo": "0804",
+      "provincia_codigo": "08",
+      "nombre": "QUININDÉ"
+    },
+    {
+      "codigo": "0805",
+      "provincia_codigo": "08",
+      "nombre": "SAN LORENZO"
+    },
+    {
+      "codigo": "0806",
+      "provincia_codigo": "08",
+      "nombre": "ATACAMES"
+    },
+    {
+      "codigo": "0807",
+      "provincia_codigo": "08",
+      "nombre": "RIOVERDE"
+    },
+    {
+      "codigo": "0901",
+      "provincia_codigo": "09",
+      "nombre": "GUAYAQUIL"
+    },
+    {
+      "codigo": "0902",
+      "provincia_codigo": "09",
+      "nombre": "ALFREDO BAQUERIZO MORENO (JUJÁN)"
+    },
+    {
+      "codigo": "0903",
+      "provincia_codigo": "09",
+      "nombre": "BALAO"
+    },
+    {
+      "codigo": "0904",
+      "provincia_codigo": "09",
+      "nombre": "BALZAR"
+    },
+    {
+      "codigo": "0905",
+      "provincia_codigo": "09",
+      "nombre": "COLIMES"
+    },
+    {
+      "codigo": "0906",
+      "provincia_codigo": "09",
+      "nombre": "DAULE"
+    },
+    {
+      "codigo": "0907",
+      "provincia_codigo": "09",
+      "nombre": "DURÁN"
+    },
+    {
+      "codigo": "0908",
+      "provincia_codigo": "09",
+      "nombre": "EL EMPALME"
+    },
+    {
+      "codigo": "0909",
+      "provincia_codigo": "09",
+      "nombre": "EL TRIUNFO"
+    },
+    {
+      "codigo": "0910",
+      "provincia_codigo": "09",
+      "nombre": "MILAGRO"
+    },
+    {
+      "codigo": "0911",
+      "provincia_codigo": "09",
+      "nombre": "NARANJAL"
+    },
+    {
+      "codigo": "0912",
+      "provincia_codigo": "09",
+      "nombre": "NARANJITO"
+    },
+    {
+      "codigo": "0913",
+      "provincia_codigo": "09",
+      "nombre": "PALESTINA"
+    },
+    {
+      "codigo": "0914",
+      "provincia_codigo": "09",
+      "nombre": "PEDRO CARBO"
+    },
+    {
+      "codigo": "0916",
+      "provincia_codigo": "09",
+      "nombre": "SAMBORONDÓN"
+    },
+    {
+      "codigo": "0918",
+      "provincia_codigo": "09",
+      "nombre": "SANTA LUCÍA"
+    },
+    {
+      "codigo": "0919",
+      "provincia_codigo": "09",
+      "nombre": "SALITRE"
+    },
+    {
+      "codigo": "0920",
+      "provincia_codigo": "09",
+      "nombre": "SAN JACINTO DE YAGUACHI"
+    },
+    {
+      "codigo": "0921",
+      "provincia_codigo": "09",
+      "nombre": "PLAYAS"
+    },
+    {
+      "codigo": "0922",
+      "provincia_codigo": "09",
+      "nombre": "SIMÓN BOLÍVAR"
+    },
+    {
+      "codigo": "0923",
+      "provincia_codigo": "09",
+      "nombre": "CORONEL MARCELINO MARIDUEÑA"
+    },
+    {
+      "codigo": "0924",
+      "provincia_codigo": "09",
+      "nombre": "LOMAS DE SARGENTILLO"
+    },
+    {
+      "codigo": "0925",
+      "provincia_codigo": "09",
+      "nombre": "NOBOL"
+    },
+    {
+      "codigo": "0927",
+      "provincia_codigo": "09",
+      "nombre": "GENERAL ANTONIO ELIZALDE"
+    },
+    {
+      "codigo": "0928",
+      "provincia_codigo": "09",
+      "nombre": "ISIDRO AYORA"
+    },
+    {
+      "codigo": "1001",
+      "provincia_codigo": "10",
+      "nombre": "IBARRA"
+    },
+    {
+      "codigo": "1002",
+      "provincia_codigo": "10",
+      "nombre": "ANTONIO ANTE"
+    },
+    {
+      "codigo": "1003",
+      "provincia_codigo": "10",
+      "nombre": "COTACACHI"
+    },
+    {
+      "codigo": "1004",
+      "provincia_codigo": "10",
+      "nombre": "OTAVALO"
+    },
+    {
+      "codigo": "1005",
+      "provincia_codigo": "10",
+      "nombre": "PIMAMPIRO"
+    },
+    {
+      "codigo": "1006",
+      "provincia_codigo": "10",
+      "nombre": "SAN MIGUEL DE URCUQUÍ"
+    },
+    {
+      "codigo": "1101",
+      "provincia_codigo": "11",
+      "nombre": "LOJA"
+    },
+    {
+      "codigo": "1102",
+      "provincia_codigo": "11",
+      "nombre": "CALVAS"
+    },
+    {
+      "codigo": "1103",
+      "provincia_codigo": "11",
+      "nombre": "CATAMAYO"
+    },
+    {
+      "codigo": "1104",
+      "provincia_codigo": "11",
+      "nombre": "CELICA"
+    },
+    {
+      "codigo": "1105",
+      "provincia_codigo": "11",
+      "nombre": "CHAGUARPAMBA"
+    },
+    {
+      "codigo": "1106",
+      "provincia_codigo": "11",
+      "nombre": "ESPÍNDOLA"
+    },
+    {
+      "codigo": "1107",
+      "provincia_codigo": "11",
+      "nombre": "GONZANAMÁ"
+    },
+    {
+      "codigo": "1108",
+      "provincia_codigo": "11",
+      "nombre": "MACARÁ"
+    },
+    {
+      "codigo": "1109",
+      "provincia_codigo": "11",
+      "nombre": "PALTAS"
+    },
+    {
+      "codigo": "1110",
+      "provincia_codigo": "11",
+      "nombre": "PUYANGO"
+    },
+    {
+      "codigo": "1111",
+      "provincia_codigo": "11",
+      "nombre": "SARAGURO"
+    },
+    {
+      "codigo": "1112",
+      "provincia_codigo": "11",
+      "nombre": "SOZORANGA"
+    },
+    {
+      "codigo": "1113",
+      "provincia_codigo": "11",
+      "nombre": "ZAPOTILLO"
+    },
+    {
+      "codigo": "1114",
+      "provincia_codigo": "11",
+      "nombre": "PINDAL"
+    },
+    {
+      "codigo": "1115",
+      "provincia_codigo": "11",
+      "nombre": "QUILANGA"
+    },
+    {
+      "codigo": "1116",
+      "provincia_codigo": "11",
+      "nombre": "OLMEDO"
+    },
+    {
+      "codigo": "1201",
+      "provincia_codigo": "12",
+      "nombre": "BABAHOYO"
+    },
+    {
+      "codigo": "1202",
+      "provincia_codigo": "12",
+      "nombre": "BABA"
+    },
+    {
+      "codigo": "1203",
+      "provincia_codigo": "12",
+      "nombre": "MONTALVO"
+    },
+    {
+      "codigo": "1204",
+      "provincia_codigo": "12",
+      "nombre": "PUEBLOVIEJO"
+    },
+    {
+      "codigo": "1205",
+      "provincia_codigo": "12",
+      "nombre": "QUEVEDO"
+    },
+    {
+      "codigo": "1206",
+      "provincia_codigo": "12",
+      "nombre": "URDANETA"
+    },
+    {
+      "codigo": "1207",
+      "provincia_codigo": "12",
+      "nombre": "VENTANAS"
+    },
+    {
+      "codigo": "1208",
+      "provincia_codigo": "12",
+      "nombre": "VINCES"
+    },
+    {
+      "codigo": "1209",
+      "provincia_codigo": "12",
+      "nombre": "PALENQUE"
+    },
+    {
+      "codigo": "1210",
+      "provincia_codigo": "12",
+      "nombre": "BUENA FE"
+    },
+    {
+      "codigo": "1211",
+      "provincia_codigo": "12",
+      "nombre": "VALENCIA"
+    },
+    {
+      "codigo": "1212",
+      "provincia_codigo": "12",
+      "nombre": "MOCACHE"
+    },
+    {
+      "codigo": "1213",
+      "provincia_codigo": "12",
+      "nombre": "QUINSALOMA"
+    },
+    {
+      "codigo": "1301",
+      "provincia_codigo": "13",
+      "nombre": "PORTOVIEJO"
+    },
+    {
+      "codigo": "1302",
+      "provincia_codigo": "13",
+      "nombre": "BOLÍVAR"
+    },
+    {
+      "codigo": "1303",
+      "provincia_codigo": "13",
+      "nombre": "CHONE"
+    },
+    {
+      "codigo": "1304",
+      "provincia_codigo": "13",
+      "nombre": "EL CARMEN"
+    },
+    {
+      "codigo": "1305",
+      "provincia_codigo": "13",
+      "nombre": "FLAVIO ALFARO"
+    },
+    {
+      "codigo": "1306",
+      "provincia_codigo": "13",
+      "nombre": "JIPIJAPA"
+    },
+    {
+      "codigo": "1307",
+      "provincia_codigo": "13",
+      "nombre": "JUNÍN"
+    },
+    {
+      "codigo": "1308",
+      "provincia_codigo": "13",
+      "nombre": "MANTA"
+    },
+    {
+      "codigo": "1309",
+      "provincia_codigo": "13",
+      "nombre": "MONTECRISTI"
+    },
+    {
+      "codigo": "1310",
+      "provincia_codigo": "13",
+      "nombre": "PAJÁN"
+    },
+    {
+      "codigo": "1311",
+      "provincia_codigo": "13",
+      "nombre": "PICHINCHA"
+    },
+    {
+      "codigo": "1312",
+      "provincia_codigo": "13",
+      "nombre": "ROCAFUERTE"
+    },
+    {
+      "codigo": "1313",
+      "provincia_codigo": "13",
+      "nombre": "SANTA ANA"
+    },
+    {
+      "codigo": "1314",
+      "provincia_codigo": "13",
+      "nombre": "SUCRE"
+    },
+    {
+      "codigo": "1315",
+      "provincia_codigo": "13",
+      "nombre": "TOSAGUA"
+    },
+    {
+      "codigo": "1316",
+      "provincia_codigo": "13",
+      "nombre": "24 DE MAYO"
+    },
+    {
+      "codigo": "1317",
+      "provincia_codigo": "13",
+      "nombre": "PEDERNALES"
+    },
+    {
+      "codigo": "1318",
+      "provincia_codigo": "13",
+      "nombre": "OLMEDO"
+    },
+    {
+      "codigo": "1319",
+      "provincia_codigo": "13",
+      "nombre": "PUERTO LÓPEZ"
+    },
+    {
+      "codigo": "1320",
+      "provincia_codigo": "13",
+      "nombre": "JAMA"
+    },
+    {
+      "codigo": "1321",
+      "provincia_codigo": "13",
+      "nombre": "JARAMIJÓ"
+    },
+    {
+      "codigo": "1322",
+      "provincia_codigo": "13",
+      "nombre": "SAN VICENTE"
+    },
+    {
+      "codigo": "1401",
+      "provincia_codigo": "14",
+      "nombre": "MORONA"
+    },
+    {
+      "codigo": "1402",
+      "provincia_codigo": "14",
+      "nombre": "GUALAQUIZA"
+    },
+    {
+      "codigo": "1403",
+      "provincia_codigo": "14",
+      "nombre": "LIMÓN INDANZA"
+    },
+    {
+      "codigo": "1404",
+      "provincia_codigo": "14",
+      "nombre": "PALORA"
+    },
+    {
+      "codigo": "1405",
+      "provincia_codigo": "14",
+      "nombre": "SANTIAGO"
+    },
+    {
+      "codigo": "1406",
+      "provincia_codigo": "14",
+      "nombre": "SUCÚA"
+    },
+    {
+      "codigo": "1407",
+      "provincia_codigo": "14",
+      "nombre": "HUAMBOYA"
+    },
+    {
+      "codigo": "1408",
+      "provincia_codigo": "14",
+      "nombre": "SAN JUAN BOSCO"
+    },
+    {
+      "codigo": "1409",
+      "provincia_codigo": "14",
+      "nombre": "TAISHA"
+    },
+    {
+      "codigo": "1410",
+      "provincia_codigo": "14",
+      "nombre": "LOGROÑO"
+    },
+    {
+      "codigo": "1411",
+      "provincia_codigo": "14",
+      "nombre": "PABLO SEXTO"
+    },
+    {
+      "codigo": "1412",
+      "provincia_codigo": "14",
+      "nombre": "TIWINTZA"
+    },
+    {
+      "codigo": "1413",
+      "provincia_codigo": "14",
+      "nombre": "SEVILLA DON BOSCO"
+    },
+    {
+      "codigo": "1501",
+      "provincia_codigo": "15",
+      "nombre": "TENA"
+    },
+    {
+      "codigo": "1503",
+      "provincia_codigo": "15",
+      "nombre": "ARCHIDONA"
+    },
+    {
+      "codigo": "1504",
+      "provincia_codigo": "15",
+      "nombre": "EL CHACO"
+    },
+    {
+      "codigo": "1507",
+      "provincia_codigo": "15",
+      "nombre": "QUIJOS"
+    },
+    {
+      "codigo": "1509",
+      "provincia_codigo": "15",
+      "nombre": "CARLOS JULIO AROSEMENA TOLA"
+    },
+    {
+      "codigo": "1601",
+      "provincia_codigo": "16",
+      "nombre": "PASTAZA"
+    },
+    {
+      "codigo": "1602",
+      "provincia_codigo": "16",
+      "nombre": "MERA"
+    },
+    {
+      "codigo": "1603",
+      "provincia_codigo": "16",
+      "nombre": "SANTA CLARA"
+    },
+    {
+      "codigo": "1604",
+      "provincia_codigo": "16",
+      "nombre": "ARAJUNO"
+    },
+    {
+      "codigo": "1701",
+      "provincia_codigo": "17",
+      "nombre": "DISTRITO METROPOLITANO DE QUITO"
+    },
+    {
+      "codigo": "1702",
+      "provincia_codigo": "17",
+      "nombre": "CAYAMBE"
+    },
+    {
+      "codigo": "1703",
+      "provincia_codigo": "17",
+      "nombre": "MEJÍA"
+    },
+    {
+      "codigo": "1704",
+      "provincia_codigo": "17",
+      "nombre": "PEDRO MONCAYO"
+    },
+    {
+      "codigo": "1705",
+      "provincia_codigo": "17",
+      "nombre": "RUMIÑAHUI"
+    },
+    {
+      "codigo": "1707",
+      "provincia_codigo": "17",
+      "nombre": "SAN MIGUEL DE LOS BANCOS"
+    },
+    {
+      "codigo": "1708",
+      "provincia_codigo": "17",
+      "nombre": "PEDRO VICENTE MALDONADO"
+    },
+    {
+      "codigo": "1709",
+      "provincia_codigo": "17",
+      "nombre": "PUERTO QUITO"
+    },
+    {
+      "codigo": "1801",
+      "provincia_codigo": "18",
+      "nombre": "AMBATO"
+    },
+    {
+      "codigo": "1802",
+      "provincia_codigo": "18",
+      "nombre": "BAÑOS DE AGUA SANTA"
+    },
+    {
+      "codigo": "1803",
+      "provincia_codigo": "18",
+      "nombre": "CEVALLOS"
+    },
+    {
+      "codigo": "1804",
+      "provincia_codigo": "18",
+      "nombre": "MOCHA"
+    },
+    {
+      "codigo": "1805",
+      "provincia_codigo": "18",
+      "nombre": "PATATE"
+    },
+    {
+      "codigo": "1806",
+      "provincia_codigo": "18",
+      "nombre": "QUERO"
+    },
+    {
+      "codigo": "1807",
+      "provincia_codigo": "18",
+      "nombre": "SAN PEDRO DE PELILEO"
+    },
+    {
+      "codigo": "1808",
+      "provincia_codigo": "18",
+      "nombre": "SANTIAGO DE PÍLLARO"
+    },
+    {
+      "codigo": "1809",
+      "provincia_codigo": "18",
+      "nombre": "TISALEO"
+    },
+    {
+      "codigo": "1901",
+      "provincia_codigo": "19",
+      "nombre": "ZAMORA"
+    },
+    {
+      "codigo": "1902",
+      "provincia_codigo": "19",
+      "nombre": "CHINCHIPE"
+    },
+    {
+      "codigo": "1903",
+      "provincia_codigo": "19",
+      "nombre": "NANGARITZA"
+    },
+    {
+      "codigo": "1904",
+      "provincia_codigo": "19",
+      "nombre": "YACUAMBI"
+    },
+    {
+      "codigo": "1905",
+      "provincia_codigo": "19",
+      "nombre": "YANTZAZA"
+    },
+    {
+      "codigo": "1906",
+      "provincia_codigo": "19",
+      "nombre": "EL PANGUI"
+    },
+    {
+      "codigo": "1907",
+      "provincia_codigo": "19",
+      "nombre": "CENTINELA DEL CÓNDOR"
+    },
+    {
+      "codigo": "1908",
+      "provincia_codigo": "19",
+      "nombre": "PALANDA"
+    },
+    {
+      "codigo": "1909",
+      "provincia_codigo": "19",
+      "nombre": "PAQUISHA"
+    },
+    {
+      "codigo": "2001",
+      "provincia_codigo": "20",
+      "nombre": "SAN CRISTÓBAL"
+    },
+    {
+      "codigo": "2002",
+      "provincia_codigo": "20",
+      "nombre": "ISABELA"
+    },
+    {
+      "codigo": "2003",
+      "provincia_codigo": "20",
+      "nombre": "SANTA CRUZ"
+    },
+    {
+      "codigo": "2101",
+      "provincia_codigo": "21",
+      "nombre": "LAGO AGRIO"
+    },
+    {
+      "codigo": "2102",
+      "provincia_codigo": "21",
+      "nombre": "GONZALO PIZARRO"
+    },
+    {
+      "codigo": "2103",
+      "provincia_codigo": "21",
+      "nombre": "PUTUMAYO"
+    },
+    {
+      "codigo": "2104",
+      "provincia_codigo": "21",
+      "nombre": "SHUSHUFINDI"
+    },
+    {
+      "codigo": "2105",
+      "provincia_codigo": "21",
+      "nombre": "SUCUMBÍOS"
+    },
+    {
+      "codigo": "2106",
+      "provincia_codigo": "21",
+      "nombre": "CASCALES"
+    },
+    {
+      "codigo": "2107",
+      "provincia_codigo": "21",
+      "nombre": "CUYABENO"
+    },
+    {
+      "codigo": "2201",
+      "provincia_codigo": "22",
+      "nombre": "FRANCISCO DE ORELLANA"
+    },
+    {
+      "codigo": "2202",
+      "provincia_codigo": "22",
+      "nombre": "AGUARICO"
+    },
+    {
+      "codigo": "2203",
+      "provincia_codigo": "22",
+      "nombre": "LA JOYA DE LOS SACHAS"
+    },
+    {
+      "codigo": "2204",
+      "provincia_codigo": "22",
+      "nombre": "LORETO"
+    },
+    {
+      "codigo": "2301",
+      "provincia_codigo": "23",
+      "nombre": "SANTO DOMINGO"
+    },
+    {
+      "codigo": "2302",
+      "provincia_codigo": "23",
+      "nombre": "LA CONCORDIA"
+    },
+    {
+      "codigo": "2401",
+      "provincia_codigo": "24",
+      "nombre": "SANTA ELENA"
+    },
+    {
+      "codigo": "2402",
+      "provincia_codigo": "24",
+      "nombre": "LA LIBERTAD"
+    },
+    {
+      "codigo": "2403",
+      "provincia_codigo": "24",
+      "nombre": "SALINAS"
+    }
+  ],
+  "parroquias": [
+    {
+      "codigo": "00000 ",
+      "canton_codigo": "1702",
+      "nombre": "",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010101",
+      "canton_codigo": "0101",
+      "nombre": "BELLAVISTA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010102",
+      "canton_codigo": "0101",
+      "nombre": "CAÑARIBAMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010103",
+      "canton_codigo": "0101",
+      "nombre": "EL BATÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010104",
+      "canton_codigo": "0101",
+      "nombre": "EL SAGRARIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010105",
+      "canton_codigo": "0101",
+      "nombre": "EL VECINO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010106",
+      "canton_codigo": "0101",
+      "nombre": "GIL RAMÍREZ DÁVALOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010107",
+      "canton_codigo": "0101",
+      "nombre": "HUAYNACÁPAC",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010108",
+      "canton_codigo": "0101",
+      "nombre": "MACHÁNGARA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010109",
+      "canton_codigo": "0101",
+      "nombre": "MONAY",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010110",
+      "canton_codigo": "0101",
+      "nombre": "SAN BLAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010111",
+      "canton_codigo": "0101",
+      "nombre": "SAN SEBASTIÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010112",
+      "canton_codigo": "0101",
+      "nombre": "SUCRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010113",
+      "canton_codigo": "0101",
+      "nombre": "TOTORACOCHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010114",
+      "canton_codigo": "0101",
+      "nombre": "YANUNCAY",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010115",
+      "canton_codigo": "0101",
+      "nombre": "HERMANO MIGUEL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010151",
+      "canton_codigo": "0101",
+      "nombre": "BAÑOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010152",
+      "canton_codigo": "0101",
+      "nombre": "CUMBE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010153",
+      "canton_codigo": "0101",
+      "nombre": "CHAUCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010154",
+      "canton_codigo": "0101",
+      "nombre": "CHECA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010155",
+      "canton_codigo": "0101",
+      "nombre": "CHIQUINTAD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010156",
+      "canton_codigo": "0101",
+      "nombre": "LLACAO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010157",
+      "canton_codigo": "0101",
+      "nombre": "MOLLETURO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010158",
+      "canton_codigo": "0101",
+      "nombre": "NULTI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010159",
+      "canton_codigo": "0101",
+      "nombre": "OCTAVIO CORDERO PALACIOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010160",
+      "canton_codigo": "0101",
+      "nombre": "PACCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010161",
+      "canton_codigo": "0101",
+      "nombre": "QUINGEO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010162",
+      "canton_codigo": "0101",
+      "nombre": "RICAURTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010163",
+      "canton_codigo": "0101",
+      "nombre": "SAN JOAQUÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010164",
+      "canton_codigo": "0101",
+      "nombre": "SANTA ANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010165",
+      "canton_codigo": "0101",
+      "nombre": "SAYAUSÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010166",
+      "canton_codigo": "0101",
+      "nombre": "SIDCAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010167",
+      "canton_codigo": "0101",
+      "nombre": "SININCAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010168",
+      "canton_codigo": "0101",
+      "nombre": "TARQUI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010169",
+      "canton_codigo": "0101",
+      "nombre": "TURI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010170",
+      "canton_codigo": "0101",
+      "nombre": "VALLE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010171",
+      "canton_codigo": "0101",
+      "nombre": "VICTORIA DEL PORTETE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010250",
+      "canton_codigo": "0102",
+      "nombre": "GIRÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010251",
+      "canton_codigo": "0102",
+      "nombre": "LA ASUNCIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010252",
+      "canton_codigo": "0102",
+      "nombre": "SAN GERARDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010350",
+      "canton_codigo": "0103",
+      "nombre": "GUALACEO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010352",
+      "canton_codigo": "0103",
+      "nombre": "DANIEL CÓRDOVA TORAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010353",
+      "canton_codigo": "0103",
+      "nombre": "JADÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010354",
+      "canton_codigo": "0103",
+      "nombre": "MARIANO MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010356",
+      "canton_codigo": "0103",
+      "nombre": "REMIGIO CRESPO TORAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010357",
+      "canton_codigo": "0103",
+      "nombre": "SAN JUAN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010358",
+      "canton_codigo": "0103",
+      "nombre": "ZHIDMAD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010359",
+      "canton_codigo": "0103",
+      "nombre": "LUIS CORDERO VEGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010360",
+      "canton_codigo": "0103",
+      "nombre": "SIMÓN BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010450",
+      "canton_codigo": "0104",
+      "nombre": "NABÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010451",
+      "canton_codigo": "0104",
+      "nombre": "COCHAPATA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010452",
+      "canton_codigo": "0104",
+      "nombre": "EL PROGRESO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010453",
+      "canton_codigo": "0104",
+      "nombre": "LAS NIEVES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010550",
+      "canton_codigo": "0105",
+      "nombre": "PAUTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010552",
+      "canton_codigo": "0105",
+      "nombre": "BULÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010553",
+      "canton_codigo": "0105",
+      "nombre": "CHICÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010554",
+      "canton_codigo": "0105",
+      "nombre": "EL CABO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010556",
+      "canton_codigo": "0105",
+      "nombre": "GUARAINAG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010559",
+      "canton_codigo": "0105",
+      "nombre": "SAN CRISTÓBAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010561",
+      "canton_codigo": "0105",
+      "nombre": "TOMEBAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010562",
+      "canton_codigo": "0105",
+      "nombre": "DUG DUG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010650",
+      "canton_codigo": "0106",
+      "nombre": "PUCARÁ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010652",
+      "canton_codigo": "0106",
+      "nombre": "SAN RAFAEL DE SHARUG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010750",
+      "canton_codigo": "0107",
+      "nombre": "SAN FERNANDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010751",
+      "canton_codigo": "0107",
+      "nombre": "CHUMBLÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010850",
+      "canton_codigo": "0108",
+      "nombre": "SANTA ISABEL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010851",
+      "canton_codigo": "0108",
+      "nombre": "ABDÓN CALDERÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010852",
+      "canton_codigo": "0108",
+      "nombre": "EL CARMEN DE PIJILÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010853",
+      "canton_codigo": "0108",
+      "nombre": "SHAGLLI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010854",
+      "canton_codigo": "0108",
+      "nombre": "SAN SALVADOR DE CAÑARIBAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010950",
+      "canton_codigo": "0109",
+      "nombre": "SÍGSIG",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "010951",
+      "canton_codigo": "0109",
+      "nombre": "CUCHIL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010952",
+      "canton_codigo": "0109",
+      "nombre": "JIMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010953",
+      "canton_codigo": "0109",
+      "nombre": "GÜEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010954",
+      "canton_codigo": "0109",
+      "nombre": "LUDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010955",
+      "canton_codigo": "0109",
+      "nombre": "SAN BARTOLOMÉ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "010956",
+      "canton_codigo": "0109",
+      "nombre": "SAN JOSÉ DE RARANGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011050",
+      "canton_codigo": "0110",
+      "nombre": "SAN FELIPE DE OÑA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "011051",
+      "canton_codigo": "0110",
+      "nombre": "SUSUDEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011150",
+      "canton_codigo": "0111",
+      "nombre": "CHORDELEG",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "011151",
+      "canton_codigo": "0111",
+      "nombre": "PRINCIPAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011152",
+      "canton_codigo": "0111",
+      "nombre": "LA UNIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011153",
+      "canton_codigo": "0111",
+      "nombre": "LUIS GALARZA ORELLANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011154",
+      "canton_codigo": "0111",
+      "nombre": "SAN MARTÍN DE PUZHIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011250",
+      "canton_codigo": "0112",
+      "nombre": "EL PAN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "011253",
+      "canton_codigo": "0112",
+      "nombre": "SAN VICENTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011350",
+      "canton_codigo": "0113",
+      "nombre": "SEVILLA DE ORO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "011351",
+      "canton_codigo": "0113",
+      "nombre": "AMALUZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011352",
+      "canton_codigo": "0113",
+      "nombre": "PALMAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "011450",
+      "canton_codigo": "0114",
+      "nombre": "GUACHAPALA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "011550",
+      "canton_codigo": "0115",
+      "nombre": "CAMILO PONCE ENRÍQUEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020101",
+      "canton_codigo": "0201",
+      "nombre": "ÁNGEL POLIBIO CHÁVES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020102",
+      "canton_codigo": "0201",
+      "nombre": "GABRIEL IGNACIO VEINTIMILLA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020103",
+      "canton_codigo": "0201",
+      "nombre": "GUANUJO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020151",
+      "canton_codigo": "0201",
+      "nombre": "FACUNDO VELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020153",
+      "canton_codigo": "0201",
+      "nombre": "JULIO E. MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020155",
+      "canton_codigo": "0201",
+      "nombre": "SALINAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020156",
+      "canton_codigo": "0201",
+      "nombre": "SAN LORENZO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020157",
+      "canton_codigo": "0201",
+      "nombre": "SAN SIMÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020158",
+      "canton_codigo": "0201",
+      "nombre": "SANTA FE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020159",
+      "canton_codigo": "0201",
+      "nombre": "SIMIÁTUG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020160",
+      "canton_codigo": "0201",
+      "nombre": "SAN LUIS DE PAMBIL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020250",
+      "canton_codigo": "0202",
+      "nombre": "CHILLANES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020251",
+      "canton_codigo": "0202",
+      "nombre": "SAN JOSÉ DEL TAMBO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020350",
+      "canton_codigo": "0203",
+      "nombre": "SAN JOSÉ DE CHIMBO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020351",
+      "canton_codigo": "0203",
+      "nombre": "ASUNCIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020353",
+      "canton_codigo": "0203",
+      "nombre": "LA MAGDALENA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020354",
+      "canton_codigo": "0203",
+      "nombre": "SAN SEBASTIÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020355",
+      "canton_codigo": "0203",
+      "nombre": "TELIMBELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020450",
+      "canton_codigo": "0204",
+      "nombre": "ECHEANDÍA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020550",
+      "canton_codigo": "0205",
+      "nombre": "SAN MIGUEL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020551",
+      "canton_codigo": "0205",
+      "nombre": "BALSAPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020552",
+      "canton_codigo": "0205",
+      "nombre": "BILOVÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020553",
+      "canton_codigo": "0205",
+      "nombre": "RÉGULO DE MORA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020554",
+      "canton_codigo": "0205",
+      "nombre": "SAN PABLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020555",
+      "canton_codigo": "0205",
+      "nombre": "SANTIAGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020556",
+      "canton_codigo": "0205",
+      "nombre": "SAN VICENTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "020650",
+      "canton_codigo": "0206",
+      "nombre": "CALUMA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020701",
+      "canton_codigo": "0207",
+      "nombre": "LAS MERCEDES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "020702",
+      "canton_codigo": "0207",
+      "nombre": "LAS NAVES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030101",
+      "canton_codigo": "0301",
+      "nombre": "AURELIO BAYAS MARTÍNEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030102",
+      "canton_codigo": "0301",
+      "nombre": "AZOGUES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030103",
+      "canton_codigo": "0301",
+      "nombre": "BORRERO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030104",
+      "canton_codigo": "0301",
+      "nombre": "SAN FRANCISCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030151",
+      "canton_codigo": "0301",
+      "nombre": "COJITAMBO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030153",
+      "canton_codigo": "0301",
+      "nombre": "GUAPÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030154",
+      "canton_codigo": "0301",
+      "nombre": "JAVIER LOYOLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030155",
+      "canton_codigo": "0301",
+      "nombre": "LUIS CORDERO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030156",
+      "canton_codigo": "0301",
+      "nombre": "PINDILIG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030157",
+      "canton_codigo": "0301",
+      "nombre": "RIVERA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030158",
+      "canton_codigo": "0301",
+      "nombre": "SAN MIGUEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030160",
+      "canton_codigo": "0301",
+      "nombre": "TADAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030250",
+      "canton_codigo": "0302",
+      "nombre": "BIBLIÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030251",
+      "canton_codigo": "0302",
+      "nombre": "NAZÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030252",
+      "canton_codigo": "0302",
+      "nombre": "SAN FRANCISCO DE SAGEO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030253",
+      "canton_codigo": "0302",
+      "nombre": "TURUPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030254",
+      "canton_codigo": "0302",
+      "nombre": "JERUSALÉN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030350",
+      "canton_codigo": "0303",
+      "nombre": "CAÑAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030351",
+      "canton_codigo": "0303",
+      "nombre": "CHONTAMARCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030352",
+      "canton_codigo": "0303",
+      "nombre": "CHOROCOPTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030353",
+      "canton_codigo": "0303",
+      "nombre": "GENERAL MORALES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030354",
+      "canton_codigo": "0303",
+      "nombre": "GUALLETURO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030355",
+      "canton_codigo": "0303",
+      "nombre": "HONORATO VÁSQUEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030356",
+      "canton_codigo": "0303",
+      "nombre": "INGAPIRCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030357",
+      "canton_codigo": "0303",
+      "nombre": "JUNCAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030358",
+      "canton_codigo": "0303",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030361",
+      "canton_codigo": "0303",
+      "nombre": "ZHUD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030362",
+      "canton_codigo": "0303",
+      "nombre": "VENTURA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030363",
+      "canton_codigo": "0303",
+      "nombre": "DUCUR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030450",
+      "canton_codigo": "0304",
+      "nombre": "LA TRONCAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030451",
+      "canton_codigo": "0304",
+      "nombre": "MANUEL J. CALLE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030452",
+      "canton_codigo": "0304",
+      "nombre": "PANCHO NEGRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030550",
+      "canton_codigo": "0305",
+      "nombre": "EL TAMBO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030650",
+      "canton_codigo": "0306",
+      "nombre": "DÉLEG",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "030651",
+      "canton_codigo": "0306",
+      "nombre": "SOLANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "030750",
+      "canton_codigo": "0307",
+      "nombre": "SUSCAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040101",
+      "canton_codigo": "0401",
+      "nombre": "GONZÁLEZ SUÁREZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040102",
+      "canton_codigo": "0401",
+      "nombre": "TULCÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040151",
+      "canton_codigo": "0401",
+      "nombre": "EL CARMELO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040153",
+      "canton_codigo": "0401",
+      "nombre": "JULIO ANDRADE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040154",
+      "canton_codigo": "0401",
+      "nombre": "MALDONADO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040155",
+      "canton_codigo": "0401",
+      "nombre": "PIOTER",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040156",
+      "canton_codigo": "0401",
+      "nombre": "TOBAR DONOSO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040157",
+      "canton_codigo": "0401",
+      "nombre": "TUFIÑO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040158",
+      "canton_codigo": "0401",
+      "nombre": "URBINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040159",
+      "canton_codigo": "0401",
+      "nombre": "EL CHICAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040161",
+      "canton_codigo": "0401",
+      "nombre": "SANTA MARTHA DE CUBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040250",
+      "canton_codigo": "0402",
+      "nombre": "BOLÍVAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040251",
+      "canton_codigo": "0402",
+      "nombre": "GARCÍA MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040252",
+      "canton_codigo": "0402",
+      "nombre": "LOS ANDES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040253",
+      "canton_codigo": "0402",
+      "nombre": "MONTE OLIVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040254",
+      "canton_codigo": "0402",
+      "nombre": "SAN VICENTE DE PUSIR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040255",
+      "canton_codigo": "0402",
+      "nombre": "SAN RAFAEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040301",
+      "canton_codigo": "0403",
+      "nombre": "EL ÁNGEL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040302",
+      "canton_codigo": "0403",
+      "nombre": "27 DE SEPTIEMBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040351",
+      "canton_codigo": "0403",
+      "nombre": "EL GOALTAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040352",
+      "canton_codigo": "0403",
+      "nombre": "LA LIBERTAD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040353",
+      "canton_codigo": "0403",
+      "nombre": "SAN ISIDRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040450",
+      "canton_codigo": "0404",
+      "nombre": "MIRA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040451",
+      "canton_codigo": "0404",
+      "nombre": "CONCEPCIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040452",
+      "canton_codigo": "0404",
+      "nombre": "JIJÓN Y CAAMAÑO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040453",
+      "canton_codigo": "0404",
+      "nombre": "JUAN MONTALVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040501",
+      "canton_codigo": "0405",
+      "nombre": "GONZÁLEZ SUÁREZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040502",
+      "canton_codigo": "0405",
+      "nombre": "SAN JOSÉ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040551",
+      "canton_codigo": "0405",
+      "nombre": "CRISTÓBAL COLÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040552",
+      "canton_codigo": "0405",
+      "nombre": "CHITÁN DE NAVARRETE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040553",
+      "canton_codigo": "0405",
+      "nombre": "FERNÁNDEZ SALVADOR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040554",
+      "canton_codigo": "0405",
+      "nombre": "LA PAZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040555",
+      "canton_codigo": "0405",
+      "nombre": "PIARTAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "040650",
+      "canton_codigo": "0406",
+      "nombre": "HUACA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "040651",
+      "canton_codigo": "0406",
+      "nombre": "MARISCAL SUCRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050101",
+      "canton_codigo": "0501",
+      "nombre": "ELOY ALFARO  (SAN FELIPE)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050102",
+      "canton_codigo": "0501",
+      "nombre": "IGNACIO FLORES (PARQUE FLORES)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050103",
+      "canton_codigo": "0501",
+      "nombre": "JUAN MONTALVO (SAN SEBASTIÁN)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050104",
+      "canton_codigo": "0501",
+      "nombre": "LA MATRIZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050105",
+      "canton_codigo": "0501",
+      "nombre": "SAN BUENAVENTURA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050151",
+      "canton_codigo": "0501",
+      "nombre": "ALÁQUEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050152",
+      "canton_codigo": "0501",
+      "nombre": "BELISARIO QUEVEDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050153",
+      "canton_codigo": "0501",
+      "nombre": "GUAYTACAMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050154",
+      "canton_codigo": "0501",
+      "nombre": "JOSEGUANGO BAJO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050156",
+      "canton_codigo": "0501",
+      "nombre": "MULALÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050157",
+      "canton_codigo": "0501",
+      "nombre": "ONCE DE NOVIEMBRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050158",
+      "canton_codigo": "0501",
+      "nombre": "POALÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050159",
+      "canton_codigo": "0501",
+      "nombre": "SAN JUAN DE PASTOCALLE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050161",
+      "canton_codigo": "0501",
+      "nombre": "TANICUCHÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050162",
+      "canton_codigo": "0501",
+      "nombre": "TOACASO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050201",
+      "canton_codigo": "0502",
+      "nombre": "EL CARMEN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050202",
+      "canton_codigo": "0502",
+      "nombre": "LA MANÁ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050203",
+      "canton_codigo": "0502",
+      "nombre": "EL TRIUNFO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050251",
+      "canton_codigo": "0502",
+      "nombre": "GUASAGANDA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050252",
+      "canton_codigo": "0502",
+      "nombre": "PUCAYACU",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050350",
+      "canton_codigo": "0503",
+      "nombre": "EL CORAZÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050351",
+      "canton_codigo": "0503",
+      "nombre": "MORASPUNGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050352",
+      "canton_codigo": "0503",
+      "nombre": "PINLLOPATA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050353",
+      "canton_codigo": "0503",
+      "nombre": "RAMÓN CAMPAÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050450",
+      "canton_codigo": "0504",
+      "nombre": "PUJILÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050451",
+      "canton_codigo": "0504",
+      "nombre": "ANGAMARCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050453",
+      "canton_codigo": "0504",
+      "nombre": "GUANGAJE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050455",
+      "canton_codigo": "0504",
+      "nombre": "LA VICTORIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050456",
+      "canton_codigo": "0504",
+      "nombre": "PILALÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050457",
+      "canton_codigo": "0504",
+      "nombre": "TINGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050458",
+      "canton_codigo": "0504",
+      "nombre": "ZUMBAHUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050550",
+      "canton_codigo": "0505",
+      "nombre": "SAN MIGUEL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050551",
+      "canton_codigo": "0505",
+      "nombre": "ANTONIO JOSÉ HOLGUÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050552",
+      "canton_codigo": "0505",
+      "nombre": "CUSUBAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050553",
+      "canton_codigo": "0505",
+      "nombre": "MULALILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050554",
+      "canton_codigo": "0505",
+      "nombre": "MULLIQUINDIL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050555",
+      "canton_codigo": "0505",
+      "nombre": "PANSALEO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050650",
+      "canton_codigo": "0506",
+      "nombre": "SAQUISILÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050651",
+      "canton_codigo": "0506",
+      "nombre": "CANCHAGUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050652",
+      "canton_codigo": "0506",
+      "nombre": "CHANTILÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050653",
+      "canton_codigo": "0506",
+      "nombre": "COCHAPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050750",
+      "canton_codigo": "0507",
+      "nombre": "SIGCHOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "050751",
+      "canton_codigo": "0507",
+      "nombre": "CHUGCHILLÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050752",
+      "canton_codigo": "0507",
+      "nombre": "ISINLIVI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050753",
+      "canton_codigo": "0507",
+      "nombre": "LAS PAMPAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "050754",
+      "canton_codigo": "0507",
+      "nombre": "PALO QUEMADO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060101",
+      "canton_codigo": "0601",
+      "nombre": "LIZARZABURU",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060102",
+      "canton_codigo": "0601",
+      "nombre": "MALDONADO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060103",
+      "canton_codigo": "0601",
+      "nombre": "VELASCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060104",
+      "canton_codigo": "0601",
+      "nombre": "VELOZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060105",
+      "canton_codigo": "0601",
+      "nombre": "YARUQUÍES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060151",
+      "canton_codigo": "0601",
+      "nombre": "CACHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060152",
+      "canton_codigo": "0601",
+      "nombre": "CALPI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060153",
+      "canton_codigo": "0601",
+      "nombre": "CUBIJÍES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060154",
+      "canton_codigo": "0601",
+      "nombre": "FLORES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060155",
+      "canton_codigo": "0601",
+      "nombre": "LICÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060156",
+      "canton_codigo": "0601",
+      "nombre": "LICTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060157",
+      "canton_codigo": "0601",
+      "nombre": "PUNGALÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060158",
+      "canton_codigo": "0601",
+      "nombre": "PUNÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060159",
+      "canton_codigo": "0601",
+      "nombre": "QUIMIAG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060160",
+      "canton_codigo": "0601",
+      "nombre": "SAN JUAN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060161",
+      "canton_codigo": "0601",
+      "nombre": "SAN LUIS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060250",
+      "canton_codigo": "0602",
+      "nombre": "ALAUSÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060251",
+      "canton_codigo": "0602",
+      "nombre": "ACHUPALLAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060253",
+      "canton_codigo": "0602",
+      "nombre": "GUASUNTOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060254",
+      "canton_codigo": "0602",
+      "nombre": "HUIGRA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060255",
+      "canton_codigo": "0602",
+      "nombre": "MULTITUD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060256",
+      "canton_codigo": "0602",
+      "nombre": "PISTISHI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060257",
+      "canton_codigo": "0602",
+      "nombre": "PUMALLACTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060258",
+      "canton_codigo": "0602",
+      "nombre": "SEVILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060259",
+      "canton_codigo": "0602",
+      "nombre": "SIBAMBE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060260",
+      "canton_codigo": "0602",
+      "nombre": "TIXÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060301",
+      "canton_codigo": "0603",
+      "nombre": "CAJABAMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060302",
+      "canton_codigo": "0603",
+      "nombre": "SICALPA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060351",
+      "canton_codigo": "0603",
+      "nombre": "CAÑI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060352",
+      "canton_codigo": "0603",
+      "nombre": "COLUMBE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060353",
+      "canton_codigo": "0603",
+      "nombre": "JUAN DE VELASCO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060354",
+      "canton_codigo": "0603",
+      "nombre": "SANTIAGO DE QUITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060450",
+      "canton_codigo": "0604",
+      "nombre": "CHAMBO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060550",
+      "canton_codigo": "0605",
+      "nombre": "CHUNCHI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060551",
+      "canton_codigo": "0605",
+      "nombre": "CAPZOL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060552",
+      "canton_codigo": "0605",
+      "nombre": "COMPUD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060553",
+      "canton_codigo": "0605",
+      "nombre": "GONZOL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060554",
+      "canton_codigo": "0605",
+      "nombre": "LLAGOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060650",
+      "canton_codigo": "0606",
+      "nombre": "GUAMOTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060651",
+      "canton_codigo": "0606",
+      "nombre": "CEBADAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060652",
+      "canton_codigo": "0606",
+      "nombre": "PALMIRA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060701",
+      "canton_codigo": "0607",
+      "nombre": "EL ROSARIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060702",
+      "canton_codigo": "0607",
+      "nombre": "LA MATRIZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060751",
+      "canton_codigo": "0607",
+      "nombre": "GUANANDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060752",
+      "canton_codigo": "0607",
+      "nombre": "ILAPO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060753",
+      "canton_codigo": "0607",
+      "nombre": "LA PROVIDENCIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060754",
+      "canton_codigo": "0607",
+      "nombre": "SAN ANDRÉS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060755",
+      "canton_codigo": "0607",
+      "nombre": "SAN GERARDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060756",
+      "canton_codigo": "0607",
+      "nombre": "SAN ISIDRO DE PATULÚ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060757",
+      "canton_codigo": "0607",
+      "nombre": "SAN JOSÉ DEL CHAZO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060758",
+      "canton_codigo": "0607",
+      "nombre": "SANTA FÉ DE GALÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060759",
+      "canton_codigo": "0607",
+      "nombre": "VALPARAISO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060850",
+      "canton_codigo": "0608",
+      "nombre": "PALLATANGA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060950",
+      "canton_codigo": "0609",
+      "nombre": "PENIPE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "060951",
+      "canton_codigo": "0609",
+      "nombre": "EL ALTAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060952",
+      "canton_codigo": "0609",
+      "nombre": "MATUS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060953",
+      "canton_codigo": "0609",
+      "nombre": "PUELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060954",
+      "canton_codigo": "0609",
+      "nombre": "SAN ANTONIO DE BAYUSHIG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060955",
+      "canton_codigo": "0609",
+      "nombre": "LA CANDELARIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "060956",
+      "canton_codigo": "0609",
+      "nombre": "BILBAO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "061050",
+      "canton_codigo": "0610",
+      "nombre": "CUMANDÁ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070101",
+      "canton_codigo": "0701",
+      "nombre": "LA PROVIDENCIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070102",
+      "canton_codigo": "0701",
+      "nombre": "MACHALA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070103",
+      "canton_codigo": "0701",
+      "nombre": "PUERTO BOLÍVAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070104",
+      "canton_codigo": "0701",
+      "nombre": "NUEVE DE MAYO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070105",
+      "canton_codigo": "0701",
+      "nombre": "EL CAMBIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070152",
+      "canton_codigo": "0701",
+      "nombre": "EL RETIRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070250",
+      "canton_codigo": "0702",
+      "nombre": "ARENILLAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070251",
+      "canton_codigo": "0702",
+      "nombre": "CHACRAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070254",
+      "canton_codigo": "0702",
+      "nombre": "PALMALES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070255",
+      "canton_codigo": "0702",
+      "nombre": "CARCABÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070256",
+      "canton_codigo": "0702",
+      "nombre": "LA CUCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070350",
+      "canton_codigo": "0703",
+      "nombre": "PACCHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070351",
+      "canton_codigo": "0703",
+      "nombre": "AYAPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070352",
+      "canton_codigo": "0703",
+      "nombre": "CORDONCILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070353",
+      "canton_codigo": "0703",
+      "nombre": "MILAGRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070354",
+      "canton_codigo": "0703",
+      "nombre": "SAN JOSÉ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070355",
+      "canton_codigo": "0703",
+      "nombre": "SAN JUAN DE CERRO AZUL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070450",
+      "canton_codigo": "0704",
+      "nombre": "BALSAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070451",
+      "canton_codigo": "0704",
+      "nombre": "BELLAMARÍA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070550",
+      "canton_codigo": "0705",
+      "nombre": "CHILLA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070650",
+      "canton_codigo": "0706",
+      "nombre": "EL GUABO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070651",
+      "canton_codigo": "0706",
+      "nombre": "BARBONES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070652",
+      "canton_codigo": "0706",
+      "nombre": "LA IBERIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070653",
+      "canton_codigo": "0706",
+      "nombre": "TENDALES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070654",
+      "canton_codigo": "0706",
+      "nombre": "RÍO BONITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070701",
+      "canton_codigo": "0707",
+      "nombre": "ECUADOR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070702",
+      "canton_codigo": "0707",
+      "nombre": "EL PARAÍSO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070703",
+      "canton_codigo": "0707",
+      "nombre": "HUALTACO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070704",
+      "canton_codigo": "0707",
+      "nombre": "MILTON REYES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070705",
+      "canton_codigo": "0707",
+      "nombre": "UNIÓN LOJANA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070850",
+      "canton_codigo": "0708",
+      "nombre": "MARCABELÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070851",
+      "canton_codigo": "0708",
+      "nombre": "EL INGENIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070901",
+      "canton_codigo": "0709",
+      "nombre": "BOLÍVAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070902",
+      "canton_codigo": "0709",
+      "nombre": "LOMA DE FRANCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070903",
+      "canton_codigo": "0709",
+      "nombre": "OCHOA LEÓN (MATRIZ)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070904",
+      "canton_codigo": "0709",
+      "nombre": "TRES CERRITOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "070951",
+      "canton_codigo": "0709",
+      "nombre": "BUENAVISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070952",
+      "canton_codigo": "0709",
+      "nombre": "CASACAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070953",
+      "canton_codigo": "0709",
+      "nombre": "LA PEAÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070954",
+      "canton_codigo": "0709",
+      "nombre": "PROGRESO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070955",
+      "canton_codigo": "0709",
+      "nombre": "UZHCURRUMI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "070956",
+      "canton_codigo": "0709",
+      "nombre": "CAÑAQUEMADA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071001",
+      "canton_codigo": "0710",
+      "nombre": "LA MATRIZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071002",
+      "canton_codigo": "0710",
+      "nombre": "LA SUSAYA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071003",
+      "canton_codigo": "0710",
+      "nombre": "PIÑAS GRANDE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071051",
+      "canton_codigo": "0710",
+      "nombre": "CAPIRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071052",
+      "canton_codigo": "0710",
+      "nombre": "LA BOCANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071053",
+      "canton_codigo": "0710",
+      "nombre": "MOROMORO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071054",
+      "canton_codigo": "0710",
+      "nombre": "PIEDRAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071055",
+      "canton_codigo": "0710",
+      "nombre": "SAN ROQUE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071056",
+      "canton_codigo": "0710",
+      "nombre": "SARACAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071150",
+      "canton_codigo": "0711",
+      "nombre": "PORTOVELO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071151",
+      "canton_codigo": "0711",
+      "nombre": "CURTINCAPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071152",
+      "canton_codigo": "0711",
+      "nombre": "MORALES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071153",
+      "canton_codigo": "0711",
+      "nombre": "SALATÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071201",
+      "canton_codigo": "0712",
+      "nombre": "SANTA ROSA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071202",
+      "canton_codigo": "0712",
+      "nombre": "PUERTO JELÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071203",
+      "canton_codigo": "0712",
+      "nombre": "BALNEARIO JAMBELÍ (SATÉLITE)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071204",
+      "canton_codigo": "0712",
+      "nombre": "JUMÓN (SATÉLITE)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071205",
+      "canton_codigo": "0712",
+      "nombre": "NUEVO SANTA ROSA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071251",
+      "canton_codigo": "0712",
+      "nombre": "BELLAVISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071252",
+      "canton_codigo": "0712",
+      "nombre": "JAMBELÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071253",
+      "canton_codigo": "0712",
+      "nombre": "LA AVANZADA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071254",
+      "canton_codigo": "0712",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071255",
+      "canton_codigo": "0712",
+      "nombre": "TORATA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071256",
+      "canton_codigo": "0712",
+      "nombre": "VICTORIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071257",
+      "canton_codigo": "0712",
+      "nombre": "BELLAMARÍA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071350",
+      "canton_codigo": "0713",
+      "nombre": "ZARUMA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071351",
+      "canton_codigo": "0713",
+      "nombre": "ABAÑÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071352",
+      "canton_codigo": "0713",
+      "nombre": "ARCAPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071353",
+      "canton_codigo": "0713",
+      "nombre": "GUANAZÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071354",
+      "canton_codigo": "0713",
+      "nombre": "GUIZHAGUIÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071355",
+      "canton_codigo": "0713",
+      "nombre": "HUERTAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071356",
+      "canton_codigo": "0713",
+      "nombre": "MALVAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071357",
+      "canton_codigo": "0713",
+      "nombre": "MULUNCAY GRANDE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071358",
+      "canton_codigo": "0713",
+      "nombre": "SINSAO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071359",
+      "canton_codigo": "0713",
+      "nombre": "SALVIAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071401",
+      "canton_codigo": "0714",
+      "nombre": "LA VICTORIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071402",
+      "canton_codigo": "0714",
+      "nombre": "PLATANILLOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071403",
+      "canton_codigo": "0714",
+      "nombre": "VALLE HERMOSO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "071451",
+      "canton_codigo": "0714",
+      "nombre": "LA LIBERTAD",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071452",
+      "canton_codigo": "0714",
+      "nombre": "EL PARAÍSO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "071453",
+      "canton_codigo": "0714",
+      "nombre": "SAN ISIDRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080101",
+      "canton_codigo": "0801",
+      "nombre": "BARTOLOMÉ RUIZ (CÉSAR FRANCO CARRIÓN)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080102",
+      "canton_codigo": "0801",
+      "nombre": "5 DE AGOSTO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080103",
+      "canton_codigo": "0801",
+      "nombre": "ESMERALDAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080104",
+      "canton_codigo": "0801",
+      "nombre": "LUIS TELLO  (LAS PALMAS)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080105",
+      "canton_codigo": "0801",
+      "nombre": "SIMÓN PLATA TORRES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080152",
+      "canton_codigo": "0801",
+      "nombre": "CAMARONES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080153",
+      "canton_codigo": "0801",
+      "nombre": "CORONEL CARLOS CONCHA TORRES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080154",
+      "canton_codigo": "0801",
+      "nombre": "CHINCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080159",
+      "canton_codigo": "0801",
+      "nombre": "MAJUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080163",
+      "canton_codigo": "0801",
+      "nombre": "SAN MATEO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080165",
+      "canton_codigo": "0801",
+      "nombre": "TABIAZO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080166",
+      "canton_codigo": "0801",
+      "nombre": "TACHINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080168",
+      "canton_codigo": "0801",
+      "nombre": "VUELTA LARGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080250",
+      "canton_codigo": "0802",
+      "nombre": "VALDEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080251",
+      "canton_codigo": "0802",
+      "nombre": "ANCHAYACU",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080252",
+      "canton_codigo": "0802",
+      "nombre": "ATAHUALPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080253",
+      "canton_codigo": "0802",
+      "nombre": "BORBÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080254",
+      "canton_codigo": "0802",
+      "nombre": "LA TOLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080255",
+      "canton_codigo": "0802",
+      "nombre": "LUIS VARGAS TORRES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080256",
+      "canton_codigo": "0802",
+      "nombre": "MALDONADO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080257",
+      "canton_codigo": "0802",
+      "nombre": "PAMPANAL DE BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080258",
+      "canton_codigo": "0802",
+      "nombre": "SAN FRANCISCO DE ONZOLE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080259",
+      "canton_codigo": "0802",
+      "nombre": "SANTO DOMINGO DE ONZOLE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080260",
+      "canton_codigo": "0802",
+      "nombre": "SELVA ALEGRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080261",
+      "canton_codigo": "0802",
+      "nombre": "TELEMBÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080262",
+      "canton_codigo": "0802",
+      "nombre": "COLÓN ELOY DEL MARÍA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080263",
+      "canton_codigo": "0802",
+      "nombre": "SAN JOSÉ DE CAYAPAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080264",
+      "canton_codigo": "0802",
+      "nombre": "TIMBIRÉ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080265",
+      "canton_codigo": "0802",
+      "nombre": "SANTA LUCÍA DE LAS PEÑAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080350",
+      "canton_codigo": "0803",
+      "nombre": "MUISNE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080351",
+      "canton_codigo": "0803",
+      "nombre": "BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080352",
+      "canton_codigo": "0803",
+      "nombre": "DAULE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080353",
+      "canton_codigo": "0803",
+      "nombre": "GALERA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080354",
+      "canton_codigo": "0803",
+      "nombre": "QUINGUE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080355",
+      "canton_codigo": "0803",
+      "nombre": "SÁLIMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080356",
+      "canton_codigo": "0803",
+      "nombre": "SAN FRANCISCO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080357",
+      "canton_codigo": "0803",
+      "nombre": "SAN GREGORIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080358",
+      "canton_codigo": "0803",
+      "nombre": "SAN JOSÉ DE CHAMANGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080450",
+      "canton_codigo": "0804",
+      "nombre": "ROSA ZÁRATE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080451",
+      "canton_codigo": "0804",
+      "nombre": "CUBE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080452",
+      "canton_codigo": "0804",
+      "nombre": "CHURA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080453",
+      "canton_codigo": "0804",
+      "nombre": "MALIMPIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080454",
+      "canton_codigo": "0804",
+      "nombre": "VICHE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080455",
+      "canton_codigo": "0804",
+      "nombre": "LA UNIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080550",
+      "canton_codigo": "0805",
+      "nombre": "SAN LORENZO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080551",
+      "canton_codigo": "0805",
+      "nombre": "ALTO TAMBO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080552",
+      "canton_codigo": "0805",
+      "nombre": "ANCÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080553",
+      "canton_codigo": "0805",
+      "nombre": "CALDERÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080554",
+      "canton_codigo": "0805",
+      "nombre": "CARONDELET",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080555",
+      "canton_codigo": "0805",
+      "nombre": "5 DE JUNIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080556",
+      "canton_codigo": "0805",
+      "nombre": "CONCEPCIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080557",
+      "canton_codigo": "0805",
+      "nombre": "MATAJE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080558",
+      "canton_codigo": "0805",
+      "nombre": "SAN JAVIER DE CACHAVÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080559",
+      "canton_codigo": "0805",
+      "nombre": "SANTA RITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080560",
+      "canton_codigo": "0805",
+      "nombre": "TAMBILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080561",
+      "canton_codigo": "0805",
+      "nombre": "TULULBÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080562",
+      "canton_codigo": "0805",
+      "nombre": "URBINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080650",
+      "canton_codigo": "0806",
+      "nombre": "ATACAMES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080651",
+      "canton_codigo": "0806",
+      "nombre": "LA UNIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080652",
+      "canton_codigo": "0806",
+      "nombre": "SÚA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080653",
+      "canton_codigo": "0806",
+      "nombre": "TONCHIGÜE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080654",
+      "canton_codigo": "0806",
+      "nombre": "TONSUPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080750",
+      "canton_codigo": "0807",
+      "nombre": "RIOVERDE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "080751",
+      "canton_codigo": "0807",
+      "nombre": "CHONTADURO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080752",
+      "canton_codigo": "0807",
+      "nombre": "CHUMUNDÉ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080753",
+      "canton_codigo": "0807",
+      "nombre": "LAGARTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080754",
+      "canton_codigo": "0807",
+      "nombre": "MONTALVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "080755",
+      "canton_codigo": "0807",
+      "nombre": "ROCAFUERTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090101",
+      "canton_codigo": "0901",
+      "nombre": "AYACUCHO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090102",
+      "canton_codigo": "0901",
+      "nombre": "BOLÍVAR  (SAGRARIO)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090103",
+      "canton_codigo": "0901",
+      "nombre": "CARBO (CONCEPCIÓN)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090104",
+      "canton_codigo": "0901",
+      "nombre": "FEBRES CORDERO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090105",
+      "canton_codigo": "0901",
+      "nombre": "GARCÍA MORENO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090106",
+      "canton_codigo": "0901",
+      "nombre": "LETAMENDI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090107",
+      "canton_codigo": "0901",
+      "nombre": "NUEVE DE OCTUBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090108",
+      "canton_codigo": "0901",
+      "nombre": "OLMEDO  (SAN ALEJO)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090109",
+      "canton_codigo": "0901",
+      "nombre": "ROCA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090110",
+      "canton_codigo": "0901",
+      "nombre": "ROCAFUERTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090111",
+      "canton_codigo": "0901",
+      "nombre": "SUCRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090112",
+      "canton_codigo": "0901",
+      "nombre": "TARQUI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090113",
+      "canton_codigo": "0901",
+      "nombre": "URDANETA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090114",
+      "canton_codigo": "0901",
+      "nombre": "XIMENA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090115",
+      "canton_codigo": "0901",
+      "nombre": "PASCUALES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090152",
+      "canton_codigo": "0901",
+      "nombre": "JUAN GÓMEZ RENDÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090153",
+      "canton_codigo": "0901",
+      "nombre": "MORRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090156",
+      "canton_codigo": "0901",
+      "nombre": "POSORJA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090157",
+      "canton_codigo": "0901",
+      "nombre": "PUNÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090158",
+      "canton_codigo": "0901",
+      "nombre": "TENGUEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090250",
+      "canton_codigo": "0902",
+      "nombre": "ALFREDO BAQUERIZO MORENO (JUJÁN)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090350",
+      "canton_codigo": "0903",
+      "nombre": "BALAO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090450",
+      "canton_codigo": "0904",
+      "nombre": "BALZAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090550",
+      "canton_codigo": "0905",
+      "nombre": "COLIMES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090551",
+      "canton_codigo": "0905",
+      "nombre": "SAN JACINTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090601",
+      "canton_codigo": "0906",
+      "nombre": "DAULE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090602",
+      "canton_codigo": "0906",
+      "nombre": "LA AURORA (SATÉLITE)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090603",
+      "canton_codigo": "0906",
+      "nombre": "BANIFE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090604",
+      "canton_codigo": "0906",
+      "nombre": "EMILIANO CAICEDO MARCOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090605",
+      "canton_codigo": "0906",
+      "nombre": "MAGRO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090606",
+      "canton_codigo": "0906",
+      "nombre": "PADRE JUAN BAUTISTA AGUIRRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090607",
+      "canton_codigo": "0906",
+      "nombre": "SANTA CLARA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090608",
+      "canton_codigo": "0906",
+      "nombre": "VICENTE PIEDRAHITA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090652",
+      "canton_codigo": "0906",
+      "nombre": "JUAN BAUTISTA AGUIRRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090653",
+      "canton_codigo": "0906",
+      "nombre": "LAUREL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090654",
+      "canton_codigo": "0906",
+      "nombre": "LIMONAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090656",
+      "canton_codigo": "0906",
+      "nombre": "LOS LOJAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090701",
+      "canton_codigo": "0907",
+      "nombre": "ELOY ALFARO (DURÁN)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090702",
+      "canton_codigo": "0907",
+      "nombre": "EL RECREO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090703",
+      "canton_codigo": "0907",
+      "nombre": "DIVINO NIÑO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090850",
+      "canton_codigo": "0908",
+      "nombre": "VELASCO IBARRA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "090851",
+      "canton_codigo": "0908",
+      "nombre": "GUAYAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090852",
+      "canton_codigo": "0908",
+      "nombre": "EL ROSARIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "090950",
+      "canton_codigo": "0909",
+      "nombre": "EL TRIUNFO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091001",
+      "canton_codigo": "0910",
+      "nombre": "CAMILO ANDRADE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091002",
+      "canton_codigo": "0910",
+      "nombre": "ELOY ALFARO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091003",
+      "canton_codigo": "0910",
+      "nombre": "CHIRIJOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091004",
+      "canton_codigo": "0910",
+      "nombre": "CORONEL ENRIQUE VALDEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091005",
+      "canton_codigo": "0910",
+      "nombre": "ROSA MARÍA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091006",
+      "canton_codigo": "0910",
+      "nombre": "JOSÉ MARÍA VELASCO IBARRA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091007",
+      "canton_codigo": "0910",
+      "nombre": "VICENTE ROCAFUERTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091008",
+      "canton_codigo": "0910",
+      "nombre": "ERNESTO SEMINARIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091009",
+      "canton_codigo": "0910",
+      "nombre": "LAS PIÑAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091051",
+      "canton_codigo": "0910",
+      "nombre": "CHOBO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091053",
+      "canton_codigo": "0910",
+      "nombre": "MARISCAL SUCRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091054",
+      "canton_codigo": "0910",
+      "nombre": "ROBERTO ASTUDILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091150",
+      "canton_codigo": "0911",
+      "nombre": "NARANJAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091151",
+      "canton_codigo": "0911",
+      "nombre": "JESÚS MARÍA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091152",
+      "canton_codigo": "0911",
+      "nombre": "SAN CARLOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091153",
+      "canton_codigo": "0911",
+      "nombre": "SANTA ROSA DE FLANDES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091154",
+      "canton_codigo": "0911",
+      "nombre": "TAURA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091250",
+      "canton_codigo": "0912",
+      "nombre": "NARANJITO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091350",
+      "canton_codigo": "0913",
+      "nombre": "PALESTINA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091450",
+      "canton_codigo": "0914",
+      "nombre": "PEDRO CARBO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091451",
+      "canton_codigo": "0914",
+      "nombre": "VALLE DE LA VIRGEN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091452",
+      "canton_codigo": "0914",
+      "nombre": "SABANILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091601",
+      "canton_codigo": "0916",
+      "nombre": "SAMBORONDÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091602",
+      "canton_codigo": "0916",
+      "nombre": "LA PUNTILLA (SATÉLITE)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091651",
+      "canton_codigo": "0916",
+      "nombre": "TARIFA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091850",
+      "canton_codigo": "0918",
+      "nombre": "SANTA LUCÍA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091901",
+      "canton_codigo": "0919",
+      "nombre": "BOCANA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091902",
+      "canton_codigo": "0919",
+      "nombre": "CANDILEJOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091903",
+      "canton_codigo": "0919",
+      "nombre": "CENTRAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091904",
+      "canton_codigo": "0919",
+      "nombre": "PARAÍSO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091905",
+      "canton_codigo": "0919",
+      "nombre": "SAN MATEO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "091951",
+      "canton_codigo": "0919",
+      "nombre": "GENERAL VERNAZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091952",
+      "canton_codigo": "0919",
+      "nombre": "LA VICTORIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "091953",
+      "canton_codigo": "0919",
+      "nombre": "JUNQUILLAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "092050",
+      "canton_codigo": "0920",
+      "nombre": "SAN JACINTO DE YAGUACHI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092053",
+      "canton_codigo": "0920",
+      "nombre": "GENERAL PEDRO J. MONTERO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "092055",
+      "canton_codigo": "0920",
+      "nombre": "YAGUACHI VIEJO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "092056",
+      "canton_codigo": "0920",
+      "nombre": "VIRGEN DE FÁTIMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "092150",
+      "canton_codigo": "0921",
+      "nombre": "GENERAL VILLAMIL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092250",
+      "canton_codigo": "0922",
+      "nombre": "SIMÓN BOLÍVAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092251",
+      "canton_codigo": "0922",
+      "nombre": "CORONEL LORENZO DE GARAYCOA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "092350",
+      "canton_codigo": "0923",
+      "nombre": "CORONEL MARCELINO MARIDUEÑA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092450",
+      "canton_codigo": "0924",
+      "nombre": "LOMAS DE SARGENTILLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092550",
+      "canton_codigo": "0925",
+      "nombre": "NARCISA DE JESÚS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092750",
+      "canton_codigo": "0927",
+      "nombre": "GENERAL ANTONIO ELIZALDE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "092850",
+      "canton_codigo": "0928",
+      "nombre": "ISIDRO AYORA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100101",
+      "canton_codigo": "1001",
+      "nombre": "CARANQUI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100102",
+      "canton_codigo": "1001",
+      "nombre": "GUAYAQUIL DE ALPACHACA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100103",
+      "canton_codigo": "1001",
+      "nombre": "SAGRARIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100104",
+      "canton_codigo": "1001",
+      "nombre": "SAN FRANCISCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100105",
+      "canton_codigo": "1001",
+      "nombre": "LA DOLOROSA DEL PRIORATO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100151",
+      "canton_codigo": "1001",
+      "nombre": "AMBUQUÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100152",
+      "canton_codigo": "1001",
+      "nombre": "ANGOCHAGUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100153",
+      "canton_codigo": "1001",
+      "nombre": "LA CAROLINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100154",
+      "canton_codigo": "1001",
+      "nombre": "LA ESPERANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100155",
+      "canton_codigo": "1001",
+      "nombre": "LITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100156",
+      "canton_codigo": "1001",
+      "nombre": "SALINAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100157",
+      "canton_codigo": "1001",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100201",
+      "canton_codigo": "1002",
+      "nombre": "ANDRADE MARÍN  (LOURDES)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100202",
+      "canton_codigo": "1002",
+      "nombre": "ATUNTAQUI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100251",
+      "canton_codigo": "1002",
+      "nombre": "IMBAYA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100252",
+      "canton_codigo": "1002",
+      "nombre": "SAN FRANCISCO DE NATABUELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100253",
+      "canton_codigo": "1002",
+      "nombre": "SAN JOSÉ DE CHALTURA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100254",
+      "canton_codigo": "1002",
+      "nombre": "SAN ROQUE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100301",
+      "canton_codigo": "1003",
+      "nombre": "SAGRARIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100302",
+      "canton_codigo": "1003",
+      "nombre": "SAN FRANCISCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100351",
+      "canton_codigo": "1003",
+      "nombre": "APUELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100352",
+      "canton_codigo": "1003",
+      "nombre": "GARCÍA MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100353",
+      "canton_codigo": "1003",
+      "nombre": "IMANTAG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100354",
+      "canton_codigo": "1003",
+      "nombre": "PEÑAHERRERA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100355",
+      "canton_codigo": "1003",
+      "nombre": "PLAZA GUTIÉRREZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100356",
+      "canton_codigo": "1003",
+      "nombre": "QUIROGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100357",
+      "canton_codigo": "1003",
+      "nombre": "SEIS DE JULIO DE CUELLAJE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100358",
+      "canton_codigo": "1003",
+      "nombre": "VACAS GALINDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100401",
+      "canton_codigo": "1004",
+      "nombre": "JORDÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100402",
+      "canton_codigo": "1004",
+      "nombre": "SAN LUIS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100451",
+      "canton_codigo": "1004",
+      "nombre": "DR. MIGUEL EGAS CABEZAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100452",
+      "canton_codigo": "1004",
+      "nombre": "EUGENIO ESPEJO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100453",
+      "canton_codigo": "1004",
+      "nombre": "GONZÁLEZ SUÁREZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100454",
+      "canton_codigo": "1004",
+      "nombre": "PATAQUÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100455",
+      "canton_codigo": "1004",
+      "nombre": "SAN JOSÉ DE QUICHINCHE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100456",
+      "canton_codigo": "1004",
+      "nombre": "SAN JUAN DE ILUMÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100457",
+      "canton_codigo": "1004",
+      "nombre": "SAN PABLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100458",
+      "canton_codigo": "1004",
+      "nombre": "SAN RAFAEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100459",
+      "canton_codigo": "1004",
+      "nombre": "SELVA ALEGRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100550",
+      "canton_codigo": "1005",
+      "nombre": "PIMAMPIRO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100551",
+      "canton_codigo": "1005",
+      "nombre": "CHUGÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100552",
+      "canton_codigo": "1005",
+      "nombre": "MARIANO ACOSTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100553",
+      "canton_codigo": "1005",
+      "nombre": "SAN FRANCISCO DE SIGSIPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100650",
+      "canton_codigo": "1006",
+      "nombre": "URCUQUÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "100651",
+      "canton_codigo": "1006",
+      "nombre": "CAHUASQUÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100652",
+      "canton_codigo": "1006",
+      "nombre": "LA MERCED DE BUENOS AIRES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100653",
+      "canton_codigo": "1006",
+      "nombre": "PABLO ARENAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100654",
+      "canton_codigo": "1006",
+      "nombre": "SAN BLAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "100655",
+      "canton_codigo": "1006",
+      "nombre": "TUMBABIRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110101",
+      "canton_codigo": "1101",
+      "nombre": "EL SAGRARIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110102",
+      "canton_codigo": "1101",
+      "nombre": "SAN SEBASTIÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110103",
+      "canton_codigo": "1101",
+      "nombre": "SUCRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110104",
+      "canton_codigo": "1101",
+      "nombre": "VALLE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110105",
+      "canton_codigo": "1101",
+      "nombre": "CARIGÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110106",
+      "canton_codigo": "1101",
+      "nombre": "PUNZARA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110151",
+      "canton_codigo": "1101",
+      "nombre": "CHANTACO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110152",
+      "canton_codigo": "1101",
+      "nombre": "CHUQUIRIBAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110153",
+      "canton_codigo": "1101",
+      "nombre": "EL CISNE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110154",
+      "canton_codigo": "1101",
+      "nombre": "GUALEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110155",
+      "canton_codigo": "1101",
+      "nombre": "JIMBILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110156",
+      "canton_codigo": "1101",
+      "nombre": "MALACATOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110157",
+      "canton_codigo": "1101",
+      "nombre": "SAN LUCAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110158",
+      "canton_codigo": "1101",
+      "nombre": "SAN PEDRO DE VILCABAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110159",
+      "canton_codigo": "1101",
+      "nombre": "SANTIAGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110160",
+      "canton_codigo": "1101",
+      "nombre": "TAQUIL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110161",
+      "canton_codigo": "1101",
+      "nombre": "VILCABAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110162",
+      "canton_codigo": "1101",
+      "nombre": "YANGANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110163",
+      "canton_codigo": "1101",
+      "nombre": "QUINARA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110201",
+      "canton_codigo": "1102",
+      "nombre": "CARIAMANGA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110202",
+      "canton_codigo": "1102",
+      "nombre": "CHILE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110203",
+      "canton_codigo": "1102",
+      "nombre": "SAN VICENTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110251",
+      "canton_codigo": "1102",
+      "nombre": "COLAISACA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110252",
+      "canton_codigo": "1102",
+      "nombre": "EL LUCERO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110253",
+      "canton_codigo": "1102",
+      "nombre": "UTUANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110254",
+      "canton_codigo": "1102",
+      "nombre": "SANGUILLÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110301",
+      "canton_codigo": "1103",
+      "nombre": "CATAMAYO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110302",
+      "canton_codigo": "1103",
+      "nombre": "SAN JOSÉ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110351",
+      "canton_codigo": "1103",
+      "nombre": "EL TAMBO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110352",
+      "canton_codigo": "1103",
+      "nombre": "GUAYQUICHUMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110353",
+      "canton_codigo": "1103",
+      "nombre": "SAN PEDRO DE LA BENDITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110354",
+      "canton_codigo": "1103",
+      "nombre": "ZAMBI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110450",
+      "canton_codigo": "1104",
+      "nombre": "CELICA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110451",
+      "canton_codigo": "1104",
+      "nombre": "CRUZPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110455",
+      "canton_codigo": "1104",
+      "nombre": "PÓZUL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110456",
+      "canton_codigo": "1104",
+      "nombre": "SABANILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110457",
+      "canton_codigo": "1104",
+      "nombre": "TENIENTE MAXIMILIANO RODRÍGUEZ LOAIZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110550",
+      "canton_codigo": "1105",
+      "nombre": "CHAGUARPAMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110551",
+      "canton_codigo": "1105",
+      "nombre": "BUENAVISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110552",
+      "canton_codigo": "1105",
+      "nombre": "EL ROSARIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110553",
+      "canton_codigo": "1105",
+      "nombre": "SANTA RUFINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110554",
+      "canton_codigo": "1105",
+      "nombre": "AMARILLOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110650",
+      "canton_codigo": "1106",
+      "nombre": "AMALUZA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110651",
+      "canton_codigo": "1106",
+      "nombre": "BELLAVISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110652",
+      "canton_codigo": "1106",
+      "nombre": "JIMBURA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110653",
+      "canton_codigo": "1106",
+      "nombre": "SANTA TERESITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110654",
+      "canton_codigo": "1106",
+      "nombre": "27 DE ABRIL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110655",
+      "canton_codigo": "1106",
+      "nombre": "EL INGENIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110656",
+      "canton_codigo": "1106",
+      "nombre": "EL AIRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110750",
+      "canton_codigo": "1107",
+      "nombre": "GONZANAMÁ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110751",
+      "canton_codigo": "1107",
+      "nombre": "CHANGAIMINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110753",
+      "canton_codigo": "1107",
+      "nombre": "NAMBACOLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110754",
+      "canton_codigo": "1107",
+      "nombre": "PURUNUMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110756",
+      "canton_codigo": "1107",
+      "nombre": "SACAPALCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110801",
+      "canton_codigo": "1108",
+      "nombre": "GENERAL ELOY ALFARO (SAN SEBASTIÁN)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110802",
+      "canton_codigo": "1108",
+      "nombre": "MACARÁ  (MANUEL ENRIQUE RENGEL SUQUILANDA)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110851",
+      "canton_codigo": "1108",
+      "nombre": "LARAMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110852",
+      "canton_codigo": "1108",
+      "nombre": "LA VICTORIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110853",
+      "canton_codigo": "1108",
+      "nombre": "SABIANGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110901",
+      "canton_codigo": "1109",
+      "nombre": "CATACOCHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110902",
+      "canton_codigo": "1109",
+      "nombre": "LOURDES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "110951",
+      "canton_codigo": "1109",
+      "nombre": "CANGONAMÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110952",
+      "canton_codigo": "1109",
+      "nombre": "GUACHANAMÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110954",
+      "canton_codigo": "1109",
+      "nombre": "LAURO GUERRERO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110956",
+      "canton_codigo": "1109",
+      "nombre": "ORIANGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110957",
+      "canton_codigo": "1109",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110958",
+      "canton_codigo": "1109",
+      "nombre": "CASANGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "110959",
+      "canton_codigo": "1109",
+      "nombre": "YAMANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111050",
+      "canton_codigo": "1110",
+      "nombre": "ALAMOR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111051",
+      "canton_codigo": "1110",
+      "nombre": "CIANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111052",
+      "canton_codigo": "1110",
+      "nombre": "EL ARENAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111053",
+      "canton_codigo": "1110",
+      "nombre": "EL LIMO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111054",
+      "canton_codigo": "1110",
+      "nombre": "MERCADILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111055",
+      "canton_codigo": "1110",
+      "nombre": "VICENTINO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111150",
+      "canton_codigo": "1111",
+      "nombre": "SARAGURO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111151",
+      "canton_codigo": "1111",
+      "nombre": "EL PARAÍSO DE CELEN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111152",
+      "canton_codigo": "1111",
+      "nombre": "EL TABLÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111153",
+      "canton_codigo": "1111",
+      "nombre": "LLUZHAPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111154",
+      "canton_codigo": "1111",
+      "nombre": "MANÚ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111155",
+      "canton_codigo": "1111",
+      "nombre": "SAN ANTONIO DE QUMBE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111156",
+      "canton_codigo": "1111",
+      "nombre": "SAN PABLO DE TENTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111157",
+      "canton_codigo": "1111",
+      "nombre": "SAN SEBASTIÁN DE YÚLUC",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111158",
+      "canton_codigo": "1111",
+      "nombre": "SELVA ALEGRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111159",
+      "canton_codigo": "1111",
+      "nombre": "URDANETA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111160",
+      "canton_codigo": "1111",
+      "nombre": "SUMAYPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111250",
+      "canton_codigo": "1112",
+      "nombre": "SOZORANGA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111251",
+      "canton_codigo": "1112",
+      "nombre": "NUEVA FÁTIMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111252",
+      "canton_codigo": "1112",
+      "nombre": "TACAMOROS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111350",
+      "canton_codigo": "1113",
+      "nombre": "ZAPOTILLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111351",
+      "canton_codigo": "1113",
+      "nombre": "MANGAHURCO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111352",
+      "canton_codigo": "1113",
+      "nombre": "GARZAREAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111353",
+      "canton_codigo": "1113",
+      "nombre": "LIMONES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111354",
+      "canton_codigo": "1113",
+      "nombre": "PALETILLAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111355",
+      "canton_codigo": "1113",
+      "nombre": "BOLASPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111356",
+      "canton_codigo": "1113",
+      "nombre": "CAZADEROS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111450",
+      "canton_codigo": "1114",
+      "nombre": "PINDAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111451",
+      "canton_codigo": "1114",
+      "nombre": "CHAQUINAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111452",
+      "canton_codigo": "1114",
+      "nombre": "12 DE DICIEMBRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111453",
+      "canton_codigo": "1114",
+      "nombre": "MILAGROS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111550",
+      "canton_codigo": "1115",
+      "nombre": "QUILANGA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111551",
+      "canton_codigo": "1115",
+      "nombre": "FUNDOCHAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111552",
+      "canton_codigo": "1115",
+      "nombre": "SAN ANTONIO DE LAS ARADAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "111650",
+      "canton_codigo": "1116",
+      "nombre": "OLMEDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "111651",
+      "canton_codigo": "1116",
+      "nombre": "LA TINGUE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120101",
+      "canton_codigo": "1201",
+      "nombre": "CLEMENTE BAQUERIZO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120102",
+      "canton_codigo": "1201",
+      "nombre": "DOCTOR CAMILO PONCE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120103",
+      "canton_codigo": "1201",
+      "nombre": "BARREIRO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120104",
+      "canton_codigo": "1201",
+      "nombre": "EL SALTO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120152",
+      "canton_codigo": "1201",
+      "nombre": "CARACOL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120153",
+      "canton_codigo": "1201",
+      "nombre": "FEBRES CORDERO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120154",
+      "canton_codigo": "1201",
+      "nombre": "PIMOCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120155",
+      "canton_codigo": "1201",
+      "nombre": "LA UNIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120250",
+      "canton_codigo": "1202",
+      "nombre": "BABA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120251",
+      "canton_codigo": "1202",
+      "nombre": "GUARE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120252",
+      "canton_codigo": "1202",
+      "nombre": "ISLA DE BEJUCAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120350",
+      "canton_codigo": "1203",
+      "nombre": "MONTALVO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120351",
+      "canton_codigo": "1203",
+      "nombre": "LA ESMERALDA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120450",
+      "canton_codigo": "1204",
+      "nombre": "PUEBLOVIEJO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120451",
+      "canton_codigo": "1204",
+      "nombre": "PUERTO PECHICHE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120452",
+      "canton_codigo": "1204",
+      "nombre": "SAN JUAN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120501",
+      "canton_codigo": "1205",
+      "nombre": "QUEVEDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120502",
+      "canton_codigo": "1205",
+      "nombre": "SAN CAMILO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120504",
+      "canton_codigo": "1205",
+      "nombre": "GUAYACÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120505",
+      "canton_codigo": "1205",
+      "nombre": "NICOLÁS INFANTE DÍAZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120506",
+      "canton_codigo": "1205",
+      "nombre": "SAN CRISTÓBAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120507",
+      "canton_codigo": "1205",
+      "nombre": "SIETE DE OCTUBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120508",
+      "canton_codigo": "1205",
+      "nombre": "24 DE MAYO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120509",
+      "canton_codigo": "1205",
+      "nombre": "VENUS DEL RÍO QUEVEDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120510",
+      "canton_codigo": "1205",
+      "nombre": "VIVA ALFARO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120553",
+      "canton_codigo": "1205",
+      "nombre": "SAN CARLOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120555",
+      "canton_codigo": "1205",
+      "nombre": "LA ESPERANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120650",
+      "canton_codigo": "1206",
+      "nombre": "CATARAMA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120651",
+      "canton_codigo": "1206",
+      "nombre": "RICAURTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120701",
+      "canton_codigo": "1207",
+      "nombre": "10 DE NOVIEMBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120702",
+      "canton_codigo": "1207",
+      "nombre": "VENTANAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120752",
+      "canton_codigo": "1207",
+      "nombre": "ZAPOTAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120753",
+      "canton_codigo": "1207",
+      "nombre": "CHACARITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120754",
+      "canton_codigo": "1207",
+      "nombre": "LOS ÁNGELES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120801",
+      "canton_codigo": "1208",
+      "nombre": "BALZAR DE VINCES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120802",
+      "canton_codigo": "1208",
+      "nombre": "VINCES CENTRAL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120803",
+      "canton_codigo": "1208",
+      "nombre": "SAN LORENZO DE VINCES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "120851",
+      "canton_codigo": "1208",
+      "nombre": "ANTONIO SOTOMAYOR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "120950",
+      "canton_codigo": "1209",
+      "nombre": "PALENQUE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121001",
+      "canton_codigo": "1210",
+      "nombre": "SAN JACINTO DE BUENA FE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121002",
+      "canton_codigo": "1210",
+      "nombre": "7 DE AGOSTO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121003",
+      "canton_codigo": "1210",
+      "nombre": "11 DE OCTUBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121051",
+      "canton_codigo": "1210",
+      "nombre": "PATRICIA PILAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "121101",
+      "canton_codigo": "1211",
+      "nombre": "VALENCIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121102",
+      "canton_codigo": "1211",
+      "nombre": "LA UNIÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121103",
+      "canton_codigo": "1211",
+      "nombre": "LA NUEVA UNIÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121250",
+      "canton_codigo": "1212",
+      "nombre": "MOCACHE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "121350",
+      "canton_codigo": "1213",
+      "nombre": "QUINSALOMA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130101",
+      "canton_codigo": "1301",
+      "nombre": "PORTOVIEJO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130102",
+      "canton_codigo": "1301",
+      "nombre": "12 DE MARZO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130103",
+      "canton_codigo": "1301",
+      "nombre": "COLÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130104",
+      "canton_codigo": "1301",
+      "nombre": "PICOAZÁ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130105",
+      "canton_codigo": "1301",
+      "nombre": "SAN PABLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130106",
+      "canton_codigo": "1301",
+      "nombre": "ANDRÉS DE VERA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130107",
+      "canton_codigo": "1301",
+      "nombre": "FRANCISCO PACHECO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130108",
+      "canton_codigo": "1301",
+      "nombre": "18 DE OCTUBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130109",
+      "canton_codigo": "1301",
+      "nombre": "SIMÓN BOLÍVAR",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130151",
+      "canton_codigo": "1301",
+      "nombre": "ABDÓN CALDERÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130152",
+      "canton_codigo": "1301",
+      "nombre": "ALHAJUELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130153",
+      "canton_codigo": "1301",
+      "nombre": "CRUCITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130154",
+      "canton_codigo": "1301",
+      "nombre": "PUEBLO NUEVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130155",
+      "canton_codigo": "1301",
+      "nombre": "RIOCHICO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130156",
+      "canton_codigo": "1301",
+      "nombre": "SAN PLÁCIDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130157",
+      "canton_codigo": "1301",
+      "nombre": "CHIRIJOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130250",
+      "canton_codigo": "1302",
+      "nombre": "CALCETA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130251",
+      "canton_codigo": "1302",
+      "nombre": "MEMBRILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130252",
+      "canton_codigo": "1302",
+      "nombre": "QUIROGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130301",
+      "canton_codigo": "1303",
+      "nombre": "CHONE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130302",
+      "canton_codigo": "1303",
+      "nombre": "SANTA RITA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130351",
+      "canton_codigo": "1303",
+      "nombre": "BOYACÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130352",
+      "canton_codigo": "1303",
+      "nombre": "CANUTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130353",
+      "canton_codigo": "1303",
+      "nombre": "CONVENTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130354",
+      "canton_codigo": "1303",
+      "nombre": "CHIBUNGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130355",
+      "canton_codigo": "1303",
+      "nombre": "ELOY ALFARO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130356",
+      "canton_codigo": "1303",
+      "nombre": "RICAURTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130357",
+      "canton_codigo": "1303",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130401",
+      "canton_codigo": "1304",
+      "nombre": "EL CARMEN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130402",
+      "canton_codigo": "1304",
+      "nombre": "4 DE DICIEMBRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130451",
+      "canton_codigo": "1304",
+      "nombre": "WILFRIDO LOOR MOREIRA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130452",
+      "canton_codigo": "1304",
+      "nombre": "SAN PEDRO DE SUMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130453",
+      "canton_codigo": "1304",
+      "nombre": "SANTA MARÍA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130454",
+      "canton_codigo": "1304",
+      "nombre": "EL PARAÍSO LA 14",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130550",
+      "canton_codigo": "1305",
+      "nombre": "FLAVIO ALFARO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130551",
+      "canton_codigo": "1305",
+      "nombre": "SAN FRANCISCO DE NOVILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130552",
+      "canton_codigo": "1305",
+      "nombre": "ZAPALLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130601",
+      "canton_codigo": "1306",
+      "nombre": "DOCTOR MIGUEL MORÁN LUCIO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130602",
+      "canton_codigo": "1306",
+      "nombre": "MANUEL INOCENCIO PARRALES Y GUALE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130603",
+      "canton_codigo": "1306",
+      "nombre": "SAN LORENZO DE JIPIJAPA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130651",
+      "canton_codigo": "1306",
+      "nombre": "AMÉRICA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130652",
+      "canton_codigo": "1306",
+      "nombre": "EL ANEGADO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130653",
+      "canton_codigo": "1306",
+      "nombre": "JULCUY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130654",
+      "canton_codigo": "1306",
+      "nombre": "LA UNIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130656",
+      "canton_codigo": "1306",
+      "nombre": "MEMBRILLAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130657",
+      "canton_codigo": "1306",
+      "nombre": "PEDRO PABLO GÓMEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130658",
+      "canton_codigo": "1306",
+      "nombre": "PUERTO CAYO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130750",
+      "canton_codigo": "1307",
+      "nombre": "JUNÍN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130801",
+      "canton_codigo": "1308",
+      "nombre": "LOS ESTEROS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130802",
+      "canton_codigo": "1308",
+      "nombre": "MANTA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130803",
+      "canton_codigo": "1308",
+      "nombre": "SAN MATEO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130804",
+      "canton_codigo": "1308",
+      "nombre": "TARQUI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130805",
+      "canton_codigo": "1308",
+      "nombre": "ELOY ALFARO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130806",
+      "canton_codigo": "1308",
+      "nombre": "URBIMANTA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130851",
+      "canton_codigo": "1308",
+      "nombre": "SAN LORENZO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130852",
+      "canton_codigo": "1308",
+      "nombre": "SANTA MARIANITA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "130901",
+      "canton_codigo": "1309",
+      "nombre": "ANÍBAL SAN ANDRÉS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130902",
+      "canton_codigo": "1309",
+      "nombre": "MONTECRISTI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130903",
+      "canton_codigo": "1309",
+      "nombre": "EL COLORADO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130904",
+      "canton_codigo": "1309",
+      "nombre": "GENERAL ELOY ALFARO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130905",
+      "canton_codigo": "1309",
+      "nombre": "LEONIDAS PROAÑO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130906",
+      "canton_codigo": "1309",
+      "nombre": "ISABEL MUENTES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "130952",
+      "canton_codigo": "1309",
+      "nombre": "LA PILA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131050",
+      "canton_codigo": "1310",
+      "nombre": "PAJÁN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131051",
+      "canton_codigo": "1310",
+      "nombre": "CAMPOZANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131052",
+      "canton_codigo": "1310",
+      "nombre": "CASCOL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131053",
+      "canton_codigo": "1310",
+      "nombre": "GUALE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131054",
+      "canton_codigo": "1310",
+      "nombre": "LASCANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131150",
+      "canton_codigo": "1311",
+      "nombre": "PICHINCHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131151",
+      "canton_codigo": "1311",
+      "nombre": "BARRAGANETE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131152",
+      "canton_codigo": "1311",
+      "nombre": "SAN SEBASTIÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131250",
+      "canton_codigo": "1312",
+      "nombre": "ROCAFUERTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131251",
+      "canton_codigo": "1312",
+      "nombre": "SOSOTE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131301",
+      "canton_codigo": "1313",
+      "nombre": "SANTA ANA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131302",
+      "canton_codigo": "1313",
+      "nombre": "LODANA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131351",
+      "canton_codigo": "1313",
+      "nombre": "AYACUCHO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131352",
+      "canton_codigo": "1313",
+      "nombre": "HONORATO VÁSQUEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131353",
+      "canton_codigo": "1313",
+      "nombre": "LA UNIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131355",
+      "canton_codigo": "1313",
+      "nombre": "SAN PABLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131401",
+      "canton_codigo": "1314",
+      "nombre": "BAHÍA DE CARÁQUEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131402",
+      "canton_codigo": "1314",
+      "nombre": "LEONIDAS PLAZA GUTIÉRREZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131453",
+      "canton_codigo": "1314",
+      "nombre": "CHARAPOTÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131457",
+      "canton_codigo": "1314",
+      "nombre": "SAN ISIDRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131550",
+      "canton_codigo": "1315",
+      "nombre": "TOSAGUA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131551",
+      "canton_codigo": "1315",
+      "nombre": "BACHILLERO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131552",
+      "canton_codigo": "1315",
+      "nombre": "ÁNGEL PEDRO GILER",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131650",
+      "canton_codigo": "1316",
+      "nombre": "SUCRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131651",
+      "canton_codigo": "1316",
+      "nombre": "BELLAVISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131652",
+      "canton_codigo": "1316",
+      "nombre": "NOBOA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131653",
+      "canton_codigo": "1316",
+      "nombre": "ARQUITECTO SIXTO DURÁN BALLÉN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131750",
+      "canton_codigo": "1317",
+      "nombre": "PEDERNALES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131751",
+      "canton_codigo": "1317",
+      "nombre": "COJIMÍES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131752",
+      "canton_codigo": "1317",
+      "nombre": "DIEZ DE AGOSTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131753",
+      "canton_codigo": "1317",
+      "nombre": "ATAHUALPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131850",
+      "canton_codigo": "1318",
+      "nombre": "OLMEDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131950",
+      "canton_codigo": "1319",
+      "nombre": "PUERTO LÓPEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "131951",
+      "canton_codigo": "1319",
+      "nombre": "MACHALILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "131952",
+      "canton_codigo": "1319",
+      "nombre": "SALANGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "132050",
+      "canton_codigo": "1320",
+      "nombre": "JAMA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "132150",
+      "canton_codigo": "1321",
+      "nombre": "JARAMIJÓ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "132250",
+      "canton_codigo": "1322",
+      "nombre": "SAN VICENTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "132251",
+      "canton_codigo": "1322",
+      "nombre": "CANOA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140150",
+      "canton_codigo": "1401",
+      "nombre": "MACAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140151",
+      "canton_codigo": "1401",
+      "nombre": "ALSHI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140153",
+      "canton_codigo": "1401",
+      "nombre": "GENERAL PROAÑO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140156",
+      "canton_codigo": "1401",
+      "nombre": "SAN ISIDRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140158",
+      "canton_codigo": "1401",
+      "nombre": "SINAÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140160",
+      "canton_codigo": "1401",
+      "nombre": "ZUÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140162",
+      "canton_codigo": "1401",
+      "nombre": "CUCHAENTZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140164",
+      "canton_codigo": "1401",
+      "nombre": "RÍO BLANCO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140190",
+      "canton_codigo": "1401",
+      "nombre": "SINAÍ-CUCHAENTZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140201",
+      "canton_codigo": "1402",
+      "nombre": "GUALAQUIZA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140202",
+      "canton_codigo": "1402",
+      "nombre": "MERCEDES MOLINA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140251",
+      "canton_codigo": "1402",
+      "nombre": "AMAZONAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140252",
+      "canton_codigo": "1402",
+      "nombre": "BERMEJOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140253",
+      "canton_codigo": "1402",
+      "nombre": "BOMBOÍZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140254",
+      "canton_codigo": "1402",
+      "nombre": "CHIGÜINDA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140255",
+      "canton_codigo": "1402",
+      "nombre": "EL ROSARIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140256",
+      "canton_codigo": "1402",
+      "nombre": "NUEVA TARQUI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140257",
+      "canton_codigo": "1402",
+      "nombre": "SAN MIGUEL DE CUYES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140258",
+      "canton_codigo": "1402",
+      "nombre": "EL IDEAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140350",
+      "canton_codigo": "1403",
+      "nombre": "GENERAL LEONIDAS PLAZA GUTIÉRREZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140351",
+      "canton_codigo": "1403",
+      "nombre": "INDANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140353",
+      "canton_codigo": "1403",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140356",
+      "canton_codigo": "1403",
+      "nombre": "SAN MIGUEL DE CONCHAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140357",
+      "canton_codigo": "1403",
+      "nombre": "SANTA SUSANA DE CHIVIAZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140358",
+      "canton_codigo": "1403",
+      "nombre": "YUNGANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140450",
+      "canton_codigo": "1404",
+      "nombre": "PALORA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140451",
+      "canton_codigo": "1404",
+      "nombre": "ARAPICOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140452",
+      "canton_codigo": "1404",
+      "nombre": "CUMANDÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140454",
+      "canton_codigo": "1404",
+      "nombre": "SANGAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140455",
+      "canton_codigo": "1404",
+      "nombre": "16 DE AGOSTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140550",
+      "canton_codigo": "1405",
+      "nombre": "SANTIAGO DE MÉNDEZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140551",
+      "canton_codigo": "1405",
+      "nombre": "COPAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140552",
+      "canton_codigo": "1405",
+      "nombre": "CHUPIANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140553",
+      "canton_codigo": "1405",
+      "nombre": "PATUCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140554",
+      "canton_codigo": "1405",
+      "nombre": "SAN LUIS DE EL ACHO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140556",
+      "canton_codigo": "1405",
+      "nombre": "TAYUZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140557",
+      "canton_codigo": "1405",
+      "nombre": "SAN FRANCISCO DE CHINIMBIMI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140650",
+      "canton_codigo": "1406",
+      "nombre": "SUCÚA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140651",
+      "canton_codigo": "1406",
+      "nombre": "ASUNCIÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140652",
+      "canton_codigo": "1406",
+      "nombre": "HUAMBI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140655",
+      "canton_codigo": "1406",
+      "nombre": "SANTA MARIANITA DE JESÚS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140750",
+      "canton_codigo": "1407",
+      "nombre": "HUAMBOYA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140751",
+      "canton_codigo": "1407",
+      "nombre": "CHIGUAZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140850",
+      "canton_codigo": "1408",
+      "nombre": "SAN JUAN BOSCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140851",
+      "canton_codigo": "1408",
+      "nombre": "PAN DE AZÚCAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140852",
+      "canton_codigo": "1408",
+      "nombre": "SAN CARLOS DE LIMÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140853",
+      "canton_codigo": "1408",
+      "nombre": "SAN JACINTO DE WAKAMBEIS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140854",
+      "canton_codigo": "1408",
+      "nombre": "SANTIAGO DE PANANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140950",
+      "canton_codigo": "1409",
+      "nombre": "TAISHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "140951",
+      "canton_codigo": "1409",
+      "nombre": "HUASAGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140952",
+      "canton_codigo": "1409",
+      "nombre": "MACUMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140953",
+      "canton_codigo": "1409",
+      "nombre": "TUUTINENTSA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "140954",
+      "canton_codigo": "1409",
+      "nombre": "PUMPUENTSA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "141050",
+      "canton_codigo": "1410",
+      "nombre": "LOGROÑO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "141051",
+      "canton_codigo": "1410",
+      "nombre": "YAUPI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "141052",
+      "canton_codigo": "1410",
+      "nombre": "SHIMPIS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "141150",
+      "canton_codigo": "1411",
+      "nombre": "PABLO SEXTO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "141250",
+      "canton_codigo": "1412",
+      "nombre": "SANTIAGO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "141251",
+      "canton_codigo": "1412",
+      "nombre": "SAN JOSÉ DE MORONA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "141350",
+      "canton_codigo": "1413",
+      "nombre": "SEVILLA DON BOSCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "150150",
+      "canton_codigo": "1501",
+      "nombre": "TENA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "150151",
+      "canton_codigo": "1501",
+      "nombre": "AHUANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150153",
+      "canton_codigo": "1501",
+      "nombre": "CHONTAPUNTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150154",
+      "canton_codigo": "1501",
+      "nombre": "PANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150155",
+      "canton_codigo": "1501",
+      "nombre": "PUERTO MISAHUALLÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150156",
+      "canton_codigo": "1501",
+      "nombre": "PUERTO NAPO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150157",
+      "canton_codigo": "1501",
+      "nombre": "TÁLAG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150158",
+      "canton_codigo": "1501",
+      "nombre": "SAN JUAN DE MUYUNA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150350",
+      "canton_codigo": "1503",
+      "nombre": "ARCHIDONA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "150352",
+      "canton_codigo": "1503",
+      "nombre": "COTUNDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150354",
+      "canton_codigo": "1503",
+      "nombre": "SAN PABLO DE USHPAYACU",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150356",
+      "canton_codigo": "1503",
+      "nombre": "HATUN SUMAKU",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150450",
+      "canton_codigo": "1504",
+      "nombre": "EL CHACO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "150451",
+      "canton_codigo": "1504",
+      "nombre": "GONZALO DÍAZ DE PINEDA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150452",
+      "canton_codigo": "1504",
+      "nombre": "LINARES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150453",
+      "canton_codigo": "1504",
+      "nombre": "OYACACHI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150454",
+      "canton_codigo": "1504",
+      "nombre": "SANTA ROSA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150455",
+      "canton_codigo": "1504",
+      "nombre": "SARDINAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150750",
+      "canton_codigo": "1507",
+      "nombre": "BAEZA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "150751",
+      "canton_codigo": "1507",
+      "nombre": "COSANGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150752",
+      "canton_codigo": "1507",
+      "nombre": "CUYUJA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150753",
+      "canton_codigo": "1507",
+      "nombre": "PAPALLACTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150754",
+      "canton_codigo": "1507",
+      "nombre": "SAN FRANCISCO DE BORJA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150756",
+      "canton_codigo": "1507",
+      "nombre": "SUMACO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "150950",
+      "canton_codigo": "1509",
+      "nombre": "CARLOS JULIO AROSEMENA TOLA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "160150",
+      "canton_codigo": "1601",
+      "nombre": "PUYO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "160152",
+      "canton_codigo": "1601",
+      "nombre": "CANELOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160154",
+      "canton_codigo": "1601",
+      "nombre": "DIEZ DE AGOSTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160155",
+      "canton_codigo": "1601",
+      "nombre": "FÁTIMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160156",
+      "canton_codigo": "1601",
+      "nombre": "MONTALVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160157",
+      "canton_codigo": "1601",
+      "nombre": "POMONA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160158",
+      "canton_codigo": "1601",
+      "nombre": "RÍO CORRIENTES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160159",
+      "canton_codigo": "1601",
+      "nombre": "RÍO TIGRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160161",
+      "canton_codigo": "1601",
+      "nombre": "SARAYACU",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160162",
+      "canton_codigo": "1601",
+      "nombre": "SIMÓN BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160163",
+      "canton_codigo": "1601",
+      "nombre": "TARQUI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160164",
+      "canton_codigo": "1601",
+      "nombre": "TENIENTE HUGO ORTIZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160165",
+      "canton_codigo": "1601",
+      "nombre": "VERACRUZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160166",
+      "canton_codigo": "1601",
+      "nombre": "EL TRIUNFO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160167",
+      "canton_codigo": "1601",
+      "nombre": "SHUAR PASTAZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160250",
+      "canton_codigo": "1602",
+      "nombre": "MERA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "160251",
+      "canton_codigo": "1602",
+      "nombre": "MADRE TIERRA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160252",
+      "canton_codigo": "1602",
+      "nombre": "SHELL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160350",
+      "canton_codigo": "1603",
+      "nombre": "SANTA CLARA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "160351",
+      "canton_codigo": "1603",
+      "nombre": "SAN JOSÉ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "160450",
+      "canton_codigo": "1604",
+      "nombre": "ARAJUNO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "160451",
+      "canton_codigo": "1604",
+      "nombre": "CURARAY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170101",
+      "canton_codigo": "1701",
+      "nombre": "BELISARIO QUEVEDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170102",
+      "canton_codigo": "1701",
+      "nombre": "CARCELÉN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170103",
+      "canton_codigo": "1701",
+      "nombre": "CENTRO HISTÓRICO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170104",
+      "canton_codigo": "1701",
+      "nombre": "COCHAPAMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170105",
+      "canton_codigo": "1701",
+      "nombre": "COMITÉ DEL PUEBLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170106",
+      "canton_codigo": "1701",
+      "nombre": "COTOCOLLAO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170107",
+      "canton_codigo": "1701",
+      "nombre": "CHILIBULO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170108",
+      "canton_codigo": "1701",
+      "nombre": "CHILLOGALLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170109",
+      "canton_codigo": "1701",
+      "nombre": "CHIMBACALLE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170110",
+      "canton_codigo": "1701",
+      "nombre": "EL CONDADO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170111",
+      "canton_codigo": "1701",
+      "nombre": "GUAMANÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170112",
+      "canton_codigo": "1701",
+      "nombre": "IÑAQUITO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170113",
+      "canton_codigo": "1701",
+      "nombre": "ITCHIMBIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170114",
+      "canton_codigo": "1701",
+      "nombre": "JIPIJAPA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170115",
+      "canton_codigo": "1701",
+      "nombre": "KENNEDY",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170116",
+      "canton_codigo": "1701",
+      "nombre": "LA ARGELIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170117",
+      "canton_codigo": "1701",
+      "nombre": "LA CONCEPCIÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170118",
+      "canton_codigo": "1701",
+      "nombre": "LA ECUATORIANA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170119",
+      "canton_codigo": "1701",
+      "nombre": "LA FERROVIARIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170120",
+      "canton_codigo": "1701",
+      "nombre": "LA LIBERTAD",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170121",
+      "canton_codigo": "1701",
+      "nombre": "LA MAGDALENA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170122",
+      "canton_codigo": "1701",
+      "nombre": "LA MENA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170123",
+      "canton_codigo": "1701",
+      "nombre": "MARISCAL SUCRE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170124",
+      "canton_codigo": "1701",
+      "nombre": "PONCEANO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170125",
+      "canton_codigo": "1701",
+      "nombre": "PUENGASÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170126",
+      "canton_codigo": "1701",
+      "nombre": "QUITUMBE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170127",
+      "canton_codigo": "1701",
+      "nombre": "RUMIPAMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170128",
+      "canton_codigo": "1701",
+      "nombre": "SAN BARTOLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170129",
+      "canton_codigo": "1701",
+      "nombre": "SAN ISIDRO DEL INCA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170130",
+      "canton_codigo": "1701",
+      "nombre": "SAN JUAN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170131",
+      "canton_codigo": "1701",
+      "nombre": "SOLANDA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170132",
+      "canton_codigo": "1701",
+      "nombre": "TURUBAMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170151",
+      "canton_codigo": "1701",
+      "nombre": "ALANGASÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170152",
+      "canton_codigo": "1701",
+      "nombre": "AMAGUAÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170153",
+      "canton_codigo": "1701",
+      "nombre": "ATAHUALPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170154",
+      "canton_codigo": "1701",
+      "nombre": "CALACALÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170155",
+      "canton_codigo": "1701",
+      "nombre": "CALDERÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170156",
+      "canton_codigo": "1701",
+      "nombre": "CONOCOTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170157",
+      "canton_codigo": "1701",
+      "nombre": "CUMBAYÁ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170158",
+      "canton_codigo": "1701",
+      "nombre": "CHAVEZPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170159",
+      "canton_codigo": "1701",
+      "nombre": "CHECA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170160",
+      "canton_codigo": "1701",
+      "nombre": "EL QUINCHE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170161",
+      "canton_codigo": "1701",
+      "nombre": "GUALEA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170162",
+      "canton_codigo": "1701",
+      "nombre": "GUANGOPOLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170163",
+      "canton_codigo": "1701",
+      "nombre": "GUAYLLABAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170164",
+      "canton_codigo": "1701",
+      "nombre": "LA MERCED",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170165",
+      "canton_codigo": "1701",
+      "nombre": "LLANO CHICO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170166",
+      "canton_codigo": "1701",
+      "nombre": "LLOA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170168",
+      "canton_codigo": "1701",
+      "nombre": "NANEGAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170169",
+      "canton_codigo": "1701",
+      "nombre": "NANEGALITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170170",
+      "canton_codigo": "1701",
+      "nombre": "NAYÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170171",
+      "canton_codigo": "1701",
+      "nombre": "NONO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170172",
+      "canton_codigo": "1701",
+      "nombre": "PACTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170174",
+      "canton_codigo": "1701",
+      "nombre": "PERUCHO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170175",
+      "canton_codigo": "1701",
+      "nombre": "PIFO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170176",
+      "canton_codigo": "1701",
+      "nombre": "PÍNTAG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170177",
+      "canton_codigo": "1701",
+      "nombre": "POMASQUI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170178",
+      "canton_codigo": "1701",
+      "nombre": "PUÉLLARO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170179",
+      "canton_codigo": "1701",
+      "nombre": "PUEMBO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170180",
+      "canton_codigo": "1701",
+      "nombre": "SAN ANTONIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170181",
+      "canton_codigo": "1701",
+      "nombre": "SAN JOSÉ DE MINAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170183",
+      "canton_codigo": "1701",
+      "nombre": "TABABELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170184",
+      "canton_codigo": "1701",
+      "nombre": "TUMBACO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170185",
+      "canton_codigo": "1701",
+      "nombre": "YARUQUÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170186",
+      "canton_codigo": "1701",
+      "nombre": "ZÁMBIZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170251",
+      "canton_codigo": "1702",
+      "nombre": "ASCÁZUBI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170252",
+      "canton_codigo": "1702",
+      "nombre": "CANGAHUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170253",
+      "canton_codigo": "1702",
+      "nombre": "OLMEDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170254",
+      "canton_codigo": "1702",
+      "nombre": "OTÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170255",
+      "canton_codigo": "1702",
+      "nombre": "SANTA ROSA DE CUZUBAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170256",
+      "canton_codigo": "1702",
+      "nombre": "SAN JOSÉ DE AYORA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170257",
+      "canton_codigo": "1702",
+      "nombre": "JUAN MONTALVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170350",
+      "canton_codigo": "1703",
+      "nombre": "MACHACHI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170351",
+      "canton_codigo": "1703",
+      "nombre": "ALOAG",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170352",
+      "canton_codigo": "1703",
+      "nombre": "ALOASÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170353",
+      "canton_codigo": "1703",
+      "nombre": "CUTUGLAHUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170354",
+      "canton_codigo": "1703",
+      "nombre": "EL CHAUPI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170355",
+      "canton_codigo": "1703",
+      "nombre": "MANUEL CORNEJO ASTORGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170356",
+      "canton_codigo": "1703",
+      "nombre": "TAMBILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170357",
+      "canton_codigo": "1703",
+      "nombre": "UYUMBICHO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170450",
+      "canton_codigo": "1704",
+      "nombre": "TABACUNDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170451",
+      "canton_codigo": "1704",
+      "nombre": "LA ESPERANZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170452",
+      "canton_codigo": "1704",
+      "nombre": "MALCHINGUÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170453",
+      "canton_codigo": "1704",
+      "nombre": "TOCACHI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170454",
+      "canton_codigo": "1704",
+      "nombre": "TUPIGACHI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170501",
+      "canton_codigo": "1705",
+      "nombre": "SANGOLQUÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170502",
+      "canton_codigo": "1705",
+      "nombre": "SAN PEDRO DE TABOADA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170503",
+      "canton_codigo": "1705",
+      "nombre": "SAN RAFAEL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170504",
+      "canton_codigo": "1705",
+      "nombre": "FAJARDO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170551",
+      "canton_codigo": "1705",
+      "nombre": "COTOGCHOA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170552",
+      "canton_codigo": "1705",
+      "nombre": "RUMIPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170750",
+      "canton_codigo": "1707",
+      "nombre": "SAN MIGUEL DE LOS BANCOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170751",
+      "canton_codigo": "1707",
+      "nombre": "MINDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "170850",
+      "canton_codigo": "1708",
+      "nombre": "PEDRO VICENTE MALDONADO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "170950",
+      "canton_codigo": "1709",
+      "nombre": "PUERTO QUITO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180101",
+      "canton_codigo": "1801",
+      "nombre": "ATOCHA – FICOA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180102",
+      "canton_codigo": "1801",
+      "nombre": "CELIANO MONGE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180103",
+      "canton_codigo": "1801",
+      "nombre": "HUACHI CHICO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180104",
+      "canton_codigo": "1801",
+      "nombre": "HUACHI LORETO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180105",
+      "canton_codigo": "1801",
+      "nombre": "LA MERCED",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180106",
+      "canton_codigo": "1801",
+      "nombre": "LA PENÍNSULA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180107",
+      "canton_codigo": "1801",
+      "nombre": "MATRIZ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180108",
+      "canton_codigo": "1801",
+      "nombre": "PISHILATA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180109",
+      "canton_codigo": "1801",
+      "nombre": "SAN FRANCISCO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180151",
+      "canton_codigo": "1801",
+      "nombre": "AMBATILLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180152",
+      "canton_codigo": "1801",
+      "nombre": "ATAHUALPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180153",
+      "canton_codigo": "1801",
+      "nombre": "AUGUSTO N. MARTÍNEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180154",
+      "canton_codigo": "1801",
+      "nombre": "CONSTANTINO FERNÁNDEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180155",
+      "canton_codigo": "1801",
+      "nombre": "HUACHI GRANDE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180156",
+      "canton_codigo": "1801",
+      "nombre": "IZAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180157",
+      "canton_codigo": "1801",
+      "nombre": "JUAN BENIGNO VELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180158",
+      "canton_codigo": "1801",
+      "nombre": "MONTALVO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180159",
+      "canton_codigo": "1801",
+      "nombre": "PASA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180160",
+      "canton_codigo": "1801",
+      "nombre": "PICAIHUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180161",
+      "canton_codigo": "1801",
+      "nombre": "PILAGÜÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180162",
+      "canton_codigo": "1801",
+      "nombre": "QUISAPINCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180163",
+      "canton_codigo": "1801",
+      "nombre": "SAN BARTOLOMÉ DE PINLLO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180164",
+      "canton_codigo": "1801",
+      "nombre": "SAN FERNANDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180165",
+      "canton_codigo": "1801",
+      "nombre": "SANTA ROSA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180166",
+      "canton_codigo": "1801",
+      "nombre": "TOTORAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180167",
+      "canton_codigo": "1801",
+      "nombre": "CUNCHIBAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180168",
+      "canton_codigo": "1801",
+      "nombre": "UNAMUNCHO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180250",
+      "canton_codigo": "1802",
+      "nombre": "BAÑOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180251",
+      "canton_codigo": "1802",
+      "nombre": "LLIGUA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180252",
+      "canton_codigo": "1802",
+      "nombre": "RÍO NEGRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180253",
+      "canton_codigo": "1802",
+      "nombre": "RÍO VERDE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180254",
+      "canton_codigo": "1802",
+      "nombre": "ULBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180350",
+      "canton_codigo": "1803",
+      "nombre": "CEVALLOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180450",
+      "canton_codigo": "1804",
+      "nombre": "MOCHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180451",
+      "canton_codigo": "1804",
+      "nombre": "PINGUILÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180550",
+      "canton_codigo": "1805",
+      "nombre": "PATATE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180551",
+      "canton_codigo": "1805",
+      "nombre": "EL TRIUNFO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180552",
+      "canton_codigo": "1805",
+      "nombre": "LOS ANDES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180553",
+      "canton_codigo": "1805",
+      "nombre": "SUCRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180650",
+      "canton_codigo": "1806",
+      "nombre": "QUERO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180651",
+      "canton_codigo": "1806",
+      "nombre": "RUMIPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180652",
+      "canton_codigo": "1806",
+      "nombre": "YANAYACU MOCHAPATA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180701",
+      "canton_codigo": "1807",
+      "nombre": "PELILEO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180702",
+      "canton_codigo": "1807",
+      "nombre": "PELILEO GRANDE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180751",
+      "canton_codigo": "1807",
+      "nombre": "BENÍTEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180752",
+      "canton_codigo": "1807",
+      "nombre": "BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180753",
+      "canton_codigo": "1807",
+      "nombre": "COTALÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180754",
+      "canton_codigo": "1807",
+      "nombre": "CHIQUICHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180755",
+      "canton_codigo": "1807",
+      "nombre": "EL ROSARIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180756",
+      "canton_codigo": "1807",
+      "nombre": "GARCÍA MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180757",
+      "canton_codigo": "1807",
+      "nombre": "GUAMBALÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180758",
+      "canton_codigo": "1807",
+      "nombre": "SALASACA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180801",
+      "canton_codigo": "1808",
+      "nombre": "CIUDAD NUEVA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180802",
+      "canton_codigo": "1808",
+      "nombre": "PÍLLARO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180851",
+      "canton_codigo": "1808",
+      "nombre": "BAQUERIZO MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180852",
+      "canton_codigo": "1808",
+      "nombre": "EMILIO MARÍA TERÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180853",
+      "canton_codigo": "1808",
+      "nombre": "MARCOS ESPINEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180854",
+      "canton_codigo": "1808",
+      "nombre": "PRESIDENTE URBINA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180855",
+      "canton_codigo": "1808",
+      "nombre": "SAN ANDRÉS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180856",
+      "canton_codigo": "1808",
+      "nombre": "SAN JOSÉ DE POALÓ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180857",
+      "canton_codigo": "1808",
+      "nombre": "SAN MIGUELITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "180950",
+      "canton_codigo": "1809",
+      "nombre": "TISALEO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "180951",
+      "canton_codigo": "1809",
+      "nombre": "QUINCHICOTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190101",
+      "canton_codigo": "1901",
+      "nombre": "EL LIMÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190102",
+      "canton_codigo": "1901",
+      "nombre": "ZAMORA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190151",
+      "canton_codigo": "1901",
+      "nombre": "CUMBARATZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190152",
+      "canton_codigo": "1901",
+      "nombre": "GUADALUPE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190153",
+      "canton_codigo": "1901",
+      "nombre": "IMBANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190155",
+      "canton_codigo": "1901",
+      "nombre": "SABANILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190156",
+      "canton_codigo": "1901",
+      "nombre": "TIMBARA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190158",
+      "canton_codigo": "1901",
+      "nombre": "SAN CARLOS DE LAS MINAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190250",
+      "canton_codigo": "1902",
+      "nombre": "ZUMBA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190251",
+      "canton_codigo": "1902",
+      "nombre": "CHITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190252",
+      "canton_codigo": "1902",
+      "nombre": "EL CHORRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190254",
+      "canton_codigo": "1902",
+      "nombre": "LA CHONTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190256",
+      "canton_codigo": "1902",
+      "nombre": "PUCAPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190259",
+      "canton_codigo": "1902",
+      "nombre": "SAN ANDRÉS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190350",
+      "canton_codigo": "1903",
+      "nombre": "GUAYZIMI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190351",
+      "canton_codigo": "1903",
+      "nombre": "ZURMI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190352",
+      "canton_codigo": "1903",
+      "nombre": "NUEVO PARAÍSO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190353",
+      "canton_codigo": "1903",
+      "nombre": "NANKAIS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190450",
+      "canton_codigo": "1904",
+      "nombre": "28 DE MAYO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190451",
+      "canton_codigo": "1904",
+      "nombre": "LA PAZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190452",
+      "canton_codigo": "1904",
+      "nombre": "TUTUPALI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190550",
+      "canton_codigo": "1905",
+      "nombre": "YANTZAZA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190551",
+      "canton_codigo": "1905",
+      "nombre": "CHICAÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190553",
+      "canton_codigo": "1905",
+      "nombre": "LOS ENCUENTROS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190650",
+      "canton_codigo": "1906",
+      "nombre": "EL PANGUI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190651",
+      "canton_codigo": "1906",
+      "nombre": "EL GUISME",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190652",
+      "canton_codigo": "1906",
+      "nombre": "PACHICUTZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190653",
+      "canton_codigo": "1906",
+      "nombre": "TUNDAYME",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190750",
+      "canton_codigo": "1907",
+      "nombre": "ZUMBI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190752",
+      "canton_codigo": "1907",
+      "nombre": "TRIUNFO DORADO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190753",
+      "canton_codigo": "1907",
+      "nombre": "PANGUINTZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190850",
+      "canton_codigo": "1908",
+      "nombre": "PALANDA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190851",
+      "canton_codigo": "1908",
+      "nombre": "EL PORVENIR DEL CARMEN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190852",
+      "canton_codigo": "1908",
+      "nombre": "SAN FRANCISCO DEL VERGEL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190853",
+      "canton_codigo": "1908",
+      "nombre": "VALLADOLID",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190854",
+      "canton_codigo": "1908",
+      "nombre": "LA CANELA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190950",
+      "canton_codigo": "1909",
+      "nombre": "PAQUISHA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "190951",
+      "canton_codigo": "1909",
+      "nombre": "BELLAVISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "190952",
+      "canton_codigo": "1909",
+      "nombre": "NUEVO QUITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "200150",
+      "canton_codigo": "2001",
+      "nombre": "PUERTO BAQUERIZO MORENO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "200151",
+      "canton_codigo": "2001",
+      "nombre": "EL PROGRESO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "200152",
+      "canton_codigo": "2001",
+      "nombre": "ISLA SANTA MARÍA FLOREANA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "200250",
+      "canton_codigo": "2002",
+      "nombre": "PUERTO VILLAMIL",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "200251",
+      "canton_codigo": "2002",
+      "nombre": "TOMÁS DE BERLANGA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "200350",
+      "canton_codigo": "2003",
+      "nombre": "PUERTO AYORA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "200351",
+      "canton_codigo": "2003",
+      "nombre": "BELLA VISTA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "200352",
+      "canton_codigo": "2003",
+      "nombre": "SANTA ROSA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210150",
+      "canton_codigo": "2101",
+      "nombre": "NUEVA LOJA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210152",
+      "canton_codigo": "2101",
+      "nombre": "DURENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210153",
+      "canton_codigo": "2101",
+      "nombre": "GENERAL FARFÁN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210155",
+      "canton_codigo": "2101",
+      "nombre": "EL ENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210156",
+      "canton_codigo": "2101",
+      "nombre": "PACAYACU",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210157",
+      "canton_codigo": "2101",
+      "nombre": "JAMBELÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210158",
+      "canton_codigo": "2101",
+      "nombre": "SANTA CECILIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210160",
+      "canton_codigo": "2101",
+      "nombre": "10 DE AGOSTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210250",
+      "canton_codigo": "2102",
+      "nombre": "LUMBAQUÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210251",
+      "canton_codigo": "2102",
+      "nombre": "EL REVENTADOR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210252",
+      "canton_codigo": "2102",
+      "nombre": "GONZALO PIZARRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210254",
+      "canton_codigo": "2102",
+      "nombre": "PUERTO LIBRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210350",
+      "canton_codigo": "2103",
+      "nombre": "PUERTO EL CARMEN DE PUTUMAYO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210351",
+      "canton_codigo": "2103",
+      "nombre": "PALMA ROJA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210352",
+      "canton_codigo": "2103",
+      "nombre": "PUERTO BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210353",
+      "canton_codigo": "2103",
+      "nombre": "PUERTO RODRÍGUEZ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210354",
+      "canton_codigo": "2103",
+      "nombre": "SANTA ELENA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210355",
+      "canton_codigo": "2103",
+      "nombre": "SANSAHUARI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210450",
+      "canton_codigo": "2104",
+      "nombre": "SHUSHUFINDI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210451",
+      "canton_codigo": "2104",
+      "nombre": "LIMONCOCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210452",
+      "canton_codigo": "2104",
+      "nombre": "PAÑACOCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210453",
+      "canton_codigo": "2104",
+      "nombre": "SAN ROQUE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210454",
+      "canton_codigo": "2104",
+      "nombre": "SAN PEDRO DE LOS COFÁNES",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210455",
+      "canton_codigo": "2104",
+      "nombre": "SIETE DE JULIO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210456",
+      "canton_codigo": "2104",
+      "nombre": "LA MAGDALENA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210457",
+      "canton_codigo": "2104",
+      "nombre": "LA PRIMAVERA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210550",
+      "canton_codigo": "2105",
+      "nombre": "LA BONITA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210551",
+      "canton_codigo": "2105",
+      "nombre": "EL PLAYÓN DE SAN FRANCISCO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210552",
+      "canton_codigo": "2105",
+      "nombre": "LA SOFÍA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210553",
+      "canton_codigo": "2105",
+      "nombre": "ROSA FLORIDA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210554",
+      "canton_codigo": "2105",
+      "nombre": "SANTA BÁRBARA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210650",
+      "canton_codigo": "2106",
+      "nombre": "EL DORADO DE CASCALES",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210651",
+      "canton_codigo": "2106",
+      "nombre": "SANTA ROSA DE SUCUMBÍOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210652",
+      "canton_codigo": "2106",
+      "nombre": "SEVILLA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210653",
+      "canton_codigo": "2106",
+      "nombre": "NUEVA TRONCAL",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210750",
+      "canton_codigo": "2107",
+      "nombre": "TARAPOA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "210751",
+      "canton_codigo": "2107",
+      "nombre": "CUYABENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "210752",
+      "canton_codigo": "2107",
+      "nombre": "AGUAS NEGRAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220150",
+      "canton_codigo": "2201",
+      "nombre": "EL COCA (PUERTO FRANCISCO DE ORELLANA)",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "220151",
+      "canton_codigo": "2201",
+      "nombre": "DAYUMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220152",
+      "canton_codigo": "2201",
+      "nombre": "TARACOA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220153",
+      "canton_codigo": "2201",
+      "nombre": "ALEJANDRO LABAKA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220154",
+      "canton_codigo": "2201",
+      "nombre": "EL DORADO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220155",
+      "canton_codigo": "2201",
+      "nombre": "EL EDÉN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220156",
+      "canton_codigo": "2201",
+      "nombre": "GARCÍA MORENO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220157",
+      "canton_codigo": "2201",
+      "nombre": "INÉS ARANGO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220158",
+      "canton_codigo": "2201",
+      "nombre": "LA BELLEZA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220159",
+      "canton_codigo": "2201",
+      "nombre": "NUEVO PARAÍSO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220160",
+      "canton_codigo": "2201",
+      "nombre": "SAN JOSÉ DE GUAYUSA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220161",
+      "canton_codigo": "2201",
+      "nombre": "SAN LUIS DE ARMENIA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220201",
+      "canton_codigo": "2202",
+      "nombre": "NUEVO ROCAFUERTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "220202",
+      "canton_codigo": "2202",
+      "nombre": "TIPUTINI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "220251",
+      "canton_codigo": "2202",
+      "nombre": "CAPITÁN AUGUSTO RIVADENEYRA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220252",
+      "canton_codigo": "2202",
+      "nombre": "CONONACO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220253",
+      "canton_codigo": "2202",
+      "nombre": "SANTA MARÍA DE HUIRIRIMA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220255",
+      "canton_codigo": "2202",
+      "nombre": "YASUNÍ",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220350",
+      "canton_codigo": "2203",
+      "nombre": "LA JOYA DE LOS SACHAS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "220351",
+      "canton_codigo": "2203",
+      "nombre": "ENOKANQUI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220352",
+      "canton_codigo": "2203",
+      "nombre": "POMPEYA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220353",
+      "canton_codigo": "2203",
+      "nombre": "SAN CARLOS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220354",
+      "canton_codigo": "2203",
+      "nombre": "SAN SEBASTIÁN DEL COCA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220355",
+      "canton_codigo": "2203",
+      "nombre": "LAGO SAN PEDRO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220356",
+      "canton_codigo": "2203",
+      "nombre": "RUMIPAMBA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220357",
+      "canton_codigo": "2203",
+      "nombre": "TRES DE NOVIEMBRE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220358",
+      "canton_codigo": "2203",
+      "nombre": "UNIÓN MILAGREÑA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220450",
+      "canton_codigo": "2204",
+      "nombre": "LORETO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "220451",
+      "canton_codigo": "2204",
+      "nombre": "ÁVILA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220452",
+      "canton_codigo": "2204",
+      "nombre": "PUERTO MURIALDO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220453",
+      "canton_codigo": "2204",
+      "nombre": "SAN JOSÉ DE PAYAMINO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220454",
+      "canton_codigo": "2204",
+      "nombre": "SAN JOSÉ DE DAHUANO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "220455",
+      "canton_codigo": "2204",
+      "nombre": "SAN VICENTE DE HUATICOCHA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230101",
+      "canton_codigo": "2301",
+      "nombre": "ABRAHAM CALAZACÓN",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230102",
+      "canton_codigo": "2301",
+      "nombre": "BOMBOLÍ",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230103",
+      "canton_codigo": "2301",
+      "nombre": "CHIGUILPE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230104",
+      "canton_codigo": "2301",
+      "nombre": "RÍO TOACHI",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230105",
+      "canton_codigo": "2301",
+      "nombre": "RÍO VERDE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230106",
+      "canton_codigo": "2301",
+      "nombre": "SANTO DOMINGO DE LOS COLORADOS",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230107",
+      "canton_codigo": "2301",
+      "nombre": "ZARACAY",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230151",
+      "canton_codigo": "2301",
+      "nombre": "ALLURIQUÍN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230152",
+      "canton_codigo": "2301",
+      "nombre": "PUERTO LIMÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230153",
+      "canton_codigo": "2301",
+      "nombre": "LUZ DE AMÉRICA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230154",
+      "canton_codigo": "2301",
+      "nombre": "SAN JACINTO DEL BÚA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230155",
+      "canton_codigo": "2301",
+      "nombre": "VALLE HERMOSO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230156",
+      "canton_codigo": "2301",
+      "nombre": "EL ESFUERZO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230157",
+      "canton_codigo": "2301",
+      "nombre": "SANTA MARÍA DEL TOACHI",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230250",
+      "canton_codigo": "2302",
+      "nombre": "LA CONCORDIA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "230251",
+      "canton_codigo": "2302",
+      "nombre": "MONTERREY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230252",
+      "canton_codigo": "2302",
+      "nombre": "LA VILLEGAS",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "230253",
+      "canton_codigo": "2302",
+      "nombre": "PLAN PILOTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240101",
+      "canton_codigo": "2401",
+      "nombre": "BALLENITA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240102",
+      "canton_codigo": "2401",
+      "nombre": "SANTA ELENA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240151",
+      "canton_codigo": "2401",
+      "nombre": "ATAHUALPA",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240152",
+      "canton_codigo": "2401",
+      "nombre": "COLONCHE",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240153",
+      "canton_codigo": "2401",
+      "nombre": "CHANDUY",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240154",
+      "canton_codigo": "2401",
+      "nombre": "MANGLARALTO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240155",
+      "canton_codigo": "2401",
+      "nombre": "SIMÓN BOLÍVAR",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240156",
+      "canton_codigo": "2401",
+      "nombre": "SAN JOSÉ DE ANCÓN",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240250",
+      "canton_codigo": "2402",
+      "nombre": "LA LIBERTAD",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240301",
+      "canton_codigo": "2403",
+      "nombre": "CARLOS ESPINOZA LARREA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240302",
+      "canton_codigo": "2403",
+      "nombre": "GENERAL ALBERTO ENRÍQUEZ GALLO",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240303",
+      "canton_codigo": "2403",
+      "nombre": "VICENTE  ROCAFUERTE",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240304",
+      "canton_codigo": "2403",
+      "nombre": "SANTA ROSA",
+      "tipo": "URBANA"
+    },
+    {
+      "codigo": "240351",
+      "canton_codigo": "2403",
+      "nombre": "ANCONCITO",
+      "tipo": "RURAL"
+    },
+    {
+      "codigo": "240352",
+      "canton_codigo": "2403",
+      "nombre": "JOSÉ LUIS TAMAYO",
+      "tipo": "RURAL"
+    }
+  ]
+}

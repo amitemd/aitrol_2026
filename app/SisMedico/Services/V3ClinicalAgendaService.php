@@ -3,6 +3,8 @@
 namespace Sis_medico\Services;
 
 use Illuminate\Support\Facades\DB;
+use Sis_medico\Especialidad;
+use Sis_medico\Support\RequestSchema as Schema;
 
 class V3ClinicalAgendaService
 {
@@ -13,9 +15,9 @@ class V3ClinicalAgendaService
         $this->availability = $availability;
     }
 
-    public function directory($companyId, array $filters = array())
+    public function directory($companyId, array $filters = [])
     {
-        $specialties = $this->specialties();
+        $specialties = $this->specialties($companyId);
         $doctors = $this->doctors($companyId, $filters);
         $doctorIds = $doctors->pluck('id')->all();
         $doctorSpecialties = collect();
@@ -36,18 +38,24 @@ class V3ClinicalAgendaService
         }
 
         $hospitals = $this->availability->hospitals($companyId);
-        $areas = array('hospitalization' => collect(), 'emergency' => collect(), 'procedures' => collect());
+        $areas = ['hospitalization' => collect(), 'emergency' => collect(), 'procedures' => collect()];
         foreach ($hospitals as $hospital) {
             foreach ($hospital->rooms as $room) {
                 $room->hospital_name = $hospital->nombre_hospital;
                 $category = strtolower((string) $room->category_label);
-                if (strpos($category, 'emergencia') !== false) $areas['emergency']->push($room);
-                if (strpos($category, 'hospital') !== false || strpos($category, 'intensivo') !== false) $areas['hospitalization']->push($room);
-                if (strpos($category, 'procedimiento') !== false || strpos($category, 'cirug') !== false) $areas['procedures']->push($room);
+                if (strpos($category, 'emergencia') !== false) {
+                    $areas['emergency']->push($room);
+                }
+                if (strpos($category, 'hospital') !== false || strpos($category, 'intensivo') !== false) {
+                    $areas['hospitalization']->push($room);
+                }
+                if (strpos($category, 'procedimiento') !== false || strpos($category, 'cirug') !== false) {
+                    $areas['procedures']->push($room);
+                }
             }
         }
 
-        return array('doctors' => $doctors, 'specialties' => $specialties, 'hospitals' => $hospitals, 'areas' => $areas);
+        return ['doctors' => $doctors, 'specialties' => $specialties, 'hospitals' => $hospitals, 'areas' => $areas];
     }
 
     public function updateLimits($companyId, $doctorId, $consultations, $procedures, $actorId, $ip)
@@ -56,12 +64,15 @@ class V3ClinicalAgendaService
         $doctor = DoctorUserType::constrain($doctorQuery, 'u', 'doctor_type_limits')
             ->where('ue.id_empresa', $companyId)->where('u.id', $doctorId)
             ->where('u.estado', 1)->select('u.id')->first();
-        if (!$doctor) return false;
+        if (! $doctor) {
+            return false;
+        }
 
-        DB::table('users')->where('id', $doctorId)->update(array(
+        DB::table('users')->where('id', $doctorId)->update([
             'max_consulta' => (int) $consultations, 'max_procedimiento' => (int) $procedures,
             'id_usuariomod' => $actorId, 'ip_modificacion' => $ip, 'updated_at' => date('Y-m-d H:i:s'),
-        ));
+        ]);
+
         return true;
     }
 
@@ -79,36 +90,45 @@ class V3ClinicalAgendaService
         }
         $search = isset($filters['search']) ? trim((string) $filters['search']) : '';
         if ($search !== '') {
-            $like = '%'.str_replace(array('%', '_'), array('\\%', '\\_'), $search).'%';
+            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $search).'%';
             $query->where(function ($scope) use ($like) {
                 $scope->where('u.id', 'like', $like)->orWhere('u.nombre1', 'like', $like)
                     ->orWhere('u.nombre2', 'like', $like)->orWhere('u.apellido1', 'like', $like)
                     ->orWhere('u.apellido2', 'like', $like);
             });
         }
-        return $query->select(array('u.id', 'u.nombre1', 'u.nombre2', 'u.apellido1', 'u.apellido2', 'u.imagen_url'))
+
+        return $query->select(['u.id', 'u.nombre1', 'u.nombre2', 'u.apellido1', 'u.apellido2', 'u.imagen_url'])
             ->distinct()->orderBy('u.apellido1')->orderBy('u.nombre1')->get();
     }
 
-    private function specialties()
+    private function specialties($companyId)
     {
-        // `especialidad` es un catálogo global en el esquema heredado. La
-        // empresa se aplica al directorio de médicos mediante usuario_empresa.
-        return \Sis_medico\Especialidad::query()->from('especialidad as e')
-            ->where('e.estado', 1)
-            ->select('e.id', 'e.nombre')->orderBy('e.nombre')->get();
+        $query = Especialidad::query()->from('especialidad as e')
+            ->where('e.estado', 1);
+
+        if (Schema::hasColumn('especialidad', 'id_empresa')) {
+            $query->where('e.id_empresa', (string) $companyId);
+        }
+
+        return $query->select('e.id', 'e.nombre')->orderBy('e.nombre')->get();
     }
 
     private function doctorName($doctor)
     {
-        $parts = array($doctor->apellido1, $doctor->apellido2, $doctor->nombre1, $doctor->nombre2);
-        $parts = array_filter($parts, function ($part) { return trim((string) $part) !== '' && strtoupper(trim((string) $part)) !== '(N/A)'; });
+        $parts = [$doctor->apellido1, $doctor->apellido2, $doctor->nombre1, $doctor->nombre2];
+        $parts = array_filter($parts, function ($part) {
+            return trim((string) $part) !== '' && strtoupper(trim((string) $part)) !== '(N/A)';
+        });
+
         return trim(implode(' ', $parts));
     }
 
     private function initials($doctor)
     {
-        $first = trim((string) $doctor->nombre1); $last = trim((string) $doctor->apellido1);
+        $first = trim((string) $doctor->nombre1);
+        $last = trim((string) $doctor->apellido1);
+
         return strtoupper(($first !== '' ? substr($first, 0, 1) : '').($last !== '' ? substr($last, 0, 1) : ''));
     }
 }

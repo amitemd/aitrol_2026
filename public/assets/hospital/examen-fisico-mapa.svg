@@ -1,0 +1,212 @@
+<svg class="clinical-body-map-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 620 620" role="img" aria-labelledby="map-title map-description">
+  <title id="map-title">Esquema corporal oficial del examen físico</title>
+  <desc id="map-description">Las siluetas originales del formulario 003 en vistas frontal, posterior y ambos perfiles, con regiones interactivas.</desc>
+  <style>
+    .view-label{fill:#597184;font:700 12px Arial,sans-serif;letter-spacing:1px}.region{--c:#087fab;cursor:pointer;outline:none}.hotspot{fill:var(--c);fill-opacity:0;stroke:var(--c);stroke-opacity:0;stroke-width:1.2;pointer-events:all;mix-blend-mode:multiply;transition:fill-opacity .18s}.region:not([data-exam-target="columna"]) .hotspot{stroke:none}.region:hover .hotspot,.region:focus .hotspot,.region.is-active .hotspot{fill-opacity:.16}.region.has-value .hotspot{fill-opacity:.32}.region[data-exam-target="ojos"] .hotspot,.region[data-exam-target="oidos"] .hotspot,.region[data-exam-target="nariz"] .hotspot,.region[data-exam-target="boca"] .hotspot{mix-blend-mode:normal}.region[data-exam-target="ojos"]:hover .hotspot,.region[data-exam-target="ojos"]:focus .hotspot,.region[data-exam-target="ojos"].is-active .hotspot,.region[data-exam-target="oidos"]:hover .hotspot,.region[data-exam-target="oidos"]:focus .hotspot,.region[data-exam-target="oidos"].is-active .hotspot,.region[data-exam-target="nariz"]:hover .hotspot,.region[data-exam-target="nariz"]:focus .hotspot,.region[data-exam-target="nariz"].is-active .hotspot,.region[data-exam-target="boca"]:hover .hotspot,.region[data-exam-target="boca"]:focus .hotspot,.region[data-exam-target="boca"].is-active .hotspot{fill-opacity:.38}.region[data-exam-target="ojos"].has-value .hotspot{fill-opacity:.68}.region[data-exam-target="oidos"].has-value .hotspot{fill-opacity:.58}.region[data-exam-target="nariz"].has-value .hotspot{fill-opacity:.62}.region[data-exam-target="boca"].has-value .hotspot{fill-opacity:.62}.region[data-exam-target="columna"]:hover .hotspot,.region[data-exam-target="columna"]:focus .hotspot,.region[data-exam-target="columna"].is-active .hotspot{stroke-opacity:.5}.region[data-exam-target="columna"].has-value .hotspot{stroke-opacity:.6}.figure{image-rendering:auto}
+  </style>
+
+  <defs>
+    <mask id="piel-frontal-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="70" y="50" width="150" height="237.4" style="mask-type:alpha">
+      <image href="/assets/hospital/form003/masks/frente-mask.png" xlink:href="/assets/hospital/form003/masks/frente-mask.png" x="70" y="50" width="150" height="237.4" preserveAspectRatio="none"/>
+    </mask>
+    <mask id="piel-posterior-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="400" y="50" width="145" height="242" style="mask-type:alpha">
+      <image href="/assets/hospital/form003/masks/espalda-mask.png" xlink:href="/assets/hospital/form003/masks/espalda-mask.png" x="400" y="50" width="145" height="242" preserveAspectRatio="none"/>
+    </mask>
+    <mask id="piel-perfil-derecho-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="105" y="345" width="85" height="238.5" style="mask-type:alpha">
+      <image href="/assets/hospital/form003/masks/perfil-1-mask.png" xlink:href="/assets/hospital/form003/masks/perfil-1-mask.png" x="105" y="345" width="85" height="238.5" preserveAspectRatio="none"/>
+    </mask>
+    <mask id="piel-perfil-izquierdo-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="430" y="345" width="84" height="236.6" style="mask-type:alpha">
+      <image href="/assets/hospital/form003/masks/perfil-2-mask.png" xlink:href="/assets/hospital/form003/masks/perfil-2-mask.png" x="430" y="345" width="84" height="236.6" preserveAspectRatio="none"/>
+    </mask>
+    <mask id="brazos-posterior-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="400" y="50" width="145" height="242" style="mask-type:alpha">
+      <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHkAAADKCAYAAACBpO+SAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACHklEQVR42u3cYU7DMAwG0NXq/a9c/gBCSEBXssZ23rvAEn9xknawxwMAAAAAAAAAAAAAAAAAAAAAALjXNnsAx3Ecn4PZtq1LYT/mlWFOW4Zwqwf8fS4/FnvSHLfMRcke/jPzmDmfrUJhsoZdZS7RbUs0l8khdwqqklACIeviBvXQyToZISNkhIyQGWVXguu+v57M+pi4Zy8cDUP+rRu6fSPVKuRnC6CbXbx0sZAtjttDvjIRX2boZLqEXKWbK4xTJ+tkOuwEQtbJ83ghMrCW2bejKmFn/hvsPXPAzlNnMhk6eYnz7st26/vkRkVzu160i4W8yOXtSuilX4aMGLxn5cQhO0tz1SsUof8cQyD95+52vcAiiUyDrH7Ryjr+UKD+87BdL7BlR+bBeV7WyVQKWafq5MfxTlwTQ74jgErdnm2sUaEgFbfz/4x5dNOk3q5t0Q1CduFy8SovyyKO7AVYtdtHHlWRaTC6uVEnn5l4p8UzO+hYcWWvFnQoTP9zOe4cxNnQup7zsxatf131nHx/aG7r4+sRMz/cBczFS9CDGiqudLAurrVtxx0f5BI1LugrGeyvXkVXArYozuVxtk7xyoDJsYWHgPsHHQKu/yj1V1Yh4P4dHQLuz8uQBbo5dHF/L/0dL8+7OS5wIZQeN+ynOtkv4gEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAbi6o4X4kJkCoAAAAASUVORK5CYII=" x="400" y="50" width="145" height="242" preserveAspectRatio="none"/>
+    </mask>
+  </defs>
+
+  <text class="view-label" x="145" y="25" text-anchor="middle">FRONTAL</text>
+  <text class="view-label" x="472" y="25" text-anchor="middle">POSTERIOR</text>
+  <text class="view-label" x="147" y="328" text-anchor="middle">PERFIL DERECHO</text>
+  <text class="view-label" x="472" y="328" text-anchor="middle">PERFIL IZQUIERDO</text>
+
+  <image class="figure" href="/assets/hospital/form003/frente.png" xlink:href="/assets/hospital/form003/frente.png" x="70" y="50" width="150" height="237.4"/>
+  <image class="figure" href="/assets/hospital/form003/espalda.png" xlink:href="/assets/hospital/form003/espalda.png" x="400" y="50" width="145" height="242"/>
+  <image class="figure" href="/assets/hospital/form003/perfil-1.png" xlink:href="/assets/hospital/form003/perfil-1.png" x="105" y="345" width="85" height="238.5"/>
+  <image class="figure" href="/assets/hospital/form003/perfil-2.png" xlink:href="/assets/hospital/form003/perfil-2.png" x="430" y="345" width="84" height="236.6"/>
+
+  <g class="region" style="--c:#607d8b" data-exam-target="piel_faneras" tabindex="0" role="button" aria-label="1. Piel y faneras"><title>1. Piel y faneras</title>
+    <rect class="hotspot" x="70" y="50" width="150" height="237.4" mask="url(#piel-frontal-mask)"/>
+    <rect class="hotspot" x="400" y="50" width="145" height="242" mask="url(#piel-posterior-mask)"/>
+    <rect class="hotspot" x="105" y="345" width="85" height="238.5" mask="url(#piel-perfil-derecho-mask)"/>
+    <rect class="hotspot" x="430" y="345" width="84" height="236.6" mask="url(#piel-perfil-izquierdo-mask)"/>
+  </g>
+
+  <g class="region" style="--c:#7cb342" data-exam-target="miembros_inferiores" tabindex="0" role="button" aria-label="15. Miembros inferiores"><title>15. Miembros inferiores</title>
+    <rect class="hotspot" x="105" y="180" width="80" height="108" mask="url(#piel-frontal-mask)"/>
+    <rect class="hotspot" x="440" y="180" width="65" height="112" mask="url(#piel-posterior-mask)"/>
+    <rect class="hotspot" x="132" y="472" width="58" height="112" mask="url(#piel-perfil-derecho-mask)"/>
+    <rect class="hotspot" x="430" y="472" width="52" height="111" mask="url(#piel-perfil-izquierdo-mask)"/>
+  </g>
+
+  <g class="region" style="--c:#039be5" data-exam-target="miembros_superiores" tabindex="0" role="button" aria-label="14. Miembros superiores"><title>14. Miembros superiores</title>
+    <!-- El recorte exterior usa coordenadas del mapa; cada trazado interior usa
+         las coordenadas de su imagen original. No transformar la máscara. -->
+    <g mask="url(#piel-frontal-mask)">
+      <g transform="translate(70 50) scale(1.18110236 1.18109453)" data-arm-view="frontal">
+        <path class="hotspot" d="M39 37C40 43 39 48 37 52L39 56C39 62 37 67 36 72C35 80 34 86 31 92L27 100L27 109L25 121H0V35Z"/>
+        <path class="hotspot" d="M90 37C87 42 87 47 87 50L83 55C84 60 85 65 87 69C89 73 89 79 91 84C94 91 97 95 100 100L101 109L103 121H127V35Z"/>
+      </g>
+    </g>
+    <rect class="hotspot" x="400" y="50" width="145" height="242" mask="url(#brazos-posterior-mask)"/>
+    <g mask="url(#piel-perfil-derecho-mask)">
+      <g transform="translate(105 345) scale(1.18055556 1.18069307)" data-arm-view="perfil-derecho">
+        <path class="hotspot" d="M22 43C29 42 36 43 40 49C37 47 34 48 34 52C34 59 31 64 27 66L21 69C22 78 21 88 18 96L17.5 98.5L22 104L24 109L22 112L18 107L17 120H0V43Z"/>
+      </g>
+    </g>
+    <g mask="url(#piel-perfil-izquierdo-mask)">
+      <g transform="translate(430 345) scale(1.18309859 1.183)" data-arm-view="perfil-izquierdo">
+        <path class="hotspot" d="M44 41C37 40 30 42 26 48C29 46 32 47 32.5 50C33 57 35 63 39 65L45 67.5C44 77 46 88 49 97L44 102L42 109L43 112L47 106L49 120H71V41Z"/>
+      </g>
+    </g>
+  </g>
+
+  <g class="region" style="--c:#fb8c00" data-exam-target="ingle_perine" tabindex="0" role="button" aria-label="13. Ingle y periné"><title>13. Ingle y periné</title>
+    <g transform="translate(70 50) scale(1.1811)">
+      <path class="hotspot" d="M45 108Q52 112 60 114L57 121Q51 119 47 115Z"/>
+      <path class="hotspot" d="M62 114Q70 112 77 108L75 115Q71 119 65 121Z"/>
+      <path class="hotspot" d="M57 115L65 115L63 126Q61 129 59 126Z"/>
+    </g>
+    <g transform="translate(400 50) scale(1.1983)">
+      <path class="hotspot" d="M56 104Q60 108 64 104L63 117Q60 120 57 117Z"/>
+    </g>
+    <g transform="translate(105 345) scale(1.1806)">
+      <path class="hotspot" d="M37 103Q45 106 52 103L50 110Q44 113 38 109Z"/>
+    </g>
+    <g transform="translate(430 345) scale(1.1831)">
+      <path class="hotspot" d="M29 103Q21 106 14 103L16 110Q22 113 28 109Z"/>
+    </g>
+  </g>
+
+  <g class="region" style="--c:#6d4c41" data-exam-target="columna" tabindex="0" role="button" aria-label="12. Columna"><title>12. Columna</title>
+    <g transform="translate(400 50) scale(1.1983)">
+      <path class="hotspot" d="M60 31C59 47 61 62 60 78C59 91 61 104 60 115" fill="none" stroke-width="4" stroke-linecap="round"/>
+      <ellipse class="hotspot" cx="60" cy="33" rx="4.5" ry="1.9"/><ellipse class="hotspot" cx="59.8" cy="39" rx="4.5" ry="1.9"/>
+      <ellipse class="hotspot" cx="59.7" cy="45" rx="4.6" ry="2"/><ellipse class="hotspot" cx="59.8" cy="51" rx="4.7" ry="2"/>
+      <ellipse class="hotspot" cx="60" cy="57" rx="4.8" ry="2"/><ellipse class="hotspot" cx="60.2" cy="63" rx="4.9" ry="2.1"/>
+      <ellipse class="hotspot" cx="60.2" cy="69" rx="5" ry="2.1"/><ellipse class="hotspot" cx="60" cy="75" rx="5.1" ry="2.1"/>
+      <ellipse class="hotspot" cx="59.8" cy="81" rx="5.2" ry="2.2"/><ellipse class="hotspot" cx="59.7" cy="87" rx="5.3" ry="2.2"/>
+      <ellipse class="hotspot" cx="59.8" cy="93" rx="5.4" ry="2.2"/><ellipse class="hotspot" cx="60" cy="99" rx="5.5" ry="2.3"/>
+      <ellipse class="hotspot" cx="60.2" cy="105" rx="5.6" ry="2.3"/><ellipse class="hotspot" cx="60" cy="111" rx="5.8" ry="2.4"/>
+    </g>
+    <g transform="translate(105 345) scale(1.1806)">
+      <path class="hotspot" d="M32 34C28 48 28 63 30 76C32 89 29 101 31 114" fill="none" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse class="hotspot" cx="32" cy="36" rx="3.4" ry="1.7"/><ellipse class="hotspot" cx="31" cy="42" rx="3.5" ry="1.7"/>
+      <ellipse class="hotspot" cx="30" cy="48" rx="3.6" ry="1.8"/><ellipse class="hotspot" cx="29" cy="54" rx="3.7" ry="1.8"/>
+      <ellipse class="hotspot" cx="29" cy="60" rx="3.8" ry="1.9"/><ellipse class="hotspot" cx="29" cy="66" rx="3.9" ry="1.9"/>
+      <ellipse class="hotspot" cx="30" cy="72" rx="4" ry="2"/><ellipse class="hotspot" cx="30" cy="78" rx="4.1" ry="2"/>
+      <ellipse class="hotspot" cx="31" cy="84" rx="4.2" ry="2.1"/><ellipse class="hotspot" cx="31" cy="90" rx="4.3" ry="2.1"/>
+      <ellipse class="hotspot" cx="30" cy="96" rx="4.4" ry="2.2"/><ellipse class="hotspot" cx="30" cy="102" rx="4.5" ry="2.2"/>
+      <ellipse class="hotspot" cx="31" cy="108" rx="4.6" ry="2.3"/><ellipse class="hotspot" cx="31" cy="114" rx="4.8" ry="2.3"/>
+    </g>
+    <g transform="translate(430 345) scale(1.1831)">
+      <path class="hotspot" d="M35 34C39 48 39 63 37 76C35 89 38 101 36 114" fill="none" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse class="hotspot" cx="35" cy="36" rx="3.4" ry="1.7"/><ellipse class="hotspot" cx="36" cy="42" rx="3.5" ry="1.7"/>
+      <ellipse class="hotspot" cx="37" cy="48" rx="3.6" ry="1.8"/><ellipse class="hotspot" cx="38" cy="54" rx="3.7" ry="1.8"/>
+      <ellipse class="hotspot" cx="38" cy="60" rx="3.8" ry="1.9"/><ellipse class="hotspot" cx="38" cy="66" rx="3.9" ry="1.9"/>
+      <ellipse class="hotspot" cx="37" cy="72" rx="4" ry="2"/><ellipse class="hotspot" cx="37" cy="78" rx="4.1" ry="2"/>
+      <ellipse class="hotspot" cx="36" cy="84" rx="4.2" ry="2.1"/><ellipse class="hotspot" cx="36" cy="90" rx="4.3" ry="2.1"/>
+      <ellipse class="hotspot" cx="37" cy="96" rx="4.4" ry="2.2"/><ellipse class="hotspot" cx="37" cy="102" rx="4.5" ry="2.2"/>
+      <ellipse class="hotspot" cx="36" cy="108" rx="4.6" ry="2.3"/><ellipse class="hotspot" cx="36" cy="114" rx="4.8" ry="2.3"/>
+    </g>
+  </g>
+
+  <g class="region" style="--c:#43a047" data-exam-target="abdomen" tabindex="0" role="button" aria-label="11. Abdomen"><title>11. Abdomen</title>
+    <g transform="translate(70 50) scale(1.1811)">
+      <path class="hotspot" d="M43 78Q52 81 61 79Q70 81 78 78Q80 87 81 96Q81 104 77 110Q69 113 61 111Q52 113 44 110Q41 103 41 96Q42 87 43 78Z"/>
+    </g>
+    <g transform="translate(105 345) scale(1.1806)">
+      <path class="hotspot" d="M35 78Q44 80 51 76Q56 82 58 91Q59 101 55 111Q49 117 40 116Q34 109 32 100Q31 89 35 78Z"/>
+    </g>
+    <g transform="translate(430 345) scale(1.1831)">
+      <path class="hotspot" d="M31 78Q22 80 15 76Q10 82 8 91Q7 101 11 111Q17 117 26 116Q32 109 34 100Q35 89 31 78Z"/>
+    </g>
+  </g>
+
+  <g class="region" style="--c:#00897b" data-exam-target="torax" tabindex="0" role="button" aria-label="10. Tórax"><title>10. Tórax</title>
+    <g transform="translate(70 50) scale(1.1811)">
+      <path class="hotspot" d="M42 45Q50 40 60 40Q71 40 81 45Q83 55 82 65Q81 72 78 78Q70 81 61 79Q52 81 43 78Q41 71 40 65Q39 55 42 45Z"/>
+    </g>
+    <g transform="translate(400 50) scale(1.1983)">
+      <path class="hotspot" d="M40 44Q50 39 60 39Q70 39 80 44Q82 53 81 64Q80 75 77 83Q69 86 60 84Q51 86 43 83Q40 75 39 64Q38 53 40 44Z"/>
+    </g>
+    <g transform="translate(105 345) scale(1.1806)">
+      <path class="hotspot" d="M33 44Q43 41 51 46Q57 51 58 60Q57 68 51 74Q44 78 36 75Q33 67 32 58Q31 50 33 44Z"/>
+    </g>
+    <g transform="translate(430 345) scale(1.1831)">
+      <path class="hotspot" d="M35 44Q25 41 17 46Q10 51 9 60Q10 68 16 74Q23 78 31 75Q34 67 35 58Q36 50 35 44Z"/>
+    </g>
+  </g>
+
+  <g class="region" style="--c:#d81b60" data-exam-target="axilas_mamas" tabindex="0" role="button" aria-label="9. Axilas y mamas"><title>9. Axilas y mamas</title>
+    <g transform="translate(70 50) scale(1.1811)">
+      <path class="hotspot" d="M41 47Q49 43 58 47Q61 55 58 63Q51 69 43 65Q38 61 39 54Q40 50 41 47Z"/>
+      <path class="hotspot" d="M63 47Q72 43 81 47Q83 50 84 54Q85 61 79 65Q70 69 63 63Q60 55 63 47Z"/>
+      <path class="hotspot" d="M36 46Q40 43 44 46L43 57Q39 55 36 51Z"/>
+      <path class="hotspot" d="M86 46Q82 43 78 46L79 57Q83 55 86 51Z"/>
+    </g>
+    <g transform="translate(400 50) scale(1.1983)">
+      <path class="hotspot" d="M35 47Q39 44 43 47L42 59Q38 57 35 52Z"/>
+      <path class="hotspot" d="M85 47Q81 44 77 47L78 59Q82 57 85 52Z"/>
+    </g>
+    <g transform="translate(105 345) scale(1.1806)">
+      <path class="hotspot" d="M40 48Q50 45 57 51L58 61Q56 68 48 71Q40 72 35 66Q37 57 40 48Z"/>
+      <path class="hotspot" d="M31 45Q37 44 41 49L38 58Q34 56 30 52Z"/>
+    </g>
+    <g transform="translate(430 345) scale(1.1831)">
+      <path class="hotspot" d="M28 48Q18 45 10 51L9 61Q11 68 19 71Q27 72 32 66Q30 57 28 48Z"/>
+      <path class="hotspot" d="M37 45Q31 44 27 49L30 58Q34 56 38 52Z"/>
+    </g>
+  </g>
+
+  <g class="region" style="--c:#3949ab" data-exam-target="cuello" tabindex="0" role="button" aria-label="8. Cuello"><title>8. Cuello</title>
+    <g transform="translate(70 50) scale(1.1811)"><path class="hotspot" d="M54 32Q60 35 67 32L68 39Q61 42 53 39Z"/></g>
+    <g transform="translate(400 50) scale(1.1983)"><path class="hotspot" d="M53 30Q60 32 68 30L69 38Q60 41 51 38Z"/></g>
+    <g transform="translate(105 345) scale(1.1806)"><path class="hotspot" d="M31 28L48 28Q47 33 43 36L44 39Q38 40 31 38L28 34Z"/></g>
+    <g transform="translate(430 345) scale(1.1831)"><path class="hotspot" d="M19 27L35 27L38 34L35 38Q29 40 23 38L21 35Q18 32 19 27Z"/></g>
+  </g>
+
+  <g class="region" style="--c:#7e57c2" data-exam-target="cabeza" tabindex="0" role="button" aria-label="2. Cabeza"><title>2. Cabeza</title>
+    <g transform="translate(70 50) scale(1.1811)"><path class="hotspot" d="M59 5C53 5 50 10 49 16C49 23 52 29 60 32C67 30 71 25 72 18C72 11 68 5 61 5Z"/></g>
+    <g transform="translate(400 50) scale(1.1983)"><path class="hotspot" d="M60 3C53 3 50 8 50 15C50 23 53 28 60 30C67 28 71 23 71 15C71 8 67 3 60 3Z"/></g>
+    <g transform="translate(105 345) scale(1.1806)"><path class="hotspot" d="M38 3C31 3 27 8 27 14C27 19 29 21 31 23L31 28L47 28C50 28 52 26 52 24L57 24L57 22L59 20L58 18L56 17L56 10C53 5 47 3 38 3Z"/></g>
+    <g transform="translate(430 345) scale(1.1831)"><path class="hotspot" d="M29 2C35 3 39 8 39 14C39 19 37 21 34 23L34 27L19 27C16 27 14 25 14 23L9 23L9 21L7 20L6 18L7 16L9 15L9 9C12 4 19 2 29 2Z"/></g>
+  </g>
+
+  <g class="region" style="--c:#00acc1" data-exam-target="oidos" tabindex="0" role="button" aria-label="4. Oídos"><title>4. Oídos</title>
+    <g transform="translate(70 50) scale(1.1811)"><ellipse class="hotspot" cx="48.8" cy="18" rx="1.4" ry="2.5"/><ellipse class="hotspot" cx="72.2" cy="18" rx="1.4" ry="2.5"/></g>
+    <g transform="translate(400 50) scale(1.1983)"><ellipse class="hotspot" cx="48.8" cy="17.5" rx="1.4" ry="2.5"/><ellipse class="hotspot" cx="72" cy="17.5" rx="1.4" ry="2.5"/></g>
+    <g transform="translate(105 345) scale(1.1806)"><ellipse class="hotspot" cx="40.5" cy="16" rx="2.3" ry="2.8"/></g>
+    <g transform="translate(430 345) scale(1.1831)"><ellipse class="hotspot" cx="25.5" cy="15.2" rx="2.3" ry="2.8"/></g>
+  </g>
+
+  <g class="region" style="--c:#1e88e5" data-exam-target="ojos" tabindex="0" role="button" aria-label="3. Ojos"><title>3. Ojos</title>
+    <g transform="translate(70 50) scale(1.1811)"><ellipse class="hotspot" cx="56.5" cy="16.5" rx="3.2" ry="1.8"/><ellipse class="hotspot" cx="65.5" cy="16.5" rx="3.2" ry="1.8"/></g>
+    <g transform="translate(105 345) scale(1.1806)"><ellipse class="hotspot" cx="52.5" cy="15" rx="2.1" ry="1.2"/></g>
+    <g transform="translate(430 345) scale(1.1831)"><ellipse class="hotspot" cx="13" cy="12.5" rx="2.1" ry="1.2"/></g>
+  </g>
+
+  <g class="region" style="--c:#f4511e" data-exam-target="nariz" tabindex="0" role="button" aria-label="5. Nariz"><title>5. Nariz</title>
+    <g transform="translate(70 50) scale(1.1811)"><path class="hotspot" d="M60.5 17L59.5 21.5Q61 22.5 63 21.5L62 17Z"/></g>
+    <g transform="translate(105 345) scale(1.1806)"><path class="hotspot" d="M55 16L58 17L60 19L58 21L55 20Z"/></g>
+    <g transform="translate(430 345) scale(1.1831)"><path class="hotspot" d="M10 15L7 16L5 18L7 20L10 20Z"/></g>
+  </g>
+
+  <g class="region" style="--c:#e53935" data-exam-target="boca" tabindex="0" role="button" aria-label="6. Boca"><title>6. Boca</title>
+    <g transform="translate(70 50) scale(1.1811)"><ellipse class="hotspot" cx="61" cy="24.5" rx="3.5" ry="1.3"/></g>
+    <g transform="translate(105 345) scale(1.1806)"><ellipse class="hotspot" cx="55.5" cy="23" rx="2.4" ry="1"/></g>
+    <g transform="translate(430 345) scale(1.1831)"><ellipse class="hotspot" cx="11" cy="21.5" rx="2.4" ry="1"/></g>
+  </g>
+
+  <g class="region" style="--c:#8e24aa" data-exam-target="oro_faringe" tabindex="0" role="button" aria-label="7. Orofaringe"><title>7. Orofaringe</title>
+    <ellipse class="hotspot" cx="145" cy="96" rx="10" ry="6"/><ellipse class="hotspot" cx="153" cy="396" rx="10" ry="6"/><ellipse class="hotspot" cx="463" cy="396" rx="10" ry="6"/>
+  </g>
+</svg>

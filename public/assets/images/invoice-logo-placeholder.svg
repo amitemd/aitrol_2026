@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120" role="img" aria-labelledby="title description">
+  <title id="title">Logo genérico de establecimiento de salud</title>
+  <desc id="description">Emblema médico azul y turquesa con el texto Centro de Salud</desc>
+  <rect x="2" y="2" width="236" height="116" rx="16" fill="#f5fbfd" stroke="#b9dce8" stroke-width="4"/>
+  <circle cx="60" cy="60" r="38" fill="#087da8"/>
+  <path d="M52 35h16v17h17v16H68v17H52V68H35V52h17z" fill="#fff"/>
+  <path d="M106 43h104" stroke="#16a3a6" stroke-width="5" stroke-linecap="round"/>
+  <text x="106" y="70" fill="#075f82" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700">CENTRO DE SALUD</text>
+  <text x="106" y="91" fill="#6c8190" font-family="Arial, Helvetica, sans-serif" font-size="12">Atención médica</text>
+</svg>
