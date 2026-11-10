@@ -2,38 +2,48 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class IndexAllTenantCompanyColumns extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        $database = DB::connection()->getDatabaseName();
-        $tables = DB::table('information_schema.COLUMNS')->where('TABLE_SCHEMA', $database)
-            ->where('COLUMN_NAME', 'id_empresa')->orderBy('TABLE_NAME')->pluck('TABLE_NAME');
-        foreach ($tables as $table) {
-            $table = (string) $table;
-            $indexed = DB::table('information_schema.STATISTICS')->where('TABLE_SCHEMA', $database)
-                ->where('TABLE_NAME', $table)->where('COLUMN_NAME', 'id_empresa')->exists();
-            if ($indexed) {
+        foreach (Schema::getTables() as $tableData) {
+            $tableName = $tableData['name'];
+
+            if (! Schema::hasColumn($tableName, 'id_empresa') || $this->hasCompanyIndex($tableName)) {
                 continue;
             }
-            Schema::table($table, function (Blueprint $definition) {
+
+            Schema::table($tableName, function (Blueprint $definition): void {
                 $definition->index('id_empresa', 'mt_id_empresa_idx');
             });
         }
     }
 
-    public function down()
+    public function down(): void
     {
-        $database = DB::connection()->getDatabaseName();
-        $tables = DB::table('information_schema.STATISTICS')->where('TABLE_SCHEMA', $database)
-            ->where('INDEX_NAME', 'mt_id_empresa_idx')->pluck('TABLE_NAME');
-        foreach ($tables as $table) {
-            Schema::table((string) $table, function (Blueprint $definition) {
+        foreach (Schema::getTables() as $tableData) {
+            $tableName = $tableData['name'];
+
+            if (! Schema::hasIndex($tableName, 'mt_id_empresa_idx')) {
+                continue;
+            }
+
+            Schema::table($tableName, function (Blueprint $definition): void {
                 $definition->dropIndex('mt_id_empresa_idx');
             });
         }
+    }
+
+    private function hasCompanyIndex(string $tableName): bool
+    {
+        foreach (Schema::getIndexes($tableName) as $index) {
+            if (in_array('id_empresa', $index['columns'], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
