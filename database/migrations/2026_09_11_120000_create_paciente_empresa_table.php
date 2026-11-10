@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Schema;
 
 class CreatePacienteEmpresaTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         if (! Schema::hasTable('paciente_empresa')) {
-            Schema::create('paciente_empresa', function (Blueprint $table) {
+            Schema::create('paciente_empresa', function (Blueprint $table): void {
                 $table->bigIncrements('id');
                 $table->string('id_paciente', 13);
                 $table->string('id_empresa', 32);
@@ -27,44 +27,54 @@ class CreatePacienteEmpresaTable extends Migration
         $this->backfillFromCompanyActivity();
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('paciente_empresa');
     }
 
-    private function backfillFromCompanyActivity()
+    private function backfillFromCompanyActivity(): void
     {
         if (! Schema::hasTable('paciente') || ! Schema::hasTable('paciente_empresa')) {
             return;
         }
 
-        if (DB::connection()->getDriverName() !== 'mysql') {
-            return;
-        }
-
-        $tables = DB::table('information_schema.columns as patient_column')
-            ->join('information_schema.columns as company_column', function ($join) {
-                $join->on('company_column.table_schema', '=', 'patient_column.table_schema')
-                    ->on('company_column.table_name', '=', 'patient_column.table_name');
-            })
-            ->whereRaw('patient_column.table_schema = DATABASE()')
-            ->where('patient_column.column_name', 'id_paciente')
-            ->where('company_column.column_name', 'id_empresa')
-            ->pluck('patient_column.table_name');
-
         $now = date('Y-m-d H:i:s');
-        foreach ($tables as $source) {
-            if ($source === 'paciente_empresa' || ! preg_match('/^[A-Za-z0-9_]+$/', $source)) {
-                continue;
-            }
-            DB::statement("INSERT IGNORE INTO paciente_empresa
-                (id_paciente, id_empresa, ip_creacion, ip_modificacion, created_at, updated_at)
-                SELECT DISTINCT source.id_paciente, source.id_empresa, '127.0.0.1', '127.0.0.1', ?, ?
-                FROM `{$source}` AS source
-                INNER JOIN paciente AS patient ON patient.id = source.id_paciente
-                INNER JOIN empresa AS company ON company.id = source.id_empresa
-                WHERE source.id_paciente IS NOT NULL AND source.id_paciente <> ''
-                  AND source.id_empresa IS NOT NULL AND source.id_empresa <> ''", [$now, $now]);
+        foreach ($this->companyActivityTables() as $sourceTable) {
+            $memberships = DB::table($sourceTable.' as source')
+                ->join('paciente as patient', 'patient.id', '=', 'source.id_paciente')
+                ->join('empresa as company', 'company.id', '=', 'source.id_empresa')
+                ->whereNotNull('source.id_paciente')
+                ->where('source.id_paciente', '<>', '')
+                ->whereNotNull('source.id_empresa')
+                ->where('source.id_empresa', '<>', '')
+                ->distinct()
+                ->selectRaw(
+                    "source.id_paciente, source.id_empresa, '127.0.0.1' AS ip_creacion, "
+                    ."'127.0.0.1' AS ip_modificacion, ? AS created_at, ? AS updated_at",
+                    [$now, $now],
+                );
+
+            DB::table('paciente_empresa')->insertOrIgnoreUsing([
+                'id_paciente',
+                'id_empresa',
+                'ip_creacion',
+                'ip_modificacion',
+                'created_at',
+                'updated_at',
+            ], $memberships);
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function companyActivityTables(): array
+    {
+        return array_values(array_filter(
+            Schema::getTableListing(null, false),
+            fn (string $tableName): bool => $tableName !== 'paciente_empresa'
+                && preg_match('/^[A-Za-z0-9_]+$/', $tableName) === 1
+                && Schema::hasColumns($tableName, ['id_paciente', 'id_empresa']),
+        ));
     }
 }
