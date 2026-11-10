@@ -33,7 +33,7 @@ class ReactivateAttendedDentalConsultations extends Migration
                 ->all();
 
             if (! $especialidades) {
-                throw new RuntimeException('No existen especialidades odontologicas o periodontologicas para reparar.');
+                return;
             }
 
             $valores = ['estado' => 1];

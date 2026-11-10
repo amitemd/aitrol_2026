@@ -2,6 +2,7 @@
 
 use Database\Seeders\OdontologiaCatalogSeeder;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class SeedOdontologiaCatalogAndGroups extends Migration
@@ -29,6 +30,16 @@ class SeedOdontologiaCatalogAndGroups extends Migration
                     'No se puede cargar Odontologia: falta '.$requiredColumn[0].'.'.$requiredColumn[1].'.'
                 );
             }
+        }
+
+        $hasActiveActor = Schema::hasTable('users')
+            && DB::table('users')->where('estado', 1)->exists();
+        $hasOdontologySpecialty = DB::table('especialidad')
+            ->where('estado', 1)
+            ->whereRaw('LOWER(TRIM(nombre)) IN (?, ?)', ['odontologia', 'odontología'])
+            ->exists();
+        if (! $hasActiveActor || ! $hasOdontologySpecialty) {
+            return;
         }
 
         require_once database_path('seeders/OdontologiaCatalogSeeder.php');

@@ -2,11 +2,24 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Sis_medico\Support\LegacyMysqlCompatibility;
 
 class RequireCompanyOnAllTenantTables extends Migration
 {
     public function up()
     {
+        LegacyMysqlCompatibility::run(function (): void {
+            $this->requireCompanyColumns();
+        });
+    }
+
+    private function requireCompanyColumns(): void
+    {
+        if (! Schema::hasTable('empresa') || ! DB::table('empresa')->exists()) {
+            return;
+        }
+
         $database = DB::connection()->getDatabaseName();
         $columns = DB::table('information_schema.COLUMNS as column_info')
             ->join('information_schema.TABLES as table_info', function ($join) {

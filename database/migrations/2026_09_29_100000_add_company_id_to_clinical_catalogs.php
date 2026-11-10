@@ -25,7 +25,7 @@ class AddCompanyIdToClinicalCatalogs extends Migration
             $defaultCompany = DB::table('empresa')->orderBy('id')->value('id');
         }
         if (! $defaultCompany) {
-            throw new RuntimeException('No se pueden separar los catalogos porque no existe una empresa.');
+            return;
         }
 
         foreach ($this->tables as $table) {

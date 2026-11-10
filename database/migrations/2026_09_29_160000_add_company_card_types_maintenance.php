@@ -66,7 +66,7 @@ class AddCompanyCardTypesMaintenance extends Migration
             }
         }
         if (! $defaultCompany) {
-            throw new RuntimeException('No se pueden separar los tipos de tarjeta porque no existe una empresa.');
+            return;
         }
 
         $this->assignByCreator();

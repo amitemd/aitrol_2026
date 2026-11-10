@@ -48,6 +48,11 @@ class EnforcePersonSyncAtDatabaseLevel extends Migration
             if (in_array($column, ['identificacion', 'tipo_persona', 'created_at'], true)) {
                 continue;
             }
+            if (in_array($column, ['tipo_documento', 'fecha_nacimiento', 'updated_at'], true)) {
+                $updates[] = '`'.$column.'` = COALESCE(VALUES(`'.$column.'`), `'.$column.'`)';
+
+                continue;
+            }
             $updates[] = '`'.$column.'` = COALESCE(NULLIF(VALUES(`'.$column.'`), \'\'), `'.$column.'`)';
         }
         $updates[] = '`id` = LAST_INSERT_ID(`id`)';

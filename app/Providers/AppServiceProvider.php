@@ -3,14 +3,17 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Events\MigrationStarted;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Sis_medico\Support\LegacyMysqlCompatibility;
 use Sis_medico\User;
 
 class AppServiceProvider extends ServiceProvider
@@ -28,6 +31,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            Event::listen(
+                MigrationStarted::class,
+                static function (): void {
+                    LegacyMysqlCompatibility::enableForCurrentSession();
+                },
+            );
+        }
+
         $trustedProxies = trim((string) config('app.trusted_proxies'));
 
         if ($trustedProxies !== '') {

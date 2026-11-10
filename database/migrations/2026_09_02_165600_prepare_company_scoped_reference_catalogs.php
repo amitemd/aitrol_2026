@@ -23,12 +23,18 @@ return new class extends Migration
             return;
         }
 
-        $defaultCompanyId = $this->resolveDefaultCompanyId();
-
         foreach ($existingTables as $tableName) {
             $this->addCompanyColumn($tableName);
             $this->assignUnambiguousCreatorCompanies($tableName);
+        }
 
+        $defaultCompanyId = $this->resolveDefaultCompanyId();
+
+        if ($defaultCompanyId === null) {
+            return;
+        }
+
+        foreach ($existingTables as $tableName) {
             DB::table($tableName)
                 ->where(function ($query): void {
                     $query->whereNull('id_empresa')->orWhere('id_empresa', '');
@@ -42,10 +48,10 @@ return new class extends Migration
      */
     public function down(): void {}
 
-    private function resolveDefaultCompanyId(): string
+    private function resolveDefaultCompanyId(): ?string
     {
         if (! Schema::hasTable('empresa')) {
-            throw new RuntimeException('No se pueden preparar los catálogos clínicos porque no existe la tabla empresa.');
+            return null;
         }
 
         $query = DB::table('empresa')->where('estado', 1);
@@ -58,7 +64,7 @@ return new class extends Migration
             ?? DB::table('empresa')->orderBy('id')->value('id');
 
         if ($companyId === null) {
-            throw new RuntimeException('No se pueden preparar los catálogos clínicos porque no existe una empresa.');
+            return null;
         }
 
         return (string) $companyId;

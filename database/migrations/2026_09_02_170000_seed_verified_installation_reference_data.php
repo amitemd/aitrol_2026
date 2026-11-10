@@ -9,7 +9,11 @@ class SeedVerifiedInstallationReferenceData extends Migration
 {
     public function up()
     {
-        if (! Schema::hasTable('users')) {
+        if (! Schema::hasTable('users') || ! Schema::hasTable('empresa')) {
+            return;
+        }
+        $hasActiveCompany = DB::table('empresa')->where('estado', 1)->exists();
+        if (! $hasActiveCompany) {
             return;
         }
         $actor = env('BOOTSTRAP_SYSTEMS_ID', '0000000001');

@@ -15,13 +15,17 @@ class ReassignOdontologiaCatalogSpecialty extends Migration
             }
         }
 
+        if (! Schema::hasTable('users') || ! DB::table('users')->where('estado', 1)->exists()) {
+            return;
+        }
+
         $odontologiaId = DB::table('especialidad')
             ->where('estado', 1)
             ->whereRaw('LOWER(TRIM(nombre)) IN (?, ?)', ['odontologia', 'odontología'])
             ->orderBy('id')
             ->value('id');
         if (is_null($odontologiaId)) {
-            throw new RuntimeException('No existe una especialidad ODONTOLOGIA activa.');
+            return;
         }
         $odontologiaId = (int) $odontologiaId;
 

@@ -29,7 +29,7 @@ class EnsureFlatFilePublicInsurances extends Migration
                 $company = DB::table('empresa')->orderBy('id')->value('id');
             }
             if (! $company) {
-                throw new RuntimeException('No se pueden registrar los seguros públicos porque no existe una empresa.');
+                return;
             }
         }
 
