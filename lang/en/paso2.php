@@ -1,21 +1,15 @@
 <?php
 
 return [
-
- //Octavo paso
-
-    'ExamenFisicoyDiagnostico'  => 'Physical Examination and Diagnosis',
+    'ExamenFisicoyDiagnostico' => 'Physical Examination and Diagnosis',
     'Limpiar' => 'Clean',
     'Escoger Color' => 'Choose Color:',
     'Seleccione' => 'Select...',
     'Clasificaciones' => 'Classifications',
-    'Guardar'  =>  'Save',
+    'Guardar' => 'Save',
     'Entregado' => 'Delivered',
-
- //Noveno paso 
-
-    'EmergenciaObstetrica' =>  'Obstetric Emergency',
-    'Gestas' => 'Gestas', 
+    'EmergenciaObstetrica' => 'Obstetric Emergency',
+    'Gestas' => 'Gestas',
     'Partos' => 'Childbirth',
     'Abortos' => 'Abortions',
     'Cesareas' => 'Cesarean sections',
@@ -33,32 +27,20 @@ return [
     'Pelvisutil' => 'Useful pelvis',
     'SangradoVaginal' => 'Vaginal Bleeding',
     'Contracciones' => 'Contractions',
-
-    //Onceavo paso
-
     'DiagnosticodeIngreso' => 'DIncome Diagnosis',
     'Diagnostico' => 'Diagnosis',
     'Seleccionee' => 'Select',
     'PRESUNTIVO' => 'PRESUMPTIVE',
     'DEFINITIVO' => 'DEFINITIVE',
     'Agregar' => 'Add',
-
-   //Doceavo paso
-
-   'DiagnosticodeAlta'  => 'Discharge Diagnosis',
-
-   //Treceavo paso
-
-   'PlandeTratamiento' => 'Treatment Plan',
-   'Medicina' =>  'Medicine',
-   'INDICACIONES' => 'INDICATIONS',
-   'MEDICAMENTO' => 'MEDICATION',
-   'Cantidad'=>'AMOUNT',
-   'POSOLOGIA' => 'POSOLOGY',
-   'ACCION' =>  'ACTION',
-
-    //Catorceceavo paso
-
+    'DiagnosticodeAlta' => 'Discharge Diagnosis',
+    'PlandeTratamiento' => 'Treatment Plan',
+    'Medicina' => 'Medicine',
+    'INDICACIONES' => 'INDICATIONS',
+    'MEDICAMENTO' => 'MEDICATION',
+    'Cantidad' => 'AMOUNT',
+    'POSOLOGIA' => 'POSOLOGY',
+    'ACCION' => 'ACTION',
     'Alta' => 'High',
     'Domicilio' => 'Domicile',
     'ConsultaExterna' => 'Outpatient',
@@ -73,21 +55,28 @@ return [
     'Causa' => 'Cause',
     'Observaciones' => 'Observations',
     'Fecha' => 'Date',
-    'NombreProfesional'  => 'Professional Name',
-    'Actualizar'  =>  'Update',
+    'NombreProfesional' => 'Professional Name',
+    'Actualizar' => 'Update',
     'CondicionesdeAlta' => 'Registration Conditions',
-
-   //Detalle Blade 
-    'EnStock'=> 'In stock',
-    'NoseencuentraenStock.'=> 'Not in Stock.',
-    'NoseencuentraenStock..'=> 'Not in Stock..',
-    'NoseencuentraenStock...'=> 'Not in Stock...',
+    'EnStock' => 'In stock',
+    'NoseencuentraenStock.' => 'Not in Stock.',
+    'NoseencuentraenStock..' => 'Not in Stock..',
+    'NoseencuentraenStock...' => 'Not in Stock...',
     'DESCARGODEENFERMERIA' => 'NURSING DISCLAIMER',
-
-
-
-
-
-
-
+    'AltaDefinitiva' => 'Definitive Discharge',
+    'ObservaciondeEmergencia' => 'Emergency Observation',
+    'Hospitalizacion' => 'Hospitalization',
+    'Derivacion' => 'Referral',
+    'Estable' => 'Stable',
+    'Fallecido' => 'Deceased',
+    'ReferenciaInversa' => 'Reverse Referral',
+    'Vivo' => 'Alive',
+    'Inestable' => 'Unstable',
+    'IngreseDiasReposo' => 'Enter the number of rest days',
+    'IngreseServicioReferencia' => 'Enter the referral service',
+    'EscribaCausa' => 'Enter the cause',
+    'SeleccioneDiagnostico' => 'Select presumptive or definitive',
+    'SeleccioneCIE10' => 'Select ICD-10',
+    'IngreseMedicamentos' => 'Enter medications',
+    'IngresePosologia' => 'Enter dosage instructions',
 ];

@@ -1,0 +1,41 @@
+<?php
+
+// Bitacora ->Pasante
+
+return [
+    'mantenimiento_bitacora' => 'Manutenção de Bitacoras',
+    'lista_bitacora' => 'Lista de blogues',
+    'agregar' => 'Adição',
+    'editar' => 'Edição',
+    'eliminar' => 'Eliminar',
+    'descripcion' => 'Descrição',
+    'formatoBitacora' => 'Formato do registo',
+    'documento' => 'Documento',
+    'tipo' => 'Tipo',
+    'estado' => 'Estado',
+    'acciones' => 'Acções',
+    'agregarBitacora' => 'Adicionar diário de bordo',
+    'modificarBitacora' => 'Alterar o diário de bordo',
+    'guardar' => 'Guardar',
+    'mensaje_update' => 'Dados correctamente actualizados',
+    'mensaje_delete_titulo' => 'Tem a certeza de que pretende apagar estes dados?',
+    'dato_eliminado' => 'Dados eliminados com sucesso',
+    'si' => 'SIM',
+    'no' => 'NÃO',
+    'cancelar' => 'Cancelar',
+    'correcto' => 'Correcto',
+    'resumen_clinico' => 'Resumo clínico',
+    'estudio_solicitado' => 'Estudo solicitado',
+    'descripcion_estudio' => 'Descrição do estudo',
+    'prioridad' => 'Prioridade',
+    'tratamiento' => 'Tratamento',
+    'fecha_toma' => 'Data de admissão',
+    'urgente' => 'URGENT',
+    'rutina' => 'ROUTINE',
+    'control' => 'CONTROL',
+    'citogia' => 'CYTOGY',
+    'hispatologia' => 'HISPATOLOGIA',
+    'descargar_form' => 'Descarregar formulário',
+    'empresa' => 'Empresa',
+
+];

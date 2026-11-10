@@ -1,22 +1,17 @@
 <?php
+
 return [
-    //accounting
     'plandecuentas' => 'Account plan',
     'libromayor' => 'General Ledger',
     'balancedecomprobacion' => 'Checking balance',
     'balancederesultados' => 'Result balance',
     'balancefinanciero' => 'Financial balance',
-    //suppliers
     'listadeproveedores' => 'Suppliers list',
-    //Clients
     'listadeclientes' => 'Clients list',
-    //Sales
     'facturar' => 'Invoice',
     'listadeventas' => 'Sales list',
     'facturaconglomerada' => 'Conglomerate invoices',
-    //opciones
     'cambiarclave' => 'Change password',
-    //Reports
     'contables' => 'Accounting reports',
     'financieros' => 'Financial reports',
     'medicos' => 'Medical reports',
@@ -26,44 +21,16 @@ return [
     'inventario' => 'Inventory reports',
     'proveedores' => 'Supploers',
     'ventas' => 'Sales',
-    //Settings
     'menu' => 'Menu',
     'permisos' => 'Permissions',
     'usuarios' => 'Users',
     'empresas' => 'Companies',
     'subMenu' => 'Submenu',
     'roles' => 'Rols',
-    //Purchases
     'listadecompras' => 'Purchases list',
-    'listadebancos' => 'List of Banks',
-    'deudaspendientes' => 'Outstanding Debts',
-    'crearcajabanco' => 'Create bank cash',
-    'transferenciabancaria' => 'Wire transfer',
-    'notadedebito' => 'Debit note',
-    'notadecredito' => 'Credit note',
-    'notadedebitobancaria' => 'Bank debit note',
-    'depositobancario' => 'Bank deposit',
-    'estadosdecuenta' => 'Account statements',
-    'listadeactivos' => 'Asset List',
-    'grupos' => 'Groups',
-    'subtipos' => 'Subtypes',
-    'facturas' => 'Bills',
-    'depreciaciones' => 'Depreciations',
-    'ordenes' => 'Orders',
-    'saldosiniciales' => 'Opening balances',
-    'listadeproductos' => 'Product Lists',
-    'formulario103' => 'Form 103',
-    'formulario104' => 'Form 104',
-    'formulario107' => 'Form 107',
-    'ats' => 'Ats',
-    'declaraciones' => 'Statements',
-    //Rubros
     'rubros' => 'Items',
-    //saldos iniciales
     'saldosiniciales' => 'Opening balances',
-    //retenciones
     'retenciones' => 'Withholdings',
-    //cajabancos
     'crearcajabanco' => 'Create cash and banks',
     'clientes' => 'Customers',
     'listadebancos' => 'Bank List',
@@ -72,31 +39,44 @@ return [
     'crucedecuentas' => 'Crossing accounts',
     'comprobantedeegreso' => 'Proof of expenditure',
     'comprobantedeingreso' => 'Proof of customer income',
-    //Fixed Assets
+    'comprobantedeingresovarios' => 'Miscellaneous income check',
+    'submodulotipos' => 'Submodule types',
+    'transferenciabancaria' => 'Wire transfer',
+    'notadedebito' => 'Debit note',
+    'notadecredito' => 'Credit note',
+    'notadedebitobancaria' => 'Bank debit note',
+    'depositobancario' => 'Bank deposit',
+    'estadosdecuenta' => 'Account statements',
+    'listadeactivos' => 'Asset List',
+    'grupos' => 'Groups',
     'tipos' => 'Guys',
-    //Imports
+    'subtipos' => 'Subtypes',
+    'facturas' => 'Bills',
+    'depreciaciones' => 'Depreciations',
+    'ordenes' => 'Orders',
+    'listadeproductos' => 'Product Lists',
+    'ajusteentrada' => 'Inventory adjustment',
+    'formulario103' => 'Form 103',
+    'formulario104' => 'Form 104',
+    'formulario107' => 'Form 107',
+    'ats' => 'Ats',
+    'declaraciones' => 'Statements',
     'listadeimportaciones' => 'Import List',
-    //Referral Guide
     'listadeguias' => 'Guide List',
     'transportista' => 'Carrier',
-    //Customers
     'chequesposfechados' => 'Cheques pos fechados',
-    //Purchases
     'addcompra' => 'Add purchase',
-    //Reports
-    //Supploers
     'egresomasivo' => 'Massive egress',
     'retencionesproveedores' => 'Supplier withholdings',
     'deudasvspagos' => 'Debts and payments',
-    //Sales
     'ventasnetas' => 'Net sales',
-    //Utilities
     'cambiodeclave' => 'Key change',
-    //Settingg
     'establecimientos' => 'Establishments',
     'catalogo' => 'Catalogue',
     'auditoria' => 'Audit',
-    //Human Resources
+    'bodegas' => 'Warehouses',
+    'planes' => 'Plans',
+    'selecionarplan' => 'Plan selection',
     'configuraciones' => 'Settings',
     'nomina' => 'Payroll',
     'listaderoles' => 'List of roles',
@@ -111,9 +91,13 @@ return [
     'cambiodepatrimonio' => 'Change of assets',
     'calendario' => 'Calendar',
     'facturaventa' => 'Invoice',
+    'ubicaciones' => 'Location',
+    'especialidades' => 'Specialities',
     'conciliacion' => 'Conciliation',
     'agregarconciliacion' => 'Add conciliation',
-    'indicesfinancieros' => 'Financial indices',
+    'indicesfinancieron' => 'Financial statements',
+    'crearDepreciacion' => 'Create depreciation',
+    'historialDepreciacion' => 'Historical depreciation',
     'listadegastos' => 'Expense list',
     'ingresa_factura' => 'Invoice entry',
     'activosfijos' => 'Fixed assets',
@@ -121,19 +105,24 @@ return [
     'addgasto' => 'Expense income',
     'importardocumentos' => 'Import documents',
     'subCatalogo' => 'Subcatalog',
-    'nuevaretencion' => 'New retention',
     'gestiondocumentos' => 'document management',
-    'nuevanotadecredito' => "New credit note",
+    'nuevanotadecredito' => 'New credit note',
     'nuevanotadedebitocajabanco' => 'New debit note',
     'addActivos' => 'Asset income',
-    'comprobantedeegresovario' => "Miscellaneous Voucher",
+    'comprobantedeegresovario' => 'Miscellaneous Voucher',
     'anticipos' => 'Advances',
     'chequesgirados' => 'Drawn checks',
     'informesaldos' => 'Balance report',
+    'descuadrados' => 'Unbalanced journal entries',
     'informeanticipos' => 'Advance report',
     'carteravencida' => 'Past due portfolio',
     'edaddecartera' => 'Portfolio age',
     'preOrden' => 'Pre Order Fixed Assets',
     'listadeordendeactivosfijos' => 'Order list of fixed assets',
-    'listarPersonas' => 'list people'
+    'anulados' => 'Voided journal entries',
+    'asientos' => 'Accounting entries',
+    'index' => 'Home',
+    'salud' => 'Accounting health',
+    'indicesfinancieros' => 'Financial indices',
+    'listarPersonas' => 'list people',
 ];

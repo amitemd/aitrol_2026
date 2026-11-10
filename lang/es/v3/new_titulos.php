@@ -1,5 +1,8 @@
 <?php
+
 return [
+    'catalogo' => 'Catálogo',
+    'subcatalogo' => 'Subcatálogo',
     'listadeopcionesdelmenu' => 'lista de opciones del menú',
     'informaciondelcliente' => 'Información del cliente',
     'informacionfactura' => 'Información factura',
@@ -42,7 +45,6 @@ return [
     'relacionadas' => 'Relacionadas',
     'costos' => 'Costos',
     'gastos' => 'Gastos',
-    'ventas' => 'Ventas',
     'compras' => 'Compras',
     'utilidad' => 'Utilidad',
     'listadeimportaciones' => 'Lista de importaciones',
@@ -50,8 +52,6 @@ return [
     'listadodenotasdedebitodelproveedor' => 'Listado de notas de débito del proveedor',
     'listadodeopcionesdelproveedor' => 'Listado de opciones del proveedor',
     'saldosiniciales' => 'Saldos iniciales',
-    'rubros' => 'Rubros',
-    'listaderetenciones' => 'Lista de retenciones',
     'nuevacajabanco' => 'Nueva caja banco',
     'conciliaciones' => 'Conciliaciones',
     'nuevaconciliacion' => 'Nueva conciliación',
@@ -61,8 +61,6 @@ return [
     'transferencias' => 'Transferencias',
     'chequesgirados' => 'Cheques girados',
     'chequespagados' => 'Cheques pagados',
-    'notasdedebito' => 'Notas de débito',
-    'notasdecredito' => 'Notas de crédito',
     'debitosbancarios' => 'Débitos bancarios',
     'egresos' => 'Egresos',
     'egresosvarios' => 'Egresos varios',
@@ -84,4 +82,6 @@ return [
     'NotaDebito' => 'Nota de débito',
     'tipo' => 'Tipo',
     'informeanticipos' => 'Informe Anticipos',
+    'planes' => 'Planes',
+    'seleccionarplan' => 'Selección de plan',
 ];

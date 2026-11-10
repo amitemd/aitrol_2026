@@ -1,18 +1,34 @@
+@php
+    $informacionV3 = config('data.info');
+    $versionPrincipalV3 = is_object($informacionV3) && isset($informacionV3->version_info) ? $informacionV3->version_info : '3';
+    $versionMayorV3 = is_object($informacionV3) && isset($informacionV3->mayor_info) ? $informacionV3->mayor_info : '0';
+    $versionMenorV3 = is_object($informacionV3) && isset($informacionV3->menor_info) ? $informacionV3->menor_info : '0';
+    $versionV3 = $versionPrincipalV3.'.'.$versionMayorV3.'.'.$versionMenorV3;
+    $empresaLegalV3 = config('data.empresa');
+    $nombreEmpresaLegalV3 = is_object($empresaLegalV3) && isset($empresaLegalV3->razonsocial) ? $empresaLegalV3->razonsocial : 'AITROL';
+    $legalSectionsV3 = array(
+        'terms' => array('icon'=>'fa-file-contract','items'=>array('terms_scope','terms_account','terms_service','terms_limit','terms_law')),
+        'privacy' => array('icon'=>'fa-user-shield','items'=>array('privacy_controller','privacy_data','privacy_purpose','privacy_retention','privacy_rights','privacy_sensitive')),
+        'data_processing' => array('icon'=>'fa-database','items'=>array('processing_scope','processing_principles','processing_sensitive','processing_access','processing_retention','processing_rights')),
+        'acceptable_use' => array('icon'=>'fa-check-circle','items'=>array('use_allowed','use_forbidden','use_content','use_incident')),
+        'security' => array('icon'=>'fa-lock','items'=>array('security_controls','security_session','security_no_tracking','security_recommendations')),
+    );
+@endphp
 <style>
-.ir-arriba {
-    display:none;
-    padding:20px;
-    cursor:pointer;
-	position: fixed;
-	bottom:20px;
-    font-size: 20px;
-	right:20px;
-    background: #007bff;
-    font-size:10px;
-    color: white;
-}
+.aitrol-v3 .hero-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:58px;padding:11px 22px;color:#577087;border-top:1px solid #d8e5eb;background:#fff}.aitrol-v3 .hero-footer__brand{display:flex;align-items:center;gap:11px;min-width:0}.aitrol-v3 .hero-footer__mark{display:grid;flex:0 0 34px;width:34px;height:34px;place-items:center;color:#087ea4;border-radius:10px;background:#e8f7fa}.aitrol-v3 .hero-footer__copy{font-size:11px;line-height:1.45}.aitrol-v3 .hero-footer__copy strong{display:block;color:#21465e;font-size:12px}.aitrol-v3 .hero-footer__copy a{color:#087dad;font-weight:800}.aitrol-v3 .hero-footer__actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}.aitrol-v3 .hero-footer__legal{padding:6px 10px;color:#49687b;border:1px solid #cedfe7;border-radius:8px;background:#fff;font-size:11px;font-weight:700}.aitrol-v3 .hero-footer__legal:hover{color:#057da4;border-color:#86c8d9;background:#f1fafc}.aitrol-v3 .hero-footer__version{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;color:#517083;border-radius:8px;background:#f1f6f8;font-size:10px}.aitrol-v3 .legal-modal .modal-content{overflow:hidden;border:0;border-radius:16px;box-shadow:0 25px 70px rgba(8,37,55,.32)}.aitrol-v3 .legal-modal .modal-header{align-items:center;padding:17px 20px;color:#fff;border:0;background:linear-gradient(110deg,#075f8e,#10a7a2)}.aitrol-v3 .legal-modal .modal-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800}.aitrol-v3 .legal-modal .modal-title i{display:grid;width:36px;height:36px;place-items:center;border:1px solid rgba(255,255,255,.3);border-radius:10px;background:rgba(255,255,255,.13)}.aitrol-v3 .legal-modal .close{color:#fff;opacity:.9;text-shadow:none}.aitrol-v3 .legal-modal__intro{display:flex;justify-content:space-between;gap:14px;padding:12px 18px;color:#5a7485;border-bottom:1px solid #dce8ed;background:#f4f9fb;font-size:11px}.aitrol-v3 .legal-modal__intro strong{color:#254b63}.aitrol-v3 .legal-modal__layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:440px}.aitrol-v3 .legal-modal__nav{padding:16px;border-right:1px solid #dce7ec;background:#f8fbfc}.aitrol-v3 .legal-modal__nav .nav-link{display:flex;align-items:center;gap:9px;margin-bottom:6px;padding:10px 11px;color:#4a687b;border-radius:9px;font-size:12px;font-weight:700}.aitrol-v3 .legal-modal__nav .nav-link.active{color:#fff;background:linear-gradient(110deg,#087ba7,#12a29f);box-shadow:0 5px 13px rgba(8,126,160,.2)}.aitrol-v3 .legal-modal__content{max-height:58vh;overflow:auto;padding:21px 24px}.aitrol-v3 .legal-modal__content h4{margin:0 0 5px;color:#143e58;font-size:19px;font-weight:800}.aitrol-v3 .legal-modal__article{margin-top:16px;padding-bottom:15px;border-bottom:1px solid #e5edf1}.aitrol-v3 .legal-modal__article:last-child{border-bottom:0}.aitrol-v3 .legal-modal__article h5{display:flex;align-items:center;gap:7px;margin:0 0 6px;color:#214d66;font-size:13px;font-weight:800}.aitrol-v3 .legal-modal__article h5:before{content:"";display:block;width:6px;height:6px;border-radius:50%;background:#10a19f}.aitrol-v3 .legal-modal__article p{margin:0;color:#536e7f;font-size:12px;line-height:1.65}.aitrol-v3 .legal-modal__notice{padding:10px 14px;color:#725d29;border:1px solid #eddba8;border-radius:9px;background:#fff9e8;font-size:11px}.aitrol-v3 .legal-modal .modal-footer{padding:11px 18px;background:#f8fbfc}@media(max-width:767px){.aitrol-v3 .hero-footer{align-items:flex-start;flex-direction:column}.aitrol-v3 .hero-footer__actions{justify-content:flex-start}.aitrol-v3 .legal-modal__intro{flex-direction:column}.aitrol-v3 .legal-modal__layout{display:block}.aitrol-v3 .legal-modal__nav{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid #dce7ec}.aitrol-v3 .legal-modal__nav .nav-link{flex:0 0 auto;margin:0 5px 0 0}.aitrol-v3 .legal-modal__content{max-height:55vh;padding:17px}}
 </style>
-<footer class="main-footer hero-footer"><strong>Copyright &copy; {{date('Y')}} <a href="https://mdconsgroup.com/">MdConsgroup</a>.</strong><span class="botones">All rights reserved.</span>
-    <div class="float-right d-none d-sm-inline-block botones"><b>Version</b> {{config('data.info')->version_info.'.'.config('data.info')->mayor_info.'.'.config('data.info')->menor_info}}</div>
+<footer class="main-footer hero-footer">
+    <div class="hero-footer__brand"><span class="hero-footer__mark"><i class="fas fa-shield-alt" aria-hidden="true"></i></span><div class="hero-footer__copy"><strong>&copy; {{date('Y')}} <a href="https://mdconsgroup.com/" target="_blank" rel="noopener noreferrer">MdConsgroup</a></strong><span>{{trans('v3/legal.rights')}}</span></div></div>
+    <div class="hero-footer__actions"><button type="button" class="hero-footer__legal" data-toggle="modal" data-target="#aitrolLegalModal"><i class="fas fa-balance-scale mr-1" aria-hidden="true"></i>{{trans('v3/legal.legal')}}</button><span class="hero-footer__version"><i class="fas fa-code-branch" aria-hidden="true"></i>{{trans('v3/legal.version')}} {{$versionV3}}</span></div>
 </footer>
-<span class="ir-arriba fa fa-arrow-up"></span>
+<div class="modal fade legal-modal" id="aitrolLegalModal" tabindex="-1" role="dialog" aria-labelledby="aitrolLegalModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="aitrolLegalModalTitle"><i class="fas fa-balance-scale" aria-hidden="true"></i><span>{{trans('v3/legal.modal_title')}}</span></h5><button type="button" class="close" data-dismiss="modal" aria-label="{{trans('v3/legal.close')}}"><span aria-hidden="true">&times;</span></button></div>
+        <div class="legal-modal__intro"><span><strong>{{$nombreEmpresaLegalV3}}</strong><br>{{trans('v3/legal.modal_intro')}}</span><span>{{trans('v3/legal.updated')}}</span></div>
+        <div class="legal-modal__layout">
+            <nav class="nav nav-pills flex-column legal-modal__nav" role="tablist" aria-label="{{trans('v3/legal.modal_title')}}">@foreach($legalSectionsV3 as $legalKeyV3=>$legalSectionV3)<a class="nav-link {{$loop->first?'active':''}}" id="legal-{{$legalKeyV3}}-tab" data-toggle="pill" href="#legal-{{$legalKeyV3}}" role="tab" aria-controls="legal-{{$legalKeyV3}}" aria-selected="{{$loop->first?'true':'false'}}"><i class="fas {{$legalSectionV3['icon']}}" aria-hidden="true"></i>{{trans('v3/legal.'.$legalKeyV3)}}</a>@endforeach</nav>
+            <div class="tab-content legal-modal__content">@foreach($legalSectionsV3 as $legalKeyV3=>$legalSectionV3)<section class="tab-pane fade {{$loop->first?'show active':''}}" id="legal-{{$legalKeyV3}}" role="tabpanel" aria-labelledby="legal-{{$legalKeyV3}}-tab"><h4>{{trans('v3/legal.'.$legalKeyV3)}}</h4>@foreach($legalSectionV3['items'] as $legalItemV3)<article class="legal-modal__article"><h5>{{trans('v3/legal.'.$legalItemV3.'_title')}}</h5><p>{{trans('v3/legal.'.$legalItemV3)}}</p></article>@endforeach</section>@endforeach<div class="legal-modal__notice"><i class="fas fa-exclamation-circle mr-1" aria-hidden="true"></i>{{trans('v3/legal.legal_notice')}}</div></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-check mr-1" aria-hidden="true"></i>{{trans('v3/legal.close')}}</button></div>
+    </div></div>
+</div>

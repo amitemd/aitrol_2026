@@ -1,15 +1,15 @@
 <?php
-return [
 
+return [
     'RegistrodeAdmision' => 'Registro de Admision',
     'ciudad' => 'Ciudad',
     'apellidosynombres' => 'Apellidos y Nombres',
     'cedula' => 'Cedula de ciudadanía',
-    'telefono' => 'Teléfono',
+    'telefono' => 'Nº Telefono',
     'celular' => 'Celular',
     'barrio' => 'Barrio',
     'parroquia' => 'Parroquia',
-    'direccion' => 'Dirección de residencia (Calle Y N° - Manzana Y CASA)',
+    'direccion' => 'Dirección Familiar',
     'canton' => 'Canton',
     'fechaNacimiento' => 'Fecha de Nacimiento',
     'provincia' => 'Provincia',
@@ -27,13 +27,9 @@ return [
     'llamara' => 'En caso necesario llamar a ',
     'parentesco' => 'Parentesco-Afinidad',
     'familiar' => 'Familiar',
-    'telefono' => 'Nº Telefono',
-    'direccion' => 'Dirección Familiar',
     'llegada' => 'Forma de llegada',
     'informacion' => 'Fuente de información',
     'tipodocumentodeidentificacion' => 'Tipo Documento De Identificacion',
-
-
     'atencion' => 'Inicio de Atención',
     'Fecha' => 'Fecha',
     'Gruposanguineo' => 'Grupo sanguineo y Factor RH',
@@ -44,9 +40,7 @@ return [
     'CausaQuirurgica' => 'Causa Quirurgica',
     'NotificacionPolicia' => 'Notificacion a la Policia',
     'OtroMotivo' => 'Otro Motivo',
-
-
-    'Accidente,Violencia,Intoxicación,EnvenenamientooQuemadura' => "Accidente, Violencia, Intoxicación, Envenenamiento o Quemadura",
+    'Accidente,Violencia,Intoxicación,EnvenenamientooQuemadura' => 'Accidente, Violencia, Intoxicación, Envenenamiento o Quemadura',
     'Accidente' => 'Accidente',
     'FechayHora' => 'Fecha y Hora',
     'FechayHoradelEvento' => 'Fecha y Hora del Evento',
@@ -62,7 +56,7 @@ return [
     'ViolemciaXArmaC.Punzante' => 'Violencia por Arma C. Punzante',
     'ViolenciaXRiña' => 'Violencia por Riña',
     'ViolenciaFamiliar' => 'Violencia Familiar',
-    'AbusoFísico' => "Abuso Físico",
+    'AbusoFísico' => 'Abuso Físico',
     'AbusoSexual' => 'Abuso Sexual',
     'AbusoPsicológico' => 'Abuso Psicológico',
     'IntoxicacionAlimentaria' => 'Intoxicacion Alimentaria',
@@ -75,8 +69,6 @@ return [
     'Observaciones' => 'Observaciones',
     'AlientoEtílico' => 'Aliento Etílico',
     'ValorAlcocheck' => 'Valor Alcocheck',
-
-
     'AntecedentesPersonalesyFamiliares' => 'Antecedentes Patologicos Personales y Familiares',
     'AntecedentesPersonales' => 'Antecedentes Personales',
     'Alergias' => 'Alergias',
@@ -89,15 +81,11 @@ return [
     'AntecedentesFamiliares' => 'Antecedentes Familiares',
     'EnfermedadActualyRevisiondeSistemas' => 'Enfermedad o Problema Actual',
     'NoAplica' => 'No Aplica',
-
-
     'VíaAéreaLibre' => 'Vía Aérea Libre',
     'VíaAéreaObstruida' => 'Vía Aérea Obstruida',
     'CondiciónEstable' => 'Condición Estable',
     'CondiciónInestable' => 'Condición Inestable',
-
-
-    "SignosVitalesMedicionesyValores" => "Constantes Vitales y Antropometria",
+    'SignosVitalesMedicionesyValores' => 'Constantes Vitales y Antropometria',
     'PresiónArterial' => 'Presión Arterial',
     'F.CardiacaMin' => 'Pulso Min',
     'F.RespMin' => 'F. Resp Min',
@@ -119,9 +107,7 @@ return [
     'Pulsioximetria' => 'Pulsioximetria',
     'GlicemiaCapilar' => 'Glicemia Capilar',
     'PerimetroCefalico' => 'Perimetro Cefalico',
-
     'ExamenFisicoyDiagnostico' => 'Examen Fisico y Diagnostico',
-    'VíaAéreaObstruida' => 'Vía Aérea Obstruida',
     'Obstruida' => 'Obstruida',
     'Libre' => 'Libre',
     'Cabeza' => 'Cabeza',
@@ -132,19 +118,18 @@ return [
     'Pelvis' => 'Pelvis',
     'Extremidades' => 'Extremidades',
     'PielFaneras' => 'Piel Faneras',
-    'Ojos'  => 'Ojos',
+    'Ojos' => 'Ojos',
     'Oidos' => 'Oidos',
     'Nariz' => 'Nariz',
-    'Boca'  => 'Boca',
+    'Boca' => 'Boca',
     'OroFaringe' => 'OroFaringe',
     'AxilasMamas' => 'AxilasMamas',
     'InglePerine' => 'Ingle Perine',
     'MiembrosSuperiores' => 'MiembrosSuperiores',
     'MiembrosInferiores' => 'MiembrosInferiores',
-
     'Seguro' => 'Seguro',
     'SubSeguro' => 'SubSeguro',
-    'LugarNacimiento' =>  'Lugar Nacimiento',
+    'LugarNacimiento' => 'Lugar Nacimiento',
     'GrupoPrioritario' => 'Grupo Prioritario',
     'EspecifiqueGrupoPrioritario' => 'Especifique Grupo Prioritario',
     'AutoidentificacionEtnica' => 'Autoidentificacion Etnica',
@@ -158,7 +143,7 @@ return [
     'InstitucionOPersonaQueEntregaAlPaciente' => 'Institucion o Persona que entrega al paciente',
     'TipoDeEmpresaDeTrabajo' => 'Tipo de Empresa de trabajo',
     'CondicionLlegada' => 'Condicion Llegada',
-    'MotivoAtencion' => 'Motivo Atencion', 
+    'MotivoAtencion' => 'Motivo Atencion',
     'AccidenteViolenciaIntoxicacion' => 'Accidente, Violencia, Intoxicacion',
     'Notificacion' => 'Notificacion',
     'habitos' => 'Habitos',
@@ -174,9 +159,15 @@ return [
     'OtroAccidente' => 'Otro Accidente',
     'CuerpoExtrano' => 'Cuerpo Extraño',
     'Aplastamiento' => 'Aplastamiento',
-    'Pediatricos'   => 'Pediatricos',
-    
-
-
-
+    'Pediatricos' => 'Pediatricos',
+    'SeleccioneMedicamento' => 'Seleccione un medicamento...',
+    'ErrorCargar' => 'Error al cargar',
+    'F_CardiacaMin' => 'Frecuencia cardíaca mínima',
+    'F_RespMin' => 'Frecuencia respiratoria mínima',
+    'Reac_PupilaDer' => 'Reacción pupilar derecha',
+    'Reac_PupilaIzq' => 'Reacción pupilar izquierda',
+    'T_llenadoCapilar' => 'Tiempo de llenado capilar',
+    'Satura_Oxigeno' => 'Saturación de oxígeno',
+    'ViolemciaXArmaC_Punzante' => 'Violencia por arma cortopunzante',
+    'EnfermedadActualyRevisióndeSistemas' => 'Enfermedad actual y revisión de sistemas',
 ];

@@ -1,5 +1,8 @@
 <?php
+
 return [
+    'catalogo' => 'Catalog',
+    'subcatalogo' => 'Subcatalog',
     'listadeopcionesdelmenu' => 'List of menu options',
     'informaciondelcliente' => 'Customer information',
     'informacionfactura' => 'Invoice information',
@@ -42,9 +45,14 @@ return [
     'relacionadas' => 'Related',
     'costos' => 'Costs',
     'gastos' => 'Bills',
-    'ventas' => 'Sales',
     'compras' => 'Shopping',
     'utilidad' => 'Utility',
+    'listadeimportaciones' => 'Import list',
+    'listadodenotasdecreditodelproveedor' => 'Supplier credit note list',
+    'listadodenotasdedebitodelproveedor' => 'List of supplier debit notes',
+    'listadodeopcionesdelproveedor' => 'Supplier Options List',
+    'saldosiniciales' => 'Initial balances',
+    'nuevacajabanco' => 'New bank box',
     'conciliaciones' => 'conciliations',
     'nuevaconciliacion' => 'New conciliation',
     'buscador' => 'seeker',
@@ -53,8 +61,6 @@ return [
     'transferencias' => 'Transfers',
     'chequesgirados' => 'Drawn checks',
     'chequespagados' => 'Paid checks',
-    'notasdedebito' => 'Debit notes',
-    'notasdecredito' => 'Credit notes',
     'debitosbancarios' => 'Bank debits',
     'egresos' => 'Expenses',
     'egresosvarios' => 'Various expenses',
@@ -73,4 +79,9 @@ return [
     'pendientesAgregados' => 'Added earrings',
     'transferenciasacreditadas' => 'Accredited transfers',
     'transferenciasadebitadas' => 'Debited transfers',
+    'NotaDebito' => 'Debit Note',
+    'tipo' => 'Type',
+    'informeanticipos' => 'Progress Report',
+    'planes' => 'Plans',
+    'seleccionarplan' => 'Plan selection',
 ];

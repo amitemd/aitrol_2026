@@ -1,5 +1,6 @@
 <?php
-return  [
+
+return [
     'ListadodeOrdenesdeLaboratorio' => 'Lista de pedidos de laboratório',
     'OrdenesdeLaboratorio' => 'Pedidos de laboratório',
     'Desde' => 'A partir de',
@@ -9,7 +10,7 @@ return  [
     'Paciente' => 'Paciente',
     'Buscar' => 'Procurar',
     'Id' => 'Id',
-    'Fecha' => 'Data',
+    'Fecha' => 'Data:',
     'Muestra' => 'Amostra',
     'Nombres' => 'Nomes',
     'Convenio' => 'convenção',
@@ -22,40 +23,34 @@ return  [
     'Resultados' => 'Resultados',
     'Mostrando' => 'Exibindo',
     'registros' => 'registros',
-
-    //Resultado_diagnostico
+    'NombresApellidos' => 'Nomes e sobrenomes',
+    'CotizacionAbrev' => 'Cotação',
+    'Pendiente' => 'Pendente',
+    'PagadoAbrev' => 'Pago',
+    'Online' => 'Online',
+    'de' => 'de',
+    'Ordenes' => 'Pedidos',
+    'SinExamenesIngresados' => 'Nenhum exame foi inserido',
+    'ErrorCargar' => 'Erro ao carregar as informações',
+    'NoAgregarOrden' => 'O pedido não pode ser adicionado porque o seguro ou nível é diferente',
+    'ErrorAgregarOrden' => 'Não foi possível adicionar o pedido',
     'Diagnosticoporpaciente' => 'Diagnostico por paciente:',
     'Evolucionporpaciente' => 'Evolução por paciente',
     'Regresar' => 'Regressar',
     'Buscadorporpaciente' => 'Buscador por paciente:',
     'Operación' => 'Operação',
-    'Tipo' => 'Tipo',
     'Medico' => 'Doutor',
     'Accion' => 'Açao',
     'Editar' => 'Editar',
-
-    //Resultados_generales
     'MedidasGenerales' => 'Medidas gerais:',
-    'Fecha' => 'Data:',
     'Descripcion' => 'Descrição',
-
-    //Resultado_plan
     'Plan' => 'Plano',
     'Preescripcion' => 'Prescrição:',
     'Fechadeevolucion' => 'Data de evolução',
-
-    //Resultado.blade
     'Codigo' => 'Codigo',
     'NotasEvolucion' => 'Notas de evolução',
     'ExamenFisico' => 'Exame físico',
-
-    //Salas resultado
     'TraspasosSalas' => 'Transferências de salas:',
     'Area' => 'Área',
     'Medicina=' => 'Medicina',
-
-
-
-
-
 ];

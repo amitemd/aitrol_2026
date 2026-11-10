@@ -1,18 +1,13 @@
 <?php
 
 return [
-
-    //Octavo paso
-
-    'ExamenFisicoyDiagnostico'  => 'Exámen Físico y Diagnóstico',
+    'ExamenFisicoyDiagnostico' => 'Exámen Físico y Diagnóstico',
     'Limpiar' => 'Limpiar',
     'Escoger Color' => 'Escoger Color:',
     'Seleccione' => 'Seleccione...',
     'Clasificaciones' => 'Clasificaciones',
-    'Guardar'  =>  'Guardar',
+    'Guardar' => 'Guardar',
     'Entregado' => 'Entregado',
-    //Noveno paso
-
     'EmergenciaObstetrica' => 'Emergencia Obstétrica',
     'Gestas' => 'Gestas',
     'Partos' => 'Partos',
@@ -32,33 +27,20 @@ return [
     'Pelvisutil' => 'Pelvis útil',
     'SangradoVaginal' => 'Sangrado Vaginal',
     'Contracciones' => 'Contracciones',
-
-    //Onceavo paso
-
     'DiagnosticodeIngreso' => 'Diagnóstico de Ingreso',
     'Diagnostico' => 'Diagnóstico',
     'Seleccionee' => 'Seleccione',
     'PRESUNTIVO' => 'PRESUNTIVO',
     'DEFINITIVO' => 'DEFINITIVO',
     'Agregar' => 'Agregar',
-
-
-    //Doceavo paso
-
-    'DiagnosticodeAlta'  => 'Diagnóstico de Alta',
-
-    // Treceavo paso
-
+    'DiagnosticodeAlta' => 'Diagnóstico de Alta',
     'PlandeTratamiento' => 'Plan de Tratamiento',
-    'Medicina' =>  'Medicina',
+    'Medicina' => 'Medicina',
     'INDICACIONES' => 'INDICACIONES',
     'MEDICAMENTO' => 'MEDICAMENTO',
     'Cantidad' => 'CANTIDAD',
     'POSOLOGIA' => 'POSOLOGÍA',
-    'ACCION' =>  'ACCIÓN',
-
-    //Catorceceavo paso
-
+    'ACCION' => 'ACCIÓN',
     'Alta' => 'Alta',
     'Domicilio' => 'Domicilio',
     'ConsultaExterna' => 'Consulta Externa',
@@ -73,11 +55,9 @@ return [
     'Causa' => 'Causa',
     'Observaciones' => 'Observaciones',
     'Fecha' => 'Fecha',
-    'NombreProfesional'  => 'Nombre Profesional',
+    'NombreProfesional' => 'Nombre Profesional',
     'Actualizar' => 'Actualizar',
     'CondicionesdeAlta' => 'Condiciones de Alta',
-
-    //Detalle Blade 
     'EnStock' => 'En Stock',
     'NoseencuentraenStock.' => 'No se encuentra en Stock.',
     'NoseencuentraenStock..' => 'No se encuentra en Stock..',
@@ -90,15 +70,15 @@ return [
     'Hospitalizacion' => 'Hospitalización',
     'Derivacion' => 'Derivación',
     'Estable' => 'Estable',
-    'Referencia' => 'Referencia',
-    'Observaciones' => 'Observaciones',
     'Fallecido' => 'Fallecido',
     'ReferenciaInversa' => 'Referencia Inversa',
     'Vivo' => 'Vivo',
     'Inestable' => 'Inestable',
-    
-
-
-
-
+    'IngreseDiasReposo' => 'Ingrese días de reposo',
+    'IngreseServicioReferencia' => 'Ingrese el servicio de referencia',
+    'EscribaCausa' => 'Escriba la causa',
+    'SeleccioneDiagnostico' => 'Seleccione presuntivo o definitivo',
+    'SeleccioneCIE10' => 'Seleccione CIE-10',
+    'IngreseMedicamentos' => 'Ingrese medicamentos',
+    'IngresePosologia' => 'Ingrese posología',
 ];

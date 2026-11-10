@@ -1,5 +1,6 @@
 <?php
-return  [
+
+return [
     'ListadodeOrdenesdeLaboratorio' => 'List of Laboratory Orders',
     'OrdenesdeLaboratorio' => 'Laboratory Orders',
     'Desde' => 'From',
@@ -9,7 +10,7 @@ return  [
     'Paciente' => 'Patient',
     'Buscar' => 'Search',
     'Id' => 'Id',
-    'Fecha' => 'Date',
+    'Fecha' => 'Date:',
     'Muestra' => 'Sampling',
     'Nombres' => 'Names',
     'Convenio' => 'Convention',
@@ -22,39 +23,34 @@ return  [
     'Resultados' => 'Results',
     'Mostrando' => 'Showing',
     'registros' => 'records',
-
-    //Resultado_diagnostico
+    'NombresApellidos' => 'Full name',
+    'CotizacionAbrev' => 'Quote',
+    'Pendiente' => 'Pending',
+    'PagadoAbrev' => 'Paid',
+    'Online' => 'Online',
+    'de' => 'of',
+    'Ordenes' => 'Orders',
+    'SinExamenesIngresados' => 'No tests have been entered',
+    'ErrorCargar' => 'Error loading the information',
+    'NoAgregarOrden' => 'The order cannot be added because the insurance or level is different',
+    'ErrorAgregarOrden' => 'The order could not be added',
     'Diagnosticoporpaciente' => 'Diagnostic per patient:',
     'Evolucionporpaciente' => 'Evolution per patient',
     'Regresar' => 'Return',
     'Buscadorporpaciente' => 'Search by patient:',
     'Operación' => 'Operation',
-    'Tipo' => 'Type',
     'Medico' => 'Doctor',
     'Accion' => 'Action',
     'Editar' => 'Edit',
-
-    //Resultados_generales
     'MedidasGenerales' => 'General measures:',
-    'Fecha' => 'Date:',
     'Descripcion' => 'Description',
-
-    //Resultado_plan
     'Plan' => 'Plan',
     'Preescripcion' => 'Preescription:',
     'Fechadeevolucion' => 'Evolution date',
-
-    //Resultado.blade
     'Codigo' => 'Code',
     'NotasEvolucion' => 'Evolution Notes',
     'ExamenFisico' => 'Physical exam',
-
-    //Salas resultado
     'TraspasosSalas' => 'Rooms transfers:',
     'Area' => 'Area',
     'Medicina=' => 'Medicine',
-
-
-
-
 ];

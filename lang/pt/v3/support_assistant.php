@@ -1,0 +1,17 @@
+<?php
+
+return [
+    'name' => 'Walter', 'aria' => 'Walter, assistente visual de suporte Aitrol', 'initial' => 'Estou aqui caso precise de ajuda.', 'question' => 'O que deseja fazer hoje?', 'suggestion' => 'Buscar uma sugestão', 'ticket' => 'Criar chamado de suporte', 'help' => 'Walter também reage automaticamente às pesquisas e aos processos do sistema.', 'open' => 'Abrir Walter, assistente de suporte', 'close' => 'Fechar assistente', 'contact_error' => 'Para obter ajuda com este erro, entre em contato com Walter Alarcón pelo número (+593) 0939407276.',
+    'labels' => ['idle' => 'Walter esperando para ajudar', 'thinking' => 'Walter pensando e procurando uma solução', 'book' => 'Walter consultando uma sugestão em um livro', 'support' => 'Walter trabalhando em um computador'],
+    'messages' => ['idle' => 'Estou aqui caso precise de ajuda.', 'thinking' => 'Ainda não encontrei isso; deixe-me pensar melhor.', 'book' => 'Estou consultando uma sugestão para ajudar.', 'support' => 'Estou trabalhando na sua solicitação.', 'ticket' => 'Estou preparando seu chamado de suporte.', 'consult' => 'Vou consultar uma sugestão para você.', 'new_search' => 'Pronto para uma nova pesquisa.', 'processing' => 'Estou processando as informações no sistema.', 'search' => 'Vou pesquisar e consultar uma sugestão.', 'working' => 'Estou trabalhando nessa tarefa.'],
+    'greetings' => ['morning' => 'Bom dia', 'afternoon' => 'Boa tarde', 'evening' => 'Boa noite', 'question' => 'O que deseja fazer hoje?'],
+    'groups' => [
+        'idle' => ['O que deseja fazer agora?', 'Estou aqui e pronto para ajudar.', 'Vamos procurar algo no sistema?', 'Podemos continuar quando quiser.', 'O Aitrol Hospitalario está pronto. Com qual módulo continuamos?', 'Há alguma tarefa em que eu possa ajudar?'],
+        'proactive' => ['Como posso ajudar?', 'Precisa encontrar algo no Aitrol?', 'Estou atento caso queira revisar alguma tarefa.', 'Há algo pendente que queira resolver?', 'Se precisar de apoio com o sistema, estou aqui.', 'Quer procurar algo comigo?', 'Toque em mim para abrir as opções de ajuda.', 'Se algo não funcionar, toque no avatar e crie um chamado de suporte.', 'Digite nos campos de pesquisa e acompanharei a consulta.'],
+        'searching' => ['Estou procurando uma resposta e revisando sugestões.', 'Deixe-me consultar as opções disponíveis.', 'Estou revisando as informações do sistema.', 'Um momento, vou procurar a melhor correspondência.'],
+        'noResults' => ['Não encontrei resultados. Vou pensar em outra opção.', 'Ainda não vejo correspondências. Vou verificar outra possibilidade.', 'Essa pesquisa não retornou dados. Tentamos outro termo?', 'Nenhuma informação apareceu. Estou pensando em como ajudar melhor.'],
+        'working' => ['Estou trabalhando na sua solicitação.', 'Um momento, estou processando as informações.', 'Já estou atendendo essa tarefa.', 'Estou revisando os dados no computador.'],
+        'completed' => ['Pronto, o processo terminou corretamente.', 'Terminei. Continuamos com outra tarefa?', 'Tudo pronto por aqui.', 'A tarefa foi processada. O que faremos agora?', 'Trabalho concluído. Estou disponível para a próxima tarefa.'],
+    ],
+    'presentation' => ['Olá:name! Eu sou Walter.', 'Estou aqui para ajudar e orientar enquanto você usa o Aitrol Hospitalario.', 'Posso acompanhar pesquisas, processos e tarefas do sistema.', 'Toque em mim para ver as opções ou arraste-me para onde preferir.'],
+];

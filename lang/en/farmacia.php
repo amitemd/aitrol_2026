@@ -1,7 +1,6 @@
 <?php
- 
 
- return[
+return [
     'MasterFarmacia' => 'Master pharmacy',
     'Farmacia' => 'Pharmacy',
     'Medicamento' => 'Medicine',
@@ -12,9 +11,8 @@
     'Fecha' => 'Date',
     'EstistenciadelProducto' => 'Product Existence',
     'Accion' => 'Action',
-
-    'LISTADEPRODUCTOS'  => 'LIST OF PRODUCTS',
-    'Marcas'  => 'Brands',
+    'LISTADEPRODUCTOS' => 'LIST OF PRODUCTS',
+    'Marcas' => 'Brands',
     'TiposdeProductos' => 'Types of products',
     'Producto' => 'Product',
     'PedidosRealizados' => 'Orders Placed',
@@ -22,7 +20,7 @@
     'DescargarReporte' => 'Download Reports',
     'Proveedores' => 'Providers',
     'B&Uacute;SQUEDADEMEDICAMENTOS' => 'Search for Medications',
-    'BUSCAR'  => 'Search',
+    'BUSCAR' => 'Search',
     'Marca' => 'Brand',
     'Codigo' => 'Code',
     'Nombre' => 'Name',
@@ -34,5 +32,6 @@
     'TipodeProducto' => 'Type of Product',
     'CantidaddeUsos' => 'Amount of uses',
     'ExistenciadelProducto' => 'Product Existence',
-
- ];
+    'FARMACIA' => 'PHARMACY',
+    'FormadeDespacho' => 'Dispensing method',
+];

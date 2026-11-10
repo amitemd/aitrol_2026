@@ -1,41 +1,26 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Password Reset Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines are the default lines which match reasons
-    | that are given by the password broker for a password update attempt
-    | has failed, such as for an invalid token or invalid new password.
-    |
-    */
-    'IngresoporEmergencia'   => 'Emergency Admission',
+    'IngresoporEmergencia' => 'Emergency Admission',
     'Pordia' => '/Per Day',
     'NuevoIngreso' => 'New Entry',
     'NuevoTriaje' => 'New Triage',
     'OrdendeAtencionEmergencia' => 'Emergency Care Order',
-    'Fecha'  => 'Date',
-    'CedulaPaciente' =>  'Patient Card',
-    'NombredelPaciente'=> 'Patient Name',
+    'Fecha' => 'Date',
+    'CedulaPaciente' => 'Patient Card',
+    'NombredelPaciente' => 'Patient Name',
     'TipodEmergencia' => 'Type of Emergency',
     'Priorid' => 'Priority',
     'TiempodeEspera' => 'Waiting Time',
     'FormulariodeIngreso' => 'Entry Form',
     'DatosTriaje' => 'Triage Data',
-    'NuevoIngreso' => 'New Entry',
     'ListadePacienteIngresadoaEmergencia' => 'List of Patients Admitted to Emergency',
     'FechayHoradeingreso' => 'Date and Time of entry',
     'FormulariodeIngresoyEvoluciones' => 'Income and Evolutions Form',
     'Atencion' => 'Attention',
     'Formulario008' => '008 Form',
-
-
-    //nuevo ingreso formulario 008
     'INGRESOPOREMERGENCIANUEVOINGRESO' => 'EMERGENCY ADMISSION / NEW ADMISSION',
-    'Regresar' => 'Return to',
+    'Regresar' => 'Return',
     '2RegistrodePrimeraAdmision' => '2.- First Admission Registration',
     'CeduladeCiudadania' => 'Citizenship Card.',
     'ApellidosyNombres' => 'Last Name and First Name',
@@ -56,14 +41,14 @@ return [
     'Rural' => 'Rural',
     'Fechadenacimiento' => 'Date of birth',
     'Nacionalidad' => 'Nationality',
-    'GrCultural' =>'Gr.Cultural',
+    'GrCultural' => 'Gr.Cultural',
     'Mestizo' => 'Mongrel',
     'Morisco' => 'Morisco',
     'Cholocoyote' => 'Cholo or coyote',
     'Mulatos' => 'Mulatos',
-    'Zambo' => 'Zambo',//sueco
-    'Castizo' => 'Castizo',//sueco
-    'Criollo' => 'Criollo', //sueco
+    'Zambo' => 'Zambo',
+    'Castizo' => 'Castizo',
+    'Criollo' => 'Criollo',
     'Chino' => 'Chinese',
     'Edad' => 'Age',
     'Sexo' => 'Sex',
@@ -76,7 +61,6 @@ return [
     'Divorciado' => 'Divorced',
     'UnionLibre' => 'Free Union',
     'UnionHecho' => 'Domestic Partnership',
-
     'Instruccion' => 'Instruction',
     'Ocupacion' => 'Occupation',
     'Empresatrabaja' => 'Company where you work',
@@ -92,11 +76,7 @@ return [
     'OtroTransporte' => 'Other Transportation',
     'FuentedeInformacion' => 'Source of Information',
     'Guardar' => 'Save',
-
-
-    //nuevo triaje resultado manchester
     'Registrodeemergencia' => 'Emergency log',
-    'Regresar' => 'Return',
     'ApellidosNombres' => 'Surnames and names',
     'CI' => 'ID',
     'AdmisionID' => 'Admission I.D: *',
@@ -121,39 +101,32 @@ return [
     'SaturaciondeOxigeno' => 'Oxygen saturation:',
     'EstadodeConciencia' => 'Consciousness state:',
     'Actualizar' => 'Update',
-    'Noaplica'=>'Does not apply',
-    
-    // Detalle Blade
+    'Noaplica' => 'Does not apply',
     'InterconsultaNo' => 'Interconsultation No.',
     'Evolución' => 'Evolution',
     'Especialidad' => 'Specialty',
     'Tarifario' => 'Tariff',
     'Descripcion' => 'Description',
-
-
-    //Medicamentos_resultado  //falta en y pt
-    'Evoluciónporpaciente'=>'Evolution per patient',
-    'Buscadorporpaciente'=>'Search by patient:',
-    'Buscar'=>'Search',
-    'Medicamento'=>'Medicine',
-    'Posologia'=>'Posology',
-    'IndicacionesMedicinas'=>'Indications Medicines',
-    'Cantidad'=>'Quantity',
-    'Nombre'=>'Name',
-    'Presentación'=>'Presentation',
-    'Concentración'=>'Concentration',
-    'Dosis'=>'Dose',
-    'Unidad'=>'Unit',
-    'Via'=>'Via',
-    'Frecuencia'=>'Frecuency',
-    'Duración'=>'Duration',
-    'Acción'=>'Action',
-    'Editar'=>'Edit',
-    'Mostrando'=>'Showing',
-    'registros'=>'records',
-  
-    //Interconsulta - PDF 007
-    'ORDEN007' =>'007 ORDER',
+    'Evoluciónporpaciente' => 'Evolution per patient',
+    'Buscadorporpaciente' => 'Search by patient:',
+    'Buscar' => 'Search',
+    'Medicamento' => 'Medicine',
+    'Posologia' => 'Posology',
+    'IndicacionesMedicinas' => 'Indications Medicines',
+    'Cantidad' => 'Quantity',
+    'Nombre' => 'Name',
+    'Presentación' => 'Presentation',
+    'Concentración' => 'Concentration',
+    'Dosis' => 'Dose',
+    'Unidad' => 'Unit',
+    'Via' => 'Via',
+    'Frecuencia' => 'Frecuency',
+    'Duración' => 'Duration',
+    'Acción' => 'Action',
+    'Editar' => 'Edit',
+    'Mostrando' => 'Showing',
+    'registros' => 'records',
+    'ORDEN007' => '007 ORDER',
     'ESTABLECIMIENTOSOLICITANTE' => 'APPLICANT ESTABLISHMENT',
     'NOMBRE' => 'NAME',
     'SEXO(F-M)' => 'SEX (F-M)',
@@ -180,55 +153,78 @@ return [
     'DEF' => 'DEF',
     '5PLANESTERAPEUTICOSYEDUCACIONALESREALIZADOS' => '5 THERAPEUTIC AND EDUCATIONAL PLANS CARRIED OUT',
     'CODIGO' => 'CODE',
-    'Fecha' => 'Date',
     'Hora' => 'Hour',
     'Profesional' => 'Professional',
     'Firma' => 'signature',
     'NúmerodeHoja' => 'Sheet Number',
     'INTERCONSULTA-SOLICITUD' => 'INTERCONSULTATION - REQUEST',
     'SNS-MSP/HCU-form.007/2008' => 'SNS-MSP / HCU-form.007 / 2008',
-
-     //Editar Blade - Interconsulta
     'InterconsultaNo.' => 'Interconsulta No.',
     'Servicio' => 'Service',
     'Resultadosdeexamenesyprocedimientosdiagnosticos' => 'Test Results And Diagnostic Procedures',
     'Planesterapeuticosyeducacionalesrealizados' => 'Therapeutic and educational plans carried out',
-    'Guardar' => 'Save',
-
-    //Index Blade - Interconsulta 
     'INTERCONSULTA' => 'INTERCONSULTATION',
     'Agregar' => 'Add',
-
-    //Listado CIE 10 - INTERCONSULTA
     'Cie10' => 'Cie 10',
     'Presuntivo/Definitivo' => 'PRESUMPTIVE/DEFINITIVE',
     'Accion' => 'Action',
-
-    //DETALLE ORDEN - ORDEN LABORATORIO
-    'Editar' => 'Edit',
     'DetalledeOrden' => 'Order Detail',
     'DescargarOrden' => 'Download Order',
-    'Cantidad' => 'Quantity',
-
-    //Editar Orden - Orden Laboratorio
     'OrdenNo.' => 'Order No.',
     'SeleccionePerfil' => 'Select Profile',
-    'Buscar' => 'Search',
     'VerSeleccionados' => 'View Selected',
     'Deseleccionar' => 'Deselect',
     'IngresarOtrosExamenes' => 'Enter Other Exams',
-
-    //INDEX - ORDEN LABORATORIO
     'HISTORIALDEORDENESDELABORATORIO' => 'LABORATORY ORDER HISTORY',
     'Publico' => 'Public',
     'Privado' => 'Private',
-    'Formualrio005' =>  'Form 005',
-    'Atención' =>  'Attention',
-    'EnHabitación' =>  'In Room',
-    'EstadoCivil' =>  'Marital Status',
-    'Referidode'=>  'Referral by',
-    'Empresadondetrabaja'=>'Company where you work',
+    'Formualrio005' => 'Form 005',
+    'Atención' => 'Attention',
+    'EnHabitación' => 'In Room',
+    'EstadoCivil' => 'Marital Status',
+    'Referidode' => 'Referral by',
+    'Empresadondetrabaja' => 'Company where you work',
+    'formulario' => 'Form',
+    'PrioridadTabla' => 'Priority',
+    'NUEVOINGRESO' => 'NEW ADMISSION',
+    'Admision' => 'Admission',
+    'FechaAdmision' => 'Admission Date',
+    'tipoDocumento' => 'Document Type',
+    'lugarNacimiento' => 'Place of Birth',
+    'grupoPrioritario' => 'Priority Group',
+    'SI' => 'YES',
+    'NO' => 'NO',
+    'especifiqueGrupo' => 'Specify Group',
+    'autoIdentificacionEtnica' => 'Ethnic Self-identification',
+    'nacionalidadEtnica' => 'Ethnic Nationality',
+    'pueblos' => 'People or Community',
+    'nivelEducacion' => 'Education Level',
+    'estadoNivelEducacion' => 'Education Level Status',
+    'Ninguna' => 'None',
+    'Sub Seguro' => 'Sub-insurance',
+    'callePrincipal' => 'Main Street',
+    'calleSecundaria' => 'Secondary Street',
+    'referencia' => 'Reference',
+    'nombreEntregapaciente' => 'Name of Person Delivering the Patient',
+    'Doctor' => 'Doctor',
+    'Salas' => 'Rooms',
+    'Procedimientos' => 'Procedures',
+    'UniondeHecho' => 'Domestic Partnership',
+    'BuscarApellidosNombres' => 'Search by Last Name and First Name',
+    'SeleccioneOpcion' => 'Select...',
+    'Pasaporte' => 'PASSPORT',
+    'Carnet' => 'ID CARD',
+    'LimiteCredito' => 'Credit Limit',
+    'Cerrar' => 'Close',
+    'Error' => 'ERROR',
+    'APELLIDO' => 'LAST NAME',
+    'Area' => 'Area',
+    'Evolucionporpaciente' => 'Patient progress',
+    'TraspasosSalas' => 'Room transfers',
+    'Medicina' => 'Medicine',
+    'Medico' => 'Physician',
+    'Modulos' => 'Modules',
+    'guardar' => 'Save',
+    'codigo_formulario_007' => 'SNS-MSP/HCU-form.007/2008',
     'Sub_Seguro' => 'Sub insurance',
 ];
-
-?>

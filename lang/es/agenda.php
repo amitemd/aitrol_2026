@@ -1,8 +1,6 @@
 <?php
 
 return [
-    // adelantado
-
     'cDoc' => 'Control Documentos',
     'lispacrecomintadel' => 'Listado Pacientes Recomendados - Integrales Adelantados',
     'conexterna' => 'Consulta Externa',
@@ -44,11 +42,6 @@ return [
     'consultasagenpordoctotal' => 'Consultas Agendadas por Doctores  - Total',
     'consultasagenrealizadaspordoctotal' => 'Consultas Agendadas Realizadas por Doctores  - Total',
     'consultasagenporsegtotal' => 'Consultas Agendadas por Seguros  - Total',
-
-    // adelantado
-
-    // pre agenda
-
     'aggnuevoprocedi-' => 'AGREGAR NUEVO PROCEDIMIENTO',
     'agendasparaelpac' => 'Agendas para el Paciente',
     'yaagendadohoy' => 'YA AGENDADO PARA HOY',
@@ -100,10 +93,6 @@ return [
     'salastodas' => 'SALAS TODAS',
     'ocuparsala' => 'OCUPAR SALA',
     'tipoproc' => 'Tipo de Procedimiento',
-
-    // pre agenda
-
-    // agenda
     'agregarNuevaAgendaDoctor-' => 'AGREGAR NUEVA AGENDA PARA EL DR(A).',
     'pacienteporNombre' => 'Paciente Por Nombre',
     'cPublica' => 'Cobertura Pública',
@@ -124,7 +113,6 @@ return [
     'primeravez' => 'Primera vez',
     'telefonoteleconsulta' => 'Teléfono Teleconsulta',
     'adelantado' => 'Adelantado',
-    'adelantada' => 'Adelantada',
     'fechavalidacion' => 'Fecha de Validación',
     'codigovalidacion' => 'Código de Validación',
     'tipodereunion' => 'Tipo de Reunión',
@@ -160,7 +148,7 @@ return [
     'agendado' => 'Agendado',
     'modificado' => 'Modificado',
     'tomamuestra-' => 'TOMA DE MUESTRA',
-    'realizado' => 'REALIZADO',
+    'realizado-' => 'REALIZADO',
     'receta' => 'Receta',
     'fechaPasadaImposibleSeleccionar' => 'Fecha Pasada, Imposible de Seleccionar',
     'soloAgendarReuniones' => 'Solo para agendar Reuniones',
@@ -291,8 +279,6 @@ return [
     'fechaexpiradasinaccionarealizar' => 'Fecha expirada, Sin Ninguna Acción a realizar',
     'agendaTodosDoctores-' => 'AGENDA DE TODOS LOS DOCTORES',
     'detallecita' => 'Detalle de la cita',
-    // agenda
-
     'instituto_ecuatoriano' => 'INSTITUTO ECUATORIANO',
     'deenfermedadesdigestivas' => 'DE ENFERMEDADES DIGESTIVAS',
     'resultadofrascobiopsias' => 'RESULTADO BIOPSIA FRASCO',
@@ -406,7 +392,6 @@ return [
     'totalegresos' => 'Total Egresos',
     'netorecibido' => 'Neto Recibido',
     'anulada' => 'Anulada',
-
     'farmacia' => 'FARMACIA',
     'datosPrincipalesPacientes' => 'DATOS PRINCIPALES DE PACIENTES',
     'paciente' => 'Paciente',
@@ -459,7 +444,6 @@ return [
     'laboratorio' => 'Laboratorio',
     'cantidadUsos' => 'Cantidad de Usos',
     'nombre' => 'Nombre',
-
     'stockMinimo' => 'Stock Minimo',
     'proveedor' => 'Proveedor',
     'tipoProducto' => 'Tipo Producto',
@@ -599,7 +583,7 @@ return [
     'gestionCuarto' => 'GESTION DE CUARTO',
     'estadoCuarto' => 'ESTADO DEL CUARTO',
     'libres' => 'LIBRES',
-    'preparacion' => 'PREPARACION',
+    'preparacion' => 'Preparación',
     'preparacion_' => 'Preparación',
     'ocupada' => 'OCUPADA',
     'noDisponible' => 'NO DISPONIBLE',
@@ -672,7 +656,6 @@ return [
     'agendadasenelDia' => 'agendadas en el Dia',
     'lugar' => 'Lugar',
     'admisionado' => 'Admisionado',
-    'verDetalleCompleto' => 'Ver Detalle Completo',
     'verEstadisticas' => 'Ver Estadisticas',
     'verGananciaEstimada' => 'Ver Ganancia Estimada',
     'consultasAgendadas' => 'Consultas Agendadas',
@@ -684,12 +667,9 @@ return [
     'todos' => 'Todos',
     'especialidad' => 'Especialidad',
     'examenesFavoritos' => 'EXAMENES FAVORITOS',
-
-    // biopsias
     'historialBiopsias' => 'HISTORIAL DE BIOPSIAS',
     'del' => 'del',
     'descargar' => 'Descargar',
-    'de' => 'de',
     'registro' => 'REGISTRO',
     'obtenido' => 'Obtenido',
     'nombre-' => 'NOMBRE',
@@ -702,7 +682,6 @@ return [
     'diagnostico-' => 'DIAGNÓSTICO',
     'observacion-' => 'OBSERVACIÓN',
     'resultadosBiopsias' => 'RESULTADOS DE BIOPSIAS',
-
     'registro_' => 'Registro',
     'obtenido_' => 'Obtenido',
     'datosOrientacionDiagnostica_' => 'Datos de Orientación Diagnóstica',
@@ -721,8 +700,6 @@ return [
     'consultasProcedimientos' => 'Consultas y Procedimientos',
     'sala' => 'Sala',
     'modifica' => 'Modifica',
-
-    // consulta
     'agregarConsulta-' => 'AGREGAR CONSULTA',
     'datosGenerales' => 'Datos Generales',
     'ingreso' => 'Ingreso',
@@ -753,7 +730,6 @@ return [
     'resumen' => 'Resumen',
     'planDiagnostico' => 'Plan Diagnóstico',
     'planTratamiento' => 'Plan Tratamiento',
-    'indicaciones' => 'Indicaciones',
     'examenesRealizar' => 'Examenes a Realizar',
     'imprimirMembretada' => 'Imprimir Membretada',
     'imprimir' => 'Imprimir',
@@ -764,8 +740,6 @@ return [
     'fechaVisita' => 'Fecha Visita',
     'videollamada' => 'Video Llamada',
     'revisarVademecum' => 'Revisar Vademecum',
-
-    // epicrisis
     'epicrisis-' => 'EPICRISIS',
     'resumenCuadroClinico' => 'RESUMEN CUADRO CLINICO',
     'evolucionPre' => 'Evolución Pre',
@@ -779,15 +753,9 @@ return [
     'diasIncapacidad' => 'Días de Incapacidad',
     'diagnosticoPresuntivo-' => 'DIAGNÓSTICO PRESUNTIVO',
     'definitivo-' => 'DEFINITIVO',
-
-    // estudios
     'imagenesProcedimientos' => 'Imagenes de Procedimientos',
     'descargarSeleccionados' => 'Descargar Seleccionados',
-
-    // estiudiosVisualizador
     'descargarOtroFormato' => 'Descargar en Otro Formato',
-
-    // filiacion
     'detallesFiliacion' => 'DETALLE S DE FILIACIÓN',
     'sexo' => 'Sexo',
     'masculino' => 'Masculino',
@@ -811,18 +779,11 @@ return [
     'grupoSanguineo' => 'Grupo Sanguineo',
     'seleccionar' => 'Seleccionar',
     'transfusiones' => 'Transfusiones',
-    'habitos' => 'Hábitos',
     'vacunas' => 'Vacunas',
-
-    // generico
     'crearGenerico' => 'Crear Generico',
     'editarGenerico' => 'Editar Generico',
     'listadoMedicinasGenericas' => 'LISTADO DE MEDICINAS GENERICAS',
-
-    // horario doctor
     'horarioLaborableDoctor' => 'Horario Laborable del Dr(a)',
-
-    // imagenes
     'guardadoImagenesVideo' => 'Guardado de Imagenes y Video',
     'imagenesCapturadas' => 'Imagenes Capturadas',
     'videosCapturadas' => 'Videos Capturados',
@@ -830,8 +791,6 @@ return [
     'imagenesProcedimiento' => 'Imagenes del Procedimiento',
     'ingresoImagenesProcedimiento' => 'Ingreso de Imagenes del Procedimiento',
     'historialImagenesPaciente' => 'Historial de Imagenes del Paciente',
-
-    // imagenes Paciente
     'imagenesSeleccionadas' => 'Imagenes Seleccionadas',
     'fechaImprimible' => 'Fecha Imprimible',
     'medicoFirma' => 'Medico que Firma',
@@ -839,8 +798,6 @@ return [
     'referidoPor' => 'Referido Por',
     'recortarImagen' => 'Recortar Imagen',
     'recortarTodas' => 'Recortar Todas',
-
-    // laboratorio
     'ordenes_' => 'Ordenes',
     'valor' => 'Valor',
     'comision' => 'Comision',
@@ -898,7 +855,6 @@ return [
     'quimicaSanguinea' => 'QUIMICA SANGUINEA',
     'serologia' => 'SEROLOGIA',
     'bacteriologia' => 'BACTERIOLOGIA',
-    'otros-' => 'OTROS',
     'fecha-' => 'FECHA',
     'hora-' => 'HORA',
     'nombreProfesional' => 'NOMBRE DEL PROFESIONAL',
@@ -908,8 +864,6 @@ return [
     'sexo-' => 'SEXO',
     'analisis-' => 'ANALISIS',
     'pagina-' => 'PAGINA',
-
-    // medicina
     'crearMedicina' => 'Crear Medicina',
     'cantidadPreescribir' => 'Cantidad a Preescribir',
     'dosis' => 'Dosis',
@@ -918,8 +872,6 @@ return [
     'publica' => 'Publica',
     'privada' => 'Privada',
     'listadoMedicinas' => 'LISTADO DE MEDICINAS',
-
-    // ordenes
     'crearListaExamenesFavoritos' => 'Crear Lista de Examenes Favoritos',
     'ingresarNombrePerfil' => 'Ingrese Nombre del Perfil',
     'editarListaExamenesFavoritos' => 'Editar Lista de Examenes Favoritos',
@@ -981,16 +933,12 @@ return [
     'procedimientosImagenes' => 'Procedimientos Imagenes',
     'historialOrdenesImagenes' => 'HISTORIAL ORDENES DE IMAGENES',
     'ordenProcedimientoImagenes' => 'ORDEN DE PROCEDIMIENTO IMAGENES',
-
-    // pastel
     'estadisticasEstimadoGanancia' => 'Estadisticas de Estimado de Ganancia',
     'estadisticasIngresosConsultasdelDr' => 'Estadisticas de Ingresos por Consultas del Dr.',
     'deLaFecha' => 'de la Fecha',
     'tipoSeguro' => 'Tipo de Seguro',
     'pacientes' => 'Pacientes',
     'estadisticasProcedimientos' => 'Estadisticas de Procedimientos',
-
-    // plantillasProcedimientos
     'regresar' => 'Regresar',
     'agregarNuevoProcedimiento' => 'Agregar Nuevo Procedimiento',
     'grupoPertenece' => 'Grupo al que pertenece',
@@ -1001,12 +949,9 @@ return [
     'tecnicasQuirurgicas' => 'Técnicas Quirúrgicas',
     'listaProcedimientosCompletos' => 'Lista de Procedimientos Completos',
     'buscarProcedimiento' => 'Buscar Procedimiento',
-    'crearProcedimiento' => 'Crear Procedimiento',
     'hallazgo' => 'Hallazgo',
     'grupo' => 'Grupo',
     'record' => 'Record',
-
-    // procedimiento Ecografia
     'seleccioneProcedimientoEndoscopico' => 'Seleccione un Procedimiento Endoscopico',
     'insertarPlantilla' => 'Insertar Plantilla',
     'participeEsteProcedimiento' => 'Participe de este Procedimiento',
@@ -1022,8 +967,6 @@ return [
     'ecoPacientesMSP' => 'ECO para Pacientes MSP',
     'eliminarArchivo' => 'Eliminar Archivo',
     'procedimientoSeleccionado-' => 'PROCEDIMIENTO SELECCIONADO',
-
-    // procedimientoEndoscopio
     'agregarCPREECO' => 'Agregar CPRE + ECO',
     'ordenBiopsias' => 'ORDEN DE BIOPSIAS',
     'detallesFrascos' => 'DETALLES FRASCOS',
@@ -1035,24 +978,16 @@ return [
     'detalleObservacion' => 'Detalle Observacion',
     'insertarCuadroClinico' => 'Insertar Cuadro Clinico',
     'observacionAdministrativa' => 'Observacion Administrativa',
-
-    // procedimientoFuncional
     'guardadoDocumentosAnexos' => 'Guardado de Documentos & Anexos',
     'ingresoDocumentosProcedimiento' => 'Ingreso de Documentos del Procedimiento',
     'archivosCargados' => 'ARCHIVOS CARGADOS',
     'guardadoEstudios' => 'GUARDADO DE ESTUDIOS',
     'ingresoEstudiosProcedimiento' => 'Ingreso de Estudios del Procedimiento',
     'estudio' => 'ESTUDIO',
-
-    // recetas
     'prescripcion' => 'Prescripcion',
-
-    // revisarProcedimientos
     'logAgenda' => 'Log de Agenda',
     'descripcionCambio' => 'Descripción del Cambio',
     'usuario' => 'Usuario',
-
-    // evoluciones
     'motivo' => 'Motivo',
     'resultadosExamenesProcedDiagnosticos' => 'Resultados de Exámenes y Procedimientos Diagnósticos',
     'presuntivo' => 'Presuntivo',
@@ -1065,12 +1000,9 @@ return [
     'resultadosExternos' => 'Resultados Externos',
     'patologica' => 'Patologica',
     'interConsulta' => 'INTERCONSULTA',
-
-    // examenes
     'editarExamenes' => 'EditarExamenes',
     'enEspera' => 'En Espera',
     'enEspera-' => 'EN ESPERA',
-    'preparacion' => 'Preparación',
     'preparacion-' => 'PREPARACIÓN',
     'enProcedimiento' => 'En Procedimiento',
     'enProcedimiento-' => 'EN PROCEDIMIENTO',
@@ -1079,8 +1011,8 @@ return [
     'agendaSemanas-mes' => 'Agendamiento Semanas/Meses',
     'detallesProcedimientos' => 'Detalle del Procedimiento',
     'videosCapturados' => 'Videos Capturados',
-
-    // directorio médico
+    'adelantada' => 'Adelantada',
+    'realizado' => 'REALIZADO',
     'medicalDirectory' => 'Directorio médico',
     'doctorDirectoryTitle' => 'Agenda de profesionales',
     'doctorDirectorySubtitle' => 'Seleccione un profesional para gestionar su agenda, límites de atención y horario laboral.',
@@ -1099,5 +1031,4 @@ return [
     'activeProfessional' => 'Profesional activo',
     'openDoctorSchedule' => 'Abrir la agenda de :doctor',
     'doctorPhoto' => 'Fotografía de :doctor',
-
 ];
