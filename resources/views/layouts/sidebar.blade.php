@@ -212,20 +212,20 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
       <!--<li class="active"><a href="/"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>-->
 
       @if(in_array((int) $rolUsuario, array(1, 4, 5, 11, 20, 22), true))
-      <li class="treeview {{ request()->routeIs('v3.clinical-agenda.*', 'v3.scheduled-care.*', 'v3.clinical-operations.*', 'hospital.*') ? 'active' : '' }}">
+      <li class="treeview {{ request()->routeIs('new-system.clinical-agenda.*', 'v3.scheduled-care.*', 'v3.clinical-operations.*', 'hospital.*') ? 'active' : '' }}">
         <a href="#">
           <i class="fa fa-hospital-o"></i>
-          <span>Ambulatorio y Hospital</span>
+          <span>{{ __('new_system.clinical_agenda.module') }}</span>
           <span class="pull-right-container">
             <i class="fa fa-angle-left pull-right"></i>
           </span>
         </a>
         <ul class="treeview-menu">
-          <li class="container-clip {{ request()->routeIs('v3.clinical-agenda.*') ? 'active' : '' }}" data-route-prefixes="/v3/agenda-clinica">
+          <li class="container-clip {{ request()->routeIs('new-system.clinical-agenda.*') ? 'active' : '' }}" data-route-prefixes="/agenda-clinica">
             <button type="button" style="background: transparent; border: none;">
-              <i onclick="anclarTarget(this, `{{ route('v3.clinical-agenda.index') }}`, 'Ambulatorio y Hospital', 'Agenda ambulatoria')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
+              <i onclick="anclarTarget(this, `{{ route('new-system.clinical-agenda.index') }}`, `{{ __('new_system.clinical_agenda.module') }}`, `{{ __('new_system.clinical_agenda.menu_label') }}`)" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
             </button>
-            <a href="{{ route('v3.clinical-agenda.index') }}"><i class="fa fa-calendar"></i> <span>Agenda ambulatoria</span></a>
+            <a href="{{ route('new-system.clinical-agenda.index') }}"><i class="fa fa-calendar"></i> <span>{{ __('new_system.clinical_agenda.menu_label') }}</span></a>
           </li>
           <li class="container-clip {{ request()->routeIs('v3.scheduled-care.*') ? 'active' : '' }}" data-route-prefixes="/v3/consultas-procedimientos">
             <button type="button" style="background: transparent; border: none;">

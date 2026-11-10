@@ -1,0 +1,409 @@
+.clinical-agenda-page {
+    --agenda-blue: #0c638c;
+    --agenda-cyan: #16a9b2;
+    --agenda-ink: #15324a;
+    --agenda-muted: #6e8495;
+    --agenda-line: #d7e5ec;
+}
+
+.clinical-agenda-hero {
+    align-items: center;
+    background: linear-gradient(118deg, #0b4a70 0%, var(--agenda-blue) 52%, var(--agenda-cyan) 100%);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(12, 72, 105, .14);
+    color: #fff;
+    display: flex;
+    gap: 18px;
+    margin-bottom: 20px;
+    min-height: 142px;
+    overflow: hidden;
+    padding: 28px 32px;
+    position: relative;
+}
+
+.clinical-agenda-hero::after {
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 50%;
+    content: "";
+    height: 230px;
+    position: absolute;
+    right: -72px;
+    top: -118px;
+    width: 230px;
+}
+
+.clinical-agenda-hero__icon,
+.clinical-agenda-directory__icon,
+.clinical-agenda-empty__icon {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+}
+
+.clinical-agenda-hero__icon {
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 12px;
+    flex: 0 0 54px;
+    font-size: 24px;
+    height: 54px;
+}
+
+.clinical-agenda-hero__content {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.clinical-agenda-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    margin: 0 0 5px;
+    text-transform: uppercase;
+}
+
+.clinical-agenda-hero h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 5px;
+}
+
+.clinical-agenda-hero p:last-child {
+    color: rgba(255, 255, 255, .9);
+    margin: 0;
+    max-width: 720px;
+}
+
+.clinical-agenda-hero__action {
+    background: #fff;
+    border: 0;
+    border-radius: 9px;
+    color: var(--agenda-blue);
+    font-weight: 600;
+    padding: 11px 16px;
+    position: relative;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.clinical-agenda-hero__action:hover,
+.clinical-agenda-hero__action:focus {
+    background: #edfaff;
+    color: #08476a;
+}
+
+.clinical-agenda-alert {
+    border-radius: 10px;
+}
+
+.clinical-agenda-directory {
+    background: #fff;
+    border: 1px solid var(--agenda-line);
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(26, 63, 85, .07);
+    overflow: hidden;
+}
+
+.clinical-agenda-directory__header {
+    align-items: center;
+    background: #f4fbfd;
+    border-bottom: 1px solid var(--agenda-line);
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 20px;
+}
+
+.clinical-agenda-directory__heading {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+}
+
+.clinical-agenda-directory__icon {
+    background: #dff5f8;
+    border-radius: 9px;
+    color: #058cac;
+    flex: 0 0 40px;
+    font-size: 17px;
+    height: 40px;
+}
+
+.clinical-agenda-directory h3 {
+    color: var(--agenda-ink);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 3px;
+}
+
+.clinical-agenda-directory__heading p {
+    color: var(--agenda-muted);
+    font-size: 13px;
+    margin: 0;
+}
+
+.clinical-agenda-count {
+    background: #e5f7fa;
+    border-radius: 999px;
+    color: #087c94;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 11px;
+}
+
+.clinical-agenda-filters {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+    padding: 18px 20px;
+}
+
+.clinical-agenda-filters .form-group {
+    margin: 0;
+}
+
+.clinical-agenda-filters label {
+    color: #2b485e;
+    font-size: 11px;
+    letter-spacing: .45px;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+}
+
+.clinical-agenda-filters .form-control {
+    border-color: #c8dce6;
+    border-radius: 8px;
+    box-shadow: none;
+    height: 40px;
+}
+
+.clinical-agenda-filters .form-control:focus {
+    border-color: #159bb0;
+    box-shadow: 0 0 0 3px rgba(21, 155, 176, .12);
+}
+
+.clinical-agenda-input {
+    position: relative;
+}
+
+.clinical-agenda-input > i {
+    color: #7d94a5;
+    left: 13px;
+    position: absolute;
+    top: 13px;
+}
+
+.clinical-agenda-input .form-control {
+    padding-left: 36px;
+}
+
+.clinical-agenda-grid {
+    background: #f8fbfd;
+    border-top: 1px solid #e4edf2;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 270px;
+    padding: 20px;
+}
+
+.clinical-agenda-grid.is-loading {
+    opacity: .55;
+    pointer-events: none;
+}
+
+.clinical-agenda-doctor {
+    background: #fff;
+    border: 1px solid #d8e5ec;
+    border-radius: 11px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 18px;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.clinical-agenda-doctor:hover {
+    border-color: #8ccdd8;
+    box-shadow: 0 10px 24px rgba(27, 85, 112, .1);
+    transform: translateY(-2px);
+}
+
+.clinical-agenda-doctor__identity {
+    align-items: center;
+    display: flex;
+    gap: 13px;
+}
+
+.clinical-agenda-avatar {
+    align-items: center;
+    background: linear-gradient(145deg, #e6f6fa, #d6eef4);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #c7dfe8;
+    color: #0a7f9d;
+    display: flex;
+    flex: 0 0 54px;
+    font-size: 17px;
+    font-weight: 700;
+    height: 54px;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.clinical-agenda-avatar img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.clinical-agenda-doctor__label,
+.clinical-agenda-specialties > span {
+    color: #7290a1;
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+
+.clinical-agenda-doctor h4 {
+    color: var(--agenda-ink);
+    font-size: 16px;
+    font-weight: 700;
+    margin: 3px 0;
+}
+
+.clinical-agenda-doctor small {
+    color: var(--agenda-muted);
+}
+
+.clinical-agenda-specialties {
+    border-bottom: 1px solid #edf2f5;
+    border-top: 1px solid #edf2f5;
+    margin: 16px 0;
+    min-height: 71px;
+    padding: 12px 0;
+}
+
+.clinical-agenda-specialties > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.clinical-agenda-badge {
+    background: #e7f6f8;
+    border-radius: 999px;
+    color: #087d95;
+    font-size: 11px;
+    padding: 5px 9px;
+}
+
+.clinical-agenda-badge--muted {
+    background: #eef2f4;
+    color: #758895;
+}
+
+.clinical-agenda-doctor__actions {
+    display: flex;
+    gap: 9px;
+    margin-top: auto;
+}
+
+.clinical-agenda-doctor__actions .btn {
+    border-radius: 7px;
+    flex: 1;
+    font-weight: 600;
+}
+
+.clinical-agenda-doctor__actions .btn-primary {
+    background: #0a86ab;
+    border-color: #0a86ab;
+}
+
+.clinical-agenda-empty {
+    align-self: center;
+    color: var(--agenda-muted);
+    grid-column: 1 / -1;
+    justify-self: center;
+    max-width: 620px;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.clinical-agenda-empty__icon {
+    background: #e8f5f8;
+    border-radius: 50%;
+    color: #438ca3;
+    font-size: 26px;
+    height: 62px;
+    width: 62px;
+}
+
+.clinical-agenda-empty h4 {
+    color: #365a70;
+    font-size: 17px;
+    margin: 13px 0 7px;
+}
+
+.clinical-agenda-empty p {
+    margin: 0;
+}
+
+@media (max-width: 991px) {
+    .clinical-agenda-hero {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .clinical-agenda-hero__action {
+        margin-left: 72px;
+    }
+
+    .clinical-agenda-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .clinical-agenda-hero {
+        padding: 23px 20px;
+    }
+
+    .clinical-agenda-hero__icon {
+        display: none;
+    }
+
+    .clinical-agenda-hero h2 {
+        font-size: 23px;
+    }
+
+    .clinical-agenda-hero__action {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .clinical-agenda-directory__header {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .clinical-agenda-count {
+        white-space: nowrap;
+    }
+
+    .clinical-agenda-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .clinical-agenda-grid {
+        padding: 14px;
+    }
+
+    .clinical-agenda-doctor__actions {
+        flex-direction: column;
+    }
+}

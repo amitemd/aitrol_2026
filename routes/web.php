@@ -12,6 +12,7 @@ use App\Http\Controllers\Observability\SystemLogController;
 use App\Http\Controllers\Operations\AdministrationController;
 use App\Http\Controllers\Operations\ArchitectureContextController;
 use App\Http\Controllers\Operations\CashManagementController;
+use App\Http\Controllers\Operations\ClinicalAgendaController;
 use App\Http\Controllers\Operations\LaboratoryController;
 use App\Http\Controllers\Operations\MedicalSchedulingController;
 use App\Http\Controllers\Operations\OperationalModulesController;
@@ -66,6 +67,11 @@ Route::middleware(['auth', 'can:view-system-observability', 'throttle:120,1'])
 
 Route::middleware(['auth', 'new.context'])->name('new-system.')->group(function (): void {
     Route::post('/salir', [NewSystemAuthController::class, 'logout'])->name('logout');
+
+    Route::get('/agenda-clinica', [ClinicalAgendaController::class, 'index'])
+        ->name('clinical-agenda.index');
+    Route::get('/agenda-clinica/horarios', [ClinicalAgendaController::class, 'schedules'])
+        ->name('clinical-agenda.schedules');
 
     Route::get('/empresas', [NewSystemCompanySelectionController::class, 'index'])
         ->name('companies.index');

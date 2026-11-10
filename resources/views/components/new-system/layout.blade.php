@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}">
     @include('layouts.header_account_styles')
+    @stack('styles')
 </head>
 <body class="hold-transition skin-blue sidebar-mini aitrol-shell">
     <div class="wrapper">
@@ -247,5 +248,6 @@
     <script src="{{ asset('js/new-system-navigation.js') }}?v={{ filemtime(public_path('js/new-system-navigation.js')) }}"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
     @include('new-system.partials.alerts')
+    @stack('scripts')
 </body>
 </html>
