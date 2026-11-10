@@ -13,7 +13,7 @@
           <h3 class="box-title">Salas de Atención de la Unidad: {{$hospital->nombre_hospital}}</h3>
         </div>
         <div class="col-sm-4">
-          <a class="btn btn-primary" href="{{ route('sala-management.crear',['id' => $hospital->id]) }}">Agregar Nueva Sala</a>
+          <a class="btn btn-primary" href="{{ route('sala-management.crear', ['hospital' => $hospital->id]) }}">Agregar Nueva Sala</a>
         </div>
     </div>
   </div>
@@ -45,7 +45,7 @@
                   
                   <td>
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <a href="{{ route('sala-management.editar', ['id_hospital' => $hospital->id, 'id_sala' => $sala->id]) }}" class="btn btn-warning col-sm-3 col-xs-5 btn-margin">
+                        <a href="{{ route('sala-management.editar', ['hospital' => $hospital->id, 'sala' => $sala->id]) }}" class="btn btn-warning col-sm-3 col-xs-5 btn-margin">
                         Actualizar
                         </a>
                          <a href="{{route('horario.sala',['id' =>$sala->id])}}" class="btn btn-warning col-md-3 col-sm-3 col-xs-3 btn-margin"> Horario</a>

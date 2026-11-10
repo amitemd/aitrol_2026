@@ -5,7 +5,7 @@
     <div class="row">
         <div class="box box-primary col-xs-24">
             <div class="box-header"><h3 class="box-title">Agregar Nueva Sala para Unidad: {{ $hospital->nombre_hospital }}</h3></div>
-            <form class="form-vertical" role="form" method="POST" action="{{ route('sala-management.grabar',['id' => $hospital->id]) }}">
+            <form class="form-vertical" role="form" method="POST" action="{{ route('sala-management.grabar', ['hospital' => $hospital->id]) }}">
                 {{ csrf_field() }}
                 <div class="box-body col-xs-24">
                    

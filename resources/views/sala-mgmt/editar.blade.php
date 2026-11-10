@@ -5,7 +5,7 @@
     <div class="row">
         <div class="box box-primary col-xs-24">
             <div class="box-header"><h3 class="box-title">Editar Sala de Unidad: {{$hospital->nombre_hospital}}</h3></div>
-            <form class="form-vertical" role="form" method="POST" action="{{ route('sala-management.actualizar', ['id_hospital' => $hospital->id, 'id_sala' => $salas->id]) }}">
+            <form class="form-vertical" role="form" method="POST" action="{{ route('sala-management.actualizar', ['hospital' => $hospital->id, 'sala' => $salas->id]) }}">
                 <div class="box-body col-xs-24">
                     <input type="hidden" name="_method" value="PATCH">
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">       

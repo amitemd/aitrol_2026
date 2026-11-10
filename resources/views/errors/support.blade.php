@@ -164,8 +164,30 @@
             padding: 16px;
         }
 
-        .support-error__incident-label { color: #547486; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-        .support-error__incident-code { color: #075f7d; display: block; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: clamp(17px, 3vw, 22px); font-weight: 800; letter-spacing: .04em; margin: 7px 0; overflow-wrap: anywhere; }
+        .support-error__incident-label {
+            align-items: center;
+            background: rgba(8, 122, 162, .1);
+            border: 1px solid rgba(8, 122, 162, .18);
+            border-radius: 999px;
+            color: #245f75;
+            display: inline-flex;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: .1em;
+            padding: 5px 9px;
+            text-transform: uppercase;
+        }
+
+        .support-error__incident-label::before {
+            background: var(--teal);
+            border-radius: 50%;
+            content: "";
+            height: 7px;
+            margin-right: 7px;
+            width: 7px;
+        }
+
+        .support-error__incident-code { color: #075f7d; display: block; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: clamp(20px, 3vw, 25px); font-weight: 900; letter-spacing: .045em; line-height: 1.25; margin: 11px 0 8px; overflow-wrap: anywhere; }
         .support-error__incident-help { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
 
         .support-error__details {
@@ -211,6 +233,7 @@
             .support-error__action { background: #372d19; border-color: #5d4921; color: #f9dda3; }
             .support-error__action-mark { background: #4b3918; color: #ffd77a; }
             .support-error__incident { border-color: #27606a; }
+            .support-error__incident-label { background: rgba(128, 229, 220, .1); border-color: rgba(128, 229, 220, .22); color: #b9f2ed; }
             .support-error__incident-code { color: #80e5dc; }
             .support-error__button { background: #172d39; border-color: #36505e; color: #d8e9ef; }
             .support-error__button--primary { background: #087aa2; border-color: #087aa2; color: #fff; }

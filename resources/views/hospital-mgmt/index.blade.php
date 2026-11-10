@@ -55,10 +55,10 @@
                   <td> {{ $hospital->direccion }}</td>
                   <td>
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <a href="{{ route('hospital-management.edit', ['id' => $hospital->id]) }}" class="btn btn-warning col-md-8 col-sm-8 col-xs-8 btn-margin">
+                        <a href="{{ route('hospital-management.edit', ['hospital_management' => $hospital->id]) }}" class="btn btn-warning col-md-8 col-sm-8 col-xs-8 btn-margin">
                         Actualizar
                         </a>
-                        <a href="{{ route('sala-management.listasalas', ['id' => $hospital->id]) }}" class="btn btn-warning col-md-8 col-sm-8 col-xs-8 btn-margin">
+                        <a href="{{ route('sala-management.listasalas', ['hospital' => $hospital->id]) }}" class="btn btn-warning col-md-8 col-sm-8 col-xs-8 btn-margin">
                         Salas
                         </a>
                   </td>
