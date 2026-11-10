@@ -297,6 +297,7 @@ id_menu,nombre_menu,icon_menu,controlador_menu,funcion_menu,id_usuario_creacion_
 694,"CIE 10 - 3 caracteres","<i class=""fas fa-code nav-icon""></i>",legacy-route,cie_10_3.index,0000000001,0000000001,"2026-08-24 00:00:00","2026-08-24 00:00:00",127.0.0.1,127.0.0.1,110,1,683,NULL
 695,"CIE 10 - 4 caracteres","<i class=""fas fa-code nav-icon""></i>",legacy-route,cie_10_4.index,0000000001,0000000001,"2026-08-24 00:00:00","2026-08-24 00:00:00",127.0.0.1,127.0.0.1,120,1,683,NULL
 696,"Tipos de procedimiento","<i class=""fas fa-layer-group nav-icon""></i>",tipos-procedimiento,index,0000000001,0000000001,"2026-08-24 00:00:00","2026-08-24 00:00:00",127.0.0.1,127.0.0.1,45,1,683,NULL
+699,"Configuración contable inicial","<i class=""fas fa-balance-scale nav-icon""></i>",NULL,NULL,0000000001,0000000001,"2026-08-25 12:00:00","2026-08-25 12:00:00",127.0.0.1,127.0.0.1,30,1,10,NULL
 701,"Asientos contables","<i class=""nav-icon fas fa-book-open""></i>",contabilidad,asientos,0000000001,0000000001,"2026-08-25 13:30:00","2026-08-25 13:30:00",127.0.0.1,127.0.0.1,0,1,563,NULL
 702,"Centro de documentación","<i class=""fas fa-book-open nav-icon""></i>",legacy-url,documentacion,0000000001,0000000001,"2026-08-28 00:00:00","2026-08-28 00:00:00",127.0.0.1,127.0.0.1,10,1,573,NULL
 740,Oficina,"<i class=""fas fa-file-word nav-icon""></i>",legacy-url,v3/oficina,0000000001,0000000001,"2026-09-08 00:00:00","2026-09-08 00:00:00",127.0.0.1,127.0.0.1,20,1,573,NULL
