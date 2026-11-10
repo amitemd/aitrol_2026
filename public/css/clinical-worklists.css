@@ -1,0 +1,528 @@
+.clinical-worklist-page {
+    --clinical-blue: #0b557b;
+    --clinical-cyan: #13a6ad;
+    --clinical-ink: #14354d;
+    --clinical-muted: #6f8798;
+    --clinical-line: #d6e5ec;
+}
+
+.clinical-worklist-hero {
+    align-items: center;
+    background: linear-gradient(118deg, #0b4a70 0%, #0f7198 57%, var(--clinical-cyan) 100%);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(12, 72, 105, .14);
+    color: #fff;
+    display: flex;
+    gap: 18px;
+    margin-bottom: 18px;
+    min-height: 134px;
+    overflow: hidden;
+    padding: 26px 30px;
+    position: relative;
+}
+
+.clinical-worklist-hero::after {
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 50%;
+    content: "";
+    height: 225px;
+    position: absolute;
+    right: -64px;
+    top: -126px;
+    width: 225px;
+}
+
+.clinical-worklist-hero--compact {
+    min-height: 112px;
+    padding-bottom: 22px;
+    padding-top: 22px;
+}
+
+.clinical-worklist-hero__icon {
+    align-items: center;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 12px;
+    display: inline-flex;
+    flex: 0 0 54px;
+    font-size: 23px;
+    height: 54px;
+    justify-content: center;
+}
+
+.clinical-worklist-hero__copy {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.clinical-worklist-eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.clinical-worklist-hero h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 5px;
+}
+
+.clinical-worklist-hero p {
+    color: rgba(255, 255, 255, .9);
+    margin: 0;
+}
+
+.clinical-worklist-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.clinical-worklist-hero__actions .btn {
+    background: #fff;
+    border: 1px solid #fff;
+    border-radius: 8px;
+    color: var(--clinical-blue);
+    font-weight: 600;
+    padding: 9px 13px;
+}
+
+.clinical-worklist-hero__actions .btn--outline {
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+}
+
+.clinical-worklist-stats {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 16px;
+}
+
+.clinical-worklist-stats article {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--clinical-line);
+    border-radius: 11px;
+    display: flex;
+    gap: 11px;
+    padding: 14px 15px;
+}
+
+.clinical-worklist-stats article > i {
+    align-items: center;
+    background: #e2f5f8;
+    border-radius: 9px;
+    color: #0588a7;
+    display: inline-flex;
+    flex: 0 0 38px;
+    font-size: 17px;
+    height: 38px;
+    justify-content: center;
+}
+
+.clinical-worklist-stats strong,
+.clinical-worklist-stats span {
+    display: block;
+}
+
+.clinical-worklist-stats strong {
+    color: var(--clinical-ink);
+    font-size: 21px;
+    line-height: 1.05;
+}
+
+.clinical-worklist-stats span {
+    color: var(--clinical-muted);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.clinical-worklist-card {
+    background: #fff;
+    border: 1px solid var(--clinical-line);
+    border-radius: 12px;
+    box-shadow: 0 9px 25px rgba(29, 76, 99, .06);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.clinical-worklist-card__header {
+    align-items: center;
+    background: #f2fafc;
+    border-bottom: 1px solid var(--clinical-line);
+    display: flex;
+    justify-content: space-between;
+    padding: 13px 17px;
+}
+
+.clinical-worklist-card__heading {
+    align-items: center;
+    display: flex;
+    gap: 11px;
+}
+
+.clinical-worklist-card__heading > span {
+    align-items: center;
+    background: #ddf3f6;
+    border-radius: 8px;
+    color: #0786a3;
+    display: inline-flex;
+    flex: 0 0 37px;
+    height: 37px;
+    justify-content: center;
+}
+
+.clinical-worklist-card__heading h3 {
+    color: var(--clinical-ink);
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 2px;
+}
+
+.clinical-worklist-card__heading p {
+    color: var(--clinical-muted);
+    font-size: 12px;
+    margin: 0;
+}
+
+.clinical-worklist-count {
+    background: #e3f6f8;
+    border-radius: 999px;
+    color: #087e94;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+}
+
+.clinical-worklist-filters {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    padding: 16px 18px;
+}
+
+.clinical-worklist-filters--scheduled {
+    grid-template-columns: repeat(5, minmax(135px, 1fr));
+}
+
+.clinical-worklist-filters .form-group {
+    margin: 0;
+    min-width: 0;
+}
+
+.clinical-worklist-filters .form-group--wide {
+    grid-column: span 2;
+}
+
+.clinical-worklist-filters label {
+    color: #2a4a60;
+    font-size: 10px;
+    letter-spacing: .4px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.clinical-worklist-filters .form-control {
+    border-color: #c7dce5;
+    border-radius: 7px;
+    box-shadow: none;
+    height: 38px;
+}
+
+.clinical-worklist-filters .form-control:focus {
+    border-color: #159bab;
+    box-shadow: 0 0 0 3px rgba(21, 155, 171, .1);
+}
+
+.clinical-worklist-filter-actions {
+    align-items: flex-end;
+    display: flex;
+    gap: 7px;
+}
+
+.clinical-worklist-filter-actions .btn {
+    border-radius: 7px;
+    height: 38px;
+}
+
+.clinical-worklist-shortcuts {
+    background: #f8fbfc;
+    border-top: 1px solid #e4eef2;
+    display: grid;
+    gap: 9px;
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    padding: 13px 18px;
+}
+
+.clinical-worklist-shortcuts a {
+    background: #1688ad;
+    border-radius: 7px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 9px 12px;
+    text-align: center;
+}
+
+.clinical-worklist-shortcuts a:nth-child(2) {
+    background: #0b6f97;
+}
+
+.clinical-worklist-shortcuts a:nth-child(3) {
+    background: #0d9a72;
+}
+
+.clinical-worklist-table-wrap {
+    overflow-x: auto;
+    padding: 16px 18px 8px;
+}
+
+.clinical-worklist-table {
+    border: 1px solid #d8e4ea;
+    margin: 0;
+    min-width: 1050px;
+}
+
+.clinical-worklist-table--wide {
+    min-width: 1450px;
+}
+
+.clinical-worklist-table thead th {
+    background: #f1f6f8;
+    color: #24475e;
+    font-size: 10px;
+    letter-spacing: .25px;
+    padding: 10px;
+    text-transform: uppercase;
+}
+
+.clinical-worklist-table td {
+    color: #2b4a60;
+    padding: 11px 10px;
+    vertical-align: middle !important;
+}
+
+.clinical-worklist-table td > small {
+    color: #7890a1;
+    display: block;
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.clinical-worklist-table td > strong {
+    color: #0c4667;
+}
+
+.clinical-worklist-badge {
+    background: #e0f6ef;
+    border-radius: 999px;
+    color: #087c68;
+    display: inline-block;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 700;
+    margin: 2px 4px 2px 0;
+    padding: 5px 8px;
+}
+
+.clinical-worklist-muted {
+    color: var(--clinical-muted);
+    font-size: 12px;
+}
+
+.clinical-worklist-empty {
+    color: #718b9d;
+    padding: 45px !important;
+    text-align: center;
+}
+
+.clinical-worklist-empty i,
+.clinical-worklist-empty strong {
+    display: block;
+}
+
+.clinical-worklist-empty i {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.clinical-worklist-pagination {
+    align-items: center;
+    color: var(--clinical-muted);
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 18px 15px;
+}
+
+.clinical-worklist-pagination .pagination {
+    margin: 0;
+}
+
+.clinical-detail-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.clinical-detail-card {
+    margin-bottom: 0;
+}
+
+.clinical-detail-card--wide {
+    grid-column: 1 / -1;
+}
+
+.clinical-detail-data {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
+}
+
+.clinical-detail-card--wide .clinical-detail-data {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.clinical-detail-data article {
+    background: #fbfdfe;
+    border: 1px solid #dce8ed;
+    border-radius: 8px;
+    min-width: 0;
+    padding: 10px;
+}
+
+.clinical-detail-data article > span,
+.clinical-detail-data article > strong,
+.clinical-detail-data article > small {
+    display: block;
+}
+
+.clinical-detail-data article > span {
+    color: #718899;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+}
+
+.clinical-detail-data article > strong {
+    color: #173f5c;
+    overflow-wrap: anywhere;
+}
+
+.clinical-detail-data article > small {
+    color: #7790a1;
+    margin-top: 3px;
+}
+
+.clinical-detail-data__full {
+    grid-column: 1 / -1;
+}
+
+.clinical-worklist-filters .select2-container {
+    display: block;
+    width: 100% !important;
+}
+
+.clinical-worklist-filters .select2-container .select2-selection--single {
+    border-color: #c7dce5;
+    border-radius: 7px;
+    height: 38px;
+}
+
+.clinical-worklist-filters .select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    padding-left: 12px;
+}
+
+.clinical-worklist-filters .select2-container .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+@media (max-width: 1200px) {
+    .clinical-worklist-filters,
+    .clinical-worklist-filters--scheduled {
+        grid-template-columns: repeat(3, minmax(145px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .clinical-worklist-hero {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .clinical-worklist-hero__copy {
+        min-width: calc(100% - 75px);
+    }
+
+    .clinical-worklist-hero__actions {
+        padding-left: 72px;
+        width: 100%;
+    }
+
+    .clinical-worklist-stats,
+    .clinical-worklist-shortcuts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .clinical-worklist-filters,
+    .clinical-worklist-filters--scheduled,
+    .clinical-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .clinical-detail-card--wide .clinical-detail-data {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .clinical-worklist-hero {
+        padding: 22px 18px;
+    }
+
+    .clinical-worklist-hero h2 {
+        font-size: 23px;
+    }
+
+    .clinical-worklist-hero__actions {
+        padding-left: 0;
+    }
+
+    .clinical-worklist-hero__actions .btn,
+    .clinical-worklist-shortcuts a {
+        width: 100%;
+    }
+
+    .clinical-worklist-stats,
+    .clinical-worklist-shortcuts,
+    .clinical-worklist-filters,
+    .clinical-worklist-filters--scheduled,
+    .clinical-detail-grid,
+    .clinical-detail-data,
+    .clinical-detail-card--wide .clinical-detail-data {
+        grid-template-columns: 1fr;
+    }
+
+    .clinical-worklist-filters .form-group--wide,
+    .clinical-detail-card--wide,
+    .clinical-detail-data__full {
+        grid-column: auto;
+    }
+
+    .clinical-worklist-card__header,
+    .clinical-worklist-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+}

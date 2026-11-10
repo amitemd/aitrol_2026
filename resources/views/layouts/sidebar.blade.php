@@ -212,7 +212,7 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
       <!--<li class="active"><a href="/"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>-->
 
       @if(in_array((int) $rolUsuario, array(1, 4, 5, 11, 20, 22), true))
-      <li class="treeview {{ request()->routeIs('new-system.clinical-agenda.*', 'v3.scheduled-care.*', 'v3.clinical-operations.*', 'hospital.*') ? 'active' : '' }}">
+      <li class="treeview {{ request()->routeIs('new-system.clinical-agenda.*', 'new-system.scheduled-care.*', 'new-system.daily-patients.*', 'hospital.*') ? 'active' : '' }}">
         <a href="#">
           <i class="fa fa-hospital-o"></i>
           <span>{{ __('new_system.clinical_agenda.module') }}</span>
@@ -227,17 +227,17 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
             </button>
             <a href="{{ route('new-system.clinical-agenda.index') }}"><i class="fa fa-calendar"></i> <span>{{ __('new_system.clinical_agenda.menu_label') }}</span></a>
           </li>
-          <li class="container-clip {{ request()->routeIs('v3.scheduled-care.*') ? 'active' : '' }}" data-route-prefixes="/v3/consultas-procedimientos">
+          <li class="container-clip {{ request()->routeIs('new-system.scheduled-care.*') ? 'active' : '' }}" data-route-prefixes="/consultas-procedimientos">
             <button type="button" style="background: transparent; border: none;">
-              <i onclick="anclarTarget(this, `{{ route('v3.scheduled-care.index') }}`, 'Ambulatorio y Hospital', 'Consultas y procedimientos')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
+              <i onclick="anclarTarget(this, `{{ route('new-system.scheduled-care.index') }}`, 'Ambulatorio y Hospital', 'Consultas y procedimientos')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
             </button>
-            <a href="{{ route('v3.scheduled-care.index') }}"><i class="fa fa-stethoscope"></i> <span>Consultas y procedimientos</span></a>
+            <a href="{{ route('new-system.scheduled-care.index') }}"><i class="fa fa-stethoscope"></i> <span>Consultas y procedimientos</span></a>
           </li>
-          <li class="container-clip {{ request()->routeIs('v3.clinical-operations.daily') ? 'active' : '' }}" data-route-prefixes="/v3/pacientes-dia">
+          <li class="container-clip {{ request()->routeIs('new-system.daily-patients.*') ? 'active' : '' }}" data-route-prefixes="/pacientes-dia">
             <button type="button" style="background: transparent; border: none;">
-              <i onclick="anclarTarget(this, `{{ route('v3.clinical-operations.daily') }}`, 'Ambulatorio y Hospital', 'Pacientes del día')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
+              <i onclick="anclarTarget(this, `{{ route('new-system.daily-patients.index') }}`, 'Ambulatorio y Hospital', 'Pacientes del día')" style="color:white;" class="fa fa-thumb-tack" aria-hidden="true"></i>
             </button>
-            <a href="{{ route('v3.clinical-operations.daily') }}"><i class="fa fa-user-md"></i> <span>Pacientes del día</span></a>
+            <a href="{{ route('new-system.daily-patients.index') }}"><i class="fa fa-user-md"></i> <span>Pacientes del día</span></a>
           </li>
           @if((int) $rolUsuario === 1)
           <li class="container-clip {{ request()->routeIs('hospital.*') ? 'active' : '' }}" data-route-prefixes="/hospital">

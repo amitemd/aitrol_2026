@@ -36,7 +36,7 @@ Route::group(['middleware' => ['operacion.v3', 'general']], function () {
         ->name('v3.matriz-madurez');
 
     /* Admin */
-    Route::get('v3/admin', 'v3\contable\AdminController@index');
+    Route::redirect('v3/admin', '/', 301);
     Route::match(['get', 'post'], 'v3/admin/{submodulo}', 'v3\contable\AdminController@index');
 
     /* Config */

@@ -264,7 +264,7 @@ class User extends Authenticatable
             return '/sala/espera/pacientes';
         }
 
-        return $this->isDoctor() ? '/inicio' : '/v3/admin';
+        return $this->isDoctor() ? '/inicio' : '/';
     }
 
     /**

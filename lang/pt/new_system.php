@@ -121,6 +121,12 @@ return [
         'manage_schedule' => 'Administrar horário',
         'company_required' => 'Selecione uma empresa ativa para consultar a agenda clínica.',
     ],
+    'clinical' => [
+        'company_required' => 'Selecione uma empresa ativa para consultar as informações clínicas.',
+        'daily_patients' => 'Pacientes do dia',
+        'scheduled_care' => 'Consultas e procedimentos',
+        'care_detail' => 'Detalhes do atendimento',
+    ],
     'operations' => [
         'title' => 'Arquitetura modular', 'medical_title' => 'Área médica, agenda e pré-agenda', 'patients_title' => 'Pacientes e biópsias',
         'laboratory_title' => 'Laboratório', 'administration_title' => 'Administração, empresas e usuários', 'cash_title' => 'Caixa, bancos e fechamentos',

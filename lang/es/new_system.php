@@ -201,6 +201,12 @@ return [
         'manage_schedule' => 'Gestionar horario',
         'company_required' => 'Selecciona una empresa activa para consultar la agenda clínica.',
     ],
+    'clinical' => [
+        'company_required' => 'Selecciona una empresa activa para consultar la información clínica.',
+        'daily_patients' => 'Pacientes del día',
+        'scheduled_care' => 'Consultas y procedimientos',
+        'care_detail' => 'Detalle de la atención',
+    ],
     'operations' => [
         'title' => 'Arquitectura modular',
         'medical_title' => 'Parte médica, agenda y preagenda',

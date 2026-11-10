@@ -121,6 +121,12 @@ return [
         'manage_schedule' => 'Manage hours',
         'company_required' => 'Select an active company to view the clinical schedule.',
     ],
+    'clinical' => [
+        'company_required' => 'Select an active company to view clinical information.',
+        'daily_patients' => 'Patients of the day',
+        'scheduled_care' => 'Consultations and procedures',
+        'care_detail' => 'Care details',
+    ],
     'operations' => [
         'title' => 'Modular architecture', 'medical_title' => 'Medical care, schedule and pre-schedule', 'patients_title' => 'Patients and biopsies',
         'laboratory_title' => 'Laboratory', 'administration_title' => 'Administration, companies and users', 'cash_title' => 'Cash, banks and closings',

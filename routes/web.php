@@ -13,10 +13,12 @@ use App\Http\Controllers\Operations\AdministrationController;
 use App\Http\Controllers\Operations\ArchitectureContextController;
 use App\Http\Controllers\Operations\CashManagementController;
 use App\Http\Controllers\Operations\ClinicalAgendaController;
+use App\Http\Controllers\Operations\DailyPatientsController;
 use App\Http\Controllers\Operations\LaboratoryController;
 use App\Http\Controllers\Operations\MedicalSchedulingController;
 use App\Http\Controllers\Operations\OperationalModulesController;
 use App\Http\Controllers\Operations\PatientBiopsyController;
+use App\Http\Controllers\Operations\ScheduledCareController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', NewSystemDashboardController::class)
@@ -72,6 +74,17 @@ Route::middleware(['auth', 'new.context'])->name('new-system.')->group(function 
         ->name('clinical-agenda.index');
     Route::get('/agenda-clinica/horarios', [ClinicalAgendaController::class, 'schedules'])
         ->name('clinical-agenda.schedules');
+
+    Route::get('/pacientes-dia', DailyPatientsController::class)
+        ->name('daily-patients.index');
+
+    Route::prefix('consultas-procedimientos')->name('scheduled-care.')->controller(ScheduledCareController::class)->group(function (): void {
+        Route::get('/', 'index')->name('index');
+        Route::get('/catalogos', 'catalog')->name('catalog');
+        Route::get('/detalle/{id}', 'detail')->whereNumber('id')->name('detail');
+        Route::get('/exportar', 'export')->name('export');
+        Route::get('/exportar-pacientes', 'exportPatients')->name('export-patients');
+    });
 
     Route::get('/empresas', [NewSystemCompanySelectionController::class, 'index'])
         ->name('companies.index');
