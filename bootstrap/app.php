@@ -7,6 +7,7 @@ use App\Http\Middleware\AuditHttpRequest;
 use App\Http\Middleware\EnforceHttps;
 use App\Http\Middleware\SecureAuthenticationResponse;
 use App\Http\Middleware\ShareNewSystemContext;
+use App\Support\Errors\SupportIncidentRenderer;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,9 +18,9 @@ use Sis_medico\Console\Commands\VerificarApiTributariaV3;
 use Sis_medico\Console\Commands\VerificarDespliegueV3;
 use Sis_medico\Console\Commands\VerificarSaludV3;
 use Sis_medico\Http\Controllers\BdLabsController;
-use Sis_medico\Http\Middleware\Cors;
 use Sis_medico\Http\Middleware\BlockCompromisedLegacyEndpoint;
 use Sis_medico\Http\Middleware\CheckSidebarPermission;
+use Sis_medico\Http\Middleware\Cors;
 use Sis_medico\Http\Middleware\LegacyEndpointFirewall;
 use Sis_medico\Http\Middleware\RestringirIp;
 use Sis_medico\Http\Middleware\SetLang;
@@ -100,7 +101,17 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontReportDuplicates();
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+        );
+
+        $exceptions->context(
+            fn (Throwable $exception): array => app(SupportIncidentRenderer::class)->context($exception),
+        );
+
+        $exceptions->render(
+            fn (Throwable $exception, Request $request) => app(SupportIncidentRenderer::class)->render($exception, $request),
         );
     })->create();
