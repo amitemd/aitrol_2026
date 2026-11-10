@@ -1,0 +1,138 @@
+.overtime-page .overtime-filter-grid {
+    display: grid;
+    gap: 15px;
+    grid-template-columns: 1.25fr 1.45fr .7fr .95fr .7fr .95fr;
+}
+
+.overtime-page .overtime-filter-grid .payroll-field {
+    min-width: 0;
+}
+
+.overtime-page #overtime-export {
+    font-family: inherit;
+}
+
+.overtime-page .overtime-table-card .payroll-card-body {
+    padding: 16px 20px 20px;
+}
+
+.overtime-page .overtime-table-wrap {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.overtime-page #overtime-statistics-table {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    margin: 0 !important;
+    min-width: 1120px;
+    width: 100% !important;
+}
+
+.overtime-page #overtime-statistics-table thead th {
+    background: #f3f7fa;
+    border-bottom: 1px solid #dce7ed;
+    border-left: 0;
+    border-right: 0;
+    border-top: 1px solid #dce7ed;
+    color: #38556a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 12px 10px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.overtime-page #overtime-statistics-table tbody td {
+    border-bottom: 1px solid #e5edf2;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    color: #36566d;
+    font-size: 11px;
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+
+.overtime-page #overtime-statistics-table tbody tr:hover {
+    background: #f7fcfd;
+}
+
+.overtime-page .overtime-employee {
+    color: #173d56;
+    font-weight: 800;
+}
+
+.overtime-page .overtime-branch {
+    align-items: center;
+    display: inline-flex;
+    line-height: 1.35;
+}
+
+.overtime-page .overtime-branch i {
+    color: #1688bc;
+    margin-right: 6px;
+}
+
+.overtime-page .overtime-period {
+    background: #e8f4fb;
+    border-radius: 999px;
+    color: #24749e;
+    display: inline-flex;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 5px 9px;
+    white-space: nowrap;
+}
+
+.overtime-page .overtime-period i {
+    margin-right: 5px;
+}
+
+.overtime-page .overtime-hours {
+    color: #236d91;
+    font-family: monospace;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.overtime-page .overtime-money {
+    color: #16785f;
+    font-family: monospace;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.overtime-page .overtime-salary {
+    color: #36566d;
+}
+
+.overtime-page .dataTables_wrapper .dataTables_length,
+.overtime-page .dataTables_wrapper .dataTables_info,
+.overtime-page .dataTables_wrapper .dataTables_paginate {
+    margin-top: 12px;
+}
+
+@media (max-width: 1400px) {
+    .overtime-page .overtime-filter-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .overtime-page .overtime-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .overtime-page .overtime-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overtime-page .overtime-table-card .payroll-card-body {
+        padding: 15px;
+    }
+}

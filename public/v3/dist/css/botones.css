@@ -1,0 +1,48 @@
+    /* Smartphones (portrait & landscape) 
+#Dispositivo = Mayoría de teléfonos móviles (vertical y horizontal) 
+#Resolución = B/w 320px to 479px */
+    @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+        .botones {
+            font: 0/0 a;
+            text-shadow: transparent;
+            color: transparent;
+            text-decoration: none;
+        }
+
+        .select2 {
+            width: 98%;
+        }
+    }
+
+    /* #Dispositivo = Tablets de baja resolución y teléfonos Móviles (horizontal) 
+#Resolución = B/w 481px to 767px */
+    @media (min-width: 481px) and (max-width: 767px) {}
+
+    /* Smartphones (landscape) */
+    @media only screen and (min-width : 321px) {}
+
+    /* Smartphones (portrait) */
+    @media only screen and (max-width : 320px) {}
+
+    /* iPads (portrait & landscape) */
+    @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {}
+
+    /* iPads (landscape) 
+#Dispositivo = Tablets, Ipads (horizontal) 
+#Resolución = B/w 768px to 1024px */
+    @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {}
+
+    /* iPads (portrait) 
+#Dispositivo = Tablets, Ipads (vertical) 
+#Resolucion = B/w 768px to 1024px */
+    @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait) {}
+
+    /* Ordenadores de sobremesa y portátiles */
+    @media only screen and (min-width : 1224px) {}
+
+    /* Pantallas grandes */
+    @media only screen and (min-width : 1824px) {}
+
+    /* iPhone 4 */
+    @media only screen and (-webkit-min-device-pixel-ratio : 1.5),
+    only screen and (min-device-pixel-ratio : 1.5) {}
