@@ -5,6 +5,14 @@
     <div class="row">
         <div class="box box-primary col-xs-24">
             <div class="box-header"><h3 class="box-title">Editar Unidades de Atención</h3></div>
+            <div class="box-body">
+                <div class="alert {{ $isDefault ? 'alert-success' : 'alert-info' }}" role="alert">
+                    Esta unidad pertenece a la empresa activa.
+                    @if($isDefault)
+                        Es el hospital predeterminado para Emergencia y Hospitalización.
+                    @endif
+                </div>
+            </div>
             <form class="form-vertical" role="form" method="POST" action="{{ route('hospital-management.update', ['hospital_management' => $hospitales->id]) }}">
                 <div class="box-body col-xs-24">
                     <input type="hidden" name="_method" value="PATCH">

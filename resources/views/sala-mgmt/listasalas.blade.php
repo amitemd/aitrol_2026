@@ -7,10 +7,14 @@
     <!-- Main content -->
     <section class="content">
       <div class="box">
+  @if(session('success'))
+    <div class="alert alert-success" role="alert">{{ session('success') }}</div>
+  @endif
   <div class="box-header">
     <div class="row">
         <div class="col-sm-8">
           <h3 class="box-title">Salas de Atención de la Unidad: {{$hospital->nombre_hospital}}</h3>
+          <p class="help-block">Solo se muestran salas de la empresa activa.</p>
         </div>
         <div class="col-sm-4">
           <a class="btn btn-primary" href="{{ route('sala-management.crear', ['hospital' => $hospital->id]) }}">Agregar Nueva Sala</a>

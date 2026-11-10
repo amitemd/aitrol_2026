@@ -185,7 +185,9 @@ Route::match(['get', 'post'], 'empresa/buscarcontador', 'EmpresaController@busca
 Route::match(['get', 'post'], 'administracion/empresa/buscarcontador', 'EmpresaController@buscar_usuario')->name('empresa.buscar_usuario');
 
 // administración de hospitales
-Route::resource('hospital-management', 'HospitalManagementController');
+Route::patch('hospital-management/{hospital}/default', 'HospitalManagementController@setDefault')->name('hospital-management.default');
+Route::patch('hospital-management/{hospital}/assign', 'HospitalManagementController@assign')->name('hospital-management.assign');
+Route::resource('hospital-management', 'HospitalManagementController')->except(['show', 'destroy']);
 Route::post('hospital-management/search', 'HospitalManagementController@search')->name('hospital-management.search');
 
 // administración de salas

@@ -4,7 +4,6 @@ namespace Sis_medico\Services;
 
 use Illuminate\Support\Facades\DB;
 use Sis_medico\Especialidad;
-use Sis_medico\Support\RequestSchema as Schema;
 
 class V3ClinicalAgendaService
 {
@@ -25,8 +24,15 @@ class V3ClinicalAgendaService
         if ($doctorIds) {
             $doctorSpecialties = DB::table('user_espe as ue')
                 ->join('especialidad as e', 'e.id', '=', 'ue.espid')
-                ->whereIn('ue.usuid', $doctorIds)->where('e.estado', 1)
-                ->select('ue.usuid as doctor_id', 'e.id', 'e.nombre')->orderBy('e.nombre')->get()->groupBy('doctor_id');
+                ->join('usuario_empresa as company', 'company.id_usuario', '=', 'ue.usuid')
+                ->where('company.id_empresa', $companyId)
+                ->whereIn('ue.usuid', $doctorIds)
+                ->where('e.estado', 1)
+                ->select('ue.usuid as doctor_id', 'e.id', 'e.nombre')
+                ->distinct()
+                ->orderBy('e.nombre')
+                ->get()
+                ->groupBy('doctor_id');
         }
 
         foreach ($doctors as $doctor) {
@@ -105,13 +111,15 @@ class V3ClinicalAgendaService
     private function specialties($companyId)
     {
         $query = Especialidad::query()->from('especialidad as e')
+            ->join('user_espe as specialty_assignment', 'specialty_assignment.espid', '=', 'e.id')
+            ->join('users as doctor', 'doctor.id', '=', 'specialty_assignment.usuid')
+            ->join('usuario_empresa as company', 'company.id_usuario', '=', 'doctor.id');
+        DoctorUserType::constrain($query, 'doctor', 'specialty_doctor_type');
+        $query->where('company.id_empresa', (string) $companyId)
+            ->where('doctor.estado', 1)
             ->where('e.estado', 1);
 
-        if (Schema::hasColumn('especialidad', 'id_empresa')) {
-            $query->where('e.id_empresa', (string) $companyId);
-        }
-
-        return $query->select('e.id', 'e.nombre')->orderBy('e.nombre')->get();
+        return $query->select('e.id', 'e.nombre')->distinct()->orderBy('e.nombre')->get();
     }
 
     private function doctorName($doctor)

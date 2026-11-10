@@ -8,6 +8,9 @@
             <form class="form-vertical" role="form" method="POST" action="{{ route('hospital-management.store') }}">
                 {{ csrf_field() }}
                 <div class="box-body col-xs-24">
+                    <div class="alert alert-info" role="alert">
+                        Esta unidad y sus salas pertenecerán únicamente a la empresa activa.
+                    </div>
                    
                     <!--nombre hospital-->
                     <div class="form-group col-xs-12{{ $errors->has('nombre_hospital') ? ' has-error' : '' }}">
@@ -60,6 +63,15 @@
                             @endif
                         </div>
                     </div>        
+
+                    <div class="form-group col-xs-12">
+                        <div class="col-md-7 col-md-offset-2">
+                            <label>
+                                <input type="checkbox" name="is_default" value="1" {{ old('is_default') ? 'checked' : '' }}>
+                                Usar como hospital predeterminado de esta empresa
+                            </label>
+                        </div>
+                    </div>
                         
                     <div class="form-group">
                         <div class="col-md-6 col-md-offset-4">
