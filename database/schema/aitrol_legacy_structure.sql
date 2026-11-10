@@ -11068,6 +11068,7 @@ CREATE TABLE `forma_de_pago` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`,`id_usuariocrea`,`id_usuariomod`,`ip_creacion`,`ip_modificacion`),
+  UNIQUE KEY `forma_de_pago_id_unique` (`id`),
   KEY `FK_forma_de_pago_id_usuariocre` (`id_usuariocrea`),
   KEY `FK_forma_de_pago_id_usuariomod` (`id_usuariomod`),
   CONSTRAINT `FK_forma_de_pago_id_usuariocre` FOREIGN KEY (`id_usuariocrea`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
