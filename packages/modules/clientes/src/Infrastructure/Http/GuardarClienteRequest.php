@@ -16,6 +16,8 @@ final class GuardarClienteRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
+        $soloWeb = Rule::excludeIf($this->routeIs('api.*'));
+
         return [
             'tipo_identificacion' => ['required', Rule::enum(TipoIdentificacion::class)],
             'identificacion' => ['required', 'string', 'max:30'],
@@ -39,9 +41,9 @@ final class GuardarClienteRequest extends FormRequest
             'contactos.*.cargo' => ['nullable', 'string', 'max:80'],
             'contactos.*.email' => ['nullable', 'email:filter', 'max:254'],
             'contactos.*.telefono' => ['nullable', 'string', 'max:30'],
-            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
-            'adjuntos' => ['nullable', 'array', 'max:5'],
-            'adjuntos.*' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:8192'],
+            'foto' => [$soloWeb, 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'adjuntos' => [$soloWeb, 'nullable', 'array', 'max:5'],
+            'adjuntos.*' => [$soloWeb, 'required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:8192'],
         ];
     }
 

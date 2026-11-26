@@ -41,7 +41,16 @@
             </select>
         </div>
         @include('clientes::campo-ficha', ['campo' => 'nombres', 'etiqueta' => 'Nombres o razón social', 'valor' => $perfil['nombres'] ?? old('nombre'), 'limite' => 160, 'obligatorio' => true])
-        @include('clientes::campo-ficha', ['campo' => 'apellidos', 'etiqueta' => 'Apellidos', 'valor' => $perfil['apellidos'] ?? null, 'limite' => 120])
+        @include('clientes::campo-ficha', ['campo' => 'apellidos', 'etiqueta' => 'Apellidos', 'valor' => $perfil['apellidos'] ?? null, 'limite' => 100])
+        <div class="col-md-6">
+            <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+            <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
+                value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
+        </div>
+        <div class="col-12">
+            <label for="observacion" class="form-label">Observación</label>
+            <textarea id="observacion" name="observacion" class="form-control" rows="2" maxlength="3000">{{ old('observacion', $perfil['observacion'] ?? null) }}</textarea>
+        </div>
     </div>
 </section>
 
@@ -51,7 +60,13 @@
         @foreach (['provincia' => 'Provincia', 'ciudad' => 'Ciudad', 'zona' => 'Zona de distribución'] as $campo => $etiqueta)
             @include('clientes::campo-ficha', ['campo' => $campo, 'etiqueta' => $etiqueta, 'valor' => $perfil[$campo] ?? null, 'limite' => 100, 'ancho' => 'col-md-4'])
         @endforeach
-        @include('clientes::campo-ficha', ['campo' => 'referencia', 'etiqueta' => 'Referencia de entrega', 'valor' => $perfil['referencia'] ?? null, 'limite' => 255, 'ancho' => 'col-12'])
+        @foreach (['urbanizacion' => 'Urbanización', 'etapa' => 'Etapa', 'manzana' => 'Manzana', 'villa' => 'Villa'] as $campo => $etiqueta)
+            @include('clientes::campo-ficha', ['campo' => $campo, 'etiqueta' => $etiqueta, 'valor' => $perfil[$campo] ?? null, 'limite' => 100, 'ancho' => 'col-md-3'])
+        @endforeach
+        <div class="col-12">
+            <label for="referencia" class="form-label">Referencia de entrega</label>
+            <textarea id="referencia" name="referencia" class="form-control" rows="2" maxlength="1000">{{ old('referencia', $perfil['referencia'] ?? null) }}</textarea>
+        </div>
         @foreach (['latitud' => ['Latitud', 90], 'longitud' => ['Longitud', 180]] as $campo => [$etiqueta, $rango])
             <div class="col-md-6">
                 <label for="{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
@@ -71,6 +86,7 @@
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'email', 'etiqueta' => 'Correo electrónico', 'valor' => $cliente?->email, 'limite' => 254, 'tipo' => 'email'])
         @include('clientes::campo-ficha', ['campo' => 'telefono', 'etiqueta' => 'Teléfono', 'valor' => $cliente?->telefono, 'limite' => 30, 'tipo' => 'tel'])
+        @include('clientes::campo-ficha', ['campo' => 'celular', 'etiqueta' => 'Celular', 'valor' => $perfil['celular'] ?? null, 'limite' => 100, 'tipo' => 'tel'])
     </div>
     <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
         <h3 class="fs-6 fw-semibold mb-0">Contactos adicionales</h3>

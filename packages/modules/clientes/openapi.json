@@ -473,31 +473,223 @@
                 }
             },
             "Cliente": {
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/DatosCliente"
+                "type": "object",
+                "required": [
+                    "id",
+                    "tipo_identificacion",
+                    "identificacion",
+                    "nombre",
+                    "activo"
+                ],
+                "properties": {
+                    "tipo_identificacion": {
+                        "type": "string",
+                        "enum": [
+                            "cedula",
+                            "ruc",
+                            "pasaporte"
+                        ]
                     },
-                    {
-                        "type": "object",
-                        "required": [
-                            "id",
-                            "activo"
+                    "identificacion": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "description": "Cédula de 10 dígitos, RUC de 13 dígitos o pasaporte alfanumérico con guiones."
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
                         ],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "format": "int64"
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "telefono": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 30
+                    },
+                    "direccion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "activo": {
+                        "type": "boolean"
+                    },
+                    "nombres": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "apellidos": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "ciudad": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "provincia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "zona": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "latitud": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": -90,
+                        "maximum": 90
+                    },
+                    "longitud": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": -180,
+                        "maximum": 180
+                    },
+                    "contactos": {
+                        "type": "array",
+                        "maxItems": 10,
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "nombre": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 120
+                                },
+                                "cargo": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 80
+                                },
+                                "email": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "email"
+                                },
+                                "telefono": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 30
+                                }
                             }
                         }
+                    },
+                    "celular": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "id_ciudad": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "fecha_nacimiento": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "observacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 3000
+                    },
+                    "urbanizacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "etapa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "manzana": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "villa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "referencia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 1000
+                    },
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "id_persona": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
                     }
-                ]
+                }
             },
             "DatosCliente": {
                 "type": "object",
                 "required": [
                     "tipo_identificacion",
-                    "identificacion",
-                    "nombre"
+                    "identificacion"
                 ],
                 "properties": {
                     "tipo_identificacion": {
@@ -542,8 +734,168 @@
                     },
                     "activo": {
                         "type": "boolean"
+                    },
+                    "nombres": {
+                        "type": "string",
+                        "maxLength": 160
+                    },
+                    "apellidos": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "ciudad": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "provincia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "zona": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "latitud": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": -90,
+                        "maximum": 90
+                    },
+                    "longitud": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": -180,
+                        "maximum": 180
+                    },
+                    "contactos": {
+                        "type": "array",
+                        "maxItems": 10,
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "nombre": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 120
+                                },
+                                "cargo": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 80
+                                },
+                                "email": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "email"
+                                },
+                                "telefono": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 30
+                                }
+                            }
+                        }
+                    },
+                    "celular": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "id_ciudad": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "fecha_nacimiento": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "observacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 3000
+                    },
+                    "urbanizacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "etapa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "manzana": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "villa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "referencia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 1000
                     }
-                }
+                },
+                "anyOf": [
+                    {
+                        "required": [
+                            "nombre"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "nombres"
+                        ]
+                    }
+                ]
             },
             "ErrorApi": {
                 "type": "object",

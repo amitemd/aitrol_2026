@@ -3,6 +3,7 @@
 namespace Aitrol\Clientes\Infrastructure\Http;
 
 use Aitrol\Clientes\Domain\Entities\Cliente;
+use App\Models\Persona;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -32,7 +33,7 @@ final class ClienteResource extends JsonResource
             'latitud' => isset($cliente->perfil['latitud']) ? (float) $cliente->perfil['latitud'] : null,
             'longitud' => isset($cliente->perfil['longitud']) ? (float) $cliente->perfil['longitud'] : null,
             'contactos' => $cliente->perfil['contactos'] ?? [],
-            ...array_intersect_key($cliente->perfil, array_flip(array_keys(\App\Models\Persona::reglasPerfil()))),
+            ...array_intersect_key($cliente->perfil, array_flip(array_keys(Persona::reglasPerfil()))),
         ];
     }
 }

@@ -175,7 +175,7 @@
           "Usuarios"
         ],
         "operationId": "actualizarUsuario",
-        "summary": "Actualizar el nombre y correo de un usuario",
+        "summary": "Actualizar los datos de un usuario",
         "description": "Requiere un token de administrador con usuarios:escribir. Las cuentas administradoras se editan en Configuraciones generales.",
         "requestBody": {
           "required": true,
@@ -283,14 +283,123 @@
             "type": "integer"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "maxLength": 255
           },
           "is_admin": {
             "type": "boolean"
+          },
+          "nombres": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "apellidos": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "email_contacto": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
+            "maxLength": 255
+          },
+          "telefono": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "direccion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "celular": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "id_ciudad": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "fecha_nacimiento": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 3000
+          },
+          "urbanizacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "etapa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "manzana": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "villa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "id_persona": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
           }
         }
       },
@@ -306,11 +415,118 @@
             "type": "string",
             "format": "email",
             "maxLength": 255
+          },
+          "nombres": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "apellidos": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "email_contacto": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
+            "maxLength": 255
+          },
+          "telefono": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "direccion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "celular": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "id_ciudad": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "fecha_nacimiento": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 3000
+          },
+          "urbanizacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "etapa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "manzana": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "villa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
           }
         },
         "required": [
-          "name",
           "email"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "name"
+            ]
+          },
+          {
+            "required": [
+              "nombres"
+            ]
+          }
         ]
       },
       "UsuarioError": {
