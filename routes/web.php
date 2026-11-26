@@ -4,15 +4,16 @@ use App\Http\Controllers\SesionController;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'adminlte.dashboard')->name('dashboard');
-Route::view('/panel-anterior', 'dashboard')->name('dashboard.previous');
+Route::middleware('auth')->group(function (): void {
+    Route::view('/', 'adminlte.dashboard')->name('dashboard');
+    Route::view('/panel-anterior', 'dashboard')->name('dashboard.previous');
+    Route::post('/logout', [SesionController::class, 'destroy'])->name('logout');
+});
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [SesionController::class, 'create'])->name('login');
     Route::post('/login', [SesionController::class, 'store'])->middleware('throttle:6,1')->name('login.store');
 });
-
-Route::post('/logout', [SesionController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::get('/adminlte/{page}', function (string $page): Response {
     $file = resource_path('views/adminlte/demo/'.$page);

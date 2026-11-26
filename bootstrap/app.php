@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectUsersTo(fn (): string => route('dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->map(ClienteNoEncontrado::class, fn (ClienteNoEncontrado $error): NotFoundHttpException => new NotFoundHttpException($error->getMessage(), $error));

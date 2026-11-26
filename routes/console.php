@@ -9,9 +9,18 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('aitrol:usuario-crear {email} {nombre}', function (): int {
+Artisan::command('aitrol:usuario-crear {email} {nombre} {--administrador : Crear una cuenta administrativa} {--clave-inicial : Admitir una clave inicial de 8 caracteres}', function (): int {
     if (! $this->input->isInteractive()) {
         $this->error('Ejecute el comando en una terminal interactiva para ingresar la contraseña.');
+
+        return 1;
+    }
+
+    $administrador = (bool) $this->option('administrador');
+    $claveInicial = (bool) $this->option('clave-inicial');
+
+    if ($claveInicial && ! $administrador) {
+        $this->error('La opción --clave-inicial requiere --administrador.');
 
         return 1;
     }
@@ -24,7 +33,7 @@ Artisan::command('aitrol:usuario-crear {email} {nombre}', function (): int {
     ], [
         'email' => ['required', 'email:filter', 'max:255', 'unique:users,email'],
         'name' => ['required', 'string', 'max:255'],
-        'password' => ['required', 'string', 'min:12', 'max:72', 'confirmed'],
+        'password' => ['required', 'string', $claveInicial ? 'min:8' : 'min:12', 'max:72', 'confirmed'],
     ]);
 
     if ($validator->fails()) {
@@ -33,8 +42,11 @@ Artisan::command('aitrol:usuario-crear {email} {nombre}', function (): int {
         return 1;
     }
 
-    User::query()->create($validator->validated());
-    $this->info('Usuario creado.');
+    $usuario = new User($validator->validated());
+    $usuario->is_admin = $administrador;
+    $usuario->save();
+
+    $this->info($administrador ? 'Administrador creado.' : 'Usuario creado.');
 
     return 0;
 })->purpose('Crear un usuario del ERP');

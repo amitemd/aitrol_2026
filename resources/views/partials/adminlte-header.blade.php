@@ -293,56 +293,33 @@
             </li>
             <!--end::Color Mode Toggle-->
 
-            <!--begin::User Menu Dropdown-->
-            <li class="nav-item dropdown user-menu">
-              <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                <img
-                  src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}"
-                  class="user-image rounded-circle shadow"
-                  alt="Alexander Pierce"
-                />
-                <span class="d-none d-xl-inline">Alexander Pierce</span>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                <!--begin::User Image-->
-                <li class="user-header text-bg-primary">
-                  <img
-                    src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}"
-                    class="rounded-circle shadow"
-                    alt="Alexander Pierce"
-                  />
-                  <p>
-                    Alexander Pierce - Web Developer
-                    <small>Member since Nov. 2023</small>
-                  </p>
-                </li>
-                <!--end::User Image-->
-                <!--begin::Menu Body-->
-                <li class="user-body">
-                  <!--begin::Row-->
-                  <div class="row">
-                    <div class="col-4 text-center">
-                      <a href="#">Followers</a>
-                    </div>
-                    <div class="col-4 text-center">
-                      <a href="#">Sales</a>
-                    </div>
-                    <div class="col-4 text-center">
-                      <a href="#">Friends</a>
-                    </div>
-                  </div>
-                  <!--end::Row-->
-                </li>
-                <!--end::Menu Body-->
-                <!--begin::Menu Footer-->
-                <li class="user-footer">
-                  <a href="#" class="btn btn-outline-secondary">Profile</a>
-                  <a href="#" class="btn btn-outline-danger float-end">Sign out</a>
-                </li>
-                <!--end::Menu Footer-->
-              </ul>
-            </li>
-            <!--end::User Menu Dropdown-->
+            @auth
+              @php($cuenta = auth()->user())
+              <li class="nav-item dropdown user-menu">
+                <button type="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                  aria-expanded="false" aria-label="Menú de usuario">
+                  <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
+                  <span class="d-none d-xl-inline">{{ $cuenta->name }}</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li class="px-3 py-2">
+                    <strong class="d-block">{{ $cuenta->name }}</strong>
+                    @if ($cuenta->is_admin)
+                      <small class="text-body-secondary">Administrador</small>
+                    @endif
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form method="POST" action="{{ route('logout') }}">
+                      @csrf
+                      <button type="submit" class="dropdown-item">
+                        <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i> Cerrar sesión
+                      </button>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+            @endauth
           </ul>
           <!--end::End Navbar Links-->
         </div>
