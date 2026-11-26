@@ -26,7 +26,9 @@ final class ConfiguracionServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom($modulo.'/database/migrations');
         $this->loadViewsFrom($modulo.'/resources/views', 'configuracion');
 
-        Gate::define('administrar-menu', fn (User $usuario): bool => $usuario->is_admin === true);
+        $esAdministrador = fn (User $usuario): bool => $usuario->is_admin === true;
+        Gate::define('administrar-menu', $esAdministrador);
+        Gate::define('administrar-configuracion', $esAdministrador);
 
         View::composer('partials.adminlte-sidebar', function (Vista $vista): void {
             $vista->with('navegacion', $this->app->make(MenuService::class)->navegacion(Gate::allows('administrar-menu')));
