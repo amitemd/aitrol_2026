@@ -18,8 +18,9 @@
                     <span class="access-product">ERP administrativo</span>
                 </div>
             </div>
+            @yield('brand-media')
             <div class="access-brand-copy">
-                <p class="access-brand-title">Control de empresas</p>
+                <p class="access-brand-title">Tus empresas, bajo control.</p>
                 <p>Centraliza la administración de una o varias empresas.</p>
             </div>
         </aside>
