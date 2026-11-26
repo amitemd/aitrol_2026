@@ -2,26 +2,24 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-
-require_once __DIR__.'/BootstrapUsersSeeder.php';
-require_once __DIR__.'/WithholdingPercentagesSeeder.php';
-require_once __DIR__.'/V3ClinicalDocumentsSeeder.php';
-require_once __DIR__.'/Cie10CatalogSeeder.php';
-require_once __DIR__.'/VademecumSeeder.php';
-require_once __DIR__.'/LaboratoryExamCatalogSeeder.php';
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    use WithoutModelEvents;
+
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
     {
-        $this->call([
-            BootstrapUsersSeeder::class,
-            LaboratoryExamCatalogSeeder::class,
-            WithholdingPercentagesSeeder::class,
-            V3ClinicalDocumentsSeeder::class,
-            Cie10CatalogSeeder::class,
-            VademecumSeeder::class,
+        // User::factory(10)->create();
+
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
         ]);
     }
 }
