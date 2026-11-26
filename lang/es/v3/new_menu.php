@@ -11,7 +11,7 @@ return [
     'admin' => 'Admin',
     'nombre' => 'Nombre',
     'inicio' => 'Inicio',
-    'pentax' => 'Procedimientos',
+    'pentax' => 'Pentax',
     'anestesia' => 'Anestesia',
     'contabilidad' => 'Contabilidad',
     'proveedores' => 'Proveedores',

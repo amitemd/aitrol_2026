@@ -13,7 +13,7 @@
         th, td { border: .5pt solid #666; padding: .65mm; vertical-align: middle; overflow-wrap: break-word; }
         .masthead { margin-bottom: 2.5mm; }
         .masthead td { border: 0; }
-        .masthead .branding { width: 25%; height: 20mm; overflow: hidden; text-align: center; }
+        .masthead .branding { width: 25%; height: 20mm; overflow: hidden; text-align: left; }
         .masthead .branding-fallback { color: #0a345b; font-size: 12pt; font-weight: bold; letter-spacing: 2pt; }
         .masthead .title { font-size: 10pt; font-weight: bold; text-align: center; }
         .masthead .code { width: 25%; font-size: 7pt; text-align: right; }
@@ -47,7 +47,9 @@
     $document022 = \Sis_medico\Services\HospitalEpisodeForm022::forDisplay($payload022);
     $records022 = array_slice($document022['medicamentos']['registros'], 0, 6);
     while (count($records022) < 6) $records022[] = ['prescripcion' => '', 'medicamento' => '', 'dosis' => '', 'via' => '', 'frecuencia' => '', 'prescrita_por' => '', 'fecha_prescripcion' => '', 'administraciones' => []];
+    $administrationRowCount022 = 9;
     $state022 = $entry ? 'BORRADOR SIN FIRMA' : (count($document022['medicamentos']['registros']) ? 'DATOS eMAR DEL EPISODIO' : 'FORMATO SIN LLENAR');
+    $companyName022 = trim((string) (($empresa->nombrecomercial ?? null) ?: ($empresa->razonsocial ?? null) ?: 'ESTABLECIMIENTO DE SALUD'));
 @endphp
 
 <div class="footer"><table><tr>
@@ -58,9 +60,9 @@
     <table class="masthead"><tr>
         <td class="branding">
             <!--AITROL_PDF_BRANDING_SLOT-->
-            <!--AITROL_PDF_BRANDING_FALLBACK_START--><span class="branding-fallback">AITROL</span><!--AITROL_PDF_BRANDING_FALLBACK_END-->
+            <!--AITROL_PDF_BRANDING_FALLBACK_START--><span class="branding-fallback">{{ $companyName022 }}</span><!--AITROL_PDF_BRANDING_FALLBACK_END-->
         </td>
-        <td class="title">ADMINISTRACIÓN DE MEDICAMENTOS</td>
+        <td class="title"></td>
         <td class="code">FORMULARIO 022<br>{{ $state022 }}</td>
     </tr></table>
     <table>
@@ -83,13 +85,13 @@
                 $byDate022 = [[], [], [], []];
                 foreach (($record022['administraciones'] ?? []) as $administration022) {
                     $dateIndex022 = (int) ($administration022['fecha'] ?? -1);
-                    if ($dateIndex022 >= 0 && $dateIndex022 <= 3 && count($byDate022[$dateIndex022]) < 12) $byDate022[$dateIndex022][] = $administration022;
+                    if ($dateIndex022 >= 0 && $dateIndex022 <= 3 && count($byDate022[$dateIndex022]) < $administrationRowCount022) $byDate022[$dateIndex022][] = $administration022;
                 }
             @endphp
-            @for($adminRow022 = 0; $adminRow022 < 12; $adminRow022++)
+            @for($adminRow022 = 0; $adminRow022 < $administrationRowCount022; $adminRow022++)
                 <tr class="admin-row">
                     @if($adminRow022 === 0)
-                        <td rowspan="12" colspan="2" class="prescription">
+                        <td rowspan="{{ $administrationRowCount022 }}" colspan="2" class="prescription">
                             <strong>{{ $record022['medicamento'] }}</strong>
                             @if($record022['dosis'] !== '')<br><b>Dosis:</b> {{ $record022['dosis'] }}@endif
                             @if($record022['via'] !== '')<br><b>Vía:</b> {{ $record022['via'] }}@endif
@@ -111,6 +113,9 @@
 
     @if($document022['alergias']['nota_legacy'] !== '')<div class="legacy"><strong>Alergias · texto de borrador anterior:</strong> {{ $document022['alergias']['nota_legacy'] }}</div>@endif
     @if($document022['medicamentos']['nota_legacy'] !== '')<div class="legacy"><strong>Medicamentos · texto de borrador anterior:</strong> {{ $document022['medicamentos']['nota_legacy'] }}</div>@endif
+    @php $professionalBlockCompact = true; @endphp
+    @include('hospital.documentos._professional-block-pdf')
+    @php unset($professionalBlockCompact); @endphp
 </div>
 </body>
 </html>

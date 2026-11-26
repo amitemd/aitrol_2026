@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(array('middleware' => array('general', 'v3.method.guard', 'v3.authorize', 'v3.audit')), function () {
+Route::group(['middleware' => ['general', 'v3.method.guard', 'v3.authorize', 'v3.audit']], function () {
     Route::get('v3/agenda-clinica/recibo/crear/{id_agenda}', 'contable\NuevoReciboCobroController@crear')->name('v3.agenda-receipts.create');
     Route::get('v3/agenda-clinica/recibo/{id}/editar', 'contable\NuevoReciboCobroController@editar')->name('v3.agenda-receipts.edit');
     Route::post('v3/agenda-clinica/recibo/{id}/diagnosticos/refrescar', 'contable\NuevoReciboCobroController@refrescar_diagnosticos')
@@ -106,10 +106,10 @@ Route::group(array('middleware' => array('general', 'v3.method.guard', 'v3.autho
     Route::get('v3/pacientes/{patient}/ordenes-laboratorio', 'v3\clinical\LaboratoryOrderController@patient')->name('v3.patient-laboratory-orders.index');
     Route::get('v3/ordenes-laboratorio/crear-publica', 'v3\clinical\LaboratoryOrderController@publicOrder')->name('v3.laboratory-orders.public');
     Route::get('v3/ordenes-laboratorio/crear-privada', 'v3\clinical\LaboratoryOrderController@privateOrder')->name('v3.laboratory-orders.private');
-    Route::match(array('get','post'), 'v3/ordenes-laboratorio/pagos-en-linea', 'v3\clinical\LaboratoryOrderController@onlinePayments')->name('v3.laboratory-orders.online-payments');
-    Route::match(array('get','post'), 'v3/ordenes-laboratorio/devolver', 'v3\clinical\LaboratoryOrderController@returnOrder')->name('v3.laboratory-orders.return');
+    Route::match(['get', 'post'], 'v3/ordenes-laboratorio/pagos-en-linea', 'v3\clinical\LaboratoryOrderController@onlinePayments')->name('v3.laboratory-orders.online-payments');
+    Route::match(['get', 'post'], 'v3/ordenes-laboratorio/devolver', 'v3\clinical\LaboratoryOrderController@returnOrder')->name('v3.laboratory-orders.return');
     Route::get('v3/ordenes-laboratorio/factura-agrupada', 'v3\clinical\LaboratoryOrderController@groupedInvoices')->name('v3.laboratory-orders.grouped-invoices');
-    Route::match(array('get','post'), 'v3/ordenes-laboratorio/comisiones', 'v3\clinical\LaboratoryOrderController@commissions')->name('v3.laboratory-orders.commissions');
+    Route::match(['get', 'post'], 'v3/ordenes-laboratorio/comisiones', 'v3\clinical\LaboratoryOrderController@commissions')->name('v3.laboratory-orders.commissions');
     Route::get('v3/ordenes-laboratorio/cierre-caja', 'v3\clinical\LaboratoryOrderController@cashClose')->name('v3.laboratory-orders.cash-close');
     Route::get('v3/ordenes-laboratorio/exportar/{type}', 'v3\clinical\LaboratoryOrderController@export')->name('v3.laboratory-orders.export');
     Route::get('v3/ordenes-laboratorio/{id}/detalle', 'v3\clinical\LaboratoryOrderController@detail')->name('v3.laboratory-orders.detail');
@@ -193,8 +193,19 @@ Route::group(array('middleware' => array('general', 'v3.method.guard', 'v3.autho
     Route::get('v3/consultas-procedimientos/exportar', 'v3\clinical\ScheduledCareController@export')->name('v3.scheduled-care.export');
     Route::get('v3/consultas-procedimientos/exportar-pacientes', 'v3\clinical\ScheduledCareController@exportPatients')->name('v3.scheduled-care.export-patients');
 
+    Route::get('v3/documentos-ambulatorios/index', static fn () => redirect()->route('v3.ambulatory-documents.index', request()->query(), 301));
+    Route::get('v3/documentos-ambulatorios/pacientes/{patient}', static fn (string $patient) => redirect()->route('v3.ambulatory-documents.patient', ['patient' => $patient], 301));
+    Route::get('v3/documentos-ambulatorios/consultas/{appointment}', static fn (int $appointment) => redirect()->route('v3.ambulatory-documents.consultation', ['appointment' => $appointment], 301))->whereNumber('appointment');
+
+    Route::prefix('documentos-ambulatorios')->middleware('new.context')->name('v3.ambulatory-documents.')->group(function (): void {
+        Route::get('/', 'v3\clinical\AmbulatoryDocumentController@index')->name('index');
+        Route::get('pacientes/{patient}', 'v3\clinical\AmbulatoryDocumentController@patient')->name('patient');
+        Route::get('consultas/{appointment}', 'v3\clinical\AmbulatoryDocumentController@consultation')->whereNumber('appointment')->name('consultation');
+    });
+
     Route::get('v3/pacientes/index', 'v3\clinical\PatientRegistryController@index')->name('v3.patients.index');
     Route::get('v3/pacientes/crear', 'v3\clinical\PatientRegistryController@create')->name('v3.patients.create');
+    Route::get('v3/pacientes/identificacion/disponibilidad', 'v3\clinical\PatientRegistryController@checkIdentification')->middleware('throttle:30,1')->name('v3.patients.identification-availability');
     Route::get('v3/pacientes/alergias/buscar', 'v3\clinical\PatientRegistryController@searchAllergies')->name('v3.patients.allergies.search');
     Route::get('v3/pacientes/{patient}/formulario-ingreso', 'v3\clinical\AgendaDocumentController@patientAdmission')->name('v3.patients.admission-form');
     Route::get('v3/pacientes/{patient}/editar', 'v3\clinical\PatientRegistryController@edit')->name('v3.patients.edit');

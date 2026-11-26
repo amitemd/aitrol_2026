@@ -306,3 +306,4 @@ id_menu,nombre_menu,icon_menu,controlador_menu,funcion_menu,id_usuario_creacion_
 744,"Centros de costos","<i class=""nav-icon fas fa-sitemap""></i>",contabilidad,centros-costos,0000000001,0000000001,"2026-09-29 13:20:00","2026-09-29 13:20:00",127.0.0.1,127.0.0.1,2,1,563,NULL
 745,"Tipos de tarjeta","<i class=""fas fa-credit-card nav-icon""></i>",configuraciones-globales,tipos-tarjeta,0000000001,0000000001,"2026-09-29 16:00:00","2026-09-29 16:00:00",127.0.0.1,127.0.0.1,35,1,699,NULL
 746,"Presupuesto integral","<i class=""nav-icon fas fa-chart-pie""></i>",finanzas,presupuesto,0000000001,0000000001,"2026-09-30 08:10:00","2026-09-30 08:10:00",127.0.0.1,127.0.0.1,0,1,583,NULL
+748,"Documentos ambulatorios","<i class=""fas fa-folder-open nav-icon""></i>",documentos-ambulatorios,index,0000000001,0000000001,"2026-11-12 11:00:00","2026-11-12 11:00:00",127.0.0.1,127.0.0.1,5,1,574,NULL

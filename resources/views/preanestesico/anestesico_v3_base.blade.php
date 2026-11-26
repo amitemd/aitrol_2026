@@ -206,7 +206,7 @@
 <div class="anestesico-v3-shell">
   <div class="anestesico-v3-toolbar">
     <div>
-      <a class="anestesico-v3-back" href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Volver a documentos</a>
+      <a class="anestesico-v3-back" href="{{ $hospitalDocumentsUrl ?? route('hospital.index') }}"><i class="fas fa-folder-open"></i> Ir a documentos</a>
       <nav class="anestesico-v3-tabs" aria-label="Formularios anestésicos">
         <a class="{{ View::getSection('anestesico-active') === 'pre' ? 'active' : '' }}" href="@yield('anestesico-pre-route')"><i class="fas fa-stethoscope"></i> Preanestésico</a>
         <a class="{{ View::getSection('anestesico-active') === 'trans' ? 'active' : '' }}" href="@yield('anestesico-trans-route')"><i class="fas fa-procedures"></i> Transanestésico</a>

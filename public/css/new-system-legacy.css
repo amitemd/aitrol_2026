@@ -652,12 +652,12 @@ body {
     font-weight: 600;
     height: 64px;
     line-height: 64px;
-    width: 320px !important;
+    width: var(--aitrol-legacy-rail-width, 320px) !important;
 }
 
 .aitrol-shell .main-header .navbar {
     background: transparent !important;
-    margin-left: 320px !important;
+    margin-left: var(--aitrol-legacy-rail-width, 320px) !important;
     min-height: 64px;
 }
 
@@ -677,7 +677,7 @@ body {
 .aitrol-shell .main-sidebar {
     background: #17262d !important;
     padding-top: 64px;
-    width: 320px !important;
+    width: var(--aitrol-legacy-rail-width, 320px) !important;
 }
 
 .aitrol-shell .sidebar {
@@ -874,7 +874,7 @@ body {
 
 .aitrol-shell .content-wrapper,
 .aitrol-shell .main-footer {
-    margin-left: 320px !important;
+    margin-left: var(--aitrol-legacy-rail-width, 320px) !important;
 }
 
 .aitrol-shell .content-wrapper {
@@ -1030,7 +1030,7 @@ body {
     color: #5d6b7f;
     display: flex;
     bottom: 0;
-    left: 320px;
+    left: var(--aitrol-legacy-rail-width, 320px);
     margin-left: 0 !important;
     position: fixed;
     right: 0;
@@ -1125,7 +1125,7 @@ body {
 
 @media (min-width: 768px) {
     .aitrol-shell.sidebar-collapse .main-sidebar {
-        transform: translate(-270px, 0) !important;
+        transform: translate(calc(50px - var(--aitrol-legacy-rail-width, 320px)), 0) !important;
     }
 
     .aitrol-shell.sidebar-collapse .content-wrapper {

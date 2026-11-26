@@ -178,7 +178,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
                 <td colspan="12" style="text-align: center">
                     @if(!is_null($empresa))
-                    <img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:200px;height: 65px">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa, 'imageOnly' => true, 'logoHeight' => 58])
                     @endif
                 </td>
             </tr>
@@ -450,7 +450,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             <tr>
                 <td colspan="12" style="text-align: center">
                     @if(!is_null($empresa))
-                    <img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:200px;height: 65px">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa, 'imageOnly' => true, 'logoHeight' => 58])
                     @endif
                 </td>
             </tr>

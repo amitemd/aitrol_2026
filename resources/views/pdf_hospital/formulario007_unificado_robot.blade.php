@@ -257,7 +257,7 @@ if (trim($cuadroClinicoHtml) !== '') {
             <tr>
                 <td colspan="12" style="text-align: center">
                     @if(!is_null($empresa))
-                    <img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:140px;height: 45px">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa, 'imageOnly' => true, 'logoHeight' => 42])
                     @endif
                 </td>
             </tr>
@@ -564,7 +564,7 @@ if (trim($cuadroClinicoHtml) !== '') {
             <tr>
                 <td colspan="12" style="text-align: center">
                     @if(!is_null($empresa))
-                    <img src="{{base_path().'/storage/app/logo/'.$empresa->logo}}" style="width:140px;height: 45px">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa, 'imageOnly' => true, 'logoHeight' => 42])
                     @endif
                 </td>
             </tr>

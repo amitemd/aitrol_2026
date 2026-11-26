@@ -1,0 +1,127 @@
+<?php
+
+return [
+    'pediatricos' => [
+        'titulo' => 'Antecedentes pediátricos',
+        'icono' => 'fa-child',
+        'limite' => null,
+        'categorias' => [
+            'Perinatales y desarrollo' => [
+                ['nombre' => 'Prematuridad', 'requiere_detalle' => true, 'detalle' => 'Indique las semanas de gestación si las conoce'],
+                ['nombre' => 'Bajo peso al nacer'],
+                ['nombre' => 'Asfixia perinatal'],
+                ['nombre' => 'Hospitalización neonatal'],
+                ['nombre' => 'Ictericia neonatal con tratamiento'],
+                ['nombre' => 'Retraso del crecimiento o desarrollo'],
+                ['nombre' => 'Enfermedad congénita', 'requiere_detalle' => true, 'detalle' => 'Especifique la enfermedad congénita'],
+            ],
+            'Enfermedades de la infancia' => [
+                ['nombre' => 'Desnutrición'],
+                ['nombre' => 'Obesidad infantil'],
+                ['nombre' => 'Asma infantil'],
+                ['nombre' => 'Infecciones respiratorias recurrentes'],
+                ['nombre' => 'Convulsiones febriles'],
+                ['nombre' => 'Epilepsia infantil'],
+                ['nombre' => 'Hospitalizaciones recurrentes', 'requiere_detalle' => true, 'detalle' => 'Especifique el motivo'],
+                ['nombre' => 'Esquema de vacunación incompleto'],
+                ['nombre' => 'Otro antecedente pediátrico', 'requiere_detalle' => true, 'detalle' => 'Especifique el antecedente'],
+            ],
+        ],
+    ],
+    'farmacologicos' => [
+        'titulo' => 'Antecedentes farmacológicos',
+        'icono' => 'fa-medkit',
+        'limite' => 255,
+        'categorias' => [
+            'Tratamientos cardiovasculares y metabólicos' => [
+                ['nombre' => 'Antihipertensivos', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Antidiabéticos o insulina', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Anticoagulantes', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Antiagregantes plaquetarios', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Hipolipemiantes o estatinas', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+            ],
+            'Otros tratamientos habituales' => [
+                ['nombre' => 'Hormona tiroidea', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Corticoides', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Inhaladores', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Antiepilépticos', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Antidepresivos o ansiolíticos', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Antiinflamatorios de uso frecuente', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Anticonceptivos o terapia hormonal', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Inmunosupresores', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+                ['nombre' => 'Quimioterapia', 'requiere_detalle' => true, 'detalle' => 'Especifique el tratamiento'],
+                ['nombre' => 'Otro tratamiento farmacológico', 'requiere_detalle' => true, 'detalle' => 'Medicamento, dosis y frecuencia'],
+            ],
+        ],
+    ],
+    'clinicos' => [
+        'titulo' => 'Antecedentes clínicos',
+        'icono' => 'fa-stethoscope',
+        'limite' => 255,
+        'categorias' => [
+            'Hospitalizaciones y eventos relevantes' => [
+                ['nombre' => 'Hospitalización previa', 'requiere_detalle' => true, 'detalle' => 'Indique el motivo y año aproximado'],
+                ['nombre' => 'Ingreso a cuidados intensivos', 'requiere_detalle' => true, 'detalle' => 'Indique el motivo y año aproximado'],
+                ['nombre' => 'Sepsis o infección grave'],
+                ['nombre' => 'Tromboembolismo venoso'],
+                ['nombre' => 'Pancreatitis'],
+                ['nombre' => 'Lesión renal aguda'],
+            ],
+            'Enfermedades infecciosas previas' => [
+                ['nombre' => 'Neumonía'],
+                ['nombre' => 'COVID-19 con complicaciones'],
+                ['nombre' => 'Tuberculosis'],
+                ['nombre' => 'Dengue con signos de alarma'],
+                ['nombre' => 'Hepatitis'],
+                ['nombre' => 'Otra infección relevante', 'requiere_detalle' => true, 'detalle' => 'Especifique la infección'],
+            ],
+            'Otros antecedentes clínicos' => [
+                ['nombre' => 'Tratamiento oncológico previo', 'requiere_detalle' => true, 'detalle' => 'Especifique el tratamiento'],
+                ['nombre' => 'Reacción adversa grave a medicamento', 'requiere_detalle' => true, 'detalle' => 'Especifique el medicamento y la reacción'],
+                ['nombre' => 'Otro antecedente clínico', 'requiere_detalle' => true, 'detalle' => 'Especifique el antecedente'],
+            ],
+        ],
+    ],
+    'traumatologicos' => [
+        'titulo' => 'Antecedentes traumatológicos',
+        'icono' => 'fa-ambulance',
+        'limite' => 255,
+        'categorias' => [
+            'Lesiones y traumatismos' => [
+                ['nombre' => 'Fractura', 'requiere_detalle' => true, 'detalle' => 'Indique el hueso o región afectada'],
+                ['nombre' => 'Traumatismo craneoencefálico'],
+                ['nombre' => 'Politraumatismo'],
+                ['nombre' => 'Trauma torácico'],
+                ['nombre' => 'Trauma abdominal'],
+                ['nombre' => 'Lesión de columna'],
+                ['nombre' => 'Luxación', 'requiere_detalle' => true, 'detalle' => 'Indique la articulación afectada'],
+                ['nombre' => 'Lesión ligamentaria o tendinosa', 'requiere_detalle' => true, 'detalle' => 'Indique la región afectada'],
+                ['nombre' => 'Quemadura', 'requiere_detalle' => true, 'detalle' => 'Indique la región o extensión'],
+                ['nombre' => 'Amputación', 'requiere_detalle' => true, 'detalle' => 'Indique la extremidad o segmento'],
+            ],
+            'Mecanismo del trauma' => [
+                ['nombre' => 'Accidente de tránsito'],
+                ['nombre' => 'Caída de altura'],
+                ['nombre' => 'Accidente laboral'],
+                ['nombre' => 'Lesión deportiva'],
+                ['nombre' => 'Otro antecedente traumatológico', 'requiere_detalle' => true, 'detalle' => 'Especifique el antecedente'],
+            ],
+        ],
+    ],
+    'otros' => [
+        'titulo' => 'Otros antecedentes',
+        'icono' => 'fa-plus-square',
+        'limite' => null,
+        'categorias' => [
+            'Otros datos relevantes' => [
+                ['nombre' => 'Discapacidad', 'requiere_detalle' => true, 'detalle' => 'Especifique el tipo de discapacidad'],
+                ['nombre' => 'Implante, prótesis o dispositivo', 'requiere_detalle' => true, 'detalle' => 'Especifique el dispositivo'],
+                ['nombre' => 'Trasplante de órgano', 'requiere_detalle' => true, 'detalle' => 'Especifique el órgano'],
+                ['nombre' => 'Exposición ocupacional', 'requiere_detalle' => true, 'detalle' => 'Especifique la exposición'],
+                ['nombre' => 'Riesgo epidemiológico', 'requiere_detalle' => true, 'detalle' => 'Especifique viaje, residencia o contacto'],
+                ['nombre' => 'Antecedente psiquiátrico', 'requiere_detalle' => true, 'detalle' => 'Especifique el antecedente'],
+                ['nombre' => 'Otro antecedente relevante', 'requiere_detalle' => true, 'detalle' => 'Especifique el antecedente'],
+            ],
+        ],
+    ],
+];

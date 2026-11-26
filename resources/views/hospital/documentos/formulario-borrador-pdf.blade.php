@@ -1,5 +1,7 @@
 @if($form['code'] === '003')
     @include('hospital.documentos.formulario-003-pdf')
+@elseif($form['code'] === '017')
+    @include('hospital.documentos.formulario-017-pdf')
 @elseif(in_array($form['code'], ['018', '018A', '019'], true))
     @include('hospital.documentos.formulario-anestesia-pdf')
 @elseif($form['code'] === '020')

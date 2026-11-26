@@ -84,26 +84,6 @@
       </div>
     </div>
   </div>
-  <div class="col-md-12" style="padding: 1px;">
-    <div class="row">
-      <div class="col-md-12">
-        <span style="font-family: 'Helvetica general';font-size: 12px">RESUMEN DE LA HISTORIA CL&IacuteNICA:</span>
-      </div>
-      <div class="col-12">
-        <span><?php echo $orden_procedimagenes->resumen_clinico?></span>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-12" style="padding: 1px;">
-    <div class="row">
-        <div class="col-md-12">
-          <span style="font-family: 'Helvetica general';font-size: 12px">DIAGNOSTICO:</span>
-        </div>
-        <div class="col-12">
-          <span><?php echo $orden_procedimagenes->diagnosticos?></span>
-        </div>
-    </div>
-  </div>
   @php
     if(!is_null($orden_procedimagenes->id)){
       $procedimiento_orden_tipo = \Sis_medico\Orden_tipo::where('id_orden',$orden_procedimagenes->id)->where('id_grupo_procedimiento','16')

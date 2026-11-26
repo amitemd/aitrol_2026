@@ -2,8 +2,8 @@
 
 namespace Sis_medico;
 
-use Illuminate\Database\Eloquent\Model;
 use DB;
+use Illuminate\Database\Eloquent\Model;
 
 class agenda extends Model
 {
@@ -13,13 +13,14 @@ class agenda extends Model
      * @var string
      */
     protected $table = 'agenda';
+
     protected $keyType = 'string';
 
     /**
-    * The attributes that aren't mass assignable.
-    *
-    * @var array
-    */
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
     protected $guarded = [];
 
     public function paciente()
@@ -31,12 +32,13 @@ class agenda extends Model
     {
         return $this->belongsTo('Sis_medico\Seguro', 'id_seguro');
     }
+
     public function empresa()
     {
         return $this->belongsTo('Sis_medico\Empresa', 'id_empresa');
     }
 
-    //Agregada 8/04/2019
+    // Agregada 8/04/2019
     public function doctor1()
     {
         return $this->belongsTo('Sis_medico\User', 'id_doctor1');
@@ -45,6 +47,11 @@ class agenda extends Model
     public function procedimiento()
     {
         return $this->belongsTo('Sis_medico\Procedimiento', 'id_procedimiento');
+    }
+
+    public function sala()
+    {
+        return $this->belongsTo('Sis_medico\Sala', 'id_sala');
     }
 
     public function historia_clinica()
@@ -71,6 +78,7 @@ class agenda extends Model
     {
         return $this->hasMany('Sis_medico\AgendaProcedimiento', 'id_agenda');
     }
+
     public static function getPlanillas($r, $tipo = 0)
     {
         return Agenda::join('historiaclinica as h', 'agenda.id', '=', 'h.id_agenda')
@@ -90,7 +98,7 @@ class agenda extends Model
             ->where('t.estado', '!=', 0)
             ->where('agenda.estado_cita', 4)
             ->where('pl.facturado_crm', 0)
-            ->whereBetween('agenda.fechaini', [$r->desde . ' 00:00:00', $r->hasta . ' 23:59:59'])->where("agenda.id_seguro", 2)
+            ->whereBetween('agenda.fechaini', [$r->desde.' 00:00:00', $r->hasta.' 23:59:59'])->where('agenda.id_seguro', 2)
             ->where(function ($q) use ($r) {
                 if ($r->paciente != '') {
                     $q->where('agenda.id_paciente', $r->paciente);
@@ -100,6 +108,7 @@ class agenda extends Model
             ->groupBy('pl.id')
             ->get();
     }
+
     public static function getProcedimientosInsumos($r, $tipo = 0)
     {
         $id_empresa = session('id_empresa');
@@ -121,14 +130,14 @@ class agenda extends Model
                 ->join('paciente as p', 'agenda.id_paciente', 'p.id')
                 ->join('users as u', 'agenda.id_usuariomod', 'u.id')
                 ->join('historiaclinica as h', 'agenda.id', 'h.id_agenda')
-                ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') //join hc_procedimientos p on h.hcid=p.id_hc
-                ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') //join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
-                ->join('hc_procedimiento_final as pf', 'pro.id', 'pf.id_hc_procedimientos') //join hc_procedimiento_final pf on p.id=pf.id_hc_procedimientos
-                ->join('procedimiento as pr', 'pf.id_procedimiento', 'pr.id') //join procedimiento pr on pf.id_procedimiento=pr.id
+                ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') // join hc_procedimientos p on h.hcid=p.id_hc
+                ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') // join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
+                ->join('hc_procedimiento_final as pf', 'pro.id', 'pf.id_hc_procedimientos') // join hc_procedimiento_final pf on p.id=pf.id_hc_procedimientos
+                ->join('procedimiento as pr', 'pf.id_procedimiento', 'pr.id') // join procedimiento pr on pf.id_procedimiento=pr.id
                 ->where('agenda.id_empresa', '1307189140001')
                 ->where('agenda.proc_consul', 1)
                 ->where('agenda.estado_cita', 4)
-                ->whereBetween('agenda.fechaini', [$r->desde . ' 00:00:00', $r->hasta . ' 23:59:59'])
+                ->whereBetween('agenda.fechaini', [$r->desde.' 00:00:00', $r->hasta.' 23:59:59'])
                 ->where(function ($q) use ($r) {
                     if ($r->paciente != '') {
                         $q->where('agenda.id_paciente', $r->paciente);
@@ -138,7 +147,7 @@ class agenda extends Model
                 ->orderBy('agenda.fechaini', 'asc')
                 ->get();
         } else {
-            //DB::enableQueryLog();
+            // DB::enableQueryLog();
             return Agenda::join('historiaclinica as h', 'agenda.id', '=', 'h.id_agenda')
                 ->join('hc_procedimientos as pro', 'h.hcid', '=', 'pro.id_hc')
                 ->join('planilla_cabecera as pl', 'pro.id', '=', 'pl.id_hc_procedimiento')
@@ -179,19 +188,19 @@ class agenda extends Model
                 ->where('t.estado', '!=', 0)
                 ->where('agenda.estado_cita', 4)
                 ->where('pl.facturado_crm', 0)
-                ->whereBetween('agenda.fechaini', [$r->desde . ' 00:00:00', $r->hasta . ' 23:59:59'])
+                ->whereBetween('agenda.fechaini', [$r->desde.' 00:00:00', $r->hasta.' 23:59:59'])
                 ->where('agenda.id_seguro', 2)
                 ->when($r->paciente, function ($query) use ($r) {
                     $query->where('agenda.id_paciente', $r->paciente);
                 })
                 ->where('t.presenta_crm', 1)
-                //->groupBy('pd.codigo')
+                // ->groupBy('pd.codigo')
                 ->get();
-                //echo '<pre>';print_r(DB::getQueryLog());exit;
+            // echo '<pre>';print_r(DB::getQueryLog());exit;
         }
     }
 
-    public static function  planillaDetalleF($id)
+    public static function planillaDetalleF($id)
     {
         $agenda = Agenda::selectRaw('(select  
                 GROUP_CONCAT(h.nombre SEPARATOR " + ") 
@@ -205,9 +214,9 @@ class agenda extends Model
             pd.cantidad,
             p.nombre as producto')
             ->join('historiaclinica as h', 'agenda.id', 'h.id_agenda')
-            ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') //join hc_procedimientos p on h.hcid=p.id_hc
-            ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') //join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
-            ->join('planilla_detalle as pd', 'pl.id', 'pd.id_planilla_cabecera') //join planilla_detalle pd on pl.id=pd.id_planilla_cabecera
+            ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') // join hc_procedimientos p on h.hcid=p.id_hc
+            ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') // join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
+            ->join('planilla_detalle as pd', 'pl.id', 'pd.id_planilla_cabecera') // join planilla_detalle pd on pl.id=pd.id_planilla_cabecera
             ->join('producto as p', 'pd.codigo', 'p.codigo')
             ->join('tipo as t', 'p.tipo_producto', 't.id')
             ->where('agenda.id_empresa', '1307189140001')
@@ -218,11 +227,11 @@ class agenda extends Model
             ->where('agenda.estado_cita', 4)
             ->where('agenda.id', $id)
             ->get();
-        return ["detalle" => $agenda];
+
+        return ['detalle' => $agenda];
     }
 
-
-    public static function  detalleplanilla($id)
+    public static function detalleplanilla($id)
     {
         $html = '';
         $agenda = Agenda::selectRaw('(select  
@@ -237,9 +246,9 @@ class agenda extends Model
                 pd.cantidad,
                 p.nombre as producto')
             ->join('historiaclinica as h', 'agenda.id', 'h.id_agenda')
-            ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') //join hc_procedimientos p on h.hcid=p.id_hc
-            ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') //join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
-            ->join('planilla_detalle as pd', 'pl.id', 'pd.id_planilla_cabecera') //join planilla_detalle pd on pl.id=pd.id_planilla_cabecera
+            ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') // join hc_procedimientos p on h.hcid=p.id_hc
+            ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') // join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
+            ->join('planilla_detalle as pd', 'pl.id', 'pd.id_planilla_cabecera') // join planilla_detalle pd on pl.id=pd.id_planilla_cabecera
             ->join('producto as p', 'pd.codigo', 'p.codigo')
             ->join('tipo as t', 'p.tipo_producto', 't.id')
             ->where('agenda.id_empresa', '1307189140001')
@@ -271,17 +280,17 @@ class agenda extends Model
                 $total += $row->cantidad * $row->precio;
                 $cont++;
                 $html .= '<tr>';
-                $html .= '<td>' . $cont . '</td>';
-                $html .= '<td>' . $row->procedimiento . '</td>';
-                $html .= '<td>' . $row->codigo . '</td>';
-                $html .= '<td>' . $row->producto . '</td>';
-                $html .= '<td>' . $row->serie . '</td>';
-                $html .= '<td style="text-align:right;">' . $row->cantidad . '</td>';
-                $html .= '<td style="text-align:right;">' . $row->precio . '</td>';
-                $html .= '<td style="text-align:right;">' . $row->cantidad * $row->precio . '</td>';
+                $html .= '<td>'.$cont.'</td>';
+                $html .= '<td>'.$row->procedimiento.'</td>';
+                $html .= '<td>'.$row->codigo.'</td>';
+                $html .= '<td>'.$row->producto.'</td>';
+                $html .= '<td>'.$row->serie.'</td>';
+                $html .= '<td style="text-align:right;">'.$row->cantidad.'</td>';
+                $html .= '<td style="text-align:right;">'.$row->precio.'</td>';
+                $html .= '<td style="text-align:right;">'.$row->cantidad * $row->precio.'</td>';
                 $html .= '</tr>';
             }
-            $html .= '<tr><td colspan="8" style="text-align:right;">' . number_format($total, 2) . '</td></tr>';
+            $html .= '<tr><td colspan="8" style="text-align:right;">'.number_format($total, 2).'</td></tr>';
         } else {
             $html .= '<tr><td colspan="8">No hay datos que mostrar</td></tr>';
         }
@@ -292,17 +301,17 @@ class agenda extends Model
             $empresas = Empresa::where('admision', 1)->get();
             $combo = '';
             foreach ($empresas as $row) {
-                $combo .= '<option value="' . $row->id . '">' . $row->razonsocial . '</optioN>';
+                $combo .= '<option value="'.$row->id.'">'.$row->razonsocial.'</optioN>';
             }
             foreach ($agenda as $row) {
                 if ($existe != $row->procedimiento) {
                     $existe = $row->procedimiento;
                     $html .= '<tr>
-                    <td colspan="3">' . $row->procedimiento . ': </td>
+                    <td colspan="3">'.$row->procedimiento.': </td>
                     <td colspan="2">
                         <select class="form-control">
                             <option value="">--Seleccionar--</option>
-                            ' . $combo . '
+                            '.$combo.'
                         </select>
                     </td>       
                 </tr>';
@@ -312,6 +321,7 @@ class agenda extends Model
         $html .= '</tfoot></table>';
         echo $html;
     }
+
     public static function detalleplanillaVenta($id)
     {
         DB::enableQueryLog();
@@ -327,9 +337,9 @@ class agenda extends Model
                 pd.cantidad,
                 p.nombre as producto ,p.iva as iva')
             ->join('historiaclinica as h', 'agenda.id', 'h.id_agenda')
-            ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') //join hc_procedimientos p on h.hcid=p.id_hc
-            ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') //join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
-            ->join('planilla_detalle as pd', 'pl.id', 'pd.id_planilla_cabecera') //join planilla_detalle pd on pl.id=pd.id_planilla_cabecera
+            ->join('hc_procedimientos as pro', 'h.hcid', 'pro.id_hc') // join hc_procedimientos p on h.hcid=p.id_hc
+            ->join('planilla_cabecera as pl', 'pro.id', 'pl.id_hc_procedimiento') // join planilla_cabecera pl on h.hcid=pl.id_hc_procedimiento
+            ->join('planilla_detalle as pd', 'pl.id', 'pd.id_planilla_cabecera') // join planilla_detalle pd on pl.id=pd.id_planilla_cabecera
             ->join('producto as p', 'pd.codigo', 'p.codigo')
             ->join('tipo as t', 'p.tipo_producto', 't.id')
             ->where('agenda.id_empresa', '1307189140001')
@@ -350,7 +360,6 @@ class agenda extends Model
         return $this->belongsTo('Sis_medico\Especialidad', 'espid');
     }
 
-
     public static function getCantidadAgendas($id_paciente, $anio, $id_especialidad, $id_seguro, $id_empresa)
     {
         return Agenda::where('id_paciente', $id_paciente)
@@ -367,7 +376,7 @@ class agenda extends Model
     public function getEdadAgendaAttribute()
     {
         // Verificar si fechaini o fecha_nacimiento están vacíos
-        if (!$this->fechaini || !$this->paciente || !$this->paciente->fecha_nacimiento) {
+        if (! $this->fechaini || ! $this->paciente || ! $this->paciente->fecha_nacimiento) {
             return 'Desconocida'; // Manejar casos donde falten datos
         }
 
@@ -377,5 +386,4 @@ class agenda extends Model
 
         return $age->y; // Retornar solo los años
     }
-
 }

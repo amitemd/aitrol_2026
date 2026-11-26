@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Sis_medico\Agenda;
 use Sis_medico\AgendaProcedimiento;
+use Sis_medico\ClinicalEncounterEvent;
+use Sis_medico\hc_child_pugh;
 use Sis_medico\Hc_Evolucion;
 use Sis_medico\Hc_Log;
 use Sis_medico\Hc_Procedimiento_Final;
-use Sis_medico\ClinicalEncounterEvent;
+use Sis_medico\hc_procedimientos;
+use Sis_medico\hc_protocolo;
+use Sis_medico\hc_receta;
 use Sis_medico\Historiaclinica;
 use Sis_medico\Ho_Hospitalizacion;
 use Sis_medico\Ho_Log_Solicitud;
@@ -19,97 +23,93 @@ use Sis_medico\Ho_Traspaso_Sala008;
 use Sis_medico\Log_Agenda;
 use Sis_medico\Paciente;
 use Sis_medico\Pentax;
-use Sis_medico\PentaxProc;
 use Sis_medico\Pentax_log;
+use Sis_medico\PentaxProc;
+use Sis_medico\Procedimiento;
 use Sis_medico\Sala;
 use Sis_medico\User;
-use Sis_medico\hc_child_pugh;
-use Sis_medico\hc_procedimientos;
-use Sis_medico\hc_protocolo;
-use Sis_medico\hc_receta;
 
 class ClinicalWardProcedureService
 {
     public function agenda(Request $request)
     {
-        $ip_cliente   = $_SERVER["REMOTE_ADDR"];
-        $idusuario    = Auth::user()->id;
-        $id_doctor    = Auth::user()->id;
-        if (!is_null($request['id_doctor'])) {
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
+        $id_doctor = Auth::user()->id;
+        if (! is_null($request['id_doctor'])) {
         }
         $id_paciente = $request['id_paciente'];
-        $paciente = paciente::find($id_paciente);
+        $paciente = Paciente::find($id_paciente);
         $user = User::find($id_paciente);
         $especialidad = DB::table('user_espe as u_es')->where('u_es.usuid', $id_doctor)->get()->first();
 
-        if (!is_null($especialidad)) {
+        if (! is_null($especialidad)) {
             $espid = $especialidad->espid;
         } else {
             $espid = '4';
         }
 
         $input_agenda = [
-            'fechaini'        => $request['fecha'],
-            'fechafin'        => $request['fechafin'],
-            'id_paciente'     => $id_paciente,
-            'id_doctor1'      => $id_doctor,
-            'proc_consul'     => '1',
-            'estado_cita'     => '1',
-            'id_empresa'      => '1391707460001',
-            'espid'           => $espid,
-            'observaciones'   => 'EVOLUCION CREADA POR HOSPITAL',
-            'id_seguro'       => $paciente->id_seguro,
-            'estado'          => '1',
-            'ip_creacion'     => $ip_cliente,
+            'fechaini' => $request['fecha'],
+            'fechafin' => $request['fechafin'],
+            'id_paciente' => $id_paciente,
+            'id_doctor1' => $id_doctor,
+            'proc_consul' => '1',
+            'estado_cita' => '1',
+            'id_empresa' => '1391707460001',
+            'espid' => $espid,
+            'observaciones' => 'EVOLUCION CREADA POR HOSPITAL',
+            'id_seguro' => $paciente->id_seguro,
+            'estado' => '1',
+            'ip_creacion' => $ip_cliente,
             'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $id_doctor,
-            'id_usuariomod'   => $id_doctor,
+            'id_usuariocrea' => $id_doctor,
+            'id_usuariomod' => $id_doctor,
         ];
 
-        $id_agenda = agenda::insertGetId($input_agenda);
-
+        $id_agenda = Agenda::insertGetId($input_agenda);
 
         $consulta_crear_new = [
-            'anterior'        => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'nuevo'           => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: ' . $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
+            'anterior' => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: '.$id_agenda,
+            'nuevo' => 'CONSULTA: -> El Dr. creo nueva consulta -> id_agenda: '.$id_agenda,
+            'id_paciente' => $id_paciente,
+            'id_usuariomod' => $id_doctor,
+            'id_usuariocrea' => $id_doctor,
             'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
+            'ip_creacion' => $ip_cliente,
         ];
         Hc_Log::create($consulta_crear_new);
 
         $input_log = [
-            'id_agenda'       => $id_agenda,
+            'id_agenda' => $id_agenda,
             'estado_cita_ant' => '1',
-            'estado_cita'     => '1',
-            'fechaini'        => Date('Y-m-d H:i:s'),
-            'fechafin'        => Date('Y-m-d H:i:s'),
-            'estado'          => '4',
-            'observaciones'   => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_doctor1'      => $id_doctor,
-            'descripcion'     => 'EVOLUCION CREADA POR EL DOCTOR',
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
+            'estado_cita' => '1',
+            'fechaini' => date('Y-m-d H:i:s'),
+            'fechafin' => date('Y-m-d H:i:s'),
+            'estado' => '4',
+            'observaciones' => 'EVOLUCION CREADA POR EL DOCTOR',
+            'id_doctor1' => $id_doctor,
+            'descripcion' => 'EVOLUCION CREADA POR EL DOCTOR',
+            'id_usuariomod' => $id_doctor,
+            'id_usuariocrea' => $id_doctor,
             'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
+            'ip_creacion' => $ip_cliente,
         ];
 
         Log_Agenda::create($input_log);
 
         $input_historia = [
 
-            'parentesco'      => $paciente->parentesco,
-            'id_usuario'      => $paciente->id_usuario,
-            'id_agenda'       => $id_agenda,
-            'id_paciente'     => $id_paciente,
-            'id_seguro'       => $paciente->id_seguro,
-            'id_doctor1'      => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
+            'parentesco' => $paciente->parentesco,
+            'id_usuario' => $paciente->id_usuario,
+            'id_agenda' => $id_agenda,
+            'id_paciente' => $id_paciente,
+            'id_seguro' => $paciente->id_seguro,
+            'id_doctor1' => $id_doctor,
+            'id_usuariocrea' => $id_doctor,
             'ip_modificacion' => $ip_cliente,
-            'id_usuariomod'   => $id_doctor,
-            'ip_creacion'     => $ip_cliente,
+            'id_usuariomod' => $id_doctor,
+            'ip_creacion' => $ip_cliente,
 
         ];
 
@@ -118,13 +118,13 @@ class ClinicalWardProcedureService
         $id_historia = Historiaclinica::insertGetId($input_historia);
 
         $input_hc_procedimiento = [
-            'id_hc'                     => $id_historia,
-            'id_seguro'                 => $paciente->id_seguro,
+            'id_hc' => $id_historia,
+            'id_seguro' => $paciente->id_seguro,
             'id_procedimiento_completo' => $id_procedimiento_completo,
-            'ip_modificacion'           => $ip_cliente,
-            'id_usuariocrea'            => $idusuario,
-            'id_usuariomod'             => $idusuario,
-            'ip_creacion'               => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'ip_creacion' => $ip_cliente,
 
         ];
 
@@ -132,24 +132,24 @@ class ClinicalWardProcedureService
 
         $input_hc_evolucion = [
             'hc_id_procedimiento' => $id_hc_procedimiento,
-            'hcid'                => $id_historia,
-            'secuencia'           => '0',
-            'fecha_ingreso'       => ' ',
-            'ip_modificacion'     => $ip_cliente,
-            'id_usuariomod'       => $idusuario,
-            'id_usuariocrea'      => $idusuario,
-            'ip_creacion'         => $ip_cliente,
+            'hcid' => $id_historia,
+            'secuencia' => '0',
+            'fecha_ingreso' => ' ',
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariomod' => $idusuario,
+            'id_usuariocrea' => $idusuario,
+            'ip_creacion' => $ip_cliente,
 
         ];
-        $id_evolucion    = Hc_Evolucion::insertGetId($input_hc_evolucion);
+        $id_evolucion = Hc_Evolucion::insertGetId($input_hc_evolucion);
 
         $input_child_pugh = [
-            'id_hc_evolucion'       => $id_evolucion,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-            'id_usuariomod'         => $idusuario,
-            'ip_creacion'           => $ip_cliente,
-            'examen_fisico'         => 'ESTADO CABEZA Y CUELLO:
+            'id_hc_evolucion' => $id_evolucion,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'ip_creacion' => $ip_cliente,
+            'examen_fisico' => 'ESTADO CABEZA Y CUELLO:
                                                             ESTADO TORAX:
                                                             ESTADO ABDOMEN:
                                                             ESTADO MIEMBROS SUPERIORES:
@@ -160,11 +160,11 @@ class ClinicalWardProcedureService
         $id_child = hc_child_pugh::create($input_child_pugh);
 
         $input_hc_receta = [
-            'id_hc'           => $id_historia,
+            'id_hc' => $id_historia,
             'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
-            'ip_creacion'     => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
+            'ip_creacion' => $ip_cliente,
 
         ];
         hc_receta::insert($input_hc_receta);
@@ -177,6 +177,7 @@ class ClinicalWardProcedureService
             'procedimiento.*' => 'required|integer|min:1|distinct', 'doctor' => 'required|string|max:20',
             'sala' => 'required|integer|min:1', 'fecha' => 'required|date', 'fechafin' => 'required|date|after:fecha',
         ]);
+
         return DB::transaction(function () use ($data) {
             $solicitud = Ho_Solicitud::where('id', $data['id_solicitud'])->lockForUpdate()->firstOrFail();
             $encounter = app(ClinicalHospitalTransferService::class)->authorize($solicitud, 'hospital.documents.write', ['SISTEMAS', 'DOCTORES', 'DOCTOR']);
@@ -188,16 +189,16 @@ class ClinicalWardProcedureService
                 throw new \InvalidArgumentException('Seleccione el quirofano en el que fue recibido el episodio.');
             }
             app(ClinicalHospitalDestinationService::class)->assertSala($data['sala'], 5);
-            $doctorRoleId = User::roleIdForName(array('DOCTORES', 'DOCTOR'));
+            $doctorRoleId = User::roleIdForName(['DOCTORES', 'DOCTOR']);
             $doctorQuery = User::withoutGlobalScopes()->where('id', $data['doctor'])->where('estado', 1);
             if ($doctorRoleId !== null) {
                 $doctorQuery->where('id_tipo_usuario', $doctorRoleId);
             }
             $doctor = $doctorQuery->first();
-            if (!$doctor) {
+            if (! $doctor) {
                 throw new \InvalidArgumentException('El médico seleccionado no está activo o no pertenece al tipo DOCTOR.');
             }
-            $catalog = \Sis_medico\Procedimiento::whereIn('id', $data['procedimiento'])->where('estado', 1)->get();
+            $catalog = Procedimiento::whereIn('id', $data['procedimiento'])->where('estado', 1)->get();
             if ($catalog->count() !== count($data['procedimiento'])) {
                 throw new \InvalidArgumentException('Seleccione procedimientos vigentes del catalogo.');
             }
@@ -212,10 +213,10 @@ class ClinicalWardProcedureService
             $rootIsValid = $root && (string) $root->encounter_id === (string) $encounter->id
                 && (string) $root->id_empresa === (string) $encounter->id_empresa
                 && (string) $root->id_paciente === (string) $solicitud->id_paciente;
-            $patient = \Sis_medico\Paciente::find($solicitud->id_paciente);
+            $patient = Paciente::find($solicitud->id_paciente);
             $insuranceId = $rootIsValid && $root->id_seguro ? $root->id_seguro
                 : ($solicitud->id_seguro ?: ($patient ? $patient->id_seguro : null));
-            if (!$insuranceId) {
+            if (! $insuranceId) {
                 throw new \InvalidArgumentException('El paciente no tiene un seguro configurado para crear la planificación quirúrgica.');
             }
 
@@ -240,6 +241,8 @@ class ClinicalWardProcedureService
                         'id_doctor1' => $doctor->id,
                         'fechaini' => date('Y-m-d H:i:s', strtotime($data['fecha'])),
                         'fechafin' => date('Y-m-d H:i:s', strtotime($data['fechafin'])),
+                        'proc_consul' => 5,
+                        'ho_tipo' => 5,
                         'id_procedimiento' => $data['procedimiento'][0],
                         'id_sala' => $data['sala'],
                     ]));
@@ -256,34 +259,75 @@ class ClinicalWardProcedureService
                             AgendaProcedimiento::create(array_merge($createdAudit, ['id_agenda' => $agenda->id, 'id_procedimiento' => $catalogId]));
                         }
                     }
+
                     return $agenda->id;
                 }
             }
             $specialtyId = $rootIsValid && $root->espid ? $root->espid : 4;
             $audit = ['id_usuariocrea' => Auth::id(), 'id_usuariomod' => Auth::id(),
                 'ip_creacion' => request()->ip(), 'ip_modificacion' => request()->ip()];
-            $agenda = Agenda::create(array_merge($audit, [
+            $plannedAgenda = $rootIsValid && (int) $root->proc_consul === 5
+                ? $root
+                : Agenda::where('encounter_id', $encounter->id)->where('proc_consul', 5)
+                    ->where('estado', 1)->orderByDesc('id')->first();
+            $agendaValues = [
                 'encounter_id' => $encounter->id, 'id_paciente' => $solicitud->id_paciente,
                 'id_empresa' => $encounter->id_empresa, 'id_doctor1' => $doctor->id,
                 'espid' => $specialtyId, 'id_seguro' => $insuranceId,
                 'fechaini' => date('Y-m-d H:i:s', strtotime($data['fecha'])),
                 'fechafin' => date('Y-m-d H:i:s', strtotime($data['fechafin'])),
-                'proc_consul' => 1, 'estado_cita' => 0, 'estado' => 1, 'ho_tipo' => 5,
+                'proc_consul' => 5, 'estado_cita' => 0, 'estado' => 1, 'ho_tipo' => 5,
                 'id_procedimiento' => $data['procedimiento'][0], 'id_sala' => $data['sala'],
                 'observaciones' => 'PROCEDIMIENTO HOSPITALARIO PLANIFICADO',
-            ]));
+            ];
+            if ($plannedAgenda) {
+                $plannedAgenda->update(array_merge($agendaValues, [
+                    'id_usuariomod' => Auth::id(), 'ip_modificacion' => request()->ip(),
+                ]));
+                $agenda = $plannedAgenda->fresh();
+            } else {
+                $agenda = Agenda::create(array_merge($audit, $agendaValues));
+            }
             app(ClinicalEncounterService::class)->link($encounter, ['agenda' => $agenda->id]);
-            $history = Historiaclinica::create(array_merge($audit, [
-                'encounter_id' => $encounter->id, 'id_agenda' => $agenda->id,
-                'id_paciente' => $solicitud->id_paciente, 'id_seguro' => $insuranceId, 'id_doctor1' => $doctor->id,
-            ]));
-            $procedure = hc_procedimientos::create(array_merge($audit, [
-                'id_hc' => $history->hcid, 'id_seguro' => $insuranceId,
-                'id_doctor_examinador' => $doctor->id, 'id_doctor_examinador2' => $doctor->id,
-            ]));
-            $pentax = Pentax::create(array_merge($audit, ['id_agenda' => $agenda->id, 'hcid' => $history->hcid,
-                'id_sala' => $data['sala'], 'id_doctor1' => $doctor->id, 'id_seguro' => $insuranceId,
-                'observacion' => 'CASO HOSPITALARIO PLANIFICADO']));
+            $history = Historiaclinica::where('id_agenda', $agenda->id)
+                ->where('id_paciente', $solicitud->id_paciente)->first();
+            if (! $history) {
+                $history = Historiaclinica::create(array_merge($audit, [
+                    'encounter_id' => $encounter->id, 'id_agenda' => $agenda->id,
+                    'id_paciente' => $solicitud->id_paciente, 'id_seguro' => $insuranceId,
+                    'id_doctor1' => $doctor->id,
+                ]));
+            }
+            $prepared = hc_procedimientos::where('id_hc', $history->hcid)
+                ->whereNull('id_procedimiento_completo')
+                ->whereNotExists(function ($final) {
+                    $final->select(DB::raw(1))->from('hc_procedimiento_final')
+                        ->whereColumn('hc_procedimiento_final.id_hc_procedimientos', 'hc_procedimientos.id');
+                })->whereExists(function ($anesthesia) {
+                    $anesthesia->select(DB::raw(1))->from('hc_anestesiologia')
+                        ->whereColumn('hc_anestesiologia.id_hc_procedimientos', 'hc_procedimientos.id')
+                        ->join('rc_pre_anestesica', 'rc_pre_anestesica.id_hc_anestesiologia', '=', 'hc_anestesiologia.id')
+                        ->where('rc_pre_anestesica.estado', 1);
+                })->lockForUpdate()->get();
+            $procedure = $prepared->count() === 1 ? $prepared->first() : new hc_procedimientos;
+            $procedure->fill(array_merge($procedure->exists
+                ? array_intersect_key($audit, array_flip(['id_usuariomod', 'ip_modificacion'])) : $audit, [
+                    'id_hc' => $history->hcid, 'id_seguro' => $insuranceId,
+                    'id_doctor_examinador' => $doctor->id, 'id_doctor_examinador2' => $doctor->id,
+                ]))->save();
+            $pentax = Pentax::where('id_agenda', $agenda->id)->first();
+            if ($pentax) {
+                $pentax->update(['hcid' => $history->hcid, 'id_sala' => $data['sala'],
+                    'id_doctor1' => $doctor->id, 'id_seguro' => $insuranceId,
+                    'observacion' => 'CASO HOSPITALARIO PLANIFICADO',
+                    'id_usuariomod' => Auth::id(), 'ip_modificacion' => request()->ip()]);
+            } else {
+                $pentax = Pentax::create(array_merge($audit, ['id_agenda' => $agenda->id,
+                    'hcid' => $history->hcid, 'id_sala' => $data['sala'], 'id_doctor1' => $doctor->id,
+                    'id_seguro' => $insuranceId, 'observacion' => 'CASO HOSPITALARIO PLANIFICADO']));
+            }
+            AgendaProcedimiento::where('id_agenda', $agenda->id)->delete();
+            PentaxProc::where('id_pentax', $pentax->id)->delete();
             foreach ($data['procedimiento'] as $catalogId) {
                 Hc_Procedimiento_Final::create(array_merge($audit, ['id_hc_procedimientos' => $procedure->id, 'id_procedimiento' => $catalogId]));
                 PentaxProc::create(array_merge($audit, ['id_pentax' => $pentax->id, 'id_procedimiento' => $catalogId]));
@@ -292,6 +336,7 @@ class ClinicalWardProcedureService
                 }
             }
             $documents->bindProcedure($solicitud, $procedure->id);
+
             // A plan has no protocol or consumed authorization. The original agenda and bed are untouched.
             return $agenda->id;
         }, 3);
@@ -300,121 +345,121 @@ class ClinicalWardProcedureService
     public function crear_imagen(Request $request)
     {
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $id_doctor  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $id_doctor = Auth::user()->id;
 
         $procedimientos = $request['procedimiento'];
 
         $procedimientop = $procedimientos[0];
-        $paciente       = Paciente::find($request->id_paciente);
-        $sala           = \Sis_medico\Sala::find($request['sala']);
+        $paciente = Paciente::find($request->id_paciente);
+        $sala = Sala::find($request['sala']);
 
         $hospitalizacion = Ho_Hospitalizacion::find($request['id_hospitalizacion']);
         $traspaso = Ho_Traspaso_Sala008::find($hospitalizacion->id_traspaso);
         $solicitud = Ho_Solicitud::find($traspaso->id_solicitud);
 
         $procedimiento_crear_new = [
-            'anterior'        => 'IMAGEN HOSPITAL',
-            'nuevo'           => 'IMAGEN HOSPITAL',
-            'id_paciente'     => $paciente->id,
-            'id_usuariomod'   => $id_doctor,
-            'id_usuariocrea'  => $id_doctor,
+            'anterior' => 'IMAGEN HOSPITAL',
+            'nuevo' => 'IMAGEN HOSPITAL',
+            'id_paciente' => $paciente->id,
+            'id_usuariomod' => $id_doctor,
+            'id_usuariocrea' => $id_doctor,
             'ip_modificacion' => $ip_cliente,
-            'ip_creacion'     => $ip_cliente,
+            'ip_creacion' => $ip_cliente,
         ];
         Hc_Log::create($procedimiento_crear_new);
 
         if ($procedimientos != null) {
 
             $input_agenda = [
-                'fechaini'         => $request['fecha'],
-                'fechafin'         => $request['fechafin'],
-                'id_paciente'      => $paciente->id,
-                'id_doctor1'       => $request->doctor,
-                'proc_consul'      => '1',
-                'estado_cita'      => '0',
-                'id_empresa'       => $solicitud->encounter->id_empresa,
-                'espid'            => '7',
-                'observaciones'    => 'IMAGEN CREADO POR EL DOCTOR',
-                'id_seguro'        => $paciente->id_seguro,
-                'estado'           => '1',
-                'ip_creacion'      => $ip_cliente,
-                'ip_modificacion'  => $ip_cliente,
-                'id_usuariocrea'   => $id_doctor,
-                'id_usuariomod'    => $id_doctor,
+                'fechaini' => $request['fecha'],
+                'fechafin' => $request['fechafin'],
+                'id_paciente' => $paciente->id,
+                'id_doctor1' => $request->doctor,
+                'proc_consul' => '1',
+                'estado_cita' => '0',
+                'id_empresa' => $solicitud->encounter->id_empresa,
+                'espid' => '7',
+                'observaciones' => 'IMAGEN CREADO POR EL DOCTOR',
+                'id_seguro' => $paciente->id_seguro,
+                'estado' => '1',
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $id_doctor,
+                'id_usuariomod' => $id_doctor,
                 'id_procedimiento' => $procedimientop,
-                'id_sala'          => $sala->id,
-                'ho_tipo'          => $request->ho_tipo,
+                'id_sala' => $sala->id,
+                'ho_tipo' => $request->ho_tipo,
             ];
 
-            $id_agenda = agenda::insertGetId($input_agenda);
-            //return $id_agenda;
+            $id_agenda = Agenda::insertGetId($input_agenda);
+            // return $id_agenda;
 
             $txt_pro = '';
             foreach ($procedimientos as $value) {
 
                 if ($procedimientop != $value) {
-                    $txt_pro = $txt_pro . '+' . $value;
+                    $txt_pro = $txt_pro.'+'.$value;
                     AgendaProcedimiento::create([
-                        'id_agenda'        => $id_agenda,
+                        'id_agenda' => $id_agenda,
                         'id_procedimiento' => $value,
-                        'ip_creacion'      => $ip_cliente,
-                        'ip_modificacion'  => $ip_cliente,
-                        'id_usuariocrea'   => $id_doctor,
-                        'id_usuariomod'    => $id_doctor,
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariocrea' => $id_doctor,
+                        'id_usuariomod' => $id_doctor,
                     ]);
                 }
             }
 
             $input_log = [
-                'id_agenda'       => $id_agenda,
+                'id_agenda' => $id_agenda,
                 'estado_cita_ant' => '0',
-                'estado_cita'     => '0',
-                'fechaini'        => Date('Y-m-d H:i:s'),
-                'fechafin'        => Date('Y-m-d H:i:s'),
-                'estado'          => '4',
-                'observaciones'   => 'IMAGEN HOSPITAL',
-                'id_doctor1'      => $request->doctor,
-                'descripcion'     => 'IMAGEN HOSPITAL',
-                'campos_ant'      => 'PRO: ' . $procedimientop . $txt_pro,
+                'estado_cita' => '0',
+                'fechaini' => date('Y-m-d H:i:s'),
+                'fechafin' => date('Y-m-d H:i:s'),
+                'estado' => '4',
+                'observaciones' => 'IMAGEN HOSPITAL',
+                'id_doctor1' => $request->doctor,
+                'descripcion' => 'IMAGEN HOSPITAL',
+                'campos_ant' => 'PRO: '.$procedimientop.$txt_pro,
 
-                'id_usuariomod'   => $id_doctor,
-                'id_usuariocrea'  => $id_doctor,
+                'id_usuariomod' => $id_doctor,
+                'id_usuariocrea' => $id_doctor,
                 'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
+                'ip_creacion' => $ip_cliente,
             ];
             $idusuario = $id_doctor;
             Log_Agenda::create($input_log);
             $input_historia = [
 
-                'parentesco'      => $paciente->parentesco,
-                'id_usuario'      => $paciente->id_usuario,
-                'id_agenda'       => $id_agenda,
-                'id_paciente'     => $paciente->id,
-                'encounter_id'    => $solicitud->encounter_id,
-                'id_seguro'       => $paciente->id_seguro,
+                'parentesco' => $paciente->parentesco,
+                'id_usuario' => $paciente->id_usuario,
+                'id_agenda' => $id_agenda,
+                'id_paciente' => $paciente->id,
+                'encounter_id' => $solicitud->encounter_id,
+                'id_seguro' => $paciente->id_seguro,
 
-                'id_doctor1'      => $request->doctor,
-                'id_usuariocrea'  => $id_doctor,
+                'id_doctor1' => $request->doctor,
+                'id_usuariocrea' => $id_doctor,
                 'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $id_doctor,
-                'ip_creacion'     => $ip_cliente,
+                'id_usuariomod' => $id_doctor,
+                'ip_creacion' => $ip_cliente,
 
             ];
 
             $id_historia = Historiaclinica::insertGetId($input_historia);
 
             $input_pentax = [
-                'id_agenda'       => $id_agenda,
-                'hcid'            => $id_historia,
-                'id_sala'         => $sala->id,
-                'id_doctor1'      => $request->doctor,
-                'id_seguro'       => $paciente->id_seguro,
-                'observacion'     => "HOSPITAL IMAGEN",
-                'id_usuariocrea'  => $idusuario,
+                'id_agenda' => $id_agenda,
+                'hcid' => $id_historia,
+                'id_sala' => $sala->id,
+                'id_doctor1' => $request->doctor,
+                'id_seguro' => $paciente->id_seguro,
+                'observacion' => 'HOSPITAL IMAGEN',
+                'id_usuariocrea' => $idusuario,
                 'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'ip_creacion'     => $ip_cliente,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
             ];
 
             $id_pentax = Pentax::insertGetId($input_pentax);
@@ -422,46 +467,46 @@ class ClinicalWardProcedureService
             $list_proc = '';
             foreach ($procedimientos as $value) {
                 $input_pentax_pro2 = [
-                    'id_pentax'        => $id_pentax,
+                    'id_pentax' => $id_pentax,
                     'id_procedimiento' => $value,
-                    'id_usuariocrea'   => $idusuario,
-                    'ip_modificacion'  => $ip_cliente,
-                    'id_usuariomod'    => $idusuario,
-                    'ip_creacion'      => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                 ];
 
                 PentaxProc::create($input_pentax_pro2);
-                $list_proc = $list_proc . "+" . $value;
+                $list_proc = $list_proc.'+'.$value;
             }
 
             $input_log_px = [
-                'id_pentax'       => $id_pentax,
-                'tipo_cambio'     => "HOSPITAL IMAGEN",
-                'descripcion'     => "EN ESPERA",
-                'estado_pentax'   => '0',
-                'procedimientos'  => $list_proc,
-                'id_doctor1'      => $request->doctor,
-                'observacion'     => "HOSPITAL IMAGEN",
-                'id_sala'         => $sala->id,
-                'id_seguro'       => $paciente->id_seguro,
+                'id_pentax' => $id_pentax,
+                'tipo_cambio' => 'HOSPITAL IMAGEN',
+                'descripcion' => 'EN ESPERA',
+                'estado_pentax' => '0',
+                'procedimientos' => $list_proc,
+                'id_doctor1' => $request->doctor,
+                'observacion' => 'HOSPITAL IMAGEN',
+                'id_sala' => $sala->id,
+                'id_seguro' => $paciente->id_seguro,
 
                 'ip_modificacion' => $ip_cliente,
-                'ip_creacion'     => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
-                'id_usuariocrea'  => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'id_usuariomod' => $idusuario,
+                'id_usuariocrea' => $idusuario,
             ];
 
             Pentax_log::create($input_log_px);
 
             $input_hc_procedimiento = [
-                'id_hc'                 => $id_historia,
-                'id_seguro'             => $paciente->id_seguro,
-                'id_doctor_examinador'  => $idusuario,
+                'id_hc' => $id_historia,
+                'id_seguro' => $paciente->id_seguro,
+                'id_doctor_examinador' => $idusuario,
                 'id_doctor_examinador2' => $idusuario,
-                'ip_modificacion'       => $ip_cliente,
-                'id_usuariocrea'        => $idusuario,
-                'id_usuariomod'         => $idusuario,
-                'ip_creacion'           => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
 
             ];
 
@@ -472,19 +517,19 @@ class ClinicalWardProcedureService
                 ->authorizeForProcedure($id_hc_procedimiento, $request->all(), $safetyContext);
 
             $input_hc_protocolo = [
-                'fecha'                => date('Y-m-d'),
+                'fecha' => date('Y-m-d'),
                 'id_hc_procedimientos' => $id_hc_procedimiento,
-                'hora_inicio'          => date('H:i:s'),
-                'hora_fin'             => date('H:i:s'),
-                'estado_final'         => ' ',
-                'ip_modificacion'      => $ip_cliente,
-                'hcid'                 => $id_historia,
-                'id_usuariocrea'       => $idusuario,
-                'id_usuariomod'        => $idusuario,
-                'ip_creacion'          => $ip_cliente,
-                'created_at'           => date('Y-m-d H:i:s'),
-                'updated_at'           => date('Y-m-d H:i:s'),
-                'tipo_procedimiento'   => '2',
+                'hora_inicio' => date('H:i:s'),
+                'hora_fin' => date('H:i:s'),
+                'estado_final' => ' ',
+                'ip_modificacion' => $ip_cliente,
+                'hcid' => $id_historia,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+                'tipo_procedimiento' => '2',
             ];
             $protocolId = hc_protocolo::insertGetId($input_hc_protocolo);
             app(ClinicalProcedureSafetyService::class)
@@ -493,22 +538,21 @@ class ClinicalWardProcedureService
             foreach ($procedimientos as $value) {
                 $input_pro_final = [
                     'id_hc_procedimientos' => $id_hc_procedimiento,
-                    'id_procedimiento'     => $value,
-                    'id_usuariocrea'       => $idusuario,
-                    'ip_modificacion'      => $ip_cliente,
-                    'id_usuariomod'        => $idusuario,
-                    'ip_creacion'          => $ip_cliente,
+                    'id_procedimiento' => $value,
+                    'id_usuariocrea' => $idusuario,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariomod' => $idusuario,
+                    'ip_creacion' => $ip_cliente,
                 ];
 
                 Hc_Procedimiento_Final::create($input_pro_final);
             }
+
             // El cambio de módulo pertenece a la transacción de traslado del
             // controlador. Aquí solo se crea la atención y se devuelve su agenda.
             return $id_agenda;
         }
 
-        return "Ingrese LA Imagen";
+        return 'Ingrese LA Imagen';
     }
-
-
 }

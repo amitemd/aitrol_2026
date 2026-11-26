@@ -19,6 +19,8 @@
                             searching: function () { return 'Buscando...'; }
                         }
                     };
+                    var dropdownRoot = select.closest('[data-select2-dropdown-root]');
+                    if (dropdownRoot.length) options.dropdownParent = dropdownRoot;
                     if (select.prop('multiple')) {
                         options.closeOnSelect = false;
                         options.placeholder = placeholder;

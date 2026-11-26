@@ -16,6 +16,7 @@
   </section>
 
   @if(session('agenda_success'))<div class="alert alert-success ca-alert"><i class="fas fa-check-circle mr-1"></i> {{session('agenda_success')}}</div>@endif
+  @if(session('agenda_error'))<div class="alert alert-warning ca-alert"><i class="fas fa-exclamation-triangle mr-1"></i> {{session('agenda_error')}}</div>@endif
   @if($errors->any())<div class="alert alert-danger ca-alert"><i class="fas fa-exclamation-circle mr-1"></i> {{trans('v3/clinical_agenda.invalid_limits')}}</div>@endif
 
   <section class="co-card">

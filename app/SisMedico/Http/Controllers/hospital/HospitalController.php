@@ -34,7 +34,9 @@ use Sis_medico\HoEstadoPaso;
 use Sis_medico\Hospital;
 use Sis_medico\Hospital_Emergencia;
 use Sis_medico\Hospital_Producto;
+use Sis_medico\HospitalEpisodeFormDraft;
 use Sis_medico\Http\Controllers\Controller;
+use Sis_medico\Http\Controllers\v3\clinical\DoctorAgendaController;
 use Sis_medico\Insumo_Plantilla_Control;
 use Sis_medico\Medicina;
 use Sis_medico\Opcion_Usuario;
@@ -59,6 +61,7 @@ use Sis_medico\Services\ClinicalHospitalTransferService;
 use Sis_medico\Services\ClinicalTransferReconciliationService;
 use Sis_medico\Services\HospitalServiceMenuService;
 use Sis_medico\Subseguro;
+use Sis_medico\Support\RequestSchema;
 use Sis_medico\Support\RequestSchema as Schema;
 use Sis_medico\User;
 
@@ -716,30 +719,45 @@ class HospitalController extends Controller
         return $id;
     }
 
-    public function admision($id_paso)
+    public function admision(Request $request, $id_paso)
     {
-        abort_unless(in_array((int) $id_paso, [2, 3], true), 404);
+        abort_unless(in_array((int) $id_paso, [2, 3, 5], true), 404);
+
+        if ((int) $id_paso === 5) {
+            return app(DoctorAgendaController::class)
+                ->hospitalSurgeryBooking($request);
+        }
 
         $fecha = date('Y-m-d');
         $companyId = app(ClinicalHospitalDestinationService::class)->companyId();
         $seguros = Seguro::where('id_empresa', $companyId)->where('inactivo', '1')->orderBy('nombre')->get();
         $procedimiento = Procedimiento::where('estado', 1)->whereNotNull('id_grupo_procedimiento')->orderBy('nombre')->get();
         $doctorRoleId = User::roleIdForName(['DOCTORES', 'DOCTOR']);
-        $user = DB::table('users')->join('usuario_empresa as doctor_company',
-            'doctor_company.id_usuario', '=', 'users.id')
+        $user = DB::table('users')->join(
+            'usuario_empresa as doctor_company',
+            'doctor_company.id_usuario',
+            '=',
+            'users.id'
+        )
             ->where('doctor_company.id_empresa', $companyId)
             ->where('users.id_tipo_usuario', $doctorRoleId)->where('users.estado', 1)
             ->select('users.*')->distinct()->orderBy('users.apellido1')->get();
         $salas = app(ClinicalHospitalDestinationService::class)->salas([(int) $id_paso]);
         $areaIngreso = (int) $id_paso === 2
             ? 'Emergencia'
-            : ((int) $id_paso === 3 ? 'Hospitalizacion' : 'Atencion hospitalaria');
+            : ((int) $id_paso === 3 ? 'Hospitalizacion' : 'Cirugia');
+
+        // Cirugia se agenda con un horario real. El valor sugerido siempre
+        // queda en el futuro y puede ser modificado por Admision.
+        $suggestedSurgeryTimestamp = (int) (ceil((time() + 3600) / 1800) * 1800);
+        $surgeryDate = date('Y-m-d', $suggestedSurgeryTimestamp);
+        $surgeryTime = date('H:i', $suggestedSurgeryTimestamp);
 
         $subseguros = Subseguro::join('seguros as s', 's.id', 'subseguro.id_seguro')
             ->where('s.id_empresa', $companyId)->where('subseguro.estado', 1)
             ->select('subseguro.nombre', 's.nombre as seguro')->orderBy('subseguro.nombre')->get();
 
-        return view('hospital/admision', ['seguros' => $seguros, 'fecha' => $fecha, 'id_paso' => $id_paso, 'procedimiento' => $procedimiento, 'user' => $user, 'salas' => $salas, 'areaIngreso' => $areaIngreso, 'procedimiento2' => $procedimiento, 'subseguros' => $subseguros]);
+        return view('hospital/admision', ['seguros' => $seguros, 'fecha' => $fecha, 'id_paso' => $id_paso, 'procedimiento' => $procedimiento, 'user' => $user, 'salas' => $salas, 'areaIngreso' => $areaIngreso, 'procedimiento2' => $procedimiento, 'subseguros' => $subseguros, 'surgeryDate' => $surgeryDate, 'surgeryTime' => $surgeryTime]);
     }
 
     public function ingreso_modulos(Request $request)
@@ -749,6 +767,12 @@ class HospitalController extends Controller
 
     public function index_modulos(Request $request, $id_paso)
     {
+        if ((int) $id_paso === 5 && Schema::hasTable('agenda_cirugias')
+            && Schema::hasTable('clinical_encounters') && Schema::hasColumn('agenda', 'encounter_id')
+            && Schema::hasColumn('ho_solicitud', 'encounter_id')) {
+            return $this->surgeryBoard($request, 5);
+        }
+
         if ((int) $id_paso === 2) {
             return redirect()->route('hospital.emergencia');
         }
@@ -1466,5 +1490,219 @@ class HospitalController extends Controller
     public function guardar_f008_admision(Request $request)
     {
         return app(ClinicalEmergencyFormUpdateService::class)->update($request, false);
+    }
+
+    private function surgeryBoard(Request $request, int $id_paso)
+    {
+        if ((int) $id_paso === 2) {
+            return redirect()->route('hospital.emergencia');
+        }
+        abort_unless(in_array((int) $id_paso, [3, 4, 5, 6, 7], true), 404);
+        $this->validate($request, [
+            'fecha_desde' => 'nullable|date_format:Y-m-d',
+            'fecha_hasta' => 'nullable|date_format:Y-m-d'.($request->filled('fecha_desde') ? '|after_or_equal:fecha_desde' : ''),
+        ]);
+        $companyId = app(ClinicalHospitalDestinationService::class)->companyId();
+        $desde = trim((string) $request->input('fecha_desde', ''));
+        $hasta = trim((string) $request->input('fecha_hasta', ''));
+        $cedula = trim((string) $request->input('cedula', ''));
+        $paciente = trim((string) $request->input('paciente', ''));
+        $savedSurgery = null;
+        if ((int) $id_paso === 5 && $request->session()->has('surgery_agenda_saved_id')) {
+            $savedSurgery = Agenda::where('id_empresa', $companyId)->where('estado', 1)
+                ->whereKey($request->session()->get('surgery_agenda_saved_id'))->first(['id', 'encounter_id']);
+        }
+        $ho_estado_paso = app(ClinicalHospitalModuleService::class)->resolveHospitalModule($id_paso);
+        abort_unless($ho_estado_paso, 404);
+        $salas = app(ClinicalHospitalDestinationService::class)->salas([(int) $id_paso]);
+        $solicitudes = Ho_Solicitud::with(['paciente', 'agenda.paciente', 'agenda.doctor1', 'manchester.ho_prioridad'])
+            ->leftJoin('agenda as a', 'a.id', '=', 'ho_solicitud.id_agenda')
+            ->leftJoin('clinical_encounters as ce', 'ce.id', '=', 'ho_solicitud.encounter_id')
+            ->join('paciente as p', 'p.id', '=', 'ho_solicitud.id_paciente')
+            ->where(function ($tenant) use ($companyId) {
+                $tenant->where('ce.id_empresa', $companyId)->orWhere('a.id_empresa', $companyId);
+            })->where('ho_solicitud.estado', 1)
+            ->where(function ($query) use ($id_paso, $companyId) {
+                $query->where('ho_solicitud.estado_paso', $id_paso);
+                if ((int) $id_paso === 5) {
+                    // Una cirugía programada desde Agenda forma parte del tablero
+                    // quirúrgico aunque el paciente todavía permanezca en su área
+                    // hospitalaria de origen.
+                    $query->orWhereExists(function ($surgery) use ($companyId) {
+                        $surgery->select(DB::raw(1))->from('agenda as surgery_agenda')
+                            ->whereColumn('surgery_agenda.encounter_id', 'ho_solicitud.encounter_id')
+                            ->where('surgery_agenda.id_empresa', $companyId)
+                            ->where(function ($surgeryType) {
+                                $surgeryType->where('surgery_agenda.proc_consul', 5)
+                                    ->orWhere('surgery_agenda.ho_tipo', 5)
+                                    ->orWhereExists(function ($detail) {
+                                        $detail->select(DB::raw(1))->from('agenda_cirugias as surgery_detail')
+                                            ->whereColumn('surgery_detail.id_agenda', 'surgery_agenda.id');
+                                    });
+                            })
+                            ->where('surgery_agenda.estado', 1);
+                    });
+                }
+                if (in_array((int) $id_paso, [3, 6, 7], true)) {
+                    $query->orWhereExists(function ($stay) use ($id_paso) {
+                        $stay->select(DB::raw(1))->from('ho_hospitalizacion as h')
+                            ->join('ho_traspaso_sala008 as t', 't.id', '=', 'h.id_traspaso')
+                            ->whereColumn('t.id_solicitud', 'ho_solicitud.id')->where('h.estado', 1)->where('t.paso', $id_paso)
+                            ->where('ho_solicitud.estado_paso', '<>', 5);
+                    });
+                }
+            })->select('ho_solicitud.*', DB::raw('COALESCE(a.fechaini, ho_solicitud.fecha_ingreso) as fechaini'));
+        if ($desde !== '') {
+            $solicitudes->where('ho_solicitud.fecha_ingreso', '>=', $desde.' 00:00:00');
+        }
+        if ($hasta !== '') {
+            $solicitudes->where('ho_solicitud.fecha_ingreso', '<=', $hasta.' 23:59:59');
+        }
+        if ($cedula !== '') {
+            $solicitudes->where('ho_solicitud.id_paciente', $cedula);
+        }
+        if ($paciente !== '') {
+            $solicitudes->where(function ($query) use ($paciente) {
+                $like = '%'.$paciente.'%';
+                $query->whereRaw('CONCAT_WS(" ", p.nombre1, p.nombre2, p.apellido1, p.apellido2) LIKE ?', [$like])
+                    ->orWhereRaw('CONCAT_WS(" ", p.apellido1, p.apellido2, p.nombre1, p.nombre2) LIKE ?', [$like]);
+            });
+        }
+        if ($savedSurgery) {
+            $solicitudes->orderByRaw('CASE WHEN ho_solicitud.id_agenda = ? OR ho_solicitud.encounter_id = ? THEN 0 ELSE 1 END',
+                [$savedSurgery->id, $savedSurgery->encounter_id]);
+        }
+        $solicitudes = $solicitudes->orderBy('ho_solicitud.fecha_ingreso', 'asc')->paginate(50);
+        $formulariosDisponibles = app(ClinicalHospitalFormAvailabilityService::class)
+            ->forSolicitudes($solicitudes->getCollection()->pluck('id')->all());
+        $surgeryTransfers = collect();
+        $surgeryStates = [];
+        $surgeryAgendas = collect();
+        $scheduledSurgeries = collect();
+        $surgeryForm017Drafts = collect();
+        if ((int) $id_paso === 5) {
+            $solicitudIds = $solicitudes->getCollection()->pluck('id')->all();
+            $surgeryTransfers = Ho_Traspaso_Sala008::with('sala')->whereIn('id_solicitud', $solicitudIds)
+                ->where('paso', 5)->whereIn('estado', [1, 2])->orderByDesc('id')->get()
+                ->groupBy('id_solicitud')->map(function ($items) {
+                    return $items->first();
+                });
+            $encounterIds = $solicitudes->getCollection()->pluck('encounter_id')->filter()->all();
+            $surgeryAgendaQuery = Agenda::with(['doctor1', 'procedimiento', 'sala'])
+                ->whereIn('encounter_id', $encounterIds)
+                ->where('agenda.id_empresa', $companyId)
+                ->where(function ($surgeryType) {
+                    $surgeryType->where('proc_consul', 5)->orWhere('ho_tipo', 5)
+                        ->orWhereExists(function ($detail) {
+                            $detail->select(DB::raw(1))->from('agenda_cirugias as surgery_detail')
+                                ->whereColumn('surgery_detail.id_agenda', 'agenda.id');
+                        });
+                })->where('estado', 1);
+            if ($savedSurgery) {
+                $surgeryAgendaQuery->orderByRaw('CASE WHEN agenda.id = ? THEN 0 ELSE 1 END', [$savedSurgery->id]);
+            }
+            $surgeryAgendas = $surgeryAgendaQuery->orderByDesc('id')->get()
+                ->unique('encounter_id')->keyBy('encounter_id');
+            $surgeryEvents = ClinicalEncounterEvent::whereIn('encounter_id', $encounterIds)
+                ->whereIn('event_type', [
+                    'HOSPITAL_SURGERY_BOUND',
+                    'HOSPITAL_SURGERY_STARTED',
+                    'HOSPITAL_SURGERY_FINISHED',
+                    'HOSPITAL_SURGERY_RECOVERED',
+                ])->get()->groupBy('encounter_id');
+            foreach ($solicitudes as $surgerySolicitud) {
+                $events = $surgeryEvents->get($surgerySolicitud->encounter_id, collect());
+                $types = $events->pluck('event_type')->all();
+                $surgeryStates[$surgerySolicitud->id] = in_array('HOSPITAL_SURGERY_RECOVERED', $types, true)
+                    ? 'RECUPERACION COMPLETADA'
+                    : (in_array('HOSPITAL_SURGERY_FINISHED', $types, true)
+                        ? 'CIRUGIA FINALIZADA / RECUPERACION PENDIENTE'
+                        : (in_array('HOSPITAL_SURGERY_STARTED', $types, true)
+                            ? 'EN QUIROFANO / OPERACION EN CURSO'
+                            : (in_array('HOSPITAL_SURGERY_BOUND', $types, true)
+                                ? 'PENDIENTE DE INICIO'
+                                : ($surgeryAgendas->has($surgerySolicitud->encounter_id)
+                                    ? 'CIRUGIA PROGRAMADA' : 'RECEPCION QUIRURGICA'))));
+            }
+
+            // Las cirugías creadas directamente desde la Agenda todavía pueden
+            // no tener episodio hospitalario. Se muestran como programadas, sin
+            // habilitar acciones documentales hasta que exista el ingreso.
+            $scheduledQuery = Agenda::with(['paciente', 'doctor1', 'procedimiento', 'sala'])
+                ->leftJoin('agenda_cirugias as ac', 'ac.id_agenda', '=', 'agenda.id')
+                ->where('agenda.id_empresa', $companyId)
+                ->where(function ($surgeryType) {
+                    $surgeryType->where('agenda.proc_consul', 5)
+                        ->orWhere('agenda.ho_tipo', 5)
+                        ->orWhereNotNull('ac.id');
+                })
+                ->where('agenda.estado', 1)->select('agenda.*', 'ac.estado_quirurgico');
+            if ($desde !== '') {
+                $scheduledQuery->where('agenda.fechaini', '>=', $desde.' 00:00:00');
+            }
+            if ($hasta !== '') {
+                $scheduledQuery->where('agenda.fechaini', '<=', $hasta.' 23:59:59');
+            }
+            if ($desde === '' && $hasta === '') {
+                $scheduledQuery->where(function ($query) use ($savedSurgery) {
+                    $query->where('agenda.fechafin', '>=', date('Y-m-d').' 00:00:00');
+                    if ($savedSurgery) {
+                        $query->orWhere('agenda.id', $savedSurgery->id);
+                    }
+                });
+            }
+            if ($cedula !== '') {
+                $scheduledQuery->where('agenda.id_paciente', $cedula);
+            }
+            if ($paciente !== '') {
+                $scheduledQuery->whereHas('paciente', function ($patientQuery) use ($paciente) {
+                    $like = '%'.$paciente.'%';
+                    $patientQuery->whereRaw('CONCAT_WS(" ", nombre1, nombre2, apellido1, apellido2) LIKE ?', [$like])
+                        ->orWhereRaw('CONCAT_WS(" ", apellido1, apellido2, nombre1, nombre2) LIKE ?', [$like]);
+                });
+            }
+            $representedAgendaIds = $solicitudes->getCollection()->map(function ($solicitud) use ($surgeryAgendas) {
+                return $surgeryAgendas->has($solicitud->encounter_id)
+                    ? $surgeryAgendas->get($solicitud->encounter_id)->id : $solicitud->id_agenda;
+            })->filter()->unique()->all();
+            if ($savedSurgery) {
+                $scheduledQuery->orderByRaw('CASE WHEN agenda.id = ? THEN 0 ELSE 1 END', [$savedSurgery->id]);
+            }
+            $scheduledSurgeries = $scheduledQuery->whereNotIn('agenda.id', $representedAgendaIds)
+                ->orderBy('agenda.fechaini')->limit(100)->get();
+            if (RequestSchema::hasTable('hospital_episode_form_drafts')) {
+                $surgeryForm017Drafts = HospitalEpisodeFormDraft::whereIn('solicitud_id', $solicitudIds)
+                    ->where('form_code', '017')->orderByDesc('id')->get()
+                    ->unique('solicitud_id')->keyBy('solicitud_id');
+            }
+        }
+        $pendingHospitalTransfers = Ho_Traspaso_Sala008::with(['paciente', 'sala'])
+            ->join('ho_solicitud as s', 's.id', '=', 'ho_traspaso_sala008.id_solicitud')
+            ->join('clinical_encounters as e', 'e.id', '=', 's.encounter_id')
+            ->where('e.id_empresa', $companyId)->whereNull('e.ended_at')->where('s.estado', 1)
+            ->where('ho_traspaso_sala008.estado', 1)->where('ho_traspaso_sala008.paso', $id_paso)
+            ->orderBy('ho_traspaso_sala008.fecha')->get(['ho_traspaso_sala008.*']);
+        $surgeryBooking = (int) $id_paso === 5 && $request->query('agendar') === '1'
+            ? app(DoctorAgendaController::class)
+                ->hospitalSurgeryBookingData($request, $companyId)
+            : null;
+
+        return view('hospital/modulos/index', compact(
+            'solicitudes',
+            'formulariosDisponibles',
+            'salas',
+            'ho_estado_paso',
+            'desde',
+            'hasta',
+            'cedula',
+            'paciente',
+            'pendingHospitalTransfers',
+            'surgeryTransfers',
+            'surgeryStates',
+            'surgeryBooking',
+            'surgeryAgendas',
+            'scheduledSurgeries',
+            'surgeryForm017Drafts'
+        ));
     }
 }

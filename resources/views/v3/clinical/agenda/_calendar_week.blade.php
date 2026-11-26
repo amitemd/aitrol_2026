@@ -20,29 +20,38 @@
     @else<span class="da-readonly-badge"><i class="fas fa-eye mr-1"></i> Consulta histórica</span>@endif
   </div>
 </div>
-<div class="da-week {{$viewMode==='dia'?'da-week--day':''}}">
+<div class="da-week {{$viewMode==='dia'?'da-week--day':'da-week--week'}}" aria-label="{{$viewMode==='dia'?'Agenda del día':'Agenda semanal'}}">
 @foreach($days as $day)
   @php($futureSlots=$day->slots->filter(function($slot){return strtotime($slot->start)>time();}))
-  <article class="da-day {{$day->today?'da-day--today':''}} {{$viewMode==='dia'?'da-day--daily':''}}"><header class="da-day__head"><span>{{$day->short}} · {{$day->month}}</span><strong>{{$day->number}}</strong></header><div class="da-day__body">
+  @php($dayEventCount=$day->events->count())
+  <article class="da-day {{$day->today?'da-day--today':''}} {{$viewMode==='dia'?'da-day--daily':''}}">
+    <header class="da-day__head">
+      <div class="da-day__label">
+        <span>{{$day->short}} · {{$day->month}}</span>
+        <small>{{$day->today?'Hoy':($dayEventCount===1?'1 actividad':$dayEventCount.' actividades')}}</small>
+      </div>
+      <strong>{{$day->number}}</strong>
+    </header>
+    <div class="da-day__body">
   @forelse($day->events as $event)
     @if($showCancelled || (string)$event->id_doctor1!==(string)$doctor->id)
       <div class="da-event da-event--{{$event->proc_consul}}">
-        <div class="da-event__top"><time><i class="far fa-clock"></i> {{date('H:i',strtotime($event->fechaini))}} – {{date('H:i',strtotime($event->fechafin))}}</time><span class="da-event__status">{{$showCancelled?'Cancelada':$event->state_label}}</span></div>
-        <strong class="da-event__patient">{{$event->patient_name}}</strong>
+        <div class="da-event__top"><time><i class="far fa-clock"></i> {{date('H:i',strtotime($event->display_start))}} – {{date('H:i',strtotime($event->display_end))}}</time><span class="da-event__status">{{$showCancelled?'Cancelada':$event->state_label}}</span></div>
+        <strong class="da-event__patient" title="{{$event->patient_name}}">{{$event->patient_name}}</strong>
         <div class="da-event__meta">
           @if((int)$event->proc_consul!==2 && $event->id_paciente)<span><i class="far fa-id-card"></i> {{$event->id_paciente}}</span>@endif
-          @if((int)$event->proc_consul!==2)<span class="da-event__insurance"><i class="fas fa-shield-alt"></i> {{$event->seguro_nombre?:'Sin seguro registrado'}}</span>@endif
+          @if((int)$event->proc_consul!==2)<span class="da-event__insurance" title="{{$event->seguro_nombre?:'Sin seguro registrado'}}"><i class="fas fa-shield-alt"></i> {{$event->seguro_nombre?:'Sin seguro registrado'}}</span>@endif
           <span><i class="fas fa-tag"></i> {{$event->type_label}}</span>
           @if(!$showCancelled)<span><i class="fas fa-user-friends"></i> Médico de apoyo</span>@endif
         </div>
       </div>
     @else
       <a class="da-event da-event--{{$event->proc_consul}} js-activity-modal" href="{{route('v3.doctor-agenda.edit',array('doctor'=>$event->id_doctor1,'appointment'=>$event->id))}}">
-        <div class="da-event__top"><time><i class="far fa-clock"></i> {{date('H:i',strtotime($event->fechaini))}} – {{date('H:i',strtotime($event->fechafin))}}</time><span class="da-event__status">{{$event->state_label}}</span></div>
-        <strong class="da-event__patient">{{$event->patient_name}}</strong>
+        <div class="da-event__top"><time><i class="far fa-clock"></i> {{date('H:i',strtotime($event->display_start))}} – {{date('H:i',strtotime($event->display_end))}}</time><span class="da-event__status">{{$event->state_label}}</span></div>
+        <strong class="da-event__patient" title="{{$event->patient_name}}">{{$event->patient_name}}</strong>
         <div class="da-event__meta">
           @if((int)$event->proc_consul!==2 && $event->id_paciente)<span><i class="far fa-id-card"></i> {{$event->id_paciente}}</span>@endif
-          @if((int)$event->proc_consul!==2)<span class="da-event__insurance"><i class="fas fa-shield-alt"></i> {{$event->seguro_nombre?:'Sin seguro registrado'}}</span>@endif
+          @if((int)$event->proc_consul!==2)<span class="da-event__insurance" title="{{$event->seguro_nombre?:'Sin seguro registrado'}}"><i class="fas fa-shield-alt"></i> {{$event->seguro_nombre?:'Sin seguro registrado'}}</span>@endif
           <span><i class="fas fa-tag"></i> {{$event->type_label}}</span>
           @if($event->nombre_sala)<span><i class="fas fa-door-open"></i> {{$event->nombre_sala}}</span>@endif
         </div>
@@ -54,4 +63,4 @@
   </div></article>
 @endforeach
 </div>
-<div class="da-summary"><span><i class="fas fa-stethoscope"></i> {{$events->where('proc_consul',0)->count()}} consultas</span><span><i class="fas fa-procedures"></i> {{$events->where('proc_consul',1)->count()}} procedimientos</span><span><i class="fas fa-users"></i> {{$events->where('proc_consul',2)->count()}} reuniones</span></div>
+<div class="da-summary"><span><i class="fas fa-stethoscope"></i> {{$events->where('proc_consul',0)->count()}} consultas</span><span><i class="fas fa-procedures"></i> {{$events->where('proc_consul',1)->count()}} procedimientos</span><span><i class="fas fa-hospital"></i> {{$events->where('proc_consul',5)->count()}} cirugías</span><span><i class="fas fa-users"></i> {{$events->where('proc_consul',2)->count()}} reuniones</span></div>

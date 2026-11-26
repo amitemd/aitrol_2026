@@ -710,8 +710,8 @@ $fecha_actual = date("Y-m-d H:i:s");
             <div class="admission-hero-icon"><i class="fa fa-hospital-o" aria-hidden="true"></i></div>
             <div>
                 <span class="admission-hero-label">Gestión de pacientes</span>
-                <h3>@if((int) $id_paso === 2) Ingreso por Emergencia @elseif((int) $id_paso === 3) Ingreso a Hospitalización @else {{trans('emergencia.NUEVOINGRESO')}} @endif</h3>
-                <p>@if((int) $id_paso === 2) Registra la atención inmediata; al guardar se habilitarán el triaje y el Formulario 008. @elseif((int) $id_paso === 3) Registra la internación del paciente; al guardar se habilitarán la cama y el Formulario 005. @else Registra los datos personales, clínicos y de contacto necesarios para el ingreso hospitalario. @endif</p>
+                <h3>@if((int) $id_paso === 2) Ingreso por Emergencia @elseif((int) $id_paso === 3) Ingreso a Hospitalización @elseif((int) $id_paso === 5) Ingreso a Cirugía @else {{trans('emergencia.NUEVOINGRESO')}} @endif</h3>
+                <p>@if((int) $id_paso === 2) Registra la atención inmediata; al guardar se habilitarán el triaje y el Formulario 008. @elseif((int) $id_paso === 3) Registra la internación del paciente; al guardar se habilitarán la cama y el Formulario 005. @elseif((int) $id_paso === 5) Registra al paciente y crea su agenda quirúrgica con acceso a documentos, protocolo y valoración preanestésica. @else Registra los datos personales, clínicos y de contacto necesarios para el ingreso hospitalario. @endif</p>
             </div>
         </div>
     </section>
@@ -761,7 +761,7 @@ $fecha_actual = date("Y-m-d H:i:s");
                                     </button>
                                     <button type="button" class="admission-wizard-step" data-step="2">
                                         <span class="admission-wizard-step-number">2</span>
-                                        <span class="admission-wizard-step-copy">Atención y datos</span>
+                                        <span class="admission-wizard-step-copy">@if((int) $id_paso === 5) Agenda quirúrgica @else Atención y datos @endif</span>
                                     </button>
                                     <button type="button" class="admission-wizard-step" data-step="3">
                                         <span class="admission-wizard-step-number">3</span>
@@ -826,7 +826,7 @@ $fecha_actual = date("Y-m-d H:i:s");
                                         </select>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label class="col-form-label-sm"><b>@if((int) $id_paso === 2) Área de atención de Emergencia @elseif((int) $id_paso === 3) Servicio de Hospitalización @else Sala clínica de ingreso @endif</b></label>
+                                        <label class="col-form-label-sm"><b>@if((int) $id_paso === 2) Área de atención de Emergencia @elseif((int) $id_paso === 3) Servicio de Hospitalización @elseif((int) $id_paso === 5) Quirófano / sala quirúrgica @else Sala clínica de ingreso @endif</b></label>
                                         <select class="form-control form-control-sm validar" name="id_sala" id="id_sala">
                                             <option value="">{{trans('emergencia.SeleccioneOpcion')}}</option>
                                             @foreach($salas as $s)
@@ -850,6 +850,8 @@ $fecha_actual = date("Y-m-d H:i:s");
                                         <small class="admission-field-help">
                                             @if((int) $id_paso === 3)
                                                 Ingreso directo a Hospitalización. La cama se asignará desde Gestión de camas.
+                                            @elseif((int) $id_paso === 5)
+                                                Ingreso directo a Cirugía. Se creará una agenda quirúrgica de tipo 5.
                                             @else
                                                 Ingreso por Emergencia. Pendiente de triaje y valoración médica.
                                             @endif
@@ -859,7 +861,7 @@ $fecha_actual = date("Y-m-d H:i:s");
                                     @if($id_paso==4 or $id_paso==5)
                                     <div class="form-group col-md-3">
                                         <label class="col-form-label-sm"><b>{{trans('emergencia.Procedimientos')}}</b></label>
-                                        <select id="id_procedimiento" class="form-control form-control-sm select2" name="id_procedimiento"  data-placeholder="{{trans('emergencia.SeleccioneOpcion')}}" autocomplete="off">
+                                        <select id="id_procedimiento" class="form-control form-control-sm select2 @if((int) $id_paso === 5) validar @endif" name="id_procedimiento"  data-placeholder="{{trans('emergencia.SeleccioneOpcion')}}" autocomplete="off">
                                             <option value="">{{trans('emergencia.SeleccioneOpcion')}}</option>
                                             @foreach($procedimiento as $procedimiento)
                                             <option value="{{$procedimiento->id}}">{{$procedimiento->nombre}}</option>
@@ -869,6 +871,66 @@ $fecha_actual = date("Y-m-d H:i:s");
                                     @endif
                                 </div>    
                                     <!--  -->
+                                @if((int) $id_paso === 5)
+                                <div class="admission-section-title"><i class="fa fa-calendar-check-o" aria-hidden="true"></i> Programación de la cirugía</div>
+                                <div class="alert alert-info" style="border-radius:10px; margin-bottom:14px">
+                                    Define el horario quirúrgico una sola vez. El sistema reservará también el tiempo de preparación y limpieza, y mostrará esta cirugía en Agenda Clínica y en Hospitalización.
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-2">
+                                        <label class="col-form-label-sm"><b>Fecha de cirugía</b></label>
+                                        <input type="date" class="form-control form-control-sm validar" name="fecha_cirugia" id="fecha_cirugia" value="{{old('fecha_cirugia', $surgeryDate)}}" min="{{date('Y-m-d')}}">
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label class="col-form-label-sm"><b>Hora quirúrgica</b></label>
+                                        <input type="time" class="form-control form-control-sm validar" name="hora_cirugia" id="hora_cirugia" value="{{old('hora_cirugia', $surgeryTime)}}" step="900">
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label class="col-form-label-sm"><b>Duración estimada</b></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control form-control-sm validar" name="duracion_cirugia" id="duracion_cirugia" value="{{old('duracion_cirugia', 120)}}" min="30" max="720" step="15">
+                                            <div class="input-group-addon">min</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label class="col-form-label-sm"><b>Preparación</b></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control form-control-sm validar" name="preparacion_minutos" id="preparacion_minutos" value="{{old('preparacion_minutos', 30)}}" min="0" max="180" step="15">
+                                            <div class="input-group-addon">min</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label class="col-form-label-sm"><b>Limpieza</b></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control form-control-sm validar" name="limpieza_minutos" id="limpieza_minutos" value="{{old('limpieza_minutos', 30)}}" min="0" max="180" step="15">
+                                            <div class="input-group-addon">min</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <label class="col-form-label-sm"><b>Modalidad</b></label>
+                                        <select class="form-control form-control-sm validar" name="modalidad_cirugia" id="modalidad_cirugia">
+                                            <option value="HOSPITALIZACION_PROGRAMADA" selected>Programada</option>
+                                            <option value="EMERGENCIA">Emergencia</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label class="col-form-label-sm"><b>Anestesiólogo</b> <span class="text-muted">(opcional)</span></label>
+                                        <select class="form-control form-control-sm select2" name="id_anestesiologo" id="id_anestesiologo" data-placeholder="Seleccione si ya está asignado">
+                                            <option value=""></option>
+                                            @foreach($user as $us)
+                                            <option value="{{$us->id}}">Dr. {{$us->apellido1}} {{$us->nombre1}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-8">
+                                        <label class="col-form-label-sm"><b>Indicación quirúrgica</b></label>
+                                        <textarea class="form-control form-control-sm validar" name="indicacion_quirurgica" id="indicacion_quirurgica" rows="2" maxlength="5000" placeholder="Motivo clínico, diagnóstico o indicación para la cirugía">{{old('indicacion_quirurgica')}}</textarea>
+                                    </div>
+                                </div>
+                                @endif
+
                                 <div class="admission-section-title"><i class="fa fa-id-card-o" aria-hidden="true"></i> Información personal y de contacto</div>
                                 <div class="form-row">    
                                     <div class="form-group col-md-2">
@@ -1144,6 +1206,10 @@ $fecha_actual = date("Y-m-d H:i:s");
                                         <div class="admission-review-item"><span>Identificación</span><strong id="review_identification">Sin completar</strong></div>
                                         <div class="admission-review-item"><span>Sala</span><strong id="review_room">Sin seleccionar</strong></div>
                                         <div class="admission-review-item"><span>Seguro</span><strong id="review_insurance">Sin seleccionar</strong></div>
+                                        @if((int) $id_paso === 5)
+                                        <div class="admission-review-item"><span>Cirugía</span><strong id="review_surgery_time">Sin programar</strong></div>
+                                        <div class="admission-review-item"><span>Procedimiento</span><strong id="review_procedure">Sin seleccionar</strong></div>
+                                        @endif
                                     </div>
                                 </div>
                                 </section>
@@ -1160,7 +1226,7 @@ $fecha_actual = date("Y-m-d H:i:s");
                         <div class="admission-footer-actions">
                             <button type="button" id="admission_previous" class="btn btn-default admission-nav-button" style="display:none"><i class="fa fa-arrow-left"></i> Anterior</button>
                             <button type="button" id="admission_next" class="btn btn-primary admission-nav-button">Siguiente <i class="fa fa-arrow-right"></i></button>
-                            <button type="button" id="admission_save" onclick="guardar();" class="btn btn-primary admission-save-button" style="display:none"><i class="far fa-save"></i>{{trans('emergencia.Guardar')}}</button>
+                            <button type="button" id="admission_save" onclick="guardar();" class="btn btn-primary admission-save-button" style="display:none"><i class="far fa-calendar-check"></i>@if((int) $id_paso === 5) Agendar e ingresar @else {{trans('emergencia.Guardar')}} @endif</button>
                         </div>
                     </div>
                 </form>
@@ -1382,6 +1448,17 @@ $fecha_actual = date("Y-m-d H:i:s");
         $('#review_identification').text(admissionFieldValue('#cedula', 'Sin completar'));
         $('#review_room').text($('#id_sala').val() ? $('#id_sala option:selected').text() : 'Sin seleccionar');
         $('#review_insurance').text($('#id_seguro').val() ? $('#id_seguro option:selected').text() : 'Sin seleccionar');
+        if ($('#fecha_cirugia').length) {
+            var surgeryDate = admissionFieldValue('#fecha_cirugia', '');
+            var surgeryTime = admissionFieldValue('#hora_cirugia', '');
+            var surgeryDuration = admissionFieldValue('#duracion_cirugia', '');
+            $('#review_surgery_time').text(surgeryDate && surgeryTime
+                ? surgeryDate + ' · ' + surgeryTime + (surgeryDuration ? ' · ' + surgeryDuration + ' min' : '')
+                : 'Sin programar');
+            $('#review_procedure').text($('#id_procedimiento').val()
+                ? $('#id_procedimiento option:selected').text()
+                : 'Sin seleccionar');
+        }
     }
 
     function showAdmissionStep(step) {
@@ -1773,7 +1850,9 @@ $fecha_actual = date("Y-m-d H:i:s");
                     alertas('error', 'No se pudo registrar el ingreso', 'Ocurrió un inconveniente al guardar. Tus datos permanecen en el borrador para que puedas intentarlo nuevamente.');
                 },
                 complete: function() {
-                    saveButton.prop('disabled', false).html('<i class="far fa-save"></i>{{trans('emergencia.Guardar')}}');
+                    saveButton.prop('disabled', false).html(@json((int) $id_paso === 5
+                        ? '<i class="far fa-calendar-check"></i> Agendar e ingresar'
+                        : '<i class="far fa-save"></i>'.trans('emergencia.Guardar')));
                 }
             });
         } else {

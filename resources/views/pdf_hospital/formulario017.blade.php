@@ -225,7 +225,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <table border="1" style="width: 99%">
             <tr>
                 <td colspan="12">
-                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa ?? null, 'imageOnly' => true, 'logoHeight' => 72])
                 </td>
             </tr>
         </table>
@@ -625,40 +625,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </tbody>
         </table>
         <br>
-        <table border="1" style="width: 100%">
-            <tbody>
-                <tr>
-                    <td colspan="4" class="bg-purple" style="font-size: 11;"><b>J. DATOS DEL PROFESIONAL RESPONSABLE</b></td>
-                </tr>
-                <tr>
-                    <td style="font-size: 9;" class="text-center bg-green"><b>NOMBRE Y APELLIDOS</b></td>
-                    <td style="font-size: 9;" class="text-center bg-green"><b>ESPECIALIDAD</b></td>
-                    <td style="font-size: 9; width: 28%;" class="text-center bg-green"><b>FIRMA</b></td>
-                    <td style="font-size: 8;" class="text-center bg-green"><b>SELLO Y NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
-                </tr>
-                <tr>
-
-                    @php $especialidad = Sis_medico\Especialidad::find($hc_procedimiento->historia->agenda->espid) @endphp
-                    <td style="height: 50px;" class="text-center">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif</td>
-                    <td style="height: 50px;" class="text-center">@if(!is_null($especialidad)) {{$especialidad->nombre}} @endif</td>
-                    <td class="text-center" style="height: 50px;">
-                        <p style="text-align: center;">
-                            @if(!is_null($firma) && !is_null($firma->firma))
-                            <img width=150 height=60 src="{{base_path().'/storage/app/avatars/'.$firma->firma}}" style="" align=center hspace=12><br>
-                            @else
-                            <br><br><br>
-                            <b style="font-size: 10px;">Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}}</b><br>
-                            @endif
-                        </p>
-                    </td>
-                    <td class="text-center" style="height: 50px;">
-                        Dr(a). {{$protocolo->procedimiento->doctor_firma->apellido1}} @if($protocolo->procedimiento->doctor_firma->apellido2!='N/A'){{$protocolo->procedimiento->doctor_firma->apellido2}}@endif {{$protocolo->procedimiento->doctor_firma->nombre1}} @if($protocolo->procedimiento->doctor_firma->nombre2!='N/A'){{$protocolo->procedimiento->doctor_firma->nombre2}}@endif<br>
-                        @if(!is_null($especialidad)) {{$especialidad->nombre}} @endif<br>
-                        MSP No. {{$protocolo->procedimiento->doctor_firma->id}}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        @include('hospital.documentos._professional-block-pdf', [
+            'professionalBlock' => $professionalBlock ?? [],
+            'professionalBlockTitle' => 'J. DATOS DEL PROFESIONAL RESPONSABLE',
+        ])
 
         <div>
             <footer>

@@ -81,6 +81,8 @@ route::get('edita_orden/imagenes/historial_hc4/{id_orden}/{id_paciente}', 'hc4\o
 // Para actualizar Orden de Procedimiento Imagenes
 Route::post('orden_hc4/actualiza/imagenes', 'hc4\ordenes\Orden_Proc_ImagenesController@actualiza_orden_imagenes')->name('actualiza.ordenhc4_procedimagenes');
 
+Route::post('orden_hc4/actualiza/imagenes/embarazo', 'hc4\ordenes\Orden_Proc_ImagenesController@actualiza_embarazo_imagenes')->name('actualiza.ordenhc4_imagenes_embarazo');
+
 // Para Imprimir la Orden de Procedimiento Imagenes
 Route::get('imprimir/orden_hc4/imagenes/{id_orden}', 'hc4\ordenes\Orden_Proc_ImagenesController@imprimir_orden_imagenes')->name('imprimir.ordenhc4_imagenes');
 

@@ -10,8 +10,8 @@
         .form-page.is-first { page-break-before: auto; }
         .masthead { width: 100%; border-collapse: collapse; margin-bottom: 1.5mm; }
         .masthead td { padding: 0; border: 0; vertical-align: middle; }
-        .masthead .title { width: 62%; }
-        .masthead .branding { width: 25%; height: 14mm; padding: 0 1mm; overflow: hidden; text-align: center; }
+        .masthead .branding { width: 25%; height: 14mm; padding: 0 1mm; overflow: hidden; text-align: left; }
+        .masthead .title { width: 62%; padding-left: 2mm; }
         .masthead .branding-fallback { color: #254969; font-size: 6.5pt; font-weight: bold; letter-spacing: .4pt; }
         .masthead .code { text-align: right; font-size: 11pt; font-weight: bold; }
         h1 { margin: 0 0 .5mm; font-size: 10pt; }
@@ -50,6 +50,7 @@
     $institutionalCode = strpos($form['code'], 'ANEXO') === 0
         ? 'SNS-MSP / HCU-'.str_replace('ANEXO', 'ANEXO ', $form['code'])
         : 'SNS-MSP / HCU-form.'.$form['code'].' / '.$form['edition'];
+    $companyNameGeneric = trim((string) (($empresa->nombrecomercial ?? null) ?: ($empresa->razonsocial ?? null) ?: 'ESTABLECIMIENTO DE SALUD'));
 @endphp
 <div class="footer">
     <table><tr>
@@ -60,12 +61,12 @@
 @foreach($pages as $pageNumber => $sections)
     <div class="form-page {{ $loop->first ? 'is-first' : '' }}">
         <table class="masthead"><tr>
-            <td class="title"><h1>{{ $form['name'] }}</h1>Plantilla de captura del episodio · {{ $state }}</td>
             <td class="branding">
                 <!--AITROL_PDF_BRANDING_SLOT-->
-                <!--AITROL_PDF_BRANDING_FALLBACK_START--><span class="branding-fallback">ESTABLECIMIENTO DE SALUD</span><!--AITROL_PDF_BRANDING_FALLBACK_END-->
+                <!--AITROL_PDF_BRANDING_FALLBACK_START--><span class="branding-fallback">{{ $companyNameGeneric }}</span><!--AITROL_PDF_BRANDING_FALLBACK_END-->
             </td>
-            <td class="code">{{ $form['code'] }}</td>
+            <td class="title"></td>
+            <td class="code">{{ $form['code'] }}<br><small>{{ $state }}</small></td>
         </tr></table>
         <table class="record">
             <tr><th colspan="4" class="section-heading">A. DATOS DEL USUARIO / PACIENTE</th></tr>
@@ -102,11 +103,7 @@
             @endforeach
         @endforeach
         @if($loop->last)
-            <table class="record responsible">
-                <tr><th colspan="2" class="section-heading">DATOS DEL REGISTRO</th></tr>
-                <tr><th>ÚLTIMA EDICIÓN</th><th>VALIDACIÓN Y FIRMA CLÍNICA</th></tr>
-                <tr><td>{{ $entry ? $entry->updated_at.' · Usuario '.$entry->updated_by : 'Sin registro guardado' }}</td><td>Pendiente. Este borrador no acredita firma.</td></tr>
-            </table>
+            @include('hospital.documentos._professional-block-pdf')
         @endif
     </div>
 @endforeach

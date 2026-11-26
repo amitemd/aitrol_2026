@@ -10,8 +10,9 @@
         .hospital-embedded-container { min-height: 100vh; }
     </style>
     @yield('styles')
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body>
+<body class="aitrol-theme">
     <main class="hospital-embedded-container">
         @yield('content')
     </main>

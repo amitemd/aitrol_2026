@@ -333,22 +333,45 @@
   body.modal-open > .modal-backdrop.hc4-log-agenda-backdrop {
     z-index: 2147483600 !important;
   }
+
+  #modal_log_agenda .modal-dialog{width:min(900px,calc(100% - 30px));margin:32px auto}
+  #modal_log_agenda .modal-content{overflow:hidden;border:0;border-radius:18px;background:#f5f9fb;box-shadow:0 28px 80px rgba(5,43,68,.34)}
+  #modal_log_agenda .modal-header{display:flex;align-items:center;justify-content:space-between;min-height:82px;padding:16px 20px;border:0;color:#fff;background:linear-gradient(120deg,#075f8f,#078bb6 58%,#10a39f)}
+  #modal_log_agenda .modal-header__identity{display:flex;align-items:center;gap:12px;min-width:0}
+  #modal_log_agenda .modal-header__icon{display:grid;width:44px;height:44px;flex:0 0 44px;place-items:center;border:1px solid rgba(255,255,255,.3);border-radius:13px;background:rgba(255,255,255,.14);font-size:18px}
+  #modal_log_agenda .modal-title{margin:0;color:#fff;font-size:18px;font-weight:800;line-height:1.25}
+  #modal_log_agenda .modal-header__identity small{display:block;margin-top:3px;color:rgba(255,255,255,.8);font-size:10px;letter-spacing:.02em}
+  #modal_log_agenda .modal-header .close{position:static!important;display:inline-flex!important;width:36px;height:36px;min-width:36px;flex:0 0 36px;align-items:center;justify-content:center;float:none!important;margin:0!important;padding:0!important;border:1px solid rgba(255,255,255,.28);border-radius:10px;color:#fff;background:rgba(0,0,0,.08);font-size:15px;line-height:1!important;opacity:1;text-shadow:none;transition:background .18s,transform .18s}
+  #modal_log_agenda .modal-header .close i{display:block;width:auto;height:auto;margin:0;padding:0;font-size:15px;line-height:1}
+  #modal_log_agenda .modal-header .close:hover{background:rgba(0,0,0,.18);transform:rotate(4deg)}
+  #modal_log_agenda .modal-body{max-height:72vh;padding:18px 20px;overflow-y:auto;background:#f5f9fb}
+  #modal_log_agenda .modal-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #dce8ed;background:#fff;text-align:initial}
+  #modal_log_agenda .modal-footer__note{display:flex;align-items:center;gap:6px;color:#6b8290;font-size:10px}
+  #modal_log_agenda .modal-footer .btn{min-width:105px;padding:8px 16px;border:0;border-radius:9px;color:#fff;background:#087da8;font-weight:750}
+  .hc4-log-loading{display:flex;min-height:220px;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#5b7889;text-align:center}
+  .hc4-log-loading i{color:#0789b3;font-size:27px}.hc4-log-loading strong{color:#274e65;font-size:13px}.hc4-log-loading span{font-size:10px}
+  .hc4-log-error{display:flex;min-height:180px;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:24px;color:#8d3434;text-align:center}.hc4-log-error i{font-size:28px}.hc4-log-error strong{font-size:14px}.hc4-log-error span{color:#816363;font-size:11px}
+  .hc4-agenda-log__summary{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;padding:12px 14px;border:1px solid #d8e7ed;border-radius:12px;background:#fff}.hc4-agenda-log__summary strong,.hc4-agenda-log__summary span{display:block}.hc4-agenda-log__summary strong{color:#183f58;font-size:12px}.hc4-agenda-log__summary>div>span{margin-top:3px;color:#718896;font-size:10px}.hc4-agenda-log__secure{display:inline-flex!important;align-items:center;gap:6px;padding:6px 9px;border-radius:12px;color:#137463;background:#e8f7f3;font-size:9px;font-weight:800;text-transform:uppercase}
+  .hc4-agenda-log__list{display:grid}.hc4-agenda-log__item{display:grid;grid-template-columns:28px minmax(0,1fr)}.hc4-agenda-log__rail{position:relative}.hc4-agenda-log__rail:before{position:absolute;left:13px;top:0;bottom:0;width:2px;background:#cfe1e8;content:""}.hc4-agenda-log__item:first-child .hc4-agenda-log__rail:before{top:25px}.hc4-agenda-log__item:last-child .hc4-agenda-log__rail:before{bottom:calc(100% - 26px)}.hc4-agenda-log__rail span{position:absolute;z-index:1;left:8px;top:20px;width:12px;height:12px;border:3px solid #e9f7fa;border-radius:50%;background:#0789b3;box-shadow:0 0 0 2px #8acbd9}
+  .hc4-agenda-log__card{margin-bottom:12px;padding:14px 15px;border:1px solid #d8e6ec;border-radius:13px;background:#fff;box-shadow:0 5px 15px rgba(12,72,99,.06)}.hc4-agenda-log__card header{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding-bottom:11px;border-bottom:1px solid #e6eef2}.hc4-agenda-log__event{display:flex;align-items:center;gap:9px;min-width:0}.hc4-agenda-log__icon{display:grid;width:33px;height:33px;flex:0 0 33px;place-items:center;border-radius:9px;color:#087da8;background:#e8f6fa}.hc4-agenda-log__event strong,.hc4-agenda-log__event small{display:block}.hc4-agenda-log__event strong{color:#173f58;font-size:12px;line-height:1.35}.hc4-agenda-log__event small{margin-top:2px;color:#8ba0ac;font-size:9px}.hc4-agenda-log__card time{flex:0 0 auto;text-align:right}.hc4-agenda-log__card time strong,.hc4-agenda-log__card time span{display:block}.hc4-agenda-log__card time strong{color:#087da8;font-size:13px}.hc4-agenda-log__card time span{margin-top:2px;color:#738b99;font-size:9px}
+  .hc4-agenda-log__user{display:flex;align-items:center;gap:8px;padding:11px 0 0}.hc4-agenda-log__avatar{display:grid;width:29px;height:29px;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(135deg,#087fab,#11a29f);font-size:9px;font-weight:900}.hc4-agenda-log__user small,.hc4-agenda-log__user strong{display:block}.hc4-agenda-log__user small{color:#879aa5;font-size:8px;text-transform:uppercase}.hc4-agenda-log__user strong{margin-top:1px;color:#395c70;font-size:10px}
+  .hc4-agenda-log__changes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}.hc4-agenda-log__changes>div{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border-radius:9px;color:#4e6d7e;background:#f2f7f9}.hc4-agenda-log__changes>div>i{width:15px;padding-top:2px;color:#148ca2;text-align:center}.hc4-agenda-log__changes span,.hc4-agenda-log__changes small,.hc4-agenda-log__changes strong{display:block}.hc4-agenda-log__changes small{color:#8599a5;font-size:8px;text-transform:uppercase}.hc4-agenda-log__changes strong{margin-top:2px;color:#385b6e;font-size:9px;font-weight:750;line-height:1.45}.hc4-agenda-log__changes em{color:#8a6c6c;font-style:normal;text-decoration:line-through}.hc4-agenda-log__change--wide{grid-column:1/-1}.hc4-agenda-log__no-detail{margin:10px 0 0;color:#7d929e;font-size:9px}.hc4-agenda-log__no-detail i{margin-right:5px;color:#55a4b5}.hc4-agenda-log__empty{display:flex;min-height:230px;align-items:center;justify-content:center;flex-direction:column;color:#7a909d;text-align:center}.hc4-agenda-log__empty>i{display:grid;width:58px;height:58px;margin-bottom:10px;place-items:center;border-radius:17px;color:#168da8;background:#e8f6f9;font-size:23px}.hc4-agenda-log__empty strong{color:#31566c;font-size:13px}.hc4-agenda-log__empty span{margin-top:4px;font-size:10px}
+  @media(max-width:640px){#modal_log_agenda .modal-dialog{width:calc(100% - 16px);margin:8px auto}#modal_log_agenda .modal-content{border-radius:13px}#modal_log_agenda .modal-header{padding:13px 14px}#modal_log_agenda .modal-body{max-height:calc(100vh - 150px);padding:12px}#modal_log_agenda .modal-footer{padding:10px 13px}.hc4-agenda-log__summary{align-items:flex-start;flex-direction:column}.hc4-agenda-log__changes{grid-template-columns:1fr}.hc4-agenda-log__change--wide{grid-column:auto}.hc4-agenda-log__card header{align-items:flex-start}.hc4-agenda-log__card{padding:12px}.hc4-agenda-log__item{grid-template-columns:22px minmax(0,1fr)}.hc4-agenda-log__rail:before{left:10px}.hc4-agenda-log__rail span{left:5px}}
 </style>
 
 <div class="modal fade" id="modal_log_agenda" tabindex="-1" role="dialog" aria-labelledby="modal_log_agenda_titulo" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document" style="margin-top: 35px;">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title" id="modal_log_agenda_titulo">Log de Agenda</h4>
+        <div class="modal-header__identity"><span class="modal-header__icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span><div><h4 class="modal-title" id="modal_log_agenda_titulo">Historial de la agenda</h4><small>Movimientos, responsables y cambios registrados</small></div></div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><i class="fas fa-times" aria-hidden="true"></i></button>
       </div>
-      <div class="modal-body" id="modal_log_agenda_contenido" style="max-height: 72vh; overflow-y: auto;">
-        <div class="text-center" style="padding: 25px;">Cargando...</div>
+      <div class="modal-body" id="modal_log_agenda_contenido">
+        <div class="hc4-log-loading"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i><strong>Cargando historial</strong><span>Estamos consultando los movimientos de la agenda.</span></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+        <span class="modal-footer__note"><i class="fas fa-lock" aria-hidden="true"></i> Registro de auditoría de solo lectura</span>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -378,7 +401,7 @@
       var url = $(boton).data('log-url');
       var $contenido = $('#modal_log_agenda_contenido');
 
-      $contenido.html('<div class="text-center" style="padding: 25px;">Cargando...</div>');
+      $contenido.html('<div class="hc4-log-loading"><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i><strong>Cargando historial</strong><span>Estamos consultando los movimientos de la agenda.</span></div>');
       $('#modal_log_agenda').modal('show');
 
       $.ajax({
@@ -389,7 +412,7 @@
           $contenido.html(datahtml);
         },
         error: function(xhr){
-          $contenido.html('<div class="alert alert-danger">No se pudo cargar el log de agenda.</div>');
+          $contenido.html('<div class="hc4-log-error"><i class="fas fa-exclamation-circle" aria-hidden="true"></i><strong>No se pudo cargar el historial</strong><span>Intenta nuevamente o actualiza la página.</span></div>');
           if (typeof mostrarErrorAmbulatorio === 'function') {
             mostrarErrorAmbulatorio(xhr, 'cargar el log de agenda');
           }

@@ -23,6 +23,7 @@
     $doctor = $order->doctor;
     $doctorName = $doctor ? trim(($doctor->apellido1 ?? '').' '.($doctor->apellido2 ?? '').' '.($doctor->nombre1 ?? '').' '.($doctor->nombre2 ?? '')) : '';
 @endphp
+@include('pdf_hospital.partials.establishment_logo', ['empresa' => optional($order)->empresa ?? null])
 <h1>LABORATORIO CLÍNICO · {{ $code === '010A' ? 'SOLICITUD' : 'INFORME' }}</h1>
 <div>Formulario {{ $code }} · Orden #{{ $order->id }} · Episodio #{{ $solicitud->id }}</div>
 <div class="status">

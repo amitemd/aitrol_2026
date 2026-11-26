@@ -24,8 +24,9 @@
 
 	<!-- CSS Just for demo purpose, don't include it in your project -->
 	<link rel="stylesheet" href="{{ asset('contable/assets/css/demo.css') }}">
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body>
+<body class="aitrol-theme">
 	<div class="wrapper">
 		<div class="main-header">
 			<!-- Logo Header -->

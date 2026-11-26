@@ -61,6 +61,41 @@
       line-height: 1.25;
     }
 
+    #area_trabajo .hc4-image-pregnancy {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-bottom: 14px;
+    }
+    #area_trabajo .hc4-image-pregnancy__title {
+      font-family: 'Helvetica general';
+      font-size: 12px;
+      font-weight: bold;
+    }
+    #area_trabajo .hc4-image-pregnancy__option {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      font-size: 12px;
+      font-weight: normal;
+      cursor: pointer;
+    }
+    #area_trabajo .hc4-image-pregnancy__option input {
+      position: static !important;
+      flex: 0 0 16px;
+      width: 16px !important;
+      min-width: 16px !important;
+      max-width: 16px !important;
+      height: 16px !important;
+      min-height: 16px !important;
+      max-height: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      accent-color: #078da4;
+    }
+
     .hc4-image-catalog-tools {
       display: grid;
       grid-template-columns: minmax(210px, 1fr) minmax(210px, 1fr) auto;
@@ -346,31 +381,20 @@
           @endif
         </div>
       </div>
+      @if((string) $paciente->sexo === '2')
+        <div class="row"><div class="col-md-12"><div class="hc4-image-pregnancy">
+          <span class="hc4-image-pregnancy__title">EMBARAZO:</span>
+          <label class="hc4-image-pregnancy__option"><input type="radio" name="embarazo" value="1" @if((string) $data_orden_imag->embarazo === '1') checked @endif> Sí</label>
+          <label class="hc4-image-pregnancy__option"><input type="radio" name="embarazo" value="0" @if((string) $data_orden_imag->embarazo === '0') checked @endif> No</label>
+          <span class="hc4-image-pregnancy__error" role="alert" style="display:none;color:#b42318">No se pudo guardar. Vuelve a seleccionar una opción.</span>
+        </div></div></div>
+      @endif
       <div class="row">
         <div class="form-group col-md-12">
           <span style="font-family: 'Helvetica general';font-size: 12px">MOTIVO:</span>
           <textarea id="xmotivo_orden" name="xmotivo_orden"  style="width: 100%; border: 2px solid #004AC1;" rows="3">@if(!is_null($data_orden_imag)){{$data_orden_imag->motivo_consulta}}@endif 
           </textarea>
         </div>
-      </div>
-      <div class="col-12">&nbsp;</div>
-      <div class="row">
-            <div class="col-md-12">
-              <span style="font-family: 'Helvetica general';font-size: 12px">RESUMEN DE LA HISTORIA CL&IacuteNICA:</span>
-              <div id="imag_resumen_orden{{$data_orden_imag->id}}{{$aleatorio}}"  style="width: 100%; border: 2px solid #004AC1;">
-                @if(!is_null($data_orden_imag))<?php echo $data_orden_imag->resumen_clinico ?>@endif
-              </div>
-              <input type="hidden" name="imag_historia_clinica" id="imag_historia_clinica{{$data_orden_imag->id}}{{$aleatorio}}">
-            </div>
-      </div>
-      <div class="row">
-              <div class="col-md-12">
-                <span style="font-family: 'Helvetica general';font-size: 12px">DIAGNOSTICO:</span>
-                <div id="imag_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}"  style="width: 100%; border: 2px solid #004AC1;">
-                  @if(!is_null($data_orden_imag))<?php echo $data_orden_imag->diagnosticos ?>@endif
-                </div>
-                <input type="hidden" name="imag_des_diagnostico" id="imag_des_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}">
-              </div>
       </div>
       @php
         $paletaImagenes = [
@@ -467,11 +491,6 @@
           <textarea id="xobservacion_orden" name="xobservacion_orden"  style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_imagenes({{$data_orden_imag->id}});">@if(!is_null($data_orden_imag))<?php echo $data_orden_imag->observacion_medica ?>@endif</textarea>
         </div>
       </div>
-      <div class="row">
-          <div class="col-md-12">
-           <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION RECEPCI&OacuteN:</span><textarea id="xobservacion_recepcion" name="xobservacion_recepcion" style="width: 100%; border: 2px solid #004AC1;" rows="3" onchange="actualiza_orden_imagenes({{$data_orden_imag->id}});">@if(!is_null($data_orden_imag))<?php echo $data_orden_imag->observacion_recepcion?>@endif</textarea>
-          </div>
-      </div>
       <div class="hc4-image-edit-actions">
           <button type="button" class="btn hc4-image-edit-actions__button" onclick="actualiza_orden_imagenes({{$data_orden_imag->id}})">
             <span class="fa fa-floppy-o" aria-hidden="true"></span>
@@ -485,65 +504,6 @@
   </form>
   <div class="row" style="border-radius: 8px;" id="area_trabajo_formato012_pi"></div>
 </div>
-
-<script type="text/javascript">
-
-  tinymce.init({
-      selector: '#imag_resumen_orden{{$data_orden_imag->id}}{{$aleatorio}}',
-      inline: true,
-      menubar: false,
-      invalid_elements : 'table,tr,td',
-      content_style: ".mce-content-body {font-size:14px;}",
-
-      setup: function (editor) {
-          editor.on('init', function (e) {
-
-            var ed = tinyMCE.get('imag_resumen_orden{{$data_orden_imag->id}}{{$aleatorio}}');
-            $('#imag_historia_clinica{{$data_orden_imag->id}}{{$aleatorio}}').val(ed.getContent());
-            //alert(ed.getContent());
-          
-          });
-      },
-    
-      init_instance_callback: function (editor) {
-          editor.on('Change', function (e) {
-
-             var ed = tinyMCE.get('imag_resumen_orden{{$data_orden_imag->id}}{{$aleatorio}}');
-              $('#imag_historia_clinica{{$data_orden_imag->id}}{{$aleatorio}}').val(ed.getContent());
-              
-          });
-      }
-    });
-
-
-    tinymce.init({
-      selector: '#imag_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}',
-      inline: true,
-      menubar: false,
-      invalid_elements : 'table,tr,td',
-      content_style: ".mce-content-body {font-size:14px;}",
-
-      setup: function (editor) {
-          editor.on('init', function (e) {
-
-            var ed = tinyMCE.get('imag_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}');
-            $('#imag_des_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}').val(ed.getContent());
-            //alert(ed.getContent());
-          
-          });
-      },
-    
-      init_instance_callback: function (editor) {
-          editor.on('Change', function (e) {
-
-             var ed = tinyMCE.get('imag_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}');
-              $('#imag_des_diagnostico{{$data_orden_imag->id}}{{$aleatorio}}').val(ed.getContent());
-              
-          });
-      }
-    });
-
-</script>
 
 <script type="text/javascript">
   (function configurarCatalogoImagenes{{$data_orden_imag->id}}(){
@@ -606,6 +566,34 @@
       $check.closest('.hc4-image-procedure').toggleClass('is-selected', $check.prop('checked'));
       actualizarContador();
       filtrarCatalogo();
+      actualiza_orden_imagenes(idOrden);
+    });
+
+    var guardadoEmbarazo = $.Deferred().resolve().promise();
+    var $estadoEmbarazo = $editor.find('.hc4-image-pregnancy__error');
+    $editor.find('[name="embarazo"]').on('change.hc4imagenes', function(){
+      var valor = this.value;
+      var $formulario = $('#edit_orden_imag_' + idOrden);
+      $estadoEmbarazo.hide();
+      guardadoEmbarazo = guardadoEmbarazo.then(function(){
+        return $.ajax({
+          type: 'POST',
+          url: "{{route('actualiza.ordenhc4_imagenes_embarazo')}}",
+          headers: {'X-CSRF-TOKEN': $formulario.find('input[name=_token]').val()},
+          data: {id_ordenimag: idOrden, id_paciente: $formulario.find('[name=id_paciente]').val(), embarazo: valor}
+        }).then(null, function(){
+          var $actual = $editor.find('[name="embarazo"]:checked');
+          if ($actual.val() === valor) { $actual.prop('checked', false); $estadoEmbarazo.show(); }
+        });
+      });
+    });
+
+    var temporizadorMotivo;
+    $editor.find('[name="xmotivo_orden"]').on('input.hc4imagenes', function(){
+      clearTimeout(temporizadorMotivo);
+      temporizadorMotivo = setTimeout(function(){ actualiza_orden_imagenes(idOrden); }, 800);
+    }).on('change.hc4imagenes', function(){
+      clearTimeout(temporizadorMotivo);
       actualiza_orden_imagenes(idOrden);
     });
 

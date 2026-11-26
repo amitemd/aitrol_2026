@@ -1,6 +1,7 @@
 @extends('layouts.hospital-embedded')
 @section('title', $form['code'].' · '.$form['name'])
 @section('styles')
+    @if(in_array($form['code'], ['017', '024'], true))<link rel="stylesheet" href="{{ asset('ho/app-assets/vendors/css/forms/select/select2.min.css') }}">@endif
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 20px; background: #f5faff; color: #27475f; font: 14px/1.5 Arial, sans-serif; }
@@ -27,6 +28,11 @@
         .entry-list a { display: block; padding: 9px 10px; border: 1px solid #dce9f1; border-radius: 6px; color: #1b567b; text-decoration: none; }
         .entry-list a:hover, .entry-list a.is-active { border-color: #6ab4d4; background: #e9f7fd; }
         .entry-list small { display: block; color: #678093; }
+        .form024-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+        .form024-tabs .btn { flex: 1; text-align: center; }
+        .form024-tabs .btn.is-active { border-color: #0b6f9e; background: #0b6f9e; color: #fff; }
+        .form024-tab-panel[hidden] { display: none !important; }
+        .form024-entry-name { display: block; overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
         .form-field { margin-bottom: 15px; }
         .form-field label { display: block; margin-bottom: 5px; color: #27475f; font-weight: 700; }
         .form-field input, .form-field textarea, .form-field select { display: block; width: 100%; padding: 9px 10px; border: 1px solid #bcd5e5; border-radius: 6px; color: #183d57; background: #fff; font: inherit; }
@@ -114,7 +120,7 @@
         .form022-admin th { background: #d7f4d7; color: #17384f; font-size: 11px; }
         .form022-admin input, .form022-admin select { width: 100%; padding: 6px; border: 1px solid #b8cfd9; border-radius: 3px; }
         .form022-card-actions { display: flex; justify-content: flex-end; padding: 8px 10px; background: #f7fafb; }
-        @media (max-width: 700px) { body { padding: 10px; } .entry-toolbar__header { align-items: flex-start; flex-direction: column; } .body-mark-row { grid-template-columns: 1fr auto; } .body-mark-row strong { grid-column: 1 / -1; } .form020-grid { grid-template-columns: 1fr 1fr; } .form020-grid .span-4 { grid-column: 1 / -1; } .form022-allergy, .form022-dates, .form022-prescription, .form022-order-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) { body { padding: 10px; } .entry-toolbar__header { align-items: flex-start; flex-direction: column; } .body-mark-row { grid-template-columns: 1fr auto; } .body-mark-row strong { grid-column: 1 / -1; } .form020-grid { grid-template-columns: 1fr 1fr; } .form020-grid .span-4 { grid-column: 1 / -1; } .form022-allergy, .form022-dates, .form022-prescription, .form022-order-grid { grid-template-columns: 1fr; } .form024-tabs { flex-direction: column; } .form024-images { grid-template-columns: 1fr; } }
         @media (prefers-reduced-motion: reduce) { .body-panel.is-active { animation: none; } }
         @media print { body { padding: 0; background: #fff; } .entry-sidebar, .form-actions, .form-success, .form-error { display: none !important; } .form-layout { display: block; } .form-card { border: 0; } .form-header { color: #000; background: #fff; border-bottom: 2px solid #000; } .form-header p, .form-header small { color: #000; } .form-note { border: 2px solid #000; color: #000; font-weight: 700; } .form-field input, .form-field textarea { border: 0; border-bottom: 1px solid #999; resize: none; } }
     </style>
@@ -129,6 +135,11 @@
     $pdfUrl = route('hospital.documents.form.pdf', ['code' => $form['code'], 'id_solicitud' => $solicitud->id] + ($entry ? ['entry' => $entry->id] : ['template' => 1]));
 @endphp
 <div class="form-page">
+    @if($form['code'] === '017')
+    <style>
+        .form-page input[type="text"], .form-page textarea { text-transform: uppercase; }
+    </style>
+    @endif
     <header class="form-header">
         <small>Formulario {{ $form['code'] }} · Episodio {{ $solicitud->id }}</small>
         <h1>{{ $form['name'] }}</h1>
@@ -147,6 +158,15 @@
         <br><a class="btn btn-primary" href="{{ $pdfUrl }}" target="_blank" rel="noopener">{{ $entry ? 'Ver borrador en formato '.$form['code'] : 'Ver formato '.$form['code'] }}</a>
         @if($entry)<div class="form-muted">La vista PDF muestra la última versión guardada. Guarde los cambios antes de abrirla.</div>@endif
     </div>
+    @if($form['code'] === '017' && $entry)
+        <div class="form-note form-note-info">
+            <strong>Continuación después del procedimiento.</strong>
+            Los datos preoperatorios y el equipo previsto ya están guardados. Complete o corrija el diagnóstico posoperatorio, procedimiento realizado, horas reales, hallazgos, técnica, complicaciones y datos de cierre.
+        </div>
+    @endif
+    @if($form['code'] === '024')
+        <div class="form-note form-note-info"><strong>El formato vacío permanece disponible.</strong> Use «Ver formato 024» para consultar la estructura sin datos. Cada consentimiento que guarde se conserva como un registro independiente del episodio.</div>
+    @endif
     @if($form['code'] === '003')
         <div class="form-note form-note-info">
             <strong>¿Dónde y cuándo se llena?</strong> Aquí, desde Documentación → «Completar 003». Puede iniciarlo después de crear el episodio de Emergencia, antes o después de asignar la cama. Sistemas puede preparar o corregir el borrador; el médico debe revisar y validar la valoración de ingreso a Hospitalización.<br>
@@ -177,7 +197,13 @@
     @if(session('status'))<div class="form-success" role="status">{{ session('status') }}</div>@endif
     @if($errors->any())<div class="form-error" role="alert">{{ $errors->first() }}</div>@endif
     <div class="form-layout">
-        <section class="form-card entry-sidebar entry-toolbar">
+        @if($form['code'] === '024')
+            <nav class="form024-tabs" aria-label="Secciones del Formulario 024">
+                <button type="button" class="btn is-active" data-form024-tab="editor" aria-selected="true"><i class="fa fa-pencil" aria-hidden="true"></i> {{ $entry ? 'Editar consentimiento' : 'Nuevo consentimiento' }}</button>
+                <button type="button" class="btn" data-form024-tab="records" aria-selected="false"><i class="fa fa-folder-open" aria-hidden="true"></i> Formularios creados ({{ $entries->count() }})</button>
+            </nav>
+        @endif
+        <section class="form-card entry-sidebar entry-toolbar {{ $form['code'] === '024' ? 'form024-tab-panel' : '' }}" @if($form['code'] === '024') data-form024-panel="records" hidden @endif>
             <div class="entry-toolbar__header">
                 <h2>Registros de este formulario</h2>
                 @if($canWrite)<a class="btn" href="{{ route('hospital.documents.form.show', ['code' => $form['code'], 'id_solicitud' => $solicitud->id, 'new' => 1] + $embeddedQuery) }}">Nuevo registro</a>@endif
@@ -187,15 +213,19 @@
             @else
                 <ul class="entry-list">
                     @foreach($entries as $item)
-                        <li><a class="{{ $entry && $entry->id === $item->id ? 'is-active' : '' }}" href="{{ route('hospital.documents.form.show', ['code' => $form['code'], 'id_solicitud' => $solicitud->id, 'entry' => $item->id] + $embeddedQuery) }}">Registro #{{ $item->id }}<small>{{ $item->updated_at }} · {{ $item->updated_by }}</small></a></li>
+                        @php
+                            $item024 = $form['code'] === '024' ? \Sis_medico\Services\HospitalEpisodeForm024::forDisplay((array) $item->payload) : null;
+                            $item024Type = $item024 ? (\Sis_medico\Services\HospitalEpisodeForm024::types()[$item024['tipo_consentimiento']] ?? 'Consentimiento informado') : null;
+                        @endphp
+                        <li><a class="{{ $entry && $entry->id === $item->id ? 'is-active' : '' }}" href="{{ route('hospital.documents.form.show', ['code' => $form['code'], 'id_solicitud' => $solicitud->id, 'entry' => $item->id] + $embeddedQuery) }}">@if($item024)<span class="form024-entry-name">{{ $item024Type }}</span><small>{{ $item024['procedimiento'] ?: 'Procedimiento por completar' }}</small>@else Registro #{{ $item->id }}@endif<small>{{ $item->updated_at }} · {{ $item->updated_by }}</small></a></li>
                     @endforeach
                 </ul>
             @endif
         </section>
-        <main class="form-card" @if($form['code'] === '003') id="campos-003" @endif>
+        <main class="form-card {{ $form['code'] === '024' ? 'form024-tab-panel' : '' }}" @if($form['code'] === '003') id="campos-003" @endif @if($form['code'] === '024') data-form024-panel="editor" @endif>
             <h2>{{ $entry ? 'Borrador #'.$entry->id : 'Nuevo borrador' }}</h2>
             @if(!$canWrite)<p class="form-muted">El episodio está en modo de lectura o su usuario no tiene permiso para editar borradores clínicos.@if($form['code'] === '003') Para completar el 003 se requiere un médico o usuario de Sistemas autorizado.@endif</p>@endif
-            <form method="POST" action="{{ route('hospital.documents.form.store', ['code' => $form['code'], 'id_solicitud' => $solicitud->id] + $embeddedQuery) }}">
+            <form method="POST" action="{{ route('hospital.documents.form.store', ['code' => $form['code'], 'id_solicitud' => $solicitud->id] + $embeddedQuery) }}" @if(in_array($form['code'], ['017', '024'], true)) enctype="multipart/form-data" @endif>
                 {{ csrf_field() }}
                 @if($entry)<input type="hidden" name="entry_id" value="{{ $entry->id }}">@endif
                 @if($form['code'] === '020')
@@ -208,7 +238,14 @@
                     @include('hospital.documentos.formulario-anestesia-editor')
                 @else
                 @foreach($fields as $key => $label)
-                    @php $value = old('data.'.$key, $entry ? ($entry->payload[$key] ?? '') : ($emergencySource['suggestions'][$key] ?? '')); @endphp
+                    @php
+                        $savedValue = $entry ? ($entry->payload[$key] ?? '') : '';
+                        $suggestedValue = $emergencySource['suggestions'][$key] ?? '';
+                        $defaultValue = $entry
+                            ? (trim((string) $savedValue) !== '' || $form['code'] !== '017' ? $savedValue : $suggestedValue)
+                            : $suggestedValue;
+                        $value = old('data.'.$key, $defaultValue);
+                    @endphp
                     @if(isset($fieldSections[$key]) && $fieldSections[$key] !== $previousSection)
                         <h3 class="form-section-title">{{ $fieldSections[$key] }}</h3>
                         @php $previousSection = $fieldSections[$key]; @endphp
@@ -260,6 +297,21 @@
                             </div></div>
                             <input id="field_{{ $key }}" type="hidden" name="data[{{ $key }}]" value="{{ $value }}" {{ $canWrite ? '' : 'disabled' }}>
                             <div class="body-mark-list" id="body-mark-list" aria-live="polite"></div>
+                        @elseif($form['code'] === '017' && in_array($key, ['cie_preoperatorio', 'cie_postoperatorio'], true))
+                            <select id="field_{{ $key }}" class="js-remote-clinical-select" name="data[{{ $key }}]" data-catalog-url="{{ route('hospital.surgery.catalog', ['type' => 'cie10', 'id_solicitud' => $solicitud->id]) }}" {{ $canWrite ? '' : 'disabled' }}>
+                                @if($value !== '')<option value="{{ $value }}" selected>{{ $value }}</option>@endif
+                            </select>
+                            <small class="form-muted">Busque por código o descripción. El catálogo se consulta según lo que escriba.</small>
+                        @elseif($form['code'] === '017' && in_array($key, ['procedimiento', 'indicacion'], true))
+                            <select id="field_{{ $key }}" class="js-remote-clinical-select" name="data[{{ $key }}]" data-store-text="1" data-catalog-url="{{ route('hospital.surgery.catalog', ['type' => 'procedures', 'id_solicitud' => $solicitud->id]) }}" {{ $canWrite ? '' : 'disabled' }}>
+                                @if($value !== '')<option value="{{ $value }}" selected>{{ $value }}</option>@endif
+                            </select>
+                            <small class="form-muted">Busque el procedimiento; no se precarga el catálogo completo.</small>
+                        @elseif($form['code'] === '017' && in_array($key, ['cirujano_1', 'cirujano_2', 'primer_ayudante', 'segundo_ayudante', 'tercer_ayudante', 'instrumentista', 'circulante', 'anestesiologo', 'ayudante_anestesia'], true))
+                            <select id="field_{{ $key }}" class="js-remote-clinical-select" name="data[{{ $key }}]" data-store-text="1" data-catalog-url="{{ route('hospital.surgery.catalog', ['type' => 'doctors', 'id_solicitud' => $solicitud->id]) }}" {{ $canWrite ? '' : 'disabled' }}>
+                                @if($value !== '')<option value="{{ $value }}" selected>{{ $value }}</option>@endif
+                            </select>
+                            <small class="form-muted">Busque al profesional por apellidos o nombres.</small>
                         @elseif(in_array($key, ['fecha_hora', 'fecha_admision'], true))
                             <input id="field_{{ $key }}" type="datetime-local" name="data[{{ $key }}]" value="{{ $value }}" {{ $canWrite ? '' : 'disabled' }}>
                         @elseif(in_array($key, ['especialidad_solicitada', 'especialidad', 'estudio', 'muestra', 'sitio_anatomico', 'establecimiento_destino', 'prioridad', 'destino', 'procedimiento'], true))
@@ -279,9 +331,87 @@
                     <a class="btn" href="{{ route('hospital.documents.index', ['id_solicitud' => $solicitud->id]) }}" target="_top">Volver al episodio</a>
                 </div>
             </form>
+            @if($form['code'] === '017' && $entry && $canWrite)
+                @if(!empty($entrySigned))
+                    <div class="form-success" role="status">Documento firmado. La celda FIRMA del PDF muestra {{ !empty($entryProof) ? 'la validación electrónica' : 'la rúbrica digitalizada registrada' }}.</div>
+                @else
+                    <form method="POST" action="{{ route('hospital.documents.form.sign', ['code' => '017', 'id_solicitud' => $solicitud->id] + $embeddedQuery) }}" onsubmit="return confirm('¿Confirma que revisó el Formulario 017 y desea firmarlo? Después de firmar no podrá modificar este registro.');">
+                        {{ csrf_field() }}
+                        <input type="hidden" name="entry_id" value="{{ $entry->id }}">
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit">Firmar Formulario 017</button>
+                        </div>
+                    </form>
+                @endif
+            @endif
         </main>
     </div>
 </div>
+@if(in_array($form['code'], ['017', '024'], true))
+<script src="{{ asset('ho/app-assets/vendors/js/vendors.min.js') }}"></script>
+<script src="{{ asset('ho/app-assets/vendors/js/forms/select/select2.full.min.js') }}"></script>
+<script>
+(function ($) {
+    if (!$ || !$.fn || !$.fn.select2) return;
+    $('.js-remote-clinical-select').each(function () {
+        var select = $(this);
+        select.select2({
+            width: '100%',
+            minimumInputLength: 2,
+            placeholder: 'Escriba para buscar',
+            allowClear: true,
+            ajax: {
+                url: select.data('catalog-url'),
+                dataType: 'json',
+                delay: 300,
+                data: function (params) { return {q: params.term || ''}; },
+                processResults: function (data) {
+                    var results = data.results || [];
+                    if (select.data('store-text')) {
+                        results = results.map(function (item) { return {id: item.text, text: item.text}; });
+                    }
+                    return {results: results};
+                },
+                cache: true
+            },
+            language: {
+                inputTooShort: function () { return 'Escriba al menos 2 caracteres'; },
+                noResults: function () { return 'No se encontraron coincidencias'; },
+                searching: function () { return 'Buscando…'; }
+            }
+        });
+        if (select.data('fill-target')) {
+            select.on('select2:select', function (event) {
+                var target = document.querySelector(select.data('fill-target'));
+                if (target && event.params && event.params.data) target.value = event.params.data.text || '';
+            });
+        }
+    });
+})(window.jQuery);
+</script>
+@endif
+@if($form['code'] === '024')
+<script>
+(function () {
+    var tabs = document.querySelectorAll('[data-form024-tab]');
+    var panels = document.querySelectorAll('[data-form024-panel]');
+    function activate(name) {
+        tabs.forEach(function (tab) {
+            var active = tab.getAttribute('data-form024-tab') === name;
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        panels.forEach(function (panel) {
+            panel.hidden = panel.getAttribute('data-form024-panel') !== name;
+        });
+    }
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () { activate(tab.getAttribute('data-form024-tab')); });
+    });
+    if (window.location.hash === '#formularios-creados') activate('records');
+})();
+</script>
+@endif
 @if($form['code'] === '003')
 <script>
 (function () {
@@ -446,6 +576,20 @@
         });
     });
     sync(); render();
+})();
+</script>
+@endif
+@if($form['code'] === '017')
+<script>
+(function () {
+    document.querySelectorAll('.form-page input[type="text"], .form-page textarea').forEach(function (field) {
+        field.addEventListener('input', function () {
+            var start = typeof field.selectionStart === 'number' ? field.selectionStart : null;
+            var end = typeof field.selectionEnd === 'number' ? field.selectionEnd : null;
+            field.value = String(field.value || '').toLocaleUpperCase('es-EC');
+            if (start !== null && typeof field.setSelectionRange === 'function') field.setSelectionRange(start, end);
+        });
+    });
 })();
 </script>
 @endif

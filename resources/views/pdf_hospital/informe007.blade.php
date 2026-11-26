@@ -183,6 +183,7 @@ $doctorInterconsulta = $historiaInterconsulta ? $historiaInterconsulta->doctor_1
     </style>
 </head>
 <body>
+    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa ?? null])
     <footer>
         <span>SNS-MSP / HCU-form.007 / 2021</span>
         <span class="document-name">INTERCONSULTA - INFORME (<span class="page-number"></span>)</span>

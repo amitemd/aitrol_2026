@@ -27,8 +27,8 @@
     }
 
     .company-brand img {
-      width: 400px;
-      height: auto;
+      width: auto;
+      height: 112px;
       max-width: 90%;
       max-height: 112px;
       vertical-align: middle;
@@ -77,6 +77,20 @@
       width: 14%;
       font-weight: bold;
       white-space: nowrap;
+    }
+
+    .pregnancy-options { white-space: nowrap; }
+    .pregnancy-box {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border: 1px solid #26313a;
+      margin: 0 3px 0 8px;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 8px;
+      line-height: 8px;
+      font-weight: bold;
     }
 
     .section-title {
@@ -266,7 +280,13 @@
       </tr>
       <tr>
         <td class="label">PACIENTE:</td>
-        <td colspan="5">{{$nombrePaciente}}</td>
+        @if((string) $paciente->sexo === '2' && (string) $orden_proc_imagenes->tipo_procedimiento === '2')
+          <td colspan="3">{{$nombrePaciente}}</td>
+          <td class="label">EMBARAZO:</td>
+          <td class="pregnancy-options"><span class="pregnancy-box">{{(string) $orden_proc_imagenes->embarazo === '1' ? 'X' : ''}}</span> SÍ <span class="pregnancy-box">{{(string) $orden_proc_imagenes->embarazo === '0' ? 'X' : ''}}</span> NO</td>
+        @else
+          <td colspan="5">{{$nombrePaciente}}</td>
+        @endif
       </tr>
       <tr>
         <td class="label">DOCTOR:</td>
@@ -275,7 +295,7 @@
         <td>{{optional($seguro)->nombre ?: 'PARTICULAR'}}</td>
       </tr>
 
-      @if($mostrarAntecedentes)
+      @if($mostrarAntecedentes && (string) $orden_proc_imagenes->tipo_procedimiento !== '2')
         <tr><td colspan="6" class="section-title">ANTECEDENTES</td></tr>
         @if(trim(strip_tags((string) $paciente->antecedentes_pat)) !== '')
           <tr><td class="label">PATOLÓGICOS:</td><td colspan="5" class="section-content">{!! $paciente->antecedentes_pat !!}</td></tr>

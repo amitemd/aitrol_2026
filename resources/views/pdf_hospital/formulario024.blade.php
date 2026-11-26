@@ -171,7 +171,7 @@
         <table cellpadding="0" cellspacing="0" style="width: 100%">
             <tr style="height: max-content;">
                 <td colspan="2">
-                    <center><img src="{{base_path().'/storage/app/logo/'}}/{{$empresa->logo}}" style="width:250px;height: 100px"></center>
+                    <center>@include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa, 'imageOnly' => true, 'logoHeight' => 88])</center>
                 </td>
             </tr>
             <tr>

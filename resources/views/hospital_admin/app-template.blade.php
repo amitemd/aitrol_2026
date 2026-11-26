@@ -18,9 +18,10 @@
   <link href="{{ asset('hospitalAdmin/css/sb-admin-2.min.css') }}" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 
+    @include('layouts.partials.aitrol-theme')
 </head>
 
-<body id="page-top">
+<body class="aitrol-theme aitrol-admin-theme" id="page-top">
 
   <!-- Page Wrapper -->
   <div id="wrapper">

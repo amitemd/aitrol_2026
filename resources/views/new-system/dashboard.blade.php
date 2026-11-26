@@ -11,7 +11,6 @@
 
     <section class="aitrol-welcome">
         <div class="aitrol-welcome__content">
-            <p class="aitrol-welcome__eyebrow">{{ __('new_system.dashboard.platform') }}</p>
             <h2>{{ __('new_system.dashboard.welcome', ['name' => $dashboardUserName]) }}</h2>
             <p>{{ __('new_system.dashboard.description', ['company' => $dashboardCompanyName]) }}</p>
         </div>
@@ -27,50 +26,42 @@
         </div>
     @endif
 
-    <div class="row">
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-aqua new-system-stat">
-                <div class="inner">
-                    <h3>{{ number_format($stats['activeUsers']) }}</h3>
-                    <p>{{ __('new_system.dashboard.active_users') }}</p>
-                </div>
-                <div class="icon"><i class="fa fa-users"></i></div>
-                <span class="small-box-footer">{{ __('new_system.dashboard.shared_system') }} <i class="fa fa-check-circle"></i></span>
+    <div class="new-system-stat-grid">
+        <div class="small-box new-system-stat">
+            <span class="icon" aria-hidden="true"><i class="fa fa-users"></i></span>
+            <div class="inner">
+                <h3>{{ __('new_system.dashboard.active_users') }}</h3>
+                <strong class="new-system-stat-value">{{ number_format($stats['activeUsers']) }}</strong>
             </div>
+            <span class="small-box-footer">{{ __('new_system.dashboard.shared_system') }} <i class="fa fa-check-circle"></i></span>
         </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-green new-system-stat">
-                <div class="inner">
-                    <h3>{{ number_format($stats['companies']) }}</h3>
-                    <p>{{ __('new_system.dashboard.active_companies') }}</p>
-                </div>
-                <div class="icon"><i class="fa fa-building"></i></div>
-                <a href="{{ route('new-system.companies.index') }}" class="small-box-footer">{{ __('new_system.dashboard.select_company') }} <i class="fa fa-arrow-circle-right"></i></a>
+        <div class="small-box new-system-stat">
+            <span class="icon" aria-hidden="true"><i class="fa fa-building"></i></span>
+            <div class="inner">
+                <h3>{{ __('new_system.dashboard.active_companies') }}</h3>
+                <strong class="new-system-stat-value">{{ number_format($stats['companies']) }}</strong>
             </div>
+            <a href="{{ route('new-system.companies.index') }}" class="small-box-footer">{{ __('new_system.dashboard.select_company') }} <i class="fa fa-arrow-circle-right"></i></a>
         </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-yellow new-system-stat">
-                <div class="inner">
-                    <h3>{{ number_format($stats['companyUsers']) }}</h3>
-                    <p>{{ __('new_system.dashboard.company_users') }}</p>
-                </div>
-                <div class="icon"><i class="fa fa-user-md"></i></div>
-                @can('manage-new-system-users')
-                    <a href="{{ route('new-system.users.index') }}" class="small-box-footer">{{ __('new_system.dashboard.manage_users') }} <i class="fa fa-arrow-circle-right"></i></a>
-                @else
-                    <span class="small-box-footer">{{ __('new_system.dashboard.selected_company') }} <i class="fa fa-check-circle"></i></span>
-                @endcan
+        <div class="small-box new-system-stat">
+            <span class="icon" aria-hidden="true"><i class="fa fa-user-md"></i></span>
+            <div class="inner">
+                <h3>{{ __('new_system.dashboard.company_users') }}</h3>
+                <strong class="new-system-stat-value">{{ number_format($stats['companyUsers']) }}</strong>
             </div>
+            @can('manage-new-system-users')
+                <a href="{{ route('new-system.users.index') }}" class="small-box-footer">{{ __('new_system.dashboard.manage_users') }} <i class="fa fa-arrow-circle-right"></i></a>
+            @else
+                <span class="small-box-footer">{{ __('new_system.dashboard.selected_company') }} <i class="fa fa-check-circle"></i></span>
+            @endcan
         </div>
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-red new-system-stat">
-                <div class="inner">
-                    <h3>{{ number_format($stats['legacyRoutes']) }}</h3>
-                    <p>{{ __('new_system.dashboard.integrated_routes') }}</p>
-                </div>
-                <div class="icon"><i class="fa fa-exchange"></i></div>
-                <span class="small-box-footer">{{ __('new_system.dashboard.sidebar_available') }} <i class="fa fa-check-circle"></i></span>
+        <div class="small-box new-system-stat">
+            <span class="icon" aria-hidden="true"><i class="fa fa-exchange"></i></span>
+            <div class="inner">
+                <h3>{{ __('new_system.dashboard.integrated_routes') }}</h3>
+                <strong class="new-system-stat-value">{{ number_format($stats['legacyRoutes']) }}</strong>
             </div>
+            <span class="small-box-footer">{{ __('new_system.dashboard.sidebar_available') }} <i class="fa fa-check-circle"></i></span>
         </div>
     </div>
 

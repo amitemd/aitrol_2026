@@ -12,7 +12,7 @@
  */
 
 Route::get('/pentax', 'PentaxController@pentax')->name('pentax.pentax');
-Route::get('/pentax/buscar/{fecha}', 'PentaxController@pentax2')->name('pentax.pentax2'); //14/05/2018
+Route::get('/pentax/buscar/{fecha}', 'PentaxController@pentax2')->name('pentax.pentax2'); // 14/05/2018
 Route::get('/pentax/index', 'PentaxController@index')->name('pentax.index');
 Route::get('/pentax/index/{fecha}', 'PentaxController@index')->name('pentax.index2');
 Route::get('/pentax/actualiza', 'PentaxController@actualiza')->name('pentax.actualiza');
@@ -25,7 +25,7 @@ Route::get('/pentax/actualizasala/{id}/{vsala}/{fec}', 'PentaxController@actuali
 Route::get('/pentax/log/{id}', 'PentaxController@log')->name('pentax.log');
 Route::get('/pentax/reporte', 'PentaxController@reporte_pentax')->name('pentax.reporte');
 Route::get('/pentax/reporte/{fecha}', 'PentaxController@reporte_pentax')->name('pentax.reporte2');
-//original
+// original
 Route::get('/pentaxtv', 'PentaxController@pentaxtv')->name('pentax.pentaxtv');
 Route::get('/pentaxtv/index', 'PentaxController@indextv')->name('pentax.indextv');
 Route::get('/pentaxtv/index/{fecha}', 'PentaxController@indextv')->name('pentax.index2tv');
@@ -33,11 +33,13 @@ Route::get('/pentaxtv/index/{fecha}', 'PentaxController@indextv')->name('pentax.
 Route::get('/pentaxtv_dr', 'PentaxController@pentaxtv_dr')->name('pentax.pentaxtv_dr');
 Route::get('/pentaxtv_dr/index', 'PentaxController@indextv_dr')->name('pentax.indextv_dr');
 Route::get('/pentaxtv_dr/index/{fecha}', 'PentaxController@indextv_dr')->name('pentax.index2tv_dr');
-//reporteagenda
+// reporteagenda
 Route::match(['get', 'post'], 'pentax/reporteagenda', 'PentaxController@reporteagenda')->name('pentax.reporteagenda');
 Route::post('pentax/excel', 'PentaxController@excel')->name('pentax.excel');
 
 Route::get('/procedimientos_dr', 'PentaxController@procedimientos_dr')->name('procedimientos_dr.procedimientos_dr');
+Route::get('/procedimientos/control', 'PentaxController@procedimientos_dr')->name('procedimientos.menu.control');
+Route::get('/procedimientos/procedimientostv', 'PentaxController@procedimientostv_dr')->name('procedimientos.menu.tv');
 Route::get('/procedimientos_dr/buscar/{fecha}', 'PentaxController@procedimientos_dr2')->name('procedimientos_dr.procedimientos_dr2');
 Route::get('/procedimientos_dr/index', 'PentaxController@index_dr')->name('procedimientos_dr.index_dr');
 Route::get('/procedimientos_dr/index/{fecha}', 'PentaxController@index_dr')->name('pentax.index_dr2');
@@ -49,8 +51,8 @@ Route::get('/procedimientostv_dr', 'PentaxController@procedimientostv_dr')->name
 Route::get('/procedimientostv_dr/index', 'PentaxController@indextv_drH')->name('procedimientostv_dr.indextv_drH');
 Route::get('/procedimientostv_dr/index/{fecha}', 'PentaxController@indextv_drH')->name('procedimientostv_dr.indextv_drH2');
 
-//NUEVO 109 EN PENTAX
+// NUEVO 109 EN PENTAX
 Route::get('/pentaxtv_dr/index_109/{fecha}', 'PentaxController@indextv_dr_109')->name('pentax.indextv_dr_109');
 
-//PANTALLAS CONSULTORIOS PRMD. LOPEZ
+// PANTALLAS CONSULTORIOS PRMD. LOPEZ
 Route::match(['get', 'post'], '/consulta_tv', 'PentaxController@consultatv')->name('pentax.consultatv');

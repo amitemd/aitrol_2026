@@ -92,6 +92,26 @@
         box-sizing: border-box
     }
 
+    .pc-field.pc-field--error input,
+    .pc-field.pc-field--error select,
+    .pc-field.pc-field--error textarea {
+        border-color: #dc3545;
+        background: #fff8f8;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, .12)
+    }
+
+    .pc-field.pc-field--error label,
+    .pc-field-error {
+        color: #b4232d
+    }
+
+    .pc-field-error {
+        display: block;
+        margin-top: 5px;
+        font-size: 11px;
+        font-weight: 700
+    }
+
     .pc-span2 {
         grid-column: span 2
     }
@@ -250,6 +270,7 @@
             <input type="hidden" name="agenda_inicio" value="{{ $agendaContext['inicio'] }}">
             <input type="hidden" name="agenda_fin" value="{{ $agendaContext['fin'] }}">
             <input type="hidden" name="agenda_tipo" value="{{ $agendaContext['tipo'] }}">
+            @if(!empty($agendaContext['origin']))<input type="hidden" name="agenda_origen" value="{{ $agendaContext['origin'] }}">@endif
             <div class="alert alert-info"><i class="fas fa-calendar-plus mr-1"></i> Al guardar el paciente regresarás a la nueva agenda y quedará seleccionado automáticamente.</div>
         @endif
         <section class="pc-card">
@@ -265,8 +286,10 @@
                         <option value="2" {{ old('tipo_documento') == 2 ? 'selected' : '' }}>Pasaporte</option>
                         <option value="3" {{ old('tipo_documento') == 3 ? 'selected' : '' }}>Otro documento</option>
                     </select></div>
-                <div class="pc-field"><label>Identificación <span class="pc-required">*</span></label><input
-                        name="id" maxlength="13" value="{{ old('id') }}" required autocomplete="off"></div>
+                <div class="pc-field{{ $errors->has('id') ? ' pc-field--error' : '' }}" id="patient-identification-field"><label>Identificación <span class="pc-required">*</span></label><input
+                        id="patient-identification" name="id" maxlength="13" value="{{ old('id') }}" required autocomplete="off" aria-describedby="patient-identification-error">
+                    <small class="pc-field-error" id="patient-identification-error" @if(!$errors->has('id')) hidden @endif>{{ $errors->first('id') }}</small>
+                </div>
                 <div class="pc-field"><label>Parentesco / responsable <span class="pc-required">*</span></label><select
                         name="parentesco" id="parentesco" data-order="preserve" autocomplete="off" required>
                         @foreach (['Principal', 'Padre/Madre', 'Conyugue', 'Hijo(a)', 'Hermano(a)', 'Sobrino(a)', 'Nieto(a)', 'Primo(a)', 'Familiar'] as $item)
@@ -416,6 +439,97 @@
     </form>
 </div>
 <script>
+    (function () {
+        var input = document.getElementById('patient-identification');
+        var field = document.getElementById('patient-identification-field');
+        var error = document.getElementById('patient-identification-error');
+        var form = document.getElementById('patient-form');
+        if (!input || !field || !error || !form || !window.fetch) return;
+
+        var endpoint = "{{ route('v3.patients.identification-availability') }}";
+        var timer = null;
+        var sequence = 0;
+        var lastAlertedIdentification = '';
+
+        function showAlert(message) {
+            var options = {
+                icon: 'warning',
+                title: 'Identificación ya registrada',
+                text: message,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#087fa5',
+                allowOutsideClick: false
+            };
+            if (typeof window.mostrarSweetAlertV3 === 'function') {
+                return window.mostrarSweetAlertV3(options);
+            }
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+                return window.Swal.fire(options);
+            }
+            window.alert(message);
+        }
+
+        function setDuplicate(message, identification) {
+            input.dataset.duplicate = '1';
+            input.setCustomValidity(message);
+            field.classList.add('pc-field--error');
+            error.textContent = message;
+            error.hidden = false;
+            if (lastAlertedIdentification !== identification) {
+                lastAlertedIdentification = identification;
+                showAlert(message);
+            }
+        }
+
+        function clearDuplicate() {
+            input.dataset.duplicate = '0';
+            input.setCustomValidity('');
+            field.classList.remove('pc-field--error');
+            error.textContent = '';
+            error.hidden = true;
+        }
+
+        function checkIdentification() {
+            window.clearTimeout(timer);
+            var identification = input.value.trim();
+            var requestSequence = ++sequence;
+            if (identification.length < 3) {
+                clearDuplicate();
+                return;
+            }
+
+            input.setAttribute('aria-busy', 'true');
+            fetch(endpoint + '?id=' + encodeURIComponent(identification), {
+                headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                credentials: 'same-origin'
+            }).then(function (response) {
+                if (!response.ok) throw new Error('No se pudo validar la identificación.');
+                return response.json();
+            }).then(function (data) {
+                if (requestSequence !== sequence || input.value.trim() !== identification) return;
+                if (data.exists) setDuplicate(data.message, identification);
+                else clearDuplicate();
+            }).catch(function () {
+                // El guardado conserva la validación del servidor como respaldo.
+            }).then(function () {
+                if (requestSequence === sequence) input.removeAttribute('aria-busy');
+            });
+        }
+
+        input.addEventListener('input', function () {
+            if (this.value.trim() !== lastAlertedIdentification) lastAlertedIdentification = '';
+            clearDuplicate();
+            window.clearTimeout(timer);
+            timer = window.setTimeout(checkIdentification, 450);
+        });
+        input.addEventListener('blur', checkIdentification);
+        form.addEventListener('submit', function (event) {
+            if (input.dataset.duplicate === '1') {
+                event.preventDefault();
+                input.reportValidity();
+            }
+        });
+    })();
     (function () {
         function showPatientTypeWarning() {
             var warning = document.getElementById('patient-type-warning');

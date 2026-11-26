@@ -18,8 +18,9 @@
     </style>
     @yield('styles')
     <script src="{{ asset('/bower_components/jquery/dist/jquery.min.js') }}"></script>
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body>
+<body class="aitrol-theme">
     <main class="hospital-embedded-container">
         @yield('content')
     </main>

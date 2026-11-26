@@ -65,6 +65,7 @@ $classicon="sun";
 
     <!-- END: Custom CSS-->
 
+    @include('layouts.partials.aitrol-theme')
 </head>
 <style>
     .ui-menu-item {
@@ -75,7 +76,7 @@ $classicon="sun";
 
 <!-- BEGIN: Body-->
 
-<body class="vertical-layout vertical-menu-modern content-left-sidebar chat-application navbar-floating footer-static  " data-open="click" data-menu="vertical-menu-modern" data-col="content-left-sidebar">
+<body class="aitrol-theme vertical-layout vertical-menu-modern content-left-sidebar chat-application navbar-floating footer-static  " data-open="click" data-menu="vertical-menu-modern" data-col="content-left-sidebar">
 
     <!-- BEGIN: Header-->
 

@@ -95,6 +95,7 @@ return [
     'clinical_agenda' => [
         'module' => 'Outpatient and Hospital',
         'menu_label' => 'Outpatient schedule',
+        'documents' => 'Outpatient documents',
         'title' => 'Clinical schedule',
         'eyebrow' => 'Outpatient clinical management',
         'subtitle' => 'Organize care by physician, specialty and availability from the main system.',

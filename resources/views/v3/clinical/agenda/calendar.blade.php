@@ -7,7 +7,7 @@
       <div>
         <div class="co-eyebrow">AGENDA MÉDICA · V3</div>
         <h1>Dr(a). {{$doctor->display_name}}</h1>
-        <p>Consultas, procedimientos y reuniones en una sola vista {{$viewMode==='dia'?'diaria':'semanal'}}.</p>
+        <p>Consultas, procedimientos, cirugías y reuniones en una sola vista {{$viewMode==='dia'?'diaria':'semanal'}}.</p>
       </div>
     </div><a class="btn btn-light" href="{{route('v3.clinical-agenda.index')}}"><i class="fas fa-arrow-left mr-1"></i> Directorio</a>
   </section>
@@ -147,7 +147,7 @@
         confirmButtonColor: '#087fb5'
       }).then(function() {
         if (!firstField || !form) return;
-        var field = form.querySelector('[name="' + firstField.replace(/"/g, '') + '"]');
+        var field = form.querySelector('[name="' + firstField.replace(/"/g, '') + '"]:not(:disabled)') || form.querySelector('[name="' + firstField.replace(/"/g, '') + '"]');
         if (!field) return;
         field.focus();
         if (window.jQuery && field.tagName === 'SELECT' && window.jQuery(field).hasClass('select2-hidden-accessible')) {
@@ -157,6 +157,11 @@
     }
 
     function clientValidation(form) {
+      function activeField(name) {
+        var fields = form.querySelectorAll('[name="' + name + '"]');
+        for (var i = 0; i < fields.length; i += 1) if (!fields[i].disabled) return fields[i];
+        return fields.length ? fields[0] : null;
+      }
       var typeField = form.querySelector('[name="tipo"]'),
         type = typeField ? parseInt(typeField.value, 10) : 0,
         rules = [
@@ -168,16 +173,21 @@
         rules.push(['id_sala', 'Seleccione una sala o consultorio.']);
         rules.push(['id_seguro', 'Seleccione un seguro o convenio.']);
       }
-      if (type === 1) rules.push(['id_procedimiento', 'Seleccione el procedimiento que se realizará.']);
+      if (type === 1 || type === 5) rules.push(['id_procedimiento', 'Seleccione el procedimiento que se realizará.']);
+      if (type === 5) {
+        rules.push(['hora_quirurgica', 'Seleccione la fecha y hora de la cirugía.']);
+        rules.push(['duracion_cirugia', 'Ingrese la duración estimada de la cirugía.']);
+        rules.push(['indicacion_quirurgica', 'Ingrese la indicación quirúrgica.']);
+      }
 
       var messages = [], firstField = null;
       rules.forEach(function(rule) {
-        var field = form.querySelector('[name="' + rule[0] + '"]');
+        var field = activeField(rule[0]);
         if (!field || String(field.value || '').trim() !== '') return;
         if (!firstField) firstField = rule[0];
         messages.push(rule[1]);
       });
-      var start = form.querySelector('[name="inicio"]'), end = form.querySelector('[name="fin"]');
+      var start = activeField('inicio'), end = activeField('fin');
       if (start && end && start.value && end.value && new Date(end.value).getTime() <= new Date(start.value).getTime()) {
         if (!firstField) firstField = 'fin';
         messages.push('La fecha y hora de fin debe ser posterior al inicio.');
@@ -295,13 +305,14 @@
       var cancel = event.target.closest('.js-cancel-activity');
       if (cancel) {
         event.preventDefault();
+        var activityNoun = cancel.getAttribute('data-activity-noun') || 'agenda';
         agendaAlert({
           icon: 'warning',
-          title: '¿Cancelar esta agenda?',
-          text: 'La agenda quedará marcada como cancelada y se conservará su trazabilidad.',
+          title: '¿Cancelar esta ' + activityNoun + '?',
+          text: 'La ' + activityNoun + ' quedará marcada como cancelada y se conservará su trazabilidad.',
           input: 'textarea',
           inputLabel: 'Motivo de cancelación',
-          inputPlaceholder: 'Explique por qué se cancela la agenda…',
+          inputPlaceholder: 'Explique por qué se cancela la ' + activityNoun + '…',
           inputAttributes: { maxlength: 1000, 'aria-label': 'Motivo de cancelación' },
           target: modal,
           focusConfirm: false,
@@ -315,7 +326,7 @@
           },
           showCancelButton: true,
           confirmButtonText: '<i class="fas fa-ban"></i> Sí, cancelar',
-          cancelButtonText: 'No, mantener agenda',
+          cancelButtonText: 'No, mantener ' + activityNoun,
           confirmButtonColor: '#d33',
           cancelButtonColor: '#6c8797',
           reverseButtons: true
@@ -367,8 +378,12 @@
         patientCreate = root.querySelector('[data-patient-create]'),
         form = root.querySelector('.js-activity-form'), startInput = root.querySelector('[name="inicio"]'),
         endInput = root.querySelector('[name="fin"]'), availabilityBox = root.querySelector('.da-availability__slots'),
-        refreshAvailability = root.querySelector('.js-refresh-availability'), status = root.querySelector('.js-agenda-status'), availabilityTimer = null;
+        availabilityPanel = root.querySelector('.js-reagendar-availability'), standardAvailabilityAnchor = root.querySelector('.js-standard-availability-anchor'),
+        surgeryAvailabilityAnchor = root.querySelector('.js-surgery-availability-anchor'), refreshAvailability = root.querySelector('.js-refresh-availability'),
+        surgeryPlan = root.querySelector('.js-surgery-plan'), surgeryPlanAnchor = root.querySelector('.js-surgery-plan-anchor'),
+        status = root.querySelector('.js-agenda-status'), availabilityTimer = null;
       if (!type) return;
+      root.querySelectorAll('input:disabled,select:disabled,textarea:disabled').forEach(function(field) { field.setAttribute('data-initial-disabled', '1'); });
       if (window.jQuery && window.jQuery.fn.select2) {
         window.jQuery(root).find('.js-activity-form select').each(function() {
           var select = window.jQuery(this);
@@ -400,6 +415,18 @@
             };
           }
           select.select2(options);
+          var labelClearButton = function() {
+            select.next('.select2-container').find('.select2-selection__clear').attr({
+              'title': 'Quitar selección',
+              'aria-label': 'Quitar selección',
+              'role': 'button'
+            });
+          };
+          labelClearButton();
+          select.off('select2:select.agendaClear select2:clear.agendaClear')
+            .on('select2:select.agendaClear select2:clear.agendaClear', function() {
+              window.setTimeout(labelClearButton, 0);
+            });
           select.off('select2:open.agendaFocus').on('select2:open.agendaFocus', function() {
             window.setTimeout(function() {
               var searchField = modal.querySelector('.select2-container--open .select2-search__field');
@@ -415,34 +442,113 @@
         });
       }
 
+      function activeField(name) {
+        var fields = root.querySelectorAll('[name="' + name + '"]');
+        for (var i = 0; i < fields.length; i += 1) if (!fields[i].disabled) return fields[i];
+        return fields.length ? fields[0] : null;
+      }
+
+      function surgeryField(name) {
+        return root.querySelector('.da-surgery-card [name="' + name + '"]:not(:disabled)') || root.querySelector('.da-surgery-card [name="' + name + '"]');
+      }
+
+      function syncActivityGroups(value) {
+        root.querySelectorAll('[data-activity-types]').forEach(function(group) {
+          var visible = group.getAttribute('data-activity-types').split(',').indexOf(String(value)) !== -1;
+          group.classList.toggle('is-agenda-hidden', !visible);
+          group.querySelectorAll('input,select,textarea').forEach(function(field) {
+            if (field.name === 'inicio' || field.name === 'fin') return;
+            field.disabled = !visible || field.hasAttribute('data-initial-disabled');
+            if (field.tagName === 'SELECT' && window.jQuery && window.jQuery(field).hasClass('select2-hidden-accessible')) window.jQuery(field).trigger('change.select2');
+          });
+        });
+      }
+
+      function syncSurgeryBlock() {
+        var duration = parseInt((activeField('duracion_cirugia') || {}).value || 0, 10),
+          preparation = parseInt((activeField('preparacion_minutos') || {}).value || 0, 10),
+          cleaning = parseInt((activeField('limpieza_minutos') || {}).value || 0, 10),
+          summary = root.querySelector('.js-surgery-summary'), surgeryTime = activeField('hora_quirurgica');
+        if (summary) {
+          summary.textContent = 'Bloque total: ' + (duration + preparation + cleaning) + ' minutos';
+          var detail = summary.parentNode.querySelector('small');
+          if (detail) detail.textContent = 'Incluye ' + preparation + ' min de preparación y ' + cleaning + ' min de limpieza/recuperación.';
+        }
+        if (parseInt(type.value, 10) === 5 && surgeryTime && surgeryTime.value && startInput && endInput) {
+          var coreStart = new Date(surgeryTime.value), blockStart = new Date(coreStart.getTime() - preparation * 60000),
+            blockEnd = new Date(coreStart.getTime() + (duration + cleaning) * 60000);
+          function localValue(date) {
+            var offset = date.getTimezoneOffset() * 60000;
+            return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+          }
+          startInput.value = localValue(blockStart);
+          endInput.value = localValue(blockEnd);
+        }
+      }
+
+      function placeAvailability(value) {
+        if (!availabilityPanel) return;
+        var anchor = value === 5 ? surgeryAvailabilityAnchor : standardAvailabilityAnchor;
+        if (anchor && availabilityPanel.previousElementSibling !== anchor) anchor.insertAdjacentElement('afterend', availabilityPanel);
+      }
+
+      function placeSurgeryPlan(value) {
+        if (value === 5 && surgeryPlan && surgeryPlanAnchor && surgeryPlan.previousElementSibling !== surgeryPlanAnchor) {
+          surgeryPlanAnchor.insertAdjacentElement('afterend', surgeryPlan);
+        }
+      }
+
       function sync() {
         var value = parseInt(type.value, 10);
+        placeSurgeryPlan(value);
+        placeAvailability(value);
         show(root.querySelectorAll('.da-patient-fields'), value !== 2);
         show(root.querySelectorAll('.da-procedure-fields'), value === 1);
+        show(root.querySelectorAll('.da-surgery-fields'), value === 5);
         show(root.querySelectorAll('.da-meeting-fields'), value === 2);
-        var procedure = root.querySelector('[name="id_procedimiento"]');
-        if (procedure) procedure.required = value === 1;
-        if (value !== 1) {
-          if (procedure) procedure.value = '';
-          ['id_doctor2', 'id_doctor3'].forEach(function(name) {
-            var assistant = root.querySelector('.da-procedure-fields [name="' + name + '"]');
-            if (assistant) assistant.value = '';
-          });
-        }
+        syncActivityGroups(value);
+        var procedure = activeField('id_procedimiento');
+        if (procedure) procedure.required = value === 1 || value === 5;
+        var title = root.querySelector('.js-availability-title'), help = root.querySelector('.js-availability-help'), saveLabel = root.querySelector('.js-save-label');
+        if (title) title.textContent = value === 5 ? 'Bloques disponibles del quirófano' : 'Horarios disponibles del médico';
+        if (help) help.textContent = value === 5 ? 'Se validan simultáneamente quirófano, cirujano y anestesiólogo. El bloque incluye preparación y limpieza.' : 'Selecciona un intervalo libre para completar automáticamente las horas.';
+        if (saveLabel && !form.getAttribute('data-appointment-id')) saveLabel.textContent = value === 5 ? 'Guardar como tentativa' : 'Crear agenda';
+        var modality = activeField('modalidad_cirugia'), admissionType = root.querySelector('.js-surgery-admission-type');
+        if (modality && admissionType) admissionType.value = modality.value === 'AMBULATORIA' ? '0' : '1';
+        syncSurgeryBlock();
       }
       function loadAvailability() {
         if (!form || !availabilityBox || !startInput || !startInput.value) return;
-        var date = startInput.value.substring(0, 10), url = form.getAttribute('data-availability-url'), exclude = form.getAttribute('data-appointment-id');
+        var isSurgery = parseInt(type.value, 10) === 5, surgeryTime = activeField('hora_quirurgica'),
+          sourceDate = isSurgery && surgeryTime ? surgeryTime.value : startInput.value,
+          date = sourceDate.substring(0, 10), url = form.getAttribute('data-availability-url'), exclude = form.getAttribute('data-appointment-id');
         if (!url || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
-        availabilityBox.innerHTML = '<span class="da-availability__hint"><i class="fas fa-spinner fa-spin mr-1"></i> Consultando horarios libres…</span>';
+        var surgeryRoom = isSurgery ? surgeryField('id_sala') : activeField('id_sala');
+        if (isSurgery && (!surgeryRoom || !surgeryRoom.value)) {
+          if (refreshAvailability) refreshAvailability.disabled = true;
+          availabilityBox.innerHTML = '<span class="da-availability__hint"><i class="fas fa-door-open mr-1"></i> Selecciona un quirófano para consultar bloques disponibles.</span>';
+          return;
+        }
+        if (refreshAvailability) refreshAvailability.disabled = false;
+        var roomLabel = isSurgery && surgeryRoom.options && surgeryRoom.selectedIndex >= 0 ? surgeryRoom.options[surgeryRoom.selectedIndex].text : '';
+        availabilityBox.innerHTML = '<span class="da-availability__hint"><i class="fas fa-spinner fa-spin mr-1"></i> Consultando bloques libres' + (roomLabel ? ' en ' + escapeHtml(roomLabel) : '') + '…</span>';
         var query = '?fecha=' + encodeURIComponent(date) + '&tipo=' + encodeURIComponent(type.value);
         if (exclude) query += '&excluir=' + encodeURIComponent(exclude);
+        if (isSurgery) {
+          ['id_sala','id_anestesiologo','duracion_cirugia','preparacion_minutos','limpieza_minutos'].forEach(function(name) {
+            var field = surgeryField(name);
+            if (field && field.value !== '') query += '&' + encodeURIComponent(name) + '=' + encodeURIComponent(field.value);
+          });
+        }
         fetch(url + query, { credentials: 'same-origin', headers: headers(true) }).then(function(response) {
           return response.json().then(function(data) { if (!response.ok) throw new Error(errorText(data, 'No se pudo consultar la disponibilidad.')); return data; });
         }).then(function(data) {
           var items = data.items || [];
-          if (!items.length) { availabilityBox.innerHTML = '<span class="da-availability__hint da-availability__hint--empty"><i class="fas fa-calendar-times mr-1"></i> No existen intervalos libres para esta fecha y tipo de agenda.</span>'; return; }
-          availabilityBox.innerHTML = items.map(function(item) { return '<button type="button" class="da-availability__slot" data-start="' + escapeHtml(item.start) + '" data-end="' + escapeHtml(item.end) + '"><i class="far fa-clock mr-1"></i>' + escapeHtml(item.label) + '<small>Turno de ' + item.minutes + ' minutos</small></button>'; }).join('');
+          if (!items.length) { availabilityBox.innerHTML = '<span class="da-availability__hint da-availability__hint--empty"><i class="fas fa-calendar-times mr-1"></i> No existen ' + (isSurgery ? 'bloques quirúrgicos' : 'intervalos') + ' libres para esta fecha.</span>'; return; }
+          availabilityBox.innerHTML = items.map(function(item) {
+            if (isSurgery) return '<button type="button" class="da-availability__slot da-availability__slot--surgery" data-start="' + escapeHtml(item.start) + '" data-end="' + escapeHtml(item.end) + '" data-surgery-start="' + escapeHtml(item.surgery_start) + '"><i class="fas fa-procedures mr-1"></i><span>Cirugía ' + escapeHtml(item.surgery_label) + '</span><small>Bloque de sala ' + escapeHtml(item.block_label) + '</small></button>';
+            return '<button type="button" class="da-availability__slot" data-start="' + escapeHtml(item.start) + '" data-end="' + escapeHtml(item.end) + '"><i class="far fa-clock mr-1"></i>' + escapeHtml(item.label) + '<small>Turno de ' + item.minutes + ' minutos</small></button>';
+          }).join('');
         }).catch(function(error) { availabilityBox.innerHTML = '<span class="da-availability__hint da-availability__hint--empty"><i class="fas fa-exclamation-circle mr-1"></i>' + escapeHtml(error.message) + '</span>'; });
       }
       function scheduleAvailability() { window.clearTimeout(availabilityTimer); availabilityTimer = window.setTimeout(loadAvailability, 180); }
@@ -488,7 +594,19 @@
       type.addEventListener('change', scheduleAvailability);
       if (startInput) startInput.addEventListener('change', scheduleAvailability);
       if (refreshAvailability) refreshAvailability.addEventListener('click', loadAvailability);
-      if (availabilityBox) availabilityBox.addEventListener('click', function(event) { var slot = event.target.closest('.da-availability__slot'); if (!slot) return; startInput.value = slot.getAttribute('data-start'); endInput.value = slot.getAttribute('data-end'); availabilityBox.querySelectorAll('.da-availability__slot').forEach(function(item) { item.classList.toggle('is-selected', item === slot); }); });
+      if (availabilityBox) availabilityBox.addEventListener('click', function(event) { var slot = event.target.closest('.da-availability__slot'); if (!slot) return; startInput.value = slot.getAttribute('data-start'); endInput.value = slot.getAttribute('data-end'); var surgeryTime = activeField('hora_quirurgica'); if (surgeryTime && slot.getAttribute('data-surgery-start')) surgeryTime.value = slot.getAttribute('data-surgery-start'); availabilityBox.querySelectorAll('.da-availability__slot').forEach(function(item) { item.classList.toggle('is-selected', item === slot); }); });
+      root.querySelectorAll('.js-surgery-time,.js-surgery-duration,.js-surgery-preparation,.js-surgery-cleaning,.js-surgery-resource').forEach(function(field) {
+        field.addEventListener('change', function() { syncSurgeryBlock(); scheduleAvailability(); });
+        field.addEventListener('input', syncSurgeryBlock);
+        if (window.jQuery && field.tagName === 'SELECT') {
+          window.jQuery(field).off('change.surgeryAvailability select2:select.surgeryAvailability').on('change.surgeryAvailability select2:select.surgeryAvailability', function() {
+            syncSurgeryBlock();
+            scheduleAvailability();
+          });
+        }
+      });
+      var surgeryModality = root.querySelector('.js-surgery-modality');
+      if (surgeryModality) surgeryModality.addEventListener('change', sync);
       function syncPatientDefaults(data) {
         var option = patient.options[patient.selectedIndex],
           appointmentType = data && data.appointment_type != null ? data.appointment_type : (option ? option.getAttribute('data-appointment-type') : null);

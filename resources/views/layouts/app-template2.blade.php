@@ -153,7 +153,8 @@ Full screen Modal
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-  </head>
+      @include('layouts.partials.aitrol-theme')
+</head>
   <!--
     Creado y Diseñado por:
     -Victor Touris
@@ -178,7 +179,7 @@ Full screen Modal
     |               | sidebar-mini                            |
     |---------------------------------------------------------|
     -->
-  <body class="hold-transition skin-blue  sidebar-mini sidebar-collapse " id="body2">
+  <body class="aitrol-theme hold-transition skin-blue  sidebar-mini sidebar-collapse " id="body2">
     <div class="wrapper">
     <!-- Main Header -->
     @include('layouts.header2')

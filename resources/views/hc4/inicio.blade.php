@@ -237,6 +237,8 @@
 
    .hc4-history-panel {
       position: relative;
+	      z-index: 100100;
+	      overflow: visible !important;
       margin-top: 0 !important;
       padding: 14px 18px !important;
       border: 1px solid #bad9e5;
@@ -312,11 +314,36 @@
 
    .hc4-history-panel .hc4-filter-panel {
       padding: 10px 12px !important;
+	      overflow: visible !important;
       border: 1px solid rgba(8, 126, 174, .28);
       border-radius: 12px;
       background: rgba(255,255,255,.7);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
    }
+
+	   .hc4-history-panel form,
+	   .hc4-history-panel form > .row,
+	   .hc4-filter-panel > .row,
+	   .hc4-filter-panel .form-group,
+	   .hc4-filter-panel .input-group,
+	   .hc4-filter-panel .input-group-append {
+	      overflow: visible !important;
+	   }
+
+	   #datetimepicker1,
+	   #datetimepicker2 {
+	      position: relative;
+	   }
+
+	   #datetimepicker1:focus-within,
+	   #datetimepicker2:focus-within {
+	      z-index: 100102;
+	   }
+
+	   .hc4-history-panel .bootstrap-datetimepicker-widget,
+	   body > .bootstrap-datetimepicker-widget {
+	      z-index: 100103 !important;
+	   }
 
    .hc4-filter-panel .form-control,
    .hc4-filter-panel .input-group-text {
@@ -1151,7 +1178,7 @@
                             <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
                               <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                                <input type="text" name="desde_inicio" id="desde_inicio" class="form-control form-control-sm datetimepicker-input" data-target="#datetimepicker1"  />
+	                                <input type="text" name="desde_inicio" id="desde_inicio" class="form-control form-control-sm datetimepicker-input" data-target="#datetimepicker1" placeholder="AAAA-MM-DD" inputmode="numeric" autocomplete="off" />
                                 <input type="hidden" id="fecha" name="fecha" onchange="cambio_fecha()">
                               </div>
                             </div>
@@ -1167,7 +1194,7 @@
                             <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
                               <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                                <input type="text" name="hasta_fin" id="hasta_fin" class="form-control form-control-sm datetimepicker-input" data-target="#datetimepicker2" />
+	                                <input type="text" name="hasta_fin" id="hasta_fin" class="form-control form-control-sm datetimepicker-input" data-target="#datetimepicker2" placeholder="AAAA-MM-DD" inputmode="numeric" autocomplete="off" />
                                 <input type="hidden" id="fecha_hasta" name="fecha_hasta">
                               </div>
                             </div>
@@ -1377,24 +1404,46 @@
             $(function () {
                 inicializarFiltrosSelect2Ambulatorios();
 
-                $('#datetimepicker1').datetimepicker({
-                    format: 'YYYY/MM/DD',
-                    defaultDate: '{{$fecha1}}'
-                });
+	                var fechaDesdeInicial = moment({!! json_encode($fecha1) !!});
+	                var fechaHastaInicial = moment({!! json_encode($fecha2) !!});
+	                var formatoFechaBusqueda = 'YYYY-MM-DD';
 
-                $('#datetimepicker2').datetimepicker({
-                    format: 'YYYY/MM/DD',
-                    defaultDate: '{{$fecha2}}',
-                    //minDate: '{{$fecha2}}',
-                  });
+	                $('#datetimepicker1').datetimepicker({
+	                    format: formatoFechaBusqueda,
+	                    viewMode: 'days',
+	                    useCurrent: false,
+	                    defaultDate: fechaDesdeInicial
+	                });
+
+	                $('#datetimepicker2').datetimepicker({
+	                    format: formatoFechaBusqueda,
+	                    viewMode: 'days',
+	                    useCurrent: false,
+	                    defaultDate: fechaHastaInicial
+	                  });
+
+	                // Tempus Dominus puede conservar el formato regional previo
+	                // si el campo ya tenía valor. Se normaliza siempre a fecha ISO.
+	                $('#desde_inicio').val(fechaDesdeInicial.format(formatoFechaBusqueda));
+	                $('#hasta_fin').val(fechaHastaInicial.format(formatoFechaBusqueda));
 
                 $("#datetimepicker1").on("change.datetimepicker", function (e) {
+	                    if (e.date) {
+	                      $('#desde_inicio').val(e.date.format(formatoFechaBusqueda));
+	                    }
                     $('#datetimepicker2').datetimepicker('minDate', e.date);
                     buscador_paciente_fecha();
                 });
                 $("#datetimepicker2").on("change.datetimepicker", function (e) {
+	                    if (e.date) {
+	                      $('#hasta_fin').val(e.date.format(formatoFechaBusqueda));
+	                    }
                     buscador_paciente_fecha();
                 });
+
+                @if(!is_null($id_doctor1))
+                buscador_paciente_fecha();
+                @endif
 
                 $(".clickable-row").click(function() {
                     window.location = $(this).data("href");

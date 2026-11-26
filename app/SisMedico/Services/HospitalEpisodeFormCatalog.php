@@ -8,18 +8,30 @@ class HospitalEpisodeFormCatalog
 {
     public static function canAuthor($user, $code)
     {
-        if (!$user) return false;
+        if (! $user) {
+            return false;
+        }
 
         $roles = ['DOCTORES', 'DOCTOR', 'ANESTESIÓLOGO', 'ANESTESIOLOGO', 'SISTEMAS', 'SISTEMA'];
         // Sistemas is included for every form because it administers the clinical platform.
-        if (in_array($code, ['020', '021', '022', '060', '113', '114', '115', '120', '122'], true)) {
+        if (in_array($code, ['020', '021', '022', 'LVCS', '113', '114', '115', '120', '122'], true)) {
             $roles = array_merge($roles, ['ENFERMEROS', 'ENFERMERO', 'ENFERMERA', 'ENFERMERÍA', 'ENFERMERIA']);
         }
-        if ($code === '033') $roles = array_merge($roles, ['ODONTÓLOGOS', 'ODONTOLOGOS', 'ODONTÓLOGO', 'ODONTOLOGO']);
-        if ($code === '038') $roles = array_merge($roles, ['TRABAJO SOCIAL', 'TRABAJADOR SOCIAL', 'TRABAJADORA SOCIAL']);
-        if ($code === '051') $roles = array_merge($roles, ['OBSTETRICES', 'OBSTETRIZ']);
-        if ($code === '051A') $roles = array_merge($roles, ['OBSTETRICES', 'OBSTETRIZ', 'NUTRICIONISTAS', 'NUTRICIONISTA']);
-        if ($code === '121') $roles = array_merge($roles, ['PSICÓLOGOS', 'PSICOLOGOS', 'PSICÓLOGO', 'PSICOLOGO']);
+        if ($code === '033') {
+            $roles = array_merge($roles, ['ODONTÓLOGOS', 'ODONTOLOGOS', 'ODONTÓLOGO', 'ODONTOLOGO']);
+        }
+        if ($code === '038') {
+            $roles = array_merge($roles, ['TRABAJO SOCIAL', 'TRABAJADOR SOCIAL', 'TRABAJADORA SOCIAL']);
+        }
+        if ($code === '051') {
+            $roles = array_merge($roles, ['OBSTETRICES', 'OBSTETRIZ']);
+        }
+        if ($code === '051A') {
+            $roles = array_merge($roles, ['OBSTETRICES', 'OBSTETRIZ', 'NUTRICIONISTAS', 'NUTRICIONISTA']);
+        }
+        if ($code === '121') {
+            $roles = array_merge($roles, ['PSICÓLOGOS', 'PSICOLOGOS', 'PSICÓLOGO', 'PSICOLOGO']);
+        }
 
         return $user->hasAnyUserTypeName($roles);
     }
@@ -68,7 +80,8 @@ class HospitalEpisodeFormCatalog
             self::form('018', 'Pre anestésico', 'Cirugía', 'Cirugía y anestesia'),
             self::form('018A', 'Transanestésico', 'Cirugía', 'Cirugía y anestesia'),
             self::form('019', 'Cuidados post anestésico', 'Cirugía', 'Cirugía y anestesia'),
-            self::form('060', 'Lista de verificación de cirugía segura', 'Cirugía', 'Cirugía y anestesia'),
+            self::form('LVCS', 'Lista de verificación de cirugía segura', 'Cirugía', 'Cirugía y anestesia', '2016', ['Cirugía segura', 'OMS'], 'DNCSS-MSP-003'),
+            self::form('HDMDM', 'Hoja de descarga de medicamentos y dispositivos médicos', 'Transquirúrgico, recuperación y hospitalización', 'Cirugía y anestesia', '2025', ['Descargo de medicamentos', 'Dispositivos médicos'], 'HFBC-CQX-001'),
 
             self::form('113', 'Bitácora de UCI adulto', 'Cuidados intensivos de adultos', 'Cuidados críticos'),
             self::form('114', 'Bitácora de UCI neonatal', 'Cuidados intensivos neonatales', 'Cuidados críticos'),
@@ -96,10 +109,25 @@ class HospitalEpisodeFormCatalog
         ];
     }
 
-    private static function form($code, $name, $context, $group, $edition = '2021', array $aliases = [])
+    /**
+     * Formularios pertinentes al trabajo ambulatorio de consulta e interconsulta.
+     * Este subconjunto evita exponer desde la historia ambulatoria formularios de
+     * emergencia, hospitalizacion, enfermeria, cirugia o cuidados criticos.
+     */
+    public static function ambulatoryCodes()
+    {
+        return [
+            '002', '005', '007', '007B',
+            '010A', '010B', '011', '012A', '012B', '013A', '013B',
+            '053', '117',
+        ];
+    }
+
+    private static function form($code, $name, $context, $group, $edition = '2021', array $aliases = [], $displayCode = null)
     {
         return [
             'code' => $code,
+            'display_code' => $displayCode ?: $code,
             'name' => $name,
             'context' => $context,
             'group' => $group,
@@ -131,7 +159,9 @@ class HospitalEpisodeFormCatalog
         $reports = [];
         foreach ($reportTypes as $code => $type) {
             foreach ($pdfLinks[$code] ?? [] as $pdf) {
-                if (empty($pdf['url'])) continue;
+                if (empty($pdf['url'])) {
+                    continue;
+                }
                 $reports[] = [
                     'code' => $code, 'name' => $type['name'], 'group' => $type['group'],
                     'url' => $pdf['url'], 'label' => $pdf['label'] ?? null,
@@ -140,14 +170,18 @@ class HospitalEpisodeFormCatalog
                 ];
             }
         }
+
         return $reports;
     }
 
     public static function find($code)
     {
         foreach (self::definitions() as $form) {
-            if ($form['code'] === (string) $code) return $form;
+            if ($form['code'] === (string) $code) {
+                return $form;
+            }
         }
+
         return null;
     }
 
@@ -170,7 +204,49 @@ class HospitalEpisodeFormCatalog
             '013A' => ['muestra' => 'Muestra solicitada', 'sitio_anatomico' => 'Sitio anatómico', 'antecedentes' => 'Antecedentes relevantes', 'diagnostico_presuntivo' => 'Diagnóstico presuntivo'],
             '013B' => ['muestra' => 'Muestra estudiada', 'macroscopia' => 'Descripción macroscópica', 'microscopia' => 'Descripción microscópica', 'diagnostico' => 'Diagnóstico anatomopatológico'],
             '016' => ['datos_parto' => 'Datos del parto y nacimiento', 'condicion_nacimiento' => 'Condición al nacimiento', 'apgar' => 'APGAR y valoración respiratoria', 'reanimacion' => 'Reanimación y procedimientos', 'antropometria' => 'Antropometría del recién nacido', 'examen_fisico' => 'Examen físico y malformaciones', 'profilaxis' => 'Profilaxis e inmunizaciones', 'destino' => 'Alojamiento, referencia o ingreso neonatal'],
-            '017' => ['procedimiento' => 'Procedimiento', 'indicacion' => 'Indicación', 'tecnica' => 'Técnica quirúrgica', 'hallazgos' => 'Hallazgos', 'complicaciones' => 'Complicaciones', 'conclusion' => 'Conclusión'],
+            '017' => [
+                'diagnosticos_preoperatorios' => 'Diagnósticos preoperatorios',
+                'cie_preoperatorio' => 'CIE preoperatorio',
+                'diagnosticos_postoperatorios' => 'Diagnósticos postoperatorios',
+                'cie_postoperatorio' => 'CIE postoperatorio',
+                'procedimiento' => 'Procedimiento proyectado',
+                'indicacion' => 'Procedimiento realizado',
+                'tipo_procedimiento' => 'Tipo de procedimiento: electiva, emergencia o urgencia',
+                'cirujano_1' => 'Cirujano 1',
+                'cirujano_2' => 'Cirujano 2',
+                'primer_ayudante' => 'Primer ayudante',
+                'segundo_ayudante' => 'Segundo ayudante',
+                'tercer_ayudante' => 'Tercer ayudante',
+                'instrumentista' => 'Instrumentista',
+                'circulante' => 'Circulante',
+                'anestesiologo' => 'Anestesiólogo/a',
+                'ayudante_anestesia' => 'Ayudante de anestesia',
+                'otros_equipo' => 'Otros integrantes',
+                'tipo_anestesia' => 'Tipo de anestesia: general, regional, sedación u otros',
+                'fecha_operacion' => 'Fecha de operación',
+                'hora_inicio' => 'Hora de inicio',
+                'hora_terminacion' => 'Hora de terminación',
+                'dieresis' => 'Diéresis',
+                'exposicion_exploracion' => 'Exposición y exploración',
+                'hallazgos' => 'Hallazgos quirúrgicos',
+                'tecnica' => 'Procedimiento quirúrgico',
+                'complicaciones' => 'Complicaciones del procedimiento quirúrgico',
+                'perdida_sanguinea_total' => 'Pérdida sanguínea total (ml)',
+                'sangrado_aproximado' => 'Sangrado aproximado (ml)',
+                'material_protesico' => 'Uso de material protésico: sí o no',
+                'conclusion' => 'Descripción de las complicaciones o del material protésico',
+                'transquirurgico' => 'Examen transquirúrgico',
+                'biopsia_congelacion' => 'Biopsia por congelación: sí o no',
+                'resultado_biopsia' => 'Resultado de biopsia por congelación',
+                'patologo_reporta' => 'Patólogo que reporta',
+                'histopatologico' => 'Examen histopatológico: sí o no',
+                'muestra' => 'Muestra',
+                'diagrama' => 'Diagrama o descripción gráfica del procedimiento',
+                'profesional_responsable' => 'Nombre y apellidos del profesional responsable',
+                'especialidad_profesional' => 'Especialidad del profesional responsable',
+                'firma_profesional' => 'Firma del profesional responsable',
+                'sello_identificacion' => 'Sello y número de documento de identificación',
+            ],
             '018' => [
                 'diagnosticos' => 'Diagnósticos y CIE-10', 'procedimientos' => 'Procedimiento propuesto',
                 'prioridad' => 'Tipo y prioridad del procedimiento', 'riesgo_quirurgico' => 'Riesgo quirúrgico',
@@ -244,7 +320,7 @@ class HospitalEpisodeFormCatalog
             '056B' => ['fecha_control' => 'Fecha y edad del control', 'antropometria' => 'Peso, talla e IMC', 'crecimiento' => 'Curvas de crecimiento', 'tanner' => 'Estadios de Tanner', 'desarrollo_puberal' => 'Desarrollo puberal', 'interpretacion' => 'Interpretación y conducta'],
             '057' => ['motivo' => 'Motivo de atención', 'antecedentes' => 'Antecedentes y síndromes geriátricos', 'medicacion' => 'Medicación y conciliación', 'funcional' => 'Valoración funcional', 'cognitivo_afectivo' => 'Valoración cognitiva y afectiva', 'nutricional' => 'Valoración nutricional', 'social' => 'Valoración social y red de apoyo', 'riesgos' => 'Riesgos identificados', 'plan' => 'Plan integral de cuidados'],
             '057A' => ['barthel' => 'Índice de Barthel', 'lawton_brody' => 'Escala de Lawton y Brody', 'pfeiffer' => 'Cuestionario de Pfeiffer', 'yesavage' => 'Escala de Yesavage', 'mini_nutricional' => 'Valoración nutricional', 'riesgo_caidas' => 'Riesgo de caídas', 'interpretacion' => 'Interpretación integral y conducta'],
-            '060' => ['identificacion' => 'Identificación del paciente y procedimiento', 'sitio' => 'Sitio y lateralidad', 'equipo' => 'Confirmación del equipo', 'profilaxis' => 'Profilaxis y seguridad', 'recuento' => 'Recuento final', 'incidentes' => 'Incidentes'],
+            'LVCS' => ['identificacion' => 'Identificación del paciente y procedimiento', 'sitio' => 'Sitio y lateralidad', 'equipo' => 'Confirmación del equipo', 'profilaxis' => 'Profilaxis y seguridad', 'recuento' => 'Recuento final', 'incidentes' => 'Incidentes'],
             '078' => ['puesto_trabajo' => 'Puesto, tareas y antigüedad', 'exposiciones' => 'Riesgos y exposiciones ocupacionales', 'antecedentes' => 'Antecedentes personales y laborales', 'examen_fisico' => 'Examen físico ocupacional', 'examenes' => 'Exámenes complementarios', 'aptitud' => 'Conclusión de aptitud laboral', 'restricciones' => 'Restricciones y recomendaciones'],
             '113' => ['fecha_turno' => 'Fecha, hora y turno', 'antropometria' => 'Antropometría', 'bitacora' => 'Bitácora, constantes y resultados', 'ventilacion' => 'Ventilación mecánica', 'procedimientos' => 'Procedimientos y oxigenación', 'examenes' => 'Solicitud y resultados de exámenes', 'cuidados' => 'Cuidados generales e interconsultas', 'enfermeria' => 'Informe de enfermería'],
             '114' => ['fecha_turno' => 'Fecha, hora y turno', 'soporte' => 'Soporte respiratorio y accesos', 'constantes' => 'Constantes y monitorización', 'neurologico' => 'Estado neurológico y dolor', 'nutricion' => 'Nutrición y tolerancia', 'balance' => 'Ingresos, egresos y balance', 'medicacion' => 'Medicación e infusiones', 'eventos' => 'Eventos, procedimientos y novedades'],
@@ -258,10 +334,11 @@ class HospitalEpisodeFormCatalog
             'ANEXO1' => ['domicilio' => 'Ubicación y datos del domicilio', 'integrantes' => 'Integrantes del núcleo familiar', 'determinantes' => 'Condiciones y determinantes de salud', 'riesgos' => 'Riesgos familiares y comunitarios', 'familiograma' => 'Familiograma o descripción familiar', 'seguimiento' => 'Intervenciones y seguimiento'],
             'ANEXO2' => ['evento' => 'Evento, lugar y mecanismo', 'evaluacion_inicial' => 'Evaluación inicial y prioridad', 'constantes' => 'Constantes y monitorización', 'trauma' => 'Evaluación de trauma', 'procedimientos' => 'Procedimientos y tratamiento prehospitalario', 'medicacion' => 'Medicamentos y fluidos', 'traslado' => 'Traslado, destino y tiempos', 'entrega' => 'Condición y entrega-recepción'],
         ];
+
         return isset($fields[$code]) ? $fields[$code] : [];
     }
 
-    public static function forEpisode($episodeId, array $availableKeys, $hasSurgicalWorkflow, $readOnly = false, array $draftCounts = [], array $pdfLinks = [], $canComplete003 = true, ?array $authorableCodes = null)
+    public static function forEpisode($episodeId, array $availableKeys, $hasSurgicalWorkflow, $readOnly = false, array $draftCounts = [], array $pdfLinks = [], $canComplete003 = true, ?array $authorableCodes = null, array $nativeFormLinks = [])
     {
         $forms = self::definitions();
         // The emergency link is a PDF, not an editor. Keep capture and viewing separate.
@@ -269,6 +346,7 @@ class HospitalEpisodeFormCatalog
 
         foreach ($forms as &$form) {
             $code = $form['code'];
+            $visibleCode = $form['display_code'] ?? $code;
             $form['url'] = Route::has('hospital.documents.form.show')
                 ? route('hospital.documents.form.show', ['code' => $code, 'id_solicitud' => $episodeId]) : null;
             $form['embedded_url'] = Route::has('hospital.documents.form.show')
@@ -276,10 +354,10 @@ class HospitalEpisodeFormCatalog
             $form['status'] = $readOnly ? 'Solo lectura' : 'Borrador disponible';
             $form['native'] = false;
             $form['saved_count'] = (int) ($draftCounts[$code] ?? 0);
-            $form['can_complete'] = !$readOnly && ($code !== '003' || $canComplete003)
+            $form['can_complete'] = ! $readOnly && ($code !== '003' || $canComplete003)
                 && ($authorableCodes === null || in_array($code, $authorableCodes, true));
-            $form['action'] = !$form['can_complete'] ? 'Ver '.$code
-                : ($form['saved_count'] ? 'Continuar '.$code : 'Completar '.$code);
+            $form['action'] = ! $form['can_complete'] ? 'Ver '.$visibleCode
+                : ($form['saved_count'] ? 'Continuar '.$visibleCode : 'Completar '.$visibleCode);
             $form['template_preview_url'] = Route::has('hospital.documents.form.pdf')
                 ? route('hospital.documents.form.pdf', ['code' => $code, 'id_solicitud' => $episodeId, 'template' => 1]) : null;
             $form['draft_preview_url'] = $form['saved_count'] && Route::has('hospital.documents.form.pdf')
@@ -290,16 +368,35 @@ class HospitalEpisodeFormCatalog
                 : null;
             $form['preview_is_official'] = count($form['pdf_links']) > 0 && ($form['pdf_links'][0]['official'] ?? true);
             $form['preview_label'] = $form['pdf_links'][0]['preview_label'] ?? 'Ver aquí';
-            $form['workflow_url'] = $hasSurgicalWorkflow && in_array($code, ['017', '018', '018A', '019', '060'], true)
+            $form['workflow_url'] = $hasSurgicalWorkflow && in_array($code, ['017', '018', '018A', '019', 'LVCS'], true)
                 ? '#formularios-quirurgicos' : null;
 
-            if (isset($linked[$code]) && ($code !== '005' || !$readOnly)
+            $staticTemplates = [
+                'HDMDM' => 'documentos-hospitalarios/HFBC-CQX-001-hoja-descargo-medicamentos-dispositivos.pdf',
+            ];
+            if (isset($staticTemplates[$code])) {
+                $form['url'] = null;
+                $form['embedded_url'] = null;
+                $form['template_preview_url'] = asset($staticTemplates[$code]);
+                $form['draft_preview_url'] = null;
+                $form['status'] = 'Formato institucional';
+                $form['native'] = true;
+                $form['can_complete'] = false;
+                $form['action'] = null;
+            }
+            if ($code === 'LVCS' && Route::has('hospital.documents.form.pdf')) {
+                $form['template_preview_url'] = route('hospital.documents.form.pdf', [
+                    'code' => $code, 'id_solicitud' => $episodeId,
+                ]);
+            }
+
+            if (isset($linked[$code]) && ($code !== '005' || ! $readOnly)
                 && in_array($linked[$code], $availableKeys, true)
                 && Route::has('hospital.documents.link')) {
                 $form['url'] = route('hospital.documents.link', [
                     'id_solicitud' => $episodeId, 'key' => $linked[$code],
                 ]);
-                $form['action'] = ($form['can_complete'] ? 'Completar ' : 'Ver ').$code;
+                $form['action'] = ($form['can_complete'] ? 'Completar ' : 'Ver ').$visibleCode;
                 $form['status'] = 'Módulo clínico';
                 $form['native'] = true;
                 // Evolución y Epicrisis conservan sus pantallas compartidas y se abren aparte.
@@ -313,23 +410,39 @@ class HospitalEpisodeFormCatalog
                 $form['action'] = $readOnly ? 'Ver laboratorio' : ($code === '010A' ? 'Solicitar laboratorio' : 'Ingresar resultados');
                 $form['native'] = true;
             }
-            if (in_array($code, ['005', '006'], true)) $form['embedded_url'] = null;
+            if (isset($nativeFormLinks[$code])) {
+                $form['url'] = $nativeFormLinks[$code]['url'];
+                $form['embedded_url'] = null;
+                $form['action'] = $nativeFormLinks[$code]['action'] ?? ($readOnly ? 'Ver '.$visibleCode : 'Abrir '.$visibleCode);
+                $form['status'] = 'Módulo anestésico';
+                $form['native'] = true;
+                $form['saved_count'] = 0;
+                $form['template_preview_url'] = null;
+                $form['draft_preview_url'] = null;
+                $form['workflow_url'] = null;
+            }
+            if (in_array($code, ['005', '006'], true)) {
+                $form['embedded_url'] = null;
+            }
             if ($form['preview_url']) {
                 $form['status'] = $form['pdf_links'][0]['status'] ?? 'PDF disponible';
+            } elseif ($form['native']) {
+                // Conserva el nombre del módulo real cuando todavía no existe
+                // un PDF; no debe presentarse como un borrador genérico.
             } elseif ($code === '003' && $form['saved_count']) {
                 $form['status'] = 'Borrador guardado';
-            } elseif ($code === '003' && !$form['can_complete'] && !$readOnly) {
+            } elseif ($code === '003' && ! $form['can_complete'] && ! $readOnly) {
                 $form['status'] = 'Requiere médico o Sistemas';
-            } elseif ($code === '003' && !$readOnly) {
+            } elseif ($code === '003' && ! $readOnly) {
                 $form['status'] = 'Por completar';
-            } elseif (!$readOnly) {
+            } elseif (! $readOnly) {
                 $form['status'] = $form['saved_count'] ? 'Borrador guardado' : 'Sin registro';
             }
             $form['hint'] = HospitalEpisodeFormLayout::guidance($code);
-            if (!$form['native'] && $code !== '003') {
+            if (! $form['native'] && $code !== '003') {
                 $form['hint'] .= $form['can_complete']
                     ? ' Use «'.$form['action'].'» para llenar el borrador de este episodio.'
-                    : ' Abra «Ver '.$code.'» para consultar los datos guardados; la edición requiere un profesional autorizado y un episodio abierto.';
+                    : ' Abra «Ver '.$visibleCode.'» para consultar los datos guardados; la edición requiere un profesional autorizado y un episodio abierto.';
             }
             if ($code === '003') {
                 $form['hint'] = $form['saved_count']
@@ -338,9 +451,9 @@ class HospitalEpisodeFormCatalog
                         : ($form['can_complete']
                             ? 'Complete la valoración inicial. Puede comenzar tras abrir el episodio, antes o después de asignar cama.'
                             : 'Un médico o usuario de Sistemas autorizado puede completar el borrador antes o después de asignar cama.'));
-            } elseif ($code === '005' && !$form['preview_url'] && !$form['saved_count'] && !$readOnly) {
+            } elseif ($code === '005' && ! $form['preview_url'] && ! $form['saved_count'] && ! $readOnly) {
                 $form['hint'] = 'Registre la evolución durante la atención.';
-            } elseif ($code === '006' && !$form['preview_url'] && !$form['saved_count'] && !$readOnly) {
+            } elseif ($code === '006' && ! $form['preview_url'] && ! $form['saved_count'] && ! $readOnly) {
                 $form['hint'] = 'La epicrisis se completa al egreso.';
             }
         }

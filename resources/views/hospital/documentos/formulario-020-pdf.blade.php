@@ -12,7 +12,7 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: .45pt solid #4b5a62; padding: .8mm; vertical-align: middle; overflow-wrap: break-word; }
         .no-border, .no-border td { border: 0; }
-        .brand { height: 20mm; overflow: hidden; color: #0a345b; font-size: 13pt; font-weight: bold; letter-spacing: 2.5pt; text-align: center; }
+        .brand { height: 20mm; overflow: hidden; color: #0a345b; font-size: 13pt; font-weight: bold; letter-spacing: 2.5pt; text-align: left; }
         .title { font-size: 10pt; font-weight: bold; text-align: center; }
         .code { font-size: 7pt; text-align: right; }
         .section { background: #d0ccff; color: #112d47; font-size: 7.5pt; font-weight: bold; text-align: left; }
@@ -60,6 +60,8 @@
     $fluidRowCount020 = max(12, min(24, max(count($intakes020), count($outputs020))));
     $state020 = $entry ? 'BORRADOR SIN FIRMA' : 'FORMATO SIN LLENAR';
     $fullName020 = trim(($patient->apellido1 ?? '').' '.($patient->apellido2 ?? '').' '.($patient->nombre1 ?? '').' '.($patient->nombre2 ?? ''));
+    $companyName020 = trim((string) (($empresa->nombrecomercial ?? null) ?: ($empresa->razonsocial ?? null) ?: 'ESTABLECIMIENTO DE SALUD'));
+    $companyCode020 = trim((string) (($empresa->unicodigo ?? null) ?: ($empresa->codigo ?? null) ?: ''));
     $formatNumber020 = function ($value) {
         return abs($value - round($value)) < 0.00001 ? number_format($value, 0, '.', '') : number_format($value, 2, '.', '');
     };
@@ -74,16 +76,16 @@
     <table class="no-border"><tr>
         <td class="brand" style="width:25%">
             <!--AITROL_PDF_BRANDING_SLOT-->
-            <!--AITROL_PDF_BRANDING_FALLBACK_START-->AITROL<!--AITROL_PDF_BRANDING_FALLBACK_END-->
+            <!--AITROL_PDF_BRANDING_FALLBACK_START-->{{ $companyName020 }}<!--AITROL_PDF_BRANDING_FALLBACK_END-->
         </td>
-        <td class="title">CONSTANTES VITALES / BALANCE HÍDRICO</td>
+        <td class="title"></td>
         <td class="code" style="width:25%">FORMULARIO 020<br>{{ $state020 }}</td>
     </tr></table>
     <div class="spacer"></div>
     <table>
         <tr><th colspan="8" class="section">A. DATOS DEL ESTABLECIMIENTO Y USUARIO / PACIENTE</th></tr>
         <tr><td class="label" colspan="2">INSTITUCIÓN DEL SISTEMA</td><td class="label">UNICÓDIGO</td><td class="label" colspan="2">ESTABLECIMIENTO DE SALUD</td><td class="label">HISTORIA CLÍNICA</td><td class="label">ARCHIVO</td><td class="label">HOJA</td></tr>
-        <tr><td class="identity" colspan="2">BORJA CLINIC</td><td></td><td colspan="2">BORJA CLINIC</td><td>{{ $solicitud->id_paciente }}</td><td>{{ $solicitud->id }}</td><td>1/2</td></tr>
+        <tr><td class="identity" colspan="2">RED PRIVADA COMPLEMENTARIA</td><td>{{ $companyCode020 }}</td><td colspan="2">{{ $companyName020 }}</td><td>{{ $solicitud->id_paciente }}</td><td>{{ $solicitud->id }}</td><td>1/2</td></tr>
         <tr><td class="label">PRIMER APELLIDO</td><td class="label">SEGUNDO APELLIDO</td><td class="label">PRIMER NOMBRE</td><td class="label">SEGUNDO NOMBRE</td><td class="label">SEXO</td><td class="label">EDAD</td><td class="label" colspan="2">FECHA Y HORA DEL REGISTRO</td></tr>
         <tr><td class="identity">{{ $patient->apellido1 ?? '' }}</td><td>{{ $patient->apellido2 ?? '' }}</td><td>{{ $patient->nombre1 ?? '' }}</td><td>{{ $patient->nombre2 ?? '' }}</td><td>{{ $patient->sexo ?? '' }}</td><td>{{ $patient->edad ?? '' }}</td><td colspan="2">{{ $payload020['fecha_hora'] }}</td></tr>
     </table>
@@ -138,9 +140,9 @@
     <table class="no-border"><tr>
         <td class="brand" style="width:25%">
             <!--AITROL_PDF_BRANDING_SLOT-->
-            <!--AITROL_PDF_BRANDING_FALLBACK_START-->AITROL<!--AITROL_PDF_BRANDING_FALLBACK_END-->
+            <!--AITROL_PDF_BRANDING_FALLBACK_START-->{{ $companyName020 }}<!--AITROL_PDF_BRANDING_FALLBACK_END-->
         </td>
-        <td class="title">BALANCE HÍDRICO · REGISTRO DETALLADO</td>
+        <td class="title"></td>
         <td class="code" style="width:25%">FORMULARIO 020<br>HOJA 2/2</td>
     </tr></table>
     <div class="spacer"></div>
@@ -184,7 +186,8 @@
         @if($document020[$section020]['nota_legacy'] !== '')<div class="legacy"><strong>{{ $label020 }} · texto de borrador anterior:</strong> {{ $document020[$section020]['nota_legacy'] }}</div>@endif
     @endforeach
     <div class="spacer"></div>
-    <table><tr><td class="label" style="width:35%">ÚLTIMA EDICIÓN</td><td>{{ $entry ? $entry->updated_at.' · Usuario '.$entry->updated_by : 'Sin registro guardado' }}</td><td class="label" style="width:30%">VALIDACIÓN / FIRMA</td><td>Pendiente</td></tr></table>
+    @php($professionalBlockCompact = true)
+    @include('hospital.documentos._professional-block-pdf')
 </div>
 </body>
 </html>

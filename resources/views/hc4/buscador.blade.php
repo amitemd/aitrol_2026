@@ -409,7 +409,6 @@
 	.hc4-patient-modules .btn_ordenes[onclick*="profuncional"]::before,
 	.hc4-patient-modules .btn_ordenes[onclick*="funcionales"]::before { content:'\f022'; }
 	.hc4-patient-modules .btn_ordenes label { margin:0; color:#fff !important; cursor:pointer; }
-
 	#area_trabajo { width:100%; padding:12px !important; }
 	#area_trabajo > *, #area_trabajo .container, #area_trabajo .container-fluid,
 	#area_trabajo .box, #area_trabajo .panel, #area_trabajo .card { width:100%; max-width:none; margin-right:0; margin-left:0; }
@@ -1726,6 +1725,324 @@
 		grid-column:3;
 		width:100%;
 	}
+
+	.hc4-pathology-field-header {
+		display:flex;
+		align-items:center;
+		justify-content:center;
+		gap:7px;
+		margin-bottom:4px;
+	}
+	.hc4-pathology-field-header span {
+		font-family:'Helvetica general';
+	}
+	.hc4-pathology-open {
+		display:inline-flex;
+		align-items:center;
+		justify-content:center;
+		width:25px;
+		height:25px;
+		padding:0;
+		border:0;
+		border-radius:7px;
+		color:#fff;
+		background:#087ea4;
+		box-shadow:0 3px 8px rgba(8,126,164,.24);
+	}
+	.hc4-pathology-open:hover,
+	.hc4-pathology-open:focus {
+		color:#fff;
+		background:#056886;
+		outline:none;
+	}
+	.hc4-pathology-open:disabled {
+		cursor:not-allowed;
+		opacity:.45;
+		box-shadow:none;
+	}
+	.hc4-antecedent-modal .modal-dialog {
+		width:min(860px, calc(100% - 28px));
+		margin:24px auto;
+	}
+	.hc4-antecedent-modal .modal-content {
+		overflow:hidden;
+		border:0;
+		border-radius:14px;
+		box-shadow:0 18px 55px rgba(14,48,67,.28);
+	}
+	.hc4-antecedent-modal .modal-header {
+		padding:17px 20px;
+		border:0;
+		color:#fff;
+		background:linear-gradient(105deg,#075779,#078dad 62%,#13aaa7);
+	}
+	.hc4-antecedent-modal .modal-title {
+		font-size:18px;
+		font-weight:700;
+	}
+	.hc4-antecedent-modal .close {
+		color:#fff;
+		opacity:.9;
+		text-shadow:none;
+	}
+	.hc4-antecedent-modal .modal-body {
+		max-height:calc(100vh - 190px);
+		padding:18px 20px;
+		overflow-y:auto;
+		background:#f7fbfd;
+	}
+	.hc4-pathology-search-wrap {
+		position:relative;
+		margin-bottom:14px;
+	}
+	.hc4-pathology-search-wrap i {
+		position:absolute;
+		top:50%;
+		left:13px;
+		color:#0782a4;
+		transform:translateY(-50%);
+	}
+	.hc4-antecedent-search {
+		height:40px;
+		padding-left:36px;
+		border-color:#b9d9e5;
+		border-radius:9px;
+	}
+	.hc4-pathology-category {
+		margin-bottom:14px;
+		padding:13px;
+		border:1px solid #d8e9ef;
+		border-radius:11px;
+		background:#fff;
+	}
+	.hc4-pathology-category-title {
+		margin:0 0 9px;
+		color:#075779;
+		font-size:12px;
+		font-weight:700;
+	}
+	.hc4-pathology-options {
+		display:grid;
+		grid-template-columns:repeat(2,minmax(0,1fr));
+		gap:8px;
+	}
+	.hc4-pathology-option {
+		display:flex;
+		align-items:flex-start;
+		gap:8px;
+		min-height:38px;
+		margin:0;
+		padding:9px 10px;
+		border:1px solid #dbe8ed;
+		border-radius:8px;
+		color:#183b4c;
+		font-size:11px;
+		font-weight:500;
+		cursor:pointer;
+		transition:.15s ease;
+	}
+	.hc4-pathology-option:hover,
+	.hc4-pathology-option.is-selected {
+		border-color:#13a1aa;
+		background:#eaf9f9;
+	}
+	.hc4-pathology-option input {
+		margin:1px 0 0;
+		accent-color:#078eaa;
+	}
+	.hc4-pathology-detail {
+		display:none;
+		grid-column:1 / -1;
+		margin:-1px 0 3px;
+		padding:0 4px;
+	}
+	.hc4-pathology-detail.is-visible { display:block; }
+	.hc4-pathology-detail input {
+		height:36px;
+		border-radius:8px;
+	}
+	.hc4-pathology-detail.has-error input {
+		border-color:#dd4b39;
+		box-shadow:0 0 0 2px rgba(221,75,57,.12);
+	}
+	.hc4-family-option-wrap {
+		min-width:0;
+	}
+	.hc4-surgical-option-wrap {
+		min-width:0;
+	}
+	.hc4-surgical-option-wrap .hc4-surgical-option {
+		width:100%;
+	}
+	.hc4-gyne-option-wrap {
+		min-width:0;
+	}
+	.hc4-gyne-option-wrap .hc4-gyne-option {
+		width:100%;
+	}
+	.hc4-additional-option-wrap {
+		min-width:0;
+	}
+	.hc4-additional-option-wrap .hc4-additional-option {
+		width:100%;
+	}
+	.hc4-antecedent-length {
+		margin-top:8px;
+		color:#59727e;
+		font-size:10px;
+		text-align:right;
+	}
+	.hc4-antecedent-length.is-near-limit { color:#b36b00; font-weight:700; }
+	.hc4-antecedent-length.is-over-limit { color:#c0392b; font-weight:700; }
+	.hc4-family-option-wrap .hc4-family-option {
+		width:100%;
+	}
+	.hc4-family-relationship {
+		display:none;
+		margin-top:6px;
+		padding:9px;
+		border:1px solid #bfe0e6;
+		border-radius:8px;
+		background:#f2fbfc;
+	}
+	.hc4-family-relationship.is-visible { display:block; }
+	.hc4-family-relationship-title {
+		display:block;
+		margin-bottom:6px;
+		color:#075779;
+		font-size:10px;
+		font-weight:700;
+	}
+	.hc4-family-relative-options {
+		display:flex;
+		flex-wrap:wrap;
+		gap:5px;
+	}
+	.hc4-family-relative-option {
+		display:inline-flex;
+		align-items:center;
+		gap:4px;
+		margin:0;
+		padding:5px 7px;
+		border:1px solid #d2e5e9;
+		border-radius:13px;
+		background:#fff;
+		color:#365766;
+		font-size:9px;
+		font-weight:500;
+		cursor:pointer;
+	}
+	.hc4-family-relative-option.is-selected {
+		border-color:#0b99a4;
+		color:#075779;
+		background:#dff6f6;
+	}
+	.hc4-family-relative-option input {
+		margin:0;
+		accent-color:#078eaa;
+	}
+	.hc4-family-relationship.has-error {
+		border-color:#dd4b39;
+		box-shadow:0 0 0 2px rgba(221,75,57,.1);
+	}
+	.hc4-family-custom-item {
+		width:100%;
+		padding:9px;
+		border:1px solid #c9e2e7;
+		border-radius:9px;
+		background:#fff;
+	}
+	.hc4-family-custom-item.has-error {
+		border-color:#dd4b39;
+		box-shadow:0 0 0 2px rgba(221,75,57,.1);
+	}
+	.hc4-family-custom-item-header {
+		display:flex;
+		align-items:center;
+		justify-content:space-between;
+		gap:8px;
+		margin-bottom:7px;
+		color:#075779;
+		font-size:10px;
+		font-weight:700;
+	}
+	.hc4-family-custom-item-header button {
+		padding:0;
+		border:0;
+		color:#a63232;
+		background:transparent;
+	}
+	.hc4-pathology-custom {
+		padding:14px;
+		border:1px solid #cde5eb;
+		border-radius:11px;
+		background:#eef9fb;
+	}
+	.hc4-pathology-custom label {
+		display:block;
+		margin-bottom:7px;
+		color:#075779;
+		font-size:12px;
+	}
+	.hc4-pathology-custom-row {
+		display:flex;
+		gap:8px;
+	}
+	.hc4-pathology-custom-row input {
+		height:38px;
+		border-radius:8px;
+	}
+	.hc4-pathology-custom-row button {
+		white-space:nowrap;
+		border-radius:8px;
+	}
+	.hc4-antecedent-custom-tags {
+		display:flex;
+		flex-wrap:wrap;
+		gap:6px;
+		margin-top:10px;
+	}
+	.hc4-pathology-tag {
+		display:inline-flex;
+		align-items:center;
+		gap:6px;
+		max-width:100%;
+		padding:6px 8px;
+		border-radius:16px;
+		color:#075779;
+		background:#d8f1f4;
+		font-size:10px;
+	}
+	.hc4-pathology-tag span {
+		overflow-wrap:anywhere;
+	}
+	.hc4-pathology-tag button {
+		padding:0;
+		border:0;
+		color:#a63232;
+		background:transparent;
+	}
+	.hc4-antecedent-modal .modal-footer {
+		display:flex;
+		align-items:center;
+		justify-content:space-between;
+		padding:13px 20px;
+		border-top:1px solid #deebef;
+		background:#fff;
+	}
+	.hc4-pathology-footer-actions {
+		display:flex;
+		gap:8px;
+	}
+	@media (max-width:767px) {
+		.hc4-pathology-options { grid-template-columns:1fr; }
+		.hc4-pathology-custom-row { flex-direction:column; }
+		.hc4-antecedent-modal .modal-footer {
+			align-items:stretch;
+			flex-direction:column;
+		}
+		.hc4-pathology-footer-actions { justify-content:flex-end; }
+	}
 </style>
 <script type="text/javascript">
     function desplegar_consulta_hoy(idProcedimiento){
@@ -1878,6 +2195,283 @@
 
       </div>
     </div>
+</div>
+
+<div class="modal fade hc4-antecedent-modal" id="modalAntecedentesPatologicos" tabindex="-1" role="dialog" aria-labelledby="tituloAntecedentesPatologicos">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="tituloAntecedentesPatologicos"><i class="fa fa-heartbeat" aria-hidden="true"></i> Antecedentes patológicos</h4>
+			</div>
+			<div class="modal-body">
+				<div class="hc4-pathology-search-wrap">
+					<i class="fa fa-search" aria-hidden="true"></i>
+					<input type="search" id="buscarAntecedentePatologico" class="form-control hc4-antecedent-search" placeholder="Buscar antecedente..." autocomplete="off">
+				</div>
+
+				<div id="catalogoAntecedentesPatologicos">
+					@foreach(config('antecedentes_patologicos', []) as $categoria => $antecedentes)
+						<section class="hc4-pathology-category">
+							<h5 class="hc4-pathology-category-title">{{ $categoria }}</h5>
+							<div class="hc4-pathology-options">
+								@foreach($antecedentes as $indice => $antecedente)
+									@php
+										$requiereDetalle = !empty($antecedente['requiere_detalle']);
+										$identificador = 'antecedente_pat_' . md5($categoria . $indice . $antecedente['nombre']);
+									@endphp
+									<label class="hc4-pathology-option">
+										<input type="checkbox" class="js-antecedente-patologico" id="{{ $identificador }}" value="{{ $antecedente['nombre'] }}" data-requiere-detalle="{{ $requiereDetalle ? '1' : '0' }}">
+										<span>{{ $antecedente['nombre'] }}</span>
+									</label>
+									@if($requiereDetalle)
+										<div class="hc4-pathology-detail" data-detail-for="{{ $identificador }}">
+											<input type="text" class="form-control js-antecedente-detalle" maxlength="180" placeholder="{{ $antecedente['detalle'] }}" aria-label="{{ $antecedente['detalle'] }}">
+										</div>
+									@endif
+								@endforeach
+							</div>
+						</section>
+					@endforeach
+				</div>
+
+				<div class="hc4-pathology-custom">
+					<label for="nuevoAntecedentePatologico">Otro antecedente no incluido en el listado</label>
+					<div class="hc4-pathology-custom-row">
+						<input type="text" id="nuevoAntecedentePatologico" class="form-control" maxlength="250" placeholder="Escriba el antecedente patológico">
+						<button type="button" class="btn btn-info" id="agregarAntecedentePatologico"><i class="fa fa-plus" aria-hidden="true"></i> Agregar</button>
+					</div>
+					<div id="antecedentesPatologicosPersonalizados" class="hc4-antecedent-custom-tags" aria-live="polite"></div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="limpiarAntecedentesPatologicos"><i class="fa fa-eraser" aria-hidden="true"></i> Limpiar selección</button>
+				<div class="hc4-pathology-footer-actions">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" id="guardarAntecedentesPatologicos"><i class="fa fa-save" aria-hidden="true"></i> Aplicar y guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade hc4-antecedent-modal" id="modalAntecedentesFamiliares" tabindex="-1" role="dialog" aria-labelledby="tituloAntecedentesFamiliares">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="tituloAntecedentesFamiliares"><i class="fa fa-users" aria-hidden="true"></i> Antecedentes familiares</h4>
+			</div>
+			<div class="modal-body">
+				<div class="hc4-pathology-search-wrap">
+					<i class="fa fa-search" aria-hidden="true"></i>
+					<input type="search" id="buscarAntecedenteFamiliar" class="form-control hc4-antecedent-search" placeholder="Buscar antecedente familiar..." autocomplete="off">
+				</div>
+
+				<div id="catalogoAntecedentesFamiliares">
+					@foreach(config('antecedentes_familiares', []) as $categoria => $antecedentes)
+						<section class="hc4-pathology-category hc4-family-category">
+							<h5 class="hc4-pathology-category-title">{{ $categoria }}</h5>
+							<div class="hc4-pathology-options">
+								@foreach($antecedentes as $indice => $antecedente)
+									@php
+										$requiereDetalle = !empty($antecedente['requiere_detalle']);
+										$identificador = 'antecedente_fam_' . md5($categoria . $indice . $antecedente['nombre']);
+									@endphp
+									<div class="hc4-family-option-wrap">
+										<label class="hc4-pathology-option hc4-family-option">
+											<input type="checkbox" class="js-antecedente-familiar" id="{{ $identificador }}" value="{{ $antecedente['nombre'] }}" data-requiere-detalle="{{ $requiereDetalle ? '1' : '0' }}">
+											<span>{{ $antecedente['nombre'] }}</span>
+										</label>
+										<div class="hc4-family-relationship" data-family-relationship-for="{{ $identificador }}">
+											<span class="hc4-family-relationship-title">¿En qué familiar se presentó?</span>
+											<div class="hc4-family-relative-options"></div>
+										</div>
+										@if($requiereDetalle)
+											<div class="hc4-pathology-detail hc4-family-detail" data-family-detail-for="{{ $identificador }}">
+												<input type="text" class="form-control js-antecedente-familiar-detalle" maxlength="180" placeholder="{{ $antecedente['detalle'] }}" aria-label="{{ $antecedente['detalle'] }}">
+											</div>
+										@endif
+									</div>
+								@endforeach
+							</div>
+						</section>
+					@endforeach
+				</div>
+
+				<div class="hc4-pathology-custom">
+					<label for="nuevoAntecedenteFamiliar">Otro antecedente no incluido en el listado</label>
+					<div class="hc4-pathology-custom-row">
+						<input type="text" id="nuevoAntecedenteFamiliar" class="form-control" maxlength="250" placeholder="Escriba el antecedente familiar">
+						<button type="button" class="btn btn-info" id="agregarAntecedenteFamiliar"><i class="fa fa-plus" aria-hidden="true"></i> Agregar</button>
+					</div>
+					<div id="antecedentesFamiliaresPersonalizados" class="hc4-antecedent-custom-tags" aria-live="polite"></div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="limpiarAntecedentesFamiliares"><i class="fa fa-eraser" aria-hidden="true"></i> Limpiar selección</button>
+				<div class="hc4-pathology-footer-actions">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" id="guardarAntecedentesFamiliares"><i class="fa fa-save" aria-hidden="true"></i> Aplicar y guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade hc4-antecedent-modal" id="modalAntecedentesQuirurgicos" tabindex="-1" role="dialog" aria-labelledby="tituloAntecedentesQuirurgicos">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="tituloAntecedentesQuirurgicos"><i class="fa fa-hospital-o" aria-hidden="true"></i> Antecedentes quirúrgicos</h4>
+			</div>
+			<div class="modal-body">
+				<div class="hc4-pathology-search-wrap">
+					<i class="fa fa-search" aria-hidden="true"></i>
+					<input type="search" id="buscarAntecedenteQuirurgico" class="form-control hc4-antecedent-search" placeholder="Buscar cirugía..." autocomplete="off">
+				</div>
+
+				<div id="catalogoAntecedentesQuirurgicos">
+					@foreach(config('antecedentes_quirurgicos', []) as $categoria => $antecedentes)
+						<section class="hc4-pathology-category hc4-surgical-category">
+							<h5 class="hc4-pathology-category-title">{{ $categoria }}</h5>
+							<div class="hc4-pathology-options">
+								@foreach($antecedentes as $indice => $antecedente)
+									@php
+										$requiereDetalle = !empty($antecedente['requiere_detalle']);
+										$identificador = 'antecedente_quir_' . md5($categoria . $indice . $antecedente['nombre']);
+									@endphp
+									<div class="hc4-surgical-option-wrap">
+										<label class="hc4-pathology-option hc4-surgical-option">
+											<input type="checkbox" class="js-antecedente-quirurgico" id="{{ $identificador }}" value="{{ $antecedente['nombre'] }}" data-requiere-detalle="{{ $requiereDetalle ? '1' : '0' }}">
+											<span>{{ $antecedente['nombre'] }}</span>
+										</label>
+										@if($requiereDetalle)
+											<div class="hc4-pathology-detail hc4-surgical-detail" data-surgical-detail-for="{{ $identificador }}">
+												<input type="text" class="form-control js-antecedente-quirurgico-detalle" maxlength="180" placeholder="{{ $antecedente['detalle'] }}" aria-label="{{ $antecedente['detalle'] }}">
+											</div>
+										@endif
+									</div>
+								@endforeach
+							</div>
+						</section>
+					@endforeach
+				</div>
+
+				<div class="hc4-pathology-custom">
+					<label for="nuevoAntecedenteQuirurgico">Otra cirugía no incluida en el listado</label>
+					<div class="hc4-pathology-custom-row">
+						<input type="text" id="nuevoAntecedenteQuirurgico" class="form-control" maxlength="250" placeholder="Escriba la cirugía o procedimiento">
+						<button type="button" class="btn btn-info" id="agregarAntecedenteQuirurgico"><i class="fa fa-plus" aria-hidden="true"></i> Agregar</button>
+					</div>
+					<div id="antecedentesQuirurgicosPersonalizados" class="hc4-antecedent-custom-tags" aria-live="polite"></div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="limpiarAntecedentesQuirurgicos"><i class="fa fa-eraser" aria-hidden="true"></i> Limpiar selección</button>
+				<div class="hc4-pathology-footer-actions">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" id="guardarAntecedentesQuirurgicos"><i class="fa fa-save" aria-hidden="true"></i> Aplicar y guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade hc4-antecedent-modal" id="modalAntecedentesGinecologicos" tabindex="-1" role="dialog" aria-labelledby="tituloAntecedentesGinecologicos">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="tituloAntecedentesGinecologicos"><i class="fa fa-venus" aria-hidden="true"></i> Antecedentes ginecológicos</h4>
+			</div>
+			<div class="modal-body">
+				<div class="hc4-pathology-search-wrap">
+					<i class="fa fa-search" aria-hidden="true"></i>
+					<input type="search" id="buscarAntecedenteGinecologico" class="form-control hc4-antecedent-search" placeholder="Buscar antecedente ginecológico..." autocomplete="off">
+				</div>
+
+				<div id="catalogoAntecedentesGinecologicos">
+					@foreach(config('antecedentes_ginecologicos', []) as $categoria => $antecedentes)
+						<section class="hc4-pathology-category hc4-gyne-category">
+							<h5 class="hc4-pathology-category-title">{{ $categoria }}</h5>
+							<div class="hc4-pathology-options">
+								@foreach($antecedentes as $indice => $antecedente)
+									@php
+										$requiereDetalle = !empty($antecedente['requiere_detalle']);
+										$identificador = 'antecedente_gin_' . md5($categoria . $indice . $antecedente['nombre']);
+									@endphp
+									<div class="hc4-gyne-option-wrap">
+										<label class="hc4-pathology-option hc4-gyne-option">
+											<input type="checkbox" class="js-antecedente-ginecologico" id="{{ $identificador }}" value="{{ $antecedente['nombre'] }}" data-requiere-detalle="{{ $requiereDetalle ? '1' : '0' }}">
+											<span>{{ $antecedente['nombre'] }}</span>
+										</label>
+										@if($requiereDetalle)
+											<div class="hc4-pathology-detail hc4-gyne-detail" data-gyne-detail-for="{{ $identificador }}">
+												<input type="text" class="form-control js-antecedente-ginecologico-detalle" maxlength="100" placeholder="{{ $antecedente['detalle'] }}" aria-label="{{ $antecedente['detalle'] }}">
+											</div>
+										@endif
+									</div>
+								@endforeach
+							</div>
+						</section>
+					@endforeach
+				</div>
+
+				<div class="hc4-pathology-custom">
+					<label for="nuevoAntecedenteGinecologico">Otro antecedente no incluido en el listado</label>
+					<div class="hc4-pathology-custom-row">
+						<input type="text" id="nuevoAntecedenteGinecologico" class="form-control" maxlength="180" placeholder="Escriba el antecedente ginecológico">
+						<button type="button" class="btn btn-info" id="agregarAntecedenteGinecologico"><i class="fa fa-plus" aria-hidden="true"></i> Agregar</button>
+					</div>
+					<div id="antecedentesGinecologicosPersonalizados" class="hc4-antecedent-custom-tags" aria-live="polite"></div>
+				</div>
+				<div class="hc4-antecedent-length" id="contadorAntecedentesGinecologicos">0 de 255 caracteres</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="limpiarAntecedentesGinecologicos"><i class="fa fa-eraser" aria-hidden="true"></i> Limpiar selección</button>
+				<div class="hc4-pathology-footer-actions">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" id="guardarAntecedentesGinecologicos"><i class="fa fa-save" aria-hidden="true"></i> Aplicar y guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade hc4-antecedent-modal" id="modalAntecedentesAdicionales" tabindex="-1" role="dialog" aria-labelledby="tituloAntecedentesAdicionales">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="tituloAntecedentesAdicionales"><i id="iconoAntecedentesAdicionales" class="fa fa-list" aria-hidden="true"></i> <span>Antecedentes</span></h4>
+			</div>
+			<div class="modal-body">
+				<div class="hc4-pathology-search-wrap">
+					<i class="fa fa-search" aria-hidden="true"></i>
+					<input type="search" id="buscarAntecedenteAdicional" class="form-control hc4-antecedent-search" placeholder="Buscar antecedente..." autocomplete="off">
+				</div>
+				<div id="catalogoAntecedentesAdicionales"></div>
+				<div class="hc4-pathology-custom">
+					<label for="nuevoAntecedenteAdicional">Otro antecedente no incluido en el listado</label>
+					<div class="hc4-pathology-custom-row">
+						<input type="text" id="nuevoAntecedenteAdicional" class="form-control" maxlength="250" placeholder="Escriba el antecedente">
+						<button type="button" class="btn btn-info" id="agregarAntecedenteAdicional"><i class="fa fa-plus" aria-hidden="true"></i> Agregar</button>
+					</div>
+					<div id="antecedentesAdicionalesPersonalizados" class="hc4-antecedent-custom-tags" aria-live="polite"></div>
+				</div>
+				<div class="hc4-antecedent-length" id="contadorAntecedentesAdicionales"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="limpiarAntecedentesAdicionales"><i class="fa fa-eraser" aria-hidden="true"></i> Limpiar selección</button>
+				<div class="hc4-pathology-footer-actions">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" id="guardarAntecedentesAdicionales"><i class="fa fa-save" aria-hidden="true"></i> Aplicar y guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <form id="formulario1" class="form-vertical" role="form" method="POST" action="{{ route('nuevo.diseño') }}">
@@ -2060,83 +2654,104 @@
 													<div class="row antecedentes_responsive">
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"> <span style="font-family: 'Helvetica general';">@lang('hc4.antecedentesPatologicos')</span>
-																</div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px">
+																		<div class="hc4-pathology-field-header">
+																			<span>@lang('hc4.antecedentesPatologicos')</span>
+																			<button type="button" class="hc4-pathology-open" id="abrirAntecedentesPatologicos" title="Seleccionar antecedentes patológicos" aria-label="Seleccionar antecedentes patológicos">
+																				<i class="fa fa-list-ul" aria-hidden="true"></i>
+																			</button>
+																		</div>
+																	</div>
 																<div class="col-md-12 col-sm-6 col-12">
-																	<textarea rows="2" name="an_patologicos" onchange="guardar_ob();" style="width: 95%">{{$paciente->antecedentes_pat}}</textarea>
+																		<textarea rows="2" id="antecedentesPatologicosTexto" name="an_patologicos" onchange="guardar_ob();" style="width: 95%">{{$paciente->antecedentes_pat}}</textarea>
 																	<!--<input style="width: 100%" type="text" name="an_patologicos" value="{{$paciente->antecedentes_pat}}" onchange="guardar_ob();">-->
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><span style="font-family: 'Helvetica general';">@lang('hc4.antecedentesFamiliares')</span>
+																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px">
+																	<div class="hc4-pathology-field-header">
+																		<span>@lang('hc4.antecedentesFamiliares')</span>
+																		<button type="button" class="hc4-pathology-open" id="abrirAntecedentesFamiliares" title="Seleccionar antecedentes familiares" aria-label="Seleccionar antecedentes familiares">
+																			<i class="fa fa-list-ul" aria-hidden="true"></i>
+																		</button>
+																	</div>
 																</div>
 																<div class="col-md-12 col-sm-6 col-12" >
-																	<textarea rows="2" name="an_familiares" onchange="guardar_ob();" style="width: 95%">{{$paciente->antecedentes_fam}}</textarea>
+																	<textarea rows="2" id="antecedentesFamiliaresTexto" name="an_familiares" onchange="guardar_ob();" style="width: 95%">{{$paciente->antecedentes_fam}}</textarea>
 																	<!--<input style="width: 100%" type="text" name="an_familiares" value="{{$paciente->antecedentes_fam}}" onchange="guardar_ob();">-->
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><span style="font-family: 'Helvetica general';">@lang('hc4.antecedentesQuirurgicos')</span></div>
+																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px">
+																	<div class="hc4-pathology-field-header">
+																		<span>@lang('hc4.antecedentesQuirurgicos')</span>
+																		<button type="button" class="hc4-pathology-open" id="abrirAntecedentesQuirurgicos" title="Seleccionar antecedentes quirúrgicos" aria-label="Seleccionar antecedentes quirúrgicos">
+																			<i class="fa fa-list-ul" aria-hidden="true"></i>
+																		</button>
+																	</div>
+																</div>
 																<div class="col-md-12 col-sm-6 col-12">
-																<textarea rows="2" name="an_quirurgicos" onchange="guardar_ob();" style="width: 95%">{{$paciente->antecedentes_quir}}</textarea>
+																<textarea rows="2" id="antecedentesQuirurgicosTexto" name="an_quirurgicos" onchange="guardar_ob();" style="width: 95%">{{$paciente->antecedentes_quir}}</textarea>
 																<!--<input style="width: 100%" type="text" name="an_quirurgicos" value="{{$paciente->antecedentes_quir}}" onchange="guardar_ob();">-->
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"> <span style="font-family: 'Helvetica general';">@lang('hc4.gynecological_history')</span>
-																</div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px">
+																		<div class="hc4-pathology-field-header">
+																			<span>@lang('hc4.gynecological_history')</span>
+																			<button type="button" class="hc4-pathology-open" id="abrirAntecedentesGinecologicos" title="{{ $paciente->sexo == '1' ? 'No aplica para pacientes masculinos' : 'Seleccionar antecedentes ginecológicos' }}" aria-label="Seleccionar antecedentes ginecológicos" @if($paciente->sexo == '1') disabled aria-disabled="true" @endif>
+																				<i class="fa fa-list-ul" aria-hidden="true"></i>
+																			</button>
+																		</div>
+																	</div>
 																<div class="col-md-12 col-sm-6 col-12">
-																	<textarea rows="2" name="ginecologico" onchange="guardar_ob();" style="width: 95%">@if($texto_def != ''){{$texto_def}}@else @if(!is_null($datos_pac)){{ $datos_pac->ginecologico }}@endif @endif</textarea>
+																		<textarea rows="2" id="antecedentesGinecologicosTexto" name="ginecologico" maxlength="255" onchange="guardar_ob();" style="width: 95%" @if($paciente->sexo == '1') readonly aria-readonly="true" @endif>@if($texto_def != ''){{$texto_def}}@else @if(!is_null($datos_pac)){{ $datos_pac->ginecologico }}@endif @endif</textarea>
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><span style="font-family: 'Helvetica general';">@lang('hc4.pediatric_history')</span>
-																</div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><div class="hc4-pathology-field-header"><span>@lang('hc4.pediatric_history')</span><button type="button" class="hc4-pathology-open js-abrir-antecedente-adicional" data-antecedent-key="pediatricos" data-target-field="#antecedentesPediatricosTexto" title="Seleccionar antecedentes pediátricos"><i class="fa fa-list-ul" aria-hidden="true"></i></button></div></div>
 																<div class="col-md-12 col-sm-6 col-12" >
-																	<textarea rows="2" name="antecedentes_pediatricos" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->antecedentes_pediatricos }}@endif</textarea>
+																		<textarea rows="2" id="antecedentesPediatricosTexto" name="antecedentes_pediatricos" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->antecedentes_pediatricos }}@endif</textarea>
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><span style="font-family: 'Helvetica general';">@lang('hc4.pharmacological_history')</span></div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><div class="hc4-pathology-field-header"><span>@lang('hc4.pharmacological_history')</span><button type="button" class="hc4-pathology-open js-abrir-antecedente-adicional" data-antecedent-key="farmacologicos" data-target-field="#antecedentesFarmacologicosTexto" title="Seleccionar antecedentes farmacológicos"><i class="fa fa-list-ul" aria-hidden="true"></i></button></div></div>
 																<div class="col-md-12 col-sm-6 col-12">
-																<textarea rows="2" name="farmacologico" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->farmacologico }}@endif</textarea>
+																	<textarea rows="2" id="antecedentesFarmacologicosTexto" name="farmacologico" maxlength="255" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->farmacologico }}@endif</textarea>
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"> <span style="font-family: 'Helvetica general';">@lang('hc4.clinical_history')</span>
-																</div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><div class="hc4-pathology-field-header"><span>@lang('hc4.clinical_history')</span><button type="button" class="hc4-pathology-open js-abrir-antecedente-adicional" data-antecedent-key="clinicos" data-target-field="#antecedentesClinicosTexto" title="Seleccionar antecedentes clínicos"><i class="fa fa-list-ul" aria-hidden="true"></i></button></div></div>
 																<div class="col-md-12 col-sm-6 col-12">
-																	<textarea rows="2" name="clinico" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->clinico }}@endif</textarea>
+																		<textarea rows="2" id="antecedentesClinicosTexto" name="clinico" maxlength="255" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->clinico }}@endif</textarea>
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"> <span style="font-family: 'Helvetica general';">@lang('hc4.trauma_history')</span>
-																</div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><div class="hc4-pathology-field-header"><span>@lang('hc4.trauma_history')</span><button type="button" class="hc4-pathology-open js-abrir-antecedente-adicional" data-antecedent-key="traumatologicos" data-target-field="#antecedentesTraumatologicosTexto" title="Seleccionar antecedentes traumatológicos"><i class="fa fa-list-ul" aria-hidden="true"></i></button></div></div>
 																<div class="col-md-12 col-sm-6 col-12">
-																	<textarea rows="2" name="traumatologico" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->traumatologico }}@endif</textarea>
+																		<textarea rows="2" id="antecedentesTraumatologicosTexto" name="traumatologico" maxlength="255" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->traumatologico }}@endif</textarea>
 																</div>
 															</div>
 														</div>
 														<div class="col-lg-4 col-sm-12 ">
 															<div class="row">
-																<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"> <span style="font-family: 'Helvetica general';">@lang('hc4.otros')</span>
-																</div>
+																	<div class="col-md-12 col-sm-6 col-12" style="font-size: 12px"><div class="hc4-pathology-field-header"><span>@lang('hc4.otros')</span><button type="button" class="hc4-pathology-open js-abrir-antecedente-adicional" data-antecedent-key="otros" data-target-field="#otrosAntecedentesTexto" title="Seleccionar otros antecedentes"><i class="fa fa-list-ul" aria-hidden="true"></i></button></div></div>
 																<div class="col-md-12 col-sm-6 col-12">
-																	<textarea rows="2" name="otros_antecedente" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->otros_antecedente }}@endif</textarea>
+																		<textarea rows="2" id="otrosAntecedentesTexto" name="otros_antecedente" onchange="guardar_ob();" style="width: 95%">@if(!is_null($datos_pac)){{ $datos_pac->otros_antecedente }}@endif</textarea>
 																</div>
 															</div>
 														</div>
@@ -2672,7 +3287,7 @@
 		                               		<a class="btn btn-info btn_ordenes" style="color: white" onClick="carga_ordenes_imagenes();">
 					                        	<div class="col-12" style="padding: 0px; margin-right: 10px">
 					                        		<img width="16px" src="{{asset('/')}}hc4/img/iconos/imagenes.png">
-															<label style="font-size: 10px">@lang('hc4.imagenes')</label>
+															<label style="font-size: 10px">@lang('hc4.imagenes-')</label>
 					                        	</div>
 		                               		</a>
 
@@ -4407,9 +5022,1123 @@
 	    }
 
 
-	    function guardar_ob(){
+			var antecedentesPatologicosPersonalizados = [];
 
-			$.ajax({
+			function normalizarAntecedentePatologico(valor){
+				var texto = $.trim(valor || '').toLocaleLowerCase('es');
+				if(typeof texto.normalize === 'function'){
+					texto = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+				}
+				return texto.replace(/\s+/g, ' ');
+			}
+
+			function obtenerDetalleAntecedente($check){
+				return $('[data-detail-for="' + $check.attr('id') + '"]');
+			}
+
+			function actualizarOpcionAntecedente($check){
+				var seleccionada = $check.is(':checked');
+				$check.closest('.hc4-pathology-option').toggleClass('is-selected', seleccionada);
+				var $detalle = obtenerDetalleAntecedente($check);
+				$detalle.toggleClass('is-visible', seleccionada && $check.data('requiere-detalle') == 1);
+				if(!seleccionada){
+					$detalle.removeClass('has-error').find('input').val('');
+				}
+			}
+
+			function agregarAntecedentePersonalizado(valor){
+				valor = $.trim(valor || '').replace(/\s+/g, ' ');
+				if(!valor){ return false; }
+
+				var normalizado = normalizarAntecedentePatologico(valor);
+				var repetido = antecedentesPatologicosPersonalizados.some(function(item){
+					return normalizarAntecedentePatologico(item) === normalizado;
+				});
+				if(repetido){ return false; }
+
+				var $coincidencia = $('.js-antecedente-patologico').filter(function(){
+					return normalizarAntecedentePatologico($(this).val()) === normalizado;
+				}).first();
+				if($coincidencia.length){
+					$coincidencia.prop('checked', true);
+					actualizarOpcionAntecedente($coincidencia);
+					return true;
+				}
+
+				antecedentesPatologicosPersonalizados.push(valor);
+				renderizarAntecedentesPersonalizados();
+				return true;
+			}
+
+			function renderizarAntecedentesPersonalizados(){
+				var $contenedor = $('#antecedentesPatologicosPersonalizados').empty();
+				antecedentesPatologicosPersonalizados.forEach(function(item, indice){
+					var $tag = $('<span>').addClass('hc4-pathology-tag');
+					$tag.append($('<span>').text(item));
+					$tag.append(
+						$('<button>', {
+							type: 'button',
+							class: 'js-eliminar-antecedente-personalizado',
+							'data-index': indice,
+							'aria-label': 'Eliminar ' + item,
+							title: 'Eliminar'
+						}).append($('<i>').addClass('fa fa-times').attr('aria-hidden', 'true'))
+					);
+					$contenedor.append($tag);
+				});
+			}
+
+			function cargarAntecedentesPatologicosEnModal(){
+				antecedentesPatologicosPersonalizados = [];
+				$('.js-antecedente-patologico').prop('checked', false).each(function(){
+					actualizarOpcionAntecedente($(this));
+				});
+				$('.js-antecedente-detalle').val('');
+
+				var existentes = ($('#antecedentesPatologicosTexto').val() || '')
+					.split(/;|\r?\n/)
+					.map(function(item){ return $.trim(item); })
+					.filter(function(item){ return item !== ''; });
+
+				existentes.forEach(function(item){
+					var normalizado = normalizarAntecedentePatologico(item);
+					var encontrado = false;
+
+					$('.js-antecedente-patologico').each(function(){
+						if(encontrado){ return; }
+						var $check = $(this);
+						var nombreNormalizado = normalizarAntecedentePatologico($check.val());
+						var esExacto = normalizado === nombreNormalizado;
+						var tieneDetalle = normalizado.indexOf(nombreNormalizado + ':') === 0;
+
+						if(esExacto || tieneDetalle){
+							$check.prop('checked', true);
+							actualizarOpcionAntecedente($check);
+							if(tieneDetalle){
+								var posicionSeparador = item.indexOf(':');
+								obtenerDetalleAntecedente($check).find('input').val($.trim(item.substring(posicionSeparador + 1)));
+							}
+							encontrado = true;
+						}
+					});
+
+					if(!encontrado){
+						agregarAntecedentePersonalizado(item);
+					}
+				});
+
+				renderizarAntecedentesPersonalizados();
+				$('#buscarAntecedentePatologico, #nuevoAntecedentePatologico').val('');
+				$('.hc4-pathology-option, .hc4-pathology-category').show();
+			}
+
+			$(document).on('click', '#abrirAntecedentesPatologicos', function(){
+				cargarAntecedentesPatologicosEnModal();
+				$('#modalAntecedentesPatologicos').modal('show');
+			});
+
+			$(document).on('shown.bs.modal', '#modalAntecedentesPatologicos', function(){
+				$('#buscarAntecedentePatologico').trigger('focus');
+			});
+
+			$(document).on('change', '.js-antecedente-patologico', function(){
+				actualizarOpcionAntecedente($(this));
+			});
+
+			$(document).on('input', '.js-antecedente-detalle', function(){
+				$(this).closest('.hc4-pathology-detail').removeClass('has-error');
+			});
+
+			$(document).on('input', '#buscarAntecedentePatologico', function(){
+				var busqueda = normalizarAntecedentePatologico($(this).val());
+				$('.hc4-pathology-category').each(function(){
+					var $categoria = $(this);
+					var visibles = 0;
+					$categoria.find('.hc4-pathology-option').each(function(){
+						var $opcion = $(this);
+						var coincide = !busqueda || normalizarAntecedentePatologico($opcion.text()).indexOf(busqueda) !== -1;
+						$opcion.toggle(coincide);
+						var $detalle = obtenerDetalleAntecedente($opcion.find('input'));
+						$detalle.toggle(coincide && $opcion.find('input').is(':checked'));
+						if(coincide){ visibles++; }
+					});
+					$categoria.toggle(visibles > 0);
+				});
+			});
+
+			$(document).on('click', '#agregarAntecedentePatologico', function(){
+				if(agregarAntecedentePersonalizado($('#nuevoAntecedentePatologico').val())){
+					$('#nuevoAntecedentePatologico').val('').trigger('focus');
+				}
+			});
+
+			$(document).on('keydown', '#nuevoAntecedentePatologico', function(evento){
+				if(evento.key === 'Enter'){
+					evento.preventDefault();
+					$('#agregarAntecedentePatologico').trigger('click');
+				}
+			});
+
+			$(document).on('click', '.js-eliminar-antecedente-personalizado', function(){
+				antecedentesPatologicosPersonalizados.splice(parseInt($(this).data('index'), 10), 1);
+				renderizarAntecedentesPersonalizados();
+			});
+
+			$(document).on('click', '#limpiarAntecedentesPatologicos', function(){
+				$('.js-antecedente-patologico').prop('checked', false).each(function(){
+					actualizarOpcionAntecedente($(this));
+				});
+				antecedentesPatologicosPersonalizados = [];
+				renderizarAntecedentesPersonalizados();
+				$('#nuevoAntecedentePatologico').val('');
+			});
+
+			$(document).on('click', '#guardarAntecedentesPatologicos', function(){
+				var pendiente = $.trim($('#nuevoAntecedentePatologico').val());
+				if(pendiente){
+					agregarAntecedentePersonalizado(pendiente);
+					$('#nuevoAntecedentePatologico').val('');
+				}
+
+				var valores = [];
+				var detalleIncompleto = null;
+				$('.js-antecedente-patologico:checked').each(function(){
+					var $check = $(this);
+					var valor = $check.val();
+					if($check.data('requiere-detalle') == 1){
+						var $contenedorDetalle = obtenerDetalleAntecedente($check);
+						var $detalle = $contenedorDetalle.find('input');
+						var textoDetalle = $.trim($detalle.val());
+						if(!textoDetalle){
+							$contenedorDetalle.addClass('has-error');
+							if(!detalleIncompleto){ detalleIncompleto = $detalle; }
+							return;
+						}
+						valor += ': ' + textoDetalle;
+					}
+					valores.push(valor);
+				});
+
+				if(detalleIncompleto){
+					detalleIncompleto.trigger('focus');
+					if(window.Swal){
+						Swal.fire({icon:'warning', title:'Complete el antecedente', text:'Especifique el tipo antes de guardar.'});
+					}
+					return;
+				}
+
+				valores = valores.concat(antecedentesPatologicosPersonalizados);
+				var unicos = [];
+				var vistos = {};
+				valores.forEach(function(valor){
+					var clave = normalizarAntecedentePatologico(valor);
+					if(clave && !vistos[clave]){
+						vistos[clave] = true;
+						unicos.push($.trim(valor));
+					}
+				});
+
+				$('#antecedentesPatologicosTexto').val(unicos.join('; '));
+				var $boton = $(this);
+				var contenidoOriginal = $boton.html();
+				$boton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+				var solicitud = guardar_ob();
+				if(solicitud && typeof solicitud.done === 'function'){
+					solicitud.done(function(){
+						$('#modalAntecedentesPatologicos').modal('hide');
+						if(window.Swal){
+							Swal.fire({toast:true, position:'top-end', icon:'success', title:'Antecedentes guardados', showConfirmButton:false, timer:1800});
+						}
+					}).always(function(){
+						$boton.prop('disabled', false).html(contenidoOriginal);
+					});
+				}else{
+					$boton.prop('disabled', false).html(contenidoOriginal);
+				}
+			});
+
+			var antecedentesFamiliaresPersonalizados = [];
+			var parentescosAntecedentesFamiliares = [
+				'Padre', 'Madre', 'Hermano/a', 'Hijo/a',
+				'Abuelo paterno', 'Abuela paterna', 'Abuelo materno', 'Abuela materna',
+				'Tío/a', 'Otro familiar'
+			];
+
+			function obtenerDetalleAntecedenteFamiliar($check){
+				return $('[data-family-detail-for="' + $check.attr('id') + '"]');
+			}
+
+			function obtenerParentescosAntecedenteFamiliar($check){
+				return $('[data-family-relationship-for="' + $check.attr('id') + '"]');
+			}
+
+			function normalizarParentescoFamiliar(valor){
+				var normalizado = normalizarAntecedentePatologico(valor);
+				var equivalencias = {
+					'papa':'Padre', 'padre':'Padre', 'mama':'Madre', 'madre':'Madre',
+					'hermano':'Hermano/a', 'hermana':'Hermano/a', 'hermano/a':'Hermano/a',
+					'hijo':'Hijo/a', 'hija':'Hijo/a', 'hijo/a':'Hijo/a',
+					'tio':'Tío/a', 'tia':'Tío/a', 'tio/a':'Tío/a'
+				};
+				return equivalencias[normalizado] || $.trim(valor);
+			}
+
+			function crearOpcionesParentesco($contenedor, seleccionados, clase, indice){
+				seleccionados = seleccionados || [];
+				var opciones = parentescosAntecedentesFamiliares.slice();
+				seleccionados.forEach(function(parentesco){
+					parentesco = normalizarParentescoFamiliar(parentesco);
+					if(parentesco && !opciones.some(function(item){
+						return normalizarAntecedentePatologico(item) === normalizarAntecedentePatologico(parentesco);
+					})){
+						opciones.push(parentesco);
+					}
+				});
+
+				$contenedor.empty();
+				opciones.forEach(function(parentesco){
+					var marcado = seleccionados.some(function(item){
+						return normalizarAntecedentePatologico(normalizarParentescoFamiliar(item)) === normalizarAntecedentePatologico(parentesco);
+					});
+					var $input = $('<input>', {type:'checkbox', value:parentesco, class:clase}).prop('checked', marcado);
+					if(indice !== undefined){ $input.attr('data-index', indice); }
+					var $opcion = $('<label>').addClass('hc4-family-relative-option').toggleClass('is-selected', marcado);
+					$opcion.append($input).append($('<span>').text(parentesco));
+					$contenedor.append($opcion);
+				});
+			}
+
+			function actualizarOpcionAntecedenteFamiliar($check){
+				var seleccionada = $check.is(':checked');
+				$check.closest('.hc4-family-option').toggleClass('is-selected', seleccionada);
+				var $detalle = obtenerDetalleAntecedenteFamiliar($check);
+				var $parentescos = obtenerParentescosAntecedenteFamiliar($check);
+				$detalle.toggleClass('is-visible', seleccionada && $check.data('requiere-detalle') == 1);
+				$parentescos.toggleClass('is-visible', seleccionada);
+				if(!seleccionada){
+					$detalle.removeClass('has-error').find('input').val('');
+					$parentescos.removeClass('has-error').find('input').prop('checked', false).closest('label').removeClass('is-selected');
+				}
+			}
+
+			function extraerRegistroAntecedenteFamiliar(texto){
+				var coincidencia = $.trim(texto || '').match(/^(.*?)\s*\[Familiares?:\s*(.*?)\]\s*$/i);
+				if(!coincidencia){ return {nombre:$.trim(texto || ''), parentescos:[]}; }
+				return {
+					nombre:$.trim(coincidencia[1]),
+					parentescos:coincidencia[2].split(',').map(function(item){
+						return normalizarParentescoFamiliar($.trim(item));
+					}).filter(function(item){ return item !== ''; })
+				};
+			}
+
+			function formatearRegistroAntecedenteFamiliar(nombre, parentescos){
+				return $.trim(nombre) + ' [Familiares: ' + parentescos.join(', ') + ']';
+			}
+
+			function renderizarAntecedentesFamiliaresPersonalizados(){
+				var $contenedor = $('#antecedentesFamiliaresPersonalizados').empty();
+				antecedentesFamiliaresPersonalizados.forEach(function(item, indice){
+					var $registro = $('<div>').addClass('hc4-family-custom-item').attr('data-custom-family-index', indice);
+					var $cabecera = $('<div>').addClass('hc4-family-custom-item-header');
+					$cabecera.append($('<span>').text(item.nombre));
+					$cabecera.append(
+						$('<button>', {type:'button', class:'js-eliminar-antecedente-familiar-personalizado', 'data-index':indice, 'aria-label':'Eliminar ' + item.nombre, title:'Eliminar'})
+							.append($('<i>').addClass('fa fa-times').attr('aria-hidden', 'true'))
+					);
+					var $titulo = $('<span>').addClass('hc4-family-relationship-title').text('¿En qué familiar se presentó?');
+					var $opciones = $('<div>').addClass('hc4-family-relative-options');
+					crearOpcionesParentesco($opciones, item.parentescos, 'js-parentesco-familiar-personalizado', indice);
+					$registro.append($cabecera).append($titulo).append($opciones);
+					$contenedor.append($registro);
+				});
+			}
+
+			function aplicarParentescosCatalogo($check, parentescos){
+				var $contenedor = obtenerParentescosAntecedenteFamiliar($check).find('.hc4-family-relative-options');
+				crearOpcionesParentesco($contenedor, parentescos, 'js-parentesco-antecedente-familiar');
+			}
+
+			function agregarAntecedenteFamiliarPersonalizado(valor, parentescos){
+				valor = $.trim(valor || '').replace(/\s+/g, ' ');
+				parentescos = parentescos || [];
+				if(!valor){ return false; }
+				var normalizado = normalizarAntecedentePatologico(valor);
+				var $coincidencia = $('.js-antecedente-familiar').filter(function(){
+					return normalizarAntecedentePatologico($(this).val()) === normalizado;
+				}).first();
+				if($coincidencia.length){
+					$coincidencia.prop('checked', true);
+					aplicarParentescosCatalogo($coincidencia, parentescos);
+					actualizarOpcionAntecedenteFamiliar($coincidencia);
+					return true;
+				}
+
+				var existente = antecedentesFamiliaresPersonalizados.filter(function(item){
+					return normalizarAntecedentePatologico(item.nombre) === normalizado;
+				})[0];
+				if(existente){
+					parentescos.forEach(function(parentesco){
+						if(existente.parentescos.indexOf(parentesco) === -1){ existente.parentescos.push(parentesco); }
+					});
+				}else{
+					antecedentesFamiliaresPersonalizados.push({nombre:valor, parentescos:parentescos});
+				}
+				renderizarAntecedentesFamiliaresPersonalizados();
+				return true;
+			}
+
+			function cargarAntecedentesFamiliaresEnModal(){
+				antecedentesFamiliaresPersonalizados = [];
+				$('.js-antecedente-familiar').each(function(){
+					var $check = $(this).prop('checked', false);
+					aplicarParentescosCatalogo($check, []);
+					actualizarOpcionAntecedenteFamiliar($check);
+				});
+				$('.js-antecedente-familiar-detalle').val('');
+
+				var existentes = ($('#antecedentesFamiliaresTexto').val() || '').split(/;|\r?\n/)
+					.map(function(item){ return $.trim(item); }).filter(function(item){ return item !== ''; });
+				existentes.forEach(function(texto){
+					var registro = extraerRegistroAntecedenteFamiliar(texto);
+					var normalizado = normalizarAntecedentePatologico(registro.nombre);
+					var encontrado = false;
+					$('.js-antecedente-familiar').each(function(){
+						if(encontrado){ return; }
+						var $check = $(this);
+						var nombreNormalizado = normalizarAntecedentePatologico($check.val());
+						var esExacto = normalizado === nombreNormalizado;
+						var tieneDetalle = normalizado.indexOf(nombreNormalizado + ':') === 0;
+						if(esExacto || tieneDetalle){
+							$check.prop('checked', true);
+							aplicarParentescosCatalogo($check, registro.parentescos);
+							actualizarOpcionAntecedenteFamiliar($check);
+							if(tieneDetalle){
+								var posicionSeparador = registro.nombre.indexOf(':');
+								obtenerDetalleAntecedenteFamiliar($check).find('input').val($.trim(registro.nombre.substring(posicionSeparador + 1)));
+							}
+							encontrado = true;
+						}
+					});
+					if(!encontrado){ agregarAntecedenteFamiliarPersonalizado(registro.nombre, registro.parentescos); }
+				});
+
+				renderizarAntecedentesFamiliaresPersonalizados();
+				$('#buscarAntecedenteFamiliar, #nuevoAntecedenteFamiliar').val('');
+				$('.hc4-family-option-wrap, .hc4-family-category').show();
+			}
+
+			$(document).on('click', '#abrirAntecedentesFamiliares', function(){
+				cargarAntecedentesFamiliaresEnModal();
+				$('#modalAntecedentesFamiliares').modal('show');
+			});
+			$(document).on('shown.bs.modal', '#modalAntecedentesFamiliares', function(){ $('#buscarAntecedenteFamiliar').trigger('focus'); });
+			$(document).on('change', '.js-antecedente-familiar', function(){ actualizarOpcionAntecedenteFamiliar($(this)); });
+			$(document).on('input', '.js-antecedente-familiar-detalle', function(){ $(this).closest('.hc4-family-detail').removeClass('has-error'); });
+
+			$(document).on('change', '.js-parentesco-antecedente-familiar', function(){
+				$(this).closest('label').toggleClass('is-selected', $(this).is(':checked'));
+				$(this).closest('.hc4-family-relationship').removeClass('has-error');
+			});
+			$(document).on('change', '.js-parentesco-familiar-personalizado', function(){
+				var indice = parseInt($(this).data('index'), 10);
+				var valores = $(this).closest('.hc4-family-relative-options').find('input:checked').map(function(){ return this.value; }).get();
+				antecedentesFamiliaresPersonalizados[indice].parentescos = valores;
+				$(this).closest('label').toggleClass('is-selected', $(this).is(':checked'));
+				$(this).closest('.hc4-family-custom-item').removeClass('has-error');
+			});
+
+			$(document).on('input', '#buscarAntecedenteFamiliar', function(){
+				var busqueda = normalizarAntecedentePatologico($(this).val());
+				$('.hc4-family-category').each(function(){
+					var $categoria = $(this), visibles = 0;
+					$categoria.find('.hc4-family-option-wrap').each(function(){
+						var $contenedor = $(this), $opcion = $contenedor.find('.hc4-family-option');
+						var coincide = !busqueda || normalizarAntecedentePatologico($opcion.text()).indexOf(busqueda) !== -1;
+						$contenedor.toggle(coincide);
+						if(coincide){ visibles++; }
+					});
+					$categoria.toggle(visibles > 0);
+				});
+			});
+
+			$(document).on('click', '#agregarAntecedenteFamiliar', function(){
+				if(agregarAntecedenteFamiliarPersonalizado($('#nuevoAntecedenteFamiliar').val(), [])){
+					$('#nuevoAntecedenteFamiliar').val('').trigger('focus');
+				}
+			});
+			$(document).on('keydown', '#nuevoAntecedenteFamiliar', function(evento){
+				if(evento.key === 'Enter'){ evento.preventDefault(); $('#agregarAntecedenteFamiliar').trigger('click'); }
+			});
+			$(document).on('click', '.js-eliminar-antecedente-familiar-personalizado', function(){
+				antecedentesFamiliaresPersonalizados.splice(parseInt($(this).data('index'), 10), 1);
+				renderizarAntecedentesFamiliaresPersonalizados();
+			});
+			$(document).on('click', '#limpiarAntecedentesFamiliares', function(){
+				$('.js-antecedente-familiar').prop('checked', false).each(function(){ actualizarOpcionAntecedenteFamiliar($(this)); });
+				antecedentesFamiliaresPersonalizados = [];
+				renderizarAntecedentesFamiliaresPersonalizados();
+				$('#nuevoAntecedenteFamiliar').val('');
+			});
+
+			$(document).on('click', '#guardarAntecedentesFamiliares', function(){
+				var pendiente = $.trim($('#nuevoAntecedenteFamiliar').val());
+				if(pendiente){ agregarAntecedenteFamiliarPersonalizado(pendiente, []); $('#nuevoAntecedenteFamiliar').val(''); }
+
+				var valores = [], primerError = null, mensajeError = '';
+				$('.js-antecedente-familiar:checked').each(function(){
+					var $check = $(this), valor = $check.val();
+					var $contenedorParentescos = obtenerParentescosAntecedenteFamiliar($check);
+					var parentescos = $contenedorParentescos.find('input:checked').map(function(){ return this.value; }).get();
+					if(!parentescos.length){
+						$contenedorParentescos.addClass('has-error');
+						if(!primerError){ primerError = $contenedorParentescos; mensajeError = 'Seleccione el familiar correspondiente para cada antecedente.'; }
+						return;
+					}
+					if($check.data('requiere-detalle') == 1){
+						var $contenedorDetalle = obtenerDetalleAntecedenteFamiliar($check);
+						var $detalle = $contenedorDetalle.find('input'), textoDetalle = $.trim($detalle.val());
+						if(!textoDetalle){
+							$contenedorDetalle.addClass('has-error');
+							if(!primerError){ primerError = $detalle; mensajeError = 'Especifique la enfermedad antes de guardar.'; }
+							return;
+						}
+						valor += ': ' + textoDetalle;
+					}
+					valores.push(formatearRegistroAntecedenteFamiliar(valor, parentescos));
+				});
+
+				antecedentesFamiliaresPersonalizados.forEach(function(item, indice){
+					if(!item.parentescos.length){
+						var $registro = $('[data-custom-family-index="' + indice + '"]').addClass('has-error');
+						if(!primerError){ primerError = $registro; mensajeError = 'Seleccione el familiar correspondiente para cada antecedente.'; }
+						return;
+					}
+					valores.push(formatearRegistroAntecedenteFamiliar(item.nombre, item.parentescos));
+				});
+
+				if(primerError){
+					var $enfocar = primerError.is('input') ? primerError : primerError.find('input').first();
+					if($enfocar.length){ $enfocar.trigger('focus'); }
+					if(window.Swal){ Swal.fire({icon:'warning', title:'Complete el antecedente familiar', text:mensajeError}); }
+					return;
+				}
+
+				var unicos = [], vistos = {};
+				valores.forEach(function(valor){
+					var clave = normalizarAntecedentePatologico(valor);
+					if(clave && !vistos[clave]){ vistos[clave] = true; unicos.push($.trim(valor)); }
+				});
+				$('#antecedentesFamiliaresTexto').val(unicos.join('; '));
+				var $boton = $(this), contenidoOriginal = $boton.html();
+				$boton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+				var solicitud = guardar_ob();
+				if(solicitud && typeof solicitud.done === 'function'){
+					solicitud.done(function(){
+						$('#modalAntecedentesFamiliares').modal('hide');
+						if(window.Swal){ Swal.fire({toast:true, position:'top-end', icon:'success', title:'Antecedentes familiares guardados', showConfirmButton:false, timer:1800}); }
+					}).always(function(){ $boton.prop('disabled', false).html(contenidoOriginal); });
+				}else{ $boton.prop('disabled', false).html(contenidoOriginal); }
+			});
+
+			var antecedentesQuirurgicosPersonalizados = [];
+
+			function obtenerDetalleAntecedenteQuirurgico($check){
+				return $('[data-surgical-detail-for="' + $check.attr('id') + '"]');
+			}
+
+			function actualizarOpcionAntecedenteQuirurgico($check){
+				var seleccionada = $check.is(':checked');
+				$check.closest('.hc4-surgical-option').toggleClass('is-selected', seleccionada);
+				var $detalle = obtenerDetalleAntecedenteQuirurgico($check);
+				$detalle.toggleClass('is-visible', seleccionada && $check.data('requiere-detalle') == 1);
+				if(!seleccionada){
+					$detalle.removeClass('has-error').find('input').val('');
+				}
+			}
+
+			function renderizarAntecedentesQuirurgicosPersonalizados(){
+				var $contenedor = $('#antecedentesQuirurgicosPersonalizados').empty();
+				antecedentesQuirurgicosPersonalizados.forEach(function(item, indice){
+					var $tag = $('<span>').addClass('hc4-pathology-tag');
+					$tag.append($('<span>').text(item));
+					$tag.append(
+						$('<button>', {
+							type:'button',
+							class:'js-eliminar-antecedente-quirurgico-personalizado',
+							'data-index':indice,
+							'aria-label':'Eliminar ' + item,
+							title:'Eliminar'
+						}).append($('<i>').addClass('fa fa-times').attr('aria-hidden', 'true'))
+					);
+					$contenedor.append($tag);
+				});
+			}
+
+			function agregarAntecedenteQuirurgicoPersonalizado(valor){
+				valor = $.trim(valor || '').replace(/\s+/g, ' ');
+				if(!valor){ return false; }
+				var normalizado = normalizarAntecedentePatologico(valor);
+				var repetido = antecedentesQuirurgicosPersonalizados.some(function(item){
+					return normalizarAntecedentePatologico(item) === normalizado;
+				});
+				if(repetido){ return false; }
+
+				var $coincidencia = $('.js-antecedente-quirurgico').filter(function(){
+					return normalizarAntecedentePatologico($(this).val()) === normalizado;
+				}).first();
+				if($coincidencia.length){
+					$coincidencia.prop('checked', true);
+					actualizarOpcionAntecedenteQuirurgico($coincidencia);
+					return true;
+				}
+
+				antecedentesQuirurgicosPersonalizados.push(valor);
+				renderizarAntecedentesQuirurgicosPersonalizados();
+				return true;
+			}
+
+			function cargarAntecedentesQuirurgicosEnModal(){
+				antecedentesQuirurgicosPersonalizados = [];
+				$('.js-antecedente-quirurgico').prop('checked', false).each(function(){
+					actualizarOpcionAntecedenteQuirurgico($(this));
+				});
+				$('.js-antecedente-quirurgico-detalle').val('');
+
+				var existentes = ($('#antecedentesQuirurgicosTexto').val() || '')
+					.split(/;|\r?\n/)
+					.map(function(item){ return $.trim(item); })
+					.filter(function(item){ return item !== ''; });
+				existentes.forEach(function(item){
+					var normalizado = normalizarAntecedentePatologico(item), encontrado = false;
+					$('.js-antecedente-quirurgico').each(function(){
+						if(encontrado){ return; }
+						var $check = $(this), nombreNormalizado = normalizarAntecedentePatologico($check.val());
+						var esExacto = normalizado === nombreNormalizado;
+						var tieneDetalle = normalizado.indexOf(nombreNormalizado + ':') === 0;
+						if(esExacto || tieneDetalle){
+							$check.prop('checked', true);
+							actualizarOpcionAntecedenteQuirurgico($check);
+							if(tieneDetalle){
+								var posicionSeparador = item.indexOf(':');
+								obtenerDetalleAntecedenteQuirurgico($check).find('input').val($.trim(item.substring(posicionSeparador + 1)));
+							}
+							encontrado = true;
+						}
+					});
+					if(!encontrado){ agregarAntecedenteQuirurgicoPersonalizado(item); }
+				});
+
+				renderizarAntecedentesQuirurgicosPersonalizados();
+				$('#buscarAntecedenteQuirurgico, #nuevoAntecedenteQuirurgico').val('');
+				$('.hc4-surgical-option-wrap, .hc4-surgical-category').show();
+			}
+
+			$(document).on('click', '#abrirAntecedentesQuirurgicos', function(){
+				cargarAntecedentesQuirurgicosEnModal();
+				$('#modalAntecedentesQuirurgicos').modal('show');
+			});
+			$(document).on('shown.bs.modal', '#modalAntecedentesQuirurgicos', function(){ $('#buscarAntecedenteQuirurgico').trigger('focus'); });
+			$(document).on('change', '.js-antecedente-quirurgico', function(){ actualizarOpcionAntecedenteQuirurgico($(this)); });
+			$(document).on('input', '.js-antecedente-quirurgico-detalle', function(){ $(this).closest('.hc4-surgical-detail').removeClass('has-error'); });
+
+			$(document).on('input', '#buscarAntecedenteQuirurgico', function(){
+				var busqueda = normalizarAntecedentePatologico($(this).val());
+				$('.hc4-surgical-category').each(function(){
+					var $categoria = $(this), visibles = 0;
+					$categoria.find('.hc4-surgical-option-wrap').each(function(){
+						var $contenedor = $(this), $opcion = $contenedor.find('.hc4-surgical-option');
+						var coincide = !busqueda || normalizarAntecedentePatologico($opcion.text()).indexOf(busqueda) !== -1;
+						$contenedor.toggle(coincide);
+						if(coincide){ visibles++; }
+					});
+					$categoria.toggle(visibles > 0);
+				});
+			});
+
+			$(document).on('click', '#agregarAntecedenteQuirurgico', function(){
+				if(agregarAntecedenteQuirurgicoPersonalizado($('#nuevoAntecedenteQuirurgico').val())){
+					$('#nuevoAntecedenteQuirurgico').val('').trigger('focus');
+				}
+			});
+			$(document).on('keydown', '#nuevoAntecedenteQuirurgico', function(evento){
+				if(evento.key === 'Enter'){ evento.preventDefault(); $('#agregarAntecedenteQuirurgico').trigger('click'); }
+			});
+			$(document).on('click', '.js-eliminar-antecedente-quirurgico-personalizado', function(){
+				antecedentesQuirurgicosPersonalizados.splice(parseInt($(this).data('index'), 10), 1);
+				renderizarAntecedentesQuirurgicosPersonalizados();
+			});
+			$(document).on('click', '#limpiarAntecedentesQuirurgicos', function(){
+				$('.js-antecedente-quirurgico').prop('checked', false).each(function(){ actualizarOpcionAntecedenteQuirurgico($(this)); });
+				antecedentesQuirurgicosPersonalizados = [];
+				renderizarAntecedentesQuirurgicosPersonalizados();
+				$('#nuevoAntecedenteQuirurgico').val('');
+			});
+
+			$(document).on('click', '#guardarAntecedentesQuirurgicos', function(){
+				var pendiente = $.trim($('#nuevoAntecedenteQuirurgico').val());
+				if(pendiente){ agregarAntecedenteQuirurgicoPersonalizado(pendiente); $('#nuevoAntecedenteQuirurgico').val(''); }
+				var valores = [], detalleIncompleto = null;
+				$('.js-antecedente-quirurgico:checked').each(function(){
+					var $check = $(this), valor = $check.val();
+					if($check.data('requiere-detalle') == 1){
+						var $contenedorDetalle = obtenerDetalleAntecedenteQuirurgico($check);
+						var $detalle = $contenedorDetalle.find('input'), textoDetalle = $.trim($detalle.val());
+						if(!textoDetalle){
+							$contenedorDetalle.addClass('has-error');
+							if(!detalleIncompleto){ detalleIncompleto = $detalle; }
+							return;
+						}
+						valor += ': ' + textoDetalle;
+					}
+					valores.push(valor);
+				});
+				if(detalleIncompleto){
+					detalleIncompleto.trigger('focus');
+					if(window.Swal){ Swal.fire({icon:'warning', title:'Complete el antecedente quirúrgico', text:'Especifique la cirugía antes de guardar.'}); }
+					return;
+				}
+
+				valores = valores.concat(antecedentesQuirurgicosPersonalizados);
+				var unicos = [], vistos = {};
+				valores.forEach(function(valor){
+					var clave = normalizarAntecedentePatologico(valor);
+					if(clave && !vistos[clave]){ vistos[clave] = true; unicos.push($.trim(valor)); }
+				});
+				$('#antecedentesQuirurgicosTexto').val(unicos.join('; '));
+				var $boton = $(this), contenidoOriginal = $boton.html();
+				$boton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+				var solicitud = guardar_ob();
+				if(solicitud && typeof solicitud.done === 'function'){
+					solicitud.done(function(){
+						$('#modalAntecedentesQuirurgicos').modal('hide');
+						if(window.Swal){ Swal.fire({toast:true, position:'top-end', icon:'success', title:'Antecedentes quirúrgicos guardados', showConfirmButton:false, timer:1800}); }
+					}).always(function(){ $boton.prop('disabled', false).html(contenidoOriginal); });
+				}else{ $boton.prop('disabled', false).html(contenidoOriginal); }
+			});
+
+			var antecedentesGinecologicosPersonalizados = [];
+
+			function obtenerDetalleAntecedenteGinecologico($check){
+				return $('[data-gyne-detail-for="' + $check.attr('id') + '"]');
+			}
+
+			function actualizarOpcionAntecedenteGinecologico($check){
+				var seleccionada = $check.is(':checked');
+				$check.closest('.hc4-gyne-option').toggleClass('is-selected', seleccionada);
+				var $detalle = obtenerDetalleAntecedenteGinecologico($check);
+				$detalle.toggleClass('is-visible', seleccionada && $check.data('requiere-detalle') == 1);
+				if(!seleccionada){ $detalle.removeClass('has-error').find('input').val(''); }
+				actualizarContadorAntecedentesGinecologicos();
+			}
+
+			function valoresAntecedentesGinecologicos(incluirDetallesVacios){
+				var valores = [];
+				$('.js-antecedente-ginecologico:checked').each(function(){
+					var $check = $(this), valor = $check.val();
+					if($check.data('requiere-detalle') == 1){
+						var detalle = $.trim(obtenerDetalleAntecedenteGinecologico($check).find('input').val());
+						if(detalle){ valor += ': ' + detalle; }
+						else if(!incluirDetallesVacios){ return; }
+					}
+					valores.push(valor);
+				});
+				return valores.concat(antecedentesGinecologicosPersonalizados);
+			}
+
+			function actualizarContadorAntecedentesGinecologicos(){
+				var longitud = valoresAntecedentesGinecologicos(true).join('; ').length;
+				$('#contadorAntecedentesGinecologicos')
+					.text(longitud + ' de 255 caracteres')
+					.toggleClass('is-near-limit', longitud >= 220 && longitud <= 255)
+					.toggleClass('is-over-limit', longitud > 255);
+			}
+
+			function renderizarAntecedentesGinecologicosPersonalizados(){
+				var $contenedor = $('#antecedentesGinecologicosPersonalizados').empty();
+				antecedentesGinecologicosPersonalizados.forEach(function(item, indice){
+					var $tag = $('<span>').addClass('hc4-pathology-tag');
+					$tag.append($('<span>').text(item));
+					$tag.append(
+						$('<button>', {type:'button', class:'js-eliminar-antecedente-ginecologico-personalizado', 'data-index':indice, 'aria-label':'Eliminar ' + item, title:'Eliminar'})
+							.append($('<i>').addClass('fa fa-times').attr('aria-hidden', 'true'))
+					);
+					$contenedor.append($tag);
+				});
+				actualizarContadorAntecedentesGinecologicos();
+			}
+
+			function agregarAntecedenteGinecologicoPersonalizado(valor){
+				valor = $.trim(valor || '').replace(/\s+/g, ' ');
+				if(!valor){ return false; }
+				var normalizado = normalizarAntecedentePatologico(valor);
+				if(antecedentesGinecologicosPersonalizados.some(function(item){ return normalizarAntecedentePatologico(item) === normalizado; })){
+					return false;
+				}
+				var $coincidencia = $('.js-antecedente-ginecologico').filter(function(){
+					return normalizarAntecedentePatologico($(this).val()) === normalizado;
+				}).first();
+				if($coincidencia.length){
+					$coincidencia.prop('checked', true);
+					actualizarOpcionAntecedenteGinecologico($coincidencia);
+					return true;
+				}
+				antecedentesGinecologicosPersonalizados.push(valor);
+				renderizarAntecedentesGinecologicosPersonalizados();
+				return true;
+			}
+
+			function cargarAntecedentesGinecologicosEnModal(){
+				antecedentesGinecologicosPersonalizados = [];
+				$('.js-antecedente-ginecologico').prop('checked', false).each(function(){ actualizarOpcionAntecedenteGinecologico($(this)); });
+				$('.js-antecedente-ginecologico-detalle').val('');
+				var existentes = ($('#antecedentesGinecologicosTexto').val() || '')
+					.split(/;|\r?\n/).map(function(item){ return $.trim(item); }).filter(function(item){ return item !== ''; });
+				existentes.forEach(function(item){
+					var normalizado = normalizarAntecedentePatologico(item), encontrado = false;
+					$('.js-antecedente-ginecologico').each(function(){
+						if(encontrado){ return; }
+						var $check = $(this), nombreNormalizado = normalizarAntecedentePatologico($check.val());
+						var esExacto = normalizado === nombreNormalizado;
+						var tieneDetalle = normalizado.indexOf(nombreNormalizado + ':') === 0;
+						if(esExacto || tieneDetalle){
+							$check.prop('checked', true);
+							actualizarOpcionAntecedenteGinecologico($check);
+							if(tieneDetalle){
+								var posicionSeparador = item.indexOf(':');
+								obtenerDetalleAntecedenteGinecologico($check).find('input').val($.trim(item.substring(posicionSeparador + 1)));
+							}
+							encontrado = true;
+						}
+					});
+					if(!encontrado){ agregarAntecedenteGinecologicoPersonalizado(item); }
+				});
+				renderizarAntecedentesGinecologicosPersonalizados();
+				$('#buscarAntecedenteGinecologico, #nuevoAntecedenteGinecologico').val('');
+				$('.hc4-gyne-option-wrap, .hc4-gyne-category').show();
+				actualizarContadorAntecedentesGinecologicos();
+			}
+
+			$(document).on('click', '#abrirAntecedentesGinecologicos', function(){
+				cargarAntecedentesGinecologicosEnModal();
+				$('#modalAntecedentesGinecologicos').modal('show');
+			});
+			$(document).on('shown.bs.modal', '#modalAntecedentesGinecologicos', function(){ $('#buscarAntecedenteGinecologico').trigger('focus'); });
+			$(document).on('change', '.js-antecedente-ginecologico', function(){ actualizarOpcionAntecedenteGinecologico($(this)); });
+			$(document).on('input', '.js-antecedente-ginecologico-detalle', function(){
+				$(this).closest('.hc4-gyne-detail').removeClass('has-error');
+				actualizarContadorAntecedentesGinecologicos();
+			});
+			$(document).on('input', '#buscarAntecedenteGinecologico', function(){
+				var busqueda = normalizarAntecedentePatologico($(this).val());
+				$('.hc4-gyne-category').each(function(){
+					var $categoria = $(this), visibles = 0;
+					$categoria.find('.hc4-gyne-option-wrap').each(function(){
+						var $contenedor = $(this), $opcion = $contenedor.find('.hc4-gyne-option');
+						var coincide = !busqueda || normalizarAntecedentePatologico($opcion.text()).indexOf(busqueda) !== -1;
+						$contenedor.toggle(coincide);
+						if(coincide){ visibles++; }
+					});
+					$categoria.toggle(visibles > 0);
+				});
+			});
+			$(document).on('click', '#agregarAntecedenteGinecologico', function(){
+				if(agregarAntecedenteGinecologicoPersonalizado($('#nuevoAntecedenteGinecologico').val())){
+					$('#nuevoAntecedenteGinecologico').val('').trigger('focus');
+				}
+			});
+			$(document).on('keydown', '#nuevoAntecedenteGinecologico', function(evento){
+				if(evento.key === 'Enter'){ evento.preventDefault(); $('#agregarAntecedenteGinecologico').trigger('click'); }
+			});
+			$(document).on('click', '.js-eliminar-antecedente-ginecologico-personalizado', function(){
+				antecedentesGinecologicosPersonalizados.splice(parseInt($(this).data('index'), 10), 1);
+				renderizarAntecedentesGinecologicosPersonalizados();
+			});
+			$(document).on('click', '#limpiarAntecedentesGinecologicos', function(){
+				$('.js-antecedente-ginecologico').prop('checked', false).each(function(){ actualizarOpcionAntecedenteGinecologico($(this)); });
+				antecedentesGinecologicosPersonalizados = [];
+				renderizarAntecedentesGinecologicosPersonalizados();
+				$('#nuevoAntecedenteGinecologico').val('');
+			});
+
+			$(document).on('click', '#guardarAntecedentesGinecologicos', function(){
+				var pendiente = $.trim($('#nuevoAntecedenteGinecologico').val());
+				if(pendiente){ agregarAntecedenteGinecologicoPersonalizado(pendiente); $('#nuevoAntecedenteGinecologico').val(''); }
+				var detalleIncompleto = null;
+				$('.js-antecedente-ginecologico:checked').each(function(){
+					var $check = $(this);
+					if($check.data('requiere-detalle') == 1){
+						var $contenedor = obtenerDetalleAntecedenteGinecologico($check), $detalle = $contenedor.find('input');
+						if(!$.trim($detalle.val())){
+							$contenedor.addClass('has-error');
+							if(!detalleIncompleto){ detalleIncompleto = $detalle; }
+						}
+					}
+				});
+				if(detalleIncompleto){
+					detalleIncompleto.trigger('focus');
+					if(window.Swal){ Swal.fire({icon:'warning', title:'Complete el antecedente ginecológico', text:'Ingrese el dato solicitado antes de guardar.'}); }
+					return;
+				}
+
+				var valores = valoresAntecedentesGinecologicos(false), unicos = [], vistos = {};
+				valores.forEach(function(valor){
+					var clave = normalizarAntecedentePatologico(valor);
+					if(clave && !vistos[clave]){ vistos[clave] = true; unicos.push($.trim(valor)); }
+				});
+				var texto = unicos.join('; ');
+				if(texto.length > 255){
+					if(window.Swal){ Swal.fire({icon:'warning', title:'Demasiada información', text:'Los antecedentes ginecológicos no pueden superar 255 caracteres. Elimine o resuma alguna selección.'}); }
+					return;
+				}
+
+				$('#antecedentesGinecologicosTexto').val(texto);
+				var $boton = $(this), contenidoOriginal = $boton.html();
+				$boton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+				var solicitud = guardar_ob();
+				if(solicitud && typeof solicitud.done === 'function'){
+					solicitud.done(function(){
+						$('#modalAntecedentesGinecologicos').modal('hide');
+						if(window.Swal){ Swal.fire({toast:true, position:'top-end', icon:'success', title:'Antecedentes ginecológicos guardados', showConfirmButton:false, timer:1800}); }
+					}).always(function(){ $boton.prop('disabled', false).html(contenidoOriginal); });
+				}else{ $boton.prop('disabled', false).html(contenidoOriginal); }
+			});
+
+			var catalogosAntecedentesAdicionales = {!! json_encode(config('antecedentes_adicionales', []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
+			var selectorAntecedenteAdicional = {
+				clave: null,
+				configuracion: null,
+				$campo: null,
+				personalizados: []
+			};
+
+			function obtenerDetalleAntecedenteAdicional($check){
+				return $('[data-additional-detail-for="' + $check.attr('id') + '"]');
+			}
+
+			function actualizarOpcionAntecedenteAdicional($check){
+				var seleccionada = $check.is(':checked');
+				$check.closest('.hc4-additional-option').toggleClass('is-selected', seleccionada);
+				var $detalle = obtenerDetalleAntecedenteAdicional($check);
+				$detalle.toggleClass('is-visible', seleccionada && $check.data('requiere-detalle') == 1);
+				if(!seleccionada){ $detalle.removeClass('has-error').find('input').val(''); }
+				actualizarContadorAntecedentesAdicionales();
+			}
+
+			function valoresAntecedentesAdicionales(incluirDetallesVacios){
+				var valores = [];
+				$('.js-antecedente-adicional:checked').each(function(){
+					var $check = $(this), valor = $check.val();
+					if($check.data('requiere-detalle') == 1){
+						var detalle = $.trim(obtenerDetalleAntecedenteAdicional($check).find('input').val());
+						if(detalle){ valor += ': ' + detalle; }
+						else if(!incluirDetallesVacios){ return; }
+					}
+					valores.push(valor);
+				});
+				return valores.concat(selectorAntecedenteAdicional.personalizados);
+			}
+
+			function actualizarContadorAntecedentesAdicionales(){
+				if(!selectorAntecedenteAdicional.configuracion){ return; }
+				var longitud = valoresAntecedentesAdicionales(true).join('; ').length;
+				var limite = selectorAntecedenteAdicional.configuracion.limite;
+				var texto = limite ? longitud + ' de ' + limite + ' caracteres' : longitud + ' caracteres';
+				$('#contadorAntecedentesAdicionales')
+					.text(texto)
+					.toggleClass('is-near-limit', !!limite && longitud >= limite - 35 && longitud <= limite)
+					.toggleClass('is-over-limit', !!limite && longitud > limite);
+			}
+
+			function renderizarPersonalizadosAntecedentesAdicionales(){
+				var $contenedor = $('#antecedentesAdicionalesPersonalizados').empty();
+				selectorAntecedenteAdicional.personalizados.forEach(function(item, indice){
+					var $tag = $('<span>').addClass('hc4-pathology-tag');
+					$tag.append($('<span>').text(item));
+					$tag.append(
+						$('<button>', {type:'button', class:'js-eliminar-antecedente-adicional-personalizado', 'data-index':indice, 'aria-label':'Eliminar ' + item, title:'Eliminar'})
+							.append($('<i>').addClass('fa fa-times').attr('aria-hidden', 'true'))
+					);
+					$contenedor.append($tag);
+				});
+				actualizarContadorAntecedentesAdicionales();
+			}
+
+			function agregarAntecedenteAdicionalPersonalizado(valor){
+				valor = $.trim(valor || '').replace(/\s+/g, ' ');
+				if(!valor){ return false; }
+				var normalizado = normalizarAntecedentePatologico(valor);
+				if(selectorAntecedenteAdicional.personalizados.some(function(item){ return normalizarAntecedentePatologico(item) === normalizado; })){
+					return false;
+				}
+				var $coincidencia = $('.js-antecedente-adicional').filter(function(){
+					return normalizarAntecedentePatologico($(this).val()) === normalizado;
+				}).first();
+				if($coincidencia.length){
+					$coincidencia.prop('checked', true);
+					actualizarOpcionAntecedenteAdicional($coincidencia);
+					return true;
+				}
+				selectorAntecedenteAdicional.personalizados.push(valor);
+				renderizarPersonalizadosAntecedentesAdicionales();
+				return true;
+			}
+
+			function construirCatalogoAntecedenteAdicional(){
+				var configuracion = selectorAntecedenteAdicional.configuracion;
+				var $catalogo = $('#catalogoAntecedentesAdicionales').empty();
+				$('#tituloAntecedentesAdicionales span').text(configuracion.titulo);
+				$('#iconoAntecedentesAdicionales').attr('class', 'fa ' + configuracion.icono);
+				var contador = 0;
+				$.each(configuracion.categorias, function(categoria, antecedentes){
+					var $seccion = $('<section>').addClass('hc4-pathology-category hc4-additional-category');
+					$seccion.append($('<h5>').addClass('hc4-pathology-category-title').text(categoria));
+					var $opciones = $('<div>').addClass('hc4-pathology-options');
+					antecedentes.forEach(function(antecedente){
+						contador++;
+						var identificador = 'antecedente_adicional_' + selectorAntecedenteAdicional.clave + '_' + contador;
+						var requiereDetalle = !!antecedente.requiere_detalle;
+						var $envoltura = $('<div>').addClass('hc4-additional-option-wrap');
+						var $check = $('<input>', {type:'checkbox', id:identificador, value:antecedente.nombre, class:'js-antecedente-adicional'})
+							.attr('data-requiere-detalle', requiereDetalle ? '1' : '0');
+						var $opcion = $('<label>').addClass('hc4-pathology-option hc4-additional-option').append($check).append($('<span>').text(antecedente.nombre));
+						$envoltura.append($opcion);
+						if(requiereDetalle){
+							var $detalle = $('<div>').addClass('hc4-pathology-detail hc4-additional-detail').attr('data-additional-detail-for', identificador);
+							$detalle.append($('<input>', {type:'text', class:'form-control js-antecedente-adicional-detalle', maxlength:180, placeholder:antecedente.detalle, 'aria-label':antecedente.detalle}));
+							$envoltura.append($detalle);
+						}
+						$opciones.append($envoltura);
+					});
+					$seccion.append($opciones);
+					$catalogo.append($seccion);
+				});
+			}
+
+			function cargarAntecedentesAdicionalesEnModal(){
+				selectorAntecedenteAdicional.personalizados = [];
+				construirCatalogoAntecedenteAdicional();
+				var existentes = (selectorAntecedenteAdicional.$campo.val() || '')
+					.split(/;|\r?\n/).map(function(item){ return $.trim(item); }).filter(function(item){ return item !== ''; });
+				existentes.forEach(function(item){
+					var normalizado = normalizarAntecedentePatologico(item), encontrado = false;
+					$('.js-antecedente-adicional').each(function(){
+						if(encontrado){ return; }
+						var $check = $(this), nombreNormalizado = normalizarAntecedentePatologico($check.val());
+						var esExacto = normalizado === nombreNormalizado;
+						var tieneDetalle = normalizado.indexOf(nombreNormalizado + ':') === 0;
+						if(esExacto || tieneDetalle){
+							$check.prop('checked', true);
+							actualizarOpcionAntecedenteAdicional($check);
+							if(tieneDetalle){
+								var posicionSeparador = item.indexOf(':');
+								obtenerDetalleAntecedenteAdicional($check).find('input').val($.trim(item.substring(posicionSeparador + 1)));
+							}
+							encontrado = true;
+						}
+					});
+					if(!encontrado){ agregarAntecedenteAdicionalPersonalizado(item); }
+				});
+				renderizarPersonalizadosAntecedentesAdicionales();
+				$('#buscarAntecedenteAdicional, #nuevoAntecedenteAdicional').val('');
+				actualizarContadorAntecedentesAdicionales();
+			}
+
+			$(document).on('click', '.js-abrir-antecedente-adicional', function(){
+				var clave = $(this).data('antecedent-key');
+				var configuracion = catalogosAntecedentesAdicionales[clave];
+				var $campo = $($(this).data('target-field'));
+				if(!configuracion || !$campo.length){ return; }
+				selectorAntecedenteAdicional.clave = clave;
+				selectorAntecedenteAdicional.configuracion = configuracion;
+				selectorAntecedenteAdicional.$campo = $campo;
+				cargarAntecedentesAdicionalesEnModal();
+				$('#modalAntecedentesAdicionales').modal('show');
+			});
+			$(document).on('shown.bs.modal', '#modalAntecedentesAdicionales', function(){ $('#buscarAntecedenteAdicional').trigger('focus'); });
+			$(document).on('change', '.js-antecedente-adicional', function(){ actualizarOpcionAntecedenteAdicional($(this)); });
+			$(document).on('input', '.js-antecedente-adicional-detalle', function(){
+				$(this).closest('.hc4-additional-detail').removeClass('has-error');
+				actualizarContadorAntecedentesAdicionales();
+			});
+			$(document).on('input', '#buscarAntecedenteAdicional', function(){
+				var busqueda = normalizarAntecedentePatologico($(this).val());
+				$('.hc4-additional-category').each(function(){
+					var $categoria = $(this), visibles = 0;
+					$categoria.find('.hc4-additional-option-wrap').each(function(){
+						var $contenedor = $(this), $opcion = $contenedor.find('.hc4-additional-option');
+						var coincide = !busqueda || normalizarAntecedentePatologico($opcion.text()).indexOf(busqueda) !== -1;
+						$contenedor.toggle(coincide);
+						if(coincide){ visibles++; }
+					});
+					$categoria.toggle(visibles > 0);
+				});
+			});
+			$(document).on('click', '#agregarAntecedenteAdicional', function(){
+				if(agregarAntecedenteAdicionalPersonalizado($('#nuevoAntecedenteAdicional').val())){
+					$('#nuevoAntecedenteAdicional').val('').trigger('focus');
+				}
+			});
+			$(document).on('keydown', '#nuevoAntecedenteAdicional', function(evento){
+				if(evento.key === 'Enter'){ evento.preventDefault(); $('#agregarAntecedenteAdicional').trigger('click'); }
+			});
+			$(document).on('click', '.js-eliminar-antecedente-adicional-personalizado', function(){
+				selectorAntecedenteAdicional.personalizados.splice(parseInt($(this).data('index'), 10), 1);
+				renderizarPersonalizadosAntecedentesAdicionales();
+			});
+			$(document).on('click', '#limpiarAntecedentesAdicionales', function(){
+				$('.js-antecedente-adicional').prop('checked', false).each(function(){ actualizarOpcionAntecedenteAdicional($(this)); });
+				selectorAntecedenteAdicional.personalizados = [];
+				renderizarPersonalizadosAntecedentesAdicionales();
+				$('#nuevoAntecedenteAdicional').val('');
+			});
+
+			$(document).on('click', '#guardarAntecedentesAdicionales', function(){
+				var pendiente = $.trim($('#nuevoAntecedenteAdicional').val());
+				if(pendiente){ agregarAntecedenteAdicionalPersonalizado(pendiente); $('#nuevoAntecedenteAdicional').val(''); }
+				var detalleIncompleto = null;
+				$('.js-antecedente-adicional:checked').each(function(){
+					var $check = $(this);
+					if($check.data('requiere-detalle') == 1){
+						var $contenedor = obtenerDetalleAntecedenteAdicional($check), $detalle = $contenedor.find('input');
+						if(!$.trim($detalle.val())){
+							$contenedor.addClass('has-error');
+							if(!detalleIncompleto){ detalleIncompleto = $detalle; }
+						}
+					}
+				});
+				if(detalleIncompleto){
+					detalleIncompleto.trigger('focus');
+					if(window.Swal){ Swal.fire({icon:'warning', title:'Complete el antecedente', text:'Ingrese el dato solicitado antes de guardar.'}); }
+					return;
+				}
+
+				var valores = valoresAntecedentesAdicionales(false), unicos = [], vistos = {};
+				valores.forEach(function(valor){
+					var clave = normalizarAntecedentePatologico(valor);
+					if(clave && !vistos[clave]){ vistos[clave] = true; unicos.push($.trim(valor)); }
+				});
+				var texto = unicos.join('; '), limite = selectorAntecedenteAdicional.configuracion.limite;
+				if(limite && texto.length > limite){
+					if(window.Swal){ Swal.fire({icon:'warning', title:'Demasiada información', text:'Este campo no puede superar ' + limite + ' caracteres. Elimine o resuma alguna selección.'}); }
+					return;
+				}
+
+				selectorAntecedenteAdicional.$campo.val(texto);
+				var $boton = $(this), contenidoOriginal = $boton.html();
+				$boton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+				var solicitud = guardar_ob();
+				if(solicitud && typeof solicitud.done === 'function'){
+					solicitud.done(function(){
+						$('#modalAntecedentesAdicionales').modal('hide');
+						if(window.Swal){ Swal.fire({toast:true, position:'top-end', icon:'success', title:selectorAntecedenteAdicional.configuracion.titulo + ' guardados', showConfirmButton:false, timer:1800}); }
+					}).always(function(){ $boton.prop('disabled', false).html(contenidoOriginal); });
+				}else{ $boton.prop('disabled', false).html(contenidoOriginal); }
+			});
+
+		    function guardar_ob(){
+
+				return $.ajax({
 
 				type: 'post',
 	            url:"{{route('paciente_observacion_act')}}",
@@ -4419,8 +6148,14 @@
 				success: function(data){
 
 				},
-				error:  function(){
-					alert({!! json_encode(trans('hc4.errorCargar')) !!});
+					error:  function(xhr){
+						var respuesta = xhr.responseJSON || {};
+						var mensaje = respuesta.message || {!! json_encode(trans('hc4.errorCargar')) !!};
+						if(window.Swal){
+							Swal.fire({icon:'error', title:'No se pudieron guardar los antecedentes', text:mensaje});
+						}else{
+							alert(mensaje);
+						}
 				}
 			});
 

@@ -162,7 +162,8 @@ document.onmousedown=click
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-  </head>
+      @include('layouts.partials.aitrol-theme')
+</head>
   <!--
     Creado y Diseñado por:
     -Victor Touris
@@ -187,7 +188,7 @@ document.onmousedown=click
     |               | sidebar-mini                            |
     |---------------------------------------------------------|
     -->
-  <body class="hold-transition skin-blue sidebar-mini aitrol-shell" id="body2" >
+  <body class="aitrol-theme hold-transition skin-blue sidebar-mini aitrol-shell" id="body2" >
     <div class="wrapper">
     <!-- Main Header -->
     @include('layouts.header')

@@ -26,31 +26,6 @@
     .clinical-doc-link-history { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     .clinical-doc-link-history h4 { margin-bottom: 4px; }
     @media (max-width: 767px) { .clinical-doc-page { padding: 0 4px 25px; } .clinical-doc-hero { display: block; padding: 20px; } .clinical-doc-status { margin-top: 16px; } }
-    .surgery-planner { margin: 18px 0 28px; padding: 22px; border: 1px solid #dbe8f2; border-radius: 8px; background: #f8fbfd; box-shadow: 0 5px 18px rgba(15, 52, 78, .06); }
-    .surgery-planner__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-    .surgery-planner__header h4 { margin: 0 0 5px; color: #123b5d; font-weight: 700; }
-    .surgery-planner__header p { margin: 0; color: #647b8d; font-size: 13px; }
-    .surgery-planner__step { display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 18px; background: #e4f3fb; color: #0877be; font-size: 12px; font-weight: 700; white-space: nowrap; }
-    .surgery-planner__field { padding: 16px; border: 1px solid #dbe8f2; border-radius: 9px; background: #fff; }
-    .surgery-planner__field label { color: #1c4868; font-weight: 700; }
-    .surgery-planner__field .help-block { margin: 6px 0 0; color: #718596; font-size: 12px; }
-    .surgery-planner .select2-container { width: 100% !important; }
-    .surgery-planner .select2-container--default .select2-selection--multiple { min-height: 46px; border: 1px solid #b9d3e3; border-radius: 7px; padding: 5px 7px; }
-    .surgery-planner .select2-container--default.select2-container--focus .select2-selection--multiple { border-color: #0789c9; box-shadow: 0 0 0 3px rgba(8, 137, 201, .12); }
-    .surgery-planner .select2-selection__choice { margin-top: 3px !important; border: 0 !important; border-radius: 14px !important; background: #dff2fb !important; color: #075985 !important; padding: 4px 8px !important; }
-    .surgery-planner .select2-selection__choice__remove { color: #075985 !important; margin-right: 5px !important; }
-    .surgery-planner .select2-selection--multiple .select2-selection__rendered { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 3px; min-width: 0; }
-    .surgery-planner .select2-selection__choice { display: inline-flex !important; align-items: flex-start; max-width: 100%; min-width: 0; white-space: normal !important; overflow-wrap: anywhere; word-break: break-word; }
-    .surgery-planner .select2-selection__choice__remove { flex: 0 0 auto; line-height: 1.35; }
-    .surgery-planner .select2-dropdown { border-color: #b9d3e3; }
-    .surgery-planner__actions { display: flex; justify-content: flex-end; margin-top: 18px; }
-    .surgery-planner__steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
-    .surgery-planner__steps li { padding: 10px 12px; border-radius: 6px; background: #eef8fc; color: #315875; font-size: 12px; }
-    .surgery-planner__steps strong { display: block; margin-bottom: 3px; color: #0877be; }
-    .surgery-advanced { margin: 15px 0 22px; border: 1px solid #dbe8f2; border-radius: 7px; background: #fff; }
-    .surgery-advanced summary { padding: 12px 15px; cursor: pointer; color: #527086; font-size: 13px; font-weight: 700; }
-    .surgery-advanced summary i { margin-right: 6px; color: #0877be; }
-    .surgery-advanced__body { padding: 0 15px 15px; }
     .clinical-doc-nav__caption { flex: 1 0 100%; margin: 0 0 2px; color: #61798c; font-size: 12px; font-weight: 600; }
     .clinical-doc-patient { display: block; margin-top: 12px; color: #bdeaf1; font-size: 14px; font-weight: 700; }
     .clinical-doc-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 auto 18px; }
@@ -106,6 +81,14 @@
     .clinical-form-code { display: inline-block; min-width: 40px; padding: 3px 5px; border-radius: 5px; background: #eaf6fb; color: #0b628c; font-size: 12px; font-weight: 700; text-align: center; }
     .clinical-form-edition { color: #6b7f8e; font-size: 10px; font-weight: 700; white-space: nowrap; }
     .clinical-form-item__bottom { padding-left: 48px; flex-wrap: wrap; }
+    .clinical-form-list .clinical-form-item__bottom .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+        min-height: 34px; padding: 5px 12px; border: 1px solid #096ba0 !important; border-radius: 7px;
+        background: #096ba0 !important; color: #fff !important; font-weight: 600; text-decoration: none;
+    }
+    .clinical-form-list .clinical-form-item__bottom .btn:hover,
+    .clinical-form-list .clinical-form-item__bottom .btn:focus { background: #084e76 !important; }
+    .clinical-form-list .clinical-form-item__bottom .btn:focus-visible { outline: 2px solid #084e76; outline-offset: 2px; }
     .clinical-form-item__context { flex: 1; min-width: 95px; color: #61798c; font-size: 11px; }
     .clinical-form-item__unavailable { color: #718596; font-size: 11px; }
     .clinical-form-item__hint { margin: 5px 0 0 48px; color: #61798c; font-size: 11px; line-height: 1.35; }
@@ -138,14 +121,15 @@
     @media (max-width: 1100px) { .clinical-doc-workspace { grid-template-columns: 1fr; } .clinical-doc-viewer { position: static; } .clinical-doc-viewer__frames iframe { height: min(76vh, 820px); } .clinical-form-list { max-height: 460px; } }
     @media (max-width: 767px) { .clinical-doc-record { align-items: flex-start; flex-direction: column; } .clinical-doc-viewer__header { align-items: flex-start; flex-direction: column; } .clinical-doc-viewer__placeholder { min-height: 300px; } .clinical-doc-viewer__frames, .clinical-doc-viewer__frames iframe { min-height: 540px; } .clinical-form-item__top { flex-wrap: wrap; } .clinical-form-status { margin-left: 48px; } .clinical-document-search input { padding-right: 96px; } .clinical-document-search__meta { align-items: flex-start; flex-direction: column; } }
     @media (max-width: 767px) { .surgery-cycle { padding: 16px; } .surgery-cycle__header { display: block; } .surgery-cycle__state { display: inline-block; margin-top: 10px; } .surgery-cycle__actions .btn, .surgery-cycle__actions form { width: 100%; } .surgery-cycle__actions form .btn { width: 100%; } }
-    @media (max-width: 767px) { .surgery-planner { padding: 15px; } .surgery-planner__header { display: block; } .surgery-planner__step { margin-top: 12px; } .surgery-planner__actions { justify-content: stretch; } .surgery-planner__actions .btn { width: 100%; } }
-    @media (max-width: 767px) { .surgery-planner__steps { grid-template-columns: 1fr; } }
     @media (max-width: 767px) { .clinical-doc-summary { grid-template-columns: 1fr; } .clinical-doc-block__heading { align-items: flex-start; flex-direction: column; } }
 </style>
 <section class="content clinical-doc-page">
-    @php $patient = $solicitud->paciente; @endphp
+    @php
+        $patient = $solicitud->paciente;
+        $isAmbulatoryContext = !empty($ambulatoryContext);
+    @endphp
     <div class="clinical-doc-hero">
-        <div><p class="clinical-doc-hero__eyebrow">Módulo hospitalario · Registro clínico</p><h3><i class="fa fa-folder-open mr-2"></i>Formularios y documentos del episodio {{ $solicitud->id }}</h3><p>Consulta y completa la documentación clínica del episodio.</p><span class="clinical-doc-patient"><i class="fa fa-user mr-1"></i>{{ mb_strtoupper(trim((optional($patient)->apellido1 ?? '').' '.(optional($patient)->apellido2 ?? '').' '.(optional($patient)->nombre1 ?? '').' '.(optional($patient)->nombre2 ?? '')), 'UTF-8') }} · ID {{ $solicitud->id_paciente }}</span></div>
+        <div><p class="clinical-doc-hero__eyebrow">{{ $isAmbulatoryContext ? 'Atención ambulatoria · Registro clínico' : 'Módulo hospitalario · Registro clínico' }}</p><h3><i class="fa fa-folder-open mr-2"></i>{{ $isAmbulatoryContext ? 'Formularios ambulatorios' : 'Formularios y documentos' }} del episodio {{ $solicitud->id }}</h3><p>{{ $isAmbulatoryContext ? 'Consulta la documentación pertinente para consulta, evolución e interconsulta.' : 'Consulta y completa la documentación clínica del episodio.' }}</p><span class="clinical-doc-patient"><i class="fa fa-user mr-1"></i>{{ mb_strtoupper(trim((optional($patient)->apellido1 ?? '').' '.(optional($patient)->apellido2 ?? '').' '.(optional($patient)->nombre1 ?? '').' '.(optional($patient)->nombre2 ?? '')), 'UTF-8') }} · ID {{ $solicitud->id_paciente }}</span></div>
         <div class="clinical-doc-status"><span>Estado clínico</span><strong>{{ mb_strtoupper($encounter->clinical_state ?: $encounter->status, 'UTF-8') }}</strong>@if($readOnly)<span class="mt-1">Solo lectura</span>@endif</div>
     </div>
     @if(session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
@@ -158,11 +142,11 @@
     @endif
     <div class="clinical-doc-summary">
         <div class="clinical-doc-summary__item"><span class="clinical-doc-summary__icon"><i class="fa fa-file-pdf-o"></i></span><div><span class="clinical-doc-summary__label">Reportes PDF</span><strong class="clinical-doc-summary__value">{{ count($reportCatalog) }} disponibles</strong></div></div>
-        <div class="clinical-doc-summary__item"><span class="clinical-doc-summary__icon"><i class="fa fa-medkit"></i></span><div><span class="clinical-doc-summary__label">Procedimientos</span><strong class="clinical-doc-summary__value">{{ count($cycles) }} quirúrgico(s)</strong></div></div>
+        <div class="clinical-doc-summary__item"><span class="clinical-doc-summary__icon"><i class="fa {{ $isAmbulatoryContext ? 'fa-list-alt' : 'fa-medkit' }}"></i></span><div><span class="clinical-doc-summary__label">{{ $isAmbulatoryContext ? 'Formularios' : 'Procedimientos' }}</span><strong class="clinical-doc-summary__value">{{ $isAmbulatoryContext ? count($formCatalog).' ambulatorios' : count($cycles).' quirúrgico(s)' }}</strong></div></div>
         <div class="clinical-doc-summary__item"><span class="clinical-doc-summary__icon"><i class="fa fa-tasks"></i></span><div><span class="clinical-doc-summary__label">Acceso</span><strong class="clinical-doc-summary__value">{{ $readOnly ? 'Solo lectura' : 'Edición disponible' }}</strong></div></div>
     </div>
     <div class="clinical-doc-nav">
-        <div class="clinical-doc-nav__caption">Acciones principales del episodio</div>
+        <div class="clinical-doc-nav__caption">{{ $isAmbulatoryContext ? 'Acciones de consulta y seguimiento' : 'Acciones principales del episodio' }}</div>
         <div class="clinical-doc-nav__group">
         @if(Route::has('hospital.index_modulos'))
             <a class="btn btn-default" href="{{ route('hospital.index_modulos', ['id_paso' => $solicitud->estado_paso]) }}"><i class="fa fa-arrow-left"></i> Hospital</a>
@@ -189,7 +173,7 @@
             <button id="episode-document-search-clear" class="clinical-document-search__clear" type="button" hidden>Limpiar</button>
         </div>
         <div class="clinical-document-search__meta">
-            <span id="episode-document-search-help">Ejemplos: 113, laboratorio, UCI o epicrisis.</span>
+            <span id="episode-document-search-help">{{ $isAmbulatoryContext ? 'Ejemplos: 002, evolución, interconsulta o laboratorio.' : 'Ejemplos: 113, laboratorio, UCI o epicrisis.' }}</span>
             <span id="episode-document-search-count" class="clinical-document-search__count" aria-live="polite">{{ count($reportCatalog) + count($formCatalog) }} disponibles</span>
         </div>
     </div>
@@ -223,65 +207,9 @@
         <p class="clinical-doc-preview-help">Las acciones disponibles se abren dentro de este panel. Si alguna pantalla no permite vista integrada, use «Abrir aparte».</p>
     </aside>
     </div>
+    @unless($isAmbulatoryContext)
     <div class="clinical-doc-block" id="formularios-quirurgicos"><div class="clinical-doc-block__heading"><h4 class="clinical-doc-section-title"><i class="fa fa-medkit"></i>Procedimientos quirúrgicos</h4><span class="clinical-doc-badge">{{ count($cycles) }} registrado(s)</span></div>
     @php $canOperateSurgery = Auth::user()->hasAnyUserTypeName(['SISTEMAS', 'DOCTORES', 'DOCTOR', 'ANESTESIÓLOGO', 'ANESTESIOLOGO']); @endphp
-    @if($operational && $canOperateSurgery && (int) $solicitud->estado_paso === 5)
-        @if($surgicalReceipt)
-            @php
-                $plannedStartDefault = date('Y-m-d\\TH:i');
-                $plannedEndDefault = date('Y-m-d\\TH:i', strtotime('+1 hour'));
-            @endphp
-            <div class="surgery-planner">
-                <div class="surgery-planner__header">
-                    <div><h4><i class="fa fa-calendar-plus-o mr-1"></i> Paso 1: Planificar la cirugía</h4><p>Completa estos datos y pulsa guardar.</p></div>
-                    <span class="surgery-planner__step"><i class="fa fa-map-marker"></i> {{ $surgicalReceipt->sala ? mb_strtoupper($surgicalReceipt->sala->nombre_sala, 'UTF-8') : 'SALA NO REGISTRADA' }}</span>
-                </div>
-                @if($surgicalReceipt->observaciones)<div class="alert alert-info"><i class="fa fa-info-circle mr-1"></i>{{ $surgicalReceipt->observaciones }}</div>@endif
-                <ol class="surgery-planner__steps">
-                    <li><strong>1. Elige la cirugía</strong>Selecciona uno o varios procedimientos.</li>
-                    <li><strong>2. Elige el médico</strong>Selecciona quién será responsable.</li>
-                    <li><strong>3. Define el horario</strong>Revisa las fechas y guarda.</li>
-                </ol>
-                <form method="POST" action="{{ route('hospital.documents.create', ['id_solicitud' => $solicitud->id]) }}" id="surgeryPlannerForm">
-                {{ csrf_field() }}
-                <input type="hidden" name="sala" value="{{ $surgicalReceipt->id_sala }}">
-                <div class="row">
-                    <div class="form-group col-md-7"><div class="surgery-planner__field"><label for="planned_procedures">Procedimiento pospuesto o propuesto *</label>
-                        <select class="form-control" id="planned_procedures" name="procedimiento[]" multiple required data-placeholder="Busque por nombre y seleccione uno o varios">
-                            @foreach($catalog as $item)<option value="{{ $item->id }}" @if(in_array($item->id, $plannedProcedureIds ?: [])) selected @endif>{{ mb_strtoupper($item->nombre, 'UTF-8') }}</option>@endforeach
-                        </select><div class="help-block">Escriba para buscar. Las opciones seleccionadas aparecerán como etiquetas.</div>
-                    </div></div>
-                    <div class="form-group col-md-5"><div class="surgery-planner__field"><label for="planned_doctor">Médico responsable *</label>
-                        <select class="form-control" id="planned_doctor" name="doctor" required><option value="">Seleccione el médico</option>
-                            @foreach($doctors as $doctor)<option value="{{ $doctor->id }}" @if((string) $plannedDoctorId === (string) $doctor->id) selected @endif>{{ mb_strtoupper(trim($doctor->apellido1.' '.$doctor->apellido2.' '.$doctor->nombre1), 'UTF-8') }}</option>@endforeach
-                        </select>
-                    </div></div>
-                    <div class="form-group col-md-6"><div class="surgery-planner__field"><label for="planned_start">Inicio previsto *</label><input id="planned_start" class="form-control" type="datetime-local" name="fecha" value="{{ $plannedStart ?: $plannedStartDefault }}" required></div></div>
-                    <div class="form-group col-md-6"><div class="surgery-planner__field"><label for="planned_end">Fin previsto *</label><input id="planned_end" class="form-control" type="datetime-local" name="fechafin" value="{{ $plannedEnd ?: $plannedEndDefault }}" required></div></div>
-                </div>
-                <div class="surgery-planner__actions"><button class="btn btn-primary" type="submit"><i class="fa fa-check mr-1"></i> Guardar planificación quirúrgica</button></div>
-                </form>
-            </div>
-        @endif
-        <details class="surgery-advanced">
-            <summary><i class="fa fa-link"></i> Opciones avanzadas: usar una cirugía ya existente</summary>
-            <div class="surgery-advanced__body">
-                <p class="text-muted">Úsalo solo si la cirugía ya fue creada antes y no aparece en el paso anterior.</p>
-        <form method="POST" action="{{ route('hospital.documents.bind', ['id_solicitud' => $solicitud->id]) }}">
-            {{ csrf_field() }}
-            <div class="row">
-                <div class="form-group col-md-6"><label for="procedure_id">Procedimiento del episodio</label>
-                    <select id="procedure_id" name="procedure_id" class="form-control" required>
-                        <option value="">Seleccione</option>
-                        @foreach($procedures as $procedure)<option value="{{ $procedure->id }}">{{ $procedure->id }} - Historia {{ $procedure->id_hc }}</option>@endforeach
-                    </select>
-                </div>
-                <div class="form-group col-md-6"><button type="submit" class="btn btn-primary"><i class="fa fa-link"></i> Vincular a recepcion actual</button></div>
-            </div>
-        </form>
-            </div>
-        </details>
-    @endif
     @foreach($cycles as $cycle)
         <?php $procedureId = $cycle['binding']->to_value; $params = ['id_solicitud' => $solicitud->id, 'procedure' => $procedureId]; ?>
         @php
@@ -355,6 +283,7 @@
         </div>
     @endif
     </div>
+    @endunless
 </section>
 <script>
     (function () {
@@ -607,24 +536,5 @@
             || document.querySelector('.js-document-preview[data-form-pdf="1"]');
         if (firstDocument) { openPreview(firstDocument, false); }
     })();
-    $(function () {
-        var procedureSelect = $('#planned_procedures');
-        if (procedureSelect.length && $.fn.select2) {
-            procedureSelect.select2({
-                width: '100%',
-                placeholder: procedureSelect.data('placeholder'),
-                closeOnSelect: false,
-                language: { noResults: function () { return 'No se encontraron procedimientos'; }, searching: function () { return 'Buscando...'; } }
-            });
-        }
-        $('#surgeryPlannerForm').on('submit', function (event) {
-            var start = $('#planned_start').val();
-            var end = $('#planned_end').val();
-            if (start && end && new Date(end) <= new Date(start)) {
-                event.preventDefault();
-                alert('La fecha de fin debe ser posterior a la fecha de inicio.');
-            }
-        });
-    });
 </script>
 @endsection

@@ -112,6 +112,7 @@
 </style>
 
 <body>
+@include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa ?? null])
     <div class="todo">
         <table class="table" border="1" cellspacing="0" cellpadding="0" style="margin-right:25px;">
             <thead>

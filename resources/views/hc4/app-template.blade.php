@@ -178,7 +178,8 @@ document.onmousedown=click
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     @include('layouts.clinical-dark-styles')
-  </head>
+      @include('layouts.partials.aitrol-theme')
+</head>
   <!--
     Creado y Diseñado por:
     -Victor Touris
@@ -203,7 +204,7 @@ document.onmousedown=click
     |               | sidebar-mini                            |
     |---------------------------------------------------------|
     -->
-  <body class="layout-top-nav hc4-clinical-ui" id="body2" >
+  <body class="aitrol-theme layout-top-nav hc4-clinical-ui" id="body2" >
     <div class="wrapper">
     <!-- Main Header -->
     @if (!View::hasSection('hide_hc4_header'))

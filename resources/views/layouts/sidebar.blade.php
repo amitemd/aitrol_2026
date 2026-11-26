@@ -212,7 +212,7 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
       <!--<li class="active"><a href="/"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>-->
 
       @if(in_array((int) $rolUsuario, array(1, 4, 5, 11, 20, 22), true))
-      <li class="treeview {{ request()->routeIs('new-system.clinical-agenda.*', 'new-system.scheduled-care.*', 'new-system.daily-patients.*', 'hospital.*') ? 'active' : '' }}">
+      <li class="treeview {{ request()->routeIs('new-system.clinical-agenda.*', 'new-system.scheduled-care.*', 'new-system.daily-patients.*', 'v3.ambulatory-documents.*', 'hospital.*') ? 'active' : '' }}">
         <a href="#">
           <i class="fa fa-hospital-o"></i>
           <span>{{ __('new_system.clinical_agenda.module') }}</span>
@@ -239,6 +239,11 @@ $permisos_1 = \Sis_medico\Agenda_Permiso::where('id_usuario', $id_auth)->where('
             </button>
             <a href="{{ route('new-system.daily-patients.index') }}"><i class="fa fa-user-md"></i> <span>Pacientes del día</span></a>
           </li>
+          @if(Route::has('v3.ambulatory-documents.index'))
+          <li class="{{ request()->routeIs('v3.ambulatory-documents.*') ? 'active' : '' }}" data-route-prefixes="/documentos-ambulatorios">
+            <a href="{{ route('v3.ambulatory-documents.index') }}"><i class="fa fa-folder-open"></i> <span>{{ __('new_system.clinical_agenda.documents') }}</span></a>
+          </li>
+          @endif
           @if((int) $rolUsuario === 1)
           <li class="container-clip {{ request()->routeIs('hospital.*') ? 'active' : '' }}" data-route-prefixes="/hospital">
             <button type="button" style="background: transparent; border: none;">

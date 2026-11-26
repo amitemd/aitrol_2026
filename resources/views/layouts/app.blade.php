@@ -215,6 +215,7 @@
             'csrfToken' => csrf_token(),
         ]) !!};
     </script>
+    @include('layouts.partials.aitrol-theme')
 </head>
 @php
     $bodyBackground = '#042647';
@@ -222,7 +223,7 @@
         $bodyBackground = '#f4f6f9';
     }
 @endphp
-<body style="background-color: {{ $bodyBackground }};">
+<body class="aitrol-theme" style="background-color: {{ $bodyBackground }};">
     <div id="app" >
 
         @yield('content')

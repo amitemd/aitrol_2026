@@ -93,6 +93,7 @@ $classicon="moon";
 
     <!-- END: Custom CSS-->
 
+    @include('layouts.partials.aitrol-theme')
 </head>
 <style>
   .ui-menu-item
@@ -135,7 +136,7 @@ $classicon="moon";
 
 <!-- BEGIN: Body-->
 
-<body class="horizontal-layout horizontal-menu navbar-floating footer-static hospital-modern-ui {{ Request::is('hospital/inicio') ? 'hospital-home-route' : 'hospital-internal-route' }} {{ isset($data) ? 'hospital-patient-route' : '' }}" data-open="hover" data-menu="horizontal-menu" data-col="" data-framework="laravel" data-asset-path="{{ asset('ho/app-assets') }}/">
+<body class="aitrol-theme horizontal-layout horizontal-menu navbar-floating footer-static hospital-modern-ui {{ Request::is('hospital/inicio') ? 'hospital-home-route' : 'hospital-internal-route' }} {{ isset($data) ? 'hospital-patient-route' : '' }}" data-open="hover" data-menu="horizontal-menu" data-col="" data-framework="laravel" data-asset-path="{{ asset('ho/app-assets') }}/">
 
     <!-- BEGIN: Header-->
 
@@ -143,6 +144,7 @@ $classicon="moon";
 
     <!-- BEGIN: Content-->
     @include('layouts.app-header-h')
+    @include('layouts.partials.hospital-navigation')
     <div class="app-content content">
         <div class="content-overlay"></div>
         <div class="header-navbar-shadow"></div>

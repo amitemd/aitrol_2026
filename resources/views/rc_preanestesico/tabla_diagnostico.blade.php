@@ -1,63 +1,39 @@
 <table style="width: 100%;">
         <tbody>
             <tr>
-                <td colspan="5" style="font-size: 14px;" class="bg-purple"><b>ANTECEDENTES PATOLÓGICOS PERSONALES</b></td>
-            </tr>
-            <tr>
-                <td></td>
+                <td><b>N.º</b></td>
                 <td style="width: 33%;"><b> DIAGNÓSTICOS </b></td>
                 <td><b> TIEMPO DE EVOLUCION </b></td>
-                <td colspan="2"><b> TRATAMIENTO </b></td>
+                <td><b> TRATAMIENTO </b></td>
+                <td><b>ORIGEN</b></td>
             </tr>
-            <tr>
-                <td></td>
-                <td>
-                    <input style="width: 98%;" type="text" name="diagnosticos" id="diagnosticos" required>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" name="tiempoEvolucion" id="tiempoEvolucion" required>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" name="tratamiento" id="tratamiento" required>
-                </td>
-                <td style="text-align: center;">
-                    <button class="btn btn-primary bg-green" id="boton_enviar" onclick="guardar();" type="button">
-                        <i class="fa fa-plus" aria-hidden="true"></i>
-                        <span class="v3-action-label">Agregar antecedente</span>
-                    </button>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="4">
-                    <hr>
-                </td>
-            </tr>
-
             @php
-            $contador = 1;
-            
+                $contador = 1;
+                $antecedentesPaciente = $antecedentes_paciente ?? collect();
             @endphp
 
-            @foreach ($rc_antecedentes as $rc)
-
-            <tr>
-                <td>{{ $contador++ }}</td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{ $rc->diagnostico }}" disabled>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{$rc->tiempo_evolucion}}" disabled>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{$rc->tratamiento}}" disabled>
-                </td>
-                <td>
-                    <a onclick="eliminar({{ $rc->id }})" class="btn btn-danger"><i class="fa fa-trash"></i></a>
-                </td>
-                <td>
-                    <hr>
-                </td>
-            </tr>
+            @foreach ($antecedentesPaciente as $antecedentePaciente)
+                <tr class="v3-preloaded-background">
+                    <td>{{ $contador++ }}</td>
+                    <td>
+                        <input style="width: 98%;" type="text" value="{{ $antecedentePaciente->diagnostico }}" disabled>
+                    </td>
+                    <td>
+                        <input style="width: 98%;" type="text" value="{{ $antecedentePaciente->tiempo_evolucion ?: 'No registrado previamente' }}" disabled>
+                    </td>
+                    <td>
+                        <input style="width: 98%;" type="text" value="{{ $antecedentePaciente->tratamiento ?: 'No registrado previamente' }}" disabled>
+                    </td>
+                    <td>
+                        <span class="v3-source-badge"><i class="fa fa-database" aria-hidden="true"></i> {{ $antecedentePaciente->origen ?? 'Historia médica' }}</span>
+                    </td>
+                </tr>
             @endforeach
+
+            @if($antecedentesPaciente->isEmpty())
+                <tr>
+                    <td colspan="5" class="v3-empty-background">No registra antecedentes médicos.</td>
+                </tr>
+            @endif
         </tbody>
     </table>

@@ -67,8 +67,7 @@
     $historyNumber = isset($patient->hcid) && $patient->hcid ? $patient->hcid : $patient->id;
     $procedureCode = isset($agenda->id_procedimiento) && $agenda->id_procedimiento ? $agenda->id_procedimiento : '';
     $physicianName = trim($clean($physician->apellido1).' '.$clean($physician->apellido2).' '.$clean($physician->nombre1).' '.$clean($physician->nombre2));
-    $logoPath = public_path('assets/images/logo_certificado_borja.png');
-    $logoSource = is_file($logoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)) : '';
+    $logoSource = app(\Sis_medico\Services\CompanyPdfLogoService::class)->dataUri($company);
     $iessLogoPath = public_path('assets/images/logo_iess.png');
     $iessLogoSource = is_file($iessLogoPath) ? 'data:image/png;base64,'.base64_encode(file_get_contents($iessLogoPath)) : '';
     $signaturePath = $signature && !empty($signature->nombre)

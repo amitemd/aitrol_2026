@@ -12,16 +12,17 @@
 
         .template {
             background-color: antiquewhite;
-            display: flex;
-
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
         }
 
-        .columna1 {
-            width: 48%;
-        }
-
+        .columna1,
         .columna2 {
-            margin-left: 50% width: 48%;
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
         }
 
         .tabla1 {
@@ -833,7 +834,7 @@
                     <td colspan="17" class="tituloc1">MARCAR CON X EL NUMERO CORRESPONDIENTE Y DESCRIBIR SEÑALANDO EL NUMERO</td>
                     <td class="tituloc" colspan="3">NO<br>APLICA</td>
                     <td colspan="2" class="campos">
-                        @if (($alergias->isEmpty()) && (is_null($datos_pac->ginecologico) && is_null($datos_pac->ginecologico) ))
+                        @if (!$hasPatientAntecedents)
                         X
                         @endif
                     </td>
@@ -843,32 +844,32 @@
                 <tr>
                     <td class="subtitulo2" colspan="9">1.ALÉRGICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!($alergias->isEmpty()))
+                        @if ($patientAntecedents[1] !== '')
                         X
                         @endif
 
                     </td>
                     <td class="subtitulo2" colspan="10">3.GINECOLÓGICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->ginecologico)))
+                        @if ($patientAntecedents[3] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="12">5.PEDIÁTRICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->antecedentes_pediatricos)))
+                        @if ($patientAntecedents[5] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="13">7.FARMACOLÓGICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->farmacologico)))
+                        @if ($patientAntecedents[7] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="11">9.FAMILIARES</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($paciente->antecedentes_fam)))
+                        @if ($patientAntecedents[9] !== '')
                         X
                         @endif
                     </td>
@@ -877,108 +878,42 @@
                 <tr>
                     <td class="subtitulo2" colspan="9">2.CLÍNICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->clinico)))
+                        @if ($patientAntecedents[2] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="10">4.TRAUMATOLÓGICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->traumatologico)))
+                        @if ($patientAntecedents[4] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="12">6.QUIRÚRGICOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($paciente->antecedentes_quir)))
+                        @if ($patientAntecedents[6] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="13">8.HÁBITOS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->habitos)))
+                        @if ($patientAntecedents[8] !== '')
                         X
                         @endif
                     </td>
                     <td class="subtitulo2" colspan="11">10.OTROS</td>
                     <td class="campos" colspan="2">
-                        @if (!(is_null($datos_pac->otros_antecedente)))
+                        @if ($patientAntecedents[10] !== '')
                         X
                         @endif
                     </td>
                 </tr>
-                @if (!($alergias->isEmpty()))
+                @foreach ($patientAntecedentSummary as $label => $description)
                 <tr>
                     <td class="campos_left" height="10px" colspan="65">
-                        Alergias:
-                        @foreach($alergias as $alergia)
-                        1. {{$alergia->principio_activo->nombre." "}}
-                        @endforeach
+                        <strong>{{ $label }}:</strong> {{ $description }}.
                     </td>
                 </tr>
-                @endif
-                @if (!(is_null($datos_pac->clinico)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        2. {{$datos_pac->clinico}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($datos_pac->ginecologico)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        3. {{$datos_pac->ginecologico}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($datos_pac->traumatologico)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        4. {{$datos_pac->traumatologico}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($datos_pac->antecedentes_pediatricos)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        5. {{$datos_pac->antecedentes_pediatricos}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($paciente->antecedentes_quir)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        6. {{$paciente->antecedentes_quir}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($datos_pac->farmacologico)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        7. {{$datos_pac->farmacologico}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($datos_pac->habitos)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        8. {{$datos_pac->habitos}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($paciente->antecedentes_fam)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        9. {{$paciente->antecedentes_fam}}
-                    </td>
-                </tr>
-                @endif
-                @if (!(is_null($datos_pac->otros_antecedente)))
-                <tr>
-                    <td class="campos_left" height="10px" colspan="65">
-                        10. {{$datos_pac->otros_antecedente}}
-                    </td>
-                </tr>
-                @endif
+                @endforeach
             </tbody>
         </table>
     </div>
@@ -1103,148 +1038,7 @@
         </table>
     </div>
     {{-- TABLA H --}}
-    <div style="margin-top: 10px">
-        <table class="tabla1" cellspacing="0">
-            <thead>
-                <tr class="titulo">
-                    <th colspan="46">H. EXAMEN FÍSICO</th>
-                    <th class="tituloc3" colspan="19">MARCAR "X" CUANDO PRESENTE PATOLOGÍA Y DESCRIBA</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="subtitulo2" colspan="2">1.</td>
-                    <td class="subtitulo2" colspan="8">PIEL-FANERAS</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->piel_faneras))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">4.</td>
-                    <td class="subtitulo2" colspan="8">OÍDOS</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->oidos))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">7.</td>
-                    <td class="subtitulo2" colspan="9">ORO FARINGE</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->oro_faringe))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">10.</td>
-                    <td class="subtitulo2" colspan="9">TÓRAX</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->torax))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">13.</td>
-                    <td class="subtitulo2" colspan="11">INGLE-PERINÉ</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->ingle_perine))
-                        X
-                        @endif
-                    </td>
-                </tr>
-                <tr>
-                    <td class="subtitulo2" colspan="2">2.</td>
-                    <td class="subtitulo2" colspan="8">CABEZA</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->cabeza))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">5.</td>
-                    <td class="subtitulo2" colspan="8">NARIZ</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->nariz))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">8.</td>
-                    <td class="subtitulo2" colspan="9">CUELLO</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->cuello))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">11.</td>
-                    <td class="subtitulo2" colspan="9">ABDOMEN</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->abdomen))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">14.</td>
-                    <td class="subtitulo2" colspan="11">MIEMBROS SUPERIORES</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->miembros_superiores))
-                        X
-                        @endif
-                    </td>
-                </tr>
-                <tr>
-                    <td class="subtitulo2" colspan="2">3.</td>
-                    <td class="subtitulo2" colspan="8">OJOS</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->ojos))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">6.</td>
-                    <td class="subtitulo2" colspan="8">BOCA</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->boca))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">9.</td>
-                    <td class="subtitulo2" colspan="9">AXILAS-MAMAS</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->axilas_mamas))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">12.</td>
-                    <td class="subtitulo2" colspan="9">COLUMNA VERTEBRAL</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->columna))
-                        X
-                        @endif
-                    </td>
-                    <td class="subtitulo2" colspan="2">15.</td>
-                    <td class="subtitulo2" colspan="11">MIEMBROS INFERIORES</td>
-                    <td class="campos" colspan="2">
-                        @if(!is_null($form008->miembros_inferiores))
-                        X
-                        @endif
-                    </td>
-                </tr>
-                <tr>
-                    <td class="campos_left" height=10px colspan="65">
-                        @if(!is_null($form008->piel_faneras)) 1. {{$form008->piel_faneras}} <br> @endif
-                        @if(!is_null($form008->cabeza)) 2. {{$form008->cabeza}} <br> @endif
-                        @if(!is_null($form008->ojos)) 3. {{$form008->ojos}} <br> @endif
-                        @if(!is_null($form008->oidos)) 4. {{$form008->oidos}} <br> @endif
-                        @if(!is_null($form008->nariz)) 5. {{$form008->nariz}} <br> @endif
-                        @if(!is_null($form008->boca)) 6. {{$form008->boca}} <br> @endif
-                        @if(!is_null($form008->oro_faringe)) 7. {{$form008->oro_faringe}} <br> @endif
-                        @if(!is_null($form008->cuello)) 8. {{$form008->cuello}} <br> @endif
-                        @if(!is_null($form008->axilas_mamas)) 9. {{$form008->axilas_mamas}} <br> @endif
-                        @if(!is_null($form008->torax)) 10. {{$form008->torax}} <br> @endif
-                        @if(!is_null($form008->abdomen)) 11. {{$form008->abdomen}} <br> @endif
-                        @if(!is_null($form008->columna)) 12. {{$form008->columna}} <br> @endif
-                        @if(!is_null($form008->ingle_perine)) 13. {{$form008->ingle_perine}} <br> @endif
-                        @if(!is_null($form008->miembros_superiores)) 14. {{$form008->miembros_superiores}} <br> @endif
-                        @if(!is_null($form008->miembros_inferiores)) 15. {{$form008->miembros_inferiores}} <br> @endif
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    @include('hospital.emergencia.partials.examen-fisico-tabla')
     {{-- TABLA I --}}
     <div style="margin-top: 10px">
         <table class="tabla1" cellspacing="0">
@@ -1775,20 +1569,11 @@
                 <tr>
                     <td class="campos" rowspan="1" height='20px' colspan="14">{{$form008->id_usuariocrea}}</td>
                     <td class="campos form008-signature-cell" rowspan="1" colspan="23">
-                        @if(!empty($formSignature['signature_image']))
-                            <img class="form008-manual-signature" src="{{$formSignature['signature_image']}}" alt="Firma manuscrita registrada">
-                            <div class="form008-image-caption">
-                                <span class="form008-signature-name">{{$formSignature['name']}}</span><br>
-                                {{$formSignature['specialty']}}<br>
-                                FIRMA MANUSCRITA REGISTRADA
-                            </div>
-                        @else
+                        @if(!empty($formSignature['qr_source']))
                             <table class="form008-electronic-signature">
                                 <tr>
                                     <td class="qr-cell">
-                                        @if(!empty($formSignature['qr_source']))
-                                            <img class="qr-image" src="{{$formSignature['qr_source']}}" alt="QR de validación de firma clínica">
-                                        @endif
+                                        <img class="qr-image" src="{{$formSignature['qr_source']}}" alt="QR de validación de firma clínica">
                                     </td>
                                     <td>
                                         Validar la firma escaneando el QR<br>
@@ -1803,13 +1588,18 @@
                                 <div class="form008-image-caption">REGISTRO PROFESIONAL: {{$formSignature['register']}}</div>
                             @endif
                             <div class="form008-signature-hash">HUELLA: {{strtoupper(substr($formSignature['fingerprint'], 0, 24))}}</div>
+                        @elseif(!empty($formSignature['signature_image']))
+                            <img class="form008-manual-signature" src="{{$formSignature['signature_image']}}" alt="Firma manuscrita registrada">
+                            <div class="form008-image-caption">
+                                <span class="form008-signature-name">{{$formSignature['name']}}</span><br>
+                                {{$formSignature['specialty']}}<br>
+                                FIRMA MANUSCRITA REGISTRADA
+                            </div>
                         @endif
                     </td>
                     <td class="campos form008-seal-cell" rowspan="1" colspan="28">
                         @if(!empty($formSignature['seal_image']))
                             <img class="form008-seal-image" src="{{$formSignature['seal_image']}}" alt="Sello registrado del profesional">
-                        @else
-                            <span class="form008-no-seal">SIN SELLO</span>
                         @endif
                     </td>
                 </tr>

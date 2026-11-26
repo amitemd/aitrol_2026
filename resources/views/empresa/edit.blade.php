@@ -68,6 +68,20 @@
                             @endif
                         </div>
 
+                        @if(array_key_exists('unicodigo', $empresa->getAttributes()))
+                        <div class="form-group col-xs-6{{ $errors->has('unicodigo') ? ' has-error' : '' }}">
+                            <label for="unicodigo">Unicódigo</label>
+                            <input id="unicodigo" name="unicodigo" class="form-control" maxlength="30" value="{{ old('unicodigo', $empresa->unicodigo) }}">
+                            @error('unicodigo')<span class="help-block">{{ $message }}</span>@enderror
+                        </div>
+                        @endif
+                        @if(array_key_exists('nivel_precio_medicamentos', $empresa->getAttributes()))
+                        <div class="form-group col-xs-6{{ $errors->has('nivel_precio_medicamentos') ? ' has-error' : '' }}">
+                            <label for="nivel_precio_medicamentos">Nivel de precios de medicamentos</label>
+                            <input id="nivel_precio_medicamentos" name="nivel_precio_medicamentos" type="number" min="1" max="999" class="form-control" value="{{ old('nivel_precio_medicamentos', $empresa->nivel_precio_medicamentos) }}">
+                            @error('nivel_precio_medicamentos')<span class="help-block">{{ $message }}</span>@enderror
+                        </div>
+                        @endif
                         <!--email-->
                         <div class="form-group col-xs-6{{ $errors->has('email') ? ' has-error' : '' }}">
                             <label for="email" class="col-xs-6 control-label">E-mail</label>

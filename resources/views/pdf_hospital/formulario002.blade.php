@@ -160,7 +160,7 @@ $edad = $hoy->diff($fechaNacimiento)->y;
         <table border="1" style="width: 99%">
             <tr>
                 <td colspan="12">
-                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 80px;">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa ?? null, 'imageOnly' => true, 'logoHeight' => 72])
                 </td>
             </tr>
         </table>

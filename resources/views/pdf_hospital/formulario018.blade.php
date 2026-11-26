@@ -4,10 +4,6 @@
 @php
 $fecha=date('Y-m-d');
 $hora = date('H:i:s');
-$logoPath = public_path('assets/images/logo_certificado_borja.png');
-$logoSrc = is_file($logoPath) && is_readable($logoPath)
-    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
-    : '';
 @endphp
 
 
@@ -33,7 +29,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
     <title>Formulario018</title>
     <style>
         @page {
-            margin: 15 0;
+            margin: 15px 0 28px;
         }
 
         /** Define now the real margins of every page in the PDF **/
@@ -41,7 +37,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
             margin-top: 40px;
             margin-left: 20px;
             margin-right: 20px;
-            margin-bottom: 1px;
+            margin-bottom: 28px;
             font-size: 10px;
         }
 
@@ -58,17 +54,17 @@ $mesNacimiento = $fechaNacimiento->format('m');
         footer {
             display: table;
             position: fixed;
-            bottom: 30px;
-            left: 0cm;
-            right: 0cm;
-            width: 100%;
+            bottom: 8px;
+            left: 20px;
+            right: 20px;
+            width: auto;
             color: #000;
             font-family: Arial, Helvetica, sans-serif;
             border-top: 1px solid #999;
             font-size: 10px;
             font-weight: 700;
             line-height: 1;
-            padding-top: 8px;
+            padding-top: 5px;
             table-layout: fixed;
         }
         footer > span { display: table-cell; width: 50%; }
@@ -221,15 +217,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
     </header>
     <main>
 
-        <table border="1" style="width: 99%">
-            <tr>
-                <td colspan="12">
-                    @if($logoSrc !== '')
-                    <img src="{{ $logoSrc }}" alt="Clínica Borja" style="width:750px;height: 80px;">
-                    @endif
-                </td>
-            </tr>
-        </table>
+        @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa])
         <br>
 
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
@@ -253,14 +241,6 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td class="text-center" colspan="4" style="font-size: 12px;">{{$pre_anestesico->anestesiologia->historia->paciente->id}}</td>
                     <td colspan="5"></td>
                 </tr>
-                @php 
-                    $record = $pre_anestesico->anestesiologia;
-                    $firma = null;
-                    if($record->id_anestesiologo != null){
-                        $firma  = Sis_medico\Firma_Usuario::where('id_usuario', $record->id_anestesiologo)->first();
-                    }
-                     
-                @endphp
                 <tr>
                     <td rowspan="2" colspan="2" class="bg-green text-center" style="height: 44px;"><b>PRIMER APELLIDO</b></td>
                     <td rowspan="2" colspan="2" class="bg-green text-center"><b>SEGUNDO APELLIDO</b></td>
@@ -411,15 +391,15 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>@php $historia = $pre_anestesico->anestesiologia->historia; @endphp
                     <td style="width: 16%;" class="text-center bg-green">CONTANTES VITALES</td>
                     <td class="text-center bg-green" style="width: 5%;">TA</td>
-                    <td colspan="3" style="width: 8%;">{{ $historia->presion }}</td>
+                    <td colspan="3" style="width: 8%;">{{ $pre_anestesico->presion ?: $historia->presion }}</td>
                     <td class="text-center bg-green" style="width: 5%;">FC</td>
-                    <td colspan="3" style="width: 8%;">{{ $historia->pulso }}</td>
+                    <td colspan="3" style="width: 8%;">{{ $pre_anestesico->pulso ?: $historia->pulso }}</td>
                     <td colspan="2" class="text-center bg-green" style="width: 5%;">FR</td>
-                    <td colspan="3" style="width: 8%;"></td>
+                    <td colspan="3" style="width: 8%;">{{ $pre_anestesico->fecuencia_respiratoria ?: $historia->frecuencia_respiratoria }}</td>
                     <td class="text-center bg-green">T°</td>
-                    <td colspan="3" style="width: 8%;">{{ $historia->temperatura }}</td>
+                    <td colspan="3" style="width: 8%;">{{ $pre_anestesico->temperatura ?: $historia->temperatura }}</td>
                     <td colspan="3" class="text-center bg-green" style="width: 6%;">SAT02</td>
-                    <td colspan="4" style="width: 5%;">{{ $historia->o2 }}</td>
+                    <td colspan="4" style="width: 5%;">{{ $pre_anestesico->o2 ?: $historia->o2 }}</td>
                     <td colspan="3" class="text-center bg-green" style="width: 8%;">GLASGOW</td>
                     <td colspan="2"></td>
                 </tr>
@@ -452,7 +432,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td style="width: 4%;" class="text-center">2-2,5</td>
                     <td class="text-center">@if($pre_anestesico->apertura_bucal == '2-2,5') X @endif</td>
                     <td colspan="2" class="text-center">2.6-3</td>
-                    <td class="text-center">@if($pre_anestesico->apertura_bucal == '>3') X @endif</td>
+                    <td class="text-center">@if($pre_anestesico->apertura_bucal == '2.6-3') X @endif</td>
                     <td colspan="2" class="text-center">&gt;3</td>
                     <td colspan="2" class="text-center">&lt;6</td>
                     <td class="text-center">@if($pre_anestesico->distancia_tiromentoneana == '<6') X @endif</td>
@@ -679,9 +659,9 @@ $mesNacimiento = $fechaNacimiento->format('m');
                 <tr>
                     <td class="text-center" style="height: 18px;">{{$fecha_new}}</td>
                     <td class="text-center">{{$hora_new}}</td>
-                    <td class="text-center">@if(!is_null($firma)) {{ $firma->doctor->nombre1 }} @endif</td>
-                    <td class="text-center" colspan="3">@if(!is_null($firma)) {{ $firma->doctor->apellido1 }} @endif</td>
-                    <td class="text-center">@if(!is_null($firma)) {{ $firma->doctor->apellido2 }} @endif</td>
+                    <td class="text-center">{{optional($anesthesiaSignature['professional'] ?? null)->nombre1}}</td>
+                    <td class="text-center" colspan="3">{{optional($anesthesiaSignature['professional'] ?? null)->apellido1}}</td>
+                    <td class="text-center">{{optional($anesthesiaSignature['professional'] ?? null)->apellido2}}</td>
                 </tr>
                 <tr>
                     <td style="font-size: 6;" colspan="2" class="text-center bg-green"><b>NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
@@ -689,17 +669,12 @@ $mesNacimiento = $fechaNacimiento->format('m');
                     <td style="font-size: 6;" colspan="3" class="text-center bg-green"><b>SELLO</b></td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="font-size: 12px; height: 60px;" class="text-center">@if(!is_null($firma)) {{ $firma->doctor->id }} @endif</td>
-                    <td colspan="2">
-                    @if(!is_null($firma))
-                        <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
+                    <td colspan="2" style="font-size: 12px; height: 86px; vertical-align:middle;" class="text-center">{{$anesthesiaSignature['identification'] ?? 'NO REGISTRADO'}}</td>
+                    <td colspan="2" style="height:86px; vertical-align:middle; text-align:center;">
+                        @include('pdf_hospital.partials.anesthesia_signature', ['anesthesiaSignature' => $anesthesiaSignature])
                     </td>
-                    @endif </td>
-                    <td colspan="3" class="td-border text-center" style="width:25%; height:60px">
-                    @if(!is_null($firma))    
-                        @if(!is_null($firma->doctor)) @if($firma->sexo == '2') Dra. @else Dr. @endif {{$firma->doctor->apellido1}} @if($firma->doctor->apellido2!='N/A'){{$firma->doctor->apellido2}}@endif {{$firma->doctor->nombre1}} @if($firma->doctor->nombre2!='N/A'){{$firma->doctor->nombre2}}@endif @endif<br>
-                        @if(!is_null($firma->doctor)) Cedula No. {{$firma->doctor->id}} @endif
-                    @endif    
+                    <td colspan="3" class="td-border text-center" style="width:25%; height:86px; vertical-align:middle;">
+                        @include('pdf_hospital.partials.anesthesia_seal', ['anesthesiaSignature' => $anesthesiaSignature])
                     </td>
 
                 </tr>

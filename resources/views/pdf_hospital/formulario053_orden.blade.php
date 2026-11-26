@@ -35,6 +35,8 @@
     if ($procedures !== '') $summary .= ($summary !== '' ? "\n\n" : '').'PROCEDIMIENTOS SOLICITADOS: '.$procedures;
 @endphp
 
+@include('pdf_hospital.partials.establishment_logo', ['empresa' => $company ?? null])
+
 <table>
     <tr><td colspan="24" class="section">A. DATOS DEL ESTABLECIMIENTO DE ORIGEN Y USUARIO / PACIENTE</td></tr>
     <tr>

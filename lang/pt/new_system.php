@@ -95,6 +95,7 @@ return [
     'clinical_agenda' => [
         'module' => 'Ambulatório e Hospital',
         'menu_label' => 'Agenda ambulatorial',
+        'documents' => 'Documentos ambulatoriais',
         'title' => 'Agenda clínica',
         'eyebrow' => 'Gestão clínica ambulatorial',
         'subtitle' => 'Organize o atendimento por médico, especialidade e disponibilidade no sistema principal.',

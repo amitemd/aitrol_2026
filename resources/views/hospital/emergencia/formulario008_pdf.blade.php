@@ -106,6 +106,7 @@
 
     @php $fecha = date('Y-m-d'); @endphp
 
+@include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa ?? null])
     <div>
 
         <table border="1" cellspacing="0" cellpadding="0" style="margin-right:25px;">

@@ -11,9 +11,11 @@ use Sis_medico\Agenda_archivo;
 use Sis_medico\Ct_Orden_Venta;
 use Sis_medico\Http\Controllers\Controller;
 use Sis_medico\Seguro;
+use Sis_medico\Services\ClinicalHospitalDestinationService;
 use Sis_medico\Services\DoctorUserType;
 use Sis_medico\Services\SidebarMenuService;
 use Sis_medico\Services\V3DoctorAgendaService;
+use Sis_medico\Services\V3PatientRegistryService;
 
 class DoctorAgendaController extends Controller
 {
@@ -35,6 +37,10 @@ class DoctorAgendaController extends Controller
         } catch (RuntimeException $exception) {
             abort(404, $exception->getMessage());
         }
+        // Conserva el médico que el usuario está gestionando. Para un médico
+        // autenticado siempre prevalece su propia cuenta; para administración
+        // permite continuar el mismo contexto al abrir Cirugía hospitalaria.
+        $request->session()->put('clinical_agenda_doctor_id', (string) $doctor);
 
         return $this->page('v3.clinical.agenda.calendar', $payload, 'Agenda del médico', 'calendario');
     }
@@ -77,7 +83,10 @@ class DoctorAgendaController extends Controller
             return response()->json(['message' => $exception->getMessage()], 404);
         }
 
-        return response()->json(['results' => $this->service->searchProcedures($request->input('q'))]);
+        return response()->json(['results' => $this->service->searchProcedures(
+            $request->input('q'),
+            filter_var($request->input('quirurgico'), FILTER_VALIDATE_BOOLEAN)
+        )]);
     }
 
     public function availability(Request $request, $doctor)
@@ -85,22 +94,36 @@ class DoctorAgendaController extends Controller
         $this->assertCanManage($doctor);
         $this->validate($request, [
             'fecha' => 'required|date_format:Y-m-d',
-            'tipo' => 'required|integer|between:0,2',
+            'tipo' => 'required|integer|in:0,1,2,5',
             'excluir' => 'nullable|integer',
+            'bloques_cirugia' => 'nullable|boolean',
+            'id_sala' => 'nullable|integer',
+            'id_anestesiologo' => 'nullable|string|max:20',
+            'duracion_cirugia' => 'nullable|integer|min:30|max:720',
+            'preparacion_minutos' => 'nullable|integer|min:0|max:180',
+            'limpieza_minutos' => 'nullable|integer|min:0|max:180',
         ]);
         try {
-            $slots = $this->service->availableIntervals(
+            $availability = $this->service->availability(
                 $this->companyId($request),
                 $doctor,
                 $request->input('fecha'),
                 (int) $request->input('tipo'),
-                $request->input('excluir')
+                $request->input('excluir'),
+                [
+                    'bloques_cirugia' => $request->query('bloques_cirugia') === '1',
+                    'id_sala' => $request->input('id_sala'),
+                    'id_anestesiologo' => $request->input('id_anestesiologo'),
+                    'duracion_cirugia' => $request->input('duracion_cirugia', 120),
+                    'preparacion_minutos' => $request->input('preparacion_minutos', 30),
+                    'limpieza_minutos' => $request->input('limpieza_minutos', 30),
+                ]
             );
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
 
-        return response()->json(['items' => $slots]);
+        return response()->json((int) $request->input('tipo') === 5 ? $availability : ['items' => $availability['items']]);
     }
 
     private function patientResponse(Request $request, $doctor)
@@ -111,14 +134,26 @@ class DoctorAgendaController extends Controller
             return response()->json(['message' => $exception->getMessage()], 404);
         }
         $items = [];
-        foreach ($this->service->searchPatients($this->companyId($request), $request->input('q')) as $patient) {
-            $items[] = [
+        $exact = $request->query('exact') === '1';
+        if ($exact) {
+            $this->validate($request, ['q' => 'required|string|min:3|max:13']);
+        }
+        foreach ($this->service->searchPatients($this->companyId($request), $request->input('q'), $exact) as $patient) {
+            $item = [
                 'id' => $patient->id,
                 'name' => $patient->display_name,
                 'birth' => $patient->fecha_nacimiento,
                 'appointment_type' => ! empty($patient->has_previous_agenda) ? 1 : 0,
                 'text' => $patient->display_name.' · '.$patient->id,
             ];
+            if ($exact) {
+                $item['details'] = array_intersect_key((array) $patient, array_flip([
+                    'tipo_documento', 'nombre1', 'nombre2', 'apellido1', 'apellido2', 'fecha_nacimiento',
+                    'sexo', 'id_pais', 'id_seguro', 'telefono1',
+                ]));
+                $item['details']['patient_email'] = $patient->mail_opcional;
+            }
+            $items[] = $item;
         }
 
         return response()->json(['items' => $items, 'results' => $items]);
@@ -145,41 +180,21 @@ class DoctorAgendaController extends Controller
     public function create(Request $request, $doctor)
     {
         $this->assertCanManage($doctor);
+        $fromSurgery = $request->input('origen') === 'hospital-cirugia';
+        if ($fromSurgery && ! $request->ajax()) {
+            return redirect()->route('hospital.admision', array_merge(
+                ['id_paso' => 5, 'doctor' => $doctor],
+                $request->only(['paciente', 'id_paciente', 'inicio', 'fin'])
+            ));
+        }
         if ($request->ajax() && filter_var($request->input('buscar_paciente'), FILTER_VALIDATE_BOOLEAN)) {
             return $this->patientResponse($request, $doctor);
         }
         try {
-            $payload = $this->service->editor($this->companyId($request), $doctor, null, ['patient' => $request->input('paciente')]);
+            $payload = $this->newAppointmentPayload($request, $this->companyId($request), $doctor, $fromSurgery);
         } catch (RuntimeException $exception) {
             abort(404, $exception->getMessage());
         }
-        $this->prepareRoomManagement($payload);
-
-        if (! $request->ajax()) {
-            $payload['patients'] = $this->service->searchPatients($this->companyId($request), $request->input('paciente'));
-        }
-        $payload['defaultPatientId'] = trim((string) $request->input('id_paciente'));
-        $payload['defaultAppointmentType'] = $this->service->appointmentTypeForPatient($this->companyId($request), $payload['defaultPatientId']);
-        if (! $payload['appointment'] && $payload['defaultPatientId'] !== '') {
-            $defaultPatientId = $payload['defaultPatientId'];
-            $patientOption = $payload['patients']->first(function ($patient) use ($defaultPatientId) {
-                return (string) $patient->id === $defaultPatientId;
-            });
-            if ($patientOption) {
-                $selectedPatient = DB::table('paciente')->where('id', $defaultPatientId)->first();
-                if ($selectedPatient) {
-                    $selectedPatient->display_name = $patientOption->display_name;
-                }
-                $payload['selectedPatient'] = $selectedPatient;
-            }
-        }
-        $this->prepareProcedureSearch($payload, $request);
-        $payload['defaultStart'] = $request->input('inicio', date('Y-m-d\TH:i'));
-        $payload['defaultEnd'] = $request->input('fin', date('Y-m-d\TH:i', strtotime($payload['defaultStart'].' +30 minutes')));
-        // Una agenda nueva siempre inicia como consulta. El usuario puede
-        // cambiar el tipo después desde el formulario si lo necesita.
-        $payload['defaultType'] = 0;
-
         if ($request->ajax()) {
             return view('v3.clinical.agenda._activity_modal', $payload);
         }
@@ -190,11 +205,24 @@ class DoctorAgendaController extends Controller
     public function store(Request $request, $doctor)
     {
         $this->assertCanManage($doctor);
+        if ($request->input('origen') === 'hospital-cirugia') {
+            $this->validate($request, ['confirmar_cirugia' => 'required|accepted'], [
+                'confirmar_cirugia.required' => 'Presiona Agendar cirugía para guardar la programación.',
+                'confirmar_cirugia.accepted' => 'Presiona Agendar cirugía para guardar la programación.',
+            ]);
+            $request->merge(['tipo' => 5]);
+        }
         $this->validateAppointment($request);
         try {
             $id = $this->service->saveAppointment($this->companyId($request), $doctor, $request->all(), Auth::id(), $request->ip());
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['ok' => true, 'id' => $id, 'message' => 'La agenda se registró correctamente.']);
+            }
+            if ($request->input('origen') === 'hospital-cirugia') {
+                return redirect()->route('hospital.index_modulos', ['id_paso' => 5])
+                    ->withFragment('cirugia-agenda-'.$id)
+                    ->with('surgery_agenda_saved_id', $id)
+                    ->with('agenda_success', 'La cirugía se agendó correctamente y ya está disponible en Cirugía.');
             }
 
             return $this->calendarRedirect($doctor, $request->input('inicio'), 'La agenda se registró correctamente.');
@@ -620,14 +648,14 @@ class DoctorAgendaController extends Controller
         $request->merge(['cortesia' => 'NO']);
 
         $this->validate($request, [
-            'tipo' => 'required|integer|between:0,2',
+            'tipo' => 'required|integer|in:0,1,2,5',
             'inicio' => 'required|date',
             'fin' => 'required|date|after:inicio',
             'id_paciente' => 'required_unless:tipo,2|nullable|string|max:20',
             'id_sala' => 'required_unless:tipo,2|nullable|integer',
             'espid' => 'nullable|integer',
             'id_seguro' => 'required_unless:tipo,2|nullable|integer',
-            'id_procedimiento' => 'required_if:tipo,1|nullable|integer',
+            'id_procedimiento' => 'required_if:tipo,1,5|nullable|integer',
             'procedimientos' => 'nullable|array',
             'id_doctor2' => 'nullable|string|max:20',
             'id_doctor3' => 'nullable|string|max:20',
@@ -642,6 +670,13 @@ class DoctorAgendaController extends Controller
             'cie10' => 'nullable|string|max:255',
             'ocupacion' => 'nullable|string|max:255',
             'referido' => 'nullable|string|max:255',
+            'modalidad_cirugia' => 'required_if:tipo,5|nullable|string|in:AMBULATORIA,HOSPITALIZACION_PROGRAMADA,HOSPITALIZADO,EMERGENCIA',
+            'id_anestesiologo' => 'nullable|string|max:20',
+            'indicacion_quirurgica' => 'required_if:tipo,5|nullable|string|max:2000',
+            'hora_quirurgica' => 'required_if:tipo,5|nullable|date',
+            'duracion_cirugia' => 'required_if:tipo,5|nullable|integer|min:30|max:720',
+            'preparacion_minutos' => 'required_if:tipo,5|nullable|integer|min:0|max:180',
+            'limpieza_minutos' => 'required_if:tipo,5|nullable|integer|min:0|max:180',
         ], [
             'required' => 'El campo :attribute es obligatorio.',
             'required_unless' => 'Debe seleccionar :attribute para una atención clínica.',
@@ -663,6 +698,10 @@ class DoctorAgendaController extends Controller
             'cortesia' => 'cortesía',
             'observaciones' => 'observaciones',
             'observacion_paciente' => 'observación médica del paciente',
+            'modalidad_cirugia' => 'modalidad de la cirugía',
+            'indicacion_quirurgica' => 'indicación quirúrgica',
+            'hora_quirurgica' => 'hora quirúrgica',
+            'duracion_cirugia' => 'duración estimada',
         ]);
     }
 
@@ -814,5 +853,97 @@ class DoctorAgendaController extends Controller
         config(['data' => array_merge(config('data'), $data)]);
 
         return view('v3.layouts.view_child');
+    }
+
+    public function hospitalSurgeryBooking(Request $request)
+    {
+        $actor = Auth::user();
+        abort_unless($actor, 401);
+        $companyId = app(ClinicalHospitalDestinationService::class)->companyId();
+        if ($request->query('horario') === '1') {
+            $selection = $request->validate(['doctor' => 'required|string|max:20', 'fecha' => 'nullable|date_format:Y-m-d']);
+            $this->assertCanManage($selection['doctor']);
+            try {
+                return response()->json($this->service->configuredHours($companyId, $selection['doctor'], $selection['fecha'] ?? null));
+            } catch (RuntimeException $exception) {
+                report($exception);
+
+                return response()->json(['message' => 'No se pudo consultar el horario del médico.'], 422);
+            }
+        }
+
+        return view('hospital.cirugia-seleccionar-medico', $this->hospitalSurgeryBookingData($request, $companyId));
+    }
+
+    public function hospitalSurgeryBookingData(Request $request, $companyId): array
+    {
+        $actor = Auth::user();
+        abort_unless($actor, 401);
+        $doctors = $this->service->manageableDoctors($companyId, $actor);
+        $selection = $request->validate(['doctor' => 'nullable|string|max:20']);
+        $requestedDoctor = $selection['doctor'] ?? null;
+        $doctorId = $requestedDoctor ?? $request->session()->get('clinical_agenda_doctor_id');
+        $selected = $doctors->first(function ($candidate) use ($doctorId) {
+            return (string) $candidate->id === (string) $doctorId;
+        });
+        $agenda = null;
+        $bookingError = null;
+        if ($selected) {
+            try {
+                $agenda = $this->newAppointmentPayload($request, $companyId, $selected->id, true);
+                $agenda['patientRegistration'] = app(V3PatientRegistryService::class)->registrationOptions($companyId);
+            } catch (RuntimeException $exception) {
+                report($exception);
+                $bookingError = 'No se pudo cargar la agenda del médico seleccionado. Inténtalo de nuevo o elige otro médico.';
+            }
+        }
+
+        return [
+            'doctors' => $doctors,
+            'selectedDoctorId' => $selected ? $selected->id : ($requestedDoctor ?? $actor->id),
+            'invalidDoctor' => $requestedDoctor !== null && ! $selected,
+            'bookingError' => $bookingError,
+            'agenda' => $agenda,
+        ];
+    }
+
+    private function newAppointmentPayload(Request $request, $companyId, $doctor, bool $fromSurgery): array
+    {
+        $payload = $this->service->editor($companyId, $doctor, null, ['patient' => $request->input('paciente')]);
+        $request->session()->put('clinical_agenda_doctor_id', (string) $doctor);
+        $this->prepareRoomManagement($payload);
+
+        if (! $request->ajax()) {
+            $payload['patients'] = $this->service->searchPatients($companyId, $request->input('paciente'));
+        }
+        $payload['defaultPatientId'] = trim((string) $request->input('id_paciente'));
+        $payload['defaultAppointmentType'] = $this->service->appointmentTypeForPatient($companyId, $payload['defaultPatientId']);
+        if (! $payload['appointment'] && $payload['defaultPatientId'] !== '') {
+            $defaultPatientId = $payload['defaultPatientId'];
+            $patientOption = $payload['patients']->first(function ($patient) use ($defaultPatientId) {
+                return (string) $patient->id === $defaultPatientId;
+            });
+            if ($patientOption) {
+                $selectedPatient = DB::table('paciente')->where('id', $defaultPatientId)->first();
+                if ($selectedPatient) {
+                    $selectedPatient->display_name = $patientOption->display_name;
+                }
+                $payload['selectedPatient'] = $selectedPatient;
+            }
+        }
+        $this->prepareProcedureSearch($payload, $request);
+        $requestedType = $fromSurgery ? 5 : (int) $request->input('tipo', 0);
+        if (! in_array($requestedType, [0, 1, 2, 5], true)) {
+            $requestedType = 0;
+        }
+        $suggestedStart = $requestedType === 5
+            ? date('Y-m-d\TH:i', (int) (ceil((time() + 3600) / 1800) * 1800))
+            : date('Y-m-d\TH:i');
+        $payload['defaultStart'] = $request->input('inicio', $suggestedStart);
+        $payload['defaultEnd'] = $request->input('fin', date('Y-m-d\TH:i', strtotime($payload['defaultStart'].($requestedType === 5 ? ' +180 minutes' : ' +30 minutes'))));
+        $payload['defaultType'] = $requestedType;
+        $payload['origin'] = $fromSurgery ? 'hospital-cirugia' : '';
+
+        return $payload;
     }
 }

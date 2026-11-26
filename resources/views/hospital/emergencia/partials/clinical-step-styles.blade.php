@@ -219,11 +219,36 @@
         font-size: 14px;
         font-weight: 800;
     }
+    .clinical-step-card .clinical-exam-sections {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+    }
+    .clinical-step-card .clinical-exam-section {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid #d4e6ed;
+        border-radius: 12px;
+        background: #fff;
+    }
+    .clinical-step-card .clinical-exam-section__title {
+        margin: 0;
+        padding: 11px 13px;
+        border-bottom: 1px solid #d4e6ed;
+        background: #e5f4f8;
+        color: #0b4f7d;
+        font-size: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
     .clinical-step-card .clinical-exam-grid {
         display: grid;
-        grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
-        gap: 10px 14px;
+        grid-template-columns: minmax(120px, 42%) minmax(0, 1fr);
+        gap: 8px 10px;
         align-items: center;
+        padding: 12px;
     }
     .clinical-step-card .clinical-exam-grid > [class*="col-md-"] {
         width: auto;
@@ -247,8 +272,8 @@
     .clinical-step-card .clinical-form-actions {
         display: flex;
         justify-content: center;
-        grid-column: 1 / -1;
-        padding-top: 4px;
+        width: 100%;
+        padding-top: 14px;
     }
     .clinical-step-card .clinical-save-button {
         display: inline-flex;
@@ -274,6 +299,7 @@
     @media (max-width: 900px) {
         .clinical-step-card .clinical-form-grid,
         .clinical-step-card .clinical-form-grid--three,
+        .clinical-step-card .clinical-exam-sections,
         .clinical-step-card .clinical-exam-grid { grid-template-columns: 1fr; }
         .clinical-step-card .clinical-exam-grid > [class*="col-md-"]:nth-child(odd):not(.clinical-form-actions) {
             margin-top: 4px;

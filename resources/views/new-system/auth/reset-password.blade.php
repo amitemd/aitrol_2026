@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="{{ asset('css/app-template.css') }}?v={{ filemtime(public_path('css/app-template.css')) }}">
     <link rel="stylesheet" href="{{ asset('hc4/awesome/css/font-awesome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}">
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body class="new-system-login-page">
+<body class="aitrol-theme new-system-login-page">
     <main class="new-system-login-shell">
         <div class="row">
             <section class="col-md-6 new-system-login-information">

@@ -537,26 +537,6 @@
 									            </div>
 				   	  		                </div>
 				   	  		                <div class="col-md-12" style="padding: 1px;">
-			                                    <div class="row">
-			                                		<div class="col-md-12">
-									                  <span style="font-family: 'Helvetica general';font-size: 12px">RESUMEN DE LA HISTORIA CL&IacuteNICA:</span>
-									                </div>
-									                <div class="col-12">
-										  				<span><?php echo $ordimag->resumen_clinico?></span>
-										  			</div>
-									            </div>
-				   	  		                </div>
-				   	  		                <div class="col-md-12" style="padding: 1px;">
-			                                	<div class="row">
-			                                		<div class="col-md-12">
-									                  <span style="font-family: 'Helvetica general';font-size: 12px">DIAGNOSTICO:</span>
-									                </div>
-									                <div class="col-12">
-										  				<span><?php echo $ordimag->diagnosticos?></span>
-										  			</div>
-									            </div>
-									        </div>
-				   	  		                <div class="col-md-12" style="padding: 1px;">
 				                                @if($texto != "")
 					                                <div class="row">
 					                                  	<div class="col-md-12">
@@ -585,18 +565,7 @@
 							   	  			    </div>
 				   	  		                </div>
 				   	  		                @endif
-				   	  		                @if(!is_null($ordimag->observacion_recepcion))
-				   	  		                <div class="col-md-12" style="padding: 1px;">
-			                                	<div class="row">
-			                                		<div class="col-md-12">
-									                  <span style="font-family: 'Helvetica general';font-size: 12px">OBSERVACION RECEPCI&OacuteN:</span>
-									                </div>
-									                <div class="col-12">
-									                  <span><?php echo $ordimag->observacion_recepcion?></span>
-									                </div>
-							   	  			    </div>
-				   	  		                </div>
-				   	  		                @endif
+
 				   	  		                <div class="col-md_12" >
 										        <center>
 										            <div class="col-md-5" style="padding-top: 15px;text-align: center;">

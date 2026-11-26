@@ -11,7 +11,7 @@
         .page.first, .form-page.is-first { page-break-before: auto; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         td, th { border: .55pt solid #333; padding: 1.1mm; vertical-align: top; word-wrap: break-word; }
-        .document-logo { height: 23mm; overflow: hidden; text-align: center; line-height: 0; }
+        .document-logo { height: 23mm; overflow: hidden; text-align: left; line-height: 0; border: .55pt solid #333; padding: 1mm 3mm; }
         .document-logo > img { max-width: 55mm; max-height: 20mm; }
         .identity { margin-bottom: 1.5mm; text-align: center; }
         .identity-band { background: #dceaf3; font-size: 8pt; font-weight: bold; text-align: left; }
@@ -51,7 +51,7 @@
         .chart img { display: block; width: 100%; height: 22mm; }
         .check-grid { font-size: 6pt; line-height: 1.55; }
         .signature { height: 8mm; }
-        .footer { position: fixed; right: 0; bottom: -8mm; left: 0; border-top: .4pt solid #777; padding-top: 1mm; font-size: 6pt; font-weight: bold; }
+        .footer { position: fixed; right: 0; bottom: -6mm; left: 0; border-top: .4pt solid #777; padding-top: 1mm; font-size: 6pt; font-weight: bold; }
         .footer table, .footer td { border: 0; padding: 0; }
         .page-number:after { content: counter(page); }
         .state { margin: 0 0 1.5mm; color: #6a5317; font-size: 6pt; text-align: right; }
@@ -128,10 +128,8 @@
         <tr><td colspan="12" class="band">H. INDICACIONES</td></tr><tr><td colspan="12" class="value h14">{{ $v('indicaciones') }}</td></tr>
         <tr><td colspan="12" class="band">I. PLAN ANESTÉSICO</td></tr><tr><td colspan="12" class="value h14">{{ $v('plan_anestesico') }}</td></tr>
         <tr><td colspan="12" class="band">J. OBSERVACIONES</td></tr><tr><td colspan="12" class="value h12">{{ $v('observaciones') }}</td></tr>
-        <tr><td colspan="12" class="band">K. DATOS DEL PROFESIONAL RESPONSABLE</td></tr>
-        <tr class="labels"><td colspan="2">FECHA / HORA</td><td colspan="5">NOMBRE Y APELLIDO</td><td colspan="2">IDENTIFICACIÓN</td><td colspan="3">FIRMA / SELLO</td></tr>
-        <tr><td colspan="2">{{ $entry ? $entry->updated_at : '' }}</td><td colspan="5" class="value">{{ $v('profesional') }}</td><td colspan="2"></td><td colspan="3" class="signature"></td></tr>
     </table>
+    @include('hospital.documentos._professional-block-pdf')
 </section>
 
 @elseif($form['code'] === '018A')
@@ -148,7 +146,7 @@
         <tr><td colspan="12" class="band">C. SERVICIO Y PRIORIDAD DE ATENCIÓN</td></tr>
         <tr class="labels"><td>CABEZA</td><td>ÓRGANOS</td><td>CUELLO</td><td>COLUMNA</td><td>TÓRAX</td><td>ABDOMEN</td><td>PELVIS</td><td>EXT. SUPERIORES</td><td>EXT. INFERIORES</td><td colspan="3">PERINEAL / OTROS</td></tr>
         <tr><td colspan="12" class="band">D. REGISTRO TRANSANESTÉSICO</td></tr>
-        <tr><td colspan="12" class="chart"><img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/record_transanestesico.png'))) }}" alt="Gráfico transanestésico"></td></tr>
+        <tr><td colspan="12" class="chart"><img src="{{ !empty($transanestesicoImage) ? $transanestesicoImage : 'data:image/png;base64,'.base64_encode(file_get_contents(public_path('assets/images/record_transanestesico.png'))) }}" alt="Gráfico transanestésico"></td></tr>
         <tr><td colspan="2" class="label">ANOTACIONES</td><td colspan="10" class="value">{{ $v('monitorizacion') }}</td></tr>
         <tr><td colspan="12" class="band">E. DROGAS ADMINISTRADAS</td></tr>
         <tr><td class="center">1</td><td colspan="2" class="value">{{ $v('drogas') }}</td><td class="center">2</td><td colspan="2"></td><td class="center">3</td><td colspan="2"></td><td class="center">4</td><td colspan="2"></td></tr>
@@ -181,9 +179,8 @@
         <tr><td colspan="12" class="band">Q. CONDICIONES DE EGRESO</td></tr>
         <tr><td colspan="2" class="label">CONDICIONES AL SALIR</td><td colspan="2">EXTUBADO / INTUBADO</td><td colspan="2" class="label">CONDUCIDO A</td><td colspan="6" class="value">{{ $v('egreso') }}</td></tr>
         <tr><td colspan="2" class="label">CONSTANTES VITALES DE ENTREGA</td><td colspan="10" class="value">{{ $v('egreso') }}</td></tr>
-        <tr><td colspan="12" class="band">R. DATOS DEL PROFESIONAL RESPONSABLE</td></tr>
-        <tr><td class="label">HORA</td><td>{{ $entry ? $entry->updated_at : '' }}</td><td colspan="2" class="label">NOMBRE Y APELLIDO</td><td colspan="4" class="value">{{ $v('profesional') }}</td><td class="label">FIRMA</td><td colspan="2" class="signature"></td><td class="label">SELLO</td></tr>
     </table>
+    @include('hospital.documentos._professional-block-pdf')
 </section>
 
 @else
@@ -216,10 +213,8 @@
         <tr><td colspan="6" class="band">H. CONDICIÓN DE EGRESO</td></tr>
         <tr><td class="label">CONSTANTES VITALES DE ENTREGA</td><td colspan="2" class="value h10">{{ $v('signos_egreso') }}</td><td class="label">ALDRETE / BROMAGE / RAMSAY / EVA / STEWARD / OTRO</td><td colspan="2" class="value">{{ $v('escalas_egreso') }}</td></tr>
         <tr><td class="label">CONDICIÓN AL SALIR Y DESTINO</td><td colspan="5" class="value h18">{{ $v('destino') }}</td></tr>
-        <tr><td colspan="6" class="band">I. DATOS DEL PROFESIONAL QUE AUTORIZA EL EGRESO</td></tr>
-        <tr><td class="label">FECHA Y HORA</td><td>{{ $entry ? $entry->updated_at : '' }}</td><td class="label">NOMBRE / IDENTIFICACIÓN</td><td colspan="3" class="value">{{ $v('profesional') }}</td></tr>
-        <tr><td colspan="3" class="center signature">FIRMA</td><td colspan="3" class="center signature">SELLO</td></tr>
     </table>
+    @include('hospital.documentos._professional-block-pdf')
 </section>
 @endif
 </body>

@@ -82,6 +82,7 @@
     .preanestesico-v3 #tabla_diagnostico > table:first-child,
     .preanestesico-v3 #tabla_indicacion > table, .preanestesico-v3 #tabla_examen > table { overflow: hidden; border-radius: 8px; }
     .preanestesico-v3 #tabla_diagnostico input:disabled,.preanestesico-v3 #tabla_indicacion input:disabled,.preanestesico-v3 #tabla_examen input:disabled { color:#315b71; background:#f6fafc; opacity:1; }
+    .preanestesico-v3 .v3-form008-antecedent{padding:9px 11px;border:1px solid #bfe0ea;border-radius:8px;color:#214f67;background:#eef9fc;line-height:1.4}.preanestesico-v3 .v3-form008-antecedent__source{display:inline-block;margin-right:8px;padding:3px 7px;border-radius:12px;color:#08799d;background:#d9f3f8;font-size:10px;font-weight:800;text-transform:uppercase}.preanestesico-v3 .v3-form008-antecedent-lock{text-align:center;color:#6d8799}
     .preanestesico-v3 .v3-section-title {
         display: flex; align-items: center; gap: 9px; margin: -20px -20px 18px; padding: 14px 18px;
         border-radius: 12px 12px 0 0; color: #fff; background: linear-gradient(100deg, var(--v3-navy), var(--v3-cyan));
@@ -128,6 +129,9 @@
     .preanestesico-v3 .v3-entry-row .v3-entry-control { flex: 1 1 auto; }
     .preanestesico-v3 .v3-entry-row .btn { flex: 0 0 42px; min-height: 40px; }
     .preanestesico-v3 .v3-helper { margin: -8px 0 16px; color: var(--v3-muted); font-size: 12px; }
+    .preanestesico-v3 .v3-hospital-sync { display:flex; align-items:flex-start; gap:10px; margin:-5px 0 16px; padding:10px 12px; border:1px solid #b9e3d3; border-radius:9px; color:#145844; background:#effaf6; font-size:12px; line-height:1.4; }
+    .preanestesico-v3 .v3-hospital-sync i { margin-top:2px; color:#15936b; }
+    .preanestesico-v3 .v3-hospital-sync strong { display:block; color:#0e5941; }
     .preanestesico-v3 .v3-hero-actions { display:flex; align-items:center; gap:12px; }
     .preanestesico-v3 .v3-save-status {
         display:inline-flex; align-items:center; gap:7px; min-width:104px; padding:9px 12px;
@@ -177,6 +181,7 @@
     .preanestesico-v3 .v3-form-block[open] > summary .v3-block-chevron { transform:rotate(180deg); }
     .preanestesico-v3 .v3-form-block-body { padding:16px; }
     .preanestesico-v3 .v3-form-block-body > br { display:none; }
+    .preanestesico-v3 .v3-form-block-body > .v3-form-grid { margin-bottom:16px; }
     .preanestesico-v3 .v3-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px 16px; }
     .preanestesico-v3 .v3-form-grid--3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
     .preanestesico-v3 .v3-field { min-width:0; }
@@ -184,7 +189,36 @@
     .preanestesico-v3 .v3-field label { display:block; margin:0 0 6px; color:#315b71; font-size:11px; font-weight:800; text-transform:uppercase; }
     .preanestesico-v3 .v3-field input,.preanestesico-v3 .v3-field select,.preanestesico-v3 .v3-field textarea { width:100%!important; }
     .preanestesico-v3 .v3-field textarea { min-height:86px; padding:10px 12px; resize:vertical; }
-    .preanestesico-v3 .v3-field--allergy input { border-color:#efb8bd; background:#fff8f8; }
+    .preanestesico-v3 .v3-field--allergy { display:flex; flex-direction:column; }
+    .preanestesico-v3 .v3-allergy-readonly-label {
+        display:block; margin:0 0 6px; color:#315b71;
+        font-size:11px; font-weight:800; text-transform:uppercase;
+    }
+    .preanestesico-v3 .v3-allergy-readonly-label i { display:none; }
+    .preanestesico-v3 .v3-allergy-readonly-value {
+        display:flex; align-items:center; min-height:38px; padding:8px 12px;
+        border:1px solid #c9dce9; border-radius:8px; color:var(--v3-ink); background:#fff; font-weight:400;
+    }
+    .preanestesico-v3 .v3-field--allergy.has-allergy .v3-allergy-readonly-label {
+        display:flex; align-items:center; gap:7px; min-height:32px; margin:0; padding:7px 10px;
+        border-radius:8px 8px 0 0; color:#fff; background:#c62828;
+        letter-spacing:.03em;
+    }
+    .preanestesico-v3 .v3-field--allergy.has-allergy .v3-allergy-readonly-label i { display:inline-block; }
+    .preanestesico-v3 .v3-field--allergy.has-allergy .v3-allergy-readonly-value {
+        min-height:42px; padding:10px 12px; border-color:#c62828; border-top:0;
+        border-radius:0 0 8px 8px; color:#8c1d24; background:#fff7f7; font-weight:700;
+    }
+    .preanestesico-v3 #tabla_diagnostico td { padding:7px 5px; vertical-align:middle; }
+    .preanestesico-v3 #tabla_diagnostico td:first-child { width:42px; text-align:center; }
+    .preanestesico-v3 #tabla_diagnostico td:last-child { width:190px; }
+    .preanestesico-v3 .v3-preloaded-background td { background:#f3f9fc; }
+    .preanestesico-v3 .v3-source-badge {
+        display:inline-flex; align-items:center; gap:5px; padding:6px 8px; border-radius:999px;
+        color:#12627f; background:#dff2f7; font-size:10px; font-weight:800; white-space:nowrap;
+    }
+    .preanestesico-v3 .v3-source-badge--current { margin-right:6px; color:#356b43; background:#e6f7ea; }
+    .preanestesico-v3 .v3-empty-background { padding:14px!important; color:var(--v3-muted); text-align:center; }
     .preanestesico-v3 .v3-pair-row {
         display:grid!important; grid-template-columns:minmax(130px,.55fr) minmax(180px,1fr) minmax(130px,.55fr) minmax(180px,1fr);
         align-items:center!important; gap:10px 14px!important; margin:0 0 12px!important; padding:0!important;
@@ -371,7 +405,7 @@ $procedimientosPropuestos = \Sis_medico\Hc_Procedimiento_Final::where('id_hc_pro
 $paciente = $pre_anestesico->anestesiologia->historia->paciente;
 $nombrePaciente = trim($paciente->apellido1 . ' ' . $paciente->apellido2 . ' ' . $paciente->nombre1 . ' ' . $paciente->nombre2);
 $sexoPaciente = $paciente->sexo == 1 ? 'Masculino' : 'Femenino';
-$alergiasPaciente = trim((string) $pre_anestesico->alergicos);
+$alergiasPaciente = trim((string) ($alergias_paciente ?? ''));
 
 ?>
 
@@ -427,7 +461,7 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
             </div>
             <div class="v3-summary-item {{ $alergiasPaciente !== '' ? 'v3-summary-item--alert' : '' }}" id="resumen-alergias">
                 <span><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Alergias</span>
-                <strong>{{ $alergiasPaciente !== '' ? $alergiasPaciente : 'No registradas' }}</strong>
+                <strong>{{ $alergiasPaciente !== '' ? $alergiasPaciente : 'No registra' }}</strong>
             </div>
         </div>
         <div class="v3-diagnosis-list" aria-label="Diagnósticos registrados">
@@ -446,77 +480,34 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
     </div>
     <div class="v3-section" id="antecedentes-personales">
     <div class="v3-section-title"><i class="fa fa-history" aria-hidden="true"></i> Antecedentes patológicos personales</div>
-    <p class="v3-helper">Registre diagnósticos previos, su tiempo de evolución y el tratamiento recibido.</p>
+    <p class="v3-helper">Información precargada desde la historia médica. Esta sección es de solo lectura.</p>
     <div id="tabla_diagnostico">
-    <table style="width: 100%;">
-        <tbody>
-            <tr>
-                <td colspan="5" style="font-size: 14px;" class="bg-purple"><b>ANTECEDENTES PATOLÓGICOS PERSONALES</b></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td style="width: 33%;"><b> DIAGNÓSTICOS </b></td>
-                <td><b> TIEMPO DE EVOLUCION </b></td>
-                <td colspan="2"><b> TRATAMIENTO </b></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>
-                    <input style="width: 98%;" type="text" name="diagnosticos" id="diagnosticos" required>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" name="tiempoEvolucion" id="tiempoEvolucion" required>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" name="tratamiento" id="tratamiento" required>
-                </td>
-                <td style="text-align: center;">
-                    <button class="btn btn-primary bg-green" id="boton_enviar" onclick="guardar();" type="button">
-                        <i class="fa fa-plus" aria-hidden="true"></i>
-                        <span class="v3-action-label">Agregar antecedente</span>
-                    </button>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="4">
-                    <hr>
-                </td>
-            </tr>
-
-            @php
-            $contador = 1;
-            
-            @endphp
-
-            @foreach ($rc_antecedentes as $rc)
-
-            <tr>
-                <td>{{ $contador++ }}</td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{ $rc->diagnostico }}" disabled>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{$rc->tiempo_evolucion}}" disabled>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{$rc->tratamiento}}" disabled>
-                </td>
-                <td>
-                    <a onclick="eliminar({{ $rc->id }})" class="btn btn-danger"><i class="fa fa-trash"></i></a>
-                </td>
-                <td>
-                    <hr>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @include('rc_preanestesico.tabla_diagnostico', [
+            'rc_antecedentes' => $rc_antecedentes,
+            'antecedentes_paciente' => $antecedentes_paciente,
+        ])
     </div>
     </div>
 
     <form id="frm" class="v3-clinical-form">
         <div class="v3-section-title"><i class="fa fa-stethoscope" aria-hidden="true"></i> Evaluación preanestésica</div>
         <p class="v3-helper">Los cambios realizados en los campos clínicos se guardan automáticamente.</p>
+        <div class="v3-hospital-sync" role="status">
+            <i class="fa fa-refresh" aria-hidden="true"></i>
+            <div>
+                <strong>Datos hospitalarios vinculados al mismo paciente y episodio</strong>
+                @if(!empty($hospitalSync['updated_fields']))
+                    Se completaron {{ count($hospitalSync['updated_fields']) }} campo(s) vacío(s)
+                    @if(!empty($hospitalSync['sources']))
+                        desde {{ implode(', ', $hospitalSync['sources']) }}.
+                    @else
+                        desde la historia clínica.
+                    @endif
+                @else
+                    Los datos existentes del anestesiólogo se conservaron; solo se completan campos vacíos cuando hay información disponible.
+                @endif
+            </div>
+        </div>
 
         <input type="hidden" value="{{$id}}" name="id_cab" id="id_cab" />
 
@@ -536,9 +527,11 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
                         <label for="quirurgicos">Antecedentes quirúrgicos</label>
                         <input type="text" name="quirurgicos" id="quirurgicos" value="{{$pre_anestesico->quirurgicos}}" onchange="actualizar();">
                     </div>
-                    <div class="v3-field v3-field--allergy">
-                        <label for="alergicos"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Alergias</label>
-                        <input type="text" name="alergicos" id="alergicos" value="{{$pre_anestesico->alergicos}}" onchange="actualizar();">
+                    <div class="v3-field v3-field--allergy {{ $alergiasPaciente !== '' ? 'has-allergy' : '' }}">
+                        <span class="v3-allergy-readonly-label"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Alergias</span>
+                        <div class="v3-allergy-readonly-value" role="status" aria-label="Alergias registradas del paciente">
+                            {{ $alergiasPaciente !== '' ? $alergiasPaciente : 'No registra' }}
+                        </div>
                     </div>
                     <div class="v3-field">
                         <label for="transfusiones">Transfusiones</label>
@@ -596,8 +589,7 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
             <label>DISTANCIA TIROMENTONEANA(cm) </label>
             <select style="width: 20%;" class="form-control input-sm" name="distancia" id="distancia" onchange="actualizar();">
                 <option value="">Seleccione</option>
-                <option {{ $pre_anestesico->distancia_tiromentoneana == ">3" ? 'selected' : '' }} value="&lt;3"> &lt;3 </option>
-                <option {{ $pre_anestesico->distancia_tiromentoneana == "<6" ? 'selected' : '' }} value="&gt;6">&gt;6 </option>
+                <option {{ $pre_anestesico->distancia_tiromentoneana == "<6" ? 'selected' : '' }} value="&lt;6"> &lt;6 </option>
                 <option {{ $pre_anestesico->distancia_tiromentoneana == "6 - 6.5" ? 'selected' : '' }} value="6 - 6.5">6 - 6.5</option>
                 <option {{ $pre_anestesico->distancia_tiromentoneana == ">6.5" ? 'selected' : '' }} value="&gt;6.5">&gt;6.5 </option>
             </select>
@@ -677,6 +669,29 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
                 <i class="fa fa-chevron-down v3-block-chevron" aria-hidden="true"></i>
             </summary>
             <div class="v3-form-block-body">
+
+        <div class="v3-form-grid">
+            <div class="v3-field">
+                <label for="presion">Presión arterial</label>
+                <input type="text" name="presion" id="presion" value="{{$pre_anestesico->presion}}" placeholder="Ej. 120/80" onchange="actualizar();">
+            </div>
+            <div class="v3-field">
+                <label for="pulso">Frecuencia cardíaca</label>
+                <input type="number" min="0" step="1" name="pulso" id="pulso" value="{{$pre_anestesico->pulso}}" placeholder="lpm" onchange="actualizar();">
+            </div>
+            <div class="v3-field">
+                <label for="frecuencia_respiratoria">Frecuencia respiratoria</label>
+                <input type="number" min="0" step="1" name="frecuencia_respiratoria" id="frecuencia_respiratoria" value="{{$pre_anestesico->fecuencia_respiratoria}}" placeholder="rpm" onchange="actualizar();">
+            </div>
+            <div class="v3-field">
+                <label for="temperatura">Temperatura</label>
+                <input type="number" min="20" max="50" step="0.1" name="temperatura" id="temperatura" value="{{$pre_anestesico->temperatura}}" placeholder="°C" onchange="actualizar();">
+            </div>
+            <div class="v3-field">
+                <label for="o2">Saturación de oxígeno</label>
+                <input type="text" name="o2" id="o2" value="{{$pre_anestesico->o2}}" placeholder="%" onchange="actualizar();">
+            </div>
+        </div>
 
         <div class="v3-pair-row" style="width: 100%; display: flex; gap: 10px">
             <div class="form-group col-xs-6{{ $errors->has('torax') ? ' has-error' : '' }}">
@@ -825,117 +840,18 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
     </form>
     <div class="v3-section" id="seccion-indicaciones">
     <div class="v3-section-title"><i class="fa fa-list-alt" aria-hidden="true"></i> Indicaciones</div>
-    <p class="v3-helper">Añada las instrucciones que deben cumplirse antes del procedimiento.</p>
-    <table style="width: 100%;">
-        <tbody>
-            <tr>
-                <td style="font-size: 14px;" class="bg-purple"><b>INDICACIONES</b></td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="v3-entry-row">
-                        <input class="v3-entry-control" type="text" name="indicaciones" id="indicaciones" aria-label="Nueva indicación">
-                        <button class="btn btn-primary bg-green" id="agregar-indicacion" onclick="guardar_indicaciones();" type="button" aria-label="Agregar indicación">
-                            <i class="fa fa-plus" aria-hidden="true"></i>
-                            <span class="v3-action-label">Agregar indicación</span>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <br>
+    <p class="v3-helper">Información precargada desde el Formulario 018 y la evolución médica. Esta sección es de solo lectura.</p>
     <div id="tabla_indicacion">
-    <table style="width: 100%;">
-        <tbody>
-            @php
-            $contador = 1;
-            @endphp
-
-            @foreach ($indicaciones as $indicacione)
-            <tr>
-                <td>{{ $contador++ }}</td>
-                <td>
-                    <input style="width: 100%;" type="text" value="{{ $indicacione->indicaciones }}" disabled>
-                </td>
-                <td>
-                <a onclick="eliminar_indicaciones({{ $indicacione->id }})" class="btn btn-danger"><i class="fa fa-trash"></i></a>
-                </td>
-                <td>
-                    <hr>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @include('rc_preanestesico.tabla_indicacion', ['indicaciones' => $indicaciones])
     </div>
     </div>
 
     <div class="v3-section" id="seccion-examenes">
     <div class="v3-section-title"><i class="fa fa-flask" aria-hidden="true"></i> Exámenes y resultados</div>
-    <p class="v3-helper">Busque el examen por nombre, registre el resultado y agréguelo al expediente.</p>
-    <div class="box-body">
-        <form id="examen" class="row">
-            <input type="hidden" id="id_examen_buscador" />
-
-            <div class="form-group col-md-5{{ $errors->has('buscador') ? ' has-error' : '' }}">
-                <label for="buscador" class="control-label">Nombre Examen</label>
-                <div class="input-group">
-                    <input id="buscador" class="form-control input-sm" type="text" name="buscador" value="" required placeholder="Buscar examen por nombre">
-                    @if ($errors->has('buscador'))
-                    <span class="help-block">
-                        <strong>{{ $errors->first('buscador') }}</strong>
-                    </span>
-                    @endif
-                    <div class="input-group-append">
-                        <button class="btn btn-default" type="button" title="Limpiar examen" onclick="document.getElementById('buscador').value = ''; document.getElementById('id_examen_buscador').value = '';">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </button>
-                        <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group col-md-5{{ $errors->has('resultado') ? ' has-error' : '' }}">
-                <label for="resultado" class="control-label">Resultado </label>
-                <input type="text" name="resultado" id="resultado" size="20" class="form-control" value="" required maxlength="255">
-            </div>
-
-            <div class="form-group col-md-2">
-                <button type="button" class="btn btn-primary" onclick="agregarExamen()"><i class="fa fa-plus" aria-hidden="true"></i> Agregar examen</button>
-            </div>
-
-        </form>
-    </div>
-
-    <br>
+    <p class="v3-helper">Información precargada desde el Formulario 018 y Laboratorio. Esta sección es de solo lectura.</p>
     <div id="tabla_examen">
-    <table style="width: 100%;">
-        <tbody>
-            @php
-            $contador = 1;
-            @endphp
-
-            @foreach ($examen as $ex)
-            <tr>
-                <td>{{ $contador++ }}</td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{ $ex->nombre }}" disabled>
-                </td>
-                <td>
-                    <input style="width: 98%;" type="text" value="{{$ex->resultado}}" disabled>
-                </td>
-                <td>
-                    <a onclick="eliminar_examen({{ $ex->id }})" class="btn btn-danger"><i class="fa fa-trash"></i></a>
-                </td>
-                <td> 
-                    <hr>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-        </div>
+        @include('rc_preanestesico.tabla_examen', ['examen' => $examen])
+    </div>
     </div>
 
 
@@ -1006,64 +922,6 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
             }
         }
 
-        function guardar() {
-
-            $.ajax({
-                url: "{{route('formato.preanestesico_store')}}",
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name=_token]').val()
-                },
-                type: 'POST',
-                data: {
-                    diagnosticos: $("#diagnosticos").val(),
-                    tiempoEvolucion: document.getElementById("tiempoEvolucion").value,
-                    tratamiento: $("#tratamiento").val(),
-                    id_hc_anestesiologia: $('#id_cab').val(),
-                    id_rc_pre_anestesico: $("#id_pre").val(),
-                },
-                success: function(response) {
-                    console.log(response);
-
-                    if (response.success) {
-                        //window.location.reload();
-                        tabla_diagnostico();
-                    }
-                },
-                error: function(error) {
-
-                    console.error(error);
-                }
-            });
-        }
-
-
-        function eliminar(id) {
-            Swal.fire({
-                title: `Estas seguro de eliminar`,
-                icon: 'error',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Si'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: 'get',
-                        url: "{{url('formato/preanestesico/delete/')}}/" + id,
-                        dataType: 'json',
-                        success: function(data) {
-                            //location.reload();
-                            tabla_diagnostico();
-                        },
-                        error: function(data) {
-                            console.log(data);
-                        }
-                    });
-                }
-            });
-        }
-
-
         function actualizar() {
 
             actualizarEstadoGuardado('saving');
@@ -1078,13 +936,6 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
                 data: $("#frm").serialize(),
                 success: function(data) {
                     actualizarEstadoGuardado('saved');
-
-                    var allergySummary = document.getElementById('resumen-alergias');
-                    var allergyValue = document.getElementById('alergicos').value.trim();
-                    if (allergySummary) {
-                        allergySummary.classList.toggle('v3-summary-item--alert', allergyValue !== '');
-                        allergySummary.querySelector('strong').textContent = allergyValue || 'No registradas';
-                    }
                 },
                 error: function(data) {
                     actualizarEstadoGuardado('error');
@@ -1092,198 +943,6 @@ $alergiasPaciente = trim((string) $pre_anestesico->alergicos);
             });
         }
 
-        $("#buscador").autocomplete({
-            source: function(request, response) {
-
-                $.ajax({
-                    url: "{{route('examenes.buscar_aj')}}",
-                    headers: {
-                        'X-CSRF-TOKEN': $('input[name=_token]').val()
-                    },
-                    data: {
-                        term: request.term
-                    },
-                    dataType: "json",
-                    type: 'post',
-                    success: function(data) {
-                        response(data);
-                        //console.log(data);
-
-                    },
-
-                })
-            },
-            minLength: 3,
-            select: function(data, ui) {
-                console.log(ui);
-                console.log(ui.item.label);
-                $('#buscador').val(ui.item.label);
-                $('#id_examen_buscador').val(ui.item.id);
-
-            }
-        });
-
-
-
-
-
-        function agregarExamen() {
-            $.ajax({
-                url: "{{route('formato.examen_preanestesico_store')}}",
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name=_token]').val()
-                },
-                type: 'POST',
-                data: {
-                    buscador: $('#buscador').val(),
-                    resultado: $('#resultado').val(),
-                    id_examen: $('#id_examen_buscador').val(),
-                    id_hc_anestesiologia: $('#id_cab').val(),
-                    id_rc_pre_anestesico: $("#id_pre").val(),
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.success) {
-                        $('#buscador, #resultado, #id_examen_buscador').val('');
-                        tabla_examen();
-                    }
-
-                },
-                error: function(error) {
-                    console.error(error);
-                }
-            });
-        }
-
-
-        function eliminar_examen(id) {
-            Swal.fire({
-                title: `Estas seguro de eliminar`,
-                icon: 'error',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Si'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: 'get',
-                        url: "{{url('examen/preanestesico/delete/')}}/" + id,
-                        dataType: 'json',
-                        success: function(data) {
-                            //location.reload();
-                            tabla_examen();
-                        },
-                        error: function(data) {
-                            console.log(data);
-                        }
-                    });
-                }
-            });
-        }
-
-
-
-
-        function guardar_indicaciones() {
-            $.ajax({
-                url: "{{route('formato.indicaciones_agregar')}}",
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name=_token]').val()
-                },
-                type: 'POST',
-                data: {
-                    indicaciones: $('#indicaciones').val(),
-                    id_rc_pre_anestesica: $('#id_pre').val(),
-                    id_hc_anestesiologia: $('#id_cab').val(),
-                    
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.success) {
-                        $('#indicaciones').val('');
-                        tabla_indicacion();
-                    }
-                    
-
-                },
-                error: function(error) {
-                    console.error(error);
-                }
-            });
-        }
-
-
-        function eliminar_indicaciones(id) {
-            Swal.fire({
-                title: `Estas seguro de eliminar`,
-                icon: 'error',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Si'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: 'get',
-                        url: "{{url('indicaciones/delete/')}}/" + id,
-                        dataType: 'html',
-                        success: function(data) {
-                            //location.reload();
-                            tabla_indicacion();
-                        },
-                        error: function(data) {
-                            console.log(data);
-                        }
-                    });
-                }
-            });
-        }
-
-        function tabla_diagnostico(){
-
-            $.ajax({
-                type: 'get',
-                url: "{{route('rc_pre-anestesica.carga_tabla_diagnosticos',['id'=> $pre_anestesico->id])}}",
-                dataType: 'html',
-                success: function(data) {
-                   $('#tabla_diagnostico').html(data);
-                },
-                error: function(data) {
-                    console.log(data);
-                }
-            });
-        }
-
-        function tabla_indicacion(){
-
-            $.ajax({
-                type: 'get',
-                url: "{{route('rc_pre-anestesica.carga_tabla_indicacion',['id'=> $pre_anestesico->id])}}",
-                dataType: 'html',
-                success: function(data) {
-                $('#tabla_indicacion').html(data);
-                },
-                error: function(data) {
-                    console.log(data);
-                }
-            });
-        }
-
-        function tabla_examen(){
-
-            $.ajax({
-                type: 'get',
-                url: "{{route('rc_pre-anestesica.carga_tabla_examenes',['id'=> $pre_anestesico->id])}}",
-                dataType: 'html',
-                success: function(data) {
-                $('#tabla_examen').html(data);
-                },
-                error: function(data) {
-                    console.log(data);
-                }
-            });
-        }
     </script>
 </section>
 @endsection

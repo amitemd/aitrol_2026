@@ -30,8 +30,9 @@
     <link rel="stylesheet" href="{{ asset('css/new-system-legacy.css') }}?v={{ filemtime(public_path('css/new-system-legacy.css')) }}">
     @include('layouts.header_account_styles')
     @stack('styles')
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body class="hold-transition skin-blue sidebar-mini aitrol-shell">
+<body class="aitrol-theme hold-transition skin-blue sidebar-mini aitrol-shell">
     <div class="wrapper">
         <header class="main-header new-system-header">
             <a href="{{ route('new-system.dashboard') }}" class="logo" aria-label="{{ __('new_system.common.home') }}">

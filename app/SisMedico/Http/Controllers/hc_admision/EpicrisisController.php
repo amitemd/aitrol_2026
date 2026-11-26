@@ -4,16 +4,19 @@ namespace Sis_medico\Http\Controllers\hc_admision;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Response;
 use Sis_medico\Agenda;
 use Sis_medico\Archivo_historico;
 use Sis_medico\Cie_10_3;
 use Sis_medico\Cie_10_4;
 use Sis_medico\ClinicalDocument;
+use Sis_medico\ClinicalEncounterClosure;
 use Sis_medico\Documento;
 use Sis_medico\Empresa;
+use Sis_medico\Especialidad;
+use Sis_medico\Exceptions\ClinicalClosureBlockedException;
 use Sis_medico\Firma_Usuario;
 use Sis_medico\Hc_Cie10;
 use Sis_medico\Hc_Epicrisis;
@@ -31,14 +34,15 @@ use Sis_medico\Paciente;
 use Sis_medico\Paciente_Alergia;
 use Sis_medico\procedimiento_completo;
 use Sis_medico\Seguro;
-use Sis_medico\User;
-use Sis_medico\Exceptions\ClinicalClosureBlockedException;
-use Sis_medico\Services\ClinicalEncounterClosureService;
+use Sis_medico\Services\ClinicalDocumentCompletenessService;
 use Sis_medico\Services\ClinicalElectronicSignatureQr;
+use Sis_medico\Services\ClinicalEncounterClosureService;
+use Sis_medico\Services\ClinicalEncounterService;
 use Sis_medico\Services\ClinicalRecordSignatureService;
 use Sis_medico\Services\DoctorSignatureService;
-use Sis_medico\ClinicalEncounterClosure;
+use Sis_medico\Services\UserElectronicCertificateService;
 use Sis_medico\Support\RequestSchema as Schema;
+use Sis_medico\User;
 
 class EpicrisisController extends Controller
 {
@@ -57,17 +61,16 @@ class EpicrisisController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-
     private function rol()
     {
         $usuario = Auth::user();
-        if (!$usuario || !$usuario->hasAnyUserTypeName(array(
+        if (! $usuario || ! $usuario->hasAnyUserTypeName([
             'SISTEMAS', 'DOCTORES', 'DOCTOR', 'ENFERMERIA', 'ENFERMERÍA',
             'ANESTESIÓLOGO', 'ANESTESIOLOGO', 'RECEPCIÓN', 'RECEPCION',
-            'CONTABILIDAD', 'FARMACIA', 'PACIENTE'
-        ))) {
+            'CONTABILIDAD', 'FARMACIA', 'PACIENTE',
+        ])) {
             return true;
         }
     }
@@ -75,28 +78,28 @@ class EpicrisisController extends Controller
     public function mostrar($hcid, $proc)
     {
 
-        //dd($hcid, $proc);
+        // dd($hcid, $proc);
         $rolUsuario = Auth::user()->id_tipo_usuario;
         if ($this->rol()) {
             return response()->view('errors.404');
         }
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
 
-        $usuarios       = DB::table('users')->where('id_tipo_usuario', '=', 3)->where('estado', '1')->get(); //3=DOCTORES;
-        $enfermeros     = DB::table('users')->where('id_tipo_usuario', '=', 6)->where('estado', '1')->get(); //6=ENFERMEROS;
-        $anestesiologos = DB::table('users')->where('id_tipo_usuario', '=', 9)->where('estado', '1')->get(); //9=ANESTESIOLOGO;
-        $salas          = DB::table('sala')
+        $usuarios = DB::table('users')->where('id_tipo_usuario', '=', 3)->where('estado', '1')->get(); // 3=DOCTORES;
+        $enfermeros = DB::table('users')->where('id_tipo_usuario', '=', 6)->where('estado', '1')->get(); // 6=ENFERMEROS;
+        $anestesiologos = DB::table('users')->where('id_tipo_usuario', '=', 9)->where('estado', '1')->get(); // 9=ANESTESIOLOGO;
+        $salas = DB::table('sala')
             ->join('hospital', 'hospital.id', '=', 'sala.id_hospital')
             ->select('sala.*', 'hospital.nombre_hospital as nombre_hospital')
             ->get();
 
-        $hc_procedimiento = Hc_procedimientos::find($proc);
-        //dd($hc_procedimiento);
+        $hc_procedimiento = hc_procedimientos::find($proc);
+        // dd($hc_procedimiento);
         $historia = Historiaclinica::find($hcid);
-        //dd($historia);
+        // dd($historia);
         $agenda = DB::table('agenda')
             ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
             ->leftJoin('seguros', 'paciente.id_seguro', '=', 'seguros.id')
@@ -110,7 +113,7 @@ class EpicrisisController extends Controller
 
         $hc_cie10 = Hc_Cie10::where('hc_id_procedimiento', $proc)->get();
 
-        $evolucion   = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '0')->first();//dd($evolucion);
+        $evolucion = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '0')->first(); // dd($evolucion);
         $evolucion_1 = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '1')->first();
 
         $procedimientos_completo = procedimiento_completo::where('estado', '1')->get();
@@ -120,135 +123,135 @@ class EpicrisisController extends Controller
         $protocolo = hc_protocolo::where('id_hc_procedimientos', $proc)->first();
 
         $favorable_des = null;
-        if (!is_null($evolucion_1)) {
+        if (! is_null($evolucion_1)) {
 
             $favorable_des = $evolucion_1->cuadro_clinico;
         } else {
             if (is_null($epicrisis)) {
                 $input = [
                     'hc_id_procedimiento' => $proc,
-                    'hcid'                => $hcid,
-                    'secuencia'           => 1,
-                    'cuadro_clinico'      => '',
-                    'fecha_ingreso'       => ' ',
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
+                    'hcid' => $hcid,
+                    'secuencia' => 1,
+                    'cuadro_clinico' => '',
+                    'fecha_ingreso' => ' ',
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
             } else {
                 $input = [
                     'hc_id_procedimiento' => $proc,
-                    'hcid'                => $hcid,
-                    'secuencia'           => 1,
-                    'cuadro_clinico'      => $epicrisis->favorable_des,
-                    'fecha_ingreso'       => ' ',
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
+                    'hcid' => $hcid,
+                    'secuencia' => 1,
+                    'cuadro_clinico' => $epicrisis->favorable_des,
+                    'fecha_ingreso' => ' ',
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
             }
             $evolucion_1 = null;
             $favorable_des = ' ';
 
-            if($agenda->proc_consul != 0){
-                $id_evolucion  = Hc_Evolucion::insertGetId($input);//NO LO DEBE HACER SI SE TRATA DE UNA CONSULTA 
-                $evolucion_1   = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '1')->first();
+            if ($agenda->proc_consul != 0) {
+                $id_evolucion = Hc_Evolucion::insertGetId($input); // NO LO DEBE HACER SI SE TRATA DE UNA CONSULTA
+                $evolucion_1 = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '1')->first();
             }
-            
-            if(!is_null($evolucion_1)){
+
+            if (! is_null($evolucion_1)) {
                 $favorable_des = $evolucion_1->cuadro_clinico;
-            }            
-            
+            }
+
         }
 
         $c_clinico = null;
-        if (!is_null($evolucion)) {
-            $c_clinico = $evolucion->cuadro_clinico;//dd($c_clinico);
+        if (! is_null($evolucion)) {
+            $c_clinico = $evolucion->cuadro_clinico; // dd($c_clinico);
         } else {
             if (is_null($epicrisis)) {
-                $edad     = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
+                $edad = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
                 $alergias = Paciente_Alergia::where('id_paciente', $agenda->id_paciente)->get();
-                if ($alergias == "[]") {
-                    $alergia = "No";
+                if ($alergias == '[]') {
+                    $alergia = 'No';
                 } else {
-                    $alergia = "";
+                    $alergia = '';
                     foreach ($alergias as $value) {
-                        if ($alergia == "") {
+                        if ($alergia == '') {
                             $alergia = $value->principio_activo->nombre;
                         } else {
-                            $alergia = $alergia . ", " . $value->principio_activo->nombre;
+                            $alergia = $alergia.', '.$value->principio_activo->nombre;
                         }
 
                     }
                 }
                 if ($paciente->sexo == 1) {
-                    $sexo = "MASCULINO";
+                    $sexo = 'MASCULINO';
                 } else {
-                    $sexo = "FEMENINO";
+                    $sexo = 'FEMENINO';
                 }
-                $procedimientos       = hc_procedimientos::find($proc);
-                $nombre_procedimiento = "";
-                //return $procedimientos;
+                $procedimientos = hc_procedimientos::find($proc);
+                $nombre_procedimiento = '';
+                // return $procedimientos;
                 if ($procedimientos->id_procedimiento != null) {
                     $nombre_procedimiento = $procedimientos->procedimiento_completo->nombre_completo;
                 }
-                $cuadro_clinico = "<p>PACIENTE " . $sexo . " DE " . $edad . " AÑOS DE EDAD ACUDE CON ORDEN DEL " . $seguro->nombre . " PARA LA REALIZACION DE " . $nombre_procedimiento . "<br> APP: " . $paciente->antecedentes_pat . " <br> APF: " . $paciente->antecedentes_fam . "<br> APQX: " . $paciente->antecedentes_quir . "<br> ALERGIAS: " . $alergia . "<br></p>";
-                $input          = [
+                $cuadro_clinico = '<p>PACIENTE '.$sexo.' DE '.$edad.' AÑOS DE EDAD ACUDE CON ORDEN DEL '.$seguro->nombre.' PARA LA REALIZACION DE '.$nombre_procedimiento.'<br> APP: '.$paciente->antecedentes_pat.' <br> APF: '.$paciente->antecedentes_fam.'<br> APQX: '.$paciente->antecedentes_quir.'<br> ALERGIAS: '.$alergia.'<br></p>';
+                $input = [
                     'hc_id_procedimiento' => $proc,
-                    'hcid'                => $hcid,
-                    'secuencia'           => 0,
-                    'cuadro_clinico'      => $cuadro_clinico,
-                    'fecha_ingreso'       => ' ',
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
+                    'hcid' => $hcid,
+                    'secuencia' => 0,
+                    'cuadro_clinico' => $cuadro_clinico,
+                    'fecha_ingreso' => ' ',
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
             } else {
                 $input = [
                     'hc_id_procedimiento' => $proc,
-                    'hcid'                => $hcid,
-                    'secuencia'           => 0,
-                    'cuadro_clinico'      => $epicrisis->cuadro_clinico,
-                    'fecha_ingreso'       => ' ',
-                    'ip_creacion'         => $ip_cliente,
-                    'ip_modificacion'     => $ip_cliente,
-                    'id_usuariocrea'      => $idusuario,
-                    'id_usuariomod'       => $idusuario,
+                    'hcid' => $hcid,
+                    'secuencia' => 0,
+                    'cuadro_clinico' => $epicrisis->cuadro_clinico,
+                    'fecha_ingreso' => ' ',
+                    'ip_creacion' => $ip_cliente,
+                    'ip_modificacion' => $ip_cliente,
+                    'id_usuariocrea' => $idusuario,
+                    'id_usuariomod' => $idusuario,
                 ];
             }
 
             $id_evolucion = Hc_Evolucion::insertGetId($input);
-            $evolucion    = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '0')->first();
-            $c_clinico    = $evolucion->cuadro_clinico;
+            $evolucion = Hc_Evolucion::where('hc_id_procedimiento', $proc)->where('secuencia', '0')->first();
+            $c_clinico = $evolucion->cuadro_clinico;
         }
 
         $complicacion = '';
-        if(!is_null($protocolo)){
+        if (! is_null($protocolo)) {
             $complicacion = $protocolo->complicaciones;
         }
-         
-        //dd($c_clinico,$epicrisis);
+
+        // dd($c_clinico,$epicrisis);
 
         if (is_null($epicrisis)) {
 
-            //$protocolo = hc_protocolo::where('id_hc_procedimientos',$proc)->first();
-            //dd($protocolo);
-            //CREAR EPICRISIS
+            // $protocolo = hc_protocolo::where('id_hc_procedimientos',$proc)->first();
+            // dd($protocolo);
+            // CREAR EPICRISIS
             $input1 = [
-                'cuadro_clinico'      => $c_clinico,
+                'cuadro_clinico' => $c_clinico,
                 'hc_id_procedimiento' => $proc,
-                'hcid'                => $hcid,
-                'favorable_des'       => $favorable_des,
-                'complicacion'        => $complicacion,
-                //'hallazgo' => $protocolo->hallazgos,
+                'hcid' => $hcid,
+                'favorable_des' => $favorable_des,
+                'complicacion' => $complicacion,
+                // 'hallazgo' => $protocolo->hallazgos,
 
-                'ip_creacion'         => $ip_cliente,
-                'ip_modificacion'     => $ip_cliente,
-                'id_usuariocrea'      => $idusuario,
-                'id_usuariomod'       => $idusuario,
+                'ip_creacion' => $ip_cliente,
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariocrea' => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
 
             $id_epi = Hc_Epicrisis::insertGetId($input1);
@@ -258,24 +261,23 @@ class EpicrisisController extends Controller
         } else {
 
             $input1a = [
-                'cuadro_clinico'  => $c_clinico,
-                //'hallazgo' => $protocolo->hallazgos,
-                'favorable_des'   => $favorable_des,
+                'cuadro_clinico' => $c_clinico,
+                // 'hallazgo' => $protocolo->hallazgos,
+                'favorable_des' => $favorable_des,
                 'ip_modificacion' => $ip_cliente,
 
-                'id_usuariomod'   => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
-            //$epicrisis->update($input1a);
+            // $epicrisis->update($input1a);
 
         }
-
 
         return view('hc_admision/epicrisis/epicrisis', ['agenda' => $agenda, 'paciente' => $paciente, 'hca' => $historia, 'seguro' => $seguro, 'epicrisis' => $epicrisis, 'hc_cie10' => $hc_cie10, 'procedimientos_completo' => $procedimientos_completo, 'hc_procedimiento' => $hc_procedimiento, 'id' => $hcid, 'protocolo' => $protocolo]);
     }
 
     public function mostrar_final($id_solicitud)
     {
-        //dd($hcid, $proc);
+        // dd($hcid, $proc);
         $solicitud = Ho_Solicitud::findOrFail($id_solicitud);
         $rolUsuario = Auth::user()->id_tipo_usuario;
         if ($this->rol()) {
@@ -286,14 +288,14 @@ class EpicrisisController extends Controller
         if ($closureService->isHospital($solicitud)) {
             try {
                 $closureService->assertHospitalActor(
-                    app(\Sis_medico\Services\ClinicalEncounterService::class)->findBySource('ho_solicitud', $solicitud->id),
-                    array('SISTEMAS', 'DOCTORES', 'DOCTOR'));
+                    app(ClinicalEncounterService::class)->findBySource('ho_solicitud', $solicitud->id),
+                    ['SISTEMAS', 'DOCTORES', 'DOCTOR']);
             } catch (ClinicalClosureBlockedException $exception) {
                 abort(403, implode(' ', $exception->blockers()));
             }
         }
 
-        $idusuario  = Auth::user()->id;
+        $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
 
         $agenda = DB::table('agenda')
@@ -305,13 +307,13 @@ class EpicrisisController extends Controller
 
         $paciente = Paciente::find($solicitud->id_paciente);
         if (is_null($agenda)) {
-            $agenda = (object) array(
+            $agenda = (object) [
                 'id_paciente' => $solicitud->id_paciente,
                 'papellido1' => $paciente ? $paciente->apellido1 : '',
                 'papellido2' => $paciente ? $paciente->apellido2 : '',
                 'pnombre1' => $paciente ? $paciente->nombre1 : '',
                 'pnombre2' => $paciente ? $paciente->nombre2 : '',
-            );
+            ];
         }
         $epicrisis_final = Hc_Epicrisis_Final::where('id_ho_solicitud', $id_solicitud)->first();
         if (is_null($epicrisis_final)) {
@@ -319,9 +321,10 @@ class EpicrisisController extends Controller
         }
         $closurePreview = app(ClinicalEncounterClosureService::class)->preview($id_solicitud, $idusuario);
         $documentCompleteness = $epicrisis_final->encounter_id
-            ? app(\Sis_medico\Services\ClinicalDocumentCompletenessService::class)->summary($epicrisis_final->encounter_id)
-            : array();
+            ? app(ClinicalDocumentCompletenessService::class)->summary($epicrisis_final->encounter_id)
+            : [];
         $closureDoctors = User::where('id_tipo_usuario', 3)->where('estado', 1)->orderBy('apellido1')->get();
+
         return view('hc_admision/epicrisis_final/epicrisis', ['agenda' => $agenda, 'paciente' => $paciente,
             'solicitud' => $solicitud, 'epicrisis_final' => $epicrisis_final, 'closurePreview' => $closurePreview,
             'closureDoctors' => $closureDoctors, 'documentCompleteness' => $documentCompleteness]);
@@ -334,45 +337,45 @@ class EpicrisisController extends Controller
         }
 
         try {
-        return app(ClinicalEncounterClosureService::class)->editEpicrisis($id_solicitud, function () use ($id_solicitud, $request) {
-        $idusuario = Auth::user()->id;
-        $solicitud = Ho_Solicitud::findOrFail($id_solicitud);
-        $historia = $solicitud->agenda ? $solicitud->agenda->historia_clinica : null;
-        if (is_null($historia)) {
-            $historia = Historiaclinica::where('id_paciente', $solicitud->id_paciente)
-                ->orderBy('created_at', 'desc')->first();
-        }
-        $procedimiento = $historia ? hc_procedimientos::where('id_hc', $historia->hcid)
-            ->orderBy('id', 'desc')->first() : null;
-        $evolucion = $procedimiento ? Hc_Evolucion::where('hc_id_procedimiento', $procedimiento->id)
-            ->orderBy('created_at', 'desc')->first() : null;
-        $protocolo = $procedimiento ? hc_protocolo::where('id_hc_procedimientos', $procedimiento->id)
-            ->orderBy('created_at', 'desc')->first() : null;
+            return app(ClinicalEncounterClosureService::class)->editEpicrisis($id_solicitud, function () use ($id_solicitud, $request) {
+                $idusuario = Auth::user()->id;
+                $solicitud = Ho_Solicitud::findOrFail($id_solicitud);
+                $historia = $solicitud->agenda ? $solicitud->agenda->historia_clinica : null;
+                if (is_null($historia)) {
+                    $historia = Historiaclinica::where('id_paciente', $solicitud->id_paciente)
+                        ->orderBy('created_at', 'desc')->first();
+                }
+                $procedimiento = $historia ? hc_procedimientos::where('id_hc', $historia->hcid)
+                    ->orderBy('id', 'desc')->first() : null;
+                $evolucion = $procedimiento ? Hc_Evolucion::where('hc_id_procedimiento', $procedimiento->id)
+                    ->orderBy('created_at', 'desc')->first() : null;
+                $protocolo = $procedimiento ? hc_protocolo::where('id_hc_procedimientos', $procedimiento->id)
+                    ->orderBy('created_at', 'desc')->first() : null;
 
-        Hc_Epicrisis_Final::firstOrCreate(
-            array('id_ho_solicitud' => $id_solicitud),
-            array(
-                'id_usuariocrea' => $idusuario,
-                'id_usuariomod' => $idusuario,
-                'ip_creacion' => $request->ip(),
-                'ip_modificacion' => $request->ip(),
-                'cuadro_clinico' => $evolucion ? $evolucion->cuadro_clinico : null,
-                'conclusion' => $protocolo ? $protocolo->conclusion : null,
-                'resumen' => null,
-                'ep_resumen_evolucion' => null,
-                'complicacion' => null,
-                'condicion' => null,
-                'pronostico' => null,
-            )
-        );
+                Hc_Epicrisis_Final::firstOrCreate(
+                    ['id_ho_solicitud' => $id_solicitud],
+                    [
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
+                        'ip_creacion' => $request->ip(),
+                        'ip_modificacion' => $request->ip(),
+                        'cuadro_clinico' => $evolucion ? $evolucion->cuadro_clinico : null,
+                        'conclusion' => $protocolo ? $protocolo->conclusion : null,
+                        'resumen' => null,
+                        'ep_resumen_evolucion' => null,
+                        'complicacion' => null,
+                        'condicion' => null,
+                        'pronostico' => null,
+                    ]
+                );
 
-        return redirect()->route('epicrisis.mostrar_final', array_filter(array(
-            'id_solicitud' => $id_solicitud,
-            'embedded' => $request->boolean('embedded') ? 1 : null,
-        )));
-        }, array('actor_id' => Auth::user()->id, 'ip' => $request->ip()));
+                return redirect()->route('epicrisis.mostrar_final', array_filter([
+                    'id_solicitud' => $id_solicitud,
+                    'embedded' => $request->boolean('embedded') ? 1 : null,
+                ]));
+            }, ['actor_id' => Auth::user()->id, 'ip' => $request->ip()]);
         } catch (ClinicalClosureBlockedException $exception) {
-            return response()->json(array('estado' => 'blocked', 'bloqueos' => $exception->blockers()), 423);
+            return response()->json(['estado' => 'blocked', 'bloqueos' => $exception->blockers()], 423);
         }
     }
 
@@ -385,44 +388,44 @@ class EpicrisisController extends Controller
         $historia = $agenda ? Historiaclinica::where('id_agenda', $agenda->id)
             ->where('encounter_id', $solicitud->encounter_id)
             ->where('id_paciente', $paciente->id)->first() : null;
-        if (!$historia) {
+        if (! $historia) {
             $historia = Historiaclinica::where('encounter_id', $solicitud->encounter_id)
                 ->where('id_paciente', $paciente->id)->orderBy('created_at', 'desc')->first();
         }
         $procedimiento = $historia && $solicitud->id_hcproc
             ? hc_procedimientos::where('id', $solicitud->id_hcproc)->where('id_hc', $historia->hcid)->first()
             : null;
-        if (!$procedimiento && $historia) {
+        if (! $procedimiento && $historia) {
             $procedimiento = hc_procedimientos::where('id_hc', $historia->hcid)->orderBy('id', 'desc')->first();
         }
         $evolucion = $procedimiento ? Hc_Evolucion::where('hc_id_procedimiento', $procedimiento->id)
             ->orderBy('created_at', 'desc')->first() : null;
         $protocolo = $procedimiento ? hc_protocolo::where('id_hc_procedimientos', $procedimiento->id)
             ->orderBy('created_at', 'desc')->first() : null;
-        if (!$protocolo) {
+        if (! $protocolo) {
             // Permite generar el F-006 aun cuando el protocolo quirurgico no exista.
-            $protocolo = (object) array(
+            $protocolo = (object) [
                 'hallazgos' => '',
                 'conclusion' => $epicrisis->conclusion ?: '',
                 'created_at' => $epicrisis->updated_at ?: $epicrisis->created_at,
                 'id_hc_procedimientos' => $procedimiento ? $procedimiento->id : null,
-            );
+            ];
         }
         $diagnosticos = Hc_Epicrisis_Final_Cie10::where('id_hc_epicrisis_final', $epicrisis->id)->get();
         $doctor = $procedimiento && $procedimiento->id_doctor_responsable
             ? User::find($procedimiento->id_doctor_responsable)
             : ($procedimiento && $procedimiento->id_doctor_examinador2 ? User::find($procedimiento->id_doctor_examinador2) : null);
-        if (!$doctor && $epicrisis->id_usuariomod) {
+        if (! $doctor && $epicrisis->id_usuariomod) {
             $doctor = User::find($epicrisis->id_usuariomod);
         }
         $empresa = $agenda ? Empresa::find($agenda->id_empresa) : null;
-        $especialidad = $agenda && $agenda->espid ? \Sis_medico\Especialidad::find($agenda->espid) : null;
+        $especialidad = $agenda && $agenda->espid ? Especialidad::find($agenda->espid) : null;
         // Alias compatible para plantillas F-006 antiguas: conserva el origen hospitalario.
-        $data = (object) array_merge($paciente->toArray(), array(
+        $data = (object) array_merge($paciente->toArray(), [
             'id_paciente' => $paciente->id,
             'id_agenda' => $agenda ? $agenda->id : ($historia ? $historia->id_agenda : null),
             'hcid' => $historia ? $historia->hcid : null,
-        ));
+        ]);
         // La Epicrisis hospitalaria no tiene documento ambulatorio original.
         $epicrisis_original = null;
         // Compatibilidad con las variables del formato F-006 anterior.
@@ -438,9 +441,10 @@ class EpicrisisController extends Controller
             'cie10', 'cie10e', 'cie10ca', 'firma', 'epicrisisSignature'
         ))->render();
         $pdf = \App::make('dompdf.wrapper');
-        $pdf->setOptions(array('chroot' => base_path('/')));
+        $pdf->setOptions(['chroot' => base_path('/')]);
         $pdf->loadHTML($view)->setPaper('a4', 'portrait');
-        return $pdf->stream('epicrisis-hospital-' . $solicitud->id . '.pdf');
+
+        return $pdf->stream('epicrisis-hospital-'.$solicitud->id.'.pdf');
     }
 
     private function epicrisisSignature(Hc_Epicrisis_Final $epicrisis, $fallbackDoctor = null, $fallbackSpecialty = null)
@@ -459,30 +463,38 @@ class EpicrisisController extends Controller
             ? User::withoutGlobalScopes()->find($document->signed_by)
             : $fallbackDoctor;
         $professionalId = $professional ? (string) $professional->id : '';
-        $stored = $professionalId !== ''
-            ? Firma_Usuario::where('id_usuario', $professionalId)->orderBy('id')->first()
-            : null;
         $images = app(DoctorSignatureService::class);
+        $visualAssets = $images->visualAssetsForDoctor($professionalId);
         $proof = $document
             ? app(ClinicalRecordSignatureService::class)->issueForm006($epicrisis, $document)
             : null;
+        $hasElectronicCertificate = app(UserElectronicCertificateService::class)
+            ->isActive($professionalId, session('id_empresa'));
+        if (! $hasElectronicCertificate) {
+            $proof = null;
+        }
 
-        $name = $professional ? trim(implode(' ', array_filter(array(
+        $name = $professional ? trim(implode(' ', array_filter([
             $professional->nombre1, $professional->nombre2, $professional->apellido1, $professional->apellido2,
-        ), function ($part) {
+        ], function ($part) {
             $value = strtoupper(trim((string) $part));
+
             return $value !== '' && $value !== 'N/A' && $value !== '(N/A)';
         }))) : '';
         $specialty = $professional
             ? DB::table('user_espe as ue')->join('especialidad as e', 'e.id', '=', 'ue.espid')
                 ->where('ue.usuid', $professional->id)->orderBy('ue.id')->pluck('e.nombre')->unique()->implode(', ')
             : '';
-        if ($specialty === '' && $fallbackSpecialty) $specialty = trim((string) $fallbackSpecialty->nombre);
+        if ($specialty === '' && $fallbackSpecialty) {
+            $specialty = trim((string) $fallbackSpecialty->nombre);
+        }
         $signedAt = $document && $document->signed_at ? $document->signed_at : $epicrisis->updated_at;
-        if ($signedAt instanceof \DateTimeInterface) $signedAt = $signedAt->format('Y-m-d H:i:s');
+        if ($signedAt instanceof \DateTimeInterface) {
+            $signedAt = $signedAt->format('Y-m-d H:i:s');
+        }
 
-        return array(
-            'electronic' => !is_null($proof),
+        return [
+            'electronic' => ! is_null($proof),
             'professional' => $professional,
             'name' => $name !== '' ? $name : 'PROFESIONAL NO IDENTIFICADO',
             'specialty' => $specialty !== '' ? $specialty : 'Especialidad no registrada',
@@ -492,57 +504,62 @@ class EpicrisisController extends Controller
             'fingerprint' => $proof ? $proof['fingerprint'] : null,
             'validation_url' => $proof ? $proof['validation_url'] : null,
             'qr_source' => $proof ? app(ClinicalElectronicSignatureQr::class)->dataUri($proof['validation_url']) : null,
-            'signature_image' => !$proof && $stored ? $images->dataUriForFilename($stored->firma) : null,
-            'seal_image' => $stored ? $images->dataUriForFilename($stored->nombre) : null,
-        );
+            'signature_image' => ! $proof ? $visualAssets['signature_image'] : null,
+            'seal_image' => $visualAssets['seal_image'],
+        ];
     }
 
     public function cerrar_final(Request $request)
     {
-        if ($this->rol()) return response()->json(array('estado' => 'error', 'msj' => 'No autorizado.'), 403);
+        if ($this->rol()) {
+            return response()->json(['estado' => 'error', 'msj' => 'No autorizado.'], 403);
+        }
         try {
             $closure = app(ClinicalEncounterClosureService::class)->close(
                 $request->input('id_solicitud'),
-                $request->only(array('closure_type', 'medication_reconciliation', 'pending_orders_decision',
+                $request->only(['closure_type', 'medication_reconciliation', 'pending_orders_decision',
                     'pending_orders_reason', 'follow_up_responsible_id', 'death_occurred_at',
                     'death_pronounced_by', 'death_pronounced_at', 'death_location', 'death_probable_cause',
                     'death_manner', 'death_certificate_number', 'death_identity_verified',
                     'death_body_identified', 'death_family_contact', 'death_family_notified_at',
-                    'death_morgue_notified_at', 'death_notes')),
-                array('actor_id' => Auth::user()->id, 'ip' => $request->ip())
+                    'death_morgue_notified_at', 'death_notes']),
+                ['actor_id' => Auth::user()->id, 'ip' => $request->ip()]
             );
-            return response()->json(array(
+
+            return response()->json([
                 'estado' => 'success',
                 'msj' => $closure->status === ClinicalEncounterClosureService::SIGNED
                     ? 'Alta medica firmada. Pendiente confirmar salida fisica; la cama sigue ocupada.'
                     : 'Episodio cerrado correctamente con checklist y firma.',
                 'closure_id' => $closure->id,
                 'closure_status' => $closure->status,
-            ));
+            ]);
         } catch (ClinicalClosureBlockedException $exception) {
-            return response()->json(array(
+            return response()->json([
                 'estado' => 'blocked',
                 'codigo' => 'F-02',
                 'msj' => $exception->getMessage(),
                 'bloqueos' => $exception->blockers(),
-            ), 422);
+            ], 422);
         } catch (\Exception $exception) {
-            return response()->json(array('estado' => 'error', 'msj' => $exception->getMessage()), 500);
+            return response()->json(['estado' => 'error', 'msj' => $exception->getMessage()], 500);
         }
     }
+
     public function confirmar_salida_final(Request $request)
     {
-        $request->validate(array('id_solicitud' => 'required|integer|min:1',
-            'closure_id' => 'required|integer|min:1', 'confirm_exit' => 'required|accepted'));
+        $request->validate(['id_solicitud' => 'required|integer|min:1',
+            'closure_id' => 'required|integer|min:1', 'confirm_exit' => 'required|accepted']);
         try {
             $closure = app(ClinicalEncounterClosureService::class)->confirmPhysicalExit(
                 $request->input('id_solicitud'), $request->input('closure_id'),
-                array('actor_id' => Auth::user()->id, 'ip' => $request->ip()));
-            return response()->json(array('estado' => 'success', 'closure_id' => $closure->id,
-                'closure_status' => $closure->status, 'msj' => 'Salida fisica confirmada.'));
+                ['actor_id' => Auth::user()->id, 'ip' => $request->ip()]);
+
+            return response()->json(['estado' => 'success', 'closure_id' => $closure->id,
+                'closure_status' => $closure->status, 'msj' => 'Salida fisica confirmada.']);
         } catch (ClinicalClosureBlockedException $exception) {
-            return response()->json(array('estado' => 'blocked', 'msj' => $exception->getMessage(),
-                'bloqueos' => $exception->blockers()), 422);
+            return response()->json(['estado' => 'blocked', 'msj' => $exception->getMessage(),
+                'bloqueos' => $exception->blockers()], 422);
         }
     }
 
@@ -554,16 +571,16 @@ class EpicrisisController extends Controller
             return response()->view('errors.404');
         }
 
-        $usuarios       = DB::table('users')->where('id_tipo_usuario', '=', 3)->where('estado', '1')->get(); //3=DOCTORES;
-        $enfermeros     = DB::table('users')->where('id_tipo_usuario', '=', 6)->where('estado', '1')->get(); //6=ENFERMEROS;
-        $anestesiologos = DB::table('users')->where('id_tipo_usuario', '=', 9)->where('estado', '1')->get(); //9=ANESTESIOLOGO;
-        $salas          = DB::table('sala')
+        $usuarios = DB::table('users')->where('id_tipo_usuario', '=', 3)->where('estado', '1')->get(); // 3=DOCTORES;
+        $enfermeros = DB::table('users')->where('id_tipo_usuario', '=', 6)->where('estado', '1')->get(); // 6=ENFERMEROS;
+        $anestesiologos = DB::table('users')->where('id_tipo_usuario', '=', 9)->where('estado', '1')->get(); // 9=ANESTESIOLOGO;
+        $salas = DB::table('sala')
             ->join('hospital', 'hospital.id', '=', 'sala.id_hospital')
             ->select('sala.*', 'hospital.nombre_hospital as nombre_hospital')
             ->get();
 
-        $hc_procedimiento = Hc_procedimientos::find($id);
-        $historia         = Historiaclinica::find($hc_procedimiento->id_hc);
+        $hc_procedimiento = hc_procedimientos::find($id);
+        $historia = Historiaclinica::find($hc_procedimiento->id_hc);
 
         $agenda = DB::table('agenda')
             ->join('paciente', 'agenda.id_paciente', '=', 'paciente.id')
@@ -580,7 +597,7 @@ class EpicrisisController extends Controller
 
         $hc_cie10 = Hc_Cie10::where('hc_id_procedimiento', $id)->get();
 
-        if (!is_null($hc_cie10)) {
+        if (! is_null($hc_cie10)) {
             $c10_arr = [];
             foreach ($hc_cie10 as $c10) {
                 $c3 = Cie_10_3::find($c10->cie10);
@@ -602,79 +619,78 @@ class EpicrisisController extends Controller
 
     public function actualiza(Request $request)
     {
-        //return "hola";
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        // return "hola";
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
 
-        //dd($request->all());
+        // dd($request->all());
 
         $epicrisis = Hc_Epicrisis::find($request->epicrisis);
         $protocolo = hc_protocolo::find($request->protocolo_id);
 
-        if (!is_null($epicrisis)) {
+        if (! is_null($epicrisis)) {
 
             $input1a = [
 
-                'cuadro_clinico'       => $request['cuadro'],
-                'favorable_des'        => $request['favorable_des'],
-                'complicacion'         => $request['complicacion'],
-                //'hallazgo' => $request['hallazgos'],
-                'resumen'              => $request['resumen'],
-                'condicion'            => $request['condicion'],
-                'pronostico'           => $request['pronostico'],
-                'alta'                 => $request['alta'],
-                'discapacidad'         => $request['discapacidad'],
-                'retiro'               => $request['retiro'],
-                'defuncion'            => $request['defuncion'],
-                'dias_estadia'         => $request['dias_estadia'],
-                'dias_incapacidad'     => $request['dias_incapacidad'],
-                'fecha_imprime'        => $request['fecha_imprime'],
+                'cuadro_clinico' => $request['cuadro'],
+                'favorable_des' => $request['favorable_des'],
+                'complicacion' => $request['complicacion'],
+                // 'hallazgo' => $request['hallazgos'],
+                'resumen' => $request['resumen'],
+                'condicion' => $request['condicion'],
+                'pronostico' => $request['pronostico'],
+                'alta' => $request['alta'],
+                'discapacidad' => $request['discapacidad'],
+                'retiro' => $request['retiro'],
+                'defuncion' => $request['defuncion'],
+                'dias_estadia' => $request['dias_estadia'],
+                'dias_incapacidad' => $request['dias_incapacidad'],
+                'fecha_imprime' => $request['fecha_imprime'],
                 'ep_resumen_evolucion' => $request['ep_resumen_evolucion'],
 
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariomod'        => $idusuario,
-                'receta'               => $request['receta'],
-                'indicaciones_alta'    => $request['indicaciones_alta'],
-                'conclusion'           => $request['conclusion'],
+                'ip_modificacion' => $ip_cliente,
+                'id_usuariomod' => $idusuario,
+                'receta' => $request['receta'],
+                'indicaciones_alta' => $request['indicaciones_alta'],
+                'conclusion' => $request['conclusion'],
 
             ];
             $input1b = [
 
-                //'hallazgos' => $request['hallazgos'],
-                'conclusion'      => $request['conclusion'],
+                // 'hallazgos' => $request['hallazgos'],
+                'conclusion' => $request['conclusion'],
                 'ip_modificacion' => $ip_cliente,
-                'id_usuariomod'   => $idusuario,
+                'id_usuariomod' => $idusuario,
             ];
 
             DB::beginTransaction();
             try {
                 $epicrisis->update($input1a);
-                if (!is_null($protocolo)) {
+                if (! is_null($protocolo)) {
                     $protocolo->update($input1b);
-               
 
                     $evolucion = Hc_Evolucion::where('hc_id_procedimiento', $protocolo->id_hc_procedimientos)->where('secuencia', '0')->first();
-                    if (!is_null($evolucion)) {
-                    $input1c = [
+                    if (! is_null($evolucion)) {
+                        $input1c = [
 
-                        'cuadro_clinico'  => $request['cuadro'],
+                            'cuadro_clinico' => $request['cuadro'],
 
-                        'ip_modificacion' => $ip_cliente,
-                        'id_usuariomod'   => $idusuario,
-                    ];
+                            'ip_modificacion' => $ip_cliente,
+                            'id_usuariomod' => $idusuario,
+                        ];
                         $evolucion->update($input1c);
                     }
 
                     $evolucion_1 = Hc_Evolucion::where('hc_id_procedimiento', $protocolo->id_hc_procedimientos)->where('secuencia', '1')->first();
-                    if (!is_null($evolucion_1)) {
-                    $input1d = [
+                    if (! is_null($evolucion_1)) {
+                        $input1d = [
 
-                        'cuadro_clinico'  => $request['favorable_des'],
+                            'cuadro_clinico' => $request['favorable_des'],
 
-                        'ip_modificacion' => $ip_cliente,
-                        'id_usuariomod'   => $idusuario,
-                    ];
+                            'ip_modificacion' => $ip_cliente,
+                            'id_usuariomod' => $idusuario,
+                        ];
                         $evolucion_1->update($input1d);
                     }
                 }
@@ -682,11 +698,12 @@ class EpicrisisController extends Controller
             } catch (\Exception $exception) {
                 DB::rollBack();
                 report($exception);
+
                 return response('No se pudo actualizar la epicrisis.', 500);
             }
         }
 
-        return "ok";
+        return 'ok';
 
     }
 
@@ -698,51 +715,51 @@ class EpicrisisController extends Controller
     public function imprimirpdf($ahid)
     {
         $archivo_historico = Archivo_historico::find($ahid);
-        $documento         = Documento::find($archivo_historico->id_documento);
-        $historia          = $this->carga_hc($archivo_historico->id_historia);
-        $agenda            = Agenda::find($historia->id_agenda);
-        $seguro            = Seguro::find($historia->id_seguro);
-        $empresa           = Empresa::where('id', $agenda->id_empresa)->first();
-        $paciente          = Paciente::find($historia->id_paciente);
-        $empresaxdoc       = Empresa::find($documento->id_empresa);
-        $doctor            = User::find($historia->id_doctor1);
+        $documento = Documento::find($archivo_historico->id_documento);
+        $historia = $this->carga_hc($archivo_historico->id_historia);
+        $agenda = Agenda::find($historia->id_agenda);
+        $seguro = Seguro::find($historia->id_seguro);
+        $empresa = Empresa::where('id', $agenda->id_empresa)->first();
+        $paciente = Paciente::find($historia->id_paciente);
+        $empresaxdoc = Empresa::find($documento->id_empresa);
+        $doctor = User::find($historia->id_doctor1);
 
-        $age        = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
-        $paper_size = array(0, 0, 595, 920);
-        $data       = $historia;
-        $date       = $historia->created_at;
+        $age = Carbon::createFromDate(substr($paciente->fecha_nacimiento, 0, 4), substr($paciente->fecha_nacimiento, 5, 2), substr($paciente->fecha_nacimiento, 8, 2))->age;
+        $paper_size = [0, 0, 595, 920];
+        $data = $historia;
+        $date = $historia->created_at;
 
-        //return view('hc_admision/formato/'.$documento->formato);
-        $view = \View::make('hc_admision.formato.' . $documento->formato, compact('data', 'date', 'empresa', 'age', 'empresaxdoc', 'paciente', 'agenda', 'doctor'))->render();
-        $pdf  = \App::make('dompdf.wrapper');
+        // return view('hc_admision/formato/'.$documento->formato);
+        $view = \View::make('hc_admision.formato.'.$documento->formato, compact('data', 'date', 'empresa', 'age', 'empresaxdoc', 'paciente', 'agenda', 'doctor'))->render();
+        $pdf = \App::make('dompdf.wrapper');
 
         if ($documento->formato == 'contrareferencia') {
 
             $pdf->setOptions(['dpi' => 96]);
-            $paper_size = array(0, 0, 1100, 1650);
+            $paper_size = [0, 0, 1100, 1650];
             $pdf->setpaper($paper_size);
             $pdf->loadHTML($view);
 
         } else {
-            $pdf->loadHTML($view) /*->setPaper($paper_size, 'portrait')*/;
+            $pdf->loadHTML($view) /* ->setPaper($paper_size, 'portrait') */;
         }
 
-        //return view('hc_admision/formato/record',['data' => $data, 'empresa' => $empresa]);
-        return $pdf->stream($historia->id_paciente . '_' . $documento->tipo_documento . '_' . $archivo_historico->id_historia . '_' . $archivo_historico->id . '.pdf');
+        // return view('hc_admision/formato/record',['data' => $data, 'empresa' => $empresa]);
+        return $pdf->stream($historia->id_paciente.'_'.$documento->tipo_documento.'_'.$archivo_historico->id_historia.'_'.$archivo_historico->id.'.pdf');
     }
 
     public function imprimir($id)
     {
-        //dd($id);
+        // dd($id);
         $procedimiento = null;
-        $firma         = null;
+        $firma = null;
 
         $epicrisis = Hc_Epicrisis::find($id);
         $protocolo = hc_protocolo::where('hcid', $epicrisis->hcid)->where('id_hc_procedimientos', $epicrisis->hc_id_procedimiento)->first();
-        //return $protocolo;
-        //return $protocolo;
+        // return $protocolo;
+        // return $protocolo;
         $historiaclinica = DB::table('historiaclinica')->where('historiaclinica.hcid', $epicrisis->hcid)->join('paciente', 'paciente.id', 'historiaclinica.id_paciente')->join('seguros', 'seguros.id', 'historiaclinica.id_seguro')->join('users', 'users.id', 'paciente.id_usuario')->join('agenda', 'agenda.id', 'historiaclinica.id_agenda')->leftjoin('subseguro', 'subseguro.id', 'historiaclinica.id_subseguro')->select('historiaclinica.*', 'paciente.nombre1', 'paciente.nombre2', 'paciente.apellido1', 'paciente.apellido2', 'seguros.nombre', 'agenda.fechaini', 'paciente.fecha_nacimiento', 'agenda.proc_consul', 'agenda.id_procedimiento', 'seguros.tipo', 'subseguro.nombre as sbnombre', 'paciente.telefono1', 'paciente.telefono2', 'paciente.telefono3', 'users.nombre1 as unombre1', 'users.nombre2 as unombre2', 'users.apellido1 as uapellido1', 'users.apellido2 as uapellido2', 'paciente.parentesco', 'users.telefono1 as utelefono1', 'users.telefono2 as utelefono2', 'users.id as uid', 'paciente.parentescofamiliar as fparentesco', 'paciente.nombre1familiar as fnombre1', 'paciente.nombre2familiar as fnombre2', 'paciente.apellido1familiar as fapellido1', 'paciente.apellido2familiar as fapellido2', 'paciente.id_usuario', 'paciente.cedulafamiliar', 'paciente.sexo', 'agenda.id_empresa')->first();
-        $id_empresa = $historiaclinica->id_empresa; 
+        $id_empresa = $historiaclinica->id_empresa;
         $cie10_in_pre = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $epicrisis->hc_id_procedimiento)->where('hc_cie10.presuntivo_definitivo', 'PRESUNTIVO')->where('hc_cie10.ingreso_egreso', 'INGRESO')->get();
 
         $cie10_in_def = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $epicrisis->hc_id_procedimiento)->where('hc_cie10.presuntivo_definitivo', 'DEFINITIVO')->where('hc_cie10.ingreso_egreso', 'INGRESO')->get();
@@ -753,11 +770,11 @@ class EpicrisisController extends Controller
 
         $cie10_3 = Cie_10_3::all();
         $cie10_4 = Cie_10_4::all();
-        if (!is_null($protocolo)) {
+        if (! is_null($protocolo)) {
             $procedimiento = hc_procedimientos::find($protocolo->id_hc_procedimientos);
-            if (!is_null($procedimiento)) {
+            if (! is_null($procedimiento)) {
 
-                $id_seguro  = $procedimiento->id_seguro;
+                $id_seguro = $procedimiento->id_seguro;
                 $id_empresa = $procedimiento->id_empresa;
                 if ($procedimiento->id_seguro == null) {
                     $procedimiento->update(['id_seguro' => $historiaclinica->id_seguro]);
@@ -786,10 +803,10 @@ class EpicrisisController extends Controller
 
             }
         }
-        //dd($procedimiento);
+        // dd($procedimiento);
         $tiene_receta = 'NO';
-        $receta       = hc_receta::where('id_hc', $historiaclinica->hcid)->first();
-        if (!is_null($receta)) {
+        $receta = hc_receta::where('id_hc', $historiaclinica->hcid)->first();
+        if (! is_null($receta)) {
             $receta_det = hc_receta_detalle::where('id_hc_receta', $receta->id)->count();
             if ($receta_det > 0 || $receta->prescripcion != null) {
                 $tiene_receta = 'SI';
@@ -797,14 +814,14 @@ class EpicrisisController extends Controller
         }
         $tiene_receta = $epicrisis->receta;
 
-        //dd($firma);
-        $nombre_doc = "";
-        if (!is_null($firma)) {
+        // dd($firma);
+        $nombre_doc = '';
+        if (! is_null($firma)) {
             $nombre_doc = User::find($firma->id_usuario);
         }
 
         $doctor = null;
-        if (!is_null($procedimiento)) {
+        if (! is_null($procedimiento)) {
 
             if ($procedimiento->id_doctor_responsable == null) {
                 $doctor = User::find($procedimiento->id_doctor_examinador2);
@@ -813,7 +830,7 @@ class EpicrisisController extends Controller
                 $doctor = User::find($procedimiento->id_doctor_responsable);
 
             }
-            
+
             if ($xseguro->tipo == '0') {
                 if ($id_empresa == '1307189140001') {
                     $doctor = User::find('1307189140');
@@ -829,24 +846,25 @@ class EpicrisisController extends Controller
         // dd($doctor);
 
         $data = $historiaclinica;
-        $receta = hc_receta::where('id_hc',$data->hcid)->first();
-        //dd($receta);
-        $view = \View::make('hc_admision.formato.epicrisis', compact('receta','data', 'evolucion_1', 'epicrisis', 'cie10_in_pre', 'cie10_in_def', 'cie10_3', 'cie10_4', 'cie10_eg_pre', 'cie10_eg_def', 'tiene_receta', 'protocolo', 'firma', 'nombre_doc', 'doctor', 'id_empresa', 'firma', 'procedimiento'))->render();
-        $pdf  = \App::make('dompdf.wrapper');
+        $receta = hc_receta::where('id_hc', $data->hcid)->first();
+        // dd($receta);
+        $view = \View::make('hc_admision.formato.epicrisis', compact('receta', 'data', 'evolucion_1', 'epicrisis', 'cie10_in_pre', 'cie10_in_def', 'cie10_3', 'cie10_4', 'cie10_eg_pre', 'cie10_eg_def', 'tiene_receta', 'protocolo', 'firma', 'nombre_doc', 'doctor', 'id_empresa', 'firma', 'procedimiento'))->render();
+        $pdf = \App::make('dompdf.wrapper');
 
         $pdf->loadHTML($view);
+
         return $pdf->stream('HCU_006.pdf');
     }
 
     public function imprimir_stream($id)
-    { 
-        $procedimiento = "";
-        $doctor = "";
-        $firma         = "";
+    {
+        $procedimiento = '';
+        $doctor = '';
+        $firma = '';
         $epicrisis = Hc_Epicrisis::find($id);
         $protocolo = hc_protocolo::where('hcid', $epicrisis->hcid)->where('id_hc_procedimientos', $epicrisis->hc_id_procedimiento)->first();
-        //return $protocolo;
-        //return $protocolo;
+        // return $protocolo;
+        // return $protocolo;
         $historiaclinica = DB::table('historiaclinica')->where('historiaclinica.hcid', $epicrisis->hcid)->join('paciente', 'paciente.id', 'historiaclinica.id_paciente')->join('seguros', 'seguros.id', 'historiaclinica.id_seguro')->join('users', 'users.id', 'paciente.id_usuario')->join('agenda', 'agenda.id', 'historiaclinica.id_agenda')->leftjoin('subseguro', 'subseguro.id', 'historiaclinica.id_subseguro')->select('historiaclinica.*', 'paciente.nombre1', 'paciente.nombre2', 'paciente.apellido1', 'paciente.apellido2', 'seguros.nombre', 'agenda.fechaini', 'paciente.fecha_nacimiento', 'agenda.proc_consul', 'agenda.id_procedimiento', 'seguros.tipo', 'subseguro.nombre as sbnombre', 'paciente.telefono1', 'paciente.telefono2', 'paciente.telefono3', 'users.nombre1 as unombre1', 'users.nombre2 as unombre2', 'users.apellido1 as uapellido1', 'users.apellido2 as uapellido2', 'paciente.parentesco', 'users.telefono1 as utelefono1', 'users.telefono2 as utelefono2', 'users.id as uid', 'paciente.parentescofamiliar as fparentesco', 'paciente.nombre1familiar as fnombre1', 'paciente.nombre2familiar as fnombre2', 'paciente.apellido1familiar as fapellido1', 'paciente.apellido2familiar as fapellido2', 'paciente.id_usuario', 'paciente.cedulafamiliar', 'paciente.sexo')->first();
 
         $cie10_in_pre = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $epicrisis->hc_id_procedimiento)->where('hc_cie10.presuntivo_definitivo', 'PRESUNTIVO')->where('hc_cie10.ingreso_egreso', 'INGRESO')->get();
@@ -861,8 +879,8 @@ class EpicrisisController extends Controller
         $cie10_4 = Cie_10_4::all();
 
         $tiene_receta = 'NO';
-        $receta       = hc_receta::where('id_hc', $historiaclinica->hcid)->first();
-        if (!is_null($receta)) {
+        $receta = hc_receta::where('id_hc', $historiaclinica->hcid)->first();
+        if (! is_null($receta)) {
             $receta_det = hc_receta_detalle::where('id_hc_receta', $receta->id)->count();
             if ($receta_det > 0) {
                 $tiene_receta = 'SI';
@@ -870,25 +888,25 @@ class EpicrisisController extends Controller
 
         }
 
-        //dd('hol');
-      
+        // dd('hol');
+
         $data = $historiaclinica;
-        $receta = hc_receta::where('id_hc',$data->hcid)->first();
+        $receta = hc_receta::where('id_hc', $data->hcid)->first();
         $view = \View::make('hc_admision.formato.epicrisis', compact('data', 'evolucion_1', 'epicrisis', 'cie10_in_pre', 'cie10_in_def', 'cie10_3', 'cie10_4', 'cie10_eg_pre', 'cie10_eg_def', 'tiene_receta', 'protocolo', 'firma', 'receta', 'procedimiento', 'doctor'))->render();
-        $pdf  = \App::make('dompdf.wrapper');
+        $pdf = \App::make('dompdf.wrapper');
 
         $pdf->loadHTML($view);
 
-        //return $pdf->download('epicrisis-'.$historiaclinica->id_paciente.'-'.$historiaclinica->hcid.'.pdf');
+        // return $pdf->download('epicrisis-'.$historiaclinica->id_paciente.'-'.$historiaclinica->hcid.'.pdf');
 
-        return $pdf->stream('epicrisis-' . $historiaclinica->id_paciente . '-' . $historiaclinica->hcid . '.pdf');
+        return $pdf->stream('epicrisis-'.$historiaclinica->id_paciente.'-'.$historiaclinica->hcid.'.pdf');
     }
 
     public function seleccion()
     {
 
         return response()->json([
-            'name'  => 'Abigail',
+            'name' => 'Abigail',
             'state' => 'CA',
         ]);
 
@@ -897,26 +915,27 @@ class EpicrisisController extends Controller
     public function cie10_nombre(Request $request)
     {
         $nombre_cie10 = trim((string) $request['term']);
-        $data = array();
+        $data = [];
         if (strlen($nombre_cie10) < 2) {
             return $data;
         }
 
-        $seteo = '%' . $nombre_cie10 . '%';
+        $seteo = '%'.$nombre_cie10.'%';
         $cie10_3 = Cie_10_3::where(function ($query) use ($seteo) {
             $query->where('descripcion', 'like', $seteo)->orWhere('id', 'like', $seteo);
-        })->orderBy('id')->limit(100)->get(array('id', 'descripcion'));
+        })->orderBy('id')->limit(100)->get(['id', 'descripcion']);
         $cie10_4 = Cie_10_4::where(function ($query) use ($seteo) {
             $query->where('descripcion', 'like', $seteo)->orWhere('id', 'like', $seteo);
-        })->orderBy('id')->limit(100)->get(array('id', 'descripcion'));
+        })->orderBy('id')->limit(100)->get(['id', 'descripcion']);
 
         foreach ($cie10_3 as $value) {
-            $data[] = array('value' => '(' . $value->id . ') ' . $value->descripcion, 'id' => $value->id);
+            $data[] = ['value' => '('.$value->id.') '.$value->descripcion, 'id' => $value->id];
         }
         foreach ($cie10_4 as $value) {
-            $data[] = array('value' => '(' . $value->id . ') ' . $value->descripcion, 'id' => $value->id);
+            $data[] = ['value' => '('.$value->id.') '.$value->descripcion, 'id' => $value->id];
         }
-        return count($data) > 0 ? $data : array(array('value' => 'No se encontraron resultados', 'id' => ''));
+
+        return count($data) > 0 ? $data : [['value' => 'No se encontraron resultados', 'id' => '']];
 
     }
 
@@ -924,10 +943,10 @@ class EpicrisisController extends Controller
     {
 
         $nombre_cie10 = $request['cie10'];
-        //dd($nombre_cie10);
-        $data = array();
+        // dd($nombre_cie10);
+        $data = [];
 
-        $porciones = explode(")", $nombre_cie10);
+        $porciones = explode(')', $nombre_cie10);
         if (count($porciones) > 1) {
             $nombre_cie10 = substr($porciones[0], 1);
 
@@ -937,13 +956,13 @@ class EpicrisisController extends Controller
 
         $cie10_3 = Cie_10_3::where('id', $nombre_cie10)->get();
         $cie10_4 = Cie_10_4::where('id', $nombre_cie10)->get();
-        //dd($cie10_3);
+        // dd($cie10_3);
 
         foreach ($cie10_3 as $value) {
-            $data[] = array('value' => $value->descripcion, 'id' => $value->id);
+            $data[] = ['value' => $value->descripcion, 'id' => $value->id];
         }
         foreach ($cie10_4 as $value) {
-            $data[] = array('value' => $value->descripcion, 'id' => $value->id);
+            $data[] = ['value' => $value->descripcion, 'id' => $value->id];
         }
         if (count($data) > 0) {
             return $data[0];
@@ -951,12 +970,13 @@ class EpicrisisController extends Controller
             return '0';
         }
     }
-    //aquii proc_agregar_cie10
+
+    // aquii proc_agregar_cie10
     public function agregar_cie10(Request $request)
     {
-        //return $request->all();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        // return $request->all();
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
 
         if ($request['codigo'] == null) {
@@ -968,19 +988,19 @@ class EpicrisisController extends Controller
         if($request['in_eg']==null){
         return ['estado' => 'err', 'msn' => 'Seleccione un CIE10'];
         }*/
-        //return $request->all();
+        // return $request->all();
 
         $input2 = [
-            'hcid'                  => $request['hcid'],
-            'cie10'                 => $request['codigo'],
-            'hc_id_procedimiento'   => $request['hc_id_procedimiento'],
-            'ingreso_egreso'        => $request['in_eg'],
+            'hcid' => $request['hcid'],
+            'cie10' => $request['codigo'],
+            'hc_id_procedimiento' => $request['hc_id_procedimiento'],
+            'ingreso_egreso' => $request['in_eg'],
             'presuntivo_definitivo' => $request['pre_def'],
 
-            'ip_creacion'           => $ip_cliente,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-            'id_usuariomod'         => $idusuario,
+            'ip_creacion' => $ip_cliente,
+            'ip_modificacion' => $ip_cliente,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
 
         ];
         $id = Hc_Cie10::insertGetId($input2);
@@ -990,11 +1010,11 @@ class EpicrisisController extends Controller
         $cie10 = Hc_Cie10::find($id);
 
         $c3 = Cie_10_3::find($cie10->cie10);
-        if (!is_null($c3)) {
+        if (! is_null($c3)) {
             $descripcion = $c3->descripcion;
         }
         $c4 = Cie_10_4::find($cie10->cie10);
-        if (!is_null($c4)) {
+        if (! is_null($c4)) {
             $descripcion = $c4->descripcion;
         }
 
@@ -1004,18 +1024,18 @@ class EpicrisisController extends Controller
     public function cargar($id)
     {
 
-        $c     = [];
-        $x     = 0;
+        $c = [];
+        $x = 0;
         $cie10 = DB::table('hc_cie10')->where('hc_cie10.hc_id_procedimiento', $id)->get();
-        //dd($cie10);
-        if (!is_null($cie10)) {
+        // dd($cie10);
+        if (! is_null($cie10)) {
             foreach ($cie10 as $value) {
                 $c3 = Cie_10_3::find($value->cie10);
-                if (!is_null($c3)) {
+                if (! is_null($c3)) {
                     $c[$x] = ['cie10' => $value->cie10, 'id' => $value->id, 'descripcion' => $c3->descripcion, 'pre_def' => $value->presuntivo_definitivo, 'ingreso_egreso' => $value->ingreso_egreso];
                 }
                 $c4 = Cie_10_4::find($value->cie10);
-                if (!is_null($c4)) {
+                if (! is_null($c4)) {
                     $c[$x] = ['cie10' => $value->cie10, 'id' => $value->id, 'descripcion' => $c4->descripcion, 'pre_def' => $value->presuntivo_definitivo, 'ingreso_egreso' => $value->ingreso_egreso];
                 }
                 $x++;
@@ -1024,7 +1044,7 @@ class EpicrisisController extends Controller
             return $c;
 
         } else {
-            return "no";
+            return 'no';
         }
 
     }
@@ -1033,63 +1053,64 @@ class EpicrisisController extends Controller
     {
 
         $cie10 = DB::table('hc_cie10')->where('id', $id)->delete();
-        //dd($cie10);
-        return "ok";
+
+        // dd($cie10);
+        return 'ok';
     }
 
     public function actualiza_final(Request $request)
     {
         try {
-        return app(ClinicalEncounterClosureService::class)->editEpicrisis($request->id_solicitud, function () use ($request) {
-        //return "hola";
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
+            return app(ClinicalEncounterClosureService::class)->editEpicrisis($request->id_solicitud, function () use ($request) {
+                // return "hola";
+                $ip_cliente = $_SERVER['REMOTE_ADDR'];
+                $idusuario = Auth::user()->id;
+                date_default_timezone_set('America/Guayaquil');
 
-        if (Schema::hasTable('clinical_encounter_closures')
-            && ClinicalEncounterClosure::where('solicitud_id', $request->id_solicitud)->where('status', 'COMPLETED')->exists()) {
-            return response()->json(array(
-                'estado' => 'blocked',
-                'msj' => 'La epicrisis está firmada y el episodio está cerrado. Las correcciones deben realizarse mediante una adenda.',
-            ), 423);
-        }
+                if (Schema::hasTable('clinical_encounter_closures')
+                    && ClinicalEncounterClosure::where('solicitud_id', $request->id_solicitud)->where('status', 'COMPLETED')->exists()) {
+                    return response()->json([
+                        'estado' => 'blocked',
+                        'msj' => 'La epicrisis está firmada y el episodio está cerrado. Las correcciones deben realizarse mediante una adenda.',
+                    ], 423);
+                }
 
-        $epicrisis_final = Hc_Epicrisis_Final::where('id_ho_solicitud',$request->id_solicitud)->first();
+                $epicrisis_final = Hc_Epicrisis_Final::where('id_ho_solicitud', $request->id_solicitud)->first();
 
-        if (!is_null($epicrisis_final)) {
+                if (! is_null($epicrisis_final)) {
 
-            $input1a = [
-                'id_ho_solicitud'      => $request['id_solicitud'],
-                'cuadro_clinico'       => $request['cuadro'],
-                'favorable_des'        => $request['favorable_des'],
-                'complicacion'         => $request['complicacion'],
-                'hallazgo'             => $request['hallazgo'],
-                'resumen'              => $request['resumen'],
-                'condicion'            => $request['condicion'],
-                'pronostico'           => $request['pronostico'],
-                'alta'                 => $request['alta'],
-                'discapacidad'         => $request['discapacidad'],
-                'retiro'               => $request['retiro'],
-                'defuncion'            => $request['defuncion'],
-                'dias_estadia'         => $request['dias_estadia'],
-                'dias_incapacidad'     => $request['dias_incapacidad'],
-                'fecha_imprime'        => $request['fecha_imprime'],
-                'ep_resumen_evolucion' => $request['ep_resumen_evolucion'],
-                'ip_modificacion'      => $ip_cliente,
-                'id_usuariomod'        => $idusuario,
-                'receta'               => $request['receta'],
-                'indicaciones_alta'    => $request['indicaciones_alta'],
-                'conclusion'           => $request['conclusion'],
+                    $input1a = [
+                        'id_ho_solicitud' => $request['id_solicitud'],
+                        'cuadro_clinico' => $request['cuadro'],
+                        'favorable_des' => $request['favorable_des'],
+                        'complicacion' => $request['complicacion'],
+                        'hallazgo' => $request['hallazgo'],
+                        'resumen' => $request['resumen'],
+                        'condicion' => $request['condicion'],
+                        'pronostico' => $request['pronostico'],
+                        'alta' => $request['alta'],
+                        'discapacidad' => $request['discapacidad'],
+                        'retiro' => $request['retiro'],
+                        'defuncion' => $request['defuncion'],
+                        'dias_estadia' => $request['dias_estadia'],
+                        'dias_incapacidad' => $request['dias_incapacidad'],
+                        'fecha_imprime' => $request['fecha_imprime'],
+                        'ep_resumen_evolucion' => $request['ep_resumen_evolucion'],
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariomod' => $idusuario,
+                        'receta' => $request['receta'],
+                        'indicaciones_alta' => $request['indicaciones_alta'],
+                        'conclusion' => $request['conclusion'],
 
-            ];
+                    ];
 
-            $epicrisis_final->update($input1a);
-        }
+                    $epicrisis_final->update($input1a);
+                }
 
-        return "ok";
-        }, array('actor_id' => Auth::user()->id, 'ip' => $request->ip()));
+                return 'ok';
+            }, ['actor_id' => Auth::user()->id, 'ip' => $request->ip()]);
         } catch (ClinicalClosureBlockedException $exception) {
-            return response()->json(array('estado' => 'blocked', 'bloqueos' => $exception->blockers()), 423);
+            return response()->json(['estado' => 'blocked', 'bloqueos' => $exception->blockers()], 423);
         }
     }
 
@@ -1104,52 +1125,52 @@ class EpicrisisController extends Controller
         ]);
         $epicrisis = Hc_Epicrisis_Final::findOrFail($request->id_epicrisis_final);
         try {
-        return app(ClinicalEncounterClosureService::class)->editEpicrisis($epicrisis->id_ho_solicitud,
-            function ($solicitud) use ($request, $epicrisis) {
-        if (app(ClinicalEncounterClosureService::class)->isHospital($solicitud)) {
-            abort_unless((string) $request->id_ho_solicitud === (string) $solicitud->id, 422,
-                'El diagnostico no corresponde a la solicitud.');
-        }
-        //return $request->all();
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
-        date_default_timezone_set('America/Guayaquil');
+            return app(ClinicalEncounterClosureService::class)->editEpicrisis($epicrisis->id_ho_solicitud,
+                function ($solicitud) use ($request) {
+                    if (app(ClinicalEncounterClosureService::class)->isHospital($solicitud)) {
+                        abort_unless((string) $request->id_ho_solicitud === (string) $solicitud->id, 422,
+                            'El diagnostico no corresponde a la solicitud.');
+                    }
+                    // return $request->all();
+                    $ip_cliente = $_SERVER['REMOTE_ADDR'];
+                    $idusuario = Auth::user()->id;
+                    date_default_timezone_set('America/Guayaquil');
 
-        $input2 = [
-            'id_ho_solicitud'       => $request['id_ho_solicitud'],
-            'id_hc_epicrisis_final' => $request['id_epicrisis_final'],
-            'hcid'                  => $request['hcid'],
-            'cie10'                 => $request['codigo'],
-            'hc_id_procedimiento'   => $request['hc_id_procedimiento'],
-            'ingreso_egreso'        => $request['in_eg'],
-            'presuntivo_definitivo' => $request['pre_def'],
-            'ip_creacion'           => $ip_cliente,
-            'ip_modificacion'       => $ip_cliente,
-            'id_usuariocrea'        => $idusuario,
-            'id_usuariomod'         => $idusuario,
+                    $input2 = [
+                        'id_ho_solicitud' => $request['id_ho_solicitud'],
+                        'id_hc_epicrisis_final' => $request['id_epicrisis_final'],
+                        'hcid' => $request['hcid'],
+                        'cie10' => $request['codigo'],
+                        'hc_id_procedimiento' => $request['hc_id_procedimiento'],
+                        'ingreso_egreso' => $request['in_eg'],
+                        'presuntivo_definitivo' => $request['pre_def'],
+                        'ip_creacion' => $ip_cliente,
+                        'ip_modificacion' => $ip_cliente,
+                        'id_usuariocrea' => $idusuario,
+                        'id_usuariomod' => $idusuario,
 
-        ];
+                    ];
 
-        $id = Hc_Epicrisis_Final_Cie10::insertGetId($input2);
+                    $id = Hc_Epicrisis_Final_Cie10::insertGetId($input2);
 
-        $count = Hc_Epicrisis_Final_Cie10::where('id_hc_epicrisis_final', $request['id_epicrisis_final'])->get()->count();
+                    $count = Hc_Epicrisis_Final_Cie10::where('id_hc_epicrisis_final', $request['id_epicrisis_final'])->get()->count();
 
-        $cie10 = Hc_Epicrisis_Final_Cie10::find($id);
+                    $cie10 = Hc_Epicrisis_Final_Cie10::find($id);
 
-        $descripcion = '';
-        $c3 = Cie_10_3::find($cie10->cie10);
-        if (!is_null($c3)) {
-            $descripcion = $c3->descripcion;
-        }
-        $c4 = Cie_10_4::find($cie10->cie10);
-        if (!is_null($c4)) {
-            $descripcion = $c4->descripcion;
-        }
+                    $descripcion = '';
+                    $c3 = Cie_10_3::find($cie10->cie10);
+                    if (! is_null($c3)) {
+                        $descripcion = $c3->descripcion;
+                    }
+                    $c4 = Cie_10_4::find($cie10->cie10);
+                    if (! is_null($c4)) {
+                        $descripcion = $c4->descripcion;
+                    }
 
-        return response()->json(['count' => $count, 'id' => $id, 'cie10' => $cie10->cie10, 'descripcion' => $descripcion, 'pre_def' => $request['pre_def'], 'in_eg' => $request['in_eg']]);
-        }, array('actor_id' => Auth::user()->id, 'ip' => $request->ip()));
+                    return response()->json(['count' => $count, 'id' => $id, 'cie10' => $cie10->cie10, 'descripcion' => $descripcion, 'pre_def' => $request['pre_def'], 'in_eg' => $request['in_eg']]);
+                }, ['actor_id' => Auth::user()->id, 'ip' => $request->ip()]);
         } catch (ClinicalClosureBlockedException $exception) {
-            return response()->json(array('estado' => 'blocked', 'bloqueos' => $exception->blockers()), 423);
+            return response()->json(['estado' => 'blocked', 'bloqueos' => $exception->blockers()], 423);
         }
     }
 
@@ -1162,33 +1183,35 @@ class EpicrisisController extends Controller
                 function () use ($id) {
                     $cie10 = Hc_Epicrisis_Final_Cie10::where('id', $id)->lockForUpdate()->firstOrFail();
                     $cie10->delete();
+
                     return $cie10;
                 });
         } catch (ClinicalClosureBlockedException $exception) {
-            return response()->json(array('estado' => 'blocked', 'bloqueos' => $exception->blockers()), 423);
+            return response()->json(['estado' => 'blocked', 'bloqueos' => $exception->blockers()], 423);
         }
     }
 
     public function cargar_final($id)
     {
-        $c     = [];
-        $x     = 0;
+        $c = [];
+        $x = 0;
         $cie10 = Hc_Epicrisis_Final_Cie10::where('id_hc_epicrisis_final', $id)->get();
-        if (!is_null($cie10)) {
+        if (! is_null($cie10)) {
             foreach ($cie10 as $value) {
                 $c3 = Cie_10_3::find($value->cie10);
-                if (!is_null($c3)) {
+                if (! is_null($c3)) {
                     $c[$x] = ['cie10' => $value->cie10, 'id' => $value->id, 'descripcion' => $c3->descripcion, 'pre_def' => $value->presuntivo_definitivo, 'ingreso_egreso' => $value->ingreso_egreso];
                 }
                 $c4 = Cie_10_4::find($value->cie10);
-                if (!is_null($c4)) {
+                if (! is_null($c4)) {
                     $c[$x] = ['cie10' => $value->cie10, 'id' => $value->id, 'descripcion' => $c4->descripcion, 'pre_def' => $value->presuntivo_definitivo, 'ingreso_egreso' => $value->ingreso_egreso];
                 }
                 $x++;
             }
+
             return $c;
         } else {
-            return "no";
+            return 'no';
         }
     }
 }

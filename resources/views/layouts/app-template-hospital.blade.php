@@ -29,8 +29,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
 
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body>
+<body class="aitrol-theme">
 
 
 <div class="main-wrapper"> 

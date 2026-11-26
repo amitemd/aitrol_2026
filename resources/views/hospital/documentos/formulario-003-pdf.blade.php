@@ -6,9 +6,15 @@
     <style>
         @page { size: letter portrait; margin: 0; }
         body { margin: 0; color: #111; font-family: DejaVu Sans, sans-serif; }
-        .sheet { position: relative; width: 215.9mm; height: 250mm; overflow: visible; page-break-after: always; }
+        .sheet { position: relative; width: 215.9mm; height: 279.4mm; overflow: hidden; page-break-after: always; }
         .sheet:last-child { page-break-after: auto; }
         .template { position: absolute; top: 0; left: 0; width: 215.9mm; height: 279.4mm; }
+        .company-branding { position: absolute; z-index: 3; top: 2mm; left: 8mm; width: 48mm; height: 12.4mm; overflow: hidden; background: #fff; text-align: left; line-height: 0; }
+        .company-name-overlay { position: absolute; z-index: 3; left: 79.8mm; top: 23.75mm; width: 46mm; height: 3.2mm; overflow: hidden; background: #fff; font-size: 6pt; font-weight: bold; line-height: 3.2mm; text-align: center; }
+        .professional-value { position: absolute; z-index: 4; overflow: hidden; font-size: 6pt; text-align: center; vertical-align: middle; }
+        .professional-visual { position: absolute; z-index: 4; overflow: hidden; text-align: center; }
+        .professional-visual img { display: inline-block; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+        .professional-visual img.qr { max-width: 16mm; max-height: 16mm; }
         .value { position: absolute; overflow: hidden; white-space: pre-line; overflow-wrap: break-word; font-size: 7pt; line-height: 1.18; }
         .value.small { font-size: 6pt; }
         .value.name { font-size: 8pt; text-transform: uppercase; }
@@ -66,10 +72,16 @@
         'apellido1' => $patient->apellido1 ?? '', 'apellido2' => $patient->apellido2 ?? '',
         'nombre1' => $patient->nombre1 ?? '', 'nombre2' => $patient->nombre2 ?? '',
     ];
+    $companyName003 = trim((string) (($empresa->nombrecomercial ?? null) ?: ($empresa->razonsocial ?? null) ?: 'ESTABLECIMIENTO DE SALUD'));
 @endphp
 @foreach(['first', 'second'] as $page)
     <div class="sheet">
         <img class="template" src="data:image/png;base64,{{ $pageImage[$page] }}" alt="Plantilla 003, {{ $page === 'first' ? 'anamnesis' : 'examen físico y prescripciones' }}">
+        <div class="company-branding">
+            <!--AITROL_PDF_BRANDING_SLOT-->
+            <!--AITROL_PDF_BRANDING_FALLBACK_START--><span>{{ $companyName003 }}</span><!--AITROL_PDF_BRANDING_FALLBACK_END-->
+        </div>
+        @if($page === 'first')<div class="company-name-overlay">{{ $companyName003 }}</div>@endif
         @foreach($layout[$page] as $key => $box)
             @if(isset($names[$key]))
                 <div class="value name" style="{{ $position($box) }}">{{ $names[$key] }}</div>
@@ -87,6 +99,22 @@
                 @endphp
                 <div class="exam-check" data-exam-code="{{ $examCode }}" style="{{ $position($examBox) }}">X</div>
             @endforeach
+            <div class="professional-value" style="{{ $position([120, 1920, 295, 32]) }}">{{ $professionalBlock['date'] ?? '' }}</div>
+            <div class="professional-value" style="{{ $position([420, 1920, 105, 32]) }}">{{ $professionalBlock['time'] ?? '' }}</div>
+            <div class="professional-value" style="{{ $position([530, 1920, 345, 32]) }}">{{ $professionalBlock['first_name'] ?? '' }}</div>
+            <div class="professional-value" style="{{ $position([880, 1920, 438, 32]) }}">{{ $professionalBlock['last_name'] ?? '' }}</div>
+            <div class="professional-value" style="{{ $position([1322, 1920, 260, 32]) }}">{{ $professionalBlock['second_last_name'] ?? '' }}</div>
+            <div class="professional-value" style="{{ $position([120, 1972, 400, 94]) }}">{{ $professionalBlock['identification'] ?? '' }}</div>
+            <div class="professional-visual" style="{{ $position([525, 1972, 420, 94]) }}">
+                @if(!empty($professionalBlock['electronic']) && !empty($professionalBlock['qr_source']))
+                    <img class="qr" src="{{ $professionalBlock['qr_source'] }}" alt="Firma electrónica verificable">
+                @elseif(!empty($professionalBlock['signature_image']))
+                    <img src="{{ $professionalBlock['signature_image'] }}" alt="Firma manuscrita del profesional">
+                @endif
+            </div>
+            <div class="professional-visual" style="{{ $position([950, 1972, 632, 94]) }}">
+                @if(!empty($professionalBlock['seal_image']))<img src="{{ $professionalBlock['seal_image'] }}" alt="Sello del profesional">@endif
+            </div>
         @endif
         @if($page === 'first')<div class="draft-stamp">BORRADOR SIN FIRMA · Episodio {{ $solicitud->id }}@if($entry) · Registro #{{ $entry->id }}@endif</div>@endif
     </div>

@@ -110,7 +110,7 @@
   @media(max-width:767px){ .ef-page{padding:12px}.ef-actions{justify-content:flex-start;margin-top:14px}.ef-table{min-width:920px} }
   @media(max-width:575px){ #progressModal .modal-dialog,#triageModal .modal-dialog,#moveModal .modal-dialog,#criticalModal .modal-dialog,#annulEpisodeModal .modal-dialog{width:auto !important;max-width:none !important;min-height:calc(100% - 24px);margin:12px} #progressModal .modal-content{height:calc(100vh - 24px)} #triageModal .modal-content{max-height:calc(100vh - 24px)} #triageModal .modal-body{padding:16px} }
 </style>
-<link rel="stylesheet" href="{{ asset('css/emergency-flow.css') }}?v=1">
+<link rel="stylesheet" href="{{ asset('css/emergency-flow.css') }}?v=2">
 
 @php
   $pending = collect($patients)->filter(function($p){ return is_null($p['triage']); })->count();
@@ -265,49 +265,49 @@
             <td>@if($f && $f->disposition)<strong>{{ isset($dispositions[$f->disposition]) ? $dispositions[$f->disposition] : $f->disposition }}</strong>@if(!$readOnly && $f->bed_request_status==='REQUESTED')<div class="ef-id">Cama solicitada · <a href="{{ route('hospital.gcuartos', ['traspaso' => $f->requested_transfer_id]) }}">Asignar cama</a></div>@endif @else <span class="text-muted">Por definir</span> @endif</td>
             <td><div class="ef-buttons">
               @if($continueCare)
-                <a class="btn btn-sm btn-primary" href="{{ route('hospital.emergency-care.show', ['solicitud'=>$s->id]) }}"><i class="fas fa-notes-medical" aria-hidden="true"></i> Continuar atención</a>
+                <a class="btn btn-sm ef-action-main" href="{{ route('hospital.emergency-care.show', ['solicitud'=>$s->id]) }}"><i class="fas fa-notes-medical" aria-hidden="true"></i> Continuar atención</a>
               @endif
               @if($can['TRIAGE'])
-                <button type="button" class="btn btn-sm btn-outline-primary ef-open-progress" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.progress', ['solicitud'=>$s->id, 'embedded'=>1]) }}">Completar datos</button>
-                <button type="button" class="btn btn-sm btn-outline-warning ef-open-triage" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.triage', ['solicitud'=>$s->id]) }}" data-autosave-url="{{ route('hospital.emergency-flow.progress.autosave', ['solicitud'=>$s->id]) }}" data-draft-url="{{ route('hospital.emergency-flow.progress', ['solicitud'=>$s->id]) }}"><i class="fas fa-stethoscope"></i> {{ $t ? 'Reevaluar' : 'Triaje' }}</button>
+                <button type="button" class="btn btn-sm ef-action-neutral ef-open-progress" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.progress', ['solicitud'=>$s->id, 'embedded'=>1]) }}"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Completar datos</button>
+                <button type="button" class="btn btn-sm ef-action-triage ef-open-triage" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.triage', ['solicitud'=>$s->id]) }}" data-autosave-url="{{ route('hospital.emergency-flow.progress.autosave', ['solicitud'=>$s->id]) }}" data-draft-url="{{ route('hospital.emergency-flow.progress', ['solicitud'=>$s->id]) }}"><i class="fas fa-stethoscope"></i> {{ $t ? 'Reevaluar' : 'Triaje' }}</button>
               @endif
               @if($can['START'])
-                <form method="post" class="ef-patient-form" action="{{ route('hospital.emergency-flow.start', ['solicitud'=>$s->id]) }}" data-solicitud="{{ $s->id }}">{{ csrf_field() }}
+                <form method="post" class="ef-patient-form ef-action-main" action="{{ route('hospital.emergency-flow.start', ['solicitud'=>$s->id]) }}" data-solicitud="{{ $s->id }}">{{ csrf_field() }}
                   <input type="hidden" name="id_solicitud" value="{{ $s->id }}"><input type="hidden" name="version" value="{{ $version }}"><input type="hidden" name="start_mode" value="STANDARD">
                   <button class="btn btn-sm btn-primary"><i class="fas fa-play"></i> Atender</button>
                 </form>
               @endif
               @if($can['START_CRITICAL'])
-                <button type="button" class="btn btn-sm btn-danger ef-open-critical-start" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.start', ['solicitud'=>$s->id]) }}"><i class="fas fa-bolt"></i> Iniciar atencion critica</button>
+                <button type="button" class="btn btn-sm ef-action-critical ef-open-critical-start" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.start', ['solicitud'=>$s->id]) }}"><i class="fas fa-bolt"></i> Iniciar atención crítica</button>
               @endif
               @if($can['MOVE'])
-                <button type="button" class="btn btn-sm btn-outline-secondary ef-open-move" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.move', ['solicitud'=>$s->id]) }}" title="Cambiar ubicación dentro de Emergencia" aria-label="Cambiar ubicación dentro de Emergencia"><i class="fas fa-map-marker-alt"></i></button>
+                <button type="button" class="btn btn-sm ef-action-neutral ef-open-move" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.move', ['solicitud'=>$s->id]) }}" title="Cambiar ubicación dentro de Emergencia"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Ubicación</button>
               @endif
               @if($can['REROUTE_HOSPITALIZATION'])
-                <button type="button" class="btn btn-sm btn-success ef-open-destination" data-disposition="HOSPITALIZATION" data-reroute="1" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.reroute-hospitalization', ['solicitud'=>$s->id]) }}"><i class="fas fa-bed"></i> Enviar a Hospitalización</button>
+                <button type="button" class="btn btn-sm ef-action-destination ef-open-destination" data-disposition="HOSPITALIZATION" data-reroute="1" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.reroute-hospitalization', ['solicitud'=>$s->id]) }}"><i class="fas fa-bed"></i> Enviar a Hospitalización</button>
               @endif
               @if($can['DECIDE'])
-                <button type="button" class="btn btn-sm btn-success ef-open-destination" data-disposition="HOSPITALIZATION" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.disposition', ['solicitud'=>$s->id]) }}" data-care-url="{{ route('hospital.emergency-care.show', ['solicitud'=>$s->id]) }}"><i class="fas fa-bed"></i> Hospitalizar</button>
-                <button type="button" class="btn btn-sm btn-outline-success ef-open-destination" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.disposition', ['solicitud'=>$s->id]) }}" data-care-url="{{ route('hospital.emergency-care.show', ['solicitud'=>$s->id]) }}"><i class="fas fa-route"></i> Otros destinos</button>
+                <button type="button" class="btn btn-sm ef-action-destination ef-open-destination" data-disposition="HOSPITALIZATION" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.disposition', ['solicitud'=>$s->id]) }}" data-care-url="{{ route('hospital.emergency-care.show', ['solicitud'=>$s->id]) }}"><i class="fas fa-bed"></i> Hospitalizar</button>
+                <button type="button" class="btn btn-sm ef-action-destination ef-open-destination" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.disposition', ['solicitud'=>$s->id]) }}" data-care-url="{{ route('hospital.emergency-care.show', ['solicitud'=>$s->id]) }}"><i class="fas fa-route"></i> Otros destinos</button>
               @endif
               @if($canAlta)
-                <a class="btn btn-sm btn-outline-success" href="{{ route('epicrisis.mostrar_final', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-signature"></i> Alta</a>
+                <a class="btn btn-sm ef-action-destination" href="{{ route('epicrisis.mostrar_final', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-signature"></i> Alta</a>
               @endif
               @if($can['CANCEL_TRANSFER'] && $f && $f->requested_transfer_id && \Illuminate\Support\Facades\Route::has('hospital.emergency-flow.cancel-transfer'))
-                <button type="button" class="btn btn-sm btn-outline-danger ef-open-cancel" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.cancel-transfer', ['solicitud'=>$s->id]) }}"><i class="fas fa-times"></i> Cancelar traslado</button>
+                <button type="button" class="btn btn-sm ef-action-danger ef-open-cancel" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.cancel-transfer', ['solicitud'=>$s->id]) }}"><i class="fas fa-times"></i> Cancelar traslado</button>
               @endif
               @if($isSystemUser && !$readOnly && in_array((int) $s->estado_paso, [1, 2], true) && \Illuminate\Support\Facades\Route::has('hospital.emergency-flow.annul-episode'))
-                <button type="button" class="btn btn-sm btn-outline-danger ef-open-annul" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.annul-episode', ['solicitud'=>$s->id]) }}"><i class="fas fa-ban"></i> Anular episodio</button>
+                <button type="button" class="btn btn-sm ef-action-danger ef-open-annul" data-id="{{ $s->id }}" data-version="{{ $version }}" data-name="{{ $name }} · {{ $s->id_paciente }}" data-url="{{ route('hospital.emergency-flow.annul-episode', ['solicitud'=>$s->id]) }}"><i class="fas fa-ban"></i> Anular episodio</button>
               @endif
               @if($pendingExit)
-                <a class="btn btn-sm btn-outline-success" href="{{ route('epicrisis.mostrar_final', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-door-open"></i> Salida fisica</a>
+                <a class="btn btn-sm ef-action-destination" href="{{ route('epicrisis.mostrar_final', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-door-open"></i> Salida física</a>
               @endif
               @if(\Illuminate\Support\Facades\Route::has('hospital.documents.index'))
-                <a class="btn btn-sm btn-outline-info" href="{{ route('hospital.documents.index', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-folder-open"></i> Documentos</a>
+                <a class="btn btn-sm ef-action-document" href="{{ route('hospital.documents.index', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-folder-open"></i> Documentos</a>
               @endif
               @if(!$readOnly)
-                <a class="btn btn-sm btn-outline-info" href="{{ route('hospital.ingreso008',array('id_solicitud'=>$s->id)) }}"><i class="far fa-file-alt" aria-hidden="true"></i> {{ $s->id_agenda ? 'Historia 008' : 'Vincular Historia 008' }}</a>
-                @if($s->id_agenda)<a class="btn btn-sm btn-outline-info" href="{{ route('formulario005.index_005', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-notes-medical" aria-hidden="true"></i> Evoluciones F005</a>@endif
+                <a class="btn btn-sm ef-action-document" href="{{ route('hospital.ingreso008',array('id_solicitud'=>$s->id)) }}"><i class="far fa-file-alt" aria-hidden="true"></i> {{ $s->id_agenda ? 'Historia 008' : 'Vincular Historia 008' }}</a>
+                @if($s->id_agenda)<a class="btn btn-sm ef-action-document" href="{{ route('formulario005.index_005', ['id_solicitud'=>$s->id]) }}"><i class="fas fa-notes-medical" aria-hidden="true"></i> Evoluciones F005</a>@endif
               @endif
             </div></td>
           </tr>

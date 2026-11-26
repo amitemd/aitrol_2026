@@ -13,10 +13,6 @@ $hora = date('H:i:s');
 @php
 $usuarioLogueado = auth()->user();
 $rd = rand();
-$logoPath = public_path('assets/images/logo_certificado_borja.png');
-$logoSrc = is_file($logoPath)
-    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
-    : '';
 $doctor = $doctor ?: (object) array(
     'id' => '', 'nombre1' => '', 'nombre2' => '',
     'apellido1' => '', 'apellido2' => '',
@@ -52,7 +48,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
 
         /* Define now the real margins of every page in the PDF */
         body {
-            margin-top: 40px;
+            margin-top: 12px;
             margin-left: 20px;
             margin-right: 20px;
             margin-bottom: 1px;
@@ -273,11 +269,11 @@ $mesNacimiento = $fechaNacimiento->format('m');
 $empresa = Sis_medico\Empresa::find($id_empresa);
         
         @endphp
-        <div class="box-body card" style="text-align: center; padding:0; margin:0;">
-            @if($logoSrc !== '')
-            <p><img src="{{ $logoSrc }}" alt="Clínica Borja" style="width:150px;height: 50px"></p>
-            @endif
-        </div><br>
+        @include('pdf_hospital.partials.establishment_logo', [
+            'empresa' => $empresa,
+            'logoRowHeight' => 52,
+            'logoHeight' => 48,
+        ])
         <table border="1" style="width: 100%">
             <thead>
                 <tr>
@@ -726,15 +722,11 @@ $empresa = Sis_medico\Empresa::find($id_empresa);
                         <img class="form006-manual-signature" src="{{$epicrisisSignature['signature_image']}}" alt="Firma manuscrita registrada"><br>
                         <span class="form006-signature-name">{{$epicrisisSignature['name']}}</span><br>
                         {{$epicrisisSignature['specialty']}}
-                    @else
-                        <span class="form006-no-signature">SIN FIRMA</span>
                     @endif
                 </td>
                 <td class="td-border" style="width:25%; height:78px; text-align: center;">
                     @if(!empty($epicrisisSignature['seal_image']))
                         <img class="form006-seal-image" src="{{$epicrisisSignature['seal_image']}}" alt="Sello registrado del profesional">
-                    @else
-                        <span class="form006-no-seal">SIN SELLO</span>
                     @endif
                 </td>
             </tr>

@@ -1,6 +1,6 @@
 <div class="document-logo">
     <!--AITROL_PDF_BRANDING_SLOT-->
-    <!--AITROL_PDF_BRANDING_FALLBACK_START--><img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo_certificado_borja.png'))) }}" alt="Logo"><!--AITROL_PDF_BRANDING_FALLBACK_END-->
+    <!--AITROL_PDF_BRANDING_FALLBACK_START--><span style="font-size:16pt; line-height:20mm; font-weight:bold;">{{ $companyName }}</span><!--AITROL_PDF_BRANDING_FALLBACK_END-->
 </div>
 <table class="identity official-identity">
     <tr><td colspan="12" class="identity-band">A. DATOS DEL ESTABLECIMIENTO Y USUARIO / PACIENTE</td></tr>

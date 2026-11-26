@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Response;
 use Sis_medico\Empresa;
 use Sis_medico\LogAsiento;
+use Sis_medico\Support\RequestSchema;
 
 class EmpresaController extends Controller
 {
@@ -31,7 +32,7 @@ class EmpresaController extends Controller
     private function rol()
     {
         $rolUsuario = Auth::user()->id_tipo_usuario;
-        if (in_array($rolUsuario, array(1)) == false) {
+        if (in_array($rolUsuario, [1]) == false) {
             return true;
         }
     }
@@ -61,7 +62,7 @@ class EmpresaController extends Controller
         dd(json_decode($variable));
 
         /*return view('mails.procedimiento', ["procedimiento_nombre" => 'Procedimiento Prueba', "nombre_paciente" => 'Eduardo Faustos', "especialidad_nombre" => 'Gastro', "inicio" => '2021-01-04 14:20:00', "nombre_doctor" => 'Prueba Prueba', "hospital_nombre" => 'Torre Médica II', "consultorio_nombre" => 'Consultorio 405 -4 06 | Consultorio 2 - CRM', "hospital_direccion" => 'Calle Abel Romeo Castillo 13 E Ne Y, Av. Juan Tanca Marengo']);*/
-        //facturacion electronica
+        // facturacion electronica
         /*$data['empresa']      = '0993075000001';
         $cliente['cedula']    = "0922729587001";
         $cliente['tipo']      = "5";
@@ -152,9 +153,9 @@ class EmpresaController extends Controller
 
         $envio = ApiFacturacionController::estado_comprobante($data);
         dd($envio);*/
-        //solo si es comprobante retorna un dato del resto ya descarga el pdf o el xml
+        // solo si es comprobante retorna un dato del resto ya descarga el pdf o el xml
 
-        //crear retencion
+        // crear retencion
         /*$data                       = array();
         $data['empresa']            = "0992704152001";
         $proveedor['cedula']        = "0922729587001";
@@ -186,7 +187,7 @@ class EmpresaController extends Controller
         $envio                         = ApiFacturacionController::crearRetencion($data);
         dd($envio);*/
 
-        //crear notas de credito
+        // crear notas de credito
         /*$data['empresa']      = '1314490929001';
         $cliente['cedula']    = "0922729587001";
         $cliente['tipo']      = "5";
@@ -257,6 +258,7 @@ class EmpresaController extends Controller
 
         }dd($cambiar);*/
         $empresas = Empresa::where('estado', '1')->paginate(10);
+
         return view('empresa/index', ['empresas' => $empresas]);
     }
 
@@ -270,77 +272,78 @@ class EmpresaController extends Controller
         if ($this->rol()) {
             return response()->view('errors.404');
         }
+
         return view('empresa/create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
 
         $reglas = [
-            'id'              => 'required|max:13|min:13|unique:empresa',
-            'razonsocial'     => 'required|max:255',
+            'id' => 'required|max:13|min:13|unique:empresa',
+            'razonsocial' => 'required|max:255',
             'nombrecomercial' => 'required|max:255',
-            'ciudad'          => 'required|max:60',
-            'direccion'       => 'required|max:255',
-            'email'           => 'required|email|max:191',
-            'telefono1'       => 'required|numeric|max:9999999999',
-            'telefono2'       => 'required|numeric|max:9999999999',
-            'estado'          => 'required',
+            'ciudad' => 'required|max:60',
+            'direccion' => 'required|max:255',
+            'email' => 'required|email|max:191',
+            'telefono1' => 'required|numeric|max:9999999999',
+            'telefono2' => 'required|numeric|max:9999999999',
+            'estado' => 'required',
         ];
 
         $mensajes = [
-            'id.unique'                => 'El RUC ya se encuentra registrado.',
-            'id.required'              => 'Agrega el RUC.',
-            'id.max'                   => 'El RUC no puede ser mayor a :max caracteres.',
-            'id.min'                   => 'El RUC no puede ser menor a :min caracteres.',
-            'razonsocial.required'     => 'Agrega la razón social.',
-            'razonsocial.max'          => 'La razon social no puede ser mayor a :max caracteres.',
+            'id.unique' => 'El RUC ya se encuentra registrado.',
+            'id.required' => 'Agrega el RUC.',
+            'id.max' => 'El RUC no puede ser mayor a :max caracteres.',
+            'id.min' => 'El RUC no puede ser menor a :min caracteres.',
+            'razonsocial.required' => 'Agrega la razón social.',
+            'razonsocial.max' => 'La razon social no puede ser mayor a :max caracteres.',
             'nombrecomercial.required' => 'Agrega el nombre comercial.',
-            'nombrecomercial.max'      => 'El nombre comercial no puede ser mayor a :max caracteres.',
-            'apellido2.required'       => 'Agrega el segundo apellido.',
-            'apellido2.max'            => 'El segundo apellido no puede ser mayor a :max caracteres.',
-            'ciudad.required'          => 'Agrega la ciudad.',
-            'ciudad.max'               => 'La ciudad no puede ser mayor a :max caracteres.',
-            'direccion.required'       => 'Agrega la direccion.',
-            'direccion.max'            => 'La direccion no puede ser mayor a :max caracteres.',
-            'email.required'           => 'Agrega el Email.',
-            'email.max'                => 'El Email no puede ser mayor a :max caracteres.',
-            'email.email'              => 'El Email tiene error en el formato.',
-            'telefono1.required'       => 'Agrega el teléfono domicilio del usuario.',
-            'telefono1.max'            => 'El teléfono domicilio del usuario no puede ser mayor a 10 caracteres.',
-            'telefono1.numeric'        => 'El telefono domicilio del usuario debe ser numerico.',
-            'telefono2.required'       => 'Agrega el teléfono celular del usuario.',
-            'telefono2.max'            => 'El teléfono celular del usuario no puede ser mayor a 10 caracteres.',
-            'telefono2.numeric'        => 'El telefono cellular del usuario debe ser numérico.',
-            'estado.required'          => 'Agrega el estado.',
+            'nombrecomercial.max' => 'El nombre comercial no puede ser mayor a :max caracteres.',
+            'apellido2.required' => 'Agrega el segundo apellido.',
+            'apellido2.max' => 'El segundo apellido no puede ser mayor a :max caracteres.',
+            'ciudad.required' => 'Agrega la ciudad.',
+            'ciudad.max' => 'La ciudad no puede ser mayor a :max caracteres.',
+            'direccion.required' => 'Agrega la direccion.',
+            'direccion.max' => 'La direccion no puede ser mayor a :max caracteres.',
+            'email.required' => 'Agrega el Email.',
+            'email.max' => 'El Email no puede ser mayor a :max caracteres.',
+            'email.email' => 'El Email tiene error en el formato.',
+            'telefono1.required' => 'Agrega el teléfono domicilio del usuario.',
+            'telefono1.max' => 'El teléfono domicilio del usuario no puede ser mayor a 10 caracteres.',
+            'telefono1.numeric' => 'El telefono domicilio del usuario debe ser numerico.',
+            'telefono2.required' => 'Agrega el teléfono celular del usuario.',
+            'telefono2.max' => 'El teléfono celular del usuario no puede ser mayor a 10 caracteres.',
+            'telefono2.numeric' => 'El telefono cellular del usuario debe ser numérico.',
+            'estado.required' => 'Agrega el estado.',
         ];
 
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         $this->validateInput($request, $reglas, $mensajes);
         date_default_timezone_set('America/Guayaquil');
         Empresa::create([
-            'id'              => $request['id'],
-            'razonsocial'     => strtoupper($request['razonsocial']),
+            'id' => $request['id'],
+            'razonsocial' => strtoupper($request['razonsocial']),
             'nombrecomercial' => strtoupper($request['nombrecomercial']),
-            'ciudad'          => strtoupper($request['ciudad']),
-            'direccion'       => strtoupper($request['direccion']),
-            'email'           => $request['email'],
-            'telefono1'       => $request['telefono1'],
-            'telefono2'       => $request['telefono2'],
-            'ip_creacion'     => $ip_cliente,
+            'ciudad' => strtoupper($request['ciudad']),
+            'direccion' => strtoupper($request['direccion']),
+            'email' => $request['email'],
+            'telefono1' => $request['telefono1'],
+            'telefono2' => $request['telefono2'],
+            'ip_creacion' => $ip_cliente,
             'ip_modificacion' => $ip_cliente,
-            'id_usuariocrea'  => $idusuario,
-            'id_usuariomod'   => $idusuario,
+            'id_usuariocrea' => $idusuario,
+            'id_usuariomod' => $idusuario,
 
         ]);
         LogAsiento::secuenciaEmpresa($request['id']);
+
         return redirect()->intended('/empresa');
     }
 
@@ -369,7 +372,7 @@ class EmpresaController extends Controller
         }
         $empresa = Empresa::find($id);
         // Redirect to user list if updating user wasn't existed
-        if ($empresa == null || $empresa=='') {
+        if ($empresa == null || $empresa == '') {
             return redirect()->intended('/empresa');
         }
 
@@ -379,89 +382,99 @@ class EmpresaController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        $empresa    = Empresa::findOrFail($id);
-        $ip_cliente = $_SERVER["REMOTE_ADDR"];
-        $idusuario  = Auth::user()->id;
+        $empresa = Empresa::findOrFail($id);
+        $ip_cliente = $_SERVER['REMOTE_ADDR'];
+        $idusuario = Auth::user()->id;
         date_default_timezone_set('America/Guayaquil');
 
         $mensajes = [
 
-            'id.unique'                => 'El RUC ya se encuentra registrado.',
-            'id.required'              => 'Agrega el RUC.',
-            'id.max'                   => 'El RUC no puede ser mayor a :max caracteres.',
-            'id.min'                   => 'El RUC no puede ser menor a :min caracteres.',
+            'id.unique' => 'El RUC ya se encuentra registrado.',
+            'id.required' => 'Agrega el RUC.',
+            'id.max' => 'El RUC no puede ser mayor a :max caracteres.',
+            'id.min' => 'El RUC no puede ser menor a :min caracteres.',
 
-            'razonsocial.required'     => 'Agrega la razón social.',
-            'razonsocial.max'          => 'La razon social no puede ser mayor a :max caracteres.',
+            'razonsocial.required' => 'Agrega la razón social.',
+            'razonsocial.max' => 'La razon social no puede ser mayor a :max caracteres.',
 
             'nombrecomercial.required' => 'Agrega el nombre comercial.',
-            'nombrecomercial.max'      => 'El nombre comercial no puede ser mayor a :max caracteres.',
+            'nombrecomercial.max' => 'El nombre comercial no puede ser mayor a :max caracteres.',
 
-            'apellido2.required'       => 'Agrega el segundo apellido.',
-            'apellido2.max'            => 'El segundo apellido no puede ser mayor a :max caracteres.',
+            'apellido2.required' => 'Agrega el segundo apellido.',
+            'apellido2.max' => 'El segundo apellido no puede ser mayor a :max caracteres.',
 
-            'ciudad.required'          => 'Agrega la ciudad.',
-            'ciudad.max'               => 'La ciudad no puede ser mayor a :max caracteres.',
+            'ciudad.required' => 'Agrega la ciudad.',
+            'ciudad.max' => 'La ciudad no puede ser mayor a :max caracteres.',
 
-            'direccion.required'       => 'Agrega la direccion.',
-            'direccion.max'            => 'La direccion no puede ser mayor a :max caracteres.',
+            'direccion.required' => 'Agrega la direccion.',
+            'direccion.max' => 'La direccion no puede ser mayor a :max caracteres.',
 
-            'email.required'           => 'Agrega el Email.',
-            'email.max'                => 'El Email no puede ser mayor a :max caracteres.',
-            'email.email'              => 'El Email tiene error en el formato.',
+            'email.required' => 'Agrega el Email.',
+            'email.max' => 'El Email no puede ser mayor a :max caracteres.',
+            'email.email' => 'El Email tiene error en el formato.',
 
-            'telefono1.required'       => 'Agrega el teléfono domicilio del usuario.',
-            'telefono1.max'            => 'El teléfono domicilio del usuario no puede ser mayor a 10 caracteres.',
-            'telefono1.numeric'        => 'El telefono domicilio del usuario debe ser numerico.',
-            'telefono2.required'       => 'Agrega el teléfono celular del usuario.',
-            'telefono2.max'            => 'El teléfono celular del usuario no puede ser mayor a 10 caracteres.',
-            'telefono2.numeric'        => 'El telefono cellular del usuario debe ser numérico.',
+            'telefono1.required' => 'Agrega el teléfono domicilio del usuario.',
+            'telefono1.max' => 'El teléfono domicilio del usuario no puede ser mayor a 10 caracteres.',
+            'telefono1.numeric' => 'El telefono domicilio del usuario debe ser numerico.',
+            'telefono2.required' => 'Agrega el teléfono celular del usuario.',
+            'telefono2.max' => 'El teléfono celular del usuario no puede ser mayor a 10 caracteres.',
+            'telefono2.numeric' => 'El telefono cellular del usuario debe ser numérico.',
 
-            'estado.required'          => 'Agrega el estado.',
+            'unicodigo.max' => 'El Unicódigo no puede ser mayor a :max caracteres.',
+            'nivel_precio_medicamentos.integer' => 'El nivel de precio para medicamentos debe ser numérico.',
+            'nivel_precio_medicamentos.min' => 'El nivel de precio para medicamentos debe ser mayor a cero.',
+
+            'estado.required' => 'Agrega el estado.',
 
         ];
         $constraints = [
-            'id'              => 'required|max:13|min:13|unique:empresa,id,' . $id,
-            'razonsocial'     => 'required|max:255',
+            'id' => 'required|max:13|min:13|unique:empresa,id,'.$id,
+            'razonsocial' => 'required|max:255',
             'nombrecomercial' => 'required|max:255',
-            'ciudad'          => 'required|max:60',
-            'direccion'       => 'required|max:255',
-            'email'           => 'required|email|max:191',
-            'telefono1'       => 'required|numeric|max:9999999999',
-            'telefono2'       => 'required|numeric|max:9999999999',
-            'estado'          => 'required',
+            'ciudad' => 'required|max:60',
+            'direccion' => 'required|max:255',
+            'email' => 'required|email|max:191',
+            'telefono1' => 'required|numeric|max:9999999999',
+            'telefono2' => 'required|numeric|max:9999999999',
+            'unicodigo' => 'nullable|max:30',
+            'nivel_precio_medicamentos' => 'sometimes|required|integer|min:1|max:999',
+            'estado' => 'required',
 
         ];
 
         $input = [
-            'id'              => $request['id'],
-            'razonsocial'     => strtoupper($request['razonsocial']),
+            'id' => $request['id'],
+            'razonsocial' => strtoupper($request['razonsocial']),
             'nombrecomercial' => strtoupper($request['nombrecomercial']),
-            'ciudad'          => strtoupper($request['ciudad']),
-            'direccion'       => strtoupper($request['direccion']),
-            'email'           => $request['email'],
-            'telefono1'       => $request['telefono1'],
-            'telefono2'       => $request['telefono2'],
-            'electronica'     => $request['electronica'],
-            'appid'           => $request['appid'],
-            'appsecret'       => $request['appsecret'],
-            'url'             => $request['url'],
+            'ciudad' => strtoupper($request['ciudad']),
+            'direccion' => strtoupper($request['direccion']),
+            'email' => $request['email'],
+            'telefono1' => $request['telefono1'],
+            'telefono2' => $request['telefono2'],
+            'electronica' => $request['electronica'],
+            'appid' => $request['appid'],
+            'appsecret' => $request['appsecret'],
+            'url' => $request['url'],
             'establecimiento' => $request['establecimiento'],
-            'punto_emision'   => $request['punto_emision'],
+            'punto_emision' => $request['punto_emision'],
 
             'ip_modificacion' => $ip_cliente,
 
-            'id_usuariomod'   => $idusuario,
+            'id_usuariomod' => $idusuario,
 
         ];
 
-        $this->validate($request, $constraints, $mensajes);
+        $validated = $this->validate($request, $constraints, $mensajes);
+        foreach (['unicodigo', 'nivel_precio_medicamentos'] as $field) {
+            if (array_key_exists($field, $validated) && RequestSchema::hasColumn('empresa', $field)) {
+                $input[$field] = $validated[$field];
+            }
+        }
 
         Empresa::where('id', $id)
             ->update($input);
@@ -484,8 +497,7 @@ class EmpresaController extends Controller
     /**
      * Search user from database base on some specific constraints
      *
-     * @param  \Illuminate\Http\Request  $request
-     *  @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response
      */
     public function search(Request $request)
     {
@@ -494,7 +506,7 @@ class EmpresaController extends Controller
             return response()->view('errors.404');
         }
         $constraints = [
-            'id'          => $request['ruc'],
+            'id' => $request['ruc'],
             'razonsocial' => $request['razonsocial'],
         ];
 
@@ -505,14 +517,14 @@ class EmpresaController extends Controller
 
     private function doSearchingQuery($constraints)
     {
-        $query  = Empresa::query();
+        $query = Empresa::query();
         $fields = array_keys($constraints);
 
         $index = 0;
 
         foreach ($constraints as $constraint) {
             if ($constraint != null) {
-                $query = $query->where($fields[$index], 'like', '%' . $constraint . '%');
+                $query = $query->where($fields[$index], 'like', '%'.$constraint.'%');
             }
 
             $index++;
@@ -529,20 +541,20 @@ class EmpresaController extends Controller
 
     public function subir_logo(Request $request)
     {
-        $id       = $request['logo'];
-        $reglas   = ['archivo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:900'];
+        $id = $request['logo'];
+        $reglas = ['archivo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:900'];
         $mensajes = [
 
             'archivo.required' => 'Agrega el Logo.',
-            'archivo.image'    => 'El logo debe ser una imagen.',
-            'archivo.mimes'    => 'Los archivos permitidos son: jpeg,png,jpg,gif,svg.',
-            'archivo.max'      => 'El peso del logo no puede ser mayor a :max KB.'];
+            'archivo.image' => 'El logo debe ser una imagen.',
+            'archivo.mimes' => 'Los archivos permitidos son: jpeg,png,jpg,gif,svg.',
+            'archivo.max' => 'El peso del logo no puede ser mayor a :max KB.'];
 
         $this->validate($request, $reglas, $mensajes);
 
         $nombre_original = $request['archivo']->getClientOriginalName();
-        $extension       = $request['archivo']->getClientOriginalExtension();
-        $nuevo_nombre    = "logo" . $id . "." . $extension;
+        $extension = $request['archivo']->getClientOriginalExtension();
+        $nuevo_nombre = 'logo'.$id.'.'.$extension;
 
         $r1 = Storage::disk('logo')->put($nuevo_nombre, \File::get($request['archivo']));
 
@@ -550,14 +562,14 @@ class EmpresaController extends Controller
 
         if ($r1) {
 
-            $ip_cliente = $_SERVER["REMOTE_ADDR"];
-            $idusuario  = Auth::user()->id;
+            $ip_cliente = $_SERVER['REMOTE_ADDR'];
+            $idusuario = Auth::user()->id;
             date_default_timezone_set('America/Guayaquil');
-            $empresa                  = Empresa::find($id);
-            $empresa->logo            = $rutadelaimagen;
+            $empresa = Empresa::find($id);
+            $empresa->logo = $rutadelaimagen;
             $empresa->ip_modificacion = $ip_cliente;
-            $empresa->id_usuariomod   = $idusuario;
-            $r2                       = $empresa->save();
+            $empresa->id_usuariomod = $idusuario;
+            $r2 = $empresa->save();
 
             return redirect()->intended('/empresa');
         }
@@ -572,10 +584,9 @@ class EmpresaController extends Controller
     public function load($name)
     {
 
-        $path = storage_path() . '/app/logo/' . $name;
+        $path = storage_path().'/app/logo/'.$name;
         if (file_exists($path)) {
             return Response::download($path);
         }
     }
-
 }

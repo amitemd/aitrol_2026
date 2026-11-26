@@ -123,13 +123,18 @@
             content: counter(page);
         }
 
-        .evolution-edge {
-            border-right: 5px solid #fff !important;
+        .clinical-spacer {
+            background: #fff !important;
+            border-bottom: 0 !important;
+            border-left: 1.5px solid #000 !important;
+            border-right: 1.5px solid #000 !important;
+            border-top: 0 !important;
+            padding: 0 !important;
         }
 
         .clinical-grid {
             border-collapse: collapse;
-            table-layout: auto;
+            table-layout: fixed;
             width: 100%;
         }
 
@@ -139,6 +144,14 @@
             padding: 1px 2px;
             vertical-align: middle;
             word-wrap: break-word;
+        }
+
+        .clinical-grid .column-sizing td {
+            border: none !important;
+            font-size: 0;
+            height: 0 !important;
+            line-height: 0;
+            padding: 0 !important;
         }
 
         .evolution-content-row td {
@@ -157,6 +170,12 @@
         .prescription-item:last-child {
             border-bottom: none;
             margin-bottom: 0;
+        }
+
+        .prescription-line {
+            font-weight: bold;
+            line-height: 1.15;
+            white-space: normal;
         }
 
         .evolution-signature-cell {
@@ -284,12 +303,23 @@
 
         $prescriptions = [];
         foreach ($detallesEvolucion as $detalle) {
+            $meta = isset($medicamentosMeta[(string) $detalle->id_medicina])
+                ? $medicamentosMeta[(string) $detalle->id_medicina]
+                : [];
             $prescriptions[] = [
                 'prescripcion' => trim((string) $detalle->nombre),
                 'medicamento' => trim((string) $detalle->dosis),
+                'principio_activo' => trim((string) ($meta['principio_activo'] ?? '')),
+                'primer_nivel' => trim((string) ($meta['primer_nivel'] ?? '')),
+                'concentracion' => trim((string) ($meta['concentracion'] ?? '')),
+                'nivel_precio' => trim((string) ($meta['nivel_precio'] ?? '')),
+                'precio_nivel' => $meta['precio_nivel'] ?? null,
             ];
         }
-        if (!$prescriptions) $prescriptions[] = ['prescripcion' => '', 'medicamento' => ''];
+        if (!$prescriptions) $prescriptions[] = [
+            'prescripcion' => '', 'medicamento' => '', 'principio_activo' => '',
+            'primer_nivel' => '', 'concentracion' => '', 'nivel_precio' => '', 'precio_nivel' => null,
+        ];
 
         $recordedAt = trim($fechaEvolucion.' '.$horaEvolucion);
         $pages[] = [
@@ -312,7 +342,10 @@
             'fecha' => $fechaEvolucion,
             'hora' => $horaEvolucion,
             'evolucion' => $contenidoEvolucion,
-            'prescriptions' => [['prescripcion' => '', 'medicamento' => '']],
+            'prescriptions' => [[
+                'prescripcion' => '', 'medicamento' => '', 'principio_activo' => '',
+                'primer_nivel' => '', 'concentracion' => '', 'nivel_precio' => '', 'precio_nivel' => null,
+            ]],
             'signature' => $signatureForEmergency($emergencyEvolution['id']),
         ];
     }
@@ -322,7 +355,10 @@
 
     if (!$pages) $pages[] = [
         'sort_at' => '', 'fecha' => '', 'hora' => '', 'evolucion' => '',
-        'prescriptions' => [['prescripcion' => '', 'medicamento' => '']],
+        'prescriptions' => [[
+            'prescripcion' => '', 'medicamento' => '', 'principio_activo' => '',
+            'primer_nivel' => '', 'concentracion' => '', 'nivel_precio' => '', 'precio_nivel' => null,
+        ]],
         'signature' => null,
     ];
 
@@ -433,35 +469,59 @@
             <td colspan="20" style="border:none; padding:0;">
                 <table class="clinical-grid">
                     <colgroup>
-                        <col style="width:18%">
-                        <col style="width:18%">
-                        <col style="width:19%">
-                        <col style="width:35%">
-                        <col style="width:10%">
+                        <col style="width:8%">
+                        <col style="width:5%">
+                        <col style="width:42%">
+                        <col style="width:1%">
+                        <col style="width:44%">
                     </colgroup>
+                    <tr class="column-sizing">
+                        <td style="width:8%"></td>
+                        <td style="width:5%"></td>
+                        <td style="width:42%"></td>
+                        <td style="width:1%"></td>
+                        <td style="width:44%"></td>
+                    </tr>
                     <tr class="h-1575">
-                        <td colspan="3" width="55%" class="blue center sub-title evolution-edge"><b>1. EVOLUCION</b></td>
-                        <td colspan="2" width="45%" class="blue center sub-title"><b>2. PRESCRIPCIONES</b></td>
+                        <td colspan="3" width="55%" class="blue center sub-title"><b>1. EVOLUCION</b></td>
+                        <td class="clinical-spacer"></td>
+                        <td width="44%" class="blue center sub-title"><b>2. PRESCRIPCIONES</b></td>
                     </tr>
                     <tr class="h-2495">
-                        <td width="18%" class="green center bold header-small">FECHA<br>(aaaa-mm-dd)</td>
-                        <td width="18%" class="green center bold header-small">HORA<br>(hh:mm)</td>
-                        <td width="19%" class="green center bold header-small evolution-edge">NOTAS DE EVOLUCION</td>
-                        <td width="35%" class="green center bold header-small">FARMACOTERAPIA E INDICACIONES<br>(Para enfermeria y otro profesional de salud)</td>
-                        <td width="10%" class="green center bold header-small">ADMINISTR.<br>FARMACOS<br>DISPOSITIVO</td>
+                        <td style="width:8%" class="green center bold header-small">FECHA<br>(aaaa-mm-dd)</td>
+                        <td style="width:5%" class="green center bold header-small">HORA<br>(hh:mm)</td>
+                        <td style="width:42%" class="green center bold header-small">NOTAS DE EVOLUCION</td>
+                        <td class="clinical-spacer"></td>
+                        <td style="width:44%" class="green center bold header-small">FARMACOTERAPIA E INDICACIONES<br>(Para enfermería y otro profesional de salud)</td>
                     </tr>
                     <tr class="evolution-content-row">
-                        <td width="18%" class="center data-cell">{{$page['fecha']}}</td>
-                        <td width="18%" class="center data-cell">{{$page['hora']}}</td>
-                        <td width="19%" class="data-cell evolution-edge">{{$page['evolucion']}}</td>
-                        <td width="35%" class="data-cell">
+                        <td style="width:8%" class="center data-cell">{{$page['fecha']}}</td>
+                        <td style="width:5%" class="center data-cell">{{$page['hora']}}</td>
+                        <td style="width:42%" class="data-cell">{{$page['evolucion']}}</td>
+                        <td class="clinical-spacer"></td>
+                        <td style="width:44%" class="data-cell">
                             @foreach($page['prescriptions'] as $prescription)
-                                <div class="prescription-item">{{$prescription['prescripcion']}}</div>
-                            @endforeach
-                        </td>
-                        <td width="10%" class="center data-cell">
-                            @foreach($page['prescriptions'] as $prescription)
-                                <div class="prescription-item">{{$prescription['medicamento']}}</div>
+                                @php
+                                    $componentesMedicamento = array_values(array_filter([
+                                        trim((string) ($prescription['principio_activo'] ?? '')),
+                                        trim((string) ($prescription['primer_nivel'] ?? '')),
+                                        trim((string) ($prescription['concentracion'] ?? '')),
+                                    ], function ($valor) {
+                                        return $valor !== '';
+                                    }));
+                                    $descripcionMedicamento = implode(', ', $componentesMedicamento);
+                                    if ($descripcionMedicamento === '') {
+                                        $descripcionMedicamento = trim((string) ($prescription['prescripcion'] ?? ''));
+                                    }
+                                    $indicacionMedicamento = trim((string) ($prescription['medicamento'] ?? ''));
+                                    $lineaPrescripcion = $descripcionMedicamento;
+                                    if ($indicacionMedicamento !== '') {
+                                        $lineaPrescripcion .= ($lineaPrescripcion !== '' ? ' / ' : '').$indicacionMedicamento;
+                                    }
+                                @endphp
+                                <div class="prescription-item">
+                                    <div class="prescription-line">{{$lineaPrescripcion}}</div>
+                                </div>
                             @endforeach
                         </td>
                     </tr>

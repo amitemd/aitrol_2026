@@ -20,18 +20,23 @@ class ClinicalSignatureController extends Controller
             $doctor->nombre1, $doctor->nombre2, $doctor->apellido1, $doctor->apellido2,
         ], function ($part) {
             $value = strtoupper(trim((string) $part));
+
             return $value !== '' && $value !== 'N/A' && $value !== '(N/A)';
         }))) : 'Profesional no identificado';
         $specialties = $doctor
             ? DB::table('user_espe as ue')->join('especialidad as e', 'e.id', '=', 'ue.espid')
                 ->where('ue.usuid', $doctor->id)->orderBy('ue.id')->pluck('e.nombre')->unique()->implode(', ')
             : '';
-        $recordLabels = array(
+        $recordLabels = [
             ClinicalRecordSignatureService::FORM_006 => 'Formulario 006 - Epicrisis',
+            ClinicalRecordSignatureService::FORM_017 => 'Formulario 017 - Protocolo quirúrgico',
             ClinicalRecordSignatureService::FORM_008 => 'Formulario 008 - Emergencia',
             ClinicalRecordSignatureService::EVOLUTION => 'Formulario 005 - Evolución y prescripciones',
             ClinicalRecordSignatureService::EMERGENCY => 'Formulario 005 - Evolución de emergencia',
-        );
+            ClinicalRecordSignatureService::FORM_018 => 'Formulario 018 - Valoración preanestésica',
+            ClinicalRecordSignatureService::FORM_018A => 'Formulario 018A - Registro transanestésico',
+            ClinicalRecordSignatureService::FORM_019 => 'Formulario 019 - Cuidados postanestésicos',
+        ];
 
         return response()->view('hospital.signatures.verify', [
             'verification' => $verification,

@@ -81,11 +81,15 @@ Route::get('hospital/configuracion/servicios', 'hospital\HospitalServiceConfigur
 Route::post('hospital/configuracion/servicios', 'hospital\HospitalServiceConfigurationController@update')->name('hospital.services.configuration.save');
 Route::post('hospital/traslados/{transfer}/recibir-cirugia', 'hospital\HospitalWorkflowController@receiveSurgery')->name('hospital.workflow.surgery.receive');
 Route::get('hospital/episodios/documentos/{id_solicitud}', 'hospital\HospitalDocumentController@show')->name('hospital.documents.index');
+Route::post('hospital/episodios/documentos/{id_solicitud}/vincular-ingreso', 'hospital\HospitalDocumentController@linkScheduledAdmission')->name('hospital.documents.link-scheduled-admission');
 Route::get('hospital/episodios/documentos/{document}/leer/{id_solicitud}', 'hospital\HospitalDocumentController@document')->name('hospital.documents.document');
 Route::get('hospital/episodios/documentos/{document}/vista/{id_solicitud}', 'hospital\HospitalDocumentController@preview')->name('hospital.documents.preview');
 Route::get('hospital/episodios/borradores/{code}/{id_solicitud}', 'hospital\HospitalEpisodeFormDraftController@show')->name('hospital.documents.form.show');
 Route::get('hospital/episodios/borradores/{code}/{id_solicitud}/pdf', 'hospital\HospitalEpisodeFormDraftController@pdf')->name('hospital.documents.form.pdf');
+Route::get('hospital/episodios/borradores/017/{id_solicitud}/{entry}/diagrama/{position}', 'hospital\HospitalEpisodeFormDraftController@diagramImage')->where('position', '[0-2]')->name('hospital.documents.form017.diagram');
+Route::get('hospital/episodios/borradores/024/{id_solicitud}/{entry}/imagen/{position}', 'hospital\HospitalEpisodeFormDraftController@form024Image')->where('position', '[0-2]')->name('hospital.documents.form024.image');
 Route::post('hospital/episodios/borradores/{code}/{id_solicitud}', 'hospital\HospitalEpisodeFormDraftController@store')->name('hospital.documents.form.store');
+Route::post('hospital/episodios/borradores/{code}/{id_solicitud}/firmar', 'hospital\HospitalEpisodeFormDraftController@sign')->name('hospital.documents.form.sign');
 Route::get('hospital/episodios/{id_solicitud}/laboratorio', 'hospital\HospitalEpisodeLaboratoryController@index')->name('hospital.laboratory.index');
 Route::get('hospital/episodios/{id_solicitud}/laboratorio/solicitudes', 'hospital\HospitalEpisodeLaboratoryController@requests')->name('hospital.laboratory.requests');
 Route::post('hospital/episodios/{id_solicitud}/laboratorio/{order}/confirmar', 'hospital\HospitalEpisodeLaboratoryController@confirm')->name('hospital.laboratory.confirm');
@@ -96,7 +100,9 @@ Route::get('hospital/episodios/{id_solicitud}/laboratorio/{order}/{code}/pdf', '
 Route::get('hospital/episodios/formularios/{key}/{id_solicitud}', 'hospital\HospitalDocumentController@link')->name('hospital.documents.link');
 Route::post('hospital/episodios/cirugias/vincular/{id_solicitud}', 'hospital\HospitalDocumentController@bind')->name('hospital.documents.bind');
 Route::post('hospital/episodios/cirugias/{id_solicitud}', 'hospital\HospitalDocumentController@createProcedure')->name('hospital.documents.create');
+Route::get('hospital/episodios/cirugias/catalogo/{type}/{id_solicitud}', 'hospital\HospitalDocumentController@surgeryCatalog')->name('hospital.surgery.catalog');
 Route::post('hospital/episodios/cirugias/{procedure}/preparar/{id_solicitud}', 'hospital\HospitalDocumentController@prepare')->name('hospital.documents.prepare');
+Route::post('hospital/episodios/cirugias/preoperatorio/{id_solicitud}', 'hospital\HospitalDocumentController@preoperative')->name('hospital.surgery.preoperative');
 Route::post('hospital/episodios/cirugias/{procedure}/firmar/{id_solicitud}', 'hospital\HospitalDocumentController@sign')->name('hospital.documents.sign');
 Route::post('hospital/episodios/cirugias/{procedure}/iniciar/{id_solicitud}', 'hospital\HospitalDocumentController@start')->name('hospital.documents.start');
 Route::post('hospital/episodios/cirugias/{procedure}/finalizar/{id_solicitud}', 'hospital\HospitalDocumentController@finish')->name('hospital.documents.finish');

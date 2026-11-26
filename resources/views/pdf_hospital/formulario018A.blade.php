@@ -4,10 +4,6 @@
 @php
 $fecha=date('Y-m-d');
 $hora = date('H:i:s');
-$logoPath = public_path('assets/images/logo_certificado_borja.png');
-$logoSrc = is_file($logoPath) && is_readable($logoPath)
-    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
-    : '';
 $isLandscapeFirstPage = ($pdfPage ?? 'all') === 'first';
 $firstPageCanvasHeight = (int) ($firstPageCanvasHeight ?? 280);
 $firstPageFontSize = (float) ($firstPageFontSize ?? 5);
@@ -69,17 +65,17 @@ if (isset($record->anestesiologo)) {
         footer {
             display: table;
             position: fixed;
-            bottom: 30px;
-            left: 0cm;
-            right: 0cm;
-            width: 100%;
+            bottom: 5px;
+            left: 4px;
+            right: 4px;
+            width: auto;
             color: #000;
             font-family: Arial, Helvetica, sans-serif;
             border-top: 1px solid #999;
             font-size: 10px;
             font-weight: 700;
             line-height: 1;
-            padding-top: 8px;
+            padding-top: 4px;
             table-layout: fixed;
         }
         footer > span { display: table-cell; width: 50%; }
@@ -277,20 +273,15 @@ if (isset($record->anestesiologo)) {
         }
     </style>
 </head>
-@php $empresa = $hc_procedimiento->empresa; @endphp 
 <body class="{{ $isLandscapeFirstPage ? 'pdf-page-first' : 'pdf-page-'.($pdfPage ?? 'all') }}">
     <footer><span>SNS-MSP / HCU-form.018A / 2021</span><span class="document-name">TRANSANESTÉSICO ({{ $pdfPageNumber ?? 1 }})</span></footer>
     <main>
         @if(($pdfPage ?? 'all') !== 'second')
-        <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
-            <tr>
-                <td style="height: {{ $isLandscapeFirstPage ? '38px' : '50px' }};">
-                    @if($logoSrc !== '')
-                    <img src="{{ $logoSrc }}" alt="Clínica Borja" style="width:750px;height: {{ $isLandscapeFirstPage ? $firstPageLogoHeight.'px' : '80px' }};">
-                    @endif
-                </td>
-            </tr>         
-        </table>
+        @include('pdf_hospital.partials.establishment_logo', [
+            'empresa' => $empresa,
+            'logoRowHeight' => $isLandscapeFirstPage ? 38 : 50,
+            'logoHeight' => $isLandscapeFirstPage ? $firstPageLogoHeight : 44,
+        ])
       
         <table border="1" cellpadding="0" cellspacing="0" style="width: 100%">
             <thead>
@@ -363,9 +354,9 @@ if (isset($record->anestesiologo)) {
         @php 
             $cont = 0;
             $nombre = '';
-            $nombrePre='';
+            $nombrePre=trim((string) ($record->diagnostico_preoperatorio ?? ''));
             $ciePre='';
-            $nombrePost='';
+            $nombrePost=trim((string) ($record->diagnostico_postoperatorio ?? ''));
             $ciePost='';
             $id_anestesiologo = null;
             if(isset($record->anestesiologo)) {
@@ -377,25 +368,17 @@ if (isset($record->anestesiologo)) {
         @endphp
         @foreach ($cie10 as $key=>$val)
             @php
-                $c3 = Sis_medico\Cie_10_3::find($val->cie10);
-                if(!is_null($c3)){
-                    if($nombrePre==''){
-                        $nombrePre = $c3->descripcion;
-                        $ciePre = $val->cie10;
-                    }
-                    else{
-                        $nombrePost=$c3->descripcion;
-                        $ciePost = $val->cie10;
-                    }
+                $diagnosticoCie = Sis_medico\Cie_10_3::find($val->cie10);
+                if (is_null($diagnosticoCie)) {
+                    $diagnosticoCie = Sis_medico\Cie_10_4::find($val->cie10);
                 }
-                else{
-                    $c4 = Sis_medico\Cie_10_4::find($val->cie10);
-                    if($nombrePre==''){
-                        $nombrePre = $c3->descripcion;
+                if (!is_null($diagnosticoCie)) {
+                    if($loop->index === 0){
+                        if ($nombrePre === '') $nombrePre = $diagnosticoCie->descripcion;
                         $ciePre = $val->cie10;
                     }
-                    else{
-                        $nombrePost=$c3->descripcion;
+                    elseif($loop->index === 1){
+                        if ($nombrePost === '') $nombrePost = $diagnosticoCie->descripcion;
                         $ciePost = $val->cie10;
                     }
                 }
@@ -407,7 +390,7 @@ if (isset($record->anestesiologo)) {
                     <td colspan="12" class="bg-purple"><b>B. SERVICIO Y PRIORIDAD DE ATENCION</b></td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="text-center bg-green" style="width: 200px;">DIAGNÓSTICO PREOPERATORIO</td>
+                    <td colspan="2" class="text-center bg-green" style="width: 200px;">DIAGNÓSTICO PRESUNTIVO / PREOPERATORIO</td>
                     <td>{{$nombrePre}}</td>
                     <td class="text-center bg-green" >CIE</td>
                     <td>{{$ciePre}}</td>
@@ -419,7 +402,7 @@ if (isset($record->anestesiologo)) {
                     <td style="width: 2%;"></td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="text-center bg-green" style="width: 200px;">DIAGNÓSTICO POSTOPERATORIO</td>
+                    <td colspan="2" class="text-center bg-green" style="width: 200px;">DIAGNÓSTICO DEFINITIVO / POSTOPERATORIO</td>
                     <td>{{$nombrePost}}</td>
                     <td class="text-center bg-green" >CIE</td>
                     <td>{{$ciePost}}</td>
@@ -495,10 +478,6 @@ if (isset($record->anestesiologo)) {
                     <td class="text-center">
                     @if(!empty($transanestesicoImage))
                         <img style="width: 1100px;height: {{ $isLandscapeFirstPage ? $firstPageCanvasHeight.'px' : '380px' }};" src="{{$transanestesicoImage}}">
-                    @elseif(!empty($record->tran_anastesico_path))
-                        <img style="width: 1100px;height: {{ $isLandscapeFirstPage ? $firstPageCanvasHeight.'px' : '380px' }};" src="{{base_path().'/storage/app/hc_ima/trans/'.$record->tran_anastesico_path}}">
-                    @elseif(!empty($record->url_imagen))
-                        <img style="width: 1100px;height: {{ $isLandscapeFirstPage ? $firstPageCanvasHeight.'px' : '380px' }};" src="{{base_path().'/storage/app/hc_ima/'.$record->url_imagen}}">
                     @else
                         <img width="1000" height="{{ $isLandscapeFirstPage ? $firstPageCanvasHeight : '380' }}" src="{{base_path().'/public/assets/images/record_transanestesico.png'}}">
                     @endif
@@ -1014,24 +993,16 @@ if (isset($record->anestesiologo)) {
                     <td class="text-center bg-green" style="height: 45px; width: 6%;">HORA</td>
                     <td class="text-center" style="width: 8%;">{{$hora}}</td>
                     <td class="text-center bg-green" style="width: 15%;">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
-                    <td class="text-center" style="width: 25%;">{{$nombre}}</td>
+                    <td class="text-center" style="width: 20%;">{{$anesthesiaSignature['name'] ?? $nombre}}</td>
                     <td class="text-center bg-green" style="width: 6%;">FIRMA</td>
-                    <td class="text-center">
-                        @php 
-                            $ruta_firma = "";
-                            if(!is_null($id_anestesiologo)){
-                                $firma = \Sis_medico\Firma_Usuario::where('id_usuario',$id_anestesiologo)->first();
-                                if(!is_null($firma)){
-                                    $ruta_firma = base_path().'/storage/app/logo/' . $firma->nombre;
-                                }
-                            }
-                        @endphp
-                        @if($ruta_firma!="")
-                            <img src="{{$ruta_firma}}" style="width: 50%;"><br>
-                        @endif
+                    <td class="text-center" style="width:28%; vertical-align:middle;">
+                        @include('pdf_hospital.partials.anesthesia_signature', ['anesthesiaSignature' => $anesthesiaSignature])
                     </td>
                     <td class="text-center bg-green" style="width: 8%;">SELLO Y CÓDIGO</td>
-                    <td class="text-center"></td>
+                    <td class="text-center" style="width:18%; vertical-align:middle;">
+                        <div style="font-size:6px; margin-bottom:2px;">ID: {{$anesthesiaSignature['identification'] ?? 'NO REGISTRADO'}}</div>
+                        @include('pdf_hospital.partials.anesthesia_seal', ['anesthesiaSignature' => $anesthesiaSignature])
+                    </td>
                 </tr>
             </tbody>
         </table>

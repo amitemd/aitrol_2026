@@ -62,11 +62,22 @@ class V3DoctorAgendaService
                 'pr.nombre as procedimiento_nombre',
                 'sg.nombre as seguro_nombre'
             )->orderBy('a.fechaini')->get();
+        $surgeryDetails = collect();
+        if (Schema::hasTable('agenda_cirugias')) {
+            $surgeryIds = $events->where('proc_consul', 5)->pluck('id')->all();
+            if ($surgeryIds) {
+                $surgeryDetails = DB::table('agenda_cirugias')->whereIn('id_agenda', $surgeryIds)->get()->keyBy('id_agenda');
+            }
+        }
         foreach ($events as $event) {
             $event->patient_name = $event->proc_consul == 2 ? 'Reunión' : $this->patientName($event);
             $event->type_label = $this->typeLabel($event->proc_consul);
             $event->state_label = $this->stateLabel($event->estado_cita);
             $event->day_key = date('Y-m-d', strtotime($event->fechaini));
+            $surgery = $surgeryDetails->get($event->id);
+            $event->display_start = $surgery ? $surgery->hora_quirurgica : $event->fechaini;
+            $event->display_end = $surgery ? $surgery->fin_quirurgico : $event->fechafin;
+            $event->surgery_status = $surgery ? $surgery->estado_quirurgico : null;
         }
         $days = [];
         $recurring = DB::table('horario_doctor')->where('id_doctor', $doctorId)->where('estado', 1)
@@ -199,6 +210,9 @@ class V3DoctorAgendaService
                 $rooms->push($room);
             }
         }
+        $surgeryRooms = $rooms->filter(function ($room) {
+            return isset($room->category_label) && $room->category_label === 'Cirugía';
+        })->values();
         $doctorSpecialty = $this->assignedSpecialtiesForDoctor($companyId, $doctorId)->first();
         $insurers = Seguro::query();
         if (Schema::hasColumn('seguros', 'id_empresa')) {
@@ -227,6 +241,14 @@ class V3DoctorAgendaService
                 ->where('id_empresa', $companyId)->where('inactivo', 1)
                 ->where('tipo', '<>', 0)->exists()
             : false;
+        $procedureQuery = DB::table('procedimiento')->where('estado', 1);
+        $surgicalProcedureQuery = DB::table('procedimiento')->where('estado', 1);
+        if (Schema::hasColumn('procedimiento', 'quirofano')) {
+            $surgicalProcedureQuery->where('quirofano', 1);
+        }
+        $surgeryDetail = $appointment && Schema::hasTable('agenda_cirugias')
+            ? DB::table('agenda_cirugias')->where('id_agenda', $appointment->id)->first()
+            : null;
 
         return [
             'doctor' => $doctor,
@@ -235,10 +257,13 @@ class V3DoctorAgendaService
             'selectedPatient' => $selectedPatient,
             'patientSearch' => $patientSearch,
             'rooms' => $rooms,
+            'surgeryRooms' => $surgeryRooms,
             'doctorSpecialty' => $doctorSpecialty,
             'insurers' => $insurers->orderBy('nombre')->get(),
-            'procedures' => DB::table('procedimiento')->where('estado', 1)->select('id', 'nombre')->orderBy('nombre')->get(),
+            'procedures' => $procedureQuery->select('id', 'nombre')->orderBy('nombre')->get(),
+            'surgicalProcedures' => $surgicalProcedureQuery->select('id', 'nombre')->orderBy('nombre')->get(),
             'assistants' => $assistants,
+            'surgeryDetail' => $surgeryDetail,
             'additionalProcedures' => $additionalProcedures,
             'logs' => $logs,
             'patientObservation' => $patientObservation,
@@ -249,7 +274,7 @@ class V3DoctorAgendaService
         ];
     }
 
-    public function searchPatients($companyId, $search)
+    public function searchPatients($companyId, $search, $exactIdentification = false)
     {
         $search = trim((string) $search);
         if (mb_strlen($search, 'UTF-8') < 3) {
@@ -262,20 +287,27 @@ class V3DoctorAgendaService
         }
         // Paciente no usa SoftDeletes. En bases legadas deleted_at puede contener
         // la fecha de creación de registros vigentes y no sirve como filtro.
-        foreach (preg_split('/\s+/u', $search, -1, PREG_SPLIT_NO_EMPTY) as $term) {
-            $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
-            $patients->where(function ($query) use ($like) {
-                $query->where('id', 'like', $like)->orWhere('nombre1', 'like', $like)->orWhere('nombre2', 'like', $like)
-                    ->orWhere('apellido1', 'like', $like)->orWhere('apellido2', 'like', $like);
-            });
+        if ($exactIdentification) {
+            $patients->where('id', $search);
+        } else {
+            foreach (preg_split('/\s+/u', $search, -1, PREG_SPLIT_NO_EMPTY) as $term) {
+                $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
+                $patients->where(function ($query) use ($like) {
+                    $query->where('id', 'like', $like)->orWhere('nombre1', 'like', $like)->orWhere('nombre2', 'like', $like)
+                        ->orWhere('apellido1', 'like', $like)->orWhere('apellido2', 'like', $like);
+                });
+            }
         }
-        $patients = $patients->select('id', 'nombre1', 'nombre2', 'apellido1', 'apellido2', 'fecha_nacimiento', 'id_seguro')
+        $columns = ['id', 'nombre1', 'nombre2', 'apellido1', 'apellido2', 'fecha_nacimiento', 'id_seguro'];
+        if ($exactIdentification) {
+            $columns = array_merge($columns, ['tipo_documento', 'sexo', 'id_pais', 'telefono1', 'mail_opcional']);
+        }
+        $patients = $patients->select($columns)
             ->orderBy('apellido1')->orderBy('nombre1')->limit(20)->get();
         $patientsWithAppointments = [];
         if ($patients->isNotEmpty()) {
             foreach (
-                DB::table('agenda')->where('id_empresa', $companyId)
-                    ->whereIn('id_paciente', $patients->pluck('id')->all())
+                DB::table('agenda')->where('id_empresa', $companyId)->whereIn('id_paciente', $patients->pluck('id')->all())->where('proc_consul', 0)
                     ->distinct()->pluck('id_paciente') as $patientId
             ) {
                 $patientsWithAppointments[(string) $patientId] = true;
@@ -302,13 +334,16 @@ class V3DoctorAgendaService
         return $query->first() ? 1 : 0;
     }
 
-    public function searchProcedures($search)
+    public function searchProcedures($search, $surgical = false)
     {
         $search = trim((string) $search);
         if (mb_strlen($search, 'UTF-8') < 3) {
             return collect();
         }
         $query = DB::table('procedimiento')->where('estado', 1);
+        if ($surgical && Schema::hasColumn('procedimiento', 'quirofano')) {
+            $query->where('quirofano', 1);
+        }
         foreach (preg_split('/\s+/u', $search, -1, PREG_SPLIT_NO_EMPTY) as $term) {
             $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
             $query->where(function ($query) use ($like) {
@@ -335,84 +370,9 @@ class V3DoctorAgendaService
         return $patients;
     }
 
-    public function availableIntervals($companyId, $doctorId, $date, $type, $excludeAppointment = null)
+    public function availableIntervals($companyId, $doctorId, $date, $type, $excludeAppointment = null, array $options = [])
     {
-        $this->doctor($companyId, $doctorId);
-        $dayStart = strtotime($date.' 00:00:00');
-        if ($dayStart === false || date('Y-m-d', $dayStart) !== $date) {
-            throw new RuntimeException('La fecha consultada no es válida.');
-        }
-        if ($date < date('Y-m-d')) {
-            return [];
-        }
-        $dayEnd = strtotime($date.' 23:59:59');
-        $windows = [];
-        $scheduleTypes = $this->scheduleTypesForAgenda($type);
-        $hasConsultationInterval = Schema::hasColumn('horario_doctor', 'intervalo_consulta');
-        $hasProcedureInterval = Schema::hasColumn('horario_doctor', 'intervalo_procedimiento');
-
-        $recurring = DB::table('horario_doctor')->where('id_doctor', $doctorId)->where('estado', 1)
-            ->where('ndia', (int) date('N', $dayStart))->whereIn('tipo', $scheduleTypes)->get();
-        foreach ($recurring as $slot) {
-            $interval = 30;
-            if ((int) $type === 0 && $hasConsultationInterval) {
-                $interval = (int) $slot->intervalo_consulta;
-            }
-            if ((int) $type === 1 && $hasProcedureInterval) {
-                $interval = (int) $slot->intervalo_procedimiento;
-            }
-            $windows[] = [strtotime($date.' '.$slot->hora_ini), strtotime($date.' '.$slot->hora_fin), max(15, $interval)];
-        }
-        $exceptions = DB::table('excepcion_horario')->where('id_doctor1', $doctorId)
-            ->where('inicio', '<=', date('Y-m-d H:i:s', $dayEnd))->where('fin', '>=', date('Y-m-d H:i:s', $dayStart))
-            ->whereIn('tipo', $scheduleTypes)->get();
-        foreach ($exceptions as $slot) {
-            $windows[] = [max($dayStart, strtotime($slot->inicio)), min($dayEnd, strtotime($slot->fin)), 30];
-        }
-        usort($windows, function ($a, $b) {
-            return $a[0] - $b[0];
-        });
-
-        $busyQuery = DB::table('agenda')->where('estado', 1)
-            ->where(function ($query) use ($doctorId) {
-                $query->where('id_doctor1', $doctorId)->orWhere('id_doctor2', $doctorId)->orWhere('id_doctor3', $doctorId);
-            })
-            ->where('fechaini', '<', date('Y-m-d H:i:s', $dayEnd))->where('fechafin', '>', date('Y-m-d H:i:s', $dayStart));
-        if ($excludeAppointment) {
-            $busyQuery->where('id', '<>', $excludeAppointment);
-        }
-        $busy = $busyQuery->orderBy('fechaini')->get(['fechaini', 'fechafin']);
-
-        $available = [];
-        foreach ($windows as $window) {
-            if ($window[0] === false || $window[1] === false || $window[1] <= $window[0]) {
-                continue;
-            }
-            $duration = $window[2] * 60;
-            for ($start = $window[0]; $start + $duration <= $window[1]; $start += $duration) {
-                $end = $start + $duration;
-                if ($start <= time()) {
-                    continue;
-                }
-                $isBusy = false;
-                foreach ($busy as $appointment) {
-                    if (strtotime($appointment->fechaini) < $end && strtotime($appointment->fechafin) > $start) {
-                        $isBusy = true;
-                        break;
-                    }
-                }
-                if (! $isBusy) {
-                    $this->appendAvailableInterval($available, $date, $start, $end, $window[2]);
-                }
-            }
-        }
-        $unique = [];
-        foreach ($available as $item) {
-            $unique[$item['start'].'|'.$item['end']] = $item;
-        }
-        ksort($unique);
-
-        return array_values($unique);
+        return $this->availability($companyId, $doctorId, $date, $type, $excludeAppointment, $options)['items'];
     }
 
     private function appendAvailableInterval(array &$items, $date, $start, $end, $minutes)
@@ -433,6 +393,10 @@ class V3DoctorAgendaService
         }
         if ((int) $type === 1) {
             return [0, 2];
+        }
+        // La cirugía puede ocupar un bloque libre del horario laboral general, de consultas o de procedimientos.
+        if ((int) $type === 5) {
+            return [0, 1, 2];
         }
 
         return [0];
@@ -460,7 +424,7 @@ class V3DoctorAgendaService
             DB::table('users')->where('id', $doctorId)->lockForUpdate()->first();
 
             return $this->saveAppointmentLocked($companyId, $doctorId, $data, $actorId, $ip, $appointmentId, $allowOutside);
-        });
+        }, 3);
     }
 
     private function saveAppointmentLocked($companyId, $doctorId, array $data, $actorId, $ip, $appointmentId, $allowOutside)
@@ -477,6 +441,7 @@ class V3DoctorAgendaService
                     'id_paciente' => 'id_paciente',
                     'id_sala' => 'id_sala',
                     'id_seguro' => 'id_seguro',
+                    'id_procedimiento' => 'id_procedimiento',
                     'espid' => 'espid',
                     'tipo_cita' => 'tipo_cita',
                     'id_doctor1' => 'id_doctor1',
@@ -508,6 +473,7 @@ class V3DoctorAgendaService
                     'id_doctor2' => 'id_doctor2',
                     'id_doctor3' => 'id_doctor3',
                     'id_seguro' => 'id_seguro',
+                    'id_procedimiento' => 'id_procedimiento',
                     'espid' => 'espid',
                     'tipo_cita' => 'tipo_cita',
                     'estado_cita' => 'estado_cita',
@@ -515,12 +481,42 @@ class V3DoctorAgendaService
             ) {
                 $data[$input] = $before->$column;
             }
+            if ((int) $before->proc_consul === 5 && Schema::hasTable('agenda_cirugias')) {
+                $surgeryLocked = DB::table('agenda_cirugias')->where('id_agenda', $before->id)->first();
+                if ($surgeryLocked) {
+                    $lockedSurgeryValues = [
+                        'hora_quirurgica' => $surgeryLocked->hora_quirurgica,
+                        'modalidad_cirugia' => $surgeryLocked->modalidad,
+                        'duracion_cirugia' => $surgeryLocked->duracion_minutos,
+                        'preparacion_minutos' => $surgeryLocked->preparacion_minutos,
+                        'limpieza_minutos' => $surgeryLocked->limpieza_minutos,
+                        'id_anestesiologo' => $surgeryLocked->id_anestesiologo,
+                    ];
+                    foreach ($lockedSurgeryValues as $field => $existing) {
+                        if (array_key_exists($field, $data)) {
+                            $incoming = $field === 'hora_quirurgica' ? date('Y-m-d H:i', strtotime($data[$field])) : $data[$field];
+                            $comparable = $field === 'hora_quirurgica' ? date('Y-m-d H:i', strtotime($existing)) : $existing;
+                            if ((string) $incoming !== (string) $comparable) {
+                                throw new RuntimeException('La cirugía ya está admitida y sus recursos u horario no pueden modificarse.');
+                            }
+                        }
+                        $data[$field] = $existing;
+                    }
+                }
+            }
         }
         // La especialidad pertenece a la configuración del médico. No se acepta
         // como una selección manual del formulario.
         if (! $admitted && isset($data['tipo']) && (int) $data['tipo'] !== 2) {
             $doctorSpecialty = $this->assignedSpecialtiesForDoctor($companyId, $doctorId)->first();
             $data['espid'] = $doctorSpecialty ? $doctorSpecialty->id : null;
+        }
+        $type = (int) $data['tipo'];
+        if ($type === 5) {
+            if (! Schema::hasTable('agenda_cirugias')) {
+                throw new RuntimeException('La planificación quirúrgica todavía no está instalada. Ejecute la migración correspondiente.');
+            }
+            $data = $this->normalizeSurgeryTimes($data);
         }
         $start = date('Y-m-d H:i:s', strtotime($data['inicio']));
         $end = date('Y-m-d H:i:s', strtotime($data['fin']));
@@ -531,8 +527,7 @@ class V3DoctorAgendaService
         if ((! $appointmentId || $start !== $originalStart) && strtotime($start) <= time()) {
             throw new RuntimeException('No se puede crear o reprogramar una agenda en una fecha u hora anterior a la actual.');
         }
-        $type = (int) $data['tipo'];
-        if ($type !== 1) {
+        if (! in_array($type, [1, 5], true)) {
             $preserveLockedAssistants = $before
                 && ($admitted || (int) $before->estado_cita === 1)
                 && (int) $before->proc_consul === $type;
@@ -548,10 +543,16 @@ class V3DoctorAgendaService
         if ($type !== 2 && (empty($data['id_sala']) || empty($data['id_seguro']))) {
             throw new RuntimeException('Paciente, sala y seguro son obligatorios para una atención clínica.');
         }
-        if ($type === 1 && empty($data['id_procedimiento'])) {
+        if (in_array($type, [1, 5], true) && empty($data['id_procedimiento'])) {
             throw new RuntimeException('Seleccione el procedimiento que se realizará.');
         }
         $this->validateReferences($companyId, $doctorId, $type, $data);
+        if (! empty($data['id_sala'])) {
+            DB::table('sala')->where('id', $data['id_sala'])->lockForUpdate()->first(['id']);
+        }
+        if ($type === 5 && ! empty($data['id_anestesiologo'])) {
+            DB::table('users')->where('id', $data['id_anestesiologo'])->lockForUpdate()->first(['id']);
+        }
         if (! $appointmentId && $type !== 2) {
             // La clasificación se decide con la base de datos, no con el valor
             // manipulable del formulario. El bloqueo evita dos "primeras veces"
@@ -572,7 +573,7 @@ class V3DoctorAgendaService
         if ($appointmentId) {
             $overlap->where('id', '<>', $appointmentId);
         }
-        if (! $admitted && $overlap->exists()) {
+        if (! $admitted && $overlap->lockForUpdate()->first(['id']) !== null) {
             throw new RuntimeException('El médico ya tiene una agenda en ese horario.');
         }
         if (! $admitted && ! empty($data['id_sala'])) {
@@ -581,8 +582,19 @@ class V3DoctorAgendaService
             if ($appointmentId) {
                 $roomBusy->where('id', '<>', $appointmentId);
             }
-            if ($roomBusy->exists()) {
+            if ($roomBusy->lockForUpdate()->first(['id']) !== null) {
                 throw new RuntimeException('La sala ya está ocupada en ese horario.');
+            }
+        }
+        if (! $admitted && $type === 5 && ! empty($data['id_anestesiologo'])) {
+            $anesthesiologistBusy = DB::table('agenda_cirugias as ac')->join('agenda as a', 'a.id', '=', 'ac.id_agenda')
+                ->where('a.estado', 1)->where('ac.id_anestesiologo', $data['id_anestesiologo'])
+                ->where('a.fechaini', '<', $end)->where('a.fechafin', '>', $start);
+            if ($appointmentId) {
+                $anesthesiologistBusy->where('a.id', '<>', $appointmentId);
+            }
+            if ($anesthesiologistBusy->lockForUpdate()->first(['a.id']) !== null) {
+                throw new RuntimeException('El anestesiólogo ya tiene una cirugía en ese horario.');
             }
         }
         $now = date('Y-m-d H:i:s');
@@ -612,7 +624,7 @@ class V3DoctorAgendaService
         } else {
             $payload['id_paciente'] = $data['id_paciente'];
             $payload['id_seguro'] = $this->nullable($data, 'id_seguro');
-            $payload['id_procedimiento'] = $type === 1 ? $this->nullable($data, 'id_procedimiento') : null;
+            $payload['id_procedimiento'] = in_array($type, [1, 5], true) ? $this->nullable($data, 'id_procedimiento') : null;
             $payload['tipo_cita'] = isset($data['tipo_cita']) ? (int) $data['tipo_cita'] : 0;
             $payload['estado_cita'] = $appointmentStatus;
             $payload['est_amb_hos'] = (int) $data['est_amb_hos'];
@@ -640,6 +652,11 @@ class V3DoctorAgendaService
             $payload['id_usuariocrea'] = $actorId;
             $payload['created_at'] = $now;
             $savedId = DB::table('agenda')->insertGetId($payload);
+        }
+        if ($type === 5) {
+            $this->saveSurgeryDetail($savedId, $data, $appointmentStatus, $actorId, $ip, $now);
+        } elseif ($before && (int) $before->proc_consul === 5 && Schema::hasTable('agenda_cirugias')) {
+            DB::table('agenda_cirugias')->where('id_agenda', $savedId)->delete();
         }
         if ($type !== 2) {
             $procedureIds = array_values(array_unique(array_filter(array_map('intval', isset($data['procedimientos']) ? (array) $data['procedimientos'] : []))));
@@ -697,6 +714,9 @@ class V3DoctorAgendaService
         }
         $isAdmission = $type !== 2 && isset($payload['estado_cita']) && (int) $payload['estado_cita'] === 4;
         if ($isAdmission) {
+            if ($type === 5 && (int) $payload['estado'] === 1) {
+                app(ClinicalSurgeryAgendaAdmissionService::class)->ensure($savedId, $actorId, $ip);
+            }
             $this->createAdmissionHistory($savedId, $payload, $actorId, $ip, $now);
             if ($type === 1) {
                 $this->createPendingPentax($savedId, $payload, $procedureIds, $actorId, $ip, $now);
@@ -762,6 +782,14 @@ class V3DoctorAgendaService
                 'ip_modificacion' => $ip,
                 'updated_at' => $now,
             ]);
+            if ((int) $appointment->proc_consul === 5 && Schema::hasTable('agenda_cirugias')) {
+                DB::table('agenda_cirugias')->where('id_agenda', $appointmentId)->update([
+                    'estado_quirurgico' => 'CANCELADA',
+                    'id_usuariomod' => $actorId,
+                    'ip_modificacion' => $ip,
+                    'updated_at' => $now,
+                ]);
+            }
             DB::table('log_agenda')->insert([
                 'id_agenda' => $appointmentId,
                 'descripcion' => 'Agenda cancelada',
@@ -977,14 +1005,41 @@ class V3DoctorAgendaService
         if (! empty($data['espid']) && ! $this->assignedSpecialtiesForDoctor($companyId, $doctorId)->where('id', (int) $data['espid'])->count()) {
             throw new RuntimeException('La especialidad configurada no está disponible para el médico.');
         }
-        if ($type === 1) {
+        if (in_array($type, [1, 5], true)) {
             foreach (['id_doctor2', 'id_doctor3'] as $assistantField) {
                 if (! empty($data[$assistantField]) && ! $this->isActiveDoctorForCompany($companyId, $data[$assistantField])) {
                     throw new RuntimeException('Uno de los médicos asistentes no pertenece a la empresa activa.');
                 }
+                if (! empty($data[$assistantField]) && (string) $data[$assistantField] === (string) $doctorId) {
+                    throw new RuntimeException('El médico principal no puede repetirse como asistente.');
+                }
             }
             if (! empty($data['id_doctor2']) && ! empty($data['id_doctor3']) && (string) $data['id_doctor2'] === (string) $data['id_doctor3']) {
                 throw new RuntimeException('Los médicos asistentes deben ser diferentes.');
+            }
+        }
+        if ($type === 5) {
+            $surgicalRoomIds = [];
+            foreach ($this->availability->hospitals($companyId) as $hospital) {
+                foreach ($hospital->rooms as $room) {
+                    if (isset($room->category_label) && $room->category_label === 'Cirugía') {
+                        $surgicalRoomIds[] = (int) $room->id;
+                    }
+                }
+            }
+            if (! in_array((int) $data['id_sala'], $surgicalRoomIds, true)) {
+                throw new RuntimeException('Seleccione un quirófano activo de la empresa para programar la cirugía.');
+            }
+            if (! empty($data['id_anestesiologo'])) {
+                if ((string) $data['id_anestesiologo'] === (string) $doctorId) {
+                    throw new RuntimeException('El cirujano principal y el anestesiólogo deben ser profesionales diferentes.');
+                }
+                if (! $this->isActiveDoctorForCompany($companyId, $data['id_anestesiologo'])) {
+                    throw new RuntimeException('El anestesiólogo seleccionado no pertenece a la empresa activa.');
+                }
+                if (in_array((string) $data['id_anestesiologo'], [(string) ($data['id_doctor2'] ?? ''), (string) ($data['id_doctor3'] ?? '')], true)) {
+                    throw new RuntimeException('El anestesiólogo no puede repetirse como ayudante quirúrgico.');
+                }
             }
         }
         foreach (isset($data['procedimientos']) ? (array) $data['procedimientos'] : [] as $procedureId) {
@@ -1006,8 +1061,16 @@ class V3DoctorAgendaService
                 throw new RuntimeException('El seguro seleccionado no está activo.');
             }
         }
-        if ($type === 1 && ! DB::table('procedimiento')->where('id', $data['id_procedimiento'])->where('estado', 1)->exists()) {
-            throw new RuntimeException('El procedimiento seleccionado no está activo.');
+        if (in_array($type, [1, 5], true)) {
+            $procedure = DB::table('procedimiento')->where('id', $data['id_procedimiento'])->where('estado', 1);
+            if ($type === 5 && Schema::hasColumn('procedimiento', 'quirofano')) {
+                $procedure->where('quirofano', 1);
+            }
+            if (! $procedure->exists()) {
+                throw new RuntimeException($type === 5
+                    ? 'El procedimiento seleccionado no está habilitado para quirófano.'
+                    : 'El procedimiento seleccionado no está activo.');
+            }
         }
     }
 
@@ -1045,6 +1108,10 @@ class V3DoctorAgendaService
 
     private function typeLabel($type)
     {
+        if ((int) $type === 5) {
+            return 'Cirugía';
+        }
+
         return (int) $type === 1 ? 'Procedimiento' : ((int) $type === 2 ? 'Reunión' : 'Consulta');
     }
 
@@ -1283,5 +1350,355 @@ class V3DoctorAgendaService
     private function patientName($event)
     {
         return trim(implode(' ', array_filter([$event->p_apellido1, $event->p_apellido2, $event->p_nombre1, $event->p_nombre2])));
+    }
+
+    public static function canManageDoctor($user, $doctorId): bool
+    {
+        return $user && ((string) $user->id === (string) $doctorId
+            || self::canManageOtherDoctors($user));
+    }
+
+    public function manageableDoctors($companyId, $user)
+    {
+        if (! $user) {
+            return collect();
+        }
+        $query = $this->doctorQuery($companyId);
+        if (! self::canManageOtherDoctors($user)) {
+            $query->where('u.id', $user->id);
+        }
+
+        return $query->select('u.id', 'u.nombre1', 'u.nombre2', 'u.apellido1', 'u.apellido2')
+            ->distinct()->orderBy('u.apellido1')->orderBy('u.nombre1')->get()->map(function ($doctor) {
+                $doctor->display_name = $this->personName($doctor);
+
+                return $doctor;
+            });
+    }
+
+    private static function canManageOtherDoctors($user): bool
+    {
+        return in_array((int) $user->id_tipo_usuario, [1, 4, 5], true);
+    }
+
+    private function doctorQuery($companyId)
+    {
+        return DB::table('users as u')->join('usuario_empresa as ue', 'ue.id_usuario', '=', 'u.id')
+            ->where('ue.id_empresa', $companyId)->where('u.estado', 1)
+            ->where(function ($professional) {
+                $professional->whereExists(function ($typedDoctor) {
+                    $typedDoctor->select(DB::raw(1))->from('tipousuario as doctor_type_selected')
+                        ->whereColumn('doctor_type_selected.id', 'u.id_tipo_usuario')
+                        ->where('doctor_type_selected.estado', 1)
+                        ->whereIn(DB::raw('UPPER(TRIM(doctor_type_selected.nombre))'), DoctorUserType::names());
+                })->orWhereExists(function ($specialty) {
+                    $specialty->select(DB::raw(1))->from('user_espe as session_specialty')
+                        ->join('especialidad as session_specialty_catalog', 'session_specialty_catalog.id', '=', 'session_specialty.espid')
+                        ->whereColumn('session_specialty.usuid', 'u.id')
+                        ->where('session_specialty_catalog.estado', 1);
+                });
+            });
+    }
+
+    public function availability($companyId, $doctorId, $date, $type, $excludeAppointment = null, array $options = [])
+    {
+        $this->doctor($companyId, $doctorId);
+        $dayStart = strtotime($date.' 00:00:00');
+        if ($dayStart === false || date('Y-m-d', $dayStart) !== $date) {
+            throw new RuntimeException('La fecha consultada no es válida.');
+        }
+        if ($date < date('Y-m-d')) {
+            return ['items' => [], 'reason' => 'past_date'];
+        }
+        $dayEnd = strtotime($date.' 23:59:59');
+        $windows = [];
+        $scheduleTypes = $this->scheduleTypesForAgenda($type);
+        $hasConsultationInterval = Schema::hasColumn('horario_doctor', 'intervalo_consulta');
+        $hasProcedureInterval = Schema::hasColumn('horario_doctor', 'intervalo_procedimiento');
+        $isSurgery = (int) $type === 5;
+        $surgeryBlocks = $isSurgery && ! empty($options['bloques_cirugia']);
+        $surgeryMinutes = max(30, min(720, (int) (isset($options['duracion_cirugia']) ? $options['duracion_cirugia'] : 120)));
+        $preparationMinutes = max(0, min(180, (int) (isset($options['preparacion_minutos']) ? $options['preparacion_minutos'] : 30)));
+        $cleaningMinutes = max(0, min(180, (int) (isset($options['limpieza_minutos']) ? $options['limpieza_minutos'] : 30)));
+        $blockMinutes = $isSurgery ? $preparationMinutes + $surgeryMinutes + $cleaningMinutes : null;
+
+        $recurring = DB::table('horario_doctor')->where('id_doctor', $doctorId)->where('estado', 1)
+            ->where('ndia', (int) date('N', $dayStart));
+        if (! $isSurgery) {
+            $recurring->whereIn('tipo', $scheduleTypes);
+        }
+        foreach ($recurring->get() as $slot) {
+            $interval = 30;
+            if ((int) $type === 0 && $hasConsultationInterval) {
+                $interval = (int) $slot->intervalo_consulta;
+            }
+            if ((int) $type === 1 && $hasProcedureInterval) {
+                $interval = (int) $slot->intervalo_procedimiento;
+            }
+            if ($blockMinutes !== null) {
+                $interval = $blockMinutes;
+            }
+            $windows[] = [strtotime($date.' '.$slot->hora_ini), strtotime($date.' '.$slot->hora_fin), max(15, $interval), $isSurgery ? 30 : max(15, $interval), $slot->tipo];
+        }
+        $exceptions = DB::table('excepcion_horario')->where('id_doctor1', $doctorId)
+            ->where('inicio', '<=', date('Y-m-d H:i:s', $dayEnd))->where('fin', '>=', date('Y-m-d H:i:s', $dayStart));
+        if (! $isSurgery) {
+            $exceptions->whereIn('tipo', $scheduleTypes);
+        }
+        foreach ($exceptions->get() as $slot) {
+            $windows[] = [max($dayStart, strtotime($slot->inicio)), min($dayEnd, strtotime($slot->fin)), $blockMinutes ?? 30, 30, $slot->tipo];
+        }
+        usort($windows, function ($a, $b) {
+            return $a[0] - $b[0];
+        });
+
+        $busyQuery = DB::table('agenda')->where('estado', 1)
+            ->where(function ($query) use ($doctorId) {
+                $query->where('id_doctor1', $doctorId)->orWhere('id_doctor2', $doctorId)->orWhere('id_doctor3', $doctorId);
+            })
+            ->where('fechaini', '<', date('Y-m-d H:i:s', $dayEnd))->where('fechafin', '>', date('Y-m-d H:i:s', $dayStart));
+        if ($excludeAppointment) {
+            $busyQuery->where('id', '<>', $excludeAppointment);
+        }
+        $busy = $busyQuery->orderBy('fechaini')->get(['fechaini', 'fechafin']);
+        $roomBusy = collect();
+        $anesthesiologistBusy = collect();
+        if ($isSurgery && ! empty($options['id_sala'])) {
+            $roomQuery = DB::table('agenda')->where('estado', 1)->where('id_empresa', $companyId)
+                ->where('id_sala', $options['id_sala'])->where('fechaini', '<', date('Y-m-d H:i:s', $dayEnd))
+                ->where('fechafin', '>', date('Y-m-d H:i:s', $dayStart));
+            if ($excludeAppointment) {
+                $roomQuery->where('id', '<>', $excludeAppointment);
+            }
+            $roomBusy = $roomQuery->get(['fechaini', 'fechafin']);
+        }
+        if ($isSurgery && ! empty($options['id_anestesiologo']) && Schema::hasTable('agenda_cirugias')) {
+            $anesthesiaQuery = DB::table('agenda_cirugias as ac')->join('agenda as a', 'a.id', '=', 'ac.id_agenda')
+                ->where('a.estado', 1)->where('ac.id_anestesiologo', $options['id_anestesiologo'])
+                ->where('a.fechaini', '<', date('Y-m-d H:i:s', $dayEnd))->where('a.fechafin', '>', date('Y-m-d H:i:s', $dayStart));
+            if ($excludeAppointment) {
+                $anesthesiaQuery->where('a.id', '<>', $excludeAppointment);
+            }
+            $anesthesiologistBusy = $anesthesiaQuery->get(['a.fechaini', 'a.fechafin']);
+        }
+
+        $available = [];
+        $configured = [];
+        $reason = 'no_schedule';
+        $now = time();
+        foreach ($windows as $window) {
+            if ($window[0] === false || $window[1] === false || $window[1] <= $window[0]) {
+                continue;
+            }
+            if ($isSurgery) {
+                $scheduleType = $window[4] === null ? null : (int) $window[4];
+                $canBook = in_array($scheduleType, $scheduleTypes, true);
+                $configured[] = [
+                    'start' => date('H:i', $window[0]),
+                    'end' => date('H:i', $window[1]),
+                    'restriction' => $canBook ? null : ($scheduleType === 3 ? 'IESS' : 'Sin habilitar para cirugía'),
+                ];
+                if (! $canBook) {
+                    if ($reason === 'no_schedule') {
+                        $reason = 'restricted_schedule';
+                    }
+
+                    continue;
+                }
+            }
+            if (in_array($reason, ['no_schedule', 'restricted_schedule'], true)) {
+                $reason = 'no_full_block';
+            }
+            $duration = $window[2] * 60;
+            $step = ($surgeryBlocks ? 15 : $window[3]) * 60;
+            for ($start = $window[0]; $start + $duration <= $window[1]; $start += $step) {
+                $end = $start + $duration;
+                if ($start <= $now) {
+                    continue;
+                }
+                if ($reason === 'no_full_block') {
+                    $reason = 'doctor_busy';
+                }
+                if ($this->overlapsAny($busy, $start, $end)) {
+                    continue;
+                }
+                if ($reason === 'doctor_busy') {
+                    $reason = 'room_busy';
+                }
+                if ($this->overlapsAny($roomBusy, $start, $end)) {
+                    continue;
+                }
+                if ($reason === 'room_busy') {
+                    $reason = 'anesthesiologist_busy';
+                }
+                if ($this->overlapsAny($anesthesiologistBusy, $start, $end)) {
+                    continue;
+                }
+                $this->appendAvailableInterval($available, $date, $start, $end, $window[2]);
+                if ($isSurgery) {
+                    $last = count($available) - 1;
+                    $surgeryStart = $start + ($preparationMinutes * 60);
+                    $surgeryEnd = $surgeryStart + ($surgeryMinutes * 60);
+                    $available[$last]['surgery_start'] = date('Y-m-d\TH:i', $surgeryStart);
+                    $available[$last]['surgery_end'] = date('Y-m-d\TH:i', $surgeryEnd);
+                    $available[$last]['surgery_label'] = date('H:i', $surgeryStart).' – '.date('H:i', $surgeryEnd);
+                    $available[$last]['block_label'] = date('H:i', $start).' – '.date('H:i', $end);
+                    $available[$last]['preparation_minutes'] = $preparationMinutes;
+                    $available[$last]['cleaning_minutes'] = $cleaningMinutes;
+                }
+                // Tras ofrecer un bloque, el siguiente empieza después de su fin.
+                if ($surgeryBlocks) {
+                    $start += $duration - $step;
+                }
+            }
+        }
+        $unique = [];
+        foreach ($available as $item) {
+            $unique[$item['start'].'|'.$item['end']] = $item;
+        }
+        ksort($unique);
+
+        return [
+            'items' => array_values($unique),
+            'configured' => array_values(array_unique($configured, SORT_REGULAR)),
+            'block_minutes' => $blockMinutes,
+            'reason' => $available ? null : $reason,
+        ];
+    }
+
+    private function overlapsAny($appointments, $start, $end)
+    {
+        foreach ($appointments as $appointment) {
+            if (strtotime($appointment->fechaini) < $end && strtotime($appointment->fechafin) > $start) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizeSurgeryTimes(array $data)
+    {
+        $surgeryStart = strtotime(isset($data['hora_quirurgica']) ? $data['hora_quirurgica'] : '');
+        if ($surgeryStart === false) {
+            throw new RuntimeException('Seleccione una fecha y hora quirúrgica válida.');
+        }
+        $duration = max(30, min(720, (int) $data['duracion_cirugia']));
+        $preparation = max(0, min(180, (int) $data['preparacion_minutos']));
+        $cleaning = max(0, min(180, (int) $data['limpieza_minutos']));
+        $data['duracion_cirugia'] = $duration;
+        $data['preparacion_minutos'] = $preparation;
+        $data['limpieza_minutos'] = $cleaning;
+        $data['inicio'] = date('Y-m-d H:i:s', $surgeryStart - ($preparation * 60));
+        $data['fin'] = date('Y-m-d H:i:s', $surgeryStart + (($duration + $cleaning) * 60));
+        $data['fin_quirurgico'] = date('Y-m-d H:i:s', $surgeryStart + ($duration * 60));
+        $data['hora_quirurgica'] = date('Y-m-d H:i:s', $surgeryStart);
+
+        return $data;
+    }
+
+    private function saveSurgeryDetail($appointmentId, array $data, $appointmentStatus, $actorId, $ip, $now)
+    {
+        $existing = DB::table('agenda_cirugias')->where('id_agenda', $appointmentId)->first();
+        $values = [
+            'modalidad' => $data['modalidad_cirugia'],
+            'id_anestesiologo' => $this->nullable($data, 'id_anestesiologo'),
+            'indicacion_quirurgica' => trim((string) $data['indicacion_quirurgica']),
+            'hora_quirurgica' => $data['hora_quirurgica'],
+            'fin_quirurgico' => $data['fin_quirurgico'],
+            'duracion_minutos' => (int) $data['duracion_cirugia'],
+            'preparacion_minutos' => (int) $data['preparacion_minutos'],
+            'limpieza_minutos' => (int) $data['limpieza_minutos'],
+            'estado_quirurgico' => $this->surgeryStateForAppointmentStatus($appointmentStatus),
+            'id_usuariomod' => $actorId,
+            'ip_modificacion' => $ip,
+            'updated_at' => $now,
+        ];
+        if ($existing) {
+            DB::table('agenda_cirugias')->where('id', $existing->id)->update($values);
+
+            return;
+        }
+        DB::table('agenda_cirugias')->insert(array_merge($values, [
+            'id_agenda' => $appointmentId,
+            'id_usuariocrea' => $actorId,
+            'ip_creacion' => $ip,
+            'created_at' => $now,
+        ]));
+    }
+
+    private function surgeryStateForAppointmentStatus($status)
+    {
+        $states = [
+            -1 => 'NO_REALIZADA',
+            0 => 'TENTATIVA',
+            1 => 'CONFIRMADA',
+            2 => 'REPROGRAMAR',
+            3 => 'CANCELADA',
+            4 => 'ADMITIDA',
+        ];
+
+        return isset($states[(int) $status]) ? $states[(int) $status] : 'TENTATIVA';
+    }
+
+    public function configuredHours($companyId, $doctorId, $date = null)
+    {
+        $this->doctor($companyId, $doctorId);
+        if ($date !== null) {
+            return ['items' => $this->configuredHoursForDate($doctorId, $date)];
+        }
+        $recurring = $this->recurringHours($doctorId)->get(['ndia', 'hora_ini', 'hora_fin']);
+        $exceptions = DB::table('excepcion_horario')->where('id_doctor1', $doctorId)
+            ->where('fin', '>=', date('Y-m-d 00:00:00'))->orderBy('inicio')->get(['inicio', 'fin']);
+
+        return [
+            'recurring' => $recurring->map(function ($slot) {
+                return $this->dayName((int) $slot->ndia).' · '.substr($slot->hora_ini, 0, 5).' – '.substr($slot->hora_fin, 0, 5);
+            })->unique()->values(),
+            'exceptions' => $exceptions->map(function ($slot) {
+                $start = strtotime($slot->inicio);
+                $end = strtotime($slot->fin);
+                $endFormat = date('Y-m-d', $start) === date('Y-m-d', $end) ? 'H:i' : 'd/m/Y H:i';
+
+                return date('d/m/Y H:i', $start).' – '.date($endFormat, $end);
+            })->unique()->values(),
+        ];
+    }
+
+    private function configuredHoursForDate($doctorId, $date)
+    {
+        $dayStart = strtotime($date.' 00:00:00');
+        $dayEnd = strtotime('+1 day', $dayStart);
+        $scheduleTypes = $this->scheduleTypesForAgenda(5);
+        $ranges = [];
+        $add = function ($start, $end, $type) use (&$ranges, $scheduleTypes) {
+            if ($start >= $end) {
+                return;
+            }
+            $type = $type === null ? null : (int) $type;
+            $restriction = in_array($type, $scheduleTypes, true) ? null : ($type === 3 ? 'IESS' : 'Sin habilitar para cirugía');
+            $ranges[] = [
+                'start' => date('Y-m-d\TH:i', $start),
+                'end' => date('Y-m-d\TH:i', $end),
+                'label' => date('H:i', $start).' – '.date('H:i', $end).($restriction ? ' ('.$restriction.')' : ''),
+                'restriction' => $restriction,
+            ];
+        };
+        foreach ($this->recurringHours($doctorId)->where('ndia', (int) date('N', $dayStart))->get() as $slot) {
+            $add(strtotime($date.' '.$slot->hora_ini), strtotime($date.' '.$slot->hora_fin), $slot->tipo);
+        }
+        $exceptions = DB::table('excepcion_horario')->where('id_doctor1', $doctorId)
+            ->where('inicio', '<', date('Y-m-d H:i:s', $dayEnd))->where('fin', '>', date('Y-m-d H:i:s', $dayStart))->get();
+        foreach ($exceptions as $slot) {
+            $add(max($dayStart, strtotime($slot->inicio)), min($dayEnd, strtotime($slot->fin)), $slot->tipo);
+        }
+
+        return collect($ranges)->sortBy('start')->unique()->values();
+    }
+
+    private function recurringHours($doctorId)
+    {
+        return DB::table('horario_doctor')->where('id_doctor', $doctorId)->where('estado', 1)
+            ->orderBy('ndia')->orderBy('hora_ini');
     }
 }

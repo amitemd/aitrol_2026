@@ -6,10 +6,6 @@ $hora_actual = date('H:i:s');
 
 $usuarioLogueado = auth()->user();
 $rd = rand();
-$logoPath = public_path('assets/images/logo_certificado_borja.png');
-$logoSrc = is_file($logoPath) && is_readable($logoPath)
-    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
-    : '';
 $fechaNacimiento = new DateTime($paciente->fecha_nacimiento);
 $hoy = new DateTime();
 $edad = $hoy->diff($fechaNacimiento)->y;
@@ -17,6 +13,7 @@ $edad = $hoy->diff($fechaNacimiento)->y;
 $diaNacimiento = $fechaNacimiento->format('d');
 
 $mesNacimiento = $fechaNacimiento->format('m');
+$fechaAtencion = optional($agenda)->fechaini ?: optional($evolucion_anestesiologo)->created_at ?: date('Y-m-d H:i:s');
 $pdfPage = $pdfPage ?? 'all';
 $pdfPageNumber = $pdfPageNumber ?? 1;
 ?>
@@ -51,16 +48,16 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
             display: table;
             position: fixed;
             right: 0;
-            bottom: 30px;
-            left: 0;
-            width: 100%;
+            bottom: 7px;
+            left: 5px;
+            width: auto;
             color: #000;
             font-family: Arial, Helvetica, sans-serif;
             border-top: 1px solid #999;
             font-size: 10px;
             font-weight: 700;
             line-height: 1;
-            padding-top: 8px;
+            padding-top: 5px;
             table-layout: fixed;
         }
 
@@ -204,15 +201,7 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
     </header>
     @if($pdfPage !== 'second')
     <main>
-        <table border="1" style="width: 99%">
-            <tr>
-                <td colspan="12">
-                    @if($logoSrc !== '')
-                    <img src="{{ $logoSrc }}" alt="Clínica Borja" style="width:750px;height: 80px;">
-                    @endif
-                </td>
-            </tr>
-        </table>
+        @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa])
         <table border="1" style="width: 100%">
             <thead>
                 <tr>
@@ -230,10 +219,10 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
                 </tr>
                 <tr>
                     <td colspan="3" valign=top style='width:88.3pt;'>
-                        <p class=MsoNormal align=center style='text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{$historia->seguro->nombre}} </span></p>
+                        <p class=MsoNormal align=center style='text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{optional($historia->seguro)->nombre ?: 'No registrado'}} </span></p>
                     </td>
                     <td colspan="3">
-                        <p class=MsoNormal align=center style='text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{$empresa->nombrecomercial}} </span></p>
+                        <p class=MsoNormal align=center style='text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{optional($empresa)->nombrecomercial ?: 'No registrado'}} </span></p>
                     </td>
                     <td colspan="3">
                         <p class=MsoNormal align=center style='text-align:center;line-height:normal'><span style='font-size:9.0pt'>{{$paciente->id}}</span></p>
@@ -293,9 +282,9 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
             <tbody>
                 <tr>
                     <td style="width: 10%;" class="bg-green text-center"><b>ESPECIALIDAD</b></td>
-                    <td style="width: 40%;">{{$especialidad->nombre}}</td>
+                    <td style="width: 40%;">{{optional($especialidad)->nombre ?: 'No registrado'}}</td>
                     <td style="width: 10%;" class="bg-green text-center"><b>DIAGNÓSTICO</b></td>
-                    <td colspan="6" style="width: 40%;">&nbsp;</td>
+                    <td colspan="6" style="width: 40%;">{!! $diagnostico !== '' ? $diagnostico : 'No registrado' !!}</td>
                 </tr>
                 <tr>
                     <td rowspan="2" style="width: 10%;" class="bg-green text-center"><b>CIRUGÍA REALIZADA</b></td>
@@ -342,7 +331,7 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
                     <td class="width100"></td>
                 </tr>
                 <tr>
-                    <td rowspan="2" style="width: 20%;" class="text-left">FECHA: <?php $fecha_recepcion = date('Y-m-d', strtotime($agenda->fechaini)); ?>{{$fecha_recepcion}}</td>
+                    <td rowspan="2" style="width: 20%;" class="text-left">FECHA: <?php $fecha_recepcion = date('Y-m-d', strtotime($fechaAtencion)); ?>{{$fecha_recepcion}}</td>
                     <td class="text-center width20">7</td>
                     <td class="text-center width20">@if($evolucion_anestesiologo->aldrete_modificado == '1') X @else &nbsp; @endif</td>
                     <td class="text-center width20">8</td>
@@ -382,7 +371,7 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
                     <td class="text-center" colspan="2"><b>RECIBE</b></td>
                 </tr>
                 <tr>
-                    <td rowspan="2" style="width: 20%;" class="text-left">HORA: <?php $hora_recepcion = date('H:i', strtotime($agenda->fechaini)); ?>{{$hora_recepcion}}</td>
+                    <td rowspan="2" style="width: 20%;" class="text-left">HORA: <?php $hora_recepcion = date('H:i', strtotime($fechaAtencion)); ?>{{$hora_recepcion}}</td>
                     <td class="text-center width20">0</td>
                     <td class="text-center width20">@if($evolucion_anestesiologo->eva == '1') X @else &nbsp; @endif</td>
                     <td class="text-center width20">1</td>
@@ -660,9 +649,9 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
                 <tr>
                     <td class="text-center">{{$fecha_actual}}</td>
                     <td class="text-center">{{$hora_actual}}</td>
-                    <td class="text-center">{{$doctor->nombre1}}</td>
-                    <td class="text-center">{{$doctor->apellido1}}</td>
-                    <td class="text-center">{{$doctor->apellido2}}</td>
+                    <td class="text-center">{{optional($anesthesiaSignature['professional'] ?? null)->nombre1 ?: (optional($doctor)->nombre1 ?: 'No registrado')}}</td>
+                    <td class="text-center">{{optional($anesthesiaSignature['professional'] ?? null)->apellido1 ?: (optional($doctor)->apellido1 ?: '')}}</td>
+                    <td class="text-center">{{optional($anesthesiaSignature['professional'] ?? null)->apellido2 ?: (optional($doctor)->apellido2 ?: '')}}</td>
                 </tr>
                 <tr>
                     <td colspan="2" class="bg-green text-center">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
@@ -670,13 +659,13 @@ $pdfPageNumber = $pdfPageNumber ?? 1;
                     <td colspan="2" class="bg-green text-center">SELLO</td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="text-left-top">{{$doctor->id}}</td>
-                    <td style="height: 100px;">
-                        @if(!is_null($firma))
-    					   <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
-                        @endif
+                    <td colspan="2" class="text-center" style="vertical-align:middle;">{{$anesthesiaSignature['identification'] ?? 'NO REGISTRADO'}}</td>
+                    <td style="height: 100px; vertical-align:middle; text-align:center;">
+                        @include('pdf_hospital.partials.anesthesia_signature', ['anesthesiaSignature' => $anesthesiaSignature])
                     </td>
-                    <td colspan="2">&nbsp;</td>
+                    <td colspan="2" style="vertical-align:middle; text-align:center;">
+                        @include('pdf_hospital.partials.anesthesia_seal', ['anesthesiaSignature' => $anesthesiaSignature])
+                    </td>
                 </tr>
             </tbody>
         </table>

@@ -1,6 +1,6 @@
 <div class="clinical-doc-block" id="reportes-episodio" data-document-search-section>
     <div class="clinical-doc-block__heading">
-        <h4 class="clinical-doc-section-title"><i class="fa fa-file-pdf-o"></i>Reportes del episodio</h4>
+        <h4 class="clinical-doc-section-title"><i class="fa fa-file-pdf-o"></i>{{ !empty($ambulatoryContext) ? 'Reportes ambulatorios del episodio' : 'Reportes del episodio' }}</h4>
         <span class="clinical-doc-badge">{{ count($reportCatalog) }}</span>
     </div>
     <p class="clinical-form-help">PDF clínicos vinculados a registros de este paciente y episodio.</p>
@@ -16,7 +16,6 @@
                     <div class="clinical-form-item__top">
                         <span class="clinical-form-code">{{ $report['code'] }}</span>
                         <div class="clinical-form-item__name">{{ $report['name'] }}</div>
-                        @if($report['label'])<span class="clinical-form-status is-available">{{ $report['label'] }}</span>@endif
                         @unless($report['official'])<span class="clinical-form-status is-unavailable">{{ $report['status'] }}</span>@endunless
                     </div>
                     <div class="clinical-form-item__bottom">

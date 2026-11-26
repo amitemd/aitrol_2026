@@ -12,8 +12,15 @@ class HospitalEpisodeEmergencySource
     public function forForm($solicitudId, $code)
     {
         $result = ['suggestions' => [], 'records' => [], 'evolutions' => []];
-        if ((string) $code === '001') return $this->admission($solicitudId, $result);
-        if (!in_array((string) $code, ['003', '005', '006', '008'], true)) return $result;
+        if ((string) $code === '001') {
+            return $this->admission($solicitudId, $result);
+        }
+        if ((string) $code === '017') {
+            return $this->surgicalProtocol($solicitudId, $result);
+        }
+        if (! in_array((string) $code, ['003', '005', '006', '008'], true)) {
+            return $result;
+        }
 
         $latest = [];
         $evolutions = [];
@@ -22,25 +29,35 @@ class HospitalEpisodeEmergencySource
             $notes = DB::table('clinical_emergency_care_entries')
                 ->where('solicitud_id', $solicitudId)->orderBy('id')->get();
             foreach ($notes as $note) {
-                if (!isset(ClinicalEmergencyCareService::sections()[$note->section])) continue;
+                if (! isset(ClinicalEmergencyCareService::sections()[$note->section])) {
+                    continue;
+                }
                 $latest[$note->section] = $note;
-                if ($note->section === 'evolution' && $this->filled($note->content)) $evolutions[] = $note;
+                if ($note->section === 'evolution' && $this->filled($note->content)) {
+                    $evolutions[] = $note;
+                }
             }
         }
         foreach ($latest as $section => $note) {
-            if (!$this->filled($note->content)) continue;
+            if (! $this->filled($note->content)) {
+                continue;
+            }
             $result['records'][] = $this->record(ClinicalEmergencyCareService::sections()[$section]['title'], $note);
         }
         // Keep previous revisions visible, including a section later cleared.
         foreach ($notes as $note) {
-            if (!isset($latest[$note->section]) || !$this->filled($note->content)
-                || $latest[$note->section]->id === $note->id) continue;
+            if (! isset($latest[$note->section]) || ! $this->filled($note->content)
+                || $latest[$note->section]->id === $note->id) {
+                continue;
+            }
             $result['records'][] = $this->record('Versión anterior · '.ClinicalEmergencyCareService::sections()[$note->section]['title'], $note);
         }
         $result['evolutions'] = array_map(function ($note) {
             return $this->record('Evolución y plan', $note);
         }, $evolutions);
-        usort($result['records'], function ($a, $b) { return $a['id'] <=> $b['id']; });
+        usort($result['records'], function ($a, $b) {
+            return $a['id'] <=> $b['id'];
+        });
 
         $triage = RequestSchema::hasTable('clinical_emergency_triage_assessments')
             ? DB::table('clinical_emergency_triage_assessments')
@@ -82,7 +99,7 @@ class HospitalEpisodeEmergencySource
                 $vitals[] = $label.': '.$triage->$field;
             }
         }
-        $triageSummary = $triage ? trim(($triage->priority_name ?: 'Triaje').' · '.implode(' · ', $vitals), " ·") : '';
+        $triageSummary = $triage ? trim(($triage->priority_name ?: 'Triaje').' · '.implode(' · ', $vitals), ' ·') : '';
         if ($triage) {
             array_unshift($result['records'], [
                 'id' => 0, 'title' => 'Triaje confirmado',
@@ -119,13 +136,16 @@ class HospitalEpisodeEmergencySource
                 'plan' => implode("\n\n", array_filter([$procedures, $this->value($latest, 'evolution')])),
             ]);
         }
+
         return $result;
     }
 
     private function admission($solicitudId, array $result)
     {
         $solicitud = Ho_Solicitud::with('paciente')->find($solicitudId);
-        if (!$solicitud) return $result;
+        if (! $solicitud) {
+            return $result;
+        }
         $patient = $solicitud->paciente;
         $location = '';
         if (RequestSchema::hasTable('ho_hospitalizacion') && RequestSchema::hasTable('ho_traspaso_sala008')
@@ -139,7 +159,9 @@ class HospitalEpisodeEmergencySource
                 ->where('stay.id_paciente', $solicitud->id_paciente)
                 ->where('stay.estado', 1)
                 ->select('room.codigo as room', 'bed.codigo as bed')->orderByDesc('stay.id')->first();
-            if ($stay) $location = 'Habitación '.$stay->room.' · Cama '.$stay->bed;
+            if ($stay) {
+                $location = 'Habitación '.$stay->room.' · Cama '.$stay->bed;
+            }
         }
         $result['suggestions'] = $this->nonEmpty([
             'fecha_admision' => $solicitud->fecha_ingreso
@@ -149,6 +171,86 @@ class HospitalEpisodeEmergencySource
             'telefono_contacto' => $patient ? ($patient->telefono1 ?: $patient->telefono2) : '',
             'ubicacion' => $location,
         ]);
+
+        return $result;
+    }
+
+    /** Precarga en el 017 lo que ya se registró al planificar la cirugía. */
+    private function surgicalProtocol($solicitudId, array $result)
+    {
+        foreach (['ho_solicitud', 'historiaclinica', 'hc_procedimientos', 'hc_procedimiento_final',
+            'procedimiento', 'agenda', 'users', 'cie_10_4', 'cie_10_3'] as $table) {
+            if (! RequestSchema::hasTable($table)) {
+                return $result;
+            }
+        }
+        $solicitud = Ho_Solicitud::find($solicitudId);
+        if (! $solicitud || ! $solicitud->encounter_id) {
+            return $result;
+        }
+
+        $procedure = DB::table('hc_procedimientos as clinical_procedure')
+            ->join('historiaclinica as history', 'history.hcid', '=', 'clinical_procedure.id_hc')
+            ->join('agenda as appointment', 'appointment.id', '=', 'history.id_agenda')
+            ->where('history.encounter_id', $solicitud->encounter_id)
+            ->where('history.id_paciente', $solicitud->id_paciente)
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))->from('hc_procedimiento_final as selected_procedure')
+                    ->whereColumn('selected_procedure.id_hc_procedimientos', 'clinical_procedure.id');
+            })
+            ->select('clinical_procedure.id', 'appointment.fechaini', 'appointment.fechafin',
+                'appointment.id_doctor1')
+            ->orderByDesc('clinical_procedure.id')->first();
+        if (! $procedure) {
+            return $result;
+        }
+
+        $procedureNames = DB::table('hc_procedimiento_final as selected_procedure')
+            ->join('procedimiento as catalog', 'catalog.id', '=', 'selected_procedure.id_procedimiento')
+            ->where('selected_procedure.id_hc_procedimientos', $procedure->id)
+            ->orderBy('catalog.nombre')->pluck('catalog.nombre')->filter()->all();
+        $doctor = $procedure->id_doctor1
+            ? DB::table('users')->where('id', $procedure->id_doctor1)->first() : null;
+        $doctorName = $doctor ? trim(implode(' ', array_filter([
+            $doctor->apellido1, $doctor->apellido2, $doctor->nombre1, $doctor->nombre2,
+        ]))) : '';
+
+        $diagnoses = collect();
+        if (RequestSchema::hasTable('hc_cie10')) {
+            $diagnoses = DB::table('hc_cie10')->where('hc_id_procedimiento', $procedure->id)
+                ->orderBy('id')->get();
+        }
+        $diagnosisData = function ($type) use ($diagnoses) {
+            $items = $diagnoses->filter(function ($item) use ($type) {
+                return strtoupper((string) ($item->ingreso_egreso ?? '')) === $type;
+            });
+            $codes = $items->pluck('cie10')->filter()->values();
+            $descriptions = $codes->map(function ($code) {
+                $description = DB::table('cie_10_4')->where('id', $code)->value('descripcion');
+                if (! $description) {
+                    $description = DB::table('cie_10_3')->where('id', $code)->value('descripcion');
+                }
+
+                return trim($code.' '.($description ?: ''));
+            })->filter()->all();
+
+            return ['code' => (string) ($codes->first() ?: ''), 'description' => implode(' / ', $descriptions)];
+        };
+        $preoperative = $diagnosisData('INGRESO');
+        $postoperative = $diagnosisData('EGRESO');
+
+        $result['suggestions'] = $this->nonEmpty([
+            'diagnosticos_preoperatorios' => $preoperative['description'],
+            'cie_preoperatorio' => $preoperative['code'],
+            'diagnosticos_postoperatorios' => $postoperative['description'],
+            'cie_postoperatorio' => $postoperative['code'],
+            'procedimiento' => implode(' / ', $procedureNames),
+            'cirujano_1' => $doctorName,
+            'fecha_operacion' => $procedure->fechaini ? date('Y-m-d', strtotime($procedure->fechaini)) : '',
+            'hora_inicio' => $procedure->fechaini ? date('H:i', strtotime($procedure->fechaini)) : '',
+            'hora_terminacion' => $procedure->fechafin ? date('H:i', strtotime($procedure->fechafin)) : '',
+        ]);
+
         return $result;
     }
 
@@ -171,6 +273,8 @@ class HospitalEpisodeEmergencySource
 
     private function nonEmpty(array $values)
     {
-        return array_filter($values, function ($value) { return trim((string) $value) !== ''; });
+        return array_filter($values, function ($value) {
+            return trim((string) $value) !== '';
+        });
     }
 }

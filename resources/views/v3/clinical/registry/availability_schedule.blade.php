@@ -1,6 +1,6 @@
 @include('v3.clinical.registry._styles')
 <?php
-  $typeLabels=array(0=>'Consulta',1=>'Procedimiento',2=>'Reunión',3=>'Hospitalización',4=>'Evolución');
+  $typeLabels=array(0=>'Consulta',1=>'Procedimiento',2=>'Reunión',3=>'Hospitalización',4=>'Evolución',5=>'Cirugía');
   $statusLabels=array(0=>'Por confirmar',1=>'Confirmada',2=>'Reagendada',3=>'Suspendida');
 ?>
 <div class="co-page">

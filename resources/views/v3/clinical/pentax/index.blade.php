@@ -7,7 +7,7 @@
 <div class="px-page">
   <section class="px-hero">
     <div class="px-hero__main"><div class="px-hero__icon"><i class="fas fa-procedures"></i></div><div><small>OPERACIÓN CLÍNICA · V3</small><h1>Control de procedimientos</h1><p>Seguimiento diario del paciente, equipo clínico, sala y estado del procedimiento.</p></div></div>
-    <div class="px-hero__actions"><a class="btn btn-light" href="{{route('v3.pentax-control.report',array('fecha'=>$date))}}"><i class="fas fa-file-download mr-1"></i> Reporte de procedimientos</a><a class="btn btn-outline-light" target="_blank" rel="noopener" href="{{route('v3.pentax-waiting-room')}}"><i class="fas fa-tv mr-1"></i> Sala de espera</a></div>
+    <div class="px-hero__actions"><a class="btn btn-light" href="{{route('v3.pentax-control.report',array('fecha'=>$date))}}"><i class="fas fa-file-download mr-1"></i> Reporte de procedimientos</a>{{-- <a class="btn btn-outline-light" target="_blank" rel="noopener" href="{{route('v3.pentax-waiting-room')}}"><i class="fas fa-tv mr-1"></i> Sala de espera</a> --}}</div>
   </section>
   @if(session('success'))<div class="alert alert-success px-alert"><i class="fas fa-check-circle mr-2"></i>{{session('success')}}</div>@endif
   @if($errors->any())<div class="alert alert-danger px-alert"><i class="fas fa-exclamation-circle mr-2"></i>{{ $errors->first() }}</div>@endif

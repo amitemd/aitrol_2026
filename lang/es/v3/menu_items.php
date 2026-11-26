@@ -143,7 +143,7 @@ return [
     91 => 'Calidad', 92 => 'Encuesta de calidad', 93 => 'Listado de encuestas', 94 => 'Estadísticos', 95 => 'Nuevas encuestas IECED - Calidad',
     96 => 'Listado de encuestas de laboratorios', 97 => 'Estadísticas de laboratorios', 98 => 'Nuevo índice estadístico',
     99 => 'Enfermería', 100 => 'Registro de limpieza de equipos', 101 => 'Servicios generales', 102 => 'Registro de limpieza y desinfección',
-    103 => 'Mantenimientos', 104 => 'Registro de limpieza de equipos', 105 => 'Procedimientos', 106 => 'Control de procedimientos',
+    103 => 'Mantenimientos', 104 => 'Registro de limpieza de equipos', 105 => 'Pentax', 106 => 'Control de procedimientos',
     107 => 'Sala de espera', 108 => 'Monitor clínico', 109 => 'Consultas TV', 110 => 'Recibos pendientes de aprobación',
     111 => 'Procedimientos', 112 => 'Control', 113 => 'Procedimientos TV', 140 => 'Encuestas', 141 => 'Listado de encuestas',
     144 => 'Enfermería', 145 => 'Registro de limpieza de equipos', 146 => 'Servicios generales', 147 => 'Registro de limpieza y desinfección',

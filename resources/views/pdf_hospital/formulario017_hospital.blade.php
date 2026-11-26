@@ -233,7 +233,7 @@ $mesNacimiento = $fechaNacimiento->format('m');
         <table border="1" style="width: 99%">
             <tr>
                 <td colspan="12">
-                    <img src="{{base_path().'/storage/app/logo/cabecera.jpg'}}" style="width:750px;height: 100px;">
+                    @include('pdf_hospital.partials.establishment_logo', ['empresa' => $empresa ?? null, 'imageOnly' => true, 'logoHeight' => 88])
                 </td>
             </tr>
         </table>
@@ -593,40 +593,10 @@ $mesNacimiento = $fechaNacimiento->format('m');
             </tbody>
         </table>
         <br>
-        <table border="1" style="width: 100%">
-            <tbody>
-                <tr>
-                    <td colspan="4" class="bg-purple" style="font-size: 11;"><b>J. DATOS DEL PROFESIONAL RESPONSABLE</b></td>
-                </tr>
-                <tr>
-                    <td style="font-size: 9;" class="text-center bg-green"><b>NOMBRE Y APELLIDOS</b></td>
-                    <td style="font-size: 9;" class="text-center bg-green"><b>ESPECIALIDAD</b></td>
-                    <td style="font-size: 9; width: 28%;" class="text-center bg-green"><b>FIRMA</b></td>
-                    <td style="font-size: 8;" class="text-center bg-green"><b>SELLO Y NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</b></td>
-                </tr>
-                <tr>
-                    @php
-                    $nombreDoctor = $doctor
-                        ? trim($doctor->nombre1 . " " . $doctor->nombre2 . " " . $doctor->apellido1 . " " . $doctor->apellido2)
-                        : '';
-                    @endphp
-
-                    <td style="height: 50px;" class="text-center">{{$nombreDoctor}}</td>
-                    <td style="height: 50px;" class="text-center">{{ optional($doctor)->ocupacion }}</td>
-                    <td class="text-center">
-                        @php
-                            $firma = $doctor
-                                ? Sis_medico\Firma_Usuario::where('id_usuario', $doctor->id)->first()
-                                : null;
-                        @endphp
-                        @if(!is_null($firma))
-    					   <img width=170 height=80 src="{{base_path().'/storage/app/avatars/'.$firma->nombre}}" style="" align=center hspace=12><br>
-                        @endif
-                    </td>
-                    <td style="height: 50px;"></td>
-                </tr>
-            </tbody>
-        </table>
+        @include('hospital.documentos._professional-block-pdf', [
+            'professionalBlock' => $professionalBlock ?? [],
+            'professionalBlockTitle' => 'J. DATOS DEL PROFESIONAL RESPONSABLE',
+        ])
     </main>
 </body>
 </html>

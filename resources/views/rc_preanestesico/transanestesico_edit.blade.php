@@ -146,6 +146,50 @@ $sexoPacienteTrans = $pacienteTrans->sexo == 1 ? 'Masculino' : 'Femenino';
     .bg-light-green {
         background-color: #7FE290;
     }
+
+    .trans-diagnosis-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        padding: 14px;
+        background: #f8fbfd;
+    }
+
+    .trans-diagnosis-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #124b6a;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .trans-diagnosis-field textarea {
+        width: 100%;
+        min-height: 82px;
+        padding: 10px 12px;
+        border: 1px solid #c9dce7;
+        border-radius: 8px;
+        background: #fff;
+        color: #17324d;
+        resize: vertical;
+        transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .trans-diagnosis-field textarea:focus {
+        border-color: #0b8eb3;
+        box-shadow: 0 0 0 3px rgba(11, 142, 179, .12);
+        outline: 0;
+    }
+
+    .trans-diagnosis-field small {
+        display: block;
+        margin-top: 5px;
+        color: #678093;
+    }
+
+    @media (max-width: 760px) {
+        .trans-diagnosis-grid { grid-template-columns: 1fr; }
+    }
 </style>
 <section class="content anesthesia-record-v3 transanestesico-v3" data-anesthesia-record>
 
@@ -169,6 +213,7 @@ $sexoPacienteTrans = $pacienteTrans->sexo == 1 ? 'Masculino' : 'Femenino';
     </div>
 
     <nav class="anesthesia-record-nav" aria-label="Secciones del registro transanestésico">
+        <button type="button" data-scroll-target="trans-diagnosticos"><i class="fa fa-notes-medical" aria-hidden="true"></i> Diagnósticos</button>
         <button type="button" data-scroll-target="trans-region"><i class="fa fa-map-marker" aria-hidden="true"></i> Región operatoria</button>
         <button type="button" data-scroll-target="trans-registro"><i class="fa fa-area-chart" aria-hidden="true"></i> Registro</button>
         <button type="button" data-scroll-target="trans-medicacion"><i class="fa fa-medkit" aria-hidden="true"></i> Medicación</button>
@@ -226,6 +271,32 @@ $sexoPacienteTrans = $pacienteTrans->sexo == 1 ? 'Masculino' : 'Femenino';
                 <td class="text-center" colspan="1">{{ $unidadEdad === 'D' ? 'X' : '' }}</td>
                 <td class="text-center" colspan="1">{{ $unidadEdad === 'M' ? 'X' : '' }}</td>
                 <td class="text-center" colspan="1">{{ $unidadEdad === 'A' ? 'X' : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <table border="1" style="width: 100%">
+        <thead>
+            <tr>
+                <td colspan="2" class="bg-purple" style="font-size: 10px;"><b>DIAGNÓSTICOS DEL PROCEDIMIENTO</b></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="2" style="padding: 0 !important;">
+                    <div class="trans-diagnosis-grid">
+                        <div class="trans-diagnosis-field">
+                            <label for="diagnostico_preoperatorio">Diagnóstico presuntivo / preoperatorio</label>
+                            <textarea id="diagnostico_preoperatorio" name="diagnostico_preoperatorio" maxlength="10000" onchange="handlePublica(this)" placeholder="Describa el diagnóstico presuntivo antes del procedimiento">{{ $transanestesico->diagnostico_preoperatorio }}</textarea>
+                            <small>Se guarda en el registro transanestésico y se muestra en el Formulario 018A.</small>
+                        </div>
+                        <div class="trans-diagnosis-field">
+                            <label for="diagnostico_postoperatorio">Diagnóstico definitivo / postoperatorio</label>
+                            <textarea id="diagnostico_postoperatorio" name="diagnostico_postoperatorio" maxlength="10000" onchange="handlePublica(this)" placeholder="Describa el diagnóstico definitivo después del procedimiento">{{ $transanestesico->diagnostico_postoperatorio }}</textarea>
+                            <small>Puede completarse al finalizar el procedimiento.</small>
+                        </div>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -940,6 +1011,7 @@ $sexoPacienteTrans = $pacienteTrans->sexo == 1 ? 'Masculino' : 'Femenino';
     <div class="anesthesia-layout-end" hidden></div>
     <script type="application/json" class="anesthesia-layout-config">
     {"groups":[
+        {"match":"DIAGNÓSTICOS DEL PROCEDIMIENTO","id":"trans-diagnosticos","title":"Diagnósticos","description":"Diagnóstico presuntivo antes del procedimiento y definitivo al finalizar.","icon":"fa-notes-medical","open":true},
         {"match":"REGIÓN OPERATORIA","id":"trans-region","title":"Región operatoria","description":"Área anatómica relacionada con el procedimiento.","icon":"fa-map-marker","open":true},
         {"match":"REGISTRO TRANSANESTÉSICO","id":"trans-registro","title":"Registro transanestésico","description":"Gráfico y seguimiento durante el procedimiento.","icon":"fa-area-chart","open":true},
         {"match":"DROGAS ADMINISTRADAS","id":"trans-medicacion","title":"Medicamentos administrados","description":"Registro eMAR y administraciones realizadas.","icon":"fa-medkit","open":true},
@@ -1036,7 +1108,8 @@ $sexoPacienteTrans = $pacienteTrans->sexo == 1 ? 'Masculino' : 'Femenino';
             input.name === 'c6' || input.name === 'destrosa10' || input.name === 'destrosa5' || input.name === 'destrosass' || input.name === 'ss_9' || input.name === 'plasma' ||
             input.name === 'crioprecipitados' || input.name === 'otros_reposicion' || input.name === 'otros_perdidas' || input.name === 'total_perdidas' || input.name === 'total_reposicion' ||
             input.name === 'balance' || input.name === 'otros_indice' || input.name === 'indice' || input.name === 'observaciones' || input.name === 'analgesia'  || input.name === 'conducido'||
-	     input.name === 'condiciones_al_salir'  || input.name === 'puncion' || input.name === 'diuresis'  || input.name === 'sangrado' || input.name === 'plaquetas' || input.name === 'ta'
+            input.name === 'condiciones_al_salir'  || input.name === 'puncion' || input.name === 'diuresis'  || input.name === 'sangrado' || input.name === 'plaquetas' || input.name === 'ta'
+         || input.name === 'diagnostico_preoperatorio' || input.name === 'diagnostico_postoperatorio'
          || input.name === 'fc' || input.name === 'fr' || input.name === 'sat' || input.name === 't'
         ) {
 

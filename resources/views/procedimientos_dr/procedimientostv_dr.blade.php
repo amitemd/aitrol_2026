@@ -65,7 +65,7 @@
 
 
 
-$("#body2").addClass('sidebar-collapse');
+$("#body2:not(.aitrol-v3-legacy)").addClass('sidebar-collapse');
 
 $(function () {
         $('#fecha').datetimepicker({
@@ -133,11 +133,8 @@ $(document).ready(function(){
   console.log(vartiempo);
 
   
-  $("#body2").addClass('sidebar-collapse');
+  $("#body2:not(.aitrol-v3-legacy)").addClass('sidebar-collapse');
 
-    $("p").click(function(){
-      $(this).hide();
-    });
 
     $('#example2').DataTable({
       'paging'      : false,

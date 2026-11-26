@@ -24,8 +24,9 @@
         .epicrisis-embedded-content .content-header { display: none; }
         @media (max-width: 767px) { .epicrisis-embedded-content { padding: 0; } }
     </style>
+    @include('layouts.partials.aitrol-theme')
 </head>
-<body class="hold-transition text-sm aitrol-v3 epicrisis-embedded">
+<body class="aitrol-theme hold-transition text-sm aitrol-v3 epicrisis-embedded">
     <main class="epicrisis-embedded-content">
         @yield('contenido')
         @yield('content')

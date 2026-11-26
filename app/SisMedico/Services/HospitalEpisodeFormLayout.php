@@ -36,7 +36,7 @@ class HospitalEpisodeFormLayout
             '021' => 'Enfermería registra la valoración, los problemas, cuidados, respuesta del paciente y educación brindada.',
             '022' => 'Enfermería, el médico o Sistemas registra alergias, los medicamentos prescritos y cada administración con fecha, hora y responsable. Es el formulario vigente que reemplaza al antiguo Kardex 015/2007.',
             '120' => 'Enfermería registra las intervenciones realizadas, la respuesta del paciente y los cuidados pendientes para asegurar continuidad.',
-            '024' => 'Seleccione anestesia general/inhalatoria o raquídea. Revise los textos recuperados de V2, complete los riesgos particulares del paciente y genere el anverso/reverso para firma, negativa o revocatoria.',
+            '024' => 'Seleccione el tipo de consentimiento y el procedimiento, revise los textos sugeridos, agregue hasta tres imágenes explicativas y complete los riesgos particulares. Cada 024 se guarda por separado y conserva su anverso/reverso para firma, negativa o revocatoria.',
             '028' => 'Registre la evaluación del desarrollo infantil por áreas, su interpretación y la conducta de seguimiento.',
             '028A' => 'Registre la atención integral del niño o niña menor de 2 meses, crecimiento, alimentación, examen y seguimiento.',
             '028A1' => 'Registre y evalúe las curvas de crecimiento de la niña menor de 5 años.',
@@ -58,7 +58,7 @@ class HospitalEpisodeFormLayout
             '056B' => 'Registre crecimiento y desarrollo puberal del adolescente hombre mediante curvas y estadios de Tanner.',
             '057' => 'Registre la valoración geriátrica integral: funcional, cognitiva, afectiva, nutricional y social.',
             '057A' => 'Registre los resultados de las escalas geriátricas y su interpretación clínica integral.',
-            '060' => 'El equipo quirúrgico registra la verificación antes de la anestesia, antes de la incisión y antes de salir del quirófano.',
+            'LVCS' => 'El equipo quirúrgico registra la verificación antes de la anestesia, antes de la incisión y antes de salir del quirófano.',
             '078' => 'Salud ocupacional registra el puesto, exposiciones, evaluación clínica y conclusión de aptitud laboral.',
             '113' => 'El equipo de UCI adulto registra la bitácora, monitorización, ventilación, balance, procedimientos y cuidados del turno.',
             '114' => 'Enfermería y el equipo de UCI neonatal registran monitorización, soporte, balance, medicación y eventos del turno.',
@@ -189,11 +189,16 @@ class HospitalEpisodeFormLayout
                 $s('E. DESTINO DEL RECIÉN NACIDO', [['destino']], 24),
             ]],
             '017' => [[
-                $s('C. PROCEDIMIENTO', [['procedimiento'], ['indicacion']], 22),
-                $s('F. TIEMPOS QUIRÚRGICOS / DESCRIPCIÓN DEL PROCEDIMIENTO', [['hallazgos'], ['tecnica']], 47),
+                $s('B. DIAGNÓSTICOS', [['diagnosticos_preoperatorios', 'cie_preoperatorio'], ['diagnosticos_postoperatorios', 'cie_postoperatorio']], 24),
+                $s('C. PROCEDIMIENTO', [['procedimiento'], ['indicacion'], ['tipo_procedimiento']], 22),
+                $s('D. INTEGRANTES DEL EQUIPO QUIRÚRGICO', [['cirujano_1', 'instrumentista'], ['cirujano_2', 'circulante'], ['primer_ayudante', 'anestesiologo'], ['segundo_ayudante', 'ayudante_anestesia'], ['tercer_ayudante', 'otros_equipo']], 24),
+                $s('E. TIPO DE ANESTESIA', [['tipo_anestesia']], 12),
+                $s('F. TIEMPOS QUIRÚRGICOS Y DESCRIPCIÓN DEL PROCEDIMIENTO', [['fecha_operacion', 'hora_inicio', 'hora_terminacion'], ['dieresis'], ['exposicion_exploracion'], ['hallazgos'], ['tecnica']], 32),
             ], [
-                $s('G. COMPLICACIONES DEL PROCEDIMIENTO QUIRÚRGICO', [['complicaciones']], 65),
-                $s('CONCLUSIÓN DEL PROCEDIMIENTO', [['conclusion']], 65),
+                $s('G. COMPLICACIONES DEL PROCEDIMIENTO QUIRÚRGICO', [['complicaciones'], ['perdida_sanguinea_total', 'sangrado_aproximado'], ['material_protesico'], ['conclusion']], 34),
+                $s('H. EXÁMENES HISTOPATOLÓGICOS', [['transquirurgico'], ['biopsia_congelacion', 'resultado_biopsia'], ['patologo_reporta'], ['histopatologico', 'muestra']], 30),
+                $s('I. DIAGRAMA DEL PROCEDIMIENTO', [['diagrama']], 44),
+                $s('J. DATOS DEL PROFESIONAL RESPONSABLE', [['profesional_responsable', 'especialidad_profesional'], ['firma_profesional', 'sello_identificacion']], 28),
             ]],
             '018' => [[
                 $s('B. REGISTRO DE VALORACIÓN PREANESTÉSICA', [['diagnosticos', 'procedimientos'], ['prioridad', 'riesgo_quirurgico']], 22),
@@ -295,7 +300,7 @@ class HospitalEpisodeFormLayout
                 $s('C. VALORACIÓN GERIÁTRICA INTEGRAL', [['funcional'], ['cognitivo_afectivo'], ['nutricional'], ['social']], 27),
                 $s('D. RIESGOS Y PLAN INTEGRAL', [['riesgos'], ['plan']], 38),
             ]],
-            '060' => [[
+            'LVCS' => [[
                 $s('ENTRADA · ANTES DE LA INDUCCIÓN DE LA ANESTESIA', [['identificacion'], ['sitio']], 26),
                 $s('PAUSA QUIRÚRGICA · ANTES DE LA INCISIÓN', [['equipo'], ['profilaxis']], 26),
                 $s('SALIDA · ANTES DE SALIR DEL QUIRÓFANO', [['recuento'], ['incidentes']], 26),
@@ -426,10 +431,13 @@ class HospitalEpisodeFormLayout
         foreach (self::pages($code) as $page) {
             foreach ($page as $section) {
                 foreach ($section['rows'] as $row) {
-                    foreach ($row as $key) $sections[$key] = $section['title'];
+                    foreach ($row as $key) {
+                        $sections[$key] = $section['title'];
+                    }
                 }
             }
         }
+
         return $sections;
     }
 
@@ -453,6 +461,7 @@ class HospitalEpisodeFormLayout
             }
             $lines[] = rtrim($line);
         }
+
         return $lines;
     }
 }
