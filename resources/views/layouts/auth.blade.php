@@ -10,17 +10,17 @@
 </head>
 <body class="aitrol-access">
     <main class="access-shell">
-        <aside class="access-brand" data-bs-theme="dark" aria-label="Aitrol ERP hospitalario">
+        <aside class="access-brand" data-bs-theme="dark" aria-label="Aitrol ERP administrativo">
             <div class="access-logo">
-                <span class="medical-mark" aria-hidden="true"></span>
+                <span class="access-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
                 <div>
                     <strong>Aitrol</strong>
-                    <span class="access-product">ERP hospitalario</span>
+                    <span class="access-product">ERP administrativo</span>
                 </div>
             </div>
             <div class="access-brand-copy">
-                <p class="access-brand-title">Gestión hospitalaria y administrativa</p>
-                <p>Acceso para el personal clínico y administrativo.</p>
+                <p class="access-brand-title">Control de empresas</p>
+                <p>Centraliza la administración de una o varias empresas.</p>
             </div>
         </aside>
         <section class="access-main" aria-labelledby="access-title">
@@ -29,5 +29,6 @@
             </div>
         </section>
     </main>
+    @stack('scripts')
 </body>
 </html>

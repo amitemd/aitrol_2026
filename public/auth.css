@@ -50,26 +50,24 @@
 .access-logo { display: flex; align-items: center; gap: .8rem; font-size: 1.65rem; line-height: 1.1; }
 .access-product { display: block; margin-top: .3rem; color: var(--bs-secondary-color); font-size: .83rem; }
 
-.medical-mark {
-    position: relative;
+.access-mark {
     display: grid;
-    place-items: center;
+    grid-template-columns: repeat(2, .43rem);
+    grid-auto-rows: .43rem;
+    place-content: center;
+    gap: .22rem;
     width: 2.8rem;
     aspect-ratio: 1;
     border-radius: var(--bs-border-radius-lg);
     background: var(--bs-primary);
 }
 
-.medical-mark::before, .medical-mark::after {
-    position: absolute;
-    width: 1.15rem;
-    height: .32rem;
-    border-radius: 10rem;
+.access-mark span {
+    border-radius: .1rem;
     background: var(--bs-white);
-    content: "";
 }
 
-.medical-mark::after { transform: rotate(90deg); }
+.access-mark span:last-child { opacity: .56; }
 .access-brand-title { margin: 0 0 .8rem; max-width: 13ch; font-size: clamp(1.95rem, 3.25vw, 3.15rem); font-weight: 700; line-height: 1.08; letter-spacing: -.045em; }
 .access-brand-copy p:not(.access-brand-title) { margin: 0; max-width: 29ch; line-height: 1.6; color: var(--bs-secondary-color); }
 .access-main { display: grid; place-items: center; padding: clamp(1.5rem, 6vw, 5rem); border-top: .25rem solid var(--bs-primary); }
@@ -95,15 +93,88 @@
     font: inherit;
 }
 .access-field input[aria-invalid="true"] { border-color: var(--bs-form-invalid-border-color); }
-.aitrol-access :where(a, input):focus-visible { outline: .2rem solid var(--bs-primary); outline-offset: .12rem; }
+.access-field input:focus { background: var(--bs-body-bg); }
+.aitrol-access :where(a, input, .access-password-toggle):focus-visible { outline: .15rem solid var(--bs-primary); outline-offset: .12rem; }
+.access-password { position: relative; }
+.access-password:has(.access-password-toggle:not([hidden])) input { padding-inline-end: 3.2rem; }
+.access-password:has(.access-password-toggle:not([hidden])) input::-ms-reveal { display: none; }
+.access-password-toggle {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: .25rem;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    border-radius: var(--bs-border-radius);
+    background: transparent;
+    color: var(--bs-secondary-color);
+}
+.access-password-toggle[hidden], .access-progress[hidden] { display: none; }
+.access-password-toggle:hover, .access-password-toggle[aria-pressed="true"] {
+    color: var(--bs-primary-text-emphasis);
+    background: var(--bs-primary-bg-subtle);
+}
+.access-eye {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.05rem;
+    aspect-ratio: 1;
+    transform: rotate(45deg);
+    border: .105rem solid currentColor;
+    border-radius: 72% 0 72% 0;
+}
+.access-eye::after {
+    width: .32rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+}
+.access-password-toggle[aria-pressed="true"] .access-eye::before {
+    position: absolute;
+    width: .1rem;
+    height: 1.12rem;
+    background: currentColor;
+    box-shadow: .12rem 0 var(--bs-primary-bg-subtle);
+    content: "";
+}
 .access-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
     min-height: 3rem;
     padding: .65rem 1rem;
     font-weight: 700;
 }
+.access-progress {
+    width: .85rem;
+    height: .85rem;
+    border: .12rem solid currentColor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+}
 .access-back { justify-self: start; }
 .access-status { margin: 0 0 1.15rem; padding: .75rem .85rem; border: var(--bs-border-width) solid var(--bs-success-border-subtle); border-radius: var(--bs-border-radius); background: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); font-size: .9rem; }
 .access-error { margin: .4rem 0 0; color: var(--bs-danger-text-emphasis); font-size: .87rem; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .access-shell { animation: access-appear .28s ease-out both; }
+    .access-field input, .access-password-toggle { transition: background-color .18s ease, color .18s ease; }
+    .access-progress { animation: access-spin .85s linear infinite; }
+}
+
+@keyframes access-appear {
+    from { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes access-spin {
+    to { transform: rotate(360deg); }
+}
 
 @media (max-width: 690px) {
     .aitrol-access { place-items: center; padding: 1rem; }
