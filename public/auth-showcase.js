@@ -2,6 +2,7 @@ const showcase = document.querySelector('[data-auth-showcase]');
 const slides = [...showcase.querySelectorAll('[data-showcase-slide]')];
 const selectors = [...showcase.querySelectorAll('[data-showcase-select]')];
 const controls = showcase.querySelector('[data-showcase-controls]');
+const label = showcase.querySelector('[data-showcase-label]');
 const playback = showcase.querySelector('[data-showcase-playback]');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const canvas = showcase.closest('.access-brand').querySelector('.access-network');
@@ -31,6 +32,7 @@ let height;
 
 function show(index) {
     current = index % slides.length;
+    label.textContent = selectors[current].getAttribute('aria-label');
     slides.forEach((slide, position) => {
         const active = position === current;
         slide.classList.toggle('is-active', active);
@@ -99,7 +101,9 @@ function updatePlayback() {
     playback.hidden = reducedMotion.matches;
     playback.textContent = paused ? 'Reanudar' : 'Pausar';
 
-    if (paused || reducedMotion.matches || document.hidden) return;
+    const playing = !paused && !reducedMotion.matches && !document.hidden;
+    showcase.classList.toggle('is-playing', playing);
+    if (!playing) return;
 
     rotation = window.setInterval(() => show(current + 1), 7000);
     if (context) animation = window.requestAnimationFrame(animateNetwork);

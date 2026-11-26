@@ -3,19 +3,21 @@
 @section('title', 'Iniciar sesión')
 
 @section('brand-media')
-    @php($areas = ['Empresas', 'Administración médica', 'Contabilidad', 'Inventario'])
+    @php($areas = ['empresas' => 'Empresas', 'medica' => 'Administración médica', 'contabilidad' => 'Contabilidad', 'inventario' => 'Inventario'])
     <canvas class="access-network" aria-hidden="true"></canvas>
     <section class="access-showcase" aria-label="Áreas de gestión" data-auth-showcase>
         <div class="access-showcase-frame" id="access-showcase-photos">
-            @foreach ($areas as $actividad)
+            @foreach ($areas as $foto => $actividad)
                 <figure @class(['access-slide', 'is-active' => $loop->first]) data-showcase-slide
                     aria-hidden="{{ $loop->first ? 'false' : 'true' }}">
-                    <img src="{{ asset('auth-erp.jpg') }}" alt="" draggable="false">
+                    <img src="{{ asset('auth-erp/'.$foto.'.jpg') }}" alt="" draggable="false"
+                        width="720" height="480" @if (!$loop->first) decoding="async" @endif>
                     <figcaption>{{ $actividad }}</figcaption>
                 </figure>
             @endforeach
         </div>
         <div class="access-showcase-controls" data-showcase-controls hidden>
+            <span class="access-showcase-label" data-showcase-label>{{ reset($areas) }}</span>
             <div class="access-showcase-dots" role="group" aria-label="Elegir imagen">
                 @foreach ($areas as $actividad)
                     <button type="button" data-showcase-select aria-label="{{ $actividad }}"
