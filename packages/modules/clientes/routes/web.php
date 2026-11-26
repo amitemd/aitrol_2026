@@ -3,7 +3,7 @@
 use Aitrol\Clientes\Infrastructure\Http\ClienteWebController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['web', 'auth'])->group(function (): void {
+Route::middleware(['web', 'auth', 'auth.session'])->group(function (): void {
     Route::get('/clientes', [ClienteWebController::class, 'index'])->name('clientes.index');
     Route::get('/clientes/create', [ClienteWebController::class, 'create'])->name('clientes.create');
     Route::post('/clientes', [ClienteWebController::class, 'store'])->name('clientes.store');

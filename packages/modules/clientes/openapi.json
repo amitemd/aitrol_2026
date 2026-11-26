@@ -1,0 +1,585 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Aitrol ERP · Clientes",
+        "version": "1.0.0",
+        "description": "Consulta, registro y actualización de clientes del ERP. Usa un token Bearer emitido por Aitrol."
+    },
+    "security": [
+        {
+            "BearerToken": []
+        }
+    ],
+    "paths": {
+        "/api/v1/clientes": {
+            "get": {
+                "operationId": "listarClientes",
+                "summary": "Buscar y listar clientes",
+                "description": "Requiere el permiso clientes:leer.",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 160
+                        },
+                        "description": "Búsqueda por nombre, identificación o correo."
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000000,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Página de clientes.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cliente"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ],
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                }
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ],
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ],
+                                                                "format": "uri"
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/Validacion"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Clientes"
+                ]
+            },
+            "post": {
+                "operationId": "registrarCliente",
+                "summary": "Registrar cliente",
+                "description": "Requiere el permiso clientes:escribir. El estado predeterminado es activo.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DatosCliente"
+                            },
+                            "example": {
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Cliente de ejemplo",
+                                "email": "cliente@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": true
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/ClienteCreado"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/IdentificacionDuplicada"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/Validacion"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Clientes"
+                ]
+            }
+        },
+        "/api/v1/clientes/{cliente}": {
+            "parameters": [
+                {
+                    "name": "cliente",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 1,
+                        "maximum": 1000000000000000000
+                    }
+                }
+            ],
+            "get": {
+                "operationId": "consultarCliente",
+                "summary": "Consultar cliente",
+                "description": "Requiere el permiso clientes:leer.",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Cliente"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NoEncontrado"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Clientes"
+                ]
+            },
+            "put": {
+                "operationId": "actualizarCliente",
+                "summary": "Actualizar o desactivar cliente",
+                "description": "Requiere el permiso clientes:escribir. Reemplaza los datos editables. Los campos de contacto omitidos se limpian.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/DatosCliente"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "required": [
+                                            "activo"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "example": {
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Cliente de ejemplo",
+                                "email": "cliente@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": false
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Cliente"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NoEncontrado"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/IdentificacionDuplicada"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/Validacion"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Clientes"
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "BearerToken": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        },
+        "responses": {
+            "Cliente": {
+                "description": "Datos del cliente.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RespuestaCliente"
+                        },
+                        "example": {
+                            "data": {
+                                "id": 1,
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Cliente de ejemplo",
+                                "email": "cliente@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": true
+                            }
+                        }
+                    }
+                }
+            },
+            "ClienteCreado": {
+                "description": "Cliente registrado.",
+                "headers": {
+                    "Location": {
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        }
+                    }
+                },
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RespuestaCliente"
+                        },
+                        "example": {
+                            "data": {
+                                "id": 1,
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Cliente de ejemplo",
+                                "email": "cliente@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": true
+                            }
+                        }
+                    }
+                }
+            },
+            "NoAutenticado": {
+                "description": "Token faltante, inválido, vencido o revocado.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorApi"
+                        }
+                    }
+                }
+            },
+            "SinPermiso": {
+                "description": "El token carece del permiso necesario.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorApi"
+                        }
+                    }
+                }
+            },
+            "NoEncontrado": {
+                "description": "Cliente inexistente.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorApi"
+                        }
+                    }
+                }
+            },
+            "IdentificacionDuplicada": {
+                "description": "El tipo y número de identificación ya existen.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorApi"
+                        }
+                    }
+                }
+            },
+            "Validacion": {
+                "description": "Uno o más campos son inválidos.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorValidacionApi"
+                        }
+                    }
+                }
+            },
+            "LimiteExcedido": {
+                "description": "Se superó el límite de peticiones.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorApi"
+                        }
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "RespuestaCliente": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/Cliente"
+                    }
+                }
+            },
+            "Cliente": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/DatosCliente"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "id",
+                            "activo"
+                        ],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "format": "int64"
+                            }
+                        }
+                    }
+                ]
+            },
+            "DatosCliente": {
+                "type": "object",
+                "required": [
+                    "tipo_identificacion",
+                    "identificacion",
+                    "nombre"
+                ],
+                "properties": {
+                    "tipo_identificacion": {
+                        "type": "string",
+                        "enum": [
+                            "cedula",
+                            "ruc",
+                            "pasaporte"
+                        ]
+                    },
+                    "identificacion": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "description": "Cédula de 10 dígitos, RUC de 13 dígitos o pasaporte alfanumérico con guiones."
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "telefono": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 30
+                    },
+                    "direccion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "activo": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "ErrorApi": {
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ErrorValidacionApi": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ErrorApi"
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "errors"
+                        ],
+                        "properties": {
+                            "errors": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

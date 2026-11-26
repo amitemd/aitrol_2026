@@ -51,6 +51,12 @@
                   <p>Clientes</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="{{ route('swagger.index') }}" class="nav-link">
+                  <i class="nav-icon bi bi-braces" aria-hidden="true"></i>
+                  <p>Documentación API</p>
+                </a>
+              </li>
               @auth
                 <li class="nav-item">
                   <form method="POST" action="{{ route('logout') }}">

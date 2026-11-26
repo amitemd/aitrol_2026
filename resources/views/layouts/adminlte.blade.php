@@ -94,9 +94,6 @@
     @stack('styles')
 </head>
 <body class="@yield('body-class', 'layout-fixed sidebar-expand-lg bg-body-tertiary')">
-    @hasSection('standalone')
-        @yield('standalone')
-    @else
     <div class="app-wrapper">
         @include('partials.adminlte-header')
         @include('partials.adminlte-sidebar')
@@ -114,7 +111,6 @@
         <!--end::Copyright-->
       </footer>
     </div>
-    @endif
     <!--begin::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
