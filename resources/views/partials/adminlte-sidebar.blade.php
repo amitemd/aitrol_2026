@@ -44,8 +44,26 @@
               data-accordion="false"
               id="navigation"
             >
-              <li class="nav-item menu-open">
-                <a href="#" class="nav-link active">
+              <li class="nav-header">ERP</li>
+              <li class="nav-item">
+                <a href="{{ route('clientes.index') }}" @class(['nav-link', 'active' => request()->routeIs('clientes.*')])>
+                  <i class="nav-icon bi bi-people" aria-hidden="true"></i>
+                  <p>Clientes</p>
+                </a>
+              </li>
+              @auth
+                <li class="nav-item">
+                  <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link border-0 bg-transparent text-start w-100">
+                      <i class="nav-icon bi bi-box-arrow-right" aria-hidden="true"></i>
+                      <span>Cerrar sesión</span>
+                    </button>
+                  </form>
+                </li>
+              @endauth
+              <li @class(['nav-item', 'menu-open' => request()->routeIs('dashboard')])>
+                <a href="#" @class(['nav-link', 'active' => request()->routeIs('dashboard')])>
                   <i class="nav-icon bi bi-speedometer"></i>
                   <p>
                     Dashboard
@@ -54,7 +72,7 @@
                 </a>
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
-                    <a href="{{ route('dashboard') }}" class="nav-link active">
+                    <a href="{{ route('dashboard') }}" @class(['nav-link', 'active' => request()->routeIs('dashboard')])>
                       <i class="nav-icon bi bi-circle"></i>
                       <p>Dashboard v1</p>
                     </a>
