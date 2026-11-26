@@ -12,10 +12,10 @@ final class ClientesModuleTest extends TestCase
 
     public function test_web_requires_login_and_can_register_and_edit_a_client(): void
     {
-        $this->get('/clientes')->assertRedirect(route('login'));
+        $this->get('/clientes')->assertRedirect(route('dashboard'));
 
         $usuario = User::factory()->create();
-        $this->post('/login', ['email' => $usuario->email, 'password' => 'password'])
+        $this->post('/', ['email' => $usuario->email, 'password' => 'password'])
             ->assertRedirect(route('clientes.index'));
 
         $this->get('/clientes/create')->assertOk()->assertSee('Nuevo cliente');
@@ -26,7 +26,7 @@ final class ClientesModuleTest extends TestCase
         $this->get('/clientes/1/edit')->assertOk()->assertSee('Cliente Ejemplo');
         $this->put('/clientes/1', [...$this->datos(), 'activo' => '0'])->assertRedirect(route('clientes.index'));
         $this->assertDatabaseHas('erp_clientes', ['id' => 1, 'activo' => false]);
-        $this->post('/logout')->assertRedirect(route('login'));
+        $this->post('/logout')->assertRedirect(route('dashboard'));
         $this->assertGuest();
     }
 

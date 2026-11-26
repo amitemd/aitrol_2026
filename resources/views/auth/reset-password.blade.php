@@ -30,7 +30,7 @@
             <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password"
                 minlength="12" maxlength="72" required>
         </div>
-        <button class="access-button" type="submit">Guardar contraseña</button>
+        <button class="btn btn-primary access-button" type="submit">Guardar contraseña</button>
         <a class="access-back" href="{{ route('password.request') }}">Solicitar otro enlace</a>
     </form>
 @endsection

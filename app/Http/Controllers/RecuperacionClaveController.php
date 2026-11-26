@@ -86,6 +86,6 @@ final class RecuperacionClaveController extends Controller
             ]);
         }
 
-        return to_route('login')->with('status', 'Contraseña actualizada. Ya puedes iniciar sesión.');
+        return to_route('dashboard')->with('status', 'Contraseña actualizada. Ya puedes iniciar sesión.');
     }
 }

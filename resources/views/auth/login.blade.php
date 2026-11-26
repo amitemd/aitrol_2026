@@ -30,6 +30,6 @@
                 @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
             @error('password') <p id="password-error" class="access-error">{{ $message }}</p> @enderror
         </div>
-        <button class="access-button" type="submit">Entrar al ERP</button>
+        <button class="btn btn-primary access-button" type="submit">Entrar al ERP</button>
     </form>
 @endsection

@@ -21,7 +21,7 @@ final class RecuperacionClaveTest extends TestCase
         $usuario = User::factory()->create();
         $mensaje = 'Si existe una cuenta con ese correo, recibirás un enlace para cambiar la contraseña.';
 
-        $this->get('/login')->assertOk()->assertSee(route('password.request'));
+        $this->get('/')->assertOk()->assertSee(route('password.request'));
         $this->from('/forgot-password')
             ->post('/forgot-password', ['email' => 'desconocido@example.test'])
             ->assertSessionHas('status', $mensaje);
@@ -59,7 +59,7 @@ final class RecuperacionClaveTest extends TestCase
             'password_confirmation' => $claveNueva,
         ];
 
-        $this->post('/reset-password', $datos)->assertRedirect(route('login'));
+        $this->post('/reset-password', $datos)->assertRedirect(route('dashboard'));
         $this->assertTrue(Hash::check($claveNueva, $usuario->fresh()->password));
         $this->assertFalse(Password::tokenExists($usuario, $token));
         $this->post('/reset-password', $datos)->assertRedirect(route('password.request'));

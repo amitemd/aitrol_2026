@@ -10,9 +10,9 @@ use Illuminate\Validation\ValidationException;
 
 final class SesionController extends Controller
 {
-    public function create(): View
+    public function inicio(): View
     {
-        return view('auth.login');
+        return view(Auth::check() ? 'adminlte.dashboard' : 'auth.login');
     }
 
     public function store(Request $request): RedirectResponse
@@ -23,7 +23,8 @@ final class SesionController extends Controller
         ]);
 
         if (! Auth::attempt($credenciales)) {
-            throw ValidationException::withMessages(['email' => 'Las credenciales son incorrectas.']);
+            throw ValidationException::withMessages(['email' => 'Las credenciales son incorrectas.'])
+                ->redirectTo(route('dashboard'));
         }
 
         $request->session()->regenerate();
@@ -37,6 +38,6 @@ final class SesionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return to_route('login');
+        return to_route('dashboard');
     }
 }

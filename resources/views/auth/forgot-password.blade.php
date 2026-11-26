@@ -21,7 +21,7 @@
                 @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
             @error('email') <p id="email-error" class="access-error">{{ $message }}</p> @enderror
         </div>
-        <button class="access-button" type="submit">Enviar enlace</button>
-        <a class="access-back" href="{{ route('login') }}">Volver al inicio de sesión</a>
+        <button class="btn btn-primary access-button" type="submit">Enviar enlace</button>
+        <a class="access-back" href="{{ route('dashboard') }}">Volver al inicio de sesión</a>
     </form>
 @endsection
