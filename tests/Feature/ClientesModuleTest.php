@@ -30,6 +30,23 @@ final class ClientesModuleTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_customer_documents_and_reports_are_available_from_the_menu(): void
+    {
+        $this->get(route('clientes.documentos.facturas'))->assertRedirect(route('dashboard'));
+
+        $this->actingAs(User::factory()->create());
+        $this->get(route('dashboard'))->assertOk()
+            ->assertSeeInOrder([
+                'Lista de clientes', 'Documentos', 'Facturas', 'Comprobantes de pago',
+                'Reportes', 'Cuentas por cobrar', 'Cartera vencida', 'Edad de cartera',
+            ]);
+
+        foreach (config('clientes.secciones') as $ruta => $titulo) {
+            $this->get(route($ruta))->assertOk()->assertSee($titulo)
+                ->assertSee('Esta sección aún no está conectada a una fuente de datos.');
+        }
+    }
+
     public function test_the_customer_dialog_can_save_and_keep_the_list_available(): void
     {
         $this->postJson('/clientes', $this->datos())->assertUnauthorized();

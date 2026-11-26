@@ -93,7 +93,8 @@ final class MenuTest extends TestCase
         $this->put(route('configuracion.menu.update', $subgrupo), $this->datos('Área B', null))->assertRedirect($index);
         $this->assertDatabaseHas('menu', ['id' => $subgrupo, 'padre_id' => null]);
         $this->assertDatabaseHas('menu', ['nombre' => 'Registro interno', 'padre_id' => $subgrupo]);
-        $this->assertDatabaseHas('menu', ['ruta' => 'clientes.index', 'padre_id' => null]);
+        $ubicacionClientes = DB::table('menu')->where('nombre', 'Clientes')->whereNull('ruta')->value('id');
+        $this->assertDatabaseHas('menu', ['ruta' => 'clientes.index', 'padre_id' => $ubicacionClientes]);
     }
 
     private function datos(string $nombre, ?string $ruta, ?int $padre = null): array

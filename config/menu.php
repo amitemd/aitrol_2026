@@ -3,7 +3,7 @@
 return [
     'destinos' => [
         'dashboard' => 'Panel general',
-        'clientes.index' => 'Clientes',
+        'clientes.index' => 'Lista de clientes',
         'clientes.create' => 'Nuevo cliente',
         'swagger.index' => 'Documentación API',
     ],

@@ -41,12 +41,13 @@
 
     function activate(key, focus = false) {
         active = key;
+        bar.hidden = tabs.size === 1;
         for (const [id, tab] of tabs) {
             tab.panel.hidden = id !== key;
             tab.button.setAttribute('aria-pressed', String(id === key));
         }
         const selected = tabs.get(key);
-        if (focus) {
+        if (focus && !bar.hidden) {
             selected.button.focus({ preventScroll: true });
             selected.item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
         }
@@ -60,11 +61,7 @@
         tab.item.remove();
         tab.panel.remove();
         tabs.delete(key);
-        if (active === key) {
-            activate(next, true);
-        } else {
-            tabs.get(active).button.focus();
-        }
+        activate(active === key ? next : active, true);
     }
 
     async function refreshSidebar() {
@@ -135,7 +132,6 @@
     if (initialKey !== 'dashboard') {
         add(initialKey, document.title.split(' · Aitrol')[0].trim(), new URL(location.href), initial);
     }
-    bar.hidden = false;
     activate(initialKey);
 
     document.addEventListener('click', (event) => {

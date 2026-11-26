@@ -84,6 +84,8 @@ final class MenuController
 
     private function destinos(): array
     {
-        return array_filter(config('menu.destinos'), fn (string $ruta): bool => Route::has($ruta), ARRAY_FILTER_USE_KEY);
+        $destinos = config('menu.destinos') + config('clientes.secciones');
+
+        return array_filter($destinos, fn (string $ruta): bool => Route::has($ruta), ARRAY_FILTER_USE_KEY);
     }
 }

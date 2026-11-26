@@ -11,4 +11,12 @@ Route::middleware(['web', 'auth', 'auth.session'])->group(function (): void {
         ->where('cliente', '[1-9][0-9]{0,17}')->name('clientes.edit');
     Route::put('/clientes/{cliente}', [ClienteWebController::class, 'update'])
         ->where('cliente', '[1-9][0-9]{0,17}')->name('clientes.update');
+
+    foreach (config('clientes.secciones') as $ruta => $titulo) {
+        [, $grupo] = explode('.', $ruta);
+        Route::view('/'.str_replace('.', '/', $ruta), 'clientes::seccion', [
+            'titulo' => $titulo,
+            'grupo' => config('clientes.grupos.'.$grupo),
+        ])->name($ruta);
+    }
 });
