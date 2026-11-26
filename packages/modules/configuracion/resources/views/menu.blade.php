@@ -13,7 +13,7 @@
     <div class="app-content">
         <div class="container-fluid">
             @if (session('estado'))
-                <div class="alert alert-success" role="status">{{ session('estado') }}</div>
+                <div class="alert alert-success" role="status" data-workspace-menu-changed>{{ session('estado') }}</div>
             @endif
             @if ($errors->any())
                 <div class="alert alert-danger" role="alert">
@@ -98,28 +98,24 @@
                                     <label for="nombre" class="form-label">Nombre</label>
                                     <input class="form-control" id="nombre" name="nombre" value="{{ old('nombre', $opcion?->nombre) }}" required maxlength="80">
                                 </div>
-                                @if ($opcion?->ruta !== null || $opcion === null)
-                                    <div class="mb-3">
-                                        <label for="ruta" class="form-label">Destino</label>
-                                        <select class="form-select" id="ruta" name="ruta" @required($opcion !== null)>
-                                            @if ($opcion === null)
-                                                <option value="">Sin destino · crear un grupo</option>
-                                            @endif
-                                            @foreach ($destinos as $ruta => $etiqueta)
-                                                <option value="{{ $ruta }}" @selected(old('ruta', $opcion?->ruta) === $ruta)>{{ $etiqueta }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="padre_id" class="form-label">Ubicación del enlace</label>
-                                        <select class="form-select" id="padre_id" name="padre_id">
-                                            <option value="">Menú principal</option>
-                                            @foreach ($grupos as $grupo)
-                                                <option value="{{ $grupo->id }}" @selected((string) old('padre_id', $opcion?->padreId) === (string) $grupo->id)>{{ $grupo->nombre }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                @endif
+                                <div class="mb-3">
+                                    <label for="ruta" class="form-label">Destino</label>
+                                    <select class="form-select" id="ruta" name="ruta">
+                                        <option value="">Sin destino · grupo de menús</option>
+                                        @foreach ($destinos as $ruta => $etiqueta)
+                                            <option value="{{ $ruta }}" @selected(old('ruta', $opcion?->ruta) === $ruta)>{{ $etiqueta }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="padre_id" class="form-label">Ubicación</label>
+                                    <select class="form-select" id="padre_id" name="padre_id">
+                                        <option value="">Menú principal</option>
+                                        @foreach ($ubicaciones as $grupoId => $nombreCompleto)
+                                            <option value="{{ $grupoId }}" @selected((string) old('padre_id', $opcion?->padreId) === (string) $grupoId)>{{ $nombreCompleto }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="row g-3 mb-3">
                                     <div class="col">
                                         <label for="icono" class="form-label">Icono</label>

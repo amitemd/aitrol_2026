@@ -30,6 +30,20 @@ final class ClientesModuleTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_the_customer_dialog_can_save_and_keep_the_list_available(): void
+    {
+        $this->postJson('/clientes', $this->datos())->assertUnauthorized();
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/clientes')->assertOk()
+            ->assertSee('data-workspace-tabs', false)
+            ->assertSee('data-cliente-dialog', false);
+        $this->postJson('/clientes', [])->assertUnprocessable()->assertJsonValidationErrors('nombre');
+        $this->postJson('/clientes', $this->datos())->assertCreated()->assertJsonPath('message', 'Cliente registrado.');
+        $this->postJson('/clientes', $this->datos())->assertConflict();
+        $this->get('/clientes?q=Ejemplo')->assertOk()->assertSee('Cliente Ejemplo');
+    }
+
     public function test_api_requires_a_valid_token_even_when_the_browser_is_authenticated(): void
     {
         $usuario = User::factory()->create();

@@ -28,7 +28,7 @@ final class MenuController
             'opciones' => $opciones,
             'opcion' => $opcion,
             'destinos' => $this->destinos(),
-            'grupos' => array_filter($opciones, fn (OpcionMenu $item): bool => $item->ruta === null),
+            'ubicaciones' => $this->menuService->ubicaciones($opciones, $opcion),
         ]);
     }
 

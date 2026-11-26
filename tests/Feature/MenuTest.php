@@ -73,6 +73,29 @@ final class MenuTest extends TestCase
         $this->get($index)->assertOk()->assertSee('Administrar menú');
     }
 
+    public function test_it_can_move_a_submenu_without_creating_cycles_or_losing_children(): void
+    {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+        $index = route('configuracion.menu.index');
+        $store = route('configuracion.menu.store');
+
+        $this->post($store, $this->datos('Área A', null))->assertRedirect($index);
+        $grupo = DB::table('menu')->where('nombre', 'Área A')->value('id');
+        $this->post($store, $this->datos('Área B', null, $grupo))->assertRedirect($index);
+        $subgrupo = DB::table('menu')->where('nombre', 'Área B')->value('id');
+        $this->post($store, $this->datos('Registro interno', 'clientes.create', $subgrupo))->assertRedirect($index);
+
+        $this->get(route('dashboard'))->assertOk()->assertSeeInOrder(['Área A', 'Área B', 'Registro interno']);
+        $this->from($index)->put(route('configuracion.menu.update', $grupo), $this->datos('Área A', null, $subgrupo))
+            ->assertRedirect($index)->assertSessionHasErrors('menu');
+        $this->from($index)->put(route('configuracion.menu.update', $subgrupo), $this->datos('Área B', 'dashboard', $grupo))
+            ->assertRedirect($index)->assertSessionHasErrors('menu');
+        $this->put(route('configuracion.menu.update', $subgrupo), $this->datos('Área B', null))->assertRedirect($index);
+        $this->assertDatabaseHas('menu', ['id' => $subgrupo, 'padre_id' => null]);
+        $this->assertDatabaseHas('menu', ['nombre' => 'Registro interno', 'padre_id' => $subgrupo]);
+        $this->assertDatabaseHas('menu', ['ruta' => 'clientes.index', 'padre_id' => null]);
+    }
+
     private function datos(string $nombre, ?string $ruta, ?int $padre = null): array
     {
         return [

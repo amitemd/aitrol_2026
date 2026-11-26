@@ -4,11 +4,20 @@ namespace Aitrol\Configuracion\Infrastructure\Persistence;
 
 use Aitrol\Configuracion\Domain\MenuRepository;
 use Aitrol\Configuracion\Domain\OpcionMenu;
+use Closure;
 use DomainException;
 use Illuminate\Database\QueryException;
 
 final class EloquentMenuRepository implements MenuRepository
 {
+    public function modificarJerarquia(Closure $cambio): void
+    {
+        (new MenuModel)->getConnection()->transaction(function () use ($cambio): void {
+            MenuModel::query()->where('protegido', true)->orderBy('id')->lockForUpdate()->first();
+            $cambio();
+        }, 3);
+    }
+
     public function listar(): array
     {
         return MenuModel::query()->orderBy('orden')->orderBy('id')->get()

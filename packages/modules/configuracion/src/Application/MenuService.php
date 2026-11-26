@@ -35,19 +35,63 @@ final class MenuService
             throw new DomainException('Esta opción protege el acceso a la administración del menú.');
         }
 
-        $esGrupo = $datos['ruta'] === null;
-        if ($opcion !== null && ($opcion->ruta === null) !== $esGrupo) {
-            throw new DomainException('El tipo de una opción existente no se puede cambiar.');
-        }
+        $this->repositorio->modificarJerarquia(function () use ($opcion, $datos): void {
+            $opciones = $this->listar();
+            $padreId = $datos['padre_id'];
 
-        if ($datos['padre_id'] !== null) {
-            $padre = $this->listar()[$datos['padre_id']] ?? null;
-            if ($esGrupo || $padre === null || $padre->ruta !== null || $padre->padreId !== null) {
-                throw new DomainException('Selecciona un grupo principal para el enlace.');
+            if ($padreId !== null) {
+                $padre = $opciones[$padreId] ?? null;
+                if ($padre === null || $padre->ruta !== null) {
+                    throw new DomainException('Selecciona un grupo para ubicar esta opción.');
+                }
+                if ($opcion !== null && isset($this->jerarquia($opciones, $padre->id)[$opcion->id])) {
+                    throw new DomainException('Un grupo no puede quedar dentro de sí mismo ni de uno de sus submenús.');
+                }
+            }
+
+            if ($opcion !== null && $datos['ruta'] !== null) {
+                foreach ($opciones as $item) {
+                    if ($item->padreId === $opcion->id) {
+                        throw new DomainException('Mueve las opciones de este grupo antes de convertirlo en enlace.');
+                    }
+                }
+            }
+
+            $this->repositorio->guardar($opcion?->id, $datos);
+        });
+    }
+
+    /** @return array<int, string> */
+    public function ubicaciones(array $opciones, ?OpcionMenu $opcion): array
+    {
+        $ubicaciones = [];
+        foreach ($opciones as $grupo) {
+            if ($grupo->ruta !== null) {
+                continue;
+            }
+
+            $jerarquia = $this->jerarquia($opciones, $grupo->id);
+            if ($opcion === null || ! isset($jerarquia[$opcion->id])) {
+                $ubicaciones[$grupo->id] = implode(' › ', array_reverse($jerarquia));
             }
         }
 
-        $this->repositorio->guardar($opcion?->id, $datos);
+        natcasesort($ubicaciones);
+
+        return $ubicaciones;
+    }
+
+    /** @return array<int, string> */
+    private function jerarquia(array $opciones, int $id): array
+    {
+        $jerarquia = [];
+        $actual = $opciones[$id] ?? null;
+        while ($actual !== null && ! isset($jerarquia[$actual->id])) {
+            $jerarquia[$actual->id] = $actual->nombre;
+            $actual = $opciones[$actual->padreId] ?? null;
+        }
+
+        return $jerarquia;
     }
 
     public function eliminar(OpcionMenu $opcion): void

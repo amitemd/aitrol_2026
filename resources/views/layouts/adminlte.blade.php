@@ -4,6 +4,11 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>@yield('title', 'Panel general') · Aitrol</title>
+    <script>
+      if (window.frameElement?.hasAttribute('data-workspace-frame')) {
+        document.documentElement.setAttribute('data-workspace-embedded', '');
+      }
+    </script>
 
     <!--begin::Theme Init (prevents flash of incorrect theme on load, #6043)-->
     <script>
@@ -91,13 +96,20 @@
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.min.css') }}" />
     <!--end::Required Plugin(AdminLTE)-->
 
+    <link rel="stylesheet" href="{{ asset('workspace.css') }}" />
     @stack('styles')
 </head>
 <body class="@yield('body-class', 'layout-fixed sidebar-expand-lg bg-body-tertiary')">
     <div class="app-wrapper">
         @include('partials.adminlte-header')
         @include('partials.adminlte-sidebar')
-        <main class="app-main">@yield('content')</main>
+        <main class="app-main" data-workspace data-workspace-key="{{ request()->route()?->getName() }}"
+            data-workspace-dashboard="{{ route('dashboard') }}">
+            <nav class="workspace-tabs" data-workspace-tabs aria-label="Módulos abiertos" hidden></nav>
+            <div data-workspace-content>
+                <div data-workspace-initial>@yield('content')</div>
+            </div>
+        </main>
         <footer class="app-footer">
         <!--begin::To the end-->
         <div class="float-end d-none d-sm-inline">Aitrol</div>
@@ -166,6 +178,7 @@
      module (since 4.1) — no page script needed. Only the no-flash snippet
      in <head> stays inline, because it must run before first paint. -->
     <!--end::Color Mode Toggle-->
+    <script src="{{ asset('workspace.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>
