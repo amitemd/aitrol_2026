@@ -12,6 +12,95 @@
         const estado = container.querySelector('[data-ubicacion-estado]');
         let pending;
 
+        function actualizarTipo() {
+            if (!tipo) return;
+            for (const section of container.querySelectorAll('[data-ubicacion-campo]')) {
+                const field = section.dataset.ubicacionCampo;
+                section.hidden = field !== tipo.value && !(tipo.value === 'ciudad' && field === 'provincia');
+            }
+        }
+
+        tipo?.addEventListener('change', actualizarTipo);
+        window.jQuery?.(tipo).on('change.ubicacion', actualizarTipo);
+        actualizarTipo();
+
+        if (window.aitrolSelect2) {
+            setupSearch();
+            return;
+        }
+
+        function setupSearch() {
+            const $ = window.jQuery;
+            function configurar(select, nivel, padre) {
+                if (!select) return;
+                window.aitrolSelect2(select, {
+                    placeholder: 'Seleccionar',
+                    allowClear: true,
+                    ajax: {
+                        url: container.dataset.url,
+                        dataType: 'json',
+                        delay: 250,
+                        data: (params) => ({
+                            nivel,
+                            q: params.term ?? '',
+                            page: params.page ?? 1,
+                            ...(padre ? { [padre]: nivel === 'ciudad' ? provincia.value : pais.value } : {}),
+                        }),
+                    },
+                });
+            }
+
+            function restablecer(select, activo) {
+                if (!select) return;
+                select.replaceChildren(new Option('Seleccionar', ''));
+                $(select).val('').prop('disabled', !activo).trigger('change.select2');
+            }
+
+            function preseleccionar(select, dato, activo) {
+                if (!select) return;
+                if (dato) select.append(new Option(dato.text, dato.id, true, true));
+                $(select).prop('disabled', !activo).trigger('change.select2');
+            }
+
+            $(pais).prop('disabled', false);
+            configurar(pais, 'pais');
+            configurar(provincia, 'provincia', 'pais');
+            configurar(ciudad, 'ciudad', 'provincia');
+            restablecer(provincia, false);
+            restablecer(ciudad, false);
+            let cambioManual = false;
+            $(pais).on('change.ubicacion', () => {
+                cambioManual = true;
+                restablecer(provincia, Boolean(pais.value));
+                restablecer(ciudad, false);
+            });
+            $(provincia).on('change.ubicacion', () => {
+                cambioManual = true;
+                restablecer(ciudad, Boolean(provincia.value));
+            });
+
+            const url = new URL(container.dataset.url);
+            url.searchParams.set('seleccion', '1');
+            if (container.dataset.ciudad) url.searchParams.set('ciudad', container.dataset.ciudad);
+            else if (pais.dataset.selected) url.searchParams.set('pais', pais.dataset.selected);
+            else return;
+
+            fetch(url, { headers: { Accept: 'application/json' } })
+                .then((response) => {
+                    if (!response.ok) throw new Error();
+                    return response.json();
+                })
+                .then((datos) => {
+                    if (cambioManual || !container.isConnected) return;
+                    preseleccionar(pais, datos.pais, true);
+                    preseleccionar(provincia, datos.provincia, Boolean(datos.pais));
+                    preseleccionar(ciudad, datos.ciudad, Boolean(datos.provincia));
+                })
+                .catch(() => {
+                    if (!cambioManual) estado.textContent = 'No se pudo recuperar la ubicación seleccionada.';
+                });
+        }
+
         function options(select, rows, selected, enabled = true) {
             if (!select) return;
             const fragment = document.createDocumentFragment();
@@ -55,17 +144,6 @@
             options(ciudad, [], '', false);
             load({ pais: pais.value, provincia: provincia.value });
         });
-
-        if (tipo) {
-            const update = () => {
-                for (const section of container.querySelectorAll('[data-ubicacion-campo]')) {
-                    const field = section.dataset.ubicacionCampo;
-                    section.hidden = field !== tipo.value && !(tipo.value === 'ciudad' && field === 'provincia');
-                }
-            };
-            tipo.addEventListener('change', update);
-            update();
-        }
 
         const initial = container.dataset.ciudad;
         load(initial ? { ciudad: initial } : { pais: pais.dataset.selected }, initial);

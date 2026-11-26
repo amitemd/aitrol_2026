@@ -74,7 +74,11 @@
                                         <td colspan="5" class="text-center clientes-vacio">
                                             <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></span>
                                             <p class="fw-semibold mb-1">{{ request()->filled('q') ? 'No hay coincidencias' : 'Todavía no hay clientes' }}</p>
-                                            <p class="text-body-secondary mb-0">{{ request()->filled('q') ? 'Prueba con otro término de búsqueda.' : 'Usa Nuevo cliente para agregar el primer registro.' }}</p>
+                                            @if (request()->filled('q'))
+                                                <p class="text-body-secondary mb-0">Prueba con otro término de búsqueda.</p>
+                                            @elseif (Gate::allows('permiso', ['clientes.lista', 'escribir']))
+                                                <p class="text-body-secondary mb-0">Usa Nuevo cliente para agregar el primer registro.</p>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforelse

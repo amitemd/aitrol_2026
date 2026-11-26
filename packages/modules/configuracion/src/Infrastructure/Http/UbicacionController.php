@@ -24,13 +24,36 @@ final class UbicacionController
             'pais' => ['nullable', 'integer', 'exists:paises,id'],
             'provincia' => ['nullable', 'integer', 'exists:provincias,id'],
             'ciudad' => ['nullable', 'integer', 'exists:ciudades,id'],
+            'nivel' => ['nullable', 'in:pais,provincia,ciudad'],
+            'q' => ['nullable', 'string', 'max:120'],
+            'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
         ]);
 
         if (isset($datos['ciudad'])) {
             $ciudad = DB::table('ciudades')->join('provincias', 'provincias.id', '=', 'ciudades.id_provincia')
-                ->where('ciudades.id', $datos['ciudad'])->first(['id_provincia', 'id_pais']);
+                ->join('paises', 'paises.id', '=', 'provincias.id_pais')
+                ->where('ciudades.id', $datos['ciudad'])->first([
+                    'ciudades.id as id_ciudad', 'ciudades.nombre as ciudad',
+                    'id_provincia', 'provincias.nombre as provincia', 'id_pais', 'paises.nombre as pais',
+                ]);
             $datos['pais'] = $ciudad->id_pais;
             $datos['provincia'] = $ciudad->id_provincia;
+        }
+
+        if (isset($datos['nivel'])) {
+            return $this->buscar($datos);
+        }
+
+        if ($request->boolean('seleccion')) {
+            return response()->json(isset($ciudad) ? [
+                'pais' => ['id' => $ciudad->id_pais, 'text' => $ciudad->pais],
+                'provincia' => ['id' => $ciudad->id_provincia, 'text' => $ciudad->provincia],
+                'ciudad' => ['id' => $ciudad->id_ciudad, 'text' => $ciudad->ciudad],
+            ] : [
+                'pais' => isset($datos['pais'])
+                    ? DB::table('paises')->where('id', $datos['pais'])->first(['id', 'nombre as text'])
+                    : null,
+            ]);
         }
 
         return response()->json([
@@ -44,6 +67,23 @@ final class UbicacionController
                 ? DB::table('ciudades')->where('id_provincia', $datos['provincia'])->orderBy('nombre')->get(['id', 'nombre'])
                 : [],
         ]);
+    }
+
+    private function buscar(array $datos): JsonResponse
+    {
+        $consulta = match ($datos['nivel']) {
+            'pais' => DB::table('paises'),
+            'provincia' => DB::table('provincias')->where('id_pais', $datos['pais'] ?? 0),
+            'ciudad' => DB::table('ciudades')->where('id_provincia', $datos['provincia'] ?? 0),
+        };
+        if (isset($datos['q'])) {
+            $consulta->whereLike('nombre', '%'.$datos['q'].'%');
+        }
+
+        $pagina = $consulta->orderBy('nombre')->orderBy('id')
+            ->simplePaginate(30, ['id', 'nombre as text'], 'page', $datos['page'] ?? 1);
+
+        return response()->json(['results' => $pagina->items(), 'pagination' => ['more' => $pagina->hasMorePages()]]);
     }
 
     public function store(Request $request): RedirectResponse

@@ -15,7 +15,7 @@
             "get": {
                 "operationId": "listarClientes",
                 "summary": "Buscar y listar clientes",
-                "description": "Requiere el permiso clientes:leer.",
+                "description": "Requiere el alcance clientes:leer del token y permiso Leer en la lista de Clientes.",
                 "parameters": [
                     {
                         "name": "q",
@@ -193,7 +193,7 @@
             "post": {
                 "operationId": "registrarCliente",
                 "summary": "Registrar cliente",
-                "description": "Requiere el permiso clientes:escribir. El estado predeterminado es activo.",
+                "description": "Requiere el alcance clientes:escribir del token y permiso Escribir en la lista de Clientes. El estado predeterminado es activo.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -255,7 +255,7 @@
             "get": {
                 "operationId": "consultarCliente",
                 "summary": "Consultar cliente",
-                "description": "Requiere el permiso clientes:leer.",
+                "description": "Requiere el alcance clientes:leer del token y permiso Leer en la lista de Clientes.",
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/Cliente"
@@ -280,7 +280,7 @@
             "put": {
                 "operationId": "actualizarCliente",
                 "summary": "Actualizar o desactivar cliente",
-                "description": "Requiere el permiso clientes:escribir. Reemplaza los datos editables. Los campos de contacto omitidos se limpian.",
+                "description": "Requiere el alcance clientes:escribir del token y permiso Actualizar en la lista de Clientes. Reemplaza los datos editables. Los campos de contacto omitidos se limpian.",
                 "requestBody": {
                     "required": true,
                     "content": {
