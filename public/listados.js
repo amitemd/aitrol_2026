@@ -45,14 +45,17 @@
         }
         errors.replaceChildren(details);
         errors.hidden = false;
+        const fieldName = (name) => name.split('.').map((part, index) => index ? '[' + part + ']' : part).join('');
         for (const name of Object.keys(fields)) {
-            const input = form.elements.namedItem(name);
+            const input = form.elements.namedItem(fieldName(name)) ?? form.elements.namedItem(name.split('.')[0] + '[]');
             if (input instanceof HTMLElement) {
                 input.classList.add('is-invalid');
                 input.setAttribute('aria-invalid', 'true');
             }
         }
-        form.querySelector('[aria-invalid="true"]')?.focus();
+        const first = form.querySelector('[aria-invalid="true"]');
+        first?.closest('[data-ficha-panel]')?.dispatchEvent(new CustomEvent('aitrol:ficha-error', { bubbles: true }));
+        first?.focus();
     }
 
     async function loadHtml(url, signal) {
@@ -100,6 +103,7 @@
             if (controller.signal.aborted) return;
             form.querySelector(':scope > .card-header')?.remove();
             body.replaceChildren(form);
+            form.dispatchEvent(new Event('aitrol:form-ready', { bubbles: true }));
             (form.querySelector('[autofocus]') || form.querySelector('input:not([type="hidden"]), select'))?.focus();
         } catch (error) {
             if (!controller.signal.aborted) body.textContent = error.message;

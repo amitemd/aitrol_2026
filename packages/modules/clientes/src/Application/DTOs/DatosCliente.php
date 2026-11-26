@@ -13,5 +13,6 @@ final readonly class DatosCliente
         public ?string $telefono,
         public ?string $direccion,
         public bool $activo,
+        public array $perfil = [],
     ) {}
 }

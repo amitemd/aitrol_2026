@@ -42,6 +42,7 @@ final readonly class ClientesService
             $datos->telefono,
             $datos->direccion,
             $datos->activo,
+            perfil: $datos->perfil,
         ));
     }
 }

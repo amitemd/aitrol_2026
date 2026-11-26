@@ -2,6 +2,10 @@
 
 @section('title', 'Clientes')
 
+@push('scripts')
+    <script src="{{ asset('clientes-ficha.js') }}" defer></script>
+@endpush
+
 @section('content')
     @include('partials.listado-cabecera', [
         'titulo' => 'Clientes', 'subtitulo' => 'Directorio de clientes', 'icono' => 'bi-people',

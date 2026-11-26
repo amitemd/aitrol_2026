@@ -11,9 +11,16 @@ final class UsuarioResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'id_persona' => $this->id_persona,
             'name' => $this->name,
             'email' => $this->email,
             'is_admin' => (bool) $this->is_admin,
+            'nombres' => $this->persona?->nombre,
+            'apellidos' => $this->persona?->apellido,
+            'email_contacto' => $this->persona?->email,
+            'telefono' => $this->persona?->telefono,
+            'direccion' => $this->persona?->direccion,
+            ...($this->persona?->perfil() ?? []),
         ];
     }
 }

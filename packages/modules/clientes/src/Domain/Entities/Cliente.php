@@ -17,11 +17,13 @@ final readonly class Cliente
         public ?string $telefono,
         public ?string $direccion,
         public bool $activo,
+        public ?int $idPersona = null,
+        public array $perfil = [],
     ) {
         $this->nombre = trim($nombre);
 
-        if ($this->nombre === '' || mb_strlen($this->nombre) > 160) {
-            throw new InvalidArgumentException('El nombre debe tener entre 1 y 160 caracteres.');
+        if ($this->nombre === '') {
+            throw new InvalidArgumentException('El nombre del cliente es obligatorio.');
         }
     }
 }

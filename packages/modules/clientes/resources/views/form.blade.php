@@ -2,6 +2,14 @@
 
 @section('title', $cliente ? 'Editar cliente' : 'Nuevo cliente')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('clientes.css') }}">
+@endpush
+
+@push('scripts')
+    <script src="{{ asset('clientes-ficha.js') }}" defer></script>
+@endpush
+
 @section('content')
     <div class="app-content-header">
         <div class="container-fluid">
@@ -10,11 +18,16 @@
     </div>
     <div class="app-content">
         <div class="container-fluid">
-            <form method="POST" class="card" data-ajax-form
+            <form method="POST" class="card ficha-cliente" data-ajax-form data-ficha-cliente enctype="multipart/form-data"
                 action="{{ $cliente ? route('clientes.update', $cliente->id) : route('clientes.store') }}">
                 @csrf
                 @if ($cliente) @method('PUT') @endif
-                <div class="card-body row g-3">
+                <div class="card-body">
+                    @if ($errors->any())
+                        <ul class="alert alert-danger ps-4" role="alert">
+                            @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
+                        </ul>
+                    @endif
                     @include('clientes::campos')
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">

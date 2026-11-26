@@ -11,6 +11,10 @@ Route::middleware(['web', 'auth', 'auth.session'])->group(function (): void {
         ->where('cliente', '[1-9][0-9]{0,17}')->name('clientes.edit');
     Route::put('/clientes/{cliente}', [ClienteWebController::class, 'update'])
         ->where('cliente', '[1-9][0-9]{0,17}')->name('clientes.update');
+    Route::get('/clientes/{cliente}/foto', [ClienteWebController::class, 'foto'])
+        ->where('cliente', '[1-9][0-9]{0,17}')->name('clientes.foto');
+    Route::get('/clientes/{cliente}/documentos/{archivo}', [ClienteWebController::class, 'documento'])
+        ->where('cliente', '[1-9][0-9]{0,17}')->whereUuid('archivo')->name('clientes.documento');
 
     foreach (config('clientes.secciones') as $ruta => $titulo) {
         [, $grupo] = explode('.', $ruta);
