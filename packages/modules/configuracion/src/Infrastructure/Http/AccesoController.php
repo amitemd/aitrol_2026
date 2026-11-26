@@ -19,7 +19,11 @@ final class AccesoController
         $id = $request->integer('editar');
 
         return view('configuracion::roles', [
-            'roles' => DB::table('roles')->orderBy('nombre')->get(),
+            'roles' => DB::table('roles')
+                ->leftJoin('users as creador', 'creador.id', '=', 'roles.id_usuario_creacion')
+                ->leftJoin('users as editor', 'editor.id', '=', 'roles.id_usuario_modificacion')
+                ->orderBy('roles.nombre')
+                ->get(['roles.*', 'creador.name as creado_por', 'editor.name as modificado_por']),
             'rol' => $id ? (DB::table('roles')->find($id) ?? abort(404)) : null,
             'seleccion' => $id ? DB::table('permiso_rol')->where('id_rol', $id)->pluck('id_permiso')->map(fn ($id) => (int) $id)->all() : [],
             'opciones' => $this->opciones(),
@@ -34,18 +38,36 @@ final class AccesoController
             'permisos.*' => ['integer', 'distinct', 'exists:permisos,id'],
         ]);
 
+        $autor = $request->user()->id;
+        $permisos = array_map('intval', $datos['permisos'] ?? []);
+        sort($permisos);
+
         try {
-            DB::transaction(function () use ($rol, $datos): void {
+            DB::transaction(function () use ($rol, $datos, $autor, $permisos): void {
                 if ($rol === null) {
-                    $id = DB::table('roles')->insertGetId(['nombre' => $datos['nombre']]);
+                    $id = DB::table('roles')->insertGetId([
+                        'nombre' => $datos['nombre'],
+                        'id_usuario_creacion' => $autor,
+                        'created_at' => now(),
+                    ]);
                 } else {
-                    abort_unless(DB::table('roles')->lockForUpdate()->find($rol), 404);
-                    DB::table('roles')->where('id', $rol)->update(['nombre' => $datos['nombre']]);
+                    $actual = DB::table('roles')->lockForUpdate()->find($rol) ?? abort(404);
+                    $asignados = DB::table('permiso_rol')->where('id_rol', $rol)
+                        ->orderBy('id_permiso')->pluck('id_permiso')->map(fn ($id) => (int) $id)->all();
+                    if ($actual->nombre === $datos['nombre'] && $asignados === $permisos) {
+                        return;
+                    }
+
+                    DB::table('roles')->where('id', $rol)->update([
+                        'nombre' => $datos['nombre'],
+                        'id_usuario_modificacion' => $autor,
+                        'updated_at' => now(),
+                    ]);
                     $id = $rol;
                 }
 
                 DB::table('permiso_rol')->where('id_rol', $id)->delete();
-                foreach (array_chunk($datos['permisos'] ?? [], 200) as $grupo) {
+                foreach (array_chunk($permisos, 200) as $grupo) {
                     DB::table('permiso_rol')->insert(array_map(fn ($permiso) => ['id_rol' => $id, 'id_permiso' => $permiso], $grupo));
                 }
             });

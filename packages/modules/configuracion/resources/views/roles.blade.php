@@ -14,11 +14,29 @@
             <section class="card clientes-directorio" data-ajax-list>
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
-                        <thead><tr><th scope="col">Rol</th><th class="text-end" scope="col">Acciones</th></tr></thead>
+                        <thead class="clientes-tabla-cabecera">
+                            <tr>
+                                <th scope="col">Rol</th>
+                                <th scope="col">Creación</th>
+                                <th scope="col">Última modificación</th>
+                                <th class="text-end" scope="col">Acciones</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @forelse ($roles as $item)
                                 <tr>
                                     <th scope="row">{{ $item->nombre }}</th>
+                                    @foreach ([[$item->creado_por, $item->created_at], [$item->modificado_por, $item->updated_at]] as [$autor, $fecha])
+                                        <td>
+                                            <span>{{ $autor ?? '—' }}</span>
+                                            @if ($fecha)
+                                                @php($fechaLocal = \Illuminate\Support\Carbon::parse($fecha)->tz('America/Guayaquil'))
+                                                <time class="d-block small text-body-secondary text-nowrap" datetime="{{ $fechaLocal->toIso8601String() }}">
+                                                    {{ $fechaLocal->format('d/m/Y H:i') }}
+                                                </time>
+                                            @endif
+                                        </td>
+                                    @endforeach
                                     <td class="text-end">
                                         <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.roles.index', ['editar' => $item->id]) }}" data-ajax-open="Editar rol">Editar</a>
                                         <details class="d-inline-block">
@@ -31,7 +49,13 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="2" class="text-center text-body-secondary p-4">Todavía no hay roles registrados.</td></tr>
+                                <tr>
+                                    <td colspan="4" class="text-center clientes-vacio">
+                                        <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
+                                        <p class="fw-semibold mb-1">Todavía no hay roles registrados</p>
+                                        <p class="text-body-secondary mb-0">Usa Nuevo rol para agrupar los permisos que asignarás a tus usuarios.</p>
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
