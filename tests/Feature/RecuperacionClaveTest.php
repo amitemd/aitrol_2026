@@ -71,10 +71,28 @@ final class RecuperacionClaveTest extends TestCase
         Notification::fake();
         $usuario = User::factory()->create();
 
+        $this->get('/forgot-password')->assertOk()->assertSee('Solicita al administrador')
+            ->assertDontSee('Enviar enlace');
         $this->from('/forgot-password')->post('/forgot-password', ['email' => $usuario->email])
             ->assertRedirect('/forgot-password')->assertSessionHasErrors('email');
 
         Notification::assertNothingSent();
         $this->assertDatabaseCount('password_reset_tokens', 0);
+    }
+
+    public function test_an_operator_can_generate_a_recovery_link_without_sending_mail(): void
+    {
+        config(['app.url' => 'https://aitrol.example.test', 'mail.default' => 'log']);
+        Notification::fake();
+        $usuario = User::factory()->create();
+        $tokenAnterior = Password::createToken($usuario);
+
+        $this->artisan('aitrol:enlace-recuperacion', ['email' => $usuario->email])
+            ->expectsOutputToContain('https://aitrol.example.test/reset-password/')
+            ->assertSuccessful();
+
+        Notification::assertNothingSent();
+        $this->assertDatabaseCount('password_reset_tokens', 1);
+        $this->assertFalse(Password::tokenExists($usuario, $tokenAnterior));
     }
 }
