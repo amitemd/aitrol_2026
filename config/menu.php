@@ -8,5 +8,7 @@ return [
         'swagger.index' => 'Documentación API',
         'configuracion.usuarios.index' => 'Usuarios',
         'configuracion.empresas.index' => 'Empresas',
+        'configuracion.roles.index' => 'Roles y permisos',
+        'configuracion.ubicaciones.index' => 'Ubicaciones',
     ],
 ];

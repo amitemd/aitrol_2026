@@ -6,6 +6,7 @@ use Aitrol\Configuracion\Application\MenuService;
 use Aitrol\Configuracion\Domain\MenuRepository;
 use Aitrol\Configuracion\Infrastructure\Persistence\EloquentMenuRepository;
 use App\Models\User;
+use App\Services\Accesos;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +18,7 @@ final class ConfiguracionServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(MenuRepository::class, EloquentMenuRepository::class);
+        $this->app->scoped(Accesos::class);
     }
 
     public function boot(): void
@@ -31,11 +33,17 @@ final class ConfiguracionServiceProvider extends ServiceProvider
         $esAdministrador = fn (User $usuario): bool => $usuario->is_admin === true;
         Gate::define('administrar-menu', $esAdministrador);
         Gate::define('administrar-configuracion', $esAdministrador);
+        Gate::define('permiso', fn (User $usuario, string $opcion, string $accion): bool => app(Accesos::class)->permite($usuario, $opcion, $accion));
         Gate::define('integrar-usuarios', fn (User $usuario): bool =>
             $esAdministrador($usuario) && $usuario->currentAccessToken() instanceof PersonalAccessToken);
 
         View::composer('partials.adminlte-sidebar', function (Vista $vista): void {
-            $vista->with('navegacion', $this->app->make(MenuService::class)->navegacion(Gate::allows('administrar-menu')));
+            $usuario = auth()->user();
+            $accesos = app(Accesos::class);
+            $vista->with('navegacion', $this->app->make(MenuService::class)->navegacion(
+                Gate::allows('administrar-menu'),
+                fn (string $ruta): bool => $usuario !== null && $accesos->muestra($usuario, $ruta),
+            ));
         });
     }
 }

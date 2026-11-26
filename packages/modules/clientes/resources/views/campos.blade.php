@@ -57,7 +57,8 @@
 <section id="ficha-distribucion" data-ficha-panel="distribucion" aria-label="Distribución">
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'direccion', 'etiqueta' => 'Dirección', 'valor' => $cliente?->direccion, 'limite' => 255, 'ancho' => 'col-12'])
-        @foreach (['provincia' => 'Provincia', 'ciudad' => 'Ciudad', 'zona' => 'Zona de distribución'] as $campo => $etiqueta)
+        @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $perfil['id_ciudad'] ?? null)])
+        @foreach (['zona' => 'Zona de distribución'] as $campo => $etiqueta)
             @include('clientes::campo-ficha', ['campo' => $campo, 'etiqueta' => $etiqueta, 'valor' => $perfil[$campo] ?? null, 'limite' => 100, 'ancho' => 'col-md-4'])
         @endforeach
         @foreach (['urbanizacion' => 'Urbanización', 'etapa' => 'Etapa', 'manzana' => 'Manzana', 'villa' => 'Villa'] as $campo => $etiqueta)

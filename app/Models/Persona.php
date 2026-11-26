@@ -41,7 +41,7 @@ final class Persona extends Model
     {
         return [
             'celular' => ['nullable', 'string', 'max:100'],
-            'id_ciudad' => ['nullable', 'integer', 'min:1'],
+            'id_ciudad' => ['nullable', 'integer', 'exists:ciudades,id'],
             'fecha_nacimiento' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'observacion' => ['nullable', 'string', 'max:3000'],
             'urbanizacion' => ['nullable', 'string', 'max:100'],

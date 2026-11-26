@@ -179,6 +179,7 @@
      in <head> stays inline, because it must run before first paint. -->
     <!--end::Color Mode Toggle-->
     <script src="{{ asset('workspace.js') }}" defer></script>
+    <script src="{{ asset('ubicacion.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

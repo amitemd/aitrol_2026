@@ -17,13 +17,26 @@ final class MenuService
     }
 
     /** @return array<int, list<OpcionMenu>> */
-    public function navegacion(bool $administrador): array
+    public function navegacion(bool $administrador, callable $puedeVer): array
     {
         $grupos = [];
         foreach ($this->listar() as $opcion) {
-            if ($opcion->activo && ($administrador || ! $opcion->soloAdministrador)) {
+            if ($opcion->activo && ($administrador || ! $opcion->soloAdministrador)
+                && ($opcion->ruta === null || $puedeVer($opcion->ruta))) {
                 $grupos[$opcion->padreId ?? 0][] = $opcion;
             }
+        }
+
+        if (! $administrador) {
+            $filtrar = function (int $padre) use (&$filtrar, &$grupos): bool {
+                $grupos[$padre] = array_values(array_filter(
+                    $grupos[$padre] ?? [],
+                    fn (OpcionMenu $opcion): bool => $opcion->ruta !== null || $filtrar($opcion->id),
+                ));
+
+                return $grupos[$padre] !== [];
+            };
+            $filtrar(0);
         }
 
         return $grupos;

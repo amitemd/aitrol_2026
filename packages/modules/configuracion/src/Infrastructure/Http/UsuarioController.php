@@ -40,6 +40,16 @@ final class UsuarioController
         return view('configuracion::usuario', ['usuario' => $usuario->load('persona'), 'tipos' => TipoIdentificacion::cases()]);
     }
 
+    public function create(): View
+    {
+        return view('configuracion::usuario', ['usuario' => new User, 'tipos' => TipoIdentificacion::cases()]);
+    }
+
+    public function store(Request $request): RedirectResponse|JsonResponse
+    {
+        return $this->guardar($request, new User);
+    }
+
     public function show(User $usuario): JsonResponse
     {
         return (new UsuarioResource($usuario))->response()->header('Cache-Control', 'no-store');
@@ -48,6 +58,13 @@ final class UsuarioController
     public function update(Request $request, User $usuario): RedirectResponse|JsonResponse
     {
         abort_if($request->routeIs('api.*') && $usuario->is_admin, 403, 'Edita las cuentas administradoras desde Configuraciones generales.');
+
+        return $this->guardar($request, $usuario);
+    }
+
+    private function guardar(Request $request, User $usuario): RedirectResponse|JsonResponse
+    {
+        $esNuevo = ! $usuario->exists;
         if (is_string($request->input('email'))) {
             $request->merge(['email' => Str::lower($request->input('email'))]);
         }
@@ -63,6 +80,11 @@ final class UsuarioController
             ...Persona::reglasPerfil(),
             'tipo_identificacion' => ['exclude_if:identificacion,null', 'required_with:identificacion', 'nullable', Rule::enum(TipoIdentificacion::class)],
             'identificacion' => ['nullable', 'string', 'max:30'],
+            ...($esNuevo ? ['password' => ['required', 'string', 'min:12', 'max:72', 'confirmed', function ($atributo, $valor, $fallar): void {
+                if (is_string($valor) && (strlen($valor) > 72 || str_contains($valor, "\0"))) {
+                    $fallar('La contraseña debe tener hasta 72 bytes y no admitir caracteres nulos.');
+                }
+            }]] : []),
         ]);
 
         $identificacion = null;
@@ -80,8 +102,8 @@ final class UsuarioController
         }
 
         try {
-            $usuario = $usuario->getConnection()->transaction(function () use ($usuario, $datos, $identificacion, $nombre): User {
-                $cuenta = User::query()->lockForUpdate()->findOrFail($usuario->id);
+            $usuario = $usuario->getConnection()->transaction(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo): User {
+                $cuenta = $esNuevo ? $usuario : User::query()->lockForUpdate()->findOrFail($usuario->id);
                 $persona = $cuenta->persona()->lockForUpdate()->first();
                 $perfilAnterior = $persona;
 
@@ -91,7 +113,8 @@ final class UsuarioController
                         throw ValidationException::withMessages(['identificacion' => 'La cuenta ya está vinculada a una identificación.']);
                     }
                     $personaEncontrada = Persona::query()->where($documento)->lockForUpdate()->first();
-                    if ($personaEncontrada !== null && User::query()->where('id_persona', $personaEncontrada->id)->whereKeyNot($cuenta->id)->exists()) {
+                    if ($personaEncontrada !== null && User::query()->where('id_persona', $personaEncontrada->id)
+                        ->when(! $esNuevo, fn ($consulta) => $consulta->whereKeyNot($cuenta->id))->exists()) {
                         throw ValidationException::withMessages(['identificacion' => 'Esta persona ya tiene una cuenta de usuario.']);
                     }
                     $persona = $personaEncontrada ?? ($persona ?? new Persona(['nombre' => $nombre]))->fill($documento);
@@ -120,6 +143,9 @@ final class UsuarioController
 
                 $cuenta->persona()->associate($persona);
                 $cuenta->fill(['name' => $nombre, 'email' => $datos['email']]);
+                if ($esNuevo) {
+                    $cuenta->password = $datos['password'];
+                }
                 if ($cuenta->isDirty('email')) {
                     $cuenta->email_verified_at = null;
                     $cuenta->setRememberToken(Str::random(60));
@@ -140,11 +166,12 @@ final class UsuarioController
             throw ValidationException::withMessages(['email' => 'Ya existe una cuenta con ese correo.']);
         }
 
+        $mensaje = $esNuevo ? 'Usuario creado.' : 'Usuario actualizado.';
         if ($request->expectsJson() || $request->routeIs('api.*')) {
-            return (new UsuarioResource($usuario))->additional(['message' => 'Usuario actualizado.'])
-                ->response()->header('Cache-Control', 'no-store');
+            return (new UsuarioResource($usuario))->additional(['message' => $mensaje])
+                ->response()->setStatusCode($esNuevo ? 201 : 200)->header('Cache-Control', 'no-store');
         }
 
-        return to_route('configuracion.usuarios.index')->with('estado', 'Usuario actualizado.');
+        return to_route('configuracion.usuarios.index')->with('estado', $mensaje);
     }
 }

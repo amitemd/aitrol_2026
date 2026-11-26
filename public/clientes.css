@@ -87,7 +87,7 @@
     opacity: .6;
 }
 
-.cliente-dialog:has([data-ficha-cliente], [name="email_contacto"]) {
+.cliente-dialog:has([data-ficha-cliente], [name="email_contacto"], .form-accesos) {
     width: min(66rem, calc(100% - 2rem));
 }
 

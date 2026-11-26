@@ -1,12 +1,12 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Editar usuario')
+@section('title', $usuario->exists ? 'Editar usuario' : 'Nuevo usuario')
 
 @section('content')
     <div class="app-content-header">
         <div class="container-fluid">
             <a href="{{ route('configuracion.usuarios.index') }}" class="small text-decoration-none">Usuarios</a>
-            <h1 class="fs-3 mb-0">Editar usuario</h1>
+            <h1 class="fs-3 mb-0">{{ $usuario->exists ? 'Editar usuario' : 'Nuevo usuario' }}</h1>
         </div>
     </div>
 
@@ -14,9 +14,9 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-xl-9 col-lg-11">
-                    <form class="card shadow-sm" method="POST" data-ajax-form action="{{ route('configuracion.usuarios.update', $usuario) }}">
+                    <form class="card shadow-sm" method="POST" data-ajax-form action="{{ $usuario->exists ? route('configuracion.usuarios.update', $usuario) : route('configuracion.usuarios.store') }}">
                         @csrf
-                        @method('PUT')
+                        @if ($usuario->exists) @method('PUT') @endif
                         <div class="card-body row g-3">
                             @if ($errors->any())
                                 <div class="col-12">
@@ -82,6 +82,15 @@
                                         @if ($limite !== null) maxlength="{{ $limite }}" @endif value="{{ old($campo, $valor) }}">
                                 </div>
                             @endforeach
+                            @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $usuario->persona?->id_ciudad)])
+                            @unless ($usuario->exists)
+                                @foreach (['password' => 'Contraseña inicial', 'password_confirmation' => 'Confirmar contraseña'] as $campo => $etiqueta)
+                                    <div class="col-md-6">
+                                        <label for="{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                                        <input id="{{ $campo }}" name="{{ $campo }}" type="password" class="form-control" autocomplete="new-password" minlength="12" maxlength="72" required>
+                                    </div>
+                                @endforeach
+                            @endunless
                             @foreach (['referencia' => ['Referencia', 1000], 'observacion' => ['Observación', 3000]] as $campo => [$etiqueta, $limite])
                                 <div class="col-12">
                                     <label for="{{ $campo }}" class="form-label fw-semibold">{{ $etiqueta }}</label>

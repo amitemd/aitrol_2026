@@ -32,6 +32,11 @@ final readonly class ClientesService
         return $this->guardar($id, $datos);
     }
 
+    public function eliminar(int $id): void
+    {
+        $this->clientes->eliminar($id);
+    }
+
     private function guardar(?int $id, DatosCliente $datos): Cliente
     {
         return $this->clientes->guardar(new Cliente(

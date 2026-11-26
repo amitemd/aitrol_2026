@@ -14,6 +14,12 @@ use Illuminate\Database\UniqueConstraintViolationException;
 
 final class EloquentClienteRepository implements ClienteRepository
 {
+    public function eliminar(int $id): void
+    {
+        $cliente = ClienteModel::query()->find($id) ?? throw new ClienteNoEncontrado('Cliente no encontrado.');
+        $cliente->delete();
+    }
+
     public function buscar(int $id): ?Cliente
     {
         $model = ClienteModel::query()->with('persona')->find($id);

@@ -8,6 +8,7 @@ use Aitrol\Clientes\Infrastructure\Persistence\ArchivosCliente;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ClienteWebController
@@ -61,6 +62,15 @@ final readonly class ClienteWebController
     public function foto(int $cliente): StreamedResponse
     {
         return $this->archivos->foto($cliente);
+    }
+
+    public function destroy(Request $request, int $cliente): JsonResponse|RedirectResponse
+    {
+        $this->clientes->eliminar($cliente);
+
+        return $request->expectsJson()
+            ? response()->json(['message' => 'Cliente eliminado del listado.'])
+            : to_route('clientes.index')->with('status', 'Cliente eliminado del listado.');
     }
 
     public function documento(int $cliente, string $archivo): StreamedResponse

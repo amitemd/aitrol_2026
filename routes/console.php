@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\CatalogoGeoNames;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -10,6 +11,20 @@ use Illuminate\Support\Facades\Validator;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('ubicaciones:importar {--directorio= : Archivos locales de GeoNames} {--completo : Todos los lugares poblados}', function (CatalogoGeoNames $catalogo): int {
+    try {
+        $this->info('Cargando catálogo de GeoNames (CC BY 4.0)…');
+        $totales = $catalogo->importar($this->option('directorio'), (bool) $this->option('completo'));
+        $this->info(sprintf('%d países, %d provincias o estados y %d ciudades.', ...$totales));
+    } catch (RuntimeException|\Illuminate\Http\Client\ConnectionException $error) {
+        $this->error($error->getMessage());
+
+        return 1;
+    }
+
+    return 0;
+})->purpose('Importar la jerarquía geográfica internacional');
 
 Artisan::command('aitrol:usuario-crear {email} {nombre} {--administrador : Crear una cuenta administrativa} {--clave-inicial : Admitir una clave inicial de 8 caracteres}', function (): int {
     if (! $this->input->isInteractive()) {

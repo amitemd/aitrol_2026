@@ -5,9 +5,12 @@ namespace Aitrol\Clientes\Infrastructure\Persistence;
 use App\Models\Persona;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class ClienteModel extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'erp_clientes';
 
     protected $fillable = [

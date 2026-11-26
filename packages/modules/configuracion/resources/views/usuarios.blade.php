@@ -3,7 +3,10 @@
 @section('title', 'Usuarios')
 
 @section('content')
-    @include('partials.listado-cabecera', ['titulo' => 'Usuarios', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-person-gear'])
+    @include('partials.listado-cabecera', [
+        'titulo' => 'Usuarios', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-person-gear',
+        'crearUrl' => route('configuracion.usuarios.create'), 'crearTexto' => 'Nuevo usuario',
+    ])
     <div class="app-content">
         <div class="container-fluid">
             @if (session('estado'))
@@ -23,6 +26,9 @@
                                     <td>{{ $usuario->email }}</td>
                                     <td><span class="badge rounded-pill text-bg-light">{{ $usuario->is_admin ? 'Administrador' : 'Usuario' }}</span></td>
                                     <td class="text-end">
+                                        @unless ($usuario->is_admin)
+                                            <a href="{{ route('configuracion.usuarios.permisos', $usuario) }}" data-ajax-open="Permisos de usuario" class="btn btn-sm btn-outline-secondary">Permisos</a>
+                                        @endunless
                                         <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.usuarios.edit', $usuario) }}" data-ajax-open="Editar usuario" aria-label="Editar {{ $usuario->name }}">
                                             <i class="bi bi-pencil me-1" aria-hidden="true"></i> Editar
                                         </a>

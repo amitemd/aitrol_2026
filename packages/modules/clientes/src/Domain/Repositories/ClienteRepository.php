@@ -6,6 +6,8 @@ use Aitrol\Clientes\Domain\Entities\Cliente;
 
 interface ClienteRepository
 {
+    public function eliminar(int $id): void;
+
     public function buscar(int $id): ?Cliente;
 
     /** @return array{items: list<Cliente>, total: int} */
