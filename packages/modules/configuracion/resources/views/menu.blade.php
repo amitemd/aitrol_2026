@@ -3,15 +3,14 @@
 @section('title', 'Administrar menú')
 
 @section('content')
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <p class="text-body-secondary mb-1">Configuraciones generales</p>
-            <h1 class="fs-3 mb-0">Administrar menú</h1>
-        </div>
-    </div>
+    @include('partials.listado-cabecera', [
+        'titulo' => 'Administrar menú', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-list-ul',
+        'crearUrl' => route('configuracion.menu.index', ['crear' => 1]), 'crearTexto' => 'Nueva opción',
+    ])
 
     <div class="app-content">
         <div class="container-fluid">
+            @include('partials.listado-modal')
             @if (session('estado'))
                 <div class="alert alert-success" role="status" data-workspace-menu-changed>{{ session('estado') }}</div>
             @endif
@@ -26,14 +25,13 @@
             @endif
 
             <div class="row g-3">
-                <div class="col-xl-8">
-                    <section class="card h-100" aria-labelledby="opciones-menu">
-                        <div class="card-header">
-                            <h2 class="card-title" id="opciones-menu">Opciones registradas</h2>
-                        </div>
+                <div class="col-12">
+                    <section class="card clientes-directorio" data-ajax-list>
+                        @include('partials.listado-busqueda', ['listadoUrl' => route('configuracion.menu.index'), 'placeholder' => 'Nombre de la opción'])
+                        <div class="small text-body-secondary px-3 py-2 border-bottom">{{ count($resultados) }} opciones registradas</div>
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
-                                <thead>
+                                <thead class="clientes-tabla-cabecera">
                                     <tr>
                                         <th scope="col">Nombre</th>
                                         <th scope="col">Ubicación</th>
@@ -43,7 +41,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($opciones as $item)
+                                    @forelse ($resultados as $item)
                                         <tr>
                                             <th scope="row">
                                                 <i class="bi {{ $item->icono }} me-1" aria-hidden="true"></i>
@@ -64,10 +62,10 @@
                                                     <span class="text-body-secondary">Protegida</span>
                                                 @else
                                                     <div class="d-inline-flex gap-2">
-                                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.menu.index', ['editar' => $item->id]) }}" aria-label="Editar {{ $item->nombre }}">Editar</a>
+                                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.menu.index', ['editar' => $item->id]) }}" data-ajax-open="Editar opción" aria-label="Editar {{ $item->nombre }}">Editar</a>
                                                         <details class="text-start">
                                                             <summary class="btn btn-sm btn-outline-danger">Eliminar</summary>
-                                                            <form method="POST" action="{{ route('configuracion.menu.destroy', $item->id) }}" class="mt-2">
+                                                            <form method="POST" action="{{ route('configuracion.menu.destroy', $item->id) }}" class="mt-2" data-ajax-action>
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-danger" aria-label="Confirmar eliminación de {{ $item->nombre }}">Confirmar</button>
@@ -77,18 +75,21 @@
                                                 @endif
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr><td colspan="5" class="p-4 text-center text-body-secondary">No hay opciones que coincidan.</td></tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </section>
                 </div>
-                <div class="col-xl-4">
+                @if ($opcion || request()->boolean('crear') || $errors->any())
+                <div class="col-lg-8">
                     <section class="card h-100" aria-labelledby="formulario-menu">
                         <div class="card-header">
                             <h2 class="card-title" id="formulario-menu">{{ $opcion ? 'Editar opción' : 'Nueva opción' }}</h2>
                         </div>
-                        <form method="POST" action="{{ $opcion ? route('configuracion.menu.update', $opcion->id) : route('configuracion.menu.store') }}">
+                        <form method="POST" action="{{ $opcion ? route('configuracion.menu.update', $opcion->id) : route('configuracion.menu.store') }}" data-ajax-form>
                             @csrf
                             @if ($opcion)
                                 @method('PUT')
@@ -139,13 +140,12 @@
                             </div>
                             <div class="card-footer d-flex gap-2">
                                 <button class="btn btn-primary" type="submit">{{ $opcion ? 'Guardar cambios' : 'Crear opción' }}</button>
-                                @if ($opcion)
-                                    <a class="btn btn-outline-secondary" href="{{ route('configuracion.menu.index') }}">Cancelar</a>
-                                @endif
+                                <a class="btn btn-outline-secondary" href="{{ route('configuracion.menu.index') }}" data-ajax-close>Cancelar</a>
                             </div>
                         </form>
                     </section>
                 </div>
+                @endif
             </div>
         </div>
     </div>

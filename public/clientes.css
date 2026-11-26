@@ -67,3 +67,22 @@
 .cliente-dialog-cuerpo .form-label span {
     color: var(--bs-primary-text-emphasis);
 }
+
+.cliente-dialog-cuerpo form.card {
+    border: 0;
+    box-shadow: none !important;
+}
+
+.cliente-dialog-cuerpo form > .card-body {
+    padding: 0;
+}
+
+.cliente-dialog-cuerpo form > .card-footer {
+    margin-top: 1.25rem;
+    padding: 1rem 0 0;
+    background: transparent;
+}
+
+[data-ajax-list][aria-busy="true"] .table-responsive {
+    opacity: .6;
+}

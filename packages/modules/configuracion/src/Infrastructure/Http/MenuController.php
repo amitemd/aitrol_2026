@@ -6,10 +6,13 @@ use Aitrol\Configuracion\Application\MenuService;
 use Aitrol\Configuracion\Domain\OpcionMenu;
 use DomainException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 final class MenuController
 {
@@ -24,38 +27,49 @@ final class MenuController
 
         abort_if($opcion?->protegido, 403);
 
+        $datos = $request->validate(['q' => ['nullable', 'string', 'max:160']]);
+        $busqueda = $datos['q'] ?? '';
+
         return view('configuracion::menu', [
             'opciones' => $opciones,
+            'resultados' => $busqueda === '' ? $opciones : array_filter(
+                $opciones,
+                fn (OpcionMenu $item): bool => Str::contains($item->nombre, $busqueda, ignoreCase: true),
+            ),
             'opcion' => $opcion,
             'destinos' => $this->destinos(),
             'ubicaciones' => $this->menuService->ubicaciones($opciones, $opcion),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         return $this->guardar($request);
     }
 
-    public function update(Request $request, int $menu): RedirectResponse
+    public function update(Request $request, int $menu): RedirectResponse|JsonResponse
     {
         return $this->guardar($request, $this->menuService->listar()[$menu] ?? abort(404));
     }
 
-    public function destroy(int $menu): RedirectResponse
+    public function destroy(Request $request, int $menu): RedirectResponse|JsonResponse
     {
         $opcion = $this->menuService->listar()[$menu] ?? abort(404);
 
         try {
             $this->menuService->eliminar($opcion);
         } catch (DomainException $exception) {
+            if ($request->expectsJson()) {
+                throw ValidationException::withMessages(['menu' => $exception->getMessage()]);
+            }
+
             return to_route('configuracion.menu.index')->withErrors(['menu' => $exception->getMessage()]);
         }
 
-        return to_route('configuracion.menu.index')->with('estado', 'Opción eliminada.');
+        return $this->resultado($request, 'Opción eliminada.');
     }
 
-    private function guardar(Request $request, ?OpcionMenu $opcion = null): RedirectResponse
+    private function guardar(Request $request, ?OpcionMenu $opcion = null): RedirectResponse|JsonResponse
     {
         $datos = $request->validate([
             'nombre' => ['required', 'string', 'max:80'],
@@ -76,10 +90,21 @@ final class MenuController
         try {
             $this->menuService->guardar($opcion, $datos);
         } catch (DomainException $exception) {
+            if ($request->expectsJson()) {
+                throw ValidationException::withMessages(['menu' => $exception->getMessage()]);
+            }
+
             return back()->withInput()->withErrors(['menu' => $exception->getMessage()]);
         }
 
-        return to_route('configuracion.menu.index')->with('estado', 'Menú actualizado.');
+        return $this->resultado($request, 'Menú actualizado.');
+    }
+
+    private function resultado(Request $request, string $mensaje): RedirectResponse|JsonResponse
+    {
+        return $request->expectsJson()
+            ? response()->json(['message' => $mensaje, 'menuChanged' => true])
+            : to_route('configuracion.menu.index')->with('estado', $mensaje);
     }
 
     private function destinos(): array

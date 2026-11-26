@@ -14,7 +14,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-xl-7 col-lg-9">
-                    <form class="card shadow-sm" method="POST" action="{{ route('configuracion.usuarios.update', $usuario) }}">
+                    <form class="card shadow-sm" method="POST" data-ajax-form action="{{ route('configuracion.usuarios.update', $usuario) }}">
                         @csrf
                         @method('PUT')
                         <div class="card-body">
@@ -33,7 +33,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-end gap-2">
-                            <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
                             <button type="submit" class="btn btn-primary">Guardar cambios</button>
                         </div>
                     </form>

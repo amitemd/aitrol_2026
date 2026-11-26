@@ -3,25 +3,19 @@
 @section('title', 'Usuarios')
 
 @section('content')
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <p class="text-body-secondary mb-1">Configuraciones generales</p>
-            <h1 class="fs-3 mb-0">Usuarios</h1>
-        </div>
-    </div>
+    @include('partials.listado-cabecera', ['titulo' => 'Usuarios', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-person-gear'])
     <div class="app-content">
         <div class="container-fluid">
             @if (session('estado'))
                 <div class="alert alert-success" role="status">{{ session('estado') }}</div>
             @endif
-            <section class="card shadow-sm">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h2 class="card-title mb-0">Cuentas registradas</h2>
-                    <span class="badge rounded-pill text-bg-secondary">{{ $usuarios->total() }}</span>
-                </div>
+            @include('partials.listado-modal')
+            <section class="card clientes-directorio" data-ajax-list>
+                @include('partials.listado-busqueda', ['listadoUrl' => route('configuracion.usuarios.index'), 'placeholder' => 'Nombre o correo electrónico'])
+                <div class="small text-body-secondary px-3 py-2 border-bottom">{{ $usuarios->total() }} cuentas registradas</div>
                 <div class="table-responsive">
                     <table class="table align-middle table-hover mb-0">
-                        <thead><tr><th scope="col">Nombre</th><th scope="col">Correo electrónico</th><th scope="col">Tipo de cuenta</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+                        <thead class="clientes-tabla-cabecera"><tr><th scope="col">Nombre</th><th scope="col">Correo electrónico</th><th scope="col">Tipo de cuenta</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
                         <tbody>
                             @forelse ($usuarios as $usuario)
                                 <tr>
@@ -29,7 +23,7 @@
                                     <td>{{ $usuario->email }}</td>
                                     <td><span class="badge rounded-pill text-bg-light">{{ $usuario->is_admin ? 'Administrador' : 'Usuario' }}</span></td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.usuarios.edit', $usuario) }}" aria-label="Editar {{ $usuario->name }}">
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.usuarios.edit', $usuario) }}" data-ajax-open="Editar usuario" aria-label="Editar {{ $usuario->name }}">
                                             <i class="bi bi-pencil me-1" aria-hidden="true"></i> Editar
                                         </a>
                                     </td>

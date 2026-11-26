@@ -3,24 +3,24 @@
 @section('title', 'Empresas')
 
 @section('content')
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <p class="text-body-secondary mb-1">Configuraciones generales</p>
-            <h1 class="fs-3 mb-0">Empresas</h1>
-        </div>
-    </div>
+    @include('partials.listado-cabecera', [
+        'titulo' => 'Empresas', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-buildings',
+        'crearUrl' => route('configuracion.empresas.index', ['crear' => 1]), 'crearTexto' => 'Nueva empresa',
+    ])
     <div class="app-content">
         <div class="container-fluid">
             @if (session('estado'))
                 <div class="alert alert-success" role="status">{{ session('estado') }}</div>
             @endif
+            @include('partials.listado-modal')
             <div class="row g-3 align-items-start">
-                <div class="col-xl-7">
-                    <section class="card shadow-sm">
-                        <div class="card-header"><h2 class="card-title mb-0">Empresas registradas</h2></div>
+                <div class="col-12">
+                    <section class="card clientes-directorio" data-ajax-list>
+                        @include('partials.listado-busqueda', ['listadoUrl' => route('configuracion.empresas.index'), 'placeholder' => 'Razón social, nombre comercial o RUC'])
+                        <div class="small text-body-secondary px-3 py-2 border-bottom">{{ $empresas->total() }} empresas registradas</div>
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
-                                <thead><tr><th scope="col">Razón social</th><th scope="col">RUC</th><th scope="col">Contacto</th></tr></thead>
+                                <thead class="clientes-tabla-cabecera"><tr><th scope="col">Razón social</th><th scope="col">RUC</th><th scope="col">Contacto</th></tr></thead>
                                 <tbody>
                                     @forelse ($empresas as $empresa)
                                         <tr>
@@ -48,8 +48,9 @@
                         @endif
                     </section>
                 </div>
-                <div class="col-xl-5">
-                    <form class="card shadow-sm" method="POST" action="{{ route('configuracion.empresas.store') }}">
+                @if (request()->boolean('crear') || $errors->any())
+                <div class="col-lg-8">
+                    <form class="card shadow-sm" method="POST" data-ajax-form action="{{ route('configuracion.empresas.store') }}">
                         @csrf
                         <div class="card-header"><h2 class="card-title mb-0">Crear empresa</h2></div>
                         <div class="card-body row g-3">
@@ -70,9 +71,13 @@
                                 </div>
                             @endforeach
                         </div>
-                        <div class="card-footer text-end"><button type="submit" class="btn btn-primary">Registrar empresa</button></div>
+                        <div class="card-footer d-flex justify-content-end gap-2">
+                            <a class="btn btn-outline-secondary" href="{{ route('configuracion.empresas.index') }}" data-ajax-close>Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Registrar empresa</button>
+                        </div>
                     </form>
                 </div>
+                @endif
             </div>
         </div>
     </div>

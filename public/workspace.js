@@ -79,6 +79,8 @@
         }
     }
 
+    window.addEventListener('aitrol:menu-changed', refreshSidebar);
+
     function add(key, label, url, panel = null) {
         if (tabs.has(key)) {
             return;
@@ -91,6 +93,7 @@
             frame.title = label;
             frame.setAttribute('data-workspace-frame', '');
             frame.addEventListener('load', () => {
+                frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
                 if (frame.contentDocument?.querySelector('[data-login-form]')) {
                     location.assign(dashboard);
                 } else if (frame.contentDocument?.querySelector('[data-workspace-menu-changed]')) {

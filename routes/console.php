@@ -107,3 +107,38 @@ Artisan::command('clientes:revocar-token {email} {id}', function (): int {
 
     return 0;
 })->purpose('Revocar una credencial de la API de Clientes');
+
+Artisan::command('usuarios:token {email} {nombre} {--escritura} {--dias=30}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->where('is_admin', true)->first();
+    $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 90]]);
+    if ($usuario === null || $dias === false) {
+        $this->error('Indique un administrador existente y una vigencia de 1 a 90 días.');
+
+        return 1;
+    }
+
+    $permisos = ['usuarios:leer'];
+    if ($this->option('escritura')) {
+        $permisos[] = 'usuarios:escribir';
+    }
+
+    $token = $usuario->createToken($this->argument('nombre'), $permisos, now()->addDays($dias));
+    $this->line($token->plainTextToken);
+
+    return 0;
+})->purpose('Emitir una credencial para la API de Usuarios');
+
+Artisan::command('usuarios:revocar-token {email} {id}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+    $token = $usuario?->tokens()->find($this->argument('id'));
+    if ($token === null || ! in_array('usuarios:leer', $token->abilities, true)) {
+        $this->error('No se encontró la credencial de Usuarios para ese usuario.');
+
+        return 1;
+    }
+
+    $token->delete();
+    $this->info('Credencial revocada.');
+
+    return 0;
+})->purpose('Revocar una credencial de la API de Usuarios');

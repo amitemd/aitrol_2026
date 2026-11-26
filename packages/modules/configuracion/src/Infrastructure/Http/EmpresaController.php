@@ -5,20 +5,29 @@ namespace Aitrol\Configuracion\Infrastructure\Http;
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 final class EmpresaController
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $datos = $request->validate(['q' => ['nullable', 'string', 'max:160']]);
+        $consulta = EmpresaModel::query();
+        $busqueda = $datos['q'] ?? '';
+        if ($busqueda !== '') {
+            $consulta->where(fn ($query) => $query->whereLike('razon_social', '%'.$busqueda.'%')
+                ->orWhereLike('nombre_comercial', '%'.$busqueda.'%')->orWhereLike('ruc', '%'.$busqueda.'%'));
+        }
+
         return view('configuracion::empresas', [
-            'empresas' => EmpresaModel::query()->orderBy('razon_social')->orderBy('id')->paginate(20),
+            'empresas' => $consulta->orderBy('razon_social')->orderBy('id')->paginate(20)->appends(['q' => $busqueda]),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $datos = $request->validate([
             'ruc' => ['required', 'string', 'digits:13', 'unique:erp_empresas,ruc'],
@@ -33,6 +42,10 @@ final class EmpresaController
             EmpresaModel::query()->create($datos);
         } catch (UniqueConstraintViolationException) {
             throw ValidationException::withMessages(['ruc' => 'Ya existe una empresa con ese RUC.']);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Empresa registrada.'], 201);
         }
 
         return to_route('configuracion.empresas.index')->with('estado', 'Empresa registrada.');

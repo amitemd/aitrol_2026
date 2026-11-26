@@ -16,7 +16,6 @@ final readonly class ClienteWebController
     {
         return view('clientes::index', [
             'clientes' => $request->paginar($this->clientes),
-            'tipos' => TipoIdentificacion::cases(),
         ]);
     }
 
@@ -41,9 +40,13 @@ final readonly class ClienteWebController
         return to_route('clientes.index')->with('status', 'Cliente registrado.');
     }
 
-    public function update(GuardarClienteRequest $request, int $cliente): RedirectResponse
+    public function update(GuardarClienteRequest $request, int $cliente): RedirectResponse|JsonResponse
     {
         $this->clientes->actualizar($cliente, $request->datos());
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Cliente actualizado.']);
+        }
 
         return to_route('clientes.index')->with('status', 'Cliente actualizado.');
     }

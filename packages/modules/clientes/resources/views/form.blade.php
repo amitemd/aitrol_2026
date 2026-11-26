@@ -10,7 +10,7 @@
     </div>
     <div class="app-content">
         <div class="container-fluid">
-            <form method="POST" class="card"
+            <form method="POST" class="card" data-ajax-form
                 action="{{ $cliente ? route('clientes.update', $cliente->id) : route('clientes.store') }}">
                 @csrf
                 @if ($cliente) @method('PUT') @endif
@@ -18,7 +18,7 @@
                     @include('clientes::campos')
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
                     <button type="submit" class="btn btn-primary">Guardar cliente</button>
                 </div>
             </form>
