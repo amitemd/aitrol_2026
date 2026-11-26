@@ -12,7 +12,7 @@ final class SesionController extends Controller
 {
     public function inicio(): View
     {
-        return view(Auth::check() ? 'adminlte.dashboard' : 'auth.login');
+        return view(Auth::check() ? 'adminlte.dashboard-v2' : 'auth.login');
     }
 
     public function store(Request $request): RedirectResponse

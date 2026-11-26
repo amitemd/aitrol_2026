@@ -24,6 +24,7 @@
     "autoload": {
         "psr-4": {
             "Aitrol\\Clientes\\": "packages/modules/clientes/src/",
+            "Aitrol\\Configuracion\\": "packages/modules/configuracion/src/",
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
