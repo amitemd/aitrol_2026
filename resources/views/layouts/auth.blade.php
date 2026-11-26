@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('auth.css') }}">
 </head>
-<body class="aitrol-access">
+<body class="aitrol-access" data-bs-theme="dark">
     <main class="access-shell">
         <aside class="access-brand" data-bs-theme="dark" aria-label="Aitrol ERP administrativo">
             <div class="access-logo">

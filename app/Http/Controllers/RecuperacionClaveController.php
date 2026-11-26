@@ -18,7 +18,7 @@ final class RecuperacionClaveController extends Controller
 {
     public function create(): View
     {
-        return view('auth.forgot-password');
+        return view('auth.forgot-password', ['correoDisponible' => $this->correoDisponible()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -27,12 +27,7 @@ final class RecuperacionClaveController extends Controller
             'email' => ['required', 'string', 'email:filter', 'max:255'],
         ]);
 
-        $mailer = config('mail.default');
-        $transporte = config("mail.mailers.{$mailer}.transport");
-
-        if ($transporte === 'log'
-            || ($transporte === 'array' && ! app()->runningUnitTests())
-            || in_array('log', config("mail.mailers.{$mailer}.mailers", []), true)) {
+        if (! $this->correoDisponible()) {
             return back()->withInput()->withErrors([
                 'email' => 'El servicio de recuperación por correo aún no está disponible.',
             ]);
@@ -87,5 +82,16 @@ final class RecuperacionClaveController extends Controller
         }
 
         return to_route('dashboard')->with('status', 'Contraseña actualizada. Ya puedes iniciar sesión.');
+    }
+
+    private function correoDisponible(): bool
+    {
+        $mailer = config('mail.default');
+        $transporte = config("mail.mailers.{$mailer}.transport");
+
+        return is_string($transporte)
+            && $transporte !== 'log'
+            && ($transporte !== 'array' || app()->runningUnitTests())
+            && ! in_array('log', config("mail.mailers.{$mailer}.mailers", []), true);
     }
 }

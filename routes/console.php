@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
 Artisan::command('inspire', function () {
@@ -50,6 +52,23 @@ Artisan::command('aitrol:usuario-crear {email} {nombre} {--administrador : Crear
 
     return 0;
 })->purpose('Crear un usuario del ERP');
+
+Artisan::command('aitrol:enlace-recuperacion {email}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+
+    if ($usuario === null) {
+        $this->error('No se encontró una cuenta con ese correo.');
+
+        return 1;
+    }
+
+    $notificacion = new ResetPassword(Password::createToken($usuario));
+
+    $this->info('Abre este enlace para definir una nueva contraseña. Es de un solo uso.');
+    $this->line($notificacion->toMail($usuario)->actionUrl);
+
+    return 0;
+})->purpose('Generar un enlace de recuperación desde la consola');
 
 Artisan::command('clientes:token {email} {nombre} {--escritura} {--dias=90}', function (): int {
     $usuario = User::query()->where('email', $this->argument('email'))->first();

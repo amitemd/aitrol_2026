@@ -11,7 +11,7 @@
                 <figure @class(['access-slide', 'is-active' => $loop->first]) data-showcase-slide
                     aria-hidden="{{ $loop->first ? 'false' : 'true' }}">
                     <img src="{{ asset('auth-erp/'.$foto.'.jpg') }}" alt="" draggable="false"
-                        width="720" height="480" @if (!$loop->first) decoding="async" @endif>
+                        @if ($loop->first) fetchpriority="high" @else decoding="async" fetchpriority="low" @endif>
                     <figcaption>{{ $actividad }}</figcaption>
                 </figure>
             @endforeach
@@ -44,7 +44,7 @@
         <div class="access-field">
             <label for="email">Correo electrónico</label>
             <input id="email" name="email" type="email" autocomplete="username" maxlength="255"
-                value="{{ old('email') }}" required
+                value="{{ old('email') }}" placeholder="nombre@empresa.com" required
                 @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
             @error('email') <p id="email-error" class="access-error">{{ $message }}</p> @enderror
         </div>
@@ -63,7 +63,7 @@
             </div>
             @error('password') <p id="password-error" class="access-error">{{ $message }}</p> @enderror
         </div>
-        <button class="btn btn-primary access-button" type="submit">
+        <button class="btn btn-primary access-button access-login-submit" type="submit">
             <span class="access-progress" aria-hidden="true" hidden></span>
             <span data-submit-label>Entrar al ERP</span>
         </button>
