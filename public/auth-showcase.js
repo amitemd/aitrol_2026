@@ -5,6 +5,7 @@ const controls = showcase.querySelector('[data-showcase-controls]');
 const label = showcase.querySelector('[data-showcase-label]');
 const playback = showcase.querySelector('[data-showcase-playback]');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const desktopShowcase = window.matchMedia('(min-width: 768px)');
 const canvas = showcase.closest('.access-brand').querySelector('.access-network');
 const context = canvas.getContext('2d');
 
@@ -69,6 +70,8 @@ function drawNetwork() {
 }
 
 function resizeNetwork() {
+    if (!desktopShowcase.matches) return;
+
     const bounds = canvas.getBoundingClientRect();
     width = bounds.width;
     height = bounds.height;
@@ -101,12 +104,15 @@ function updatePlayback() {
     playback.hidden = reducedMotion.matches;
     playback.textContent = paused ? 'Reanudar' : 'Pausar';
 
-    const playing = !paused && !reducedMotion.matches && !document.hidden;
+    const playing = desktopShowcase.matches && !paused && !reducedMotion.matches && !document.hidden;
     showcase.classList.toggle('is-playing', playing);
     if (!playing) return;
 
     rotation = window.setInterval(() => show(current + 1), 7000);
-    if (context) animation = window.requestAnimationFrame(animateNetwork);
+    if (context) {
+        resizeNetwork();
+        animation = window.requestAnimationFrame(animateNetwork);
+    }
 }
 
 controls.hidden = false;
@@ -121,6 +127,7 @@ playback.addEventListener('click', () => {
     updatePlayback();
 });
 reducedMotion.addEventListener('change', updatePlayback);
+desktopShowcase.addEventListener('change', updatePlayback);
 document.addEventListener('visibilitychange', updatePlayback);
 
 if (context) {

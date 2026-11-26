@@ -2,33 +2,6 @@
 
 @section('title', 'Iniciar sesión')
 
-@section('brand-media')
-    @php($areas = ['empresas' => 'Empresas', 'medica' => 'Administración médica', 'contabilidad' => 'Contabilidad', 'inventario' => 'Inventario'])
-    <canvas class="access-network" aria-hidden="true"></canvas>
-    <section class="access-showcase" aria-label="Áreas de gestión" data-auth-showcase>
-        <div class="access-showcase-frame" id="access-showcase-photos">
-            @foreach ($areas as $foto => $actividad)
-                <figure @class(['access-slide', 'is-active' => $loop->first]) data-showcase-slide
-                    aria-hidden="{{ $loop->first ? 'false' : 'true' }}">
-                    <img src="{{ asset('auth-erp/'.$foto.'.jpg') }}" alt="" draggable="false"
-                        @if ($loop->first) fetchpriority="high" @else decoding="async" fetchpriority="low" @endif>
-                    <figcaption>{{ $actividad }}</figcaption>
-                </figure>
-            @endforeach
-        </div>
-        <div class="access-showcase-controls" data-showcase-controls hidden>
-            <span class="access-showcase-label" data-showcase-label>{{ reset($areas) }}</span>
-            <div class="access-showcase-dots" role="group" aria-label="Elegir imagen">
-                @foreach ($areas as $actividad)
-                    <button type="button" data-showcase-select aria-label="{{ $actividad }}"
-                        aria-controls="access-showcase-photos" aria-current="{{ $loop->first ? 'true' : 'false' }}"></button>
-                @endforeach
-            </div>
-            <button type="button" class="access-showcase-playback" data-showcase-playback>Pausar</button>
-        </div>
-    </section>
-@endsection
-
 @section('content')
     <header class="access-heading">
         <h1 id="access-title">Iniciar sesión</h1>
@@ -73,5 +46,4 @@
 
 @push('scripts')
     <script src="{{ asset('auth.js') }}" defer></script>
-    <script src="{{ asset('auth-showcase.js') }}" defer></script>
 @endpush

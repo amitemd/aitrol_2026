@@ -1,8 +1,8 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
     <div class="sidebar-brand">
         <a href="{{ route('dashboard') }}" class="brand-link" data-workspace-link="dashboard">
-            <img src="{{ asset('adminlte/assets/img/AdminLTELogo.png') }}" alt="" class="brand-image opacity-75 shadow">
-            <span class="brand-text fw-light">Aitrol</span>
+            @include('partials.aitrol-mark')
+            <span class="brand-text">Aitrol</span>
         </a>
     </div>
     <div class="sidebar-search" role="search">

@@ -1,4 +1,4 @@
-<nav class="app-header navbar navbar-expand bg-body">
+<nav class="app-header navbar navbar-expand">
         <!--begin::Container-->
         <div class="container-fluid">
           <!--begin::Start Navbar Links-->

@@ -100,8 +100,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte-select2.min.css') }}" />
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}" />
+    <link rel="stylesheet" href="{{ asset('aitrol-shell.css') }}" />
 </head>
-<body class="@yield('body-class', 'layout-fixed sidebar-expand-lg bg-body-tertiary')">
+<body class="aitrol-shell @yield('body-class', 'layout-fixed sidebar-expand-lg bg-body-tertiary')">
     <div class="app-wrapper">
         @include('partials.adminlte-header')
         @include('partials.adminlte-sidebar')

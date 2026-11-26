@@ -6,23 +6,24 @@
     <meta name="referrer" content="no-referrer">
     <title>@yield('title') · Aitrol</title>
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}">
     <link rel="stylesheet" href="{{ asset('auth.css') }}">
 </head>
 <body class="aitrol-access" data-bs-theme="dark">
     <main class="access-shell">
         <aside class="access-brand" data-bs-theme="dark" aria-label="Aitrol ERP administrativo">
             <div class="access-logo">
-                <span class="access-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                @include('partials.aitrol-mark')
                 <div>
                     <strong>Aitrol</strong>
                     <span class="access-product">ERP administrativo</span>
                 </div>
             </div>
-            @yield('brand-media')
             <div class="access-brand-copy">
                 <p class="access-brand-title">Tus empresas, bajo control.</p>
                 <p>Centraliza la administración de una o varias empresas.</p>
             </div>
+            @include('partials.auth-showcase')
         </aside>
         <section class="access-main" aria-labelledby="access-title">
             <div class="login-box">
@@ -30,6 +31,7 @@
             </div>
         </section>
     </main>
+    <script src="{{ asset('auth-showcase.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

@@ -1,0 +1,22 @@
+.aitrol-mark {
+    display: inline-grid;
+    flex: 0 0 auto;
+    grid-template-columns: repeat(2, 15%);
+    grid-template-rows: repeat(2, 15%);
+    place-content: center;
+    gap: 8%;
+    width: var(--aitrol-mark-size, 2.8rem);
+    height: var(--aitrol-mark-size, 2.8rem);
+    border-radius: .28em;
+    background: linear-gradient(145deg, #4d97ff, #1755e2);
+    box-shadow: inset 0 1px #d3e8ff57, 0 0 .95rem #3988ff55;
+}
+
+.aitrol-mark span {
+    border-radius: .1rem;
+    background: #fff;
+}
+
+.aitrol-mark span:last-child {
+    opacity: .56;
+}

@@ -1,0 +1,111 @@
+.aitrol-shell {
+    --aitrol-canvas: #eff4fb;
+    --aitrol-glow: #d6e6ff;
+    --aitrol-grid: #466c9d0e;
+    --aitrol-surface: #fbfdff;
+    --aitrol-border: #ccd9eb;
+    --aitrol-tab-active: #deeaff;
+    --aitrol-accent: #255fcc;
+    --aitrol-card-shadow: 0 .25rem .9rem #1736660c;
+}
+
+[data-bs-theme="dark"] .aitrol-shell {
+    --aitrol-canvas: #0c1626;
+    --aitrol-glow: #152e50;
+    --aitrol-grid: #89bdf513;
+    --aitrol-surface: #122137;
+    --aitrol-border: #2b405c;
+    --aitrol-tab-active: #1c365e;
+    --aitrol-accent: #83bdff;
+    --aitrol-card-shadow: 0 .25rem 1rem #03091238;
+}
+
+.aitrol-shell .app-main {
+    min-width: 0;
+    background:
+        radial-gradient(ellipse at top right, var(--aitrol-glow), transparent 42rem),
+        var(--aitrol-canvas);
+}
+
+.aitrol-shell :is(.app-header, .app-footer, .workspace-tabs) {
+    background-color: var(--aitrol-surface);
+    border-color: var(--aitrol-border);
+}
+
+.aitrol-shell .app-header {
+    box-shadow: inset 0 2px var(--aitrol-accent);
+}
+
+.aitrol-shell .app-sidebar {
+    --lte-sidebar-color: #bacce4;
+    --lte-sidebar-hover-color: #f4f8ff;
+    --lte-sidebar-hover-bg: #75adff20;
+    --lte-sidebar-active-color: #f4f8ff;
+    --lte-sidebar-menu-active-color: #f4f8ff;
+    --lte-sidebar-menu-active-bg: #80b5ff24;
+    color: #dce8fa;
+    background-image:
+        radial-gradient(ellipse at top right, #2260a366, transparent 24rem),
+        linear-gradient(165deg, #142b49, #0c1728 75%);
+    border-inline-end: 1px solid #6ba7f333;
+}
+
+.aitrol-shell .sidebar-brand {
+    border-color: #9cc7ff29;
+}
+
+.aitrol-shell .sidebar-brand .brand-link {
+    --aitrol-mark-size: 2rem;
+    gap: .65rem;
+    color: #f4f8ff;
+    font-weight: 650;
+    letter-spacing: -.025em;
+}
+
+.aitrol-shell .sidebar-search .form-control {
+    color: #f1f6ff;
+    background-color: #08172ab8;
+    border-color: #91b7e44f;
+}
+
+.aitrol-shell .sidebar-search .form-control::placeholder {
+    color: #b1c5df;
+}
+
+.aitrol-shell .sidebar-menu .nav-link.active {
+    background: linear-gradient(90deg, #3277da50, #80b5ff15);
+    box-shadow: inset 3px 0 #72b6ff;
+}
+
+.aitrol-shell .workspace-tab {
+    border-color: var(--aitrol-border);
+    background-color: var(--aitrol-surface);
+}
+
+.aitrol-shell .workspace-tab:has([aria-pressed="true"]) {
+    border-color: var(--aitrol-accent);
+    background-color: var(--aitrol-tab-active);
+}
+
+.aitrol-shell .workspace-tab [aria-pressed="true"] {
+    color: var(--aitrol-accent);
+    font-weight: 650;
+}
+
+.aitrol-shell .app-main :is(.card, .info-box) {
+    box-shadow: var(--aitrol-card-shadow);
+}
+
+.aitrol-shell .app-main :is(.card, .cliente-dialog) {
+    border-color: var(--aitrol-border);
+}
+
+@media (min-width: 768px) {
+    .aitrol-shell .app-main {
+        background-image:
+            linear-gradient(var(--aitrol-grid) 1px, transparent 1px),
+            linear-gradient(90deg, var(--aitrol-grid) 1px, transparent 1px),
+            radial-gradient(ellipse at top right, var(--aitrol-glow), transparent 42rem);
+        background-size: 2rem 2rem, 2rem 2rem, auto;
+    }
+}
