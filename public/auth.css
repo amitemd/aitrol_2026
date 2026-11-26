@@ -37,7 +37,7 @@
 
 .access-brand::after {
     position: absolute;
-    z-index: -1;
+    z-index: -2;
     inset: 0;
     background-image:
         linear-gradient(rgba(var(--bs-light-rgb), .14) 1px, transparent 1px),
@@ -109,7 +109,9 @@
 .access-slide::after {
     position: absolute;
     inset: 0;
-    background: linear-gradient(0deg, rgba(var(--bs-dark-rgb), .92), transparent 72%);
+    background:
+        linear-gradient(to top, rgba(var(--bs-dark-rgb), .94), rgba(var(--bs-dark-rgb), .27) 46%, transparent 82%),
+        linear-gradient(125deg, rgba(var(--bs-primary-rgb), .06) 25%, rgba(var(--bs-primary-rgb), .32));
     content: "";
 }
 .access-slide figcaption {
@@ -121,7 +123,7 @@
     font-weight: 650;
 }
 
-.access-network { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.access-network { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .access-showcase-controls {
     display: flex;
     align-items: center;

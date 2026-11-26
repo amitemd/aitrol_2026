@@ -4,16 +4,18 @@ const selectors = [...showcase.querySelectorAll('[data-showcase-select]')];
 const controls = showcase.querySelector('[data-showcase-controls]');
 const playback = showcase.querySelector('[data-showcase-playback]');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const canvas = showcase.querySelector('canvas');
+const canvas = showcase.closest('.access-brand').querySelector('.access-network');
 const context = canvas.getContext('2d');
 
-const points = Array.from({ length: 19 }, () => {
+const columns = 6;
+const rows = 7;
+const points = Array.from({ length: columns * rows }, (_, index) => {
     const angle = Math.random() * Math.PI * 2;
     const speed = .000035 + Math.random() * .00003;
 
     return {
-        x: Math.random(),
-        y: Math.random(),
+        x: (index % columns + .15 + Math.random() * .7) / columns,
+        y: (Math.floor(index / columns) + .15 + Math.random() * .7) / rows,
         dx: Math.cos(angle) * speed,
         dy: Math.sin(angle) * speed,
     };
@@ -39,26 +41,27 @@ function show(index) {
 
 function drawNetwork() {
     context.clearRect(0, 0, width, height);
-    const range = Math.min(width, height) * .48;
+    const range = Math.min(145, Math.min(width, height) * .3);
     const pointPositions = points.map(point => ({ x: point.x * width, y: point.y * height }));
 
     for (let index = 0; index < pointPositions.length; index++) {
         const from = pointPositions[index];
 
-        for (const to of pointPositions.slice(index + 1)) {
+        for (let next = index + 1; next < pointPositions.length; next++) {
+            const to = pointPositions[next];
             const distance = Math.hypot(to.x - from.x, to.y - from.y);
             if (distance >= range) continue;
 
             context.beginPath();
             context.moveTo(from.x, from.y);
             context.lineTo(to.x, to.y);
-            context.strokeStyle = 'rgba(196, 222, 255, ' + .32 * (1 - distance / range) + ')';
+            context.strokeStyle = 'rgba(196, 222, 255, ' + .26 * (1 - distance / range) + ')';
             context.stroke();
         }
 
         context.beginPath();
         context.arc(from.x, from.y, 1.35, 0, Math.PI * 2);
-        context.fillStyle = 'rgba(213, 233, 255, .5)';
+        context.fillStyle = 'rgba(213, 233, 255, .42)';
         context.fill();
     }
 }
@@ -118,7 +121,7 @@ document.addEventListener('visibilitychange', updatePlayback);
 
 if (context) {
     resizeNetwork();
-    window.addEventListener('resize', resizeNetwork, { passive: true });
+    new ResizeObserver(resizeNetwork).observe(canvas);
 }
 
 updatePlayback();

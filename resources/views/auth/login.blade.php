@@ -4,6 +4,7 @@
 
 @section('brand-media')
     @php($areas = ['Empresas', 'Administración médica', 'Contabilidad', 'Inventario'])
+    <canvas class="access-network" aria-hidden="true"></canvas>
     <section class="access-showcase" aria-label="Áreas de gestión" data-auth-showcase>
         <div class="access-showcase-frame" id="access-showcase-photos">
             @foreach ($areas as $actividad)
@@ -13,7 +14,6 @@
                     <figcaption>{{ $actividad }}</figcaption>
                 </figure>
             @endforeach
-            <canvas class="access-network" aria-hidden="true"></canvas>
         </div>
         <div class="access-showcase-controls" data-showcase-controls hidden>
             <div class="access-showcase-dots" role="group" aria-label="Elegir imagen">
