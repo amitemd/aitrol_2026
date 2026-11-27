@@ -23,49 +23,42 @@
 
 <section id="ficha-generales" data-ficha-panel="generales" aria-label="Datos generales">
     <div class="ficha-perfil">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="tipo_identificacion" class="form-label">Tipo de identificación</label>
+                <select class="form-select" id="tipo_identificacion" name="tipo_identificacion" required>
+                    @foreach ($tipos as $tipo)
+                        <option value="{{ $tipo->value }}" @selected(old('tipo_identificacion', $cliente?->identificacion->tipo->value) === $tipo->value)>{{ $tipo->etiqueta() }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="identificacion" class="form-label">Identificación</label>
+                <input class="form-control" id="identificacion" name="identificacion" maxlength="30"
+                    value="{{ old('identificacion', $cliente?->identificacion->numero) }}" autofocus required>
+            </div>
+            @include('clientes::campo-ficha', ['campo' => 'nombres', 'etiqueta' => 'Nombres o razón social', 'valor' => $perfil['nombres'] ?? old('nombre'), 'limite' => 160, 'obligatorio' => true])
+            @include('clientes::campo-ficha', ['campo' => 'apellidos', 'etiqueta' => 'Apellidos', 'valor' => $perfil['apellidos'] ?? null, 'limite' => 100])
+            @unless ($esProveedor)
+                <div class="col-md-6">
+                    <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+                    <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
+                        value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
+                </div>
+            @endunless
+            <div class="col-12">
+                <label for="observacion" class="form-label">Observación</label>
+                <textarea id="observacion" name="observacion" class="form-control" rows="2" maxlength="3000">{{ old('observacion', $perfil['observacion'] ?? null) }}</textarea>
+            </div>
+        </div>
         <aside class="ficha-perfil-foto">
-        @include('partials.campo-adjunto', [
+            @include('partials.campo-adjunto', [
             'campo' => 'foto', 'nombre' => 'foto', 'titulo' => $esProveedor ? 'Foto o logotipo del proveedor' : 'Foto del cliente',
             'iconoAdjunto' => $esProveedor ? 'bi-truck' : 'bi-person', 'formatos' => 'image/jpeg,image/png,image/webp',
             'ayuda' => 'JPG, PNG o WebP · máximo 3 MB', 'accion' => ($tieneFoto ?? false) ? 'Cambiar fotografía' : 'Seleccionar imagen',
             'vistaPrevia' => true, 'urlImagen' => ($tieneFoto ?? false) ? route($modulo.'.foto', $cliente->id) : null,
-        ])
+            ])
         </aside>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label for="tipo_identificacion" class="form-label">Tipo de identificación</label>
-            <select class="form-select" id="tipo_identificacion" name="tipo_identificacion" required>
-                @foreach ($tipos as $tipo)
-                    <option value="{{ $tipo->value }}" @selected(old('tipo_identificacion', $cliente?->identificacion->tipo->value) === $tipo->value)>{{ $tipo->etiqueta() }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="identificacion" class="form-label">Identificación</label>
-            <input class="form-control" id="identificacion" name="identificacion" maxlength="30"
-                value="{{ old('identificacion', $cliente?->identificacion->numero) }}" autofocus required>
-        </div>
-        <div class="col-md-4">
-            <label for="activo" class="form-label">Estado</label>
-            <select class="form-select" id="activo" name="activo" required>
-                <option value="1" @selected((bool) old('activo', $cliente?->activo ?? true))>Activo</option>
-                <option value="0" @selected(!(bool) old('activo', $cliente?->activo ?? true))>Inactivo</option>
-            </select>
-        </div>
-        @include('clientes::campo-ficha', ['campo' => 'nombres', 'etiqueta' => 'Nombres o razón social', 'valor' => $perfil['nombres'] ?? old('nombre'), 'limite' => 160, 'obligatorio' => true])
-        @include('clientes::campo-ficha', ['campo' => 'apellidos', 'etiqueta' => 'Apellidos', 'valor' => $perfil['apellidos'] ?? null, 'limite' => 100])
-        @unless ($esProveedor)
-            <div class="col-md-6">
-                <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
-                <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
-                    value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
-            </div>
-        @endunless
-        <div class="col-12">
-            <label for="observacion" class="form-label">Observación</label>
-            <textarea id="observacion" name="observacion" class="form-control" rows="2" maxlength="3000">{{ old('observacion', $perfil['observacion'] ?? null) }}</textarea>
-        </div>
-    </div>
     </div>
 </section>
 

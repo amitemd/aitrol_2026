@@ -143,15 +143,42 @@
     box-shadow: inset 0 -2px var(--aitrol-accent, var(--bs-primary));
 }
 
+.form-switch.ficha-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 2.4rem;
+    margin: 0;
+    padding: .35rem .65rem;
+    border: 1px solid var(--aitrol-border, var(--bs-border-color));
+    border-radius: .65rem;
+    background: var(--aitrol-field, var(--bs-tertiary-bg));
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.ficha-estado .form-check-input {
+    float: none;
+    margin: 0;
+    cursor: pointer;
+}
+
+.ficha-estado .form-check-input:checked {
+    background-color: #208453;
+    border-color: #208453;
+}
+
+.ficha-estado-activo { color: var(--bs-success-text-emphasis); }
+.ficha-estado-inactivo { color: var(--bs-secondary-text-emphasis); }
+.ficha-estado input:not(:checked) ~ .ficha-estado-activo,
+.ficha-estado input:checked ~ .ficha-estado-inactivo { display: none; }
+
 .ficha-perfil {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(11rem, 16rem);
     gap: 1rem;
     align-items: start;
 }
-
-.ficha-perfil-foto { grid-area: 1 / 2; }
-.ficha-perfil > .row { grid-area: 1 / 1; }
 
 .ficha-foto {
     display: grid;
@@ -269,7 +296,10 @@
 
 @media (max-width: 767.98px) {
     .ficha-perfil { grid-template-columns: minmax(0, 1fr); }
-    .ficha-perfil-foto, .ficha-perfil > .row { grid-area: auto; }
+}
+
+@media (max-width: 420px) {
+    .ficha-acciones > .me-auto { flex-basis: 100%; }
 }
 
 .ficha-mapa {

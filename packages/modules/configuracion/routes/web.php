@@ -35,6 +35,7 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-co
     });
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configuraciones')->name('configuracion.')->group(function (): void {
+    Route::get('/usuarios/{usuario}/foto', [UsuarioController::class, 'foto'])->whereNumber('usuario')->name('usuarios.foto');
     Route::get('/ubicaciones/opciones', [UbicacionController::class, 'opciones'])->name('ubicaciones.opciones');
     Route::get('/empresas', [EmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.index');
     Route::get('/empresas/{empresa}/editar', [EmpresaController::class, 'edit'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.edit');

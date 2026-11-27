@@ -5,15 +5,13 @@
 @section('content')
     @include('partials.listado-cabecera', [
         'titulo' => 'Empresas', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-buildings',
-        'crearUrl' => Gate::allows('permiso', ['empresas', 'escribir']) ? route('configuracion.empresas.index', ['crear' => 1]) : null,
-        'crearTexto' => 'Nueva empresa',
     ])
     <div class="app-content">
         <div class="container-fluid">
             @if (session('estado'))
                 <div class="alert alert-success" role="status">{{ session('estado') }}</div>
             @endif
-            @include('partials.listado-modal')
+            @include('partials.listado-modal', ['iconoModal' => 'bi-buildings'])
             <div class="row g-3 align-items-start">
                 <div class="col-12">
                     <section class="card clientes-directorio" data-ajax-list>
@@ -41,15 +39,6 @@
                                                 @can('permiso', ['empresas', 'actualizar'])
                                                     <a href="{{ route('configuracion.empresas.edit', $empresa) }}" class="btn btn-sm btn-outline-primary" data-ajax-open="Editar empresa">Editar</a>
                                                 @endcan
-                                                @can('permiso', ['empresas', 'eliminar'])
-                                                    <details class="d-inline-block">
-                                                        <summary class="btn btn-sm btn-outline-danger">Eliminar</summary>
-                                                        <form method="POST" data-ajax-action action="{{ route('configuracion.empresas.destroy', $empresa) }}">
-                                                            @csrf @method('DELETE')
-                                                            <button class="btn btn-sm btn-danger mt-2">Confirmar</button>
-                                                        </form>
-                                                    </details>
-                                                @endcan
                                             </td>
                                         </tr>
                                     @empty
@@ -63,11 +52,6 @@
                         @endif
                     </section>
                 </div>
-                @if (request()->boolean('crear') || $errors->any())
-                <div class="col-lg-8">
-                    @include('configuracion::formulario-empresa', ['seleccionada' => null])
-                </div>
-                @endif
             </div>
         </div>
     </div>

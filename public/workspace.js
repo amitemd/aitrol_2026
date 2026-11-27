@@ -109,7 +109,7 @@
             frame.addEventListener('load', () => {
                 syncFrameTheme(frame);
                 frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
-                if (frame.contentDocument?.querySelector('[data-login-form]')) {
+                if (frame.contentDocument?.querySelector('[data-login-form], [data-empresa-inicial]')) {
                     location.assign(dashboard);
                 } else if (frame.contentDocument?.querySelector('[data-workspace-menu-changed]')) {
                     refreshSidebar();

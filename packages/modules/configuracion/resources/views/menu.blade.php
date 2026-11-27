@@ -127,20 +127,16 @@
                                         <input class="form-control" id="orden" name="orden" type="number" value="{{ old('orden', $opcion?->orden ?? 50) }}" required min="0" max="65535">
                                     </div>
                                 </div>
-                                <div class="form-check">
-                                    <input type="hidden" name="activo" value="0">
-                                    <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" @checked(old('activo', $opcion?->activo ?? true))>
-                                    <label class="form-check-label" for="activo">Mostrar en la barra lateral</label>
-                                </div>
                                 <div class="form-check mt-2">
                                     <input type="hidden" name="solo_administrador" value="0">
                                     <input class="form-check-input" type="checkbox" id="solo_administrador" name="solo_administrador" value="1" @checked(old('solo_administrador', $opcion?->soloAdministrador ?? false))>
                                     <label class="form-check-label" for="solo_administrador">Visible solo para administradores</label>
                                 </div>
                             </div>
-                            <div class="card-footer d-flex gap-2">
-                                <button class="btn btn-primary" type="submit">{{ $opcion ? 'Guardar cambios' : 'Crear opción' }}</button>
+                            <div class="card-footer d-flex flex-wrap align-items-center gap-2 ficha-acciones">
+                                <div class="me-auto">@include('partials.interruptor-activo', ['activo' => $opcion?->activo, 'etiquetaEstado' => 'Mostrar en la barra lateral'])</div>
                                 <a class="btn btn-outline-secondary" href="{{ route('configuracion.menu.index') }}" data-ajax-close>Cancelar</a>
+                                <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ $opcion ? 'Guardar cambios' : 'Crear opción' }}</button>
                             </div>
                         </form>
                     </section>

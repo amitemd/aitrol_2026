@@ -33,11 +33,9 @@ return new class extends Migration
         }
         Schema::table('users', function (Blueprint $table): void {
             $table->string('foto')->nullable();
-            $table->boolean('is_admin_global')->default(false);
             $table->dropUnique(['id_persona']);
             $table->unique(['id_empresa', 'id_persona']);
         });
-        DB::table('users')->where('is_admin', true)->update(['is_admin_global' => true]);
         Schema::table('erp_clientes', function (Blueprint $table): void {
             $table->dropUnique('erp_clientes_identificacion_unique');
             $table->dropUnique(['id_persona']);

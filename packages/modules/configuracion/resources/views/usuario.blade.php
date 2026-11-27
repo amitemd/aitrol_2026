@@ -14,7 +14,8 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-xl-9 col-lg-11">
-                    <form class="card shadow-sm" method="POST" data-ajax-form data-usuario-form action="{{ $usuario->exists ? route('configuracion.usuarios.update', $usuario) : route('configuracion.usuarios.store') }}">
+                    <form class="card shadow-sm" method="POST" data-ajax-form data-usuario-form enctype="multipart/form-data"
+                        action="{{ $usuario->exists ? route('configuracion.usuarios.update', $usuario) : route('configuracion.usuarios.store') }}">
                         @csrf
                         @if ($usuario->exists) @method('PUT') @endif
                         <div class="card-body">
@@ -36,7 +37,8 @@
                                 </button>
                             </div>
                             <section id="usuario-generales" role="tabpanel" aria-labelledby="usuario-tab-generales"
-                                class="row g-3" data-usuario-panel="generales">
+                                class="ficha-perfil" data-usuario-panel="generales">
+                                <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="nombres" class="form-label fw-semibold">Nombres</label>
                                     <input id="nombres" name="nombres" class="form-control @error('nombres') is-invalid @enderror"
@@ -101,6 +103,16 @@
                                         <label for="observacion" class="form-label fw-semibold">Observación</label>
                                         <textarea id="observacion" name="observacion" class="form-control" rows="2" maxlength="3000">{{ old('observacion', $usuario->persona?->observacion) }}</textarea>
                                     </div>
+                                </div>
+                                <aside class="ficha-perfil-foto">
+                                    @include('partials.campo-adjunto', [
+                                        'campo' => 'foto', 'nombre' => 'foto', 'titulo' => 'Foto del usuario',
+                                        'iconoAdjunto' => 'bi-person', 'formatos' => 'image/jpeg,image/png,image/webp',
+                                        'ayuda' => 'JPG, PNG o WebP · máximo 3 MB',
+                                        'accion' => $usuario->foto ? 'Cambiar fotografía' : 'Seleccionar imagen',
+                                        'vistaPrevia' => true, 'urlImagen' => $usuario->foto ? route('configuracion.usuarios.foto', $usuario) : null,
+                                    ])
+                                </aside>
                             </section>
                             <section id="usuario-ubicacion" role="tabpanel" aria-labelledby="usuario-tab-ubicacion"
                                 class="row g-3" data-usuario-panel="ubicacion">

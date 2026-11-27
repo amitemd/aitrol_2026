@@ -22,9 +22,10 @@
                     @endif
                     @include('clientes::campos')
                 </div>
-                <div class="card-footer d-flex justify-content-end gap-2">
+                <div class="card-footer d-flex flex-wrap align-items-center gap-2 ficha-acciones">
+                    <div class="me-auto">@include('partials.interruptor-activo', ['activo' => $cliente?->activo])</div>
                     <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Guardar cliente</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Guardar cliente</button>
                 </div>
             </form>
         </div>

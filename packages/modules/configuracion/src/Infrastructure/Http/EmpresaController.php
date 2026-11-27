@@ -8,19 +8,18 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use App\Services\EmpresaActiva;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 final class EmpresaController
 {
+    public function __construct(private readonly EmpresaActiva $empresaActiva) {}
+
     public function index(Request $request): View
     {
-        if ($request->boolean('crear')) {
-            Gate::authorize('permiso', ['empresas', 'escribir']);
-        }
         $datos = $request->validate(['q' => ['nullable', 'string', 'max:160']]);
-        $consulta = EmpresaModel::query();
+        $consulta = EmpresaModel::query()->whereKey($this->empresaActiva->id());
         $busqueda = $datos['q'] ?? '';
         if ($busqueda !== '') {
             $consulta->where(fn ($query) => $query->whereLike('razon_social', '%'.$busqueda.'%')
@@ -32,31 +31,17 @@ final class EmpresaController
         ]);
     }
 
-    public function store(Request $request): RedirectResponse|JsonResponse
-    {
-        return $this->guardar($request, new EmpresaModel);
-    }
-
     public function edit(EmpresaModel $empresa): View
     {
+        abort_unless((int) $empresa->id === $this->empresaActiva->id(), 404);
+
         return view('configuracion::editar-empresa', ['seleccionada' => $empresa]);
     }
 
     public function update(Request $request, EmpresaModel $empresa): RedirectResponse|JsonResponse
     {
-        return $this->guardar($request, $empresa);
-    }
+        abort_unless((int) $empresa->id === $this->empresaActiva->id(), 404);
 
-    public function destroy(Request $request, EmpresaModel $empresa): RedirectResponse|JsonResponse
-    {
-        $empresa->delete();
-
-        return $this->resultado($request, 'Empresa eliminada del listado.');
-    }
-
-    private function guardar(Request $request, EmpresaModel $empresa): RedirectResponse|JsonResponse
-    {
-        $nuevo = ! $empresa->exists;
         $datos = $request->validate([
             'ruc' => ['required', 'string', 'digits:13', Rule::unique('erp_empresas', 'ruc')->ignore($empresa)],
             'razon_social' => ['required', 'string', 'max:160'],
@@ -72,7 +57,7 @@ final class EmpresaController
             throw ValidationException::withMessages(['ruc' => 'Ya existe una empresa con ese RUC.']);
         }
 
-        return $this->resultado($request, $nuevo ? 'Empresa registrada.' : 'Empresa actualizada.', $nuevo ? 201 : 200);
+        return $this->resultado($request, 'Empresa actualizada.');
     }
 
     private function resultado(Request $request, string $mensaje, int $estado = 200): RedirectResponse|JsonResponse

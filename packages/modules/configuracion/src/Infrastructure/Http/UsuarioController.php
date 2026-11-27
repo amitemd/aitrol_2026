@@ -12,10 +12,13 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class UsuarioController
 {
@@ -63,6 +66,16 @@ final class UsuarioController
         return (new UsuarioResource($usuario))->response()->header('Cache-Control', 'no-store');
     }
 
+    public function foto(Request $request, User $usuario): StreamedResponse
+    {
+        $this->empresaActiva->verificar($usuario);
+        abort_unless($request->user()->is_admin || $request->user()->is($usuario), 403);
+        $disco = Storage::disk('local');
+        abort_unless($usuario->foto && $disco->exists($usuario->foto), 404);
+
+        return $disco->response($usuario->foto, headers: ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
     public function update(Request $request, User $usuario): RedirectResponse|JsonResponse
     {
         $this->empresaActiva->verificar($usuario);
@@ -86,6 +99,7 @@ final class UsuarioController
             'email_contacto' => ['nullable', 'email:filter', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:100'],
             'direccion' => ['nullable', 'string', 'max:255'],
+            'foto' => [Rule::excludeIf($request->routeIs('api.*')), 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             ...Persona::reglasPerfil(),
             'tipo_identificacion' => ['exclude_if:identificacion,null', 'required_with:identificacion', 'nullable', Rule::enum(TipoIdentificacion::class)],
             'identificacion' => ['nullable', 'string', 'max:30'],
@@ -110,8 +124,12 @@ final class UsuarioController
             throw ValidationException::withMessages(['nombres' => 'El nombre completo debe tener hasta 255 caracteres.']);
         }
 
+        $fotoNueva = null;
+        $fotoAnterior = null;
+        $guardado = false;
+        $disco = Storage::disk('local');
         try {
-            $usuario = $usuario->getConnection()->transaction(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo): User {
+            $usuario = $usuario->getConnection()->transaction(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo, &$fotoNueva, &$fotoAnterior): User {
                 $cuenta = $esNuevo ? $usuario : User::query()->lockForUpdate()->findOrFail($usuario->id);
                 $persona = $cuenta->persona()->lockForUpdate()->first();
                 $perfilAnterior = $persona;
@@ -160,10 +178,16 @@ final class UsuarioController
                     $cuenta->email_verified_at = null;
                     $cuenta->setRememberToken(Str::random(60));
                 }
+                if (isset($datos['foto'])) {
+                    $fotoAnterior = $cuenta->foto;
+                    $fotoNueva = $datos['foto']->store('usuarios/fotos', 'local') ?: throw new RuntimeException('No se pudo guardar la foto.');
+                    $cuenta->foto = $fotoNueva;
+                }
                 $cuenta->save();
 
                 return $cuenta;
             });
+            $guardado = true;
         } catch (UniqueConstraintViolationException $exception) {
             $restriccion = (string) ($exception->errorInfo[2] ?? '');
             if ($identificacion !== null && str_contains($restriccion, 'id_persona')) {
@@ -174,7 +198,10 @@ final class UsuarioController
             }
 
             throw ValidationException::withMessages(['email' => 'Ya existe una cuenta con ese correo.']);
+        } finally {
+            if (! $guardado && $fotoNueva !== null) $disco->delete($fotoNueva);
         }
+        if ($fotoAnterior !== null) $disco->delete($fotoAnterior);
 
         $mensaje = $esNuevo ? 'Usuario creado.' : 'Usuario actualizado.';
         if ($request->expectsJson() || $request->routeIs('api.*')) {
