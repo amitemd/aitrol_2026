@@ -23,6 +23,7 @@
 /tests/*
 !/tests/Feature/
 /tests/Feature/*
+!/tests/Feature/FichaProductosMigracionTest.php
 !/tests/Feature/IdentidadEmpresaTest.php
 !/tests/Feature/MantenimientoServidorTest.php
 !/tests/Feature/RecursosHumanosTest.php
