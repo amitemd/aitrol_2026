@@ -3,7 +3,7 @@
 @php
     [$titulo, $icono] = config('inventarios.secciones.'.$seccion);
     $ruta = 'inventarios.'.$seccion;
-    $catalogo = in_array($seccion, ['productos', 'bodegas'], true);
+    $catalogo = in_array($seccion, config('inventarios.catalogos'), true);
     $existencias = in_array($seccion, ['existencias', 'reportes'], true);
     $alta = ['productos' => 'Nuevo producto', 'bodegas' => 'Nueva bodega', 'movimientos' => 'Nuevo movimiento', 'ajustes' => 'Nuevo ajuste'];
     $columnas = match ($seccion) {

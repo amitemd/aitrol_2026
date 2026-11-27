@@ -1,7 +1,7 @@
 @extends('layouts.adminlte')
 
 @php
-    $catalogo = in_array($seccion, ['productos', 'bodegas'], true);
+    $catalogo = in_array($seccion, config('inventarios.catalogos'), true);
     $titulo = match ($seccion) {
         'productos' => $registro ? 'Editar producto' : 'Nuevo producto',
         'bodegas' => $registro ? 'Editar bodega' : 'Nueva bodega',

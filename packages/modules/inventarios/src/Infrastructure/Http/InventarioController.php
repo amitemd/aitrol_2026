@@ -39,7 +39,7 @@ final readonly class InventarioController
     {
         $seccion = $request->route('seccion');
         $id = (int) $request->route('registro');
-        $registro = in_array($seccion, ['productos', 'bodegas'], true)
+        $registro = in_array($seccion, config('inventarios.catalogos'), true)
             ? $this->repositorio->catalogo($seccion, $id)
             : $this->repositorio->operacion($id);
 
@@ -79,7 +79,7 @@ final readonly class InventarioController
     public function store(Request $request)
     {
         $seccion = $request->route('seccion');
-        if (in_array($seccion, ['productos', 'bodegas'], true)) {
+        if (in_array($seccion, config('inventarios.catalogos'), true)) {
             return $this->guardarCatalogo($request, $seccion, null);
         }
 
@@ -179,7 +179,7 @@ final readonly class InventarioController
             'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
         ];
-        if (in_array($seccion, ['productos', 'bodegas'], true)) {
+        if (in_array($seccion, config('inventarios.catalogos'), true)) {
             $reglas['activo'] = ['nullable', 'boolean'];
         } else {
             $reglas['id_producto'] = $reglas['id_bodega'] = ['nullable', 'integer', 'min:1'];

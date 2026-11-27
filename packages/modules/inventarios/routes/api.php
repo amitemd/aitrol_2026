@@ -13,14 +13,14 @@ Route::prefix('api/v1/inventarios')->name('api.v1.inventarios.')
             Route::get($seccion, [InventarioController::class, 'index'])->defaults('seccion', $seccion)
                 ->middleware($lectura)->name($seccion.'.index');
 
-            if (in_array($seccion, ['productos', 'bodegas', 'movimientos', 'ajustes'], true)) {
+            if (in_array($seccion, [...config('inventarios.catalogos'), 'movimientos', 'ajustes'], true)) {
                 Route::get($seccion.'/{registro}', [InventarioController::class, 'show'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($lectura)->name($seccion.'.show');
                 Route::post($seccion, [InventarioController::class, 'store'])->defaults('seccion', $seccion)
                     ->middleware([CheckAbilities::class.':inventarios:escribir', $permiso.'escribir'])->name($seccion.'.store');
             }
 
-            if (in_array($seccion, ['productos', 'bodegas'], true)) {
+            if (in_array($seccion, config('inventarios.catalogos'), true)) {
                 Route::put($seccion.'/{registro}', [InventarioController::class, 'update'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')
                     ->middleware([CheckAbilities::class.':inventarios:escribir', $permiso.'actualizar'])->name($seccion.'.update');

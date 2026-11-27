@@ -11,20 +11,20 @@ Route::prefix('inventarios')->name('inventarios.')
             Route::get($seccion, [InventarioController::class, 'index'])->defaults('seccion', $seccion)
                 ->middleware($permiso.'leer')->name($seccion.'.index');
 
-            if (in_array($seccion, ['productos', 'bodegas', 'movimientos', 'ajustes'], true)) {
+            if (in_array($seccion, [...config('inventarios.catalogos'), 'movimientos', 'ajustes'], true)) {
                 Route::get($seccion.'/crear', [InventarioController::class, 'formulario'])->defaults('seccion', $seccion)
                     ->middleware($permiso.'escribir')->name($seccion.'.create');
                 Route::post($seccion, [InventarioController::class, 'store'])->defaults('seccion', $seccion)
                     ->middleware($permiso.'escribir')->name($seccion.'.store');
             }
 
-            if (in_array($seccion, ['productos', 'bodegas'], true)) {
+            if (in_array($seccion, config('inventarios.catalogos'), true)) {
                 Route::get($seccion.'/{registro}/editar', [InventarioController::class, 'formulario'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'actualizar')->name($seccion.'.edit');
                 Route::put($seccion.'/{registro}', [InventarioController::class, 'update'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'actualizar')->name($seccion.'.update');
             }
-            if (in_array($seccion, ['productos', 'bodegas', 'movimientos', 'ajustes'], true)) {
+            if (in_array($seccion, [...config('inventarios.catalogos'), 'movimientos', 'ajustes'], true)) {
                 Route::get($seccion.'/{registro}', [InventarioController::class, 'show'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'leer')->name($seccion.'.show');
             }
