@@ -5,6 +5,9 @@
         <div class="card-body">
             @include('partials.pestanas-ficha', ['pestanas' => ['generales' => ['General', 'bi-buildings'], 'ubicacion' => ['Ubicación', 'bi-geo-alt']], 'contexto' => 'empresa'])
             <section id="empresa-generales" role="tabpanel" aria-labelledby="empresa-tab-generales" class="row g-3" data-usuario-panel="generales">
+                @include('partials.ficha-panel-intro', [
+                    'tituloPanel' => 'General', 'descripcionPanel' => 'Identifica a la empresa y define sus datos de contacto.', 'claseIntro' => 'col-12',
+                ])
             @foreach ([
                 'razon_social' => ['Razón social', 'text', 160, true],
                 'ruc' => ['RUC', 'text', 13, true],
@@ -22,6 +25,9 @@
             @endforeach
             </section>
             <section id="empresa-ubicacion" role="tabpanel" aria-labelledby="empresa-tab-ubicacion" class="row g-3" data-usuario-panel="ubicacion">
+                @include('partials.ficha-panel-intro', [
+                    'tituloPanel' => 'Ubicación', 'descripcionPanel' => 'Indica la dirección registrada de la empresa.', 'claseIntro' => 'col-12',
+                ])
                 <div class="col-12">
                     <label for="direccion" class="form-label fw-semibold">Dirección</label>
                     <input id="direccion" name="direccion" maxlength="255" autocomplete="street-address"

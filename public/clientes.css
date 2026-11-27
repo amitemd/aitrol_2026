@@ -2,6 +2,21 @@
     padding-block: 1.25rem;
 }
 
+.listado-cabecera-titulo { min-width: 0; }
+
+@media (max-width: 767.98px) {
+    .listado-cabecera-alta {
+        display: inline-grid;
+        flex: 0 0 auto;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        padding: 0;
+        border-radius: .8rem;
+        font-size: 1.2rem;
+    }
+}
+
 .clientes-icono {
     display: grid;
     flex: 0 0 auto;
@@ -122,6 +137,7 @@
 
 .ficha-tabs {
     gap: .35rem;
+    margin-bottom: 1rem;
     padding: .35rem;
     border: 1px solid var(--aitrol-border, var(--bs-border-color));
     border-radius: .8rem;
@@ -150,6 +166,11 @@
     padding-inline: .6rem;
 }
 
+:is(dialog, .modal) .ficha-tabs > .nav-link:focus-visible {
+    outline: 2px solid var(--aitrol-accent, var(--bs-primary));
+    outline-offset: -2px;
+}
+
 @media (min-width: 768px) and (max-width: 991.98px) {
     :is(dialog, .modal) .ficha-tabs > .nav-link {
         gap: .35rem;
@@ -159,6 +180,11 @@
 }
 
 @media (max-width: 767.98px) {
+    :is(dialog, .modal) .ficha-tabs {
+        flex-wrap: nowrap;
+        gap: clamp(.15rem, 1vw, .35rem);
+    }
+
     :is(dialog, .modal) .ficha-tabs > .nav-link {
         flex-basis: 0;
         min-inline-size: 0;
@@ -175,9 +201,21 @@
     width: min(68rem, calc(100% - 2rem));
 }
 
-.ficha-producto-panel {
-    margin-top: 1rem;
+.ficha-panel-intro { margin-bottom: .85rem; }
+
+.ficha-panel-resumen {
+    padding: .75rem .9rem;
+    border-inline-start: 3px solid var(--aitrol-accent, var(--bs-primary));
+    border-radius: .55rem;
+    background: var(--bs-primary-bg-subtle);
 }
+
+.ficha-perfil > .ficha-panel-intro {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.row > .ficha-panel-intro { margin-bottom: 0; }
 
 .ficha-producto-bloque {
     padding: clamp(.85rem, 2vw, 1.25rem);

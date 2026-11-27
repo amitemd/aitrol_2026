@@ -12,18 +12,12 @@
         'documentos' => ['Documentos', 'bi-folder2-open'],
     ];
 @endphp
-<nav class="nav nav-pills ficha-tabs gap-1 mb-3" aria-label="Secciones de la ficha">
-    @foreach ($pestanas as $panel => [$etiqueta, $icono])
-        <button type="button" class="nav-link @if($loop->first) active @endif" data-ficha-tab="{{ $panel }}"
-            aria-controls="ficha-{{ $panel }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}"
-            aria-label="{{ $etiqueta }}" title="{{ $etiqueta }}">
-            <i class="bi {{ $icono }}" aria-hidden="true"></i>
-            <span class="ficha-tab-etiqueta">{{ $etiqueta }}</span>
-        </button>
-    @endforeach
-</nav>
+@include('partials.pestanas-ficha', ['pestanas' => $pestanas, 'contexto' => 'ficha', 'navegacionFicha' => true])
 
 <section id="ficha-generales" data-ficha-panel="generales" aria-label="Datos generales">
+    @include('partials.ficha-panel-intro', [
+        'tituloPanel' => 'Datos generales', 'descripcionPanel' => 'Registra la identificación, el nombre y la imagen de la ficha.',
+    ])
     <div class="ficha-perfil">
         <div class="row g-3">
             <div class="col-md-6">
@@ -65,6 +59,10 @@
 </section>
 
 <section id="ficha-{{ $panelUbicacion }}" data-ficha-panel="{{ $panelUbicacion }}" aria-label="{{ $tituloUbicacion }}">
+    @include('partials.ficha-panel-intro', [
+        'tituloPanel' => $tituloUbicacion,
+        'descripcionPanel' => $esProveedor ? 'Registra la dirección y la ubicación del proveedor.' : 'Define la dirección, la zona y la ubicación en el mapa.',
+    ])
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'direccion', 'etiqueta' => 'Dirección', 'valor' => $cliente?->direccion, 'limite' => 255, 'ancho' => 'col-12'])
         @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $perfil['id_ciudad'] ?? null)])
@@ -100,6 +98,9 @@
 </section>
 
 <section id="ficha-contactos" data-ficha-panel="contactos" aria-label="Contactos">
+    @include('partials.ficha-panel-intro', [
+        'tituloPanel' => 'Contactos', 'descripcionPanel' => 'Guarda los datos de contacto y las personas de referencia.',
+    ])
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'email', 'etiqueta' => 'Correo electrónico', 'valor' => $cliente?->email, 'limite' => 254, 'tipo' => 'email'])
         @include('clientes::campo-ficha', ['campo' => 'telefono', 'etiqueta' => 'Teléfono', 'valor' => $cliente?->telefono, 'limite' => 30, 'tipo' => 'tel'])
@@ -123,6 +124,9 @@
 </section>
 
 <section id="ficha-documentos" data-ficha-panel="documentos" aria-label="Documentos">
+    @include('partials.ficha-panel-intro', [
+        'tituloPanel' => 'Documentos', 'descripcionPanel' => 'Adjunta los archivos que respaldan este registro.',
+    ])
     @include('partials.campo-adjunto', [
         'campo' => 'adjuntos', 'nombre' => 'adjuntos[]', 'titulo' => 'Adjuntar documentos', 'iconoAdjunto' => 'bi-paperclip',
         'formatos' => 'application/pdf,image/jpeg,image/png', 'ayuda' => 'PDF, JPG o PNG · hasta 5 archivos de 8 MB cada uno',

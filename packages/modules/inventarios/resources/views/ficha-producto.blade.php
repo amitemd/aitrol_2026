@@ -17,6 +17,9 @@
     @include('partials.pestanas-ficha', ['pestanas' => $pestanas, 'contexto' => 'producto'])
 
     <section id="producto-generales" role="tabpanel" aria-labelledby="producto-tab-generales" data-usuario-panel="generales" class="ficha-producto-panel">
+        @include('partials.ficha-panel-intro', [
+            'tituloPanel' => 'General', 'descripcionPanel' => 'Define el código, la categoría y los datos de inventario del producto.',
+        ])
         <div class="ficha-producto-bloque">
             <h2 class="h6"><i class="bi bi-upc-scan me-2" aria-hidden="true"></i>Identificación</h2>
             <div class="row g-3">
@@ -70,6 +73,9 @@
     </section>
 
     <section id="producto-contabilidad" role="tabpanel" aria-labelledby="producto-tab-contabilidad" data-usuario-panel="contabilidad" class="ficha-producto-panel">
+        @include('partials.ficha-panel-intro', [
+            'tituloPanel' => 'Cuentas contables', 'descripcionPanel' => 'Consulta la plantilla de la categoría o asigna cuentas si la categoría no tiene plantilla.',
+        ])
         <div class="ficha-producto-bloque" data-producto-herencia data-plantillas="{{ $descripcionPlantillas->toJson(JSON_UNESCAPED_UNICODE) }}" hidden>
             <h2 class="h6"><i class="bi bi-journal-check me-2" aria-hidden="true"></i><span data-producto-plantilla></span></h2>
             <p class="text-body-secondary small">Estas cuentas se heredan de la categoría.</p>
@@ -89,6 +95,9 @@
     </section>
 
     <section id="producto-precios" role="tabpanel" aria-labelledby="producto-tab-precios" data-usuario-panel="precios" class="ficha-producto-panel">
+        @include('partials.ficha-panel-intro', [
+            'tituloPanel' => 'Precios y costos', 'descripcionPanel' => 'Registra los valores de referencia y los límites de descuento.',
+        ])
         <div class="ficha-producto-bloque">
             <h2 class="h6"><i class="bi bi-tags me-2" aria-hidden="true"></i>Precios y descuentos de referencia</h2>
             <div class="row g-3">
@@ -104,10 +113,16 @@
     </section>
 
     <section id="producto-imagenes" role="tabpanel" aria-labelledby="producto-tab-imagenes" data-usuario-panel="imagenes" class="ficha-producto-panel">
+        @include('partials.ficha-panel-intro', [
+            'tituloPanel' => 'Imágenes', 'descripcionPanel' => 'Ordena la galería y elige la foto que servirá de portada.',
+        ])
         @include('inventarios::galeria-producto')
     </section>
 
     <section id="producto-documentos" role="tabpanel" aria-labelledby="producto-tab-documentos" data-usuario-panel="documentos" class="ficha-producto-panel">
+        @include('partials.ficha-panel-intro', [
+            'tituloPanel' => 'Documentación', 'descripcionPanel' => 'Vincula la ficha técnica y registra la descripción del producto.',
+        ])
         <div class="ficha-producto-bloque">
             <h2 class="h6"><i class="bi bi-file-earmark-text me-2" aria-hidden="true"></i>Ficha técnica</h2>
             <label class="form-label" for="producto-url">Enlace al documento (HTTPS)</label>

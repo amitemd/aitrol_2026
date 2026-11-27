@@ -428,10 +428,5 @@
 
 .cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
 
-.usuario-tabs {
-    gap: .4rem;
-    margin-bottom: 1rem;
-}
-
 .usuario-tabs[hidden],
 [data-usuario-panel][hidden] { display: none; }

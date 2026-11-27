@@ -33,6 +33,9 @@
                             ])
                             <section id="usuario-generales" role="tabpanel" aria-labelledby="usuario-tab-generales"
                                 class="ficha-perfil" data-usuario-panel="generales">
+                                @include('partials.ficha-panel-intro', [
+                                    'tituloPanel' => 'Datos generales', 'descripcionPanel' => 'Edita la identidad, el correo de acceso y la foto de la cuenta.',
+                                ])
                                 <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="nombres" class="form-label fw-semibold">Nombres</label>
@@ -111,6 +114,9 @@
                             </section>
                             <section id="usuario-ubicacion" role="tabpanel" aria-labelledby="usuario-tab-ubicacion"
                                 class="row g-3" data-usuario-panel="ubicacion">
+                                @include('partials.ficha-panel-intro', [
+                                    'tituloPanel' => 'Ubicación', 'descripcionPanel' => 'Registra el país, la ciudad y las referencias de la dirección.', 'claseIntro' => 'col-12',
+                                ])
                                 @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $usuario->persona?->id_ciudad)])
                                 @foreach ([
                                     'direccion' => ['Dirección', 255, 'col-12', 'street-address'],
