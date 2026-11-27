@@ -1,13 +1,15 @@
 <?php
 
-namespace Aitrol\Contabilidad\Application;
+namespace Aitrol\Contabilidad\Infrastructure\Persistence;
 
+use Aitrol\Contabilidad\Application\Puertos\RepositorioContable;
 use App\Services\EmpresaActiva;
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
-final readonly class DatosContables
+final readonly class DatosContables implements RepositorioContable
 {
     public function __construct(private EmpresaActiva $empresa) {}
 
@@ -80,5 +82,99 @@ final readonly class DatosContables
         }
 
         return $consulta;
+    }
+
+    public function transaccion(Closure $trabajo): mixed
+    {
+        return DB::transaction(function () use ($trabajo) {
+            $this->bloquearEmpresa();
+
+            return $trabajo();
+        }, 3);
+    }
+
+    public function cuenta(int $id): stdClass
+    {
+        return $this->cuentas()->where('co_cuentas.id', $id)->first() ?? abort(404, 'Cuenta contable no encontrada.');
+    }
+
+    public function auxiliares(array $ids): array
+    {
+        return $this->tabla('co_cuentas')->whereIn('id', $ids)->where('activo', true)->where('auxiliar', true)->get()->keyBy('id')->all();
+    }
+
+    public function tieneSubcuentasActivas(int $id): bool
+    {
+        return $this->tabla('co_cuentas')->where('id_padre', $id)->where('activo', true)->exists();
+    }
+
+    public function periodoEnFecha(string $fecha): ?stdClass
+    {
+        return $this->tabla('co_periodos')->where('desde', '<=', $fecha)->where('hasta', '>=', $fecha)->first();
+    }
+
+    public function periodosSolapados(string $desde, string $hasta): bool
+    {
+        return $this->tabla('co_periodos')->where('desde', '<=', $hasta)->where('hasta', '>=', $desde)->exists();
+    }
+
+    public function periodo(int $id): stdClass
+    {
+        return $this->fila('co_periodos', $id);
+    }
+
+    public function asientoConClave(string $clave): ?stdClass
+    {
+        return $this->tabla('co_asientos')->where('clave_operacion', $clave)->first();
+    }
+
+    public function asientoDeOrigen(string $origen, int $id): ?int
+    {
+        $asiento = $this->tabla('co_asientos')->where('origen', $origen)->where('id_origen', $id)->value('id');
+
+        return $asiento === null ? null : (int) $asiento;
+    }
+
+    public function siguienteNumero(): int
+    {
+        return (int) $this->tabla('co_asientos')->max('numero') + 1;
+    }
+
+    public function guardarCuenta(array $datos, ?int $id): int
+    {
+        return $this->guardar('co_cuentas', $datos, $id);
+    }
+
+    public function guardarPeriodo(array $datos, ?int $id = null): int
+    {
+        return $this->guardar('co_periodos', $datos, $id);
+    }
+
+    public function guardarAsiento(array $cabecera, array $lineas): int
+    {
+        $id = $this->crear('co_asientos', $cabecera);
+        foreach ($lineas as $fila) {
+            $this->crear('co_lineas', $fila + ['id_asiento' => $id], false);
+        }
+
+        return $id;
+    }
+
+    public function cajaEnDolares(int $id): bool
+    {
+        return $this->tabla('cb_cuentas')->where('id', $id)->where('moneda', 'USD')->exists();
+    }
+
+    public function guardarIntegracion(array $datos): void
+    {
+        $this->guardar('co_integraciones', $datos, $this->tabla('co_integraciones')->value('id'));
+    }
+
+    private function guardar(string $tabla, array $datos, ?int $id): int
+    {
+        if ($id === null) return $this->crear($tabla, $datos);
+        $this->actualizar($tabla, $id, $datos);
+
+        return $id;
     }
 }

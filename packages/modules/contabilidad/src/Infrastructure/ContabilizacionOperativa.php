@@ -2,8 +2,8 @@
 
 namespace Aitrol\Contabilidad\Infrastructure;
 
-use Aitrol\Contabilidad\Application\DatosContables;
 use Aitrol\Contabilidad\Application\LibroContable;
+use Aitrol\Contabilidad\Infrastructure\Persistence\DatosContables;
 use App\Events\OperacionContabilizable;
 use Illuminate\Validation\ValidationException;
 use stdClass;

@@ -1,7 +1,8 @@
 <?php
 
-namespace Aitrol\Contabilidad\Application;
+namespace Aitrol\Contabilidad\Infrastructure\Queries;
 
+use Aitrol\Contabilidad\Infrastructure\Persistence\DatosContables;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -42,7 +43,7 @@ final readonly class ReportesContables
         $orden = $this->datos->lineas()->where('co_lineas.id_cuenta', $cuenta)->where('asiento.fecha', '<=', $hasta)
             ->selectRaw('sum(debe - haber) over (order by asiento.fecha, asiento.numero, co_lineas.id rows unbounded preceding) as saldo');
         $filas = DB::query()->fromSub($orden, 'mayor')->where('fecha', '>=', $desde)->orderBy('fecha')->orderBy('numero')->orderBy('id');
-        $saldos = $this->acumulados($desde, $hasta)->where('co_lineas.id_cuenta', $cuenta)
+        $saldos = $this->acumulados($hasta)->where('co_lineas.id_cuenta', $cuenta)
             ->select([])->selectRaw('coalesce(sum(case when asiento.fecha < ? then debe - haber else 0 end),0) as apertura', [$desde])
             ->selectRaw('coalesce(sum(case when asiento.fecha >= ? then debe else 0 end),0) as debe', [$desde])
             ->selectRaw('coalesce(sum(case when asiento.fecha >= ? then haber else 0 end),0) as haber', [$desde])->first();
@@ -94,7 +95,7 @@ final readonly class ReportesContables
 
     private function efectivo(string $desde, string $hasta): array
     {
-        $lineas = $this->acumulados($desde, $hasta)->where('cuenta.efectivo', true);
+        $lineas = $this->acumulados($hasta)->where('cuenta.efectivo', true);
         $saldos = (clone $lineas)->select([])
             ->selectRaw('coalesce(sum(case when asiento.fecha < ? then debe - haber else 0 end),0) as apertura', [$desde])
             ->selectRaw('coalesce(sum(debe - haber),0) as cierre')->first();
@@ -116,12 +117,14 @@ final readonly class ReportesContables
 
     private function patrimonio(string $desde, string $hasta): array
     {
-        $consulta = $this->acumulados($desde, $hasta)->where('cuenta.clase', 'patrimonio')->select('cuenta.codigo', 'cuenta.nombre as cuenta', 'cuenta.id')
+        $consulta = $this->acumulados($hasta)->where('cuenta.clase', 'patrimonio')->select('cuenta.codigo', 'cuenta.nombre as cuenta', 'cuenta.id')
             ->selectRaw('sum(case when asiento.fecha < ? then haber - debe else 0 end) as apertura', [$desde])
             ->selectRaw('sum(haber - debe) as cierre')->groupBy('cuenta.codigo', 'cuenta.nombre', 'cuenta.id')->orderBy('cuenta.codigo');
-        $movimientos = array_keys(config('contabilidad.patrimonio'));
-        foreach ($movimientos as $campo) {
-            $consulta->selectRaw('sum(case when asiento.fecha >= ? and movimiento_patrimonio = ? then haber - debe else 0 end) as '.$campo, [$desde, $campo]);
+        $movimientos = [];
+        foreach (array_keys(config('contabilidad.patrimonio')) as $clasificacion) {
+            $campo = $clasificacion === 'apertura' ? 'registro_inicial' : $clasificacion;
+            $movimientos[] = $campo;
+            $consulta->selectRaw('sum(case when asiento.fecha >= ? and movimiento_patrimonio = ? then haber - debe else 0 end) as '.$campo, [$desde, $clasificacion]);
         }
         $filas = $consulta->get()->map(fn ($fila) => (array) $fila)->all();
         $previo = $this->resultadoAcumulado($desde, estricto: true);
@@ -137,7 +140,7 @@ final readonly class ReportesContables
 
     private function porCuenta(string $desde, string $hasta): Builder
     {
-        $agregada = $this->acumulados($desde, $hasta)->select('cuenta.id', 'cuenta.codigo', 'cuenta.nombre as cuenta', 'cuenta.clase')
+        $agregada = $this->acumulados($hasta)->select('cuenta.id', 'cuenta.codigo', 'cuenta.nombre as cuenta', 'cuenta.clase')
             ->selectRaw('sum(case when asiento.fecha < ? then debe - haber else 0 end) as apertura', [$desde])
             ->selectRaw('sum(case when asiento.fecha >= ? then debe else 0 end) as debe', [$desde])
             ->selectRaw('sum(case when asiento.fecha >= ? then haber else 0 end) as haber', [$desde])
@@ -146,7 +149,7 @@ final readonly class ReportesContables
         return DB::query()->fromSub($agregada, 'cuentas_con_saldo')->select('cuentas_con_saldo.*');
     }
 
-    private function acumulados(string $desde, string $hasta): Builder
+    private function acumulados(string $hasta): Builder
     {
         return $this->datos->lineas()->where('asiento.fecha', '<=', $hasta);
     }

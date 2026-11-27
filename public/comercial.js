@@ -23,7 +23,7 @@
             contenedor.append(linea);
             contenedor.lastElementChild.querySelector('input')?.focus();
         } else {
-            if (contenedor.children.length === 1) return;
+            if (contenedor.children.length <= Number(formulario.dataset.minLineas ?? 1)) return;
 
             formulario.dataset.siguienteLinea ??= String(contenedor.children.length);
             boton.closest('[data-comercial-linea]').remove();
