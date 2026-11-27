@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Routing\Route;
 use Throwable;
 
 final class TrazaAuditoria
@@ -58,16 +59,35 @@ final class TrazaAuditoria
     public function registrarError(Throwable $error): void
     {
         $this->capturar($error->getTrace());
+
+        $base = rtrim(str_replace('\\', '/', base_path()), '/').'/';
+        $archivo = str_replace('\\', '/', $error->getFile());
+        if (str_starts_with($archivo, $base)) {
+            $relativo = substr($archivo, strlen($base));
+            if (preg_match('#^(app|packages/modules|routes)/[a-zA-Z0-9_./-]+\.php$#D', $relativo)) {
+                $this->agregar('Ubicación del error', $relativo.':'.$error->getLine());
+            }
+        }
     }
 
-    public function resumen(): array
+    public function resumen(?Route $ruta): array
     {
+        $referencias = [];
+        $nombres = ['id', 'registro', 'cliente', 'proveedor', 'usuario', 'empresa', 'rol', 'menu'];
+        foreach (array_intersect_key($ruta?->parameters() ?? [], array_flip($nombres)) as $nombre => $valor) {
+            $id = $valor instanceof Model ? $valor->getKey() : $valor;
+            if ((is_int($id) || is_string($id)) && preg_match('/^[1-9][0-9]{0,18}$/D', (string) $id)) {
+                $referencias[$nombre] = (string) $id;
+            }
+        }
+
         return [
             'duracion_ms' => (int) ((hrtime(true) - $this->inicio) / 1_000_000),
             'traza' => json_encode([
                 'consultas' => $this->consultas,
                 'pasos' => array_values($this->pasos),
                 'limitada' => $this->limitada,
+                'referencias' => $referencias,
             ], JSON_THROW_ON_ERROR),
         ];
     }
@@ -81,8 +101,14 @@ final class TrazaAuditoria
             if ($objeto instanceof Builder || $objeto instanceof Relation) {
                 $modelo = $objeto instanceof Builder ? $objeto->getModel() : $objeto->getRelated();
                 $this->agregar('Modelo Eloquent', $modelo::class);
+                if (in_array($metodo, ['get', 'first', 'find', 'create', 'update', 'delete'], true)) {
+                    $this->agregar('Operación Eloquent', $modelo::class.'::'.$metodo);
+                }
             } elseif ($objeto instanceof Model) {
                 $this->agregar('Modelo Eloquent', $objeto::class);
+                if (in_array($metodo, ['save', 'delete', 'update'], true)) {
+                    $this->agregar('Operación Eloquent', $objeto::class.'::'.$metodo);
+                }
             } elseif ($clase === \Illuminate\Database\Query\Builder::class) {
                 $this->agregar('Persistencia', 'Laravel Query Builder');
             }

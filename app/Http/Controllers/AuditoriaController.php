@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Services\Accesos;
 use App\Services\EmpresaActiva;
+use App\Services\TrazaAuditoria;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
@@ -58,13 +59,22 @@ final class AuditoriaController
             $consulta->where('e.created_at', '<', CarbonImmutable::parse($filtros['hasta'], $zona)->addDay()->setTimezone(config('app.timezone')));
         }
 
+        $eventos = $consulta->orderByDesc('e.id')->paginate(30)->appends($filtros)
+            ->through(function ($evento) use ($modulos, $zona) {
+                $modulo = $evento->modulo ?? TrazaAuditoria::modulo($evento->ruta ?? '');
+                $evento->nombre_modulo = $modulos[$modulo] ?? $modulos['otros'];
+                $evento->fecha_local = CarbonImmutable::parse($evento->created_at, config('app.timezone'))->setTimezone($zona);
+                $evento->detalle_traza = json_decode($evento->traza ?? 'null', true);
+
+                return $evento;
+            });
+
         return view('auditoria.index', [
-            'eventos' => $consulta->orderByDesc('e.id')->paginate(30)->appends($filtros),
+            'eventos' => $eventos,
             'niveles' => $niveles,
             'modulos' => $modulos,
             'filtros' => $filtros,
             'ambito' => $ambito,
-            'zona' => $zona,
         ]);
     }
 
@@ -76,8 +86,7 @@ final class AuditoriaController
 
         $usuario = $request->user();
         $opcion = DB::table('menu')->where('ruta', $ruta->getName())->where('activo', true)
-            ->where(fn ($consulta) => $consulta->where('solo_administrador', false)
-                ->when($usuario->is_admin, fn ($consulta) => $consulta->orWhere('solo_administrador', true)));
+            ->when(! $usuario->is_admin, fn ($consulta) => $consulta->where('solo_administrador', false));
         abort_unless($accesos->muestra($usuario, $ruta->getName()) && $opcion->exists(), 403);
 
         $request->attributes->set('auditoria.pestana', $ruta);

@@ -97,6 +97,9 @@ final class RegistrarAuditoria
                 $ruta === 'logout' => 'Cerró sesión',
                 $ruta === 'login.store' => 'Inició sesión',
                 $request->isMethod('GET') => $request->is('api/*') ? 'Consultó por API' : 'Abrió o consultó una pantalla',
+                str_ends_with($ruta, '.store') => 'Registró datos',
+                str_ends_with($ruta, '.update') => 'Actualizó datos',
+                str_ends_with($ruta, '.destroy') => 'Eliminó un registro',
                 default => 'Procesó una operación',
             };
             $eventos[] = ['nivel' => $nivel, 'origen' => 'http', 'evento' => $evento];
@@ -120,7 +123,7 @@ final class RegistrarAuditoria
             'created_at' => now(),
         ];
         if ($traza instanceof TrazaAuditoria && $pestana === null) {
-            $datos += $traza->resumen();
+            $datos += $traza->resumen($rutaActual);
         }
 
         try {
