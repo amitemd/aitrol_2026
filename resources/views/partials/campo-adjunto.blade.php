@@ -1,5 +1,4 @@
-<div @class(['ficha-adjunto', 'ficha-adjunto-foto' => $vistaPrevia ?? false]) data-ficha-adjunto
-    @if (isset($limiteOptimizado)) data-adjunto-limite="{{ $limiteOptimizado }}" data-adjunto-maximo="{{ $maximoOriginal }}" @endif>
+<div @class(['ficha-adjunto', 'ficha-adjunto-foto' => $vistaPrevia ?? false]) data-ficha-adjunto>
     @if ($vistaPrevia ?? false)
         <div class="ficha-adjunto-encabezado">
             <strong id="{{ $campo }}-titulo">{{ $titulo }}</strong>
@@ -27,9 +26,6 @@
     @if ($vistaPrevia ?? false)
         <small id="{{ $campo }}-ayuda" class="ficha-adjunto-ayuda">{{ $ayuda }}</small>
     @endif
-    @isset($limiteOptimizado)
-        <p class="small mt-1 mb-1 px-2" data-adjunto-estado role="status" hidden></p>
-    @endisset
     <div class="ficha-adjunto-seleccion" data-adjunto-seleccion hidden>
         <ul class="list-unstyled mb-0" data-adjunto-lista aria-live="polite"></ul>
         <button type="button" class="btn btn-sm btn-outline-secondary" data-adjunto-limpiar>Quitar selección</button>

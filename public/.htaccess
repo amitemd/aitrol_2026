@@ -1,3 +1,12 @@
+<IfModule php_module>
+    php_value upload_max_filesize 16M
+    php_value post_max_size 32M
+</IfModule>
+
+<Files ".user.ini">
+    Require all denied
+</Files>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

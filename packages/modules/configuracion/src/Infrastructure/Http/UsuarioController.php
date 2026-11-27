@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class UsuarioController
 {
-    private const FOTO_MAX_KB = 3072;
+    private const FOTO_MAX_MB = 10;
 
     public function __construct(private readonly EmpresaActiva $empresaActiva) {}
 
@@ -70,7 +70,7 @@ final class UsuarioController
 
     private function formulario(User $usuario): View
     {
-        $limiteFoto = self::FOTO_MAX_KB * 1024;
+        $limiteFoto = self::FOTO_MAX_MB * 1024 * 1024;
         $limiteSubida = ini_parse_quantity((string) ini_get('upload_max_filesize'));
         $limitePeticion = ini_parse_quantity((string) ini_get('post_max_size'));
 
@@ -83,7 +83,7 @@ final class UsuarioController
 
         return view('configuracion::usuario', [
             'usuario' => $usuario, 'tipos' => TipoIdentificacion::cases(),
-            'limiteFoto' => $limiteFoto, 'maximoFoto' => self::FOTO_MAX_KB * 1024,
+            'limiteFotoMb' => $limiteFoto / (1024 * 1024),
         ]);
     }
 
@@ -132,7 +132,7 @@ final class UsuarioController
             'email_contacto' => ['nullable', 'email:filter', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:100'],
             'direccion' => ['nullable', 'string', 'max:255'],
-            'foto' => [Rule::excludeIf($request->routeIs('api.*')), 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.self::FOTO_MAX_KB],
+            'foto' => [Rule::excludeIf($request->routeIs('api.*')), 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(self::FOTO_MAX_MB * 1024)],
             'activo' => [Rule::excludeIf($request->routeIs('api.*')), 'sometimes', 'required', 'boolean'],
             ...Persona::reglasPerfil(),
             'tipo_identificacion' => ['exclude_if:identificacion,null', 'required_with:identificacion', 'nullable', Rule::enum(TipoIdentificacion::class)],
@@ -146,7 +146,7 @@ final class UsuarioController
             'foto.uploaded' => 'No se pudo recibir la foto. Verifica el límite de carga del servidor o selecciona una imagen más ligera.',
             'foto.image' => 'Selecciona una imagen válida.',
             'foto.mimes' => 'La foto debe tener formato JPG, PNG o WebP.',
-            'foto.max' => 'La foto debe pesar como máximo 3 MB.',
+            'foto.max' => 'La foto debe pesar como máximo '.self::FOTO_MAX_MB.' MB.',
         ]);
 
         $identificacion = null;

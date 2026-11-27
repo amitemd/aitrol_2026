@@ -3,10 +3,23 @@
 use App\Models\User;
 use App\Services\CatalogoGeoNames;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+
+Event::listen(CommandStarting::class, static function (CommandStarting $evento): void {
+    if ($evento->command !== 'serve') {
+        return;
+    }
+
+    $directorios = getenv('PHP_INI_SCAN_DIR');
+    $_ENV['PHP_INI_SCAN_DIR'] = $directorios.PATH_SEPARATOR.public_path();
+    ServeCommand::$passthroughVariables[] = 'PHP_INI_SCAN_DIR';
+});
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

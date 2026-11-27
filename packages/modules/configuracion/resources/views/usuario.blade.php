@@ -108,10 +108,9 @@
                                     @include('partials.campo-adjunto', [
                                         'campo' => 'foto', 'nombre' => 'foto', 'titulo' => 'Foto del usuario',
                                         'iconoAdjunto' => 'bi-person', 'formatos' => 'image/jpeg,image/png,image/webp',
-                                        'ayuda' => 'JPG, PNG o WebP · máximo 3 MB',
+                                        'ayuda' => 'JPG, PNG o WebP · máximo '.rtrim(rtrim(number_format($limiteFotoMb, 2, ',', ''), '0'), ',').' MB',
                                         'accion' => $usuario->foto ? 'Cambiar fotografía' : 'Seleccionar imagen',
                                         'vistaPrevia' => true, 'urlImagen' => $usuario->foto ? route('configuracion.usuarios.foto', $usuario) : null,
-                                        'limiteOptimizado' => $limiteFoto, 'maximoOriginal' => $maximoFoto,
                                     ])
                                 </aside>
                             </section>
