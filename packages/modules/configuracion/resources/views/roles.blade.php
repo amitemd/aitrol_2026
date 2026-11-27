@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Roles y permisos')
+@section('title', __('Roles y permisos'))
 
 @section('content')
     @include('partials.listado-cabecera', [
@@ -19,7 +19,7 @@
                                 <th scope="col">Rol</th>
                                 <th scope="col">Creación</th>
                                 <th scope="col">Última modificación</th>
-                                <th class="text-end" scope="col">Acciones</th>
+                                <th class="text-end" scope="col">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,7 +69,7 @@
                         @include('configuracion::matriz-permisos')
                     </div>
                     <div class="card-footer d-flex justify-content-end gap-2">
-                        <a href="{{ route('configuracion.roles.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                        <a href="{{ route('configuracion.roles.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                         <button type="submit" class="btn btn-primary">Guardar rol</button>
                     </div>
                 </form>

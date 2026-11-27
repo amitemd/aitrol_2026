@@ -22,7 +22,7 @@
                             <input name="numero" class="form-control" id="com-numero" maxlength="60" value="{{ old('numero') }}" required autofocus>
                         </div>
                         <div class="col-sm-6">
-                            <label class="form-label" for="com-fecha">Fecha</label>
+                            <label class="form-label" for="com-fecha">{{ __('Fecha') }}</label>
                             <input type="date" name="fecha" class="form-control" id="com-fecha" value="{{ old('fecha', $fecha) }}"
                                 min="{{ $periodo }}-01-01" max="{{ $periodo }}-12-31" required>
                         </div>
@@ -30,12 +30,12 @@
                             <label class="form-label" for="com-tercero">{{ $vinculado ? 'Documento de origen' : $config['tercero'] }}</label>
                             <select id="com-tercero" class="form-select" name="{{ $vinculado ? 'id_documento_origen' : 'id_tercero' }}"
                                 data-select2-url="{{ route($ruta.'.opciones', $vinculado ? 'origenes' : 'terceros') }}" data-select2-min="0" required>
-                                <option value="">Seleccionar</option>
+                                <option value="">{{ __('Seleccionar') }}</option>
                             </select>
                         </div>
                         @if ($seccion === 'documentos')
                             <div class="col-sm-6">
-                                <label class="form-label" for="com-bodega">Bodega</label>
+                                <label class="form-label" for="com-bodega">{{ __('Bodega') }}</label>
                                 <select id="com-bodega" class="form-select" name="id_bodega" data-select2-url="{{ route($ruta.'.opciones', 'bodegas') }}" data-select2-min="0" data-select2-placeholder="Sin movimiento de inventario">
                                     <option value="">Sin movimiento de inventario</option>
                                 </select>
@@ -61,7 +61,7 @@
                     <template data-comercial-plantilla>@include('comercial::linea', ['indice' => '__INDICE__', 'linea' => []])</template>
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-close>Cancelar</a>
+                    <a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button class="btn btn-primary">Registrar documento</button>
                 </div>
             </form>

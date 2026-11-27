@@ -1,6 +1,6 @@
 {{-- Adaptado de AdminLTE 4.10.2, licencia MIT en public/adminlte/LICENSE. --}}
 <!doctype html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -103,7 +103,7 @@
   <link rel="stylesheet" href="{{ asset('aitrol-shell.css') }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.min.css" crossorigin="anonymous">
   @auth
-    <link rel="stylesheet" href="{{ asset('vicky.css') }}" />
+    <link rel="stylesheet" href="{{ asset('vicky.css').'?v='.filemtime(public_path('vicky.css')) }}" />
   @endauth
 </head>
 
@@ -121,7 +121,7 @@
       </div>
     </main>
     <footer class="app-footer d-flex align-items-center justify-content-between gap-3">
-      <div><strong>Copyright &copy; {{ date('Y') }}</strong> All rights reserved.</div>
+      <div><strong>Copyright &copy; {{ date('Y') }}</strong> {{ __('All rights reserved.') }}</div>
     </footer>
   </div>
   @auth
@@ -129,7 +129,7 @@
       <template data-vicky-widget>
         @include('partials.vicky')
       </template>
-      <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('vicky.js') }}" defer></script>
+      <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('vicky.js').'?v='.filemtime(public_path('vicky.js')) }}" defer></script>
     @endif
   @endauth
   <!--begin::Script-->

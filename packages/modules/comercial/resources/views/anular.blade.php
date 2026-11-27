@@ -17,7 +17,7 @@
                     <textarea class="form-control" id="com-motivo" name="motivo" rows="3" maxlength="250" required>{{ old('motivo') }}</textarea>
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <a class="btn btn-outline-secondary" href="{{ route($modulo.'.'.$seccion.'.index') }}" data-ajax-close>Cancelar</a>
+                    <a class="btn btn-outline-secondary" href="{{ route($modulo.'.'.$seccion.'.index') }}" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button class="btn btn-danger">Confirmar anulación</button>
                 </div>
             </form>

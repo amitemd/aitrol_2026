@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Gate;
@@ -14,6 +15,32 @@ final readonly class VickyConsultaOperativa
     public const OPERACIONES = ['listar', 'contar', 'sumar', 'promediar', 'minimo', 'maximo'];
 
     public const COMPARACIONES = ['igual', 'contiene', 'mayor', 'menor'];
+
+    private const FUENTES_DIRECTAS = [
+        'clientes' => 'clientes',
+        'proveedores' => 'proveedores',
+        'pacientes' => 'pacientes',
+        'productos' => 'productos',
+        'bodegas' => 'bodegas',
+        'sucursales' => 'sucursales',
+        'existencias' => 'existencias',
+        'facturas de venta' => 'facturas_venta',
+        'facturas de compra' => 'facturas_compra',
+        'cotizaciones' => 'cotizaciones',
+        'ordenes de compra' => 'ordenes_compra',
+        'categorias de inventario' => 'categorias',
+        'movimientos de inventario' => 'inventario_movimientos',
+        'movimientos de caja y bancos' => 'tesoreria_movimientos',
+        'cierres de caja' => 'tesoreria_cierres',
+        'extractos bancarios' => 'tesoreria_extractos',
+        'asientos contables' => 'asientos_contables',
+        'plan de cuentas' => 'cuentas_contables',
+        'periodos contables' => 'periodos_contables',
+        'activos fijos' => 'activos_fijos',
+        'ordenes de mantenimiento' => 'mantenimiento',
+        'declaraciones tributarias' => 'declaraciones',
+        'declaraciones' => 'declaraciones',
+    ];
 
     private const NO_DISPONIBLE = [
         'respuesta' => 'No puedo formar ese informe con las fuentes y campos disponibles. Indica qué dato quieres consultar y cómo quieres agruparlo.',
@@ -68,8 +95,15 @@ final readonly class VickyConsultaOperativa
                 'filtros' => [['campo' => 'nombre', 'comparacion' => 'contiene', 'valor' => $busqueda[2]]]];
         }
 
-        $texto = trim(Str::lower(Str::ascii($pregunta)), " \t\n?.!");
-        if (preg_match('/^(?:reporte de )?(ventas por cliente|compras por proveedor)(?: (?:este mes|mes pasado|este ano|en (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)(?: de 20\d{2})?))?$/', $texto, $desglose)) {
+        $texto = preg_replace('/\s+/', ' ', trim(Str::lower(Str::ascii(trim($pregunta, " \t\r\n"))), " \t\r\n?.!"));
+        if (preg_match('/^(?:(?:dime|verifica) )?(?:si )?(?:tengo|tenemos|hay) (?:algun )?activos? fijos?(?: registrados?)?(?: en (?:el sistema|aitrol))?$/D', $texto)) {
+            return ['fuente' => 'activos_fijos', 'operacion' => 'contar'];
+        }
+
+        $periodo = '(?:hoy|ayer|anteayer|esta semana|semana pasada|ultima semana|(?:este|del) (?:mes|ano)|(?:mes|ano) (?:pasado|anterior)|ultimos \d{1,3} dias'
+            .'|(?:en |de )?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?: de 20\d{2})?'
+            .'|(?:(?:en|de|del|desde) )?20\d{2}(?:-\d{2}(?:-\d{2}(?:(?: al| hasta| hasta el) 20\d{2}-\d{2}-\d{2})?)?)?)';
+        if (preg_match('/^(?:reporte de )?(ventas por cliente|compras por proveedor)(?: '.$periodo.')?$/D', $texto, $desglose)) {
             return [
                 'fuente' => $desglose[1] === 'ventas por cliente' ? 'facturas_venta' : 'facturas_compra',
                 'operacion' => 'sumar',
@@ -77,12 +111,15 @@ final readonly class VickyConsultaOperativa
                 'agrupar' => 'tercero',
             ];
         }
-        $patron = '/^(?:dame (?:un |una )?)?(cuant[oa]s|total de|cantidad de|lista de|listado de|listar|muestrame|reporte de)\s+(?:(?:tenemos|tengo|hay)\s+)?(?:los |las |de )?(clientes|proveedores|pacientes|productos|bodegas|sucursales|existencias|activos fijos|declaraciones)(?:\s+(activos|activas|inactivos|inactivas))?(?:\s+(?:tengo|tenemos|hay|registrados|registradas))?(?:\s+(?:hoy|ayer|este mes|este ano|mes pasado|esta semana|en (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)(?: de 20\d{2})?))?$/';
+        $fuentes = implode('|', array_map(fn (string $nombre): string => preg_quote($nombre, '/'), array_keys(self::FUENTES_DIRECTAS)));
+        $patron = '/^(?:(?:dame|muestrame) (?:(?:un|una|el|la) )?)?(cuant[oa]s|total de|cantidad de|lista de|listado de|listar|muestrame|reporte de)'
+            .' (?:(?:tenemos|tengo|hay) )?(?:los |las |de )?('.$fuentes.')'
+            .'(?: (activos|activas|inactivos|inactivas))?(?: (?:tengo|tenemos|hay|registrados|registradas))?(?: '.$periodo.')?$/D';
         if (! preg_match($patron, $texto, $partes)) {
             return null;
         }
 
-        $fuente = str_replace(' ', '_', $partes[2]);
+        $fuente = self::FUENTES_DIRECTAS[$partes[2]];
         $plan = [
             'fuente' => $fuente,
             'operacion' => preg_match('/^(cuant|total|cantidad)/', $partes[1]) ? 'contar' : 'listar',
@@ -103,7 +140,7 @@ final readonly class VickyConsultaOperativa
     }
 
     /** @param array{desde?: string, hasta?: string} $fechas */
-    public function consultar(array $plan, array $fechas): array
+    public function consultar(array $plan, array $fechas, ?Closure $alConsultar = null): array
     {
         $clave = $plan['fuente'] ?? null;
         $catalogo = config('vicky-reportes');
@@ -144,6 +181,8 @@ final readonly class VickyConsultaOperativa
         if ($fechas !== []) {
             $consulta->whereBetween($fuente['fecha'], [$fechas['desde'], $fechas['hasta'].' 23:59:59.999999']);
         }
+
+        $alConsultar?->__invoke();
 
         return $this->resultado($consulta, $fuente, $datos, $fechas);
     }
@@ -268,6 +307,8 @@ final readonly class VickyConsultaOperativa
                 foreach ($grupos as $grupo) {
                     $consulta->orderBy($grupo);
                 }
+            } elseif ($funcion !== 'COUNT') {
+                $consulta->havingRaw("COUNT({$expresion}) > 0");
             }
             $campos = [...$grupos, 'resultado'];
             $numeros['resultado'] = $funcion === 'COUNT' ? 0 : $numeros[$campo];

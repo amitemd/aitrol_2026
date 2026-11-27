@@ -23,11 +23,11 @@
             <div class="card-body row g-3">
                 @if ($catalogo || $seccion === 'activos')
                     <div class="col-sm-4">
-                        <label for="af-codigo" class="form-label">Código</label>
+                        <label for="af-codigo" class="form-label">{{ __('Código') }}</label>
                         <input class="form-control" id="af-codigo" name="codigo" maxlength="40" value="{{ old('codigo', $registro['codigo'] ?? '') }}" required autofocus>
                     </div>
                     <div class="col-sm-8">
-                        <label for="af-nombre" class="form-label">Nombre</label>
+                        <label for="af-nombre" class="form-label">{{ __('Nombre') }}</label>
                         <input class="form-control" id="af-nombre" name="nombre" maxlength="160" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
                     </div>
                 @endif
@@ -54,7 +54,7 @@
                 @elseif ($seccion === 'activos')
                     @foreach (['marca' => ['Marca', 80], 'modelo' => ['Modelo', 80], 'serie' => ['Número de serie', 100]] as $campo => [$etiqueta, $max])
                         <div class="col-sm-4">
-                            <label for="af-{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                            <label for="af-{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                             <input class="form-control" id="af-{{ $campo }}" name="{{ $campo }}" maxlength="{{ $max }}" value="{{ old($campo, $registro[$campo] ?? '') }}">
                         </div>
                     @endforeach
@@ -79,7 +79,7 @@
                     </div>
                     @foreach (['costo' => 'Costo de adquisición', 'valor_residual' => 'Valor residual'] as $campo => $etiqueta)
                         <div class="col-sm-4">
-                            <label for="af-{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                            <label for="af-{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                             <input type="number" min="0" max="1000000000" step="0.01" class="form-control" id="af-{{ $campo }}"
                                 name="{{ $campo }}" value="{{ old($campo, $registro[$campo] ?? ($campo === 'valor_residual' ? '0.00' : '')) }}" @required($campo === 'costo')>
                         </div>
@@ -87,12 +87,12 @@
                 @elseif ($seccion === 'ordenes' && $editar)
                     <div class="col-12"><p class="mb-0"><strong>{{ $registro['codigo_activo'] }} · {{ $registro['activo'] }}</strong></p></div>
                     <div class="col-sm-6">
-                        <label for="af-estado-orden" class="form-label">Estado</label>
+                        <label for="af-estado-orden" class="form-label">{{ __('Estado') }}</label>
                         <select class="form-select" id="af-estado-orden" name="estado" required>
-                            <option value="">Seleccionar</option>
+                            <option value="">{{ __('Seleccionar') }}</option>
                             @foreach (config('activos-fijos.estados_orden') as $valor => $etiqueta)
                                 @continue($valor === 'pendiente' || $valor === $registro['estado'])
-                                <option value="{{ $valor }}" @selected(old('estado') === $valor)>{{ $etiqueta }}</option>
+                                <option value="{{ $valor }}" @selected(old('estado') === $valor)>{{ __($etiqueta) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -119,7 +119,7 @@
                             <label for="af-tipo" class="form-label">{{ $seccion === 'movimientos' ? 'Tipo de movimiento' : 'Tipo de mantenimiento' }}</label>
                             <select id="af-tipo" name="tipo" class="form-select" required>
                                 @foreach ($seccion === 'movimientos' ? config('activos-fijos.movimientos') : ['preventivo' => 'Preventivo', 'correctivo' => 'Correctivo'] as $valor => $etiqueta)
-                                    <option value="{{ $valor }}" @selected(old('tipo') === $valor)>{{ $etiqueta }}</option>
+                                    <option value="{{ $valor }}" @selected(old('tipo') === $valor)>{{ __($etiqueta) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -148,7 +148,7 @@
                 @endif
                 @if ($catalogo || $seccion === 'activos')
                     <div class="col-12">
-                        <label for="af-descripcion" class="form-label">Descripción</label>
+                        <label for="af-descripcion" class="form-label">{{ __('Descripción') }}</label>
                         <textarea id="af-descripcion" name="descripcion" class="form-control" rows="2" maxlength="500">{{ old('descripcion', $registro['descripcion'] ?? '') }}</textarea>
                     </div>
                 @endif
@@ -156,7 +156,7 @@
             <div class="card-footer ficha-acciones d-flex flex-wrap gap-2 align-items-center">
                 @if ($catalogo) @include('partials.interruptor-activo', ['activo' => $registro['activo'] ?? true]) @endif
                 <div class="ms-auto d-flex gap-2">
-                    <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                    <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button class="btn btn-primary"><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ $editar ? 'Guardar cambios' : 'Registrar' }}</button>
                 </div>
             </div>

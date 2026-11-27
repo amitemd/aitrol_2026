@@ -28,7 +28,7 @@
     @endif
     <div class="ficha-adjunto-seleccion" data-adjunto-seleccion hidden>
         <ul class="list-unstyled mb-0" data-adjunto-lista aria-live="polite"></ul>
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-adjunto-limpiar>Quitar selección</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-adjunto-limpiar>{{ __('Quitar selección') }}</button>
     </div>
     @error($campo) <p class="text-danger small mt-2 mb-0">{{ $message }}</p> @enderror
     @foreach ($errors->get($campo.'.*') as $mensajes)

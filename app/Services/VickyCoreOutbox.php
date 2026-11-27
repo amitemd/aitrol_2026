@@ -82,13 +82,13 @@ final class VickyCoreOutbox
             || array_diff(array_keys($evento), [...$requeridos, 'workflow', 'operation']) !== []
             || ! is_string($evento['requestId']) || ! Str::isUuid($evento['requestId'])
             || ! is_string($evento['tenantKey']) || ! preg_match('/\A[a-f0-9]{64}\z/', $evento['tenantKey'])
-            || ! in_array($evento['status'], ['completed', 'failed', 'rejected'], true)
+            || ! in_array($evento['status'], ['completed', 'failed', 'rejected', 'unclassified'], true)
             || ! is_int($evento['durationMs']) || $evento['durationMs'] < 0 || $evento['durationMs'] > 120_000) {
             return null;
         }
         if (count($evento) !== 4 && (! in_array($evento['workflow'] ?? null, self::FLUJOS, true)
             || ! in_array($evento['operation'] ?? null, self::OPERACIONES, true)
-            || $evento['status'] === 'rejected')) {
+            || in_array($evento['status'], ['rejected', 'unclassified'], true))) {
             return null;
         }
 

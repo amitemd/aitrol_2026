@@ -11,7 +11,7 @@
                         <dl class="row mb-0">
                             @foreach ($campos as $etiqueta => $valor)
                                 @continue($valor === null || $valor === '')
-                                <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7 text-break">{{ $valor }}</dd>
+                                <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7 text-break">{{ $valor }}</dd>
                             @endforeach
                         </dl>
                     </div>
@@ -23,7 +23,7 @@
                     @endif
                 </div>
             </div>
-            <div class="card-footer text-end"><a href="{{ $volver }}" class="btn btn-outline-secondary" data-ajax-close>Cerrar</a></div>
+            <div class="card-footer text-end"><a href="{{ $volver }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a></div>
         </section>
     </div></div>
 @endsection

@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Empresas')
+@section('title', __('Empresas'))
 
 @section('content')
     @include('partials.listado-cabecera', [
@@ -19,7 +19,7 @@
                         <div class="small text-body-secondary px-3 py-2 border-bottom">{{ $empresas->total() }} empresas registradas</div>
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
-                                <thead class="clientes-tabla-cabecera"><tr><th scope="col">Razón social</th><th scope="col">RUC</th><th scope="col">Contacto</th><th scope="col">Estado</th><th scope="col" class="text-end">Acciones</th></tr></thead>
+                                <thead class="clientes-tabla-cabecera"><tr><th scope="col">{{ __('Razón social') }}</th><th scope="col">RUC</th><th scope="col">Contacto</th><th scope="col">{{ __('Estado') }}</th><th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
                                 <tbody>
                                     @forelse ($empresas as $empresa)
                                         <tr>

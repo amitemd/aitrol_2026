@@ -10,7 +10,7 @@
             <span class="clientes-icono" aria-hidden="true"><i class="bi {{ $iconoModal ?? 'bi-pencil-square' }}"></i></span>
             <h2 id="listado-modal-titulo" data-ajax-title class="fs-5 fw-semibold mb-0"></h2>
         </div>
-        <button type="button" class="cliente-dialog-cerrar" aria-label="Cerrar" data-ajax-close>
+        <button type="button" class="cliente-dialog-cerrar" aria-label="{{ __('Cerrar') }}" data-ajax-close>
             <i class="bi bi-x-lg" aria-hidden="true"></i>
         </button>
     </div>

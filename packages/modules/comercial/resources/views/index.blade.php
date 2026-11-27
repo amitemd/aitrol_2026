@@ -20,18 +20,18 @@
             <div class="card clientes-directorio" data-ajax-list>
                 <form method="GET" action="{{ route($ruta.'.index') }}" class="row g-2 align-items-end m-0 p-3 border-bottom" data-ajax-search>
                     <div class="col-12 col-sm-5 col-lg-4">
-                        <label class="form-label" for="com-q">Buscar</label>
+                        <label class="form-label" for="com-q">{{ __('Buscar') }}</label>
                         <input class="form-control" id="com-q" name="q" value="{{ $filtros['q'] ?? '' }}" maxlength="120" placeholder="Número o {{ Str::lower($config['tercero']) }}">
                     </div>
                     @foreach (['desde' => 'Desde', 'hasta' => 'Hasta'] as $campo => $etiqueta)
                         <div class="col-6 col-sm-3 col-lg-auto">
-                            <label class="form-label" for="com-{{ $campo }}">{{ $etiqueta }}</label>
+                            <label class="form-label" for="com-{{ $campo }}">{{ __($etiqueta) }}</label>
                             <input type="date" id="com-{{ $campo }}" name="{{ $campo }}" class="form-control" value="{{ $filtros[$campo] ?? '' }}">
                         </div>
                     @endforeach
                     <div class="col-auto d-flex gap-2">
                         <button class="btn btn-outline-primary">Filtrar</button>
-                        @if ($filtros)<a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-list-link>Limpiar</a>@endif
+                        @if ($filtros)<a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-list-link>{{ __('Limpiar') }}</a>@endif
                         @if ($reportes)
                             <a class="btn btn-outline-primary" href="{{ route($ruta.'.exportar', $filtros) }}">
                                 <i class="bi bi-download me-1" aria-hidden="true"></i> Exportar CSV
@@ -44,7 +44,7 @@
                         @foreach (['neto' => 'Importe neto', 'retenciones' => 'Retenciones vigentes', 'neto_menos_retenciones' => 'Neto menos retenciones'] as $campo => $etiqueta)
                             <div class="col-sm-4">
                                 <div class="rounded border bg-body-tertiary p-3 h-100">
-                                    <div class="small text-body-secondary">{{ $etiqueta }}</div>
+                                    <div class="small text-body-secondary">{{ __($etiqueta) }}</div>
                                     <strong class="fs-5">{{ $reporte[$campo] }}</strong>
                                 </div>
                             </div>
@@ -53,7 +53,7 @@
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <caption class="visually-hidden">Totales por tipo de documento</caption>
-                            <thead class="clientes-tabla-cabecera"><tr><th>Tipo</th><th>Estado</th><th class="text-end">Cantidad</th><th class="text-end">Subtotal</th><th class="text-end">Impuesto</th><th class="text-end">Total</th></tr></thead>
+                            <thead class="clientes-tabla-cabecera"><tr><th>{{ __('Tipo') }}</th><th>{{ __('Estado') }}</th><th class="text-end">{{ __('Cantidad') }}</th><th class="text-end">Subtotal</th><th class="text-end">{{ __('Impuesto') }}</th><th class="text-end">{{ __('Total') }}</th></tr></thead>
                             <tbody>
                                 @forelse ($reporte['filas'] as $fila)
                                     <tr>
@@ -73,7 +73,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <caption class="visually-hidden">{{ $titulo }}</caption>
                             <thead class="clientes-tabla-cabecera">
-                                <tr><th>Número</th><th>Fecha</th><th>{{ $config['tercero'] }}</th><th class="text-end">Total</th><th>Estado</th><th class="text-end">Acciones</th></tr>
+                                <tr><th>Número</th><th>{{ __('Fecha') }}</th><th>{{ $config['tercero'] }}</th><th class="text-end">{{ __('Total') }}</th><th>{{ __('Estado') }}</th><th class="text-end">{{ __('Acciones') }}</th></tr>
                             </thead>
                             <tbody>
                                 @forelse ($registros as $fila)

@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Services\ContextoOperativo;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -31,7 +33,16 @@ final class SesionController extends Controller
             return to_route('configuracion.contexto.index');
         }
 
-        return view('adminlte.dashboard-v2');
+        $productosRecientes = Gate::allows('permiso', ['inventarios.productos.index', 'leer'])
+            ? DB::table('inv_productos')->where('id_empresa', $usuario->id_empresa)
+                ->select(['id', 'codigo', 'nombre', 'descripcion', 'precio_venta'])
+                ->addSelect(['id_imagen' => DB::table('inv_producto_imagenes')
+                    ->whereColumn('id_empresa', 'inv_productos.id_empresa')
+                    ->whereColumn('id_producto', 'inv_productos.id')->orderBy('orden')->orderBy('id')->limit(1)->select('id')])
+                ->orderByDesc('created_at')->orderByDesc('id')->limit(4)->get()
+            : null;
+
+        return view('adminlte.dashboard-v2', compact('productosRecientes'));
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse
@@ -66,7 +77,9 @@ final class SesionController extends Controller
         RateLimiter::clear($llave);
         $request->session()->regenerate();
 
-        if (! $request->user()->empresa()->exists()) return to_route('dashboard');
+        if (! $request->user()->empresa()->exists()) {
+            return to_route('dashboard');
+        }
 
         return redirect()->intended(route('dashboard'));
     }
@@ -90,6 +103,7 @@ final class SesionController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        $request->session()->put('idioma', app()->getLocale());
 
         return to_route('dashboard');
     }

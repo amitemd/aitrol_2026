@@ -34,13 +34,13 @@
             <div class="card clientes-directorio" data-ajax-list>
                 <form method="GET" action="{{ route($ruta.'.index') }}" class="row g-2 align-items-end p-3 m-0 border-bottom" data-ajax-search>
                     <div class="col-12 col-md-3">
-                        <label class="form-label" for="inventario-q">Buscar</label>
+                        <label class="form-label" for="inventario-q">{{ __('Buscar') }}</label>
                         <input id="inventario-q" name="q" class="form-control" value="{{ $filtros['q'] ?? '' }}"
                             placeholder="Código o nombre" maxlength="120">
                     </div>
                     @if ($catalogo)
                         <div class="col-12 col-sm-5 col-md-2">
-                            <label class="form-label" for="inventario-activo">Estado</label>
+                            <label class="form-label" for="inventario-activo">{{ __('Estado') }}</label>
                             <select class="form-select" id="inventario-activo" name="activo">
                                 <option value="">Todos</option>
                                 <option value="1" @selected((string) ($filtros['activo'] ?? '') === '1')>Activos</option>
@@ -50,7 +50,7 @@
                     @else
                         @foreach (['id_producto' => ['Producto', 'productos'], 'id_bodega' => ['Bodega', 'bodegas']] as $campo => [$etiqueta, $origen])
                             <div class="col-12 col-sm-6 col-md-3 col-xl-2">
-                                <label class="form-label" for="filtro-{{ $campo }}">{{ $etiqueta }}</label>
+                                <label class="form-label" for="filtro-{{ $campo }}">{{ __($etiqueta) }}</label>
                                 <select class="form-select" id="filtro-{{ $campo }}" name="{{ $campo }}"
                                     data-select2-url="{{ route($ruta.'.opciones', $origen) }}" data-select2-min="0">
                                     <option value="">Todos</option>
@@ -67,7 +67,7 @@
                         @else
                             @foreach (['desde' => 'Desde', 'hasta' => 'Hasta'] as $campo => $etiqueta)
                                 <div class="col-6 col-md-auto">
-                                    <label class="form-label" for="filtro-{{ $campo }}">{{ $etiqueta }}</label>
+                                    <label class="form-label" for="filtro-{{ $campo }}">{{ __($etiqueta) }}</label>
                                     <input type="date" id="filtro-{{ $campo }}" name="{{ $campo }}" class="form-control" value="{{ $filtros[$campo] ?? '' }}">
                                 </div>
                             @endforeach
@@ -76,7 +76,7 @@
                     <div class="col-auto d-flex gap-2">
                         <button class="btn btn-outline-primary">Filtrar</button>
                         @if (array_diff_key($filtros, ['page' => true, 'per_page' => true]))
-                            <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-list-link>Limpiar</a>
+                            <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-list-link>{{ __('Limpiar') }}</a>
                         @endif
                     </div>
                 </form>

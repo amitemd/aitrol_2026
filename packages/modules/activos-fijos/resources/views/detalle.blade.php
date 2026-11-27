@@ -29,17 +29,17 @@
             <div class="card-body">
                 <dl class="row mb-0">
                     @if (!empty($registro['numero_asiento']))
-                        <dt class="col-sm-5">Contabilidad</dt><dd class="col-sm-7">@include('partials.referencia-asiento', ['registroAsiento' => $registro])</dd>
+                        <dt class="col-sm-5">{{ __('Contabilidad') }}</dt><dd class="col-sm-7">@include('partials.referencia-asiento', ['registroAsiento' => $registro])</dd>
                     @endif
                     @foreach (array_intersect_key($campos, $registro) as $campo => $etiqueta)
                         @continue($registro[$campo] === null)
-                        <dt class="col-sm-5">{{ $etiqueta }}</dt>
+                        <dt class="col-sm-5">{{ __($etiqueta) }}</dt>
                         <dd class="col-sm-7">@include('activos-fijos::valor', ['valor' => $registro[$campo]])</dd>
                     @endforeach
                     <dt class="col-sm-5">Creado el</dt><dd class="col-sm-7">{{ $registro['created_at'] }}</dd>
                 </dl>
             </div>
-            <div class="card-footer text-end"><a href="{{ route('activos-fijos.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cerrar</a></div>
+            <div class="card-footer text-end"><a href="{{ route('activos-fijos.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a></div>
         </section>
     </div></div>
 @endsection

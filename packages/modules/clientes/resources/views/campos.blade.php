@@ -27,7 +27,7 @@
                 </select>
             </div>
             <div class="col-md-6">
-                <label for="identificacion" class="form-label">Identificación</label>
+                <label for="identificacion" class="form-label">{{ __('Identificación') }}</label>
                 <input class="form-control" id="identificacion" name="identificacion" maxlength="30"
                     value="{{ old('identificacion', $cliente?->identificacion->numero) }}" autofocus required>
             </div>
@@ -74,7 +74,7 @@
         @unless ($esProveedor)
             @foreach (['latitud' => ['Latitud', 90], 'longitud' => ['Longitud', 180]] as $campo => [$etiqueta, $rango])
             <div class="col-md-6">
-                <label for="{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                <label for="{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                 <input id="{{ $campo }}" class="form-control" name="{{ $campo }}" type="number" step="any"
                     min="{{ -$rango }}" max="{{ $rango }}" value="{{ old($campo, $perfil[$campo] ?? null) }}">
             </div>
@@ -116,7 +116,7 @@
     </template>
 </section>
 
-<section id="ficha-documentos" class="ficha-bloque" data-ficha-panel="documentos" aria-label="Documentos">
+<section id="ficha-documentos" class="ficha-bloque" data-ficha-panel="documentos" aria-label="{{ __('Documentos') }}">
     @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Documentos', 'iconoBloque' => 'bi-folder2-open'])
     @include('partials.campo-adjunto', [
         'campo' => 'adjuntos', 'nombre' => 'adjuntos[]', 'titulo' => 'Adjuntar documentos', 'iconoAdjunto' => 'bi-paperclip',

@@ -31,6 +31,16 @@ final class RecursosHumanosTest extends TestCase
         ])->assertOk();
         $concepto = DB::table('rh_procesos')->where('tipo', 'ingreso-porcentual')->value('id');
         $this->patchJson('/rrhh/conceptos/'.$concepto.'/estado', ['estado' => 'aprobado'])->assertOk();
+        $this->get('/rrhh/conceptos/crear')->assertOk()->assertSee('role="switch"', false);
+        $this->get('/rrhh/conceptos/'.$concepto.'/editar')->assertOk()->assertSee('name="solo_estado"', false);
+        $this->putJson('/rrhh/conceptos/'.$concepto, ['solo_estado' => '1', 'activo' => '0'])->assertOk();
+        $this->assertDatabaseHas('rh_procesos', ['id' => $concepto, 'activo' => false, 'estado' => 'aprobado']);
+        $this->postJson('/rrhh/conceptos', [
+            'titulo' => 'Complemento vigente', 'tipo' => 'ingreso-porcentual', 'id_empleado' => $empleado,
+            'inicio' => '2026-11-01', 'cantidad' => '2.50', 'activo' => '1',
+        ])->assertOk();
+        $vigente = DB::table('rh_procesos')->where('titulo', 'Complemento vigente')->value('id');
+        $this->patchJson('/rrhh/conceptos/'.$vigente.'/estado', ['estado' => 'aprobado'])->assertOk();
         $this->post('/rrhh/prestamos', [
             'titulo' => 'Anticipo noviembre', 'tipo' => 'anticipo', 'id_empleado' => $empleado, 'inicio' => '2026-11-01', 'importe' => '80.00',
         ])->assertRedirect();
@@ -47,6 +57,7 @@ final class RecursosHumanosTest extends TestCase
         $this->patchJson('/rrhh/nomina/'.$nomina.'/estado', ['estado' => 'cerrar'])->assertConflict();
         $this->postJson('/rrhh/novedades', $cuota)->assertUnprocessable()->assertJsonValidationErrors('inicio');
         $this->assertDatabaseHas('rh_roles', ['id_nomina' => $nomina, 'ingresos' => 102500, 'descuentos' => 4000, 'neto' => 98500]);
+        $this->assertStringNotContainsString('Complemento interno', DB::table('rh_roles')->where('id_nomina', $nomina)->value('lineas'));
         $this->get('/rrhh/nomina/'.$nomina)->assertOk()->assertSee('data-ajax-form')->assertSee('Ana Rivas');
         $this->get('/rrhh/prestamos')->assertOk()->assertSee('Saldo USD 40.00');
         $this->get('/rrhh/nomina/'.$nomina.'/exportar')->assertDownload('nomina-2026-11.csv');

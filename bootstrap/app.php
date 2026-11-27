@@ -4,11 +4,12 @@ use Aitrol\Clientes\Domain\ClienteNoEncontrado;
 use Aitrol\Clientes\Domain\IdentificacionDuplicada;
 use Aitrol\Proveedores\Domain\IdentificacionDuplicada as IdentificacionProveedorDuplicada;
 use Aitrol\Proveedores\Domain\ProveedorNoEncontrado;
-use App\Http\Middleware\RegistrarAuditoria;
+use App\Http\Middleware\AplicarIdioma;
 use App\Http\Middleware\ExigirHttps;
 use App\Http\Middleware\ProtegerRespuesta;
-use App\Http\Middleware\VerificarPermiso;
+use App\Http\Middleware\RegistrarAuditoria;
 use App\Http\Middleware\VerificarEmpresa;
+use App\Http\Middleware\VerificarPermiso;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend([RegistrarAuditoria::class, ProtegerRespuesta::class]);
         $middleware->append(ExigirHttps::class);
+        $middleware->web(append: [AplicarIdioma::class]);
         $middleware->trimStrings(except: ['clave_firma']);
         $middleware->trustHosts(fn (): array => array_map(
             fn (string $host): string => '^'.preg_quote($host, '/').'$',

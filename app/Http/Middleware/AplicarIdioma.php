@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Symfony\Component\HttpFoundation\Response;
+
+class AplicarIdioma
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $idioma = $request->session()->get('idioma', 'es');
+        App::setLocale(is_string($idioma) && array_key_exists($idioma, config('app.idiomas')) ? $idioma : 'es');
+
+        return $next($request);
+    }
+}

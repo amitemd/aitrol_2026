@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Ubicaciones')
+@section('title', __('Ubicaciones'))
 
 @section('content')
     @include('partials.listado-cabecera', ['titulo' => 'Ubicaciones', 'subtitulo' => 'Configuración', 'icono' => 'bi-geo-alt'])
@@ -25,13 +25,13 @@
                         @csrf
                         <div class="card-header"><h2 class="card-title">Agregar ubicación</h2></div>
                         <div class="card-body" data-ubicacion data-url="{{ route('configuracion.ubicaciones.opciones') }}">
-                            <label for="tipo" class="form-label">Tipo</label>
+                            <label for="tipo" class="form-label">{{ __('Tipo') }}</label>
                             <select class="form-select mb-3" name="tipo" id="tipo" data-ubicacion-tipo>
                                 @foreach (['pais' => 'País', 'provincia' => 'Provincia o estado', 'ciudad' => 'Ciudad'] as $valor => $etiqueta)
-                                    <option value="{{ $valor }}" @selected(old('tipo') === $valor)>{{ $etiqueta }}</option>
+                                    <option value="{{ $valor }}" @selected(old('tipo') === $valor)>{{ __($etiqueta) }}</option>
                                 @endforeach
                             </select>
-                            <label for="nombre" class="form-label">Nombre</label>
+                            <label for="nombre" class="form-label">{{ __('Nombre') }}</label>
                             <input class="form-control mb-3" id="nombre" name="nombre" value="{{ old('nombre') }}" required maxlength="120">
                             <div data-ubicacion-campo="pais">
                                 <label for="codigo" class="form-label">Código del país</label>
@@ -39,11 +39,11 @@
                             </div>
                             <div data-ubicacion-campo="provincia" class="mb-3">
                                 <label for="id_pais" class="form-label">País</label>
-                                <select class="form-select" id="id_pais" name="id_pais" data-ubicacion-pais data-selected="{{ old('id_pais') }}"><option value="">Seleccionar</option></select>
+                                <select class="form-select" id="id_pais" name="id_pais" data-ubicacion-pais data-selected="{{ old('id_pais') }}"><option value="">{{ __('Seleccionar') }}</option></select>
                             </div>
                             <div data-ubicacion-campo="ciudad">
                                 <label for="id_provincia" class="form-label">Provincia o estado</label>
-                                <select class="form-select" id="id_provincia" name="id_provincia" data-ubicacion-provincia><option value="">Seleccionar</option></select>
+                                <select class="form-select" id="id_provincia" name="id_provincia" data-ubicacion-provincia><option value="">{{ __('Seleccionar') }}</option></select>
                             </div>
                             <p class="form-text" data-ubicacion-estado role="status"></p>
                         </div>

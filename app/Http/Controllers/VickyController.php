@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\EmpresaActiva;
 use App\Services\VickyConsultaOperativa;
 use App\Services\VickyCore;
+use App\Services\VickyGuia;
 use App\Services\VickyGuiaAitrol;
 use App\Services\VickyModelo;
 use App\Services\VickyReportes;
@@ -16,10 +17,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 final class VickyController extends Controller
 {
+    private const SESION_GUIAS = 'vicky.guias';
+
     private const MESES = [
         'enero' => 1, 'febrero' => 2, 'marzo' => 3, 'abril' => 4, 'mayo' => 5, 'junio' => 6,
         'julio' => 7, 'agosto' => 8, 'septiembre' => 9, 'setiembre' => 9, 'octubre' => 10, 'noviembre' => 11, 'diciembre' => 12,
@@ -37,21 +41,16 @@ final class VickyController extends Controller
         $datos = $request->validate([
             'pregunta' => ['required', 'string', 'max:1000'],
             'tema_anterior' => ['nullable', 'string', Rule::in(array_keys(VickyReportes::PERMISOS))],
+            'guia_anterior' => ['nullable', 'uuid'],
         ]);
         $empresa = $empresaActiva->id();
         $inicio = hrtime(true);
+        $id = (string) Str::uuid();
         $estado = 'rejected';
         $ambito = null;
 
         try {
-            $guia = $guiaAitrol->responder($datos['pregunta']);
-            if ($guia !== null) {
-                $estado = 'completed';
-
-                return response()->json($guia);
-            }
-
-            return $this->responder($datos, $reportes, $modelo, $operativa, $core, $empresa, $estado, $ambito);
+            return $this->responder($request, $datos, $reportes, $modelo, $operativa, $core, $guiaAitrol, $empresa, $id, $estado, $ambito);
         } catch (AuthorizationException $error) {
             $estado = 'rejected';
 
@@ -61,37 +60,120 @@ final class VickyController extends Controller
 
             throw $error;
         } finally {
-            $core->registrar($empresa, $estado, (int) ((hrtime(true) - $inicio) / 1_000_000), $ambito);
+            $core->registrar($id, $empresa, $estado, (int) ((hrtime(true) - $inicio) / 1_000_000), $ambito);
         }
     }
 
+    public function valorar(Request $request, VickyCore $core, EmpresaActiva $empresaActiva): JsonResponse
+    {
+        $datos = $request->validate([
+            'consulta_id' => ['required', 'uuid'],
+            'valoracion' => ['required', Rule::in(['helpful', 'needs_review'])],
+            'correccion' => ['sometimes', 'required', 'array:step,relation,relatedStep', 'required_array_keys:step,relation'],
+        ]);
+        $empresa = $empresaActiva->id();
+        $recibo = $this->reciboGuia($request, $datos['consulta_id'], $empresa);
+        abort_if($recibo === null, 404, 'Esta guía ya no está disponible para valorar.');
+        $this->autorizarGuia($recibo);
+        $correccion = null;
+        if (isset($datos['correccion'])) {
+            abort_unless($this->puedeCorregir($request, $recibo['permiso']), 403);
+            $pasos = array_keys(VickyGuia::pasos($recibo['workflow']));
+            $confirmados = $request->validate([
+                'confirmada' => ['accepted'],
+                'correccion.step' => ['required', Rule::in($pasos)],
+                'correccion.relation' => ['required', Rule::in(['before', 'after', 'requires_approval', 'requires_review'])],
+                'correccion.relatedStep' => ['required_if:correccion.relation,before,after', 'prohibited_unless:correccion.relation,before,after', 'different:correccion.step', Rule::in($pasos)],
+            ]);
+            if (! isset($confirmados['confirmada']) || $datos['valoracion'] !== 'needs_review') {
+                throw ValidationException::withMessages(['correccion' => 'Confirma la regla antes de guardar una corrección.']);
+            }
+            $correccion = $confirmados['correccion'];
+        }
+        $estado = $core->valorarGuia($empresa, $datos['consulta_id'], $datos['valoracion'], $correccion);
+        if ($estado >= 200 && $estado < 300) {
+            return response()->json(['guardada' => true]);
+        }
+
+        return match ($estado) {
+            404 => response()->json(['message' => 'Esta guía ya no está disponible para valorar.'], 404),
+            409, 422 => response()->json(['message' => 'La valoración o la regla no se pudo guardar. Revisa los pasos seleccionados.'], 422),
+            default => response()->json(['message' => 'Vicky no pudo guardar la valoración. Intenta de nuevo.'], 503),
+        };
+    }
+
     /**
-     * @param  array{pregunta: string, tema_anterior?: string|null}  $datos
+     * @param  array{pregunta: string, tema_anterior?: string|null, guia_anterior?: string|null}  $datos
      * @param  array{workflow: string, operation: string}|null  $ambito
      */
     private function responder(
+        Request $request,
         array $datos,
         VickyReportes $reportes,
         VickyModelo $modelo,
         VickyConsultaOperativa $operativa,
         VickyCore $core,
+        VickyGuiaAitrol $guiaAitrol,
         int $empresa,
+        string $id,
         string &$estado,
         ?array &$ambito,
     ): JsonResponse {
         $pregunta = trim($datos['pregunta']);
         $texto = Str::lower(Str::ascii($pregunta));
-        if (preg_match('/\b(?:users|usuarios?|contrasenas?|passwords?|tokens? de acceso|sesiones? activas|tabla personas)\b/', $texto)) {
+        if (preg_match('/\b(?:users|contrasenas?|passwords?|tokens? de acceso|sesiones? activas|tabla personas)\b/', $texto)) {
             return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
         }
-        $guia = $core->guiaSolicitada($texto);
-        if ($guia !== null && Gate::allows('permiso', [$guia['permiso'], 'leer'])) {
-            $respuesta = $core->consultarGuia($empresa, $guia['workflow']);
-            if ($respuesta !== null) {
-                $estado = 'completed';
+        $social = preg_replace('/[^a-z ]+/', '', $texto);
+        if (preg_match('/\A\s*(?:hola(?: vicky)?|buenos dias|buenas tardes|buenas noches|(?:en )?que (?:puedes hacer|me puedes ayudar)|como (?:me )?puedes ayudar)\s*\z/', $social)) {
+            $estado = 'completed';
 
-                return response()->json(['respuesta' => $respuesta]);
+            return response()->json(['respuesta' => 'Puedo orientarte sobre módulos de Aitrol, darte ejemplos y pasos, preparar listas de verificación y redactar borradores de agenda o actas. También puedo consultar reportes permitidos. ¿Qué necesitas?']);
+        }
+        if (preg_match('/\A\s*(?:muchas )?gracias(?: vicky| por la ayuda)?\s*\z/', $social)) {
+            $estado = 'completed';
+
+            return response()->json(['respuesta' => 'Con gusto. ¿Qué más necesitas revisar en Aitrol?']);
+        }
+        $anterior = $this->reciboGuia($request, $datos['guia_anterior'] ?? null, $empresa);
+        $guia = VickyGuia::detectar($texto, $anterior === null ? null : array_intersect_key($anterior, array_flip(['workflow', 'permiso', 'topic'])));
+        if (isset($guia['aclaracion'])) {
+            $estado = 'unclassified';
+
+            return response()->json(['respuesta' => $guia['aclaracion']]);
+        }
+        if ($guia !== null) {
+            $this->autorizarGuia($guia);
+            $respuesta = $core->consultarGuia($empresa, $guia['workflow'], $guia['goal'], $guia['topic'] ?? null, $guia['relatedTopic'] ?? null);
+            if ($respuesta === null) {
+                $estado = 'failed';
+
+                return response()->json(['message' => 'El especialista de Vicky no está disponible. Intenta de nuevo.'], 503);
             }
+            $estado = 'completed';
+            if (isset($respuesta['consulta_id'])) {
+                $recibos = $request->session()->get(self::SESION_GUIAS, []);
+                $recibos[$respuesta['consulta_id']] = $guia + [
+                    'empresa' => $empresa,
+                    'usuario' => $request->user()->getAuthIdentifier(),
+                    'fecha' => now()->timestamp,
+                ];
+                $request->session()->put(self::SESION_GUIAS, array_slice($recibos, -20, null, true));
+                if ($this->puedeCorregir($request, $guia['permiso'])) {
+                    $respuesta['pasos_correccion'] = VickyGuia::pasos($guia['workflow']);
+                }
+            }
+
+            return response()->json($respuesta);
+        }
+        if (preg_match('/\busuarios?\b/', $texto)) {
+            return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
+        }
+        $destino = $guiaAitrol->responder($pregunta);
+        if ($destino !== null) {
+            $estado = 'completed';
+
+            return response()->json($destino);
         }
         $hoy = CarbonImmutable::now('America/Guayaquil')->startOfDay();
         $fechas = $this->periodo($texto, $hoy);
@@ -105,7 +187,17 @@ final class VickyController extends Controller
         if ($tipo === null && $fechas !== [] && preg_match('/^\s*¿?\s*(?:y\s+)?(?:en |del? |desde |el |la |este |esta |ultimos |ayer|hoy|\d)/', $texto)) {
             $tipo = $datos['tema_anterior'] ?? null;
         }
+        $actividadIniciada = false;
+        $iniciarActividad = function (?array $ambito = null) use ($core, $id, $empresa, &$actividadIniciada): void {
+            if ($actividadIniciada) {
+                return;
+            }
+            $actividadIniciada = true;
+            $core->iniciar($id, $empresa, $ambito);
+        };
+
         if ($tipo === null || $tipo === 'desglose') {
+            $iniciarActividad();
             $interpretacion = $modelo->interpretar($pregunta, $hoy->toDateString(), $operativa->catalogoVisible());
             if ($interpretacion === null) {
                 $estado = 'failed';
@@ -122,6 +214,7 @@ final class VickyController extends Controller
         }
 
         if ($tipo === 'estrategia') {
+            $iniciarActividad();
             $respuesta = $modelo->estrategia($pregunta);
             if ($respuesta === null) {
                 $estado = 'failed';
@@ -134,7 +227,11 @@ final class VickyController extends Controller
             return response()->json(['respuesta' => "Sugerencias comerciales\n\n".$respuesta]);
         }
         if ($tipo !== 'operativa' && (! is_string($tipo) || ! array_key_exists($tipo, VickyReportes::PERMISOS))) {
-            return response()->json(['respuesta' => 'Prueba con una sola consulta de ventas, compras, saldo bancario actual, cuentas por cobrar o cuentas por pagar. También puedes pedirme ideas para vender más.']);
+            if (! preg_match('/\b(?:borra|elimina|modifica|actualiza|registra|ejecuta|transfiere|paga|inserta|saldo historico)\b/u', $texto)) {
+                $estado = 'unclassified';
+            }
+
+            return response()->json(['respuesta' => 'No pude identificar el proceso de Aitrol en tu pregunta. Dime el módulo y qué necesitas hacer. Por ejemplo: «Dame un ejemplo de libro diario», «¿Qué reviso antes del cierre contable?» o «Abre proveedores».']);
         }
         if ($fechas === null) {
             return response()->json(['respuesta' => 'Indica un rango de fechas válido. Ejemplo: del 2026-01-01 al 2026-01-31.']);
@@ -154,17 +251,55 @@ final class VickyController extends Controller
         $ambito = $core->ambito($tipo, $plan['fuente'] ?? null, $plan['operacion'] ?? null);
 
         try {
+            $iniciarInforme = fn () => $iniciarActividad($ambito);
             $resultado = $tipo === 'operativa'
-                ? $operativa->consultar($plan, $fechas)
-                : $reportes->consultar($tipo, $fechas, $tercero) + ['tema' => $tipo];
+                ? $operativa->consultar($plan, $fechas, $iniciarInforme)
+                : $reportes->consultar($tipo, $fechas, $tercero, $iniciarInforme) + ['tema' => $tipo];
             $estado = $resultado['estado_informe'] ?? 'completed';
             unset($resultado['estado_informe']);
+            if ($estado === 'completed' && isset($resultado['reporte'])) {
+                $resultado['reporte']['origen'] = 'base_datos_autorizada';
+            }
 
             return response()->json($resultado);
         } catch (QueryException) {
             $estado = 'failed';
 
             return response()->json(['message' => 'La fuente de lectura del informe no está disponible. Revisa la conexión y sus permisos.'], 503);
+        }
+    }
+
+    /** @return array{workflow: string, permiso: ?string, topic?: string}|null */
+    private function reciboGuia(Request $request, ?string $id, int $empresa): ?array
+    {
+        if ($id === null) {
+            return null;
+        }
+        $recibo = $request->session()->get(self::SESION_GUIAS, [])[$id] ?? null;
+        if ($recibo === null || $recibo['empresa'] !== $empresa || $recibo['usuario'] !== $request->user()->getAuthIdentifier()
+            || $recibo['fecha'] < now()->subHour()->timestamp) {
+            return null;
+        }
+
+        return $recibo;
+    }
+
+    private function puedeCorregir(Request $request, ?string $permiso): bool
+    {
+        return $permiso !== null && $request->user()->is_admin && ($permiso === 'administrar-configuracion'
+            ? Gate::allows($permiso)
+            : Gate::allows('permiso', [$permiso, 'actualizar']));
+    }
+
+    /** @param array{permiso: ?string, permisoRelacionado?: ?string} $guia */
+    private function autorizarGuia(array $guia): void
+    {
+        foreach (array_unique([$guia['permiso'], $guia['permisoRelacionado'] ?? null]) as $permiso) {
+            if ($permiso === 'administrar-configuracion') {
+                Gate::authorize($permiso);
+            } elseif ($permiso !== null) {
+                Gate::authorize('permiso', [$permiso, 'leer']);
+            }
         }
     }
 

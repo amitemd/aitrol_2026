@@ -3,7 +3,7 @@
   <span>Vicky</span>
 </button>
 
-<dialog class="vicky-dialog" id="vicky-chat" aria-labelledby="vicky-title" data-endpoint="{{ route('vicky.consultar') }}">
+<dialog class="vicky-dialog" id="vicky-chat" aria-labelledby="vicky-title" data-endpoint="{{ route('vicky.consultar') }}" data-valoracion="{{ route('vicky.valorar') }}">
   <header class="vicky-heading">
     <span class="vicky-icon" aria-hidden="true"><i class="bi bi-stars"></i></span>
     <div class="vicky-heading-text">
@@ -37,10 +37,10 @@
         <button type="button" data-vicky-question="¿Cuánto tengo en cuentas por pagar?"><i class="bi bi-receipt" aria-hidden="true"></i> Por pagar</button>
       @endcan
       @can('permiso', ['clientes.lista', 'leer'])
-        <button type="button" data-vicky-question="Listado de clientes"><i class="bi bi-people" aria-hidden="true"></i> Clientes</button>
+        <button type="button" data-vicky-question="Listado de clientes"><i class="bi bi-people" aria-hidden="true"></i> {{ __('Clientes') }}</button>
       @endcan
       @can('permiso', ['proveedores.lista', 'leer'])
-        <button type="button" data-vicky-question="Listado de proveedores"><i class="bi bi-truck" aria-hidden="true"></i> Proveedores</button>
+        <button type="button" data-vicky-question="Listado de proveedores"><i class="bi bi-truck" aria-hidden="true"></i> {{ __('Proveedores') }}</button>
       @endcan
       @if (config('services.vicky.pacientes'))
         @can('permiso', ['pacientes.reportes', 'leer'])
@@ -48,13 +48,14 @@
         @endcan
       @endif
       <button type="button" data-vicky-question="Dame tres ideas para aumentar las ventas."><i class="bi bi-lightbulb" aria-hidden="true"></i> Estrategia de ventas</button>
+      <button type="button" data-vicky-question="¿Puedes crear una agenda?"><i class="bi bi-calendar3" aria-hidden="true"></i> Borrador de agenda</button>
     </div>
   </div>
   <section class="vicky-conversation" role="log" aria-label="Conversación" aria-relevant="additions text">
     <div class="vicky-welcome">
       <i class="bi bi-chat-square-text" aria-hidden="true"></i>
       <h3>¿Qué quieres consultar?</h3>
-      <p>Pide un listado, un total o un reporte de clientes, proveedores, inventario o ventas de tu empresa.</p>
+      <p>Pide un reporte de tu empresa, una guía de Aitrol o un borrador de agenda.</p>
     </div>
   </section>
   <form class="vicky-form">

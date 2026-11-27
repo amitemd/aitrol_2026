@@ -10,14 +10,14 @@
                     <dl class="row">
                         <dt class="col-sm-4">Número</dt><dd class="col-sm-8">{{ $documento['numero'] }}</dd>
                         @if ($documento['numero_asiento'] || $documento['numero_asiento_reversion'])
-                            <dt class="col-sm-4">Contabilidad</dt><dd class="col-sm-8">@include('partials.referencia-asiento', ['registroAsiento' => $documento])</dd>
+                            <dt class="col-sm-4">{{ __('Contabilidad') }}</dt><dd class="col-sm-8">@include('partials.referencia-asiento', ['registroAsiento' => $documento])</dd>
                         @endif
-                        <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">{{ $documento['fecha'] }}</dd>
+                        <dt class="col-sm-4">{{ __('Fecha') }}</dt><dd class="col-sm-8">{{ $documento['fecha'] }}</dd>
                         <dt class="col-sm-4">{{ config('comercial.'.$modulo.'.tercero') }}</dt><dd class="col-sm-8">{{ $documento['tercero'] }}</dd>
                         @if ($documento['numero_origen'])
                             <dt class="col-sm-4">Documento de origen</dt><dd class="col-sm-8">{{ $documento['numero_origen'] }}</dd>
                         @endif
-                        <dt class="col-sm-4">Estado</dt><dd class="col-sm-8">{{ $documento['anulado_at'] ? 'Anulado' : 'Vigente' }}</dd>
+                        <dt class="col-sm-4">{{ __('Estado') }}</dt><dd class="col-sm-8">{{ $documento['anulado_at'] ? 'Anulado' : 'Vigente' }}</dd>
                         @if ($documento['anulado_at'])
                             <dt class="col-sm-4">Motivo de anulación</dt><dd class="col-sm-8">{{ $documento['motivo_anulacion'] }}</dd>
                             <dt class="col-sm-4">Fecha de anulación</dt><dd class="col-sm-8">{{ $documento['anulado_at'] }}</dd>
@@ -34,7 +34,7 @@
                                 <th>Concepto</th>
                                 <th class="text-end">{{ $retencion ? 'Base' : 'Cantidad' }}</th>
                                 <th class="text-end">{{ $retencion ? 'Retención (%)' : 'Precio unitario' }}</th>
-                                <th class="text-end">Total</th>
+                                <th class="text-end">{{ __('Total') }}</th>
                             </tr></thead>
                             <tbody>
                                 @foreach ($documento['lineas'] as $linea)
@@ -51,7 +51,7 @@
                             <tfoot>
                                 @if (!$retencion)
                                     <tr><th scope="row" colspan="3" class="text-end">Subtotal</th><td class="text-end">{{ $documento['subtotal'] }}</td></tr>
-                                    <tr><th scope="row" colspan="3" class="text-end">Impuesto</th><td class="text-end">{{ $documento['impuesto'] }}</td></tr>
+                                    <tr><th scope="row" colspan="3" class="text-end">{{ __('Impuesto') }}</th><td class="text-end">{{ $documento['impuesto'] }}</td></tr>
                                 @endif
                                 <tr><th scope="row" colspan="3" class="text-end">{{ $retencion ? 'Total retenido' : 'Total' }}</th><td class="text-end fw-semibold">{{ $documento['total'] }}</td></tr>
                             </tfoot>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-end">
-                    <a href="{{ route($modulo.'.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cerrar</a>
+                    <a href="{{ route($modulo.'.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a>
                 </div>
             </section>
         </div>

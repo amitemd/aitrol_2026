@@ -3,13 +3,13 @@
         <div class="d-flex align-items-center gap-2 gap-md-3 listado-cabecera-titulo">
             <span class="clientes-icono" aria-hidden="true"><i class="bi {{ $icono }}"></i></span>
             <div>
-                <h1 class="mb-0 fs-3 fw-semibold">{{ $titulo }}</h1>
-                <p class="mb-0 text-body-secondary">{{ $subtitulo }}</p>
+                <h1 class="mb-0 fs-3 fw-semibold">{{ __($titulo) }}</h1>
+                <p class="mb-0 text-body-secondary">{{ __($subtitulo) }}</p>
             </div>
         </div>
         @isset($crearUrl)
-            <a href="{{ $crearUrl }}" class="btn btn-primary listado-cabecera-alta" data-ajax-open="{{ $crearTexto }}" aria-label="{{ $crearTexto }}">
-                <i class="bi bi-plus-lg me-md-1" aria-hidden="true"></i><span class="d-none d-md-inline">{{ $crearTexto }}</span>
+            <a href="{{ $crearUrl }}" class="btn btn-primary listado-cabecera-alta" data-ajax-open="{{ __($crearTexto) }}" aria-label="{{ __($crearTexto) }}">
+                <i class="bi bi-plus-lg me-md-1" aria-hidden="true"></i><span class="d-none d-md-inline">{{ __($crearTexto) }}</span>
             </a>
         @endisset
     </div>

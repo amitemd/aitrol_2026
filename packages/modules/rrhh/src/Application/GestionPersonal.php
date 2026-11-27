@@ -24,7 +24,7 @@ final readonly class GestionPersonal
                 $this->datos->registro($this->datos->tabla('rh_empleados'), (int) $campos['id_empleado']);
             }
             $campos = match ($seccion) {
-                'empleados' => $this->empleado($campos, $registro),
+                'empleados' => $this->empleado($campos, $registro, $actual),
                 'contratos' => $this->contrato($campos, $registro, $actual?->id_empleado),
                 default => $this->proceso($seccion, $campos),
             };
@@ -78,7 +78,17 @@ final readonly class GestionPersonal
         });
     }
 
-    private function empleado(array $campos, ?int $registro): array
+    public function cambiarActivoConcepto(int $registro, bool $activo): void
+    {
+        $this->datos->transaccion(function () use ($registro, $activo): void {
+            $consulta = $this->datos->procedimientos('conceptos');
+            $actual = $this->datos->registro(clone $consulta, $registro);
+            abort_unless($actual->estado === 'aprobado', 409, 'El concepto debe estar aprobado.');
+            $consulta->where('id', $registro)->update(['activo' => $activo, 'updated_at' => now()]);
+        });
+    }
+
+    private function empleado(array $campos, ?int $registro, ?\stdClass $actual): array
     {
         $campos['codigo'] = Str::upper($campos['codigo']);
         if ($this->datos->codigoEmpleadoOcupado($campos['codigo'], $registro)) {
@@ -86,7 +96,10 @@ final readonly class GestionPersonal
         }
         foreach (['id_departamento' => 'departamento', 'id_cargo' => 'cargo'] as $campo => $tipo) {
             if (isset($campos[$campo])) {
-                $this->datos->registro($this->datos->procedimientos('organizacion')->where('tipo', $tipo), (int) $campos[$campo]);
+                $catalogo = $this->datos->registro($this->datos->procedimientos('organizacion')->where('tipo', $tipo), (int) $campos[$campo]);
+                if (! $catalogo->activo && (int) ($actual?->{$campo} ?? 0) !== (int) $catalogo->id) {
+                    throw ValidationException::withMessages([$campo => 'Selecciona una opción activa.']);
+                }
             }
         }
 

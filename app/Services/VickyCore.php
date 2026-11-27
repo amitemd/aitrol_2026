@@ -51,49 +51,71 @@ final class VickyCore
         'documentos_tributarios' => 'tax',
     ];
 
-    private const GUIAS = [
-        'ventas' => ['workflow' => 'sales', 'permiso' => 'ventas.reportes.index'],
-        'compras' => ['workflow' => 'purchasing', 'permiso' => 'compras.reportes.index'],
-        'inventario' => ['workflow' => 'inventory', 'permiso' => 'inventarios.productos.index'],
-        'inventarios' => ['workflow' => 'inventory', 'permiso' => 'inventarios.productos.index'],
-        'contabilidad' => ['workflow' => 'accounting', 'permiso' => 'contabilidad.asientos.index'],
-        'caja y bancos' => ['workflow' => 'finance', 'permiso' => 'caja-bancos.cuentas.index'],
-        'cuentas por cobrar' => ['workflow' => 'payments', 'permiso' => 'clientes.reportes.cuentas-por-cobrar'],
-        'cuentas por pagar' => ['workflow' => 'payments', 'permiso' => 'proveedores.reportes.cuentas-por-pagar'],
-        'tributario' => ['workflow' => 'tax', 'permiso' => 'tributario.declaraciones.index'],
-    ];
-
     public function __construct(private readonly VickyCoreOutbox $pendientes) {}
 
-    /** @return array{workflow: string, permiso: string}|null */
-    public function guiaSolicitada(string $texto): ?array
-    {
-        if (! preg_match('/\A\s*[¿?]?\s*como funciona(?:n)?\s+(?:(?:el|la|las|los|modulo de)\s+){0,2}([a-z ]+?)(?:\s+(?:en aitrol|del erp))?\s*[?!.]*\z/u', $texto, $coincidencias)) {
-            return null;
-        }
-
-        return self::GUIAS[$coincidencias[1]] ?? null;
-    }
-
-    public function consultarGuia(int $empresa, string $workflow): ?string
+    /** @return array{respuesta: string, consulta_id?: string, agente?: string}|null */
+    public function consultarGuia(int $empresa, string $workflow, string $objetivo = 'overview', ?string $tema = null, ?string $temaRelacionado = null): ?array
     {
         $conexion = $this->conexion();
         if ($conexion === null) {
             return null;
         }
         try {
+            $id = (string) Str::uuid();
+            $datos = [
+                'requestId' => $id,
+                'tenantKey' => hash_hmac('sha256', (string) $empresa, $conexion['token']),
+                'workflow' => $workflow,
+            ];
+            if ($objetivo !== 'overview') {
+                $datos['goal'] = $objetivo;
+            }
+            if ($tema !== null) {
+                $datos['topic'] = $tema;
+            }
+        if ($temaRelacionado !== null) {
+            $datos['relatedTopic'] = $temaRelacionado;
+        }
             $respuesta = Http::acceptJson()->asJson()->withToken($conexion['token'])->withoutRedirecting()
                 ->connectTimeout(1)->timeout(32)
-                ->post($conexion['url'].'/v1/business/consult/aitrol_2026', [
-                    'requestId' => (string) Str::uuid(),
-                    'tenantKey' => hash_hmac('sha256', (string) $empresa, $conexion['token']),
-                    'workflow' => $workflow,
-                ]);
+                ->post($conexion['url'].'/v1/business/consult/aitrol_2026', $datos);
             $texto = $respuesta->successful() ? $respuesta->json('answer') : null;
+            if (! is_string($texto) || trim($texto) === '') {
+                return null;
+            }
+            $resultado = ['respuesta' => Str::limit(trim($texto), 3000)];
+            $agente = $respuesta->json('agent');
+            if ($respuesta->json('requestId') === $id && is_string($agente) && preg_match('/\A[a-z][a-z0-9_-]{0,63}\z/', $agente)) {
+                $resultado += ['consulta_id' => $id, 'agente' => $agente];
+            }
 
-            return is_string($texto) && trim($texto) !== '' ? Str::limit(trim($texto), 3000) : null;
+            return $resultado;
         } catch (ConnectionException) {
             return null;
+        }
+    }
+
+    /** @param array{step: string, relation: string, relatedStep?: string}|null $correccion */
+    public function valorarGuia(int $empresa, string $id, string $valoracion, ?array $correccion): int
+    {
+        $conexion = $this->conexion();
+        if ($conexion === null) {
+            return 503;
+        }
+        $datos = [
+            'requestId' => $id,
+            'tenantKey' => hash_hmac('sha256', (string) $empresa, $conexion['token']),
+            'rating' => $valoracion,
+        ];
+        if ($correccion !== null) {
+            $datos['correction'] = $correccion;
+        }
+        try {
+            return Http::acceptJson()->asJson()->withToken($conexion['token'])->withoutRedirecting()
+                ->connectTimeout(1)->timeout(8)
+                ->post($conexion['url'].'/v1/business/feedback/aitrol_2026', $datos)->status();
+        } catch (ConnectionException) {
+            return 503;
         }
     }
 
@@ -116,7 +138,21 @@ final class VickyCore
     }
 
     /** @param array{workflow: string, operation: string}|null $ambito */
-    public function registrar(int $empresa, string $estado, int $duracion, ?array $ambito): void
+    public function iniciar(string $id, int $empresa, ?array $ambito): void
+    {
+        try {
+            $conexion = $this->conexion();
+            if ($conexion !== null) {
+                $evento = $this->evento($id, $empresa, $conexion['token'], 'in_progress', 0, $ambito);
+                $this->enviar($conexion['url'], $conexion['token'], $evento, 0.5);
+            }
+        } catch (Throwable) {
+            // La consulta de Aitrol continúa aunque falle la publicación de presencia.
+        }
+    }
+
+    /** @param array{workflow: string, operation: string}|null $ambito */
+    public function registrar(string $id, int $empresa, string $estado, int $duracion, ?array $ambito): void
     {
         $conexion = $this->conexion();
         if ($conexion === null) {
@@ -124,16 +160,7 @@ final class VickyCore
         }
         ['url' => $url, 'token' => $token] = $conexion;
 
-        $evento = [
-            'requestId' => (string) Str::uuid(),
-            'tenantKey' => hash_hmac('sha256', (string) $empresa, $token),
-            'status' => $estado,
-            'durationMs' => min(120_000, max(0, $duracion)),
-        ];
-        if ($estado !== 'rejected' && $ambito !== null) {
-            $evento['workflow'] = $ambito['workflow'];
-            $evento['operation'] = $ambito['operation'];
-        }
+        $evento = $this->evento($id, $empresa, $token, $estado, $duracion, $ambito);
 
         try {
             $this->pendientes->guardar($evento);
@@ -146,11 +173,26 @@ final class VickyCore
         defer(fn () => $this->pendientes->despachar(fn (array $registro): bool => $this->enviar($url, $token, $registro)), always: true);
     }
 
-    private function enviar(string $url, string $token, array $evento): bool
+    /** @param array{workflow: string, operation: string}|null $ambito */
+    private function evento(string $id, int $empresa, string $token, string $estado, int $duracion, ?array $ambito): array
+    {
+        $evento = [
+            'requestId' => $id,
+            'tenantKey' => hash_hmac('sha256', (string) $empresa, $token),
+            'status' => $estado,
+            'durationMs' => min(120_000, max(0, $duracion)),
+        ];
+
+        return ! in_array($estado, ['rejected', 'unclassified'], true) && $ambito !== null
+            ? $evento + $ambito
+            : $evento;
+    }
+
+    private function enviar(string $url, string $token, array $evento, float $timeout = 2): bool
     {
         try {
             $respuesta = Http::acceptJson()->asJson()->withToken($token)->withoutRedirecting()
-                ->connectTimeout(1)->timeout(2)
+                ->connectTimeout(min(1, $timeout))->timeout($timeout)
                 ->post($url.'/v1/business/ingress/aitrol_2026', $evento);
             if ($respuesta->successful()) {
                 return true;
@@ -158,7 +200,9 @@ final class VickyCore
         } catch (ConnectionException) {
             // Si Core no responde, el archivo queda pendiente para la próxima consulta.
         }
-        Log::warning('No se entregó el registro de Vicky Core.', ['request_id' => $evento['requestId']]);
+        if ($evento['status'] !== 'in_progress') {
+            Log::warning('No se entregó el registro de Vicky Core.', ['request_id' => $evento['requestId']]);
+        }
 
         return false;
     }

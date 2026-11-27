@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Contabilización automática')
+@section('title', __('Contabilización automática'))
 @section('content')
     @include('partials.listado-cabecera', ['titulo' => 'Contabilización automática', 'subtitulo' => 'Contabilidad', 'icono' => 'bi-diagram-2'])
     <div class="app-content"><div class="container-fluid">
@@ -29,7 +29,7 @@
                         @foreach (config('contabilidad.reglas') as $clave => [$etiqueta, $clase])
                             @php $cuenta = $cuentas->get(old('reglas.'.$clave, $config['reglas'][$clave] ?? null)); @endphp
                             <div class="col-sm-6 col-xl-4">
-                                <label class="form-label" for="co-regla-{{ $clave }}">{{ $etiqueta }}</label>
+                                <label class="form-label" for="co-regla-{{ $clave }}">{{ __($etiqueta) }}</label>
                                 <select id="co-regla-{{ $clave }}" name="reglas[{{ $clave }}]" class="form-select" data-select2-min="0" data-select2-placeholder="Seleccionar cuenta"
                                     data-select2-url="{{ route('contabilidad.integraciones.opciones', array_filter(['clase' => $clase]) + ['efectivo' => 0]) }}">
                                     <option value="">Seleccionar cuenta</option>

@@ -16,7 +16,7 @@
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead><tr><th scope="col">Concepto</th><th scope="col">Código y descripción</th><th scope="col">Tarifa</th><th scope="col">Vigente desde</th></tr></thead>
+                        <thead><tr><th scope="col">Concepto</th><th scope="col">Código y descripción</th><th scope="col">Tarifa</th><th scope="col">{{ __('Vigente desde') }}</th></tr></thead>
                         <tbody>
                             @forelse ($parametros as $parametro)
                                 <tr>

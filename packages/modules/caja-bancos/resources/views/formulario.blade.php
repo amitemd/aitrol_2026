@@ -25,7 +25,7 @@
             <div class="card-body row g-3">
                 @if ($seccion === 'cuentas')
                     <div class="col-sm-4">
-                        <label for="cb-codigo" class="form-label">Código</label>
+                        <label for="cb-codigo" class="form-label">{{ __('Código') }}</label>
                         <input id="cb-codigo" name="codigo" value="{{ old('codigo', $registro['codigo'] ?? '') }}" class="form-control" maxlength="40" required autofocus>
                     </div>
                     <div class="col-sm-8">
@@ -40,7 +40,7 @@
                             </select>
                         </div>
                         <div class="col-sm-6">
-                            <label for="cb-moneda" class="form-label">Moneda</label>
+                            <label for="cb-moneda" class="form-label">{{ __('Moneda') }}</label>
                             <select id="cb-moneda" class="form-select" name="moneda">
                                 @foreach (config('caja-bancos.monedas') as $moneda)<option value="{{ $moneda }}" @selected(old('moneda', 'USD') === $moneda)>{{ $moneda }}</option>@endforeach
                             </select>
@@ -119,11 +119,11 @@
                             </div>
                         @endif
                         <div class="col-sm-6">
-                            <label for="cb-fecha" class="form-label">Fecha</label>
+                            <label for="cb-fecha" class="form-label">{{ __('Fecha') }}</label>
                             <input id="cb-fecha" name="fecha" type="date" class="form-control" value="{{ old('fecha', now()->toDateString()) }}" required>
                         </div>
                         <div class="col-sm-6">
-                            <label for="cb-importe" class="form-label">Importe</label>
+                            <label for="cb-importe" class="form-label">{{ __('Importe') }}</label>
                             <input id="cb-importe" name="importe" class="form-control" value="{{ old('importe') }}" type="number" min="0.01" max="1000000000" step="0.01" required>
                         </div>
                         <div class="col-12">
@@ -140,7 +140,7 @@
                                 <select id="cb-flujo" name="flujo_contable" class="form-select">
                                     <option value="">Operación (predeterminada)</option>
                                     @foreach (['inversion' => 'Inversión', 'financiacion' => 'Financiación', 'apertura' => 'Saldos iniciales'] as $valor => $etiqueta)
-                                        <option value="{{ $valor }}" @selected(old('flujo_contable') === $valor)>{{ $etiqueta }}</option>
+                                        <option value="{{ $valor }}" @selected(old('flujo_contable') === $valor)>{{ __($etiqueta) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -151,7 +151,7 @@
             <div class="card-footer d-flex gap-2 flex-wrap align-items-center">
                 @if ($seccion === 'cuentas')@include('partials.interruptor-activo', ['activo' => $registro['activo'] ?? true])@endif
                 <div class="ms-auto d-flex gap-2">
-                    <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                    <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button @class(['btn', 'btn-primary' => $accion !== 'revertir', 'btn-danger' => $accion === 'revertir'])>
                         {{ $accion ? 'Confirmar' : ($seccion === 'extractos' ? 'Importar extracto' : 'Guardar') }}
                     </button>

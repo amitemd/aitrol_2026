@@ -19,7 +19,7 @@
             <section class="card" data-ajax-form>
                 <div class="card-header d-flex flex-wrap align-items-center gap-2">
                     <h2 class="card-title me-auto">Nómina {{ substr($nomina->periodo, 0, 7) }} · {{ $estados[$nomina->estado] }}</h2>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('rrhh.nomina.index') }}" data-ajax-close>Cerrar</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('rrhh.nomina.index') }}" data-ajax-close>{{ __('Cerrar') }}</a>
                     @if ($nomina->estado !== 'borrador')
                         <a class="btn btn-sm btn-outline-primary" href="{{ route('rrhh.nomina.exportar', $nomina->id) }}">Exportar CSV</a>
                     @endif
@@ -39,7 +39,7 @@
                 @else
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
-                            <thead><tr><th scope="col">Empleado</th><th scope="col">Ingresos</th><th scope="col">Descuentos</th><th scope="col">Neto</th></tr></thead>
+                            <thead><tr><th scope="col">{{ __('Empleado') }}</th><th scope="col">Ingresos</th><th scope="col">Descuentos</th><th scope="col">Neto</th></tr></thead>
                             <tbody>
                                 @foreach ($roles as $rol)
                                     <tr>

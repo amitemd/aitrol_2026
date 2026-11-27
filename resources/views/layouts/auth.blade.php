@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,7 +18,7 @@
                 @include('partials.aitrol-mark')
                 <div>
                     <strong class="aitrol-wordmark">Aitrol</strong>
-                    <span class="access-product">ERP administrativo</span>
+                    <span class="access-product">{{ __('ERP administrativo') }}</span>
                 </div>
             </div>
             <div class="access-brand-copy">
@@ -29,6 +29,15 @@
         </aside>
         <section class="access-main" aria-labelledby="access-title">
             <div class="login-box">
+                <form class="d-flex justify-content-end gap-2 mb-3" method="POST" action="{{ route('idioma.actualizar') }}">
+                    @csrf
+                    <select class="form-select form-select-sm w-auto" name="idioma" aria-label="{{ __('Idioma') }}">
+                        @foreach (config('app.idiomas') as $codigo => $nombreIdioma)
+                            <option value="{{ $codigo }}" lang="{{ str_replace('_', '-', $codigo) }}" @selected(app()->getLocale() === $codigo)>{{ $nombreIdioma }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">{{ __('Aplicar') }}</button>
+                </form>
                 @yield('content')
             </div>
         </section>

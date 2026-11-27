@@ -28,7 +28,7 @@
                 </div>
                 @if ($formato)
                     <div class="col-6 col-sm-4">
-                        <label for="tr-filtro-estado" class="form-label">Estado</label>
+                        <label for="tr-filtro-estado" class="form-label">{{ __('Estado') }}</label>
                         <select id="tr-filtro-estado" name="estado" class="form-select"><option value="">Todos</option>
                             @foreach (config('tributario.estados') as $estado => $texto)<option value="{{ $estado }}" @selected(($filtros['estado'] ?? '') === $estado)>{{ $texto }}</option>@endforeach
                         </select>
@@ -36,9 +36,9 @@
                 @endif
                 <div class="col-auto d-flex gap-2">
                     <button class="btn btn-outline-primary">Filtrar</button>
-                    @if ($filtros)<a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-list-link>Limpiar</a>@endif
-                    @if ($seccion === 'formulario-107')<a class="btn btn-outline-secondary" href="{{ route('tributario.nomina.index') }}" data-workspace-link="tributario.nomina.index"><i class="bi bi-people me-1" aria-hidden="true"></i>Nómina</a>@endif
-                    @if ($seccion === 'nomina')<a class="btn btn-outline-secondary" href="{{ route('tributario.formulario-107.index') }}" data-workspace-link="tributario.formulario-107.index">Formulario 107</a>@endif
+                    @if ($filtros)<a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-list-link>{{ __('Limpiar') }}</a>@endif
+                    @if ($seccion === 'formulario-107')<a class="btn btn-outline-secondary" href="{{ route('tributario.nomina.index') }}" data-workspace-link="tributario.nomina.index"><i class="bi bi-people me-1" aria-hidden="true"></i>{{ __('Nómina') }}</a>@endif
+                    @if ($seccion === 'nomina')<a class="btn btn-outline-secondary" href="{{ route('tributario.formulario-107.index') }}" data-workspace-link="tributario.formulario-107.index">{{ __('Formulario 107') }}</a>@endif
                 </div>
             </form>
             @if ($seccion === 'procesos')
@@ -47,8 +47,8 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <caption class="visually-hidden">{{ $titulo }}</caption>
-                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ $etiqueta }}</th>@endforeach
-                        @if ($formato || $seccion === 'documentos')<th scope="col" class="text-end">Acciones</th>@endif
+                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach
+                        @if ($formato || $seccion === 'documentos')<th scope="col" class="text-end">{{ __('Acciones') }}</th>@endif
                     </tr></thead>
                     <tbody>
                         @forelse ($registros as $fila)

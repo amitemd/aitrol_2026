@@ -14,8 +14,8 @@ final class VickyGuiaAitrol
     {
         $texto = $this->normalizar($pregunta);
         $abrir = preg_match('/^(?:abre|abreme|abrir|llevame|ir a)\b/', $texto) === 1;
-        $orientar = $abrir || preg_match('/^(?:donde|como|ruta (?:de|para)|en que parte|crear|registrar|agregar|nuevo|nueva)\b/', $texto);
-        $resumen = preg_match('/\b(?:que es aitrol|para que sirve aitrol|de que se trata (?:aitrol|este proyecto)|cuantos modulos|que modulos|cuales son los modulos|arquitectura|estructura del proyecto)\b/', $texto);
+        $orientar = $abrir || preg_match('/^(?:donde|como|ruta (?:de|para)|en que (?:parte|modulo)|quiero|crear|registrar|agregar|nuevo|nueva)\b/', $texto);
+        $resumen = preg_match('/\b(?:que es aitrol|para que sirve aitrol|de que se trata (?:aitrol|este proyecto)|cuantos modulos|que modulos|cuales son los modulos|modulos (?:de|que tiene) aitrol|arquitectura|estructura del proyecto)\b/', $texto);
         if (! $orientar && ! $resumen) {
             return null;
         }
@@ -30,9 +30,10 @@ final class VickyGuiaAitrol
             return $descripcion !== '' ? ['respuesta' => $descripcion] : null;
         }
 
-        $texto = preg_replace('/^(?:(?:donde|como|en que parte)(?: puedo| se)?(?: esta| estan| encuentro| veo| consulto)?|ruta (?:de|para)|abreme|abre|abrir|llevame(?: a)?|ir a)\b\s*/', '', $texto);
-        $texto = preg_replace('/^(?:creo|registro|agrego)\b/', ['crear', 'registrar', 'agregar'][array_search(Str::before($texto, ' '), ['creo', 'registro', 'agrego'], true) ?: 0], $texto, 0);
-        $texto = strtr($texto, ['creo ' => 'crear ', 'registro ' => 'registrar ', 'agrego ' => 'agregar ']);
+        $texto = preg_replace('/^(?:(?:donde|como|en que (?:parte|modulo))(?: puedo| se)?(?: esta| estan| encuentro| veo| consulto)?|ruta (?:de|para)|abreme|abre|abrir|llevame(?: a)?|ir a|quiero)\b\s*/', '', $texto);
+        $texto = preg_replace('/^(?:el )?formulario (?:para|de)\s+/', '', $texto);
+        $verbos = ['creo' => 'crear', 'registro' => 'registrar', 'agrego' => 'agregar'];
+        $texto = preg_replace_callback('/^(creo|registro(?! de\b)|agrego)\b/', fn (array $coincidencia): string => $verbos[$coincidencia[1]], $texto);
         $consulta = $this->frase($texto);
 
         foreach (explode("\n", $this->seccion($readme, 'rutas')) as $linea) {

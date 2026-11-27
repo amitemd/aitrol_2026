@@ -24,7 +24,7 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <caption class="visually-hidden">{{ $titulo }}</caption>
-                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($campos as $etiqueta)<th scope="col">{{ $etiqueta }}</th>@endforeach<th scope="col" class="text-end">Acciones</th></tr></thead>
+                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($campos as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach<th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
                     <tbody>
                         @forelse ($registros as $fila)
                             <tr>

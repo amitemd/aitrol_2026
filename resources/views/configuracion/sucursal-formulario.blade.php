@@ -14,7 +14,7 @@
                         <div class="row g-3">
                             @foreach (['codigo' => ['Código', 30], 'nombre' => ['Nombre', 120], 'direccion' => ['Dirección', 255]] as $campo => [$etiqueta, $limite])
                                 <div class="{{ $campo === 'direccion' ? 'col-12' : 'col-md-6' }}">
-                                    <label for="sucursal-{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                                    <label for="sucursal-{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                                     <input id="sucursal-{{ $campo }}" class="form-control @error($campo) is-invalid @enderror" name="{{ $campo }}" maxlength="{{ $limite }}"
                                         value="{{ old($campo, $sucursal?->{$campo}) }}" @required($campo !== 'direccion') @readonly($campo === 'codigo' && $sucursal?->codigo === 'PRINCIPAL')>
                                     @error($campo)<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -24,7 +24,7 @@
                     </section>
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <a href="{{ route('configuracion.sucursales.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                    <a href="{{ route('configuracion.sucursales.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button class="btn btn-primary">Guardar sucursal</button>
                 </div>
             </form>

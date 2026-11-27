@@ -5,7 +5,7 @@
 @section('content')
     <div class="app-content-header">
         <div class="container-fluid">
-            <a href="{{ route('configuracion.usuarios.index') }}" class="small text-decoration-none">Usuarios</a>
+            <a href="{{ route('configuracion.usuarios.index') }}" class="small text-decoration-none">{{ __('Usuarios') }}</a>
             <h1 class="fs-3 mb-0">{{ $usuario->exists ? 'Editar usuario' : 'Nuevo usuario' }}</h1>
         </div>
     </div>
@@ -51,14 +51,14 @@
                                     <div class="col-md-6">
                                         <label for="tipo_identificacion" class="form-label fw-semibold">Tipo de identificación</label>
                                         <select id="tipo_identificacion" name="tipo_identificacion" class="form-select">
-                                            <option value="">Seleccionar</option>
+                                            <option value="">{{ __('Seleccionar') }}</option>
                                             @foreach ($tipos as $tipo)
                                                 <option value="{{ $tipo->value }}" @selected(old('tipo_identificacion') === $tipo->value)>{{ $tipo->etiqueta() }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="identificacion" class="form-label fw-semibold">Identificación</label>
+                                        <label for="identificacion" class="form-label fw-semibold">{{ __('Identificación') }}</label>
                                         <input id="identificacion" name="identificacion" class="form-control" maxlength="30"
                                             value="{{ old('identificacion') }}">
                                         <div class="form-text">Si el documento ya existe, se vincula a esa persona.</div>
@@ -70,7 +70,7 @@
                                     </div>
                                 @endif
                                 <div class="col-md-6">
-                                    <label for="email" class="form-label fw-semibold">Correo electrónico</label>
+                                    <label for="email" class="form-label fw-semibold">{{ __('Correo electrónico') }}</label>
                                     <input id="email" name="email" type="email" class="form-control @error('email') is-invalid @enderror"
                                         value="{{ old('email', $usuario->email) }}" maxlength="255" autocomplete="off" aria-describedby="correo-ingreso" required>
                                     <div id="correo-ingreso" class="form-text">Este correo se usa para iniciar sesión y recuperar la contraseña.</div>
@@ -83,7 +83,7 @@
                                     'fecha_nacimiento' => ['Fecha de nacimiento', 'date', null, $usuario->persona?->fecha_nacimiento?->toDateString()],
                                 ] as $campo => [$etiqueta, $tipo, $limite, $valor])
                                     <div class="col-md-6">
-                                        <label for="{{ $campo }}" class="form-label fw-semibold">{{ $etiqueta }}</label>
+                                        <label for="{{ $campo }}" class="form-label fw-semibold">{{ __($etiqueta) }}</label>
                                         <input id="{{ $campo }}" name="{{ $campo }}" type="{{ $tipo }}" class="form-control"
                                             @if ($limite !== null) maxlength="{{ $limite }}" @endif value="{{ old($campo, $valor) }}">
                                     </div>
@@ -91,7 +91,7 @@
                                 @unless ($usuario->exists)
                                     @foreach (['password' => 'Contraseña inicial', 'password_confirmation' => 'Confirmar contraseña'] as $campo => $etiqueta)
                                         <div class="col-md-6">
-                                            <label for="{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                                            <label for="{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                                             <input id="{{ $campo }}" name="{{ $campo }}" type="password" class="form-control" autocomplete="new-password" minlength="12" maxlength="72" required>
                                         </div>
                                     @endforeach
@@ -125,7 +125,7 @@
                                     'villa' => ['Villa', 100, 'col-md-6', null],
                                 ] as $campo => [$etiqueta, $limite, $clase, $autocomplete])
                                     <div class="{{ $clase }}">
-                                        <label for="{{ $campo }}" class="form-label fw-semibold">{{ $etiqueta }}</label>
+                                        <label for="{{ $campo }}" class="form-label fw-semibold">{{ __($etiqueta) }}</label>
                                         <input id="{{ $campo }}" name="{{ $campo }}" class="form-control" maxlength="{{ $limite }}"
                                             @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
                                             value="{{ old($campo, $usuario->persona?->{$campo}) }}">
@@ -146,8 +146,8 @@
                                 ])
                                 @error('activo') <div class="small text-danger">{{ $message }}</div> @enderror
                             </div>
-                            <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
-                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                            <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
+                            <button type="submit" class="btn btn-primary">{{ __('Guardar cambios') }}</button>
                         </div>
                     </form>
                 </div>

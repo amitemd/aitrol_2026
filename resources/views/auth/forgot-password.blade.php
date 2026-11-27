@@ -20,7 +20,7 @@
         <form method="POST" action="{{ route('password.email') }}" class="access-form">
             @csrf
             <div class="access-field">
-                <label for="email">Correo electrónico</label>
+                <label for="email">{{ __('Correo electrónico') }}</label>
                 <input id="email" name="email" type="email" autocomplete="username" maxlength="255"
                     value="{{ old('email') }}" required
                     @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>

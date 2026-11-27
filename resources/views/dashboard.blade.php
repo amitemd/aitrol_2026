@@ -18,7 +18,7 @@
 @section('content')
     <header class="page-heading">
         <div>
-            <h1>Panel general</h1>
+            <h1>{{ __('Panel general') }}</h1>
             <p>Resumen de la operación hospitalaria</p>
         </div>
         <time class="date-chip" datetime="{{ $today->toDateString() }}">

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use stdClass;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class RrhhController
@@ -60,12 +61,13 @@ final readonly class RrhhController
         $seccion = $request->route('seccion');
         $id = $request->route('registro');
         $registro = $id === null ? null : $this->datos->registro($this->gestion->consulta($seccion), (int) $id);
-        if ($registro && isset(config('rrhh.procesos')[$seccion]) && $seccion !== 'organizacion') {
+        $soloEstado = $seccion === 'conceptos' && $registro?->estado === 'aprobado';
+        if ($registro && isset(config('rrhh.procesos')[$seccion]) && $seccion !== 'organizacion' && ! $soloEstado) {
             abort_unless($registro->estado === 'pendiente', 409, 'El registro ya fue resuelto.');
         }
-        $campos = $this->campos($seccion);
+        $campos = $soloEstado ? [] : $this->campos($seccion, $registro);
 
-        return view('rrhh::formulario', compact('seccion', 'registro', 'campos'));
+        return view('rrhh::formulario', compact('seccion', 'registro', 'campos', 'soloEstado'));
     }
 
     public function detalle(Request $request): View
@@ -73,7 +75,7 @@ final readonly class RrhhController
         $seccion = $request->route('seccion');
         $registro = $this->datos->registro($this->gestion->consulta($seccion), (int) $request->route('registro'));
         $campos = [];
-        foreach ($this->campos($seccion) as $clave => $campo) {
+        foreach ($this->campos($seccion, $registro) as $clave => $campo) {
             if (($valor = $registro->{$clave} ?? null) === null) {
                 continue;
             }
@@ -86,6 +88,9 @@ final readonly class RrhhController
         if (isset($registro->estado) && $seccion !== 'organizacion') {
             $campos['Estado'] = config('rrhh.procesos.'.$seccion.'.estados.'.$registro->estado, ucfirst($registro->estado));
         }
+        if (in_array($seccion, ['conceptos', 'organizacion'], true)) {
+            $campos['Activación'] = $registro->activo ? 'Activo' : 'Inactivo';
+        }
 
         return view('partials.detalle-ficha-simple', [
             'titulo' => config('rrhh.secciones.'.$seccion.'.0'), 'volver' => route('rrhh.'.$seccion.'.index'), 'campos' => $campos,
@@ -95,6 +100,12 @@ final readonly class RrhhController
     public function guardar(Request $request): RedirectResponse|JsonResponse
     {
         $seccion = $request->route('seccion');
+        if ($seccion === 'conceptos' && $request->route('registro') !== null && $request->boolean('solo_estado')) {
+            $datos = $request->validate(['activo' => ['required', 'boolean']]);
+            $this->gestion->cambiarActivoConcepto((int) $request->route('registro'), (bool) $datos['activo']);
+
+            return $this->resultado($request, 'Estado actualizado.', 'rrhh.conceptos.index');
+        }
         $flujo = config('rrhh.procesos.'.$seccion, []);
         $importe = ['required', 'regex:/^\d{1,7}(?:\.\d{1,2})?$/', 'numeric', 'gt:0'];
         $fecha = ['required', 'date_format:Y-m-d'];
@@ -127,6 +138,9 @@ final readonly class RrhhController
         if ($seccion === 'conceptos') {
             $reglas['importe'] = ['exclude_unless:tipo,ingreso-fijo,descuento-fijo', ...$importe];
             $reglas['cantidad'] = ['exclude_unless:tipo,ingreso-porcentual,descuento-porcentual', 'required', 'numeric', 'decimal:0,2', 'gt:0', 'max:100'];
+        }
+        if (in_array($seccion, ['conceptos', 'organizacion'], true)) {
+            $reglas['activo'] = ['sometimes', 'boolean'];
         }
         $datos = $request->validate($reglas);
         if ($seccion === 'conceptos') {
@@ -203,9 +217,12 @@ final readonly class RrhhController
         }, 'nomina-'.substr($nomina->periodo, 0, 7).'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    private function campos(string $seccion): array
+    private function campos(string $seccion, ?stdClass $registro = null): array
     {
         $empleado = fn (): array => ['Empleado', 'select', true, $this->datos->tabla('rh_empleados')->orderBy('nombre')->pluck('nombre', 'id')];
+        $organizacion = fn (string $tipo, ?int $asignado) => $this->datos->procedimientos('organizacion')->where('tipo', $tipo)
+            ->where(fn (Builder $query) => $query->where('activo', true)->when($asignado !== null, fn (Builder $opciones) => $opciones->orWhere('id', $asignado)))
+            ->orderBy('titulo')->pluck('titulo', 'id');
         $flujo = config('rrhh.procesos.'.$seccion, []);
 
         return match ($seccion) {
@@ -213,8 +230,8 @@ final readonly class RrhhController
                 'codigo' => ['Código', 'text', true], 'nombre' => ['Nombre completo', 'text', true],
                 'identificacion' => ['Identificación', 'text', false], 'correo' => ['Correo de trabajo', 'email', false],
                 'ingreso' => ['Fecha de ingreso', 'date', true], 'salida' => ['Fecha de salida', 'date', false],
-                'id_departamento' => ['Departamento', 'select', false, $this->datos->procedimientos('organizacion')->where('tipo', 'departamento')->orderBy('titulo')->pluck('titulo', 'id')],
-                'id_cargo' => ['Cargo', 'select', false, $this->datos->procedimientos('organizacion')->where('tipo', 'cargo')->orderBy('titulo')->pluck('titulo', 'id')],
+                'id_departamento' => ['Departamento', 'select', false, $organizacion('departamento', $registro?->id_departamento)],
+                'id_cargo' => ['Cargo', 'select', false, $organizacion('cargo', $registro?->id_cargo)],
             ],
             'contratos' => [
                 'id_empleado' => $empleado(), 'tipo' => ['Modalidad contractual', 'text', true],

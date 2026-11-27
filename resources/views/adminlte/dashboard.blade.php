@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Panel general')
+@section('title', __('Panel general'))
 
 @push('styles')
     <!-- jsvectormap -->
@@ -21,13 +21,13 @@
             <!--begin::Row-->
             <div class="row">
               <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Panel general</h1>
+                <h1 class="mb-0 fs-3">{{ __('Panel general') }}</h1>
               </div>
               <div class="col-sm-6">
                 <nav aria-label="breadcrumb">
                   <ol class="breadcrumb float-sm-end">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Inicio</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Panel general</li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ __('Panel general') }}</li>
                   </ol>
                 </nav>
               </div>
@@ -193,7 +193,7 @@
                 <!-- DIRECT CHAT -->
                 <div class="card direct-chat direct-chat-primary mb-4">
                   <div class="card-header">
-                    <h3 class="card-title">Direct Chat</h3>
+                    <h3 class="card-title">{{ __('Direct Chat') }}</h3>
 
                     <div class="card-tools">
                       <span title="3 New Messages" class="badge text-bg-primary"> 3 </span>
@@ -201,7 +201,7 @@
                         type="button"
                         class="btn btn-tool"
                         data-lte-toggle="card-collapse"
-                        aria-label="Collapse card"
+                        aria-label="{{ __('Collapse card') }}"
                       >
                         <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                         <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
@@ -218,7 +218,7 @@
                         type="button"
                         class="btn btn-tool"
                         data-lte-toggle="card-remove"
-                        aria-label="Remove card"
+                        aria-label="{{ __('Remove card') }}"
                       >
                         <i class="bi bi-x-lg"></i>
                       </button>
@@ -444,7 +444,7 @@
                           class="form-control"
                         />
                         <span class="input-group-append">
-                          <button type="button" class="btn btn-primary">Send</button>
+                          <button type="button" class="btn btn-primary">{{ __('Send') }}</button>
                         </span>
                       </div>
                     </form>
@@ -465,7 +465,7 @@
                         type="button"
                         class="btn btn-primary btn-sm"
                         data-lte-toggle="card-collapse"
-                        aria-label="Collapse card"
+                        aria-label="{{ __('Collapse card') }}"
                       >
                         <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                         <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>

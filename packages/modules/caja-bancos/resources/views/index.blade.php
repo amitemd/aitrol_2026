@@ -31,13 +31,13 @@
         <div class="card clientes-directorio" data-ajax-list>
             <form action="{{ route($ruta.'.index') }}" data-ajax-search method="GET" class="row g-2 align-items-end m-0 p-3 border-bottom">
                 <div class="col-12 col-sm-4 col-lg-3">
-                    <label for="cb-q" class="form-label">Buscar</label>
+                    <label for="cb-q" class="form-label">{{ __('Buscar') }}</label>
                     <input id="cb-q" name="q" class="form-control" maxlength="120" value="{{ $filtros['q'] ?? '' }}">
                 </div>
                 @if ($seccion === 'cuentas' || $seccion === 'conciliacion')
                     @php $filtroEstado = $seccion === 'cuentas' ? 'activo' : 'conciliado'; @endphp
                     <div class="col-6 col-sm-3 col-lg-2">
-                        <label for="cb-estado" class="form-label">Estado</label>
+                        <label for="cb-estado" class="form-label">{{ __('Estado') }}</label>
                         <select id="cb-estado" name="{{ $filtroEstado }}" class="form-select">
                             <option value="">Todos</option>
                             <option value="1" @selected((string) ($filtros[$filtroEstado] ?? '') === '1')>{{ $seccion === 'cuentas' ? 'Activo' : 'Conciliado' }}</option>
@@ -53,7 +53,7 @@
                 @endif
                 @if ($seccion !== 'cuentas')
                     <div class="col-6 col-sm-4 col-lg-3">
-                        <label for="cb-filtro-cuenta" class="form-label">Cuenta</label>
+                        <label for="cb-filtro-cuenta" class="form-label">{{ __('Cuenta') }}</label>
                         <select id="cb-filtro-cuenta" name="id_cuenta" class="form-select" data-select2-url="{{ route($ruta.'.filtro-cuentas') }}"
                             data-select2-min="0" data-select2-placeholder="Todas las cuentas">
                             <option value="">Todas las cuentas</option>
@@ -64,14 +64,14 @@
                     </div>
                     @foreach (['desde' => 'Desde', 'hasta' => 'Hasta'] as $campo => $etiqueta)
                         <div class="col-6 col-sm-auto">
-                            <label for="cb-{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                            <label for="cb-{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                             <input type="date" id="cb-{{ $campo }}" name="{{ $campo }}" class="form-control" value="{{ $filtros[$campo] ?? '' }}">
                         </div>
                     @endforeach
                 @endif
                 <div class="col-auto d-flex flex-wrap gap-2">
                     <button class="btn btn-outline-primary">Filtrar</button>
-                    @if ($filtros)<a href="{{ route($ruta.'.index') }}" data-ajax-list-link class="btn btn-outline-secondary">Limpiar</a>@endif
+                    @if ($filtros)<a href="{{ route($ruta.'.index') }}" data-ajax-list-link class="btn btn-outline-secondary">{{ __('Limpiar') }}</a>@endif
                     @if ($seccion === 'reportes')
                         <a href="{{ route($ruta.'.exportar', $filtros) }}" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>Exportar CSV</a>
                     @endif
@@ -92,8 +92,8 @@
                 <table class="table table-hover align-middle mb-0">
                     <caption class="visually-hidden">{{ $titulo }}</caption>
                     <thead class="clientes-tabla-cabecera"><tr>
-                        @foreach ($campos as $etiqueta)<th scope="col">{{ $etiqueta }}</th>@endforeach
-                        @unless ($seccion === 'reportes')<th scope="col" class="text-end">Acciones</th>@endunless
+                        @foreach ($campos as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach
+                        @unless ($seccion === 'reportes')<th scope="col" class="text-end">{{ __('Acciones') }}</th>@endunless
                     </tr></thead>
                     <tbody>
                         @forelse ($registros as $fila)

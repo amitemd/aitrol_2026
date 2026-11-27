@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Administrar menú')
+@section('title', __('Administrar menú'))
 
 @section('content')
     @include('partials.listado-cabecera', [
@@ -33,11 +33,11 @@
                             <table class="table align-middle mb-0">
                                 <thead class="clientes-tabla-cabecera">
                                     <tr>
-                                        <th scope="col">Nombre</th>
-                                        <th scope="col">Ubicación</th>
+                                        <th scope="col">{{ __('Nombre') }}</th>
+                                        <th scope="col">{{ __('Ubicación') }}</th>
                                         <th scope="col">Orden</th>
-                                        <th scope="col">Estado</th>
-                                        <th scope="col" class="text-end">Acciones</th>
+                                        <th scope="col">{{ __('Estado') }}</th>
+                                        <th scope="col" class="text-end">{{ __('Acciones') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -89,7 +89,7 @@
                             @endif
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <label for="nombre" class="form-label">{{ __('Nombre') }}</label>
                                     <input class="form-control" id="nombre" name="nombre" value="{{ old('nombre', $opcion?->nombre) }}" required maxlength="80">
                                 </div>
                                 <div class="mb-3">
@@ -97,14 +97,14 @@
                                     <select class="form-select" id="ruta" name="ruta">
                                         <option value="">Sin destino · grupo de menús</option>
                                         @foreach ($destinos as $ruta => $etiqueta)
-                                            <option value="{{ $ruta }}" @selected(old('ruta', $opcion?->ruta) === $ruta)>{{ $etiqueta }}</option>
+                                            <option value="{{ $ruta }}" @selected(old('ruta', $opcion?->ruta) === $ruta)>{{ __($etiqueta) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="padre_id" class="form-label">Ubicación</label>
+                                    <label for="padre_id" class="form-label">{{ __('Ubicación') }}</label>
                                     <select class="form-select" id="padre_id" name="padre_id">
-                                        <option value="">Menú principal</option>
+                                        <option value="">{{ __('Menú principal') }}</option>
                                         @foreach ($ubicaciones as $grupoId => $nombreCompleto)
                                             <option value="{{ $grupoId }}" @selected((string) old('padre_id', $opcion?->padreId) === (string) $grupoId)>{{ $nombreCompleto }}</option>
                                         @endforeach
@@ -128,7 +128,7 @@
                             </div>
                             <div class="card-footer d-flex flex-wrap align-items-center gap-2 ficha-acciones">
                                 <div class="me-auto">@include('partials.interruptor-activo', ['activo' => $opcion?->activo, 'etiquetaEstado' => 'Mostrar en la barra lateral'])</div>
-                                <a class="btn btn-outline-secondary" href="{{ route('configuracion.menu.index') }}" data-ajax-close>Cancelar</a>
+                                <a class="btn btn-outline-secondary" href="{{ route('configuracion.menu.index') }}" data-ajax-close>{{ __('Cancelar') }}</a>
                                 <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ $opcion ? 'Guardar cambios' : 'Crear opción' }}</button>
                             </div>
                         </form>

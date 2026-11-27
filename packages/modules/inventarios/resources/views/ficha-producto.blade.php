@@ -23,7 +23,7 @@
                 @foreach (['codigo' => ['Código', 60, 'col-sm-4'], 'nombre' => ['Nombre', 160, 'col-sm-8'],
                     'codigo_barras' => ['Código de barras', 80, 'col-sm-4'], 'marca' => ['Marca', 100, 'col-sm-4'], 'modelo' => ['Modelo', 100, 'col-sm-4']] as $campo => [$etiqueta, $maximo, $ancho])
                     <div class="{{ $ancho }}">
-                        <label class="form-label" for="producto-{{ $campo }}">{{ $etiqueta }}</label>
+                        <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}</label>
                         <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control @error($campo) is-invalid @enderror"
                             maxlength="{{ $maximo }}" value="{{ old($campo, $registro[$campo] ?? '') }}" @required(in_array($campo, ['codigo', 'nombre']))>
                     </div>
@@ -34,7 +34,7 @@
             <h2 class="h6"><i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>Clasificación e inventario</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
-                    <label class="form-label" for="producto-tipo">Tipo</label>
+                    <label class="form-label" for="producto-tipo">{{ __('Tipo') }}</label>
                     <select id="producto-tipo" name="tipo_producto" class="form-select">
                         @foreach (config('inventarios.tipos_producto') as $valor => $nombre)
                             <option value="{{ $valor }}" @selected(old('tipo_producto', $registro['tipo_producto'] ?? 'producto') === $valor)>{{ $nombre }}</option>
@@ -42,7 +42,7 @@
                     </select>
                 </div>
                 <div class="col-sm-6">
-                    <label class="form-label" for="producto-categoria">Categoría</label>
+                    <label class="form-label" for="producto-categoria">{{ __('Categoría') }}</label>
                     <select id="producto-categoria" name="id_categoria" class="form-select @error('id_categoria') is-invalid @enderror" data-producto-categoria>
                         <option value="">Sin categoría{{ !empty($registro['categoria']) && empty($registro['id_categoria']) ? ' · '.$registro['categoria'] : '' }}</option>
                         @foreach ($ficha['categorias'] as $categoria)
@@ -57,7 +57,7 @@
                     <input type="hidden" name="categoria" value="{{ $registro['categoria'] }}">
                 @endif
                 <div class="col-sm-6">
-                    <label class="form-label" for="producto-unidad">Unidad</label>
+                    <label class="form-label" for="producto-unidad">{{ __('Unidad') }}</label>
                     <input id="producto-unidad" name="unidad" class="form-control" maxlength="30" required value="{{ old('unidad', $registro['unidad'] ?? 'unidad') }}">
                 </div>
                 <div class="col-sm-6">
@@ -75,7 +75,7 @@
             <p class="text-body-secondary small">Estas cuentas se heredan de la categoría.</p>
             <dl class="row mb-0">
                 @foreach (config('inventarios.cuentas_producto') as $rol => [$etiqueta])
-                    <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7" data-producto-cuenta="{{ $rol }}"></dd>
+                    <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7" data-producto-cuenta="{{ $rol }}"></dd>
                 @endforeach
             </dl>
         </div>
@@ -94,7 +94,7 @@
             <div class="row g-3">
                 @foreach (config('inventarios.valores_producto') as $campo => [$etiqueta, $maximo, $decimales])
                     <div class="col-sm-6">
-                        <label class="form-label" for="producto-{{ $campo }}">{{ $etiqueta }}</label>
+                        <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}</label>
                         <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control" type="number" min="0"
                             max="{{ $maximo }}" step="{{ $decimales === 4 ? '0.0001' : '0.01' }}" value="{{ old($campo, $registro[$campo] ?? '') }}">
                     </div>
@@ -112,7 +112,7 @@
             <h2 class="h6"><i class="bi bi-file-earmark-text me-2" aria-hidden="true"></i>Ficha técnica</h2>
             <label class="form-label" for="producto-url">Enlace al documento (HTTPS)</label>
             <input id="producto-url" name="ficha_tecnica_url" class="form-control mb-3" type="url" maxlength="500" value="{{ old('ficha_tecnica_url', $registro['ficha_tecnica_url'] ?? '') }}">
-            <label class="form-label" for="producto-descripcion">Descripción</label>
+            <label class="form-label" for="producto-descripcion">{{ __('Descripción') }}</label>
             <textarea id="producto-descripcion" name="descripcion" class="form-control" rows="3" maxlength="500">{{ old('descripcion', $registro['descripcion'] ?? '') }}</textarea>
         </div>
     </section>

@@ -36,11 +36,11 @@
                 <div class="card-body row g-3">
                     @if ($catalogo)
                         <div class="col-sm-4">
-                            <label class="form-label" for="inv-codigo">Código</label>
+                            <label class="form-label" for="inv-codigo">{{ __('Código') }}</label>
                             <input class="form-control" name="codigo" id="inv-codigo" maxlength="60" value="{{ old('codigo', $registro['codigo'] ?? '') }}" required autofocus>
                         </div>
                         <div class="col-sm-8">
-                            <label class="form-label" for="inv-nombre">Nombre</label>
+                            <label class="form-label" for="inv-nombre">{{ __('Nombre') }}</label>
                             <input class="form-control" name="nombre" id="inv-nombre" maxlength="{{ $seccion === 'categorias' ? 100 : 160 }}" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
                         </div>
                         @if ($seccion === 'categorias')
@@ -59,25 +59,25 @@
                             @include('inventarios::campos-cuentas')
                         @endif
                         <div class="col-12">
-                            <label class="form-label" for="inv-descripcion">Descripción</label>
+                            <label class="form-label" for="inv-descripcion">{{ __('Descripción') }}</label>
                             <textarea class="form-control" name="descripcion" id="inv-descripcion" maxlength="500" rows="2">{{ old('descripcion', $registro['descripcion'] ?? '') }}</textarea>
                         </div>
                     @else
                         <input type="hidden" name="clave_operacion" value="{{ old('clave_operacion', (string) Str::uuid()) }}">
                         <div class="col-sm-6">
-                            <label class="form-label" for="inv-tipo">Tipo</label>
+                            <label class="form-label" for="inv-tipo">{{ __('Tipo') }}</label>
                             <select class="form-select" id="inv-tipo" name="tipo" required>
                                 @foreach ($tipos as $tipo => $etiqueta)
-                                    <option value="{{ $tipo }}" @selected(old('tipo') === $tipo)>{{ $etiqueta }}</option>
+                                    <option value="{{ $tipo }}" @selected(old('tipo') === $tipo)>{{ __($etiqueta) }}</option>
                                 @endforeach
                             </select>
                         </div>
                         @foreach (['id_producto' => ['Producto', 'productos'], 'id_bodega' => ['Bodega (origen en transferencias)', 'bodegas'], 'id_bodega_destino' => ['Bodega de destino', 'bodegas']] as $campo => [$etiqueta, $origen])
                             <div @class(['col-sm-6', 'inventario-bodega-destino' => $campo === 'id_bodega_destino'])>
-                                <label class="form-label" for="inv-{{ $campo }}">{{ $etiqueta }}</label>
+                                <label class="form-label" for="inv-{{ $campo }}">{{ __($etiqueta) }}</label>
                                 <select class="form-select" name="{{ $campo }}" id="inv-{{ $campo }}" data-select2-min="0"
                                     data-select2-url="{{ route($ruta.'.opciones', ['catalogo' => $origen, 'activo' => 1]) }}" @required($campo !== 'id_bodega_destino')>
-                                    <option value="">Seleccionar</option>
+                                    <option value="">{{ __('Seleccionar') }}</option>
                                     @isset($selecciones[$campo])
                                         <option value="{{ $selecciones[$campo]->id }}" selected>{{ $selecciones[$campo]->codigo }} · {{ $selecciones[$campo]->nombre }}</option>
                                     @endisset
@@ -85,7 +85,7 @@
                             </div>
                         @endforeach
                         <div class="col-sm-6">
-                            <label class="form-label" for="inv-cantidad">Cantidad</label>
+                            <label class="form-label" for="inv-cantidad">{{ __('Cantidad') }}</label>
                             <input class="form-control" type="number" id="inv-cantidad" name="cantidad" min="0.001" max="1000000" step="0.001" value="{{ old('cantidad') }}" required>
                         </div>
                         <div class="col-sm-6 inventario-costo">
@@ -110,7 +110,7 @@
                         @include('partials.interruptor-activo', ['activo' => $registro['activo'] ?? true])
                     @endif
                     <div class="ms-auto d-flex gap-2">
-                        <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                        <a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                         <button class="btn btn-primary"><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ $catalogo ? 'Guardar' : 'Registrar' }}</button>
                     </div>
                 </div>

@@ -19,16 +19,16 @@
             <form method="GET" action="{{ route($ruta) }}" data-ajax-search class="row g-2 align-items-end m-0 p-3 border-bottom">
                 @if ($reporte === 'mayorizacion')
                     <div class="col-sm-6 col-xl-3">
-                        <label class="form-label" for="co-filtro-cuenta">Cuenta</label>
+                        <label class="form-label" for="co-filtro-cuenta">{{ __('Cuenta') }}</label>
                         <select id="co-filtro-cuenta" name="id_cuenta" data-select2-min="0" data-select2-url="{{ route('contabilidad.reportes.opciones') }}" class="form-select" required>
-                            <option value="">Seleccionar</option>
+                            <option value="">{{ __('Seleccionar') }}</option>
                             @if ($cuenta)<option value="{{ $cuenta->id }}" selected>{{ $cuenta->codigo }} · {{ $cuenta->nombre }}</option>@endif
                         </select>
                     </div>
                 @endif
                 @foreach ($reporte === 'balance-financiero' ? ['hasta' => 'Fecha de corte'] : ['desde' => 'Desde', 'hasta' => 'Hasta'] as $campo => $etiqueta)
                     <div class="col-sm-auto">
-                        <label class="form-label" for="co-{{ $campo }}">{{ $etiqueta }}</label>
+                        <label class="form-label" for="co-{{ $campo }}">{{ __($etiqueta) }}</label>
                         <input type="date" id="co-{{ $campo }}" name="{{ $campo }}" class="form-control" value="{{ $filtros[$campo] }}" required>
                     </div>
                 @endforeach
@@ -53,7 +53,7 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <caption class="visually-hidden">{{ $titulo }}</caption>
-                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ $etiqueta }}</th>@endforeach</tr></thead>
+                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach</tr></thead>
                     <tbody>
                         @forelse ($registros as $fila)
                             <tr>@foreach ($columnas as $campo => $etiqueta)

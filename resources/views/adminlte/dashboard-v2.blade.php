@@ -1,7 +1,7 @@
 {{-- Adaptado del Dashboard v2 de AdminLTE 4, licencia MIT en public/adminlte/LICENSE. --}}
 @extends('layouts.adminlte')
 
-@section('title', 'Panel general')
+@section('title', __('Panel general'))
 
 @section('content')
 <!--begin::App Content Header-->
@@ -14,7 +14,7 @@
     @endphp
     <div class="aitrol-overview">
       <div class="aitrol-overview-heading">
-        <h1>Panel general</h1>
+        <h1>{{ __('Panel general') }}</h1>
       </div>
       @if ($accesosRapidos->isNotEmpty())
       <nav class="aitrol-shortcuts" aria-label="Accesos rápidos">
@@ -43,7 +43,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Uso de CPU</span>
+            <span class="info-box-text">{{ __('Uso de CPU') }}</span>
             <span class="info-box-number">
               10
               <small>%</small>
@@ -61,7 +61,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Reacciones</span>
+            <span class="info-box-text">{{ __('Reacciones') }}</span>
             <span class="info-box-number">41,410</span>
           </div>
           <!-- /.info-box-content -->
@@ -80,7 +80,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Ventas</span>
+            <span class="info-box-text">{{ __('Ventas') }}</span>
             <span class="info-box-number">760</span>
           </div>
           <!-- /.info-box-content -->
@@ -95,7 +95,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Nuevos miembros</span>
+            <span class="info-box-text">{{ __('Nuevos miembros') }}</span>
             <span class="info-box-number">2,000</span>
           </div>
           <!-- /.info-box-content -->
@@ -111,14 +111,14 @@
       <div class="col-md-12">
         <div class="card mb-4">
           <div class="card-header">
-            <h2 class="card-title">Resumen mensual</h2>
+            <h2 class="card-title">{{ __('Resumen mensual') }}</h2>
 
             <div class="card-tools">
               <button
                 type="button"
                 class="btn btn-tool"
                 data-lte-toggle="card-collapse"
-                aria-label="Collapse card">
+                aria-label="{{ __('Collapse card') }}">
                 <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                 <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
               </button>
@@ -142,7 +142,7 @@
                 type="button"
                 class="btn btn-tool"
                 data-lte-toggle="card-remove"
-                aria-label="Remove card">
+                aria-label="{{ __('Remove card') }}">
                 <i class="bi bi-x-lg"></i>
               </button>
             </div>
@@ -274,7 +274,7 @@
             <!-- DIRECT CHAT -->
             <div class="card direct-chat direct-chat-warning">
               <div class="card-header">
-                <h3 class="card-title">Direct Chat</h3>
+                <h3 class="card-title">{{ __('Direct Chat') }}</h3>
 
                 <div class="card-tools">
                   <span title="3 New Messages" class="badge text-bg-warning"> 3 </span>
@@ -282,7 +282,7 @@
                     type="button"
                     class="btn btn-tool"
                     data-lte-toggle="card-collapse"
-                    aria-label="Collapse card">
+                    aria-label="{{ __('Collapse card') }}">
                     <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                     <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
                   </button>
@@ -297,7 +297,7 @@
                     type="button"
                     class="btn btn-tool"
                     data-lte-toggle="card-remove"
-                    aria-label="Remove card">
+                    aria-label="{{ __('Remove card') }}">
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
@@ -516,7 +516,7 @@
                       placeholder="Type Message ..."
                       class="form-control" />
                     <span class="input-group-append">
-                      <button type="button" class="btn btn-warning" disabled>Send</button>
+                      <button type="button" class="btn btn-warning" disabled>{{ __('Send') }}</button>
                     </span>
                   </div>
                 </div>
@@ -531,7 +531,7 @@
             <!-- USERS LIST -->
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Latest Members</h3>
+                <h3 class="card-title">{{ __('Latest Members') }}</h3>
 
                 <div class="card-tools">
                   <span class="badge text-bg-danger"> 8 New Members </span>
@@ -539,7 +539,7 @@
                     type="button"
                     class="btn btn-tool"
                     data-lte-toggle="card-collapse"
-                    aria-label="Collapse card">
+                    aria-label="{{ __('Collapse card') }}">
                     <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                     <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
                   </button>
@@ -547,7 +547,7 @@
                     type="button"
                     class="btn btn-tool"
                     data-lte-toggle="card-remove"
-                    aria-label="Remove card">
+                    aria-label="{{ __('Remove card') }}">
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
@@ -658,7 +658,7 @@
               <div class="card-footer bg-body text-center">
                 <a
                   href="javascript:"
-                  class="link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">View All Users</a>
+                  class="link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">{{ __('View All Users') }}</a>
               </div>
               <!-- /.card-footer -->
             </div>
@@ -671,14 +671,14 @@
         <!--begin::Latest Order Widget-->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Latest Orders</h3>
+            <h3 class="card-title">{{ __('Latest Orders') }}</h3>
 
             <div class="card-tools">
               <button
                 type="button"
                 class="btn btn-tool"
                 data-lte-toggle="card-collapse"
-                aria-label="Collapse card">
+                aria-label="{{ __('Collapse card') }}">
                 <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                 <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
               </button>
@@ -686,7 +686,7 @@
                 type="button"
                 class="btn btn-tool"
                 data-lte-toggle="card-remove"
-                aria-label="Remove card">
+                aria-label="{{ __('Remove card') }}">
                 <i class="bi bi-x-lg"></i>
               </button>
             </div>
@@ -697,10 +697,10 @@
               <table class="table m-0">
                 <thead>
                   <tr>
-                    <th>Order ID</th>
-                    <th>Item</th>
-                    <th>Status</th>
-                    <th>Popularity</th>
+                    <th>{{ __('Order ID') }}</th>
+                    <th>{{ __('Item') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Popularity') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -712,7 +712,7 @@
                     </td>
                     <td>Call of Duty IV</td>
                     <td>
-                      <span class="badge text-bg-success"> Shipped </span>
+                      <span class="badge text-bg-success"> {{ __('Shipped') }} </span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -731,7 +731,7 @@
                     </td>
                     <td>Samsung Smart TV</td>
                     <td>
-                      <span class="badge text-bg-warning">Pending</span>
+                      <span class="badge text-bg-warning">{{ __('Pending') }}</span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -750,7 +750,7 @@
                     </td>
                     <td>iPhone 6 Plus</td>
                     <td>
-                      <span class="badge text-bg-danger"> Delivered </span>
+                      <span class="badge text-bg-danger"> {{ __('Delivered') }} </span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -769,7 +769,7 @@
                     </td>
                     <td>Samsung Smart TV</td>
                     <td>
-                      <span class="badge text-bg-info">Processing</span>
+                      <span class="badge text-bg-info">{{ __('Processing') }}</span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -788,7 +788,7 @@
                     </td>
                     <td>Samsung Smart TV</td>
                     <td>
-                      <span class="badge text-bg-warning">Pending</span>
+                      <span class="badge text-bg-warning">{{ __('Pending') }}</span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -807,7 +807,7 @@
                     </td>
                     <td>iPhone 6 Plus</td>
                     <td>
-                      <span class="badge text-bg-danger"> Delivered </span>
+                      <span class="badge text-bg-danger"> {{ __('Delivered') }} </span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -826,7 +826,7 @@
                     </td>
                     <td>Call of Duty IV</td>
                     <td>
-                      <span class="badge text-bg-success">Shipped</span>
+                      <span class="badge text-bg-success">{{ __('Shipped') }}</span>
                     </td>
                     <td>
                       <div class="position-relative" style="width: 150px; height: 30px">
@@ -845,10 +845,10 @@
           <!-- /.card-body -->
           <div class="card-footer bg-body clearfix">
             <a href="javascript:void(0)" class="btn btn-sm btn-primary float-start">
-              Place New Order
+              {{ __('Place New Order') }}
             </a>
             <a href="javascript:void(0)" class="btn btn-sm btn-secondary float-end">
-              View All Orders
+              {{ __('View All Orders') }}
             </a>
           </div>
           <!-- /.card-footer -->
@@ -865,7 +865,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Inventory</span>
+            <span class="info-box-text">{{ __('Inventory') }}</span>
             <span class="info-box-number">5,200</span>
           </div>
           <!-- /.info-box-content -->
@@ -877,7 +877,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Mentions</span>
+            <span class="info-box-text">{{ __('Mentions') }}</span>
             <span class="info-box-number">92,050</span>
           </div>
           <!-- /.info-box-content -->
@@ -889,7 +889,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Downloads</span>
+            <span class="info-box-text">{{ __('Downloads') }}</span>
             <span class="info-box-number">114,381</span>
           </div>
           <!-- /.info-box-content -->
@@ -901,7 +901,7 @@
           </span>
 
           <div class="info-box-content">
-            <span class="info-box-text">Direct Messages</span>
+            <span class="info-box-text">{{ __('Direct Messages') }}</span>
             <span class="info-box-number">163,921</span>
           </div>
           <!-- /.info-box-content -->
@@ -910,14 +910,14 @@
 
         <div class="card mb-4">
           <div class="card-header">
-            <h3 class="card-title">Browser Usage</h3>
+            <h3 class="card-title">{{ __('Browser Usage') }}</h3>
 
             <div class="card-tools">
               <button
                 type="button"
                 class="btn btn-tool"
                 data-lte-toggle="card-collapse"
-                aria-label="Collapse card">
+                aria-label="{{ __('Collapse card') }}">
                 <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
                 <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
               </button>
@@ -925,7 +925,7 @@
                 type="button"
                 class="btn btn-tool"
                 data-lte-toggle="card-remove"
-                aria-label="Remove card">
+                aria-label="{{ __('Remove card') }}">
                 <i class="bi bi-x-lg"></i>
               </button>
             </div>
@@ -951,7 +951,7 @@
             <ul class="nav nav-pills flex-column">
               <li class="nav-item">
                 <a href="#" class="nav-link">
-                  United States of America
+                  {{ __('United States of America') }}
                   <span class="float-end text-danger-emphasis">
                     <i class="bi bi-arrow-down fs-7"></i>
                     12%
@@ -960,7 +960,7 @@
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link">
-                  India
+                  {{ __('India') }}
                   <span class="float-end text-success-emphasis">
                     <i class="bi bi-arrow-up fs-7"></i> 4%
                   </span>
@@ -968,7 +968,7 @@
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link">
-                  China
+                  {{ __('China') }}
                   <span class="float-end text-info-emphasis">
                     <i class="bi bi-arrow-left fs-7"></i> 0%
                   </span>
@@ -980,109 +980,45 @@
         </div>
         <!-- /.card -->
 
-        <!-- PRODUCT LIST -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Recently Added Products</h3>
-
-            <div class="card-tools">
-              <button
-                type="button"
-                class="btn btn-tool"
-                data-lte-toggle="card-collapse"
-                aria-label="Collapse card">
-                <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
-                <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-tool"
-                data-lte-toggle="card-remove"
-                aria-label="Remove card">
-                <i class="bi bi-x-lg"></i>
+        @if ($productosRecientes !== null)
+          @include('partials.listado-modal', ['iconoModal' => 'bi-box-seam'])
+          <div class="card">
+            <div class="card-header d-flex align-items-center">
+              <h3 class="card-title">{{ __('Últimos productos registrados') }}</h3>
+              <button type="button" class="btn btn-tool ms-auto" data-lte-toggle="card-collapse" aria-label="{{ __('Contraer tarjeta') }}">
+                <i data-lte-icon="expand" class="bi bi-plus-lg" aria-hidden="true"></i>
+                <i data-lte-icon="collapse" class="bi bi-dash-lg" aria-hidden="true"></i>
               </button>
             </div>
-          </div>
-          <!-- /.card-header -->
-          <div class="card-body p-0">
-            <div class="px-2">
-              <div class="d-flex border-top py-2 px-1">
-                <div class="col-2">
-                  <img
-                    src="{{ asset('adminlte/assets/img/default-150x150.png') }}"
-                    alt="Product Image"
-                    class="img-size-50" />
-                </div>
-                <div class="col-10">
-                  <a href="javascript:void(0)" class="fw-bold">
-                    Samsung TV
-                    <span class="badge text-bg-warning float-end"> $1800 </span>
-                  </a>
-                  <div class="text-truncate">Samsung 32" 1080p 60Hz LED Smart HDTV.</div>
-                </div>
-              </div>
-              <!-- /.item -->
-              <div class="d-flex border-top py-2 px-1">
-                <div class="col-2">
-                  <img
-                    src="{{ asset('adminlte/assets/img/default-150x150.png') }}"
-                    alt="Product Image"
-                    class="img-size-50" />
-                </div>
-                <div class="col-10">
-                  <a href="javascript:void(0)" class="fw-bold">
-                    Bicycle
-                    <span class="badge text-bg-info float-end"> $700 </span>
-                  </a>
-                  <div class="text-truncate">
-                    26" Mongoose Dolomite Men's 7-speed, Navy Blue.
-                  </div>
-                </div>
-              </div>
-              <!-- /.item -->
-              <div class="d-flex border-top py-2 px-1">
-                <div class="col-2">
-                  <img
-                    src="{{ asset('adminlte/assets/img/default-150x150.png') }}"
-                    alt="Product Image"
-                    class="img-size-50" />
-                </div>
-                <div class="col-10">
-                  <a href="javascript:void(0)" class="fw-bold">
-                    Xbox One
-                    <span class="badge text-bg-danger float-end"> $350 </span>
-                  </a>
-                  <div class="text-truncate">
-                    Xbox One Console Bundle with Halo Master Chief Collection.
-                  </div>
-                </div>
-              </div>
-              <!-- /.item -->
-              <div class="d-flex border-top py-2 px-1">
-                <div class="col-2">
-                  <img
-                    src="{{ asset('adminlte/assets/img/default-150x150.png') }}"
-                    alt="Product Image"
-                    class="img-size-50" />
-                </div>
-                <div class="col-10">
-                  <a href="javascript:void(0)" class="fw-bold">
-                    PlayStation 4
-                    <span class="badge text-bg-success float-end"> $399 </span>
-                  </a>
-                  <div class="text-truncate">PlayStation 4 500GB Console (PS4)</div>
-                </div>
-              </div>
-              <!-- /.item -->
+            <div class="card-body p-0">
+              <ul class="list-group list-group-flush">
+                @forelse ($productosRecientes as $producto)
+                  <li class="list-group-item d-flex gap-3 align-items-center">
+                    @if ($producto->id_imagen)
+                      <img width="48" height="48" class="rounded object-fit-contain" loading="lazy" alt=""
+                        src="{{ route('inventarios.productos.imagen', [$producto->id, $producto->id_imagen]) }}">
+                    @else
+                      <span class="rounded border p-2 fs-5 text-body-secondary" aria-hidden="true"><i class="bi bi-box-seam"></i></span>
+                    @endif
+                    <div class="flex-grow-1 overflow-hidden">
+                      <a class="fw-semibold text-break" href="{{ route('inventarios.productos.show', $producto->id) }}"
+                        data-ajax-open="{{ $producto->nombre }}">{{ $producto->nombre }}</a>
+                      <div class="text-truncate text-body-secondary small">{{ $producto->descripcion ?: $producto->codigo }}</div>
+                    </div>
+                    @if ($producto->precio_venta !== null)
+                      <span class="badge text-bg-secondary">USD {{ number_format($producto->precio_venta / 100, 2) }}</span>
+                    @endif
+                  </li>
+                @empty
+                  <li class="list-group-item text-body-secondary">{{ __('Todavía no hay productos registrados.') }}</li>
+                @endforelse
+              </ul>
+            </div>
+            <div class="card-footer text-center">
+              <a href="{{ route('inventarios.productos.index') }}" data-workspace-link="inventarios.productos.index" data-workspace-label="{{ __('Productos') }}">{{ __('Ver todos los productos') }}</a>
             </div>
           </div>
-          <!-- /.card-body -->
-          <div class="card-footer bg-body text-center">
-            <a href="javascript:void(0)" class="uppercase"> View All Products </a>
-          </div>
-          <!-- /.card-footer -->
-        </div>
-        <!-- /.card -->
+        @endif
       </div>
       <!-- /.col -->
     </div>

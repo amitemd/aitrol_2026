@@ -34,9 +34,9 @@
                         <label for="rrhh-busqueda" class="form-label">Buscar en {{ mb_strtolower($titulo) }}</label>
                         <input id="rrhh-busqueda" name="q" class="form-control" type="search" maxlength="100" value="{{ $filtros['q'] ?? '' }}">
                     </div>
-                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                    <button class="btn btn-outline-primary" type="submit">{{ __('Buscar') }}</button>
                     @if (! empty($filtros['q']))
-                        <a class="btn btn-outline-secondary" href="{{ route($permiso) }}">Limpiar</a>
+                        <a class="btn btn-outline-secondary" href="{{ route($permiso) }}">{{ __('Limpiar') }}</a>
                     @endif
                 </form>
                 <div class="table-responsive">
@@ -44,9 +44,9 @@
                         <thead>
                             <tr>
                                 <th scope="col">{{ $seccion === 'nomina' ? 'Período' : ($seccion === 'contratos' ? 'Empleado' : 'Nombre o concepto') }}</th>
-                                <th scope="col">Información</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col" class="text-end">Acciones</th>
+                                <th scope="col">{{ __('Información') }}</th>
+                                <th scope="col">{{ __('Estado') }}</th>
+                                <th scope="col" class="text-end">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,19 +95,22 @@
                                         @elseif ($seccion === 'contratos')
                                             {{ $registro->fin && $registro->fin < today()->toDateString() ? 'Vencido' : ($registro->inicio > today()->toDateString() ? 'Programado' : 'Vigente') }}
                                         @elseif ($seccion === 'organizacion')
-                                            <span class="badge text-bg-secondary">Catálogo</span>
+                                            <span class="badge {{ $registro->activo ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $registro->activo ? 'Activo' : 'Inactivo' }}</span>
                                         @else
                                             <span class="badge {{ in_array($registro->estado, ['aprobado', 'pagada'], true) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $estados[$registro->estado] }}</span>
+                                            @if ($seccion === 'conceptos')
+                                                <span class="badge {{ $registro->activo ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $registro->activo ? 'Activo' : 'Inactivo' }}</span>
+                                            @endif
                                         @endif
                                     </td>
                                     <td class="text-end">
                                         @if (! $editable)
-                                            <a class="btn btn-sm btn-outline-primary" href="{{ route($ruta.'.show', $registro->id) }}" data-ajax-open="{{ $titulo }}">Ver</a>
+                                            <a class="btn btn-sm btn-outline-primary" href="{{ route($ruta.'.show', $registro->id) }}" data-ajax-open="{{ $titulo }}">{{ __('Ver') }}</a>
                                         @else
                                             <div class="d-inline-flex flex-wrap gap-1 justify-content-end">
-                                                <a class="btn btn-sm btn-outline-primary" href="{{ route($ruta.'.show', $registro->id) }}" data-ajax-open="Detalle de {{ mb_strtolower($titulo) }}">Ver</a>
-                                                @if (Gate::allows('permiso', [$permiso, 'actualizar']) && (! $procesable || $registro->estado === 'pendiente'))
-                                                    <a class="btn btn-sm btn-outline-secondary" href="{{ route($ruta.'.edit', $registro->id) }}" data-ajax-open="Editar registro">Editar</a>
+                                                <a class="btn btn-sm btn-outline-primary" href="{{ route($ruta.'.show', $registro->id) }}" data-ajax-open="Detalle de {{ mb_strtolower($titulo) }}">{{ __('Ver') }}</a>
+                                                @if (Gate::allows('permiso', [$permiso, 'actualizar']) && (! $procesable || $registro->estado === 'pendiente' || ($seccion === 'conceptos' && $registro->estado === 'aprobado')))
+                                                    <a class="btn btn-sm btn-outline-secondary" href="{{ route($ruta.'.edit', $registro->id) }}" data-ajax-open="{{ __('Editar registro') }}">{{ $seccion === 'conceptos' && $registro->estado === 'aprobado' ? 'Cambiar estado' : 'Editar' }}</a>
                                                 @endif
                                                 @if ($procesable && $registro->estado === 'pendiente' && Gate::allows('permiso', [$permiso, 'actualizar']))
                                                     <form method="POST" action="{{ route($ruta.'.estado', $registro->id) }}">

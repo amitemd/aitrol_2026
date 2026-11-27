@@ -17,15 +17,15 @@
         </div>
         @if ($retencion)
             <div class="col-sm-6 col-xl-3">
-                <label class="form-label" for="com-{{ $indice }}-tipo">Tipo</label>
+                <label class="form-label" for="com-{{ $indice }}-tipo">{{ __('Tipo') }}</label>
                 <select class="form-select" id="com-{{ $indice }}-tipo" name="lineas[{{ $indice }}][tipo_retencion]" required>
                     @foreach (['renta' => 'Renta', 'iva' => 'IVA', 'otra' => 'Otra'] as $tipo => $etiqueta)
-                        <option value="{{ $tipo }}" @selected(($linea['tipo_retencion'] ?? '') === $tipo)>{{ $etiqueta }}</option>
+                        <option value="{{ $tipo }}" @selected(($linea['tipo_retencion'] ?? '') === $tipo)>{{ __($etiqueta) }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-sm-6 col-xl-3">
-                <label class="form-label" for="com-{{ $indice }}-codigo">Código</label>
+                <label class="form-label" for="com-{{ $indice }}-codigo">{{ __('Código') }}</label>
                 <input id="com-{{ $indice }}-codigo" name="lineas[{{ $indice }}][codigo_retencion]" value="{{ $linea['codigo_retencion'] ?? '' }}" class="form-control" maxlength="32" required>
             </div>
         @endif
@@ -36,7 +36,7 @@
         @endphp
         @foreach ($importes as $campo => [$etiqueta, $min, $max, $paso, $predeterminado])
             <div class="col-6 col-sm">
-                <label class="form-label" for="com-{{ $indice }}-{{ $campo }}">{{ $etiqueta }}</label>
+                <label class="form-label" for="com-{{ $indice }}-{{ $campo }}">{{ __($etiqueta) }}</label>
                 <input class="form-control" type="number" min="{{ $min }}" max="{{ $max }}" step="{{ $paso }}"
                     id="com-{{ $indice }}-{{ $campo }}" name="lineas[{{ $indice }}][{{ $campo }}]" value="{{ $linea[$campo] ?? $predeterminado }}" @required($campo !== 'tasa')>
             </div>

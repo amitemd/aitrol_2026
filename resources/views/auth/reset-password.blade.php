@@ -13,7 +13,7 @@
         <input type="hidden" name="token" value="{{ $token }}">
         @error('token') <p class="access-error" role="alert">{{ $message }}</p> @enderror
         <div class="access-field">
-            <label for="email">Correo electrónico</label>
+            <label for="email">{{ __('Correo electrónico') }}</label>
             <input id="email" name="email" type="email" autocomplete="username" maxlength="255"
                 value="{{ old('email', $email) }}" required
                 @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>

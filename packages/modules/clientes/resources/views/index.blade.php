@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Clientes')
+@section('title', __('Clientes'))
 
 @section('content')
     @include('partials.listado-cabecera', [
@@ -28,11 +28,11 @@
                             <caption class="visually-hidden">Listado de clientes</caption>
                             <thead class="clientes-tabla-cabecera">
                                 <tr>
-                                    <th scope="col">Nombre</th>
-                                    <th scope="col">Identificación</th>
+                                    <th scope="col">{{ __('Nombre') }}</th>
+                                    <th scope="col">{{ __('Identificación') }}</th>
                                     <th scope="col">Contacto</th>
-                                    <th scope="col">Estado</th>
-                                    <th scope="col"><span class="visually-hidden">Acciones</span></th>
+                                    <th scope="col">{{ __('Estado') }}</th>
+                                    <th scope="col"><span class="visually-hidden">{{ __('Acciones') }}</span></th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -7,7 +7,7 @@
             'telefono' => ['Teléfono', 'tel', 30],
         ] as $clave => [$etiqueta, $tipo, $limite])
             <div class="col-sm">
-                <label class="form-label" for="contacto-{{ $indice }}-{{ $clave }}">{{ $etiqueta }}</label>
+                <label class="form-label" for="contacto-{{ $indice }}-{{ $clave }}">{{ __($etiqueta) }}</label>
                 <input class="form-control" id="contacto-{{ $indice }}-{{ $clave }}"
                     name="contactos[{{ $indice }}][{{ $clave }}]" type="{{ $tipo }}" maxlength="{{ $limite }}" value="{{ $contacto[$clave] ?? '' }}">
             </div>

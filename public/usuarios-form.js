@@ -3,6 +3,7 @@
 
     function setup(form) {
         const tablist = form.querySelector('.usuario-tabs');
+        if (!tablist) return;
         const tabs = [...tablist.querySelectorAll('[data-usuario-tab]')];
         const panels = [...form.querySelectorAll('[data-usuario-panel]')];
 

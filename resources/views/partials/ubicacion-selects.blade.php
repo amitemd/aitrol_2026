@@ -2,9 +2,9 @@
     <div class="row g-3">
         @foreach (['pais' => 'País', 'provincia' => 'Provincia o estado', 'ciudad' => 'Ciudad'] as $campo => $etiqueta)
             <div class="col-md-4">
-                <label for="{{ $campo }}-ubicacion" class="form-label">{{ $etiqueta }}</label>
+                <label for="{{ $campo }}-ubicacion" class="form-label">{{ __($etiqueta) }}</label>
                 <select id="{{ $campo }}-ubicacion" class="form-select" data-ubicacion-{{ $campo }} @if ($campo === 'ciudad') name="id_ciudad" @endif disabled>
-                    <option value="">Seleccionar</option>
+                    <option value="">{{ __('Seleccionar') }}</option>
                 </select>
             </div>
         @endforeach

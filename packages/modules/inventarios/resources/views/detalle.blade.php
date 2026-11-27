@@ -13,7 +13,7 @@
                         'unidad' => 'Unidad', 'stock_minimo' => 'Stock mínimo', 'tipo' => 'Tipo', 'cantidad' => 'Cantidad',
                         'costo_unitario' => 'Costo unitario', 'motivo' => 'Motivo', 'referencia' => 'Referencia', 'created_at' => 'Fecha de registro'] as $campo => $etiqueta)
                         @isset($fila[$campo])
-                            <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7">{{ match ($campo) {
+                            <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7">{{ match ($campo) {
                                 'tipo' => config('inventarios.tipos.'.$fila[$campo]),
                                 'tipo_producto' => config('inventarios.tipos_producto.'.$fila[$campo]),
                                 default => $fila[$campo],
@@ -44,14 +44,14 @@
                 @isset($fila['lineas'])
                     <div class="table-responsive"><table class="table table-sm">
                         <caption class="visually-hidden">Movimientos de existencias</caption>
-                        <thead><tr><th>Bodega</th><th>Variación</th><th>Saldo anterior</th><th>Saldo</th></tr></thead>
+                        <thead><tr><th>{{ __('Bodega') }}</th><th>Variación</th><th>Saldo anterior</th><th>Saldo</th></tr></thead>
                         <tbody>@foreach ($fila['lineas'] as $linea)
                             <tr><td>{{ $linea['id_bodega'] }}</td><td>{{ $linea['variacion'] }}</td><td>{{ $linea['saldo_anterior'] }}</td><td>{{ $linea['saldo'] }}</td></tr>
                         @endforeach</tbody>
                     </table></div>
                 @endisset
             </div>
-            <div class="card-footer text-end"><a href="{{ route('inventarios.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cerrar</a></div>
+            <div class="card-footer text-end"><a href="{{ route('inventarios.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a></div>
         </section>
     </div></div>
 @endsection

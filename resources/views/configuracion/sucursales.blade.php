@@ -1,6 +1,6 @@
 @extends('layouts.adminlte')
 
-@section('title', 'Sucursales')
+@section('title', __('Sucursales'))
 @section('content')
     @include('partials.listado-cabecera', [
         'titulo' => 'Sucursales', 'subtitulo' => 'Configuración', 'icono' => 'bi-diagram-3',
@@ -15,7 +15,7 @@
             <section class="card clientes-directorio" data-ajax-list>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead><tr><th scope="col">Código</th><th scope="col">Nombre</th><th scope="col">Dirección</th><th scope="col" class="text-end">Acciones</th></tr></thead>
+                        <thead><tr><th scope="col">{{ __('Código') }}</th><th scope="col">{{ __('Nombre') }}</th><th scope="col">{{ __('Dirección') }}</th><th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
                         <tbody>
                             @forelse ($sucursales as $sucursal)
                                 <tr>

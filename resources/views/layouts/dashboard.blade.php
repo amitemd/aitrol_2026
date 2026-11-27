@@ -20,14 +20,14 @@
             </a>
             <nav class="navigation" aria-label="Navegación principal">
                 <span class="nav-label">Operación</span>
-                <a class="nav-link is-current" href="{{ route('dashboard.previous') }}" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-grid"/></svg> Panel general</a>
+                <a class="nav-link is-current" href="{{ route('dashboard.previous') }}" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-grid"/></svg> {{ __('Panel general') }}</a>
                 <a class="nav-link" href="{{ route('dashboard.previous') }}#pacientes"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg> Pacientes</a>
                 <a class="nav-link" href="{{ route('dashboard.previous') }}#agenda"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg> Agenda</a>
                 <a class="nav-link" href="{{ route('dashboard.previous') }}#balance"><svg class="icon" aria-hidden="true"><use href="#icon-wallet"/></svg> Finanzas</a>
                 <a class="nav-link" href="{{ route('dashboard.previous') }}#habitaciones"><svg class="icon" aria-hidden="true"><use href="#icon-bed"/></svg> Habitaciones</a>
                 <span class="nav-label">Seguimiento</span>
                 <a class="nav-link" href="{{ route('dashboard.previous') }}#estadisticas"><svg class="icon" aria-hidden="true"><use href="#icon-chart"/></svg> Estadísticas</a>
-                <a class="nav-link" href="{{ route('dashboard.previous') }}#reportes"><svg class="icon" aria-hidden="true"><use href="#icon-flag"/></svg> Reportes</a>
+                <a class="nav-link" href="{{ route('dashboard.previous') }}#reportes"><svg class="icon" aria-hidden="true"><use href="#icon-flag"/></svg> {{ __('Reportes') }}</a>
             </nav>
             <div class="sidebar-footer">
                 <span class="status-dot"></span>
@@ -61,7 +61,7 @@
     <dialog id="patient-dialog" class="modal" aria-labelledby="patient-dialog-title">
         <h2 id="patient-dialog-title">Nuevo paciente</h2>
         <p>El registro de pacientes estará disponible cuando se conecte el módulo clínico.</p>
-        <form method="dialog"><button class="primary-button" type="submit">Cerrar</button></form>
+        <form method="dialog"><button class="primary-button" type="submit">{{ __('Cerrar') }}</button></form>
     </dialog>
 </body>
 </html>

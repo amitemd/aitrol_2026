@@ -23,7 +23,7 @@
                 <div class="table-responsive">
                     <table class="table align-middle">
                         <caption class="visually-hidden">Detalle del papel de trabajo</caption>
-                        <thead><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ $etiqueta }}</th>@endforeach</tr></thead>
+                        <thead><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach</tr></thead>
                         <tbody>
                             @forelse ($registro['detalle'] as $fila)
                                 <tr>@foreach ($columnas as $campo => $etiqueta)<td>{{ $fila[$campo] ?? '—' }}</td>@endforeach</tr>
@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div class="card-footer text-end">
-                <a class="btn btn-outline-secondary" href="{{ route('tributario.'.$seccion.'.index') }}" data-ajax-close>Cerrar</a>
+                <a class="btn btn-outline-secondary" href="{{ route('tributario.'.$seccion.'.index') }}" data-ajax-close>{{ __('Cerrar') }}</a>
                 <a class="btn btn-outline-primary" href="{{ route('tributario.'.$seccion.'.exportar', $registro['id']) }}"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV de trabajo</a>
             </div>
         </section>

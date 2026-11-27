@@ -29,7 +29,7 @@
                     @include('configuracion::matriz-permisos')
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                    <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button type="submit" class="btn btn-primary">Guardar permisos</button>
                 </div>
             </form>

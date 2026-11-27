@@ -24,7 +24,7 @@
                                 <input id="fiscal-codigo" class="form-control" name="codigo" maxlength="30" value="{{ old('codigo') }}" required>
                             </div>
                             <div class="col-12">
-                                <label for="fiscal-nombre" class="form-label">Descripción</label>
+                                <label for="fiscal-nombre" class="form-label">{{ __('Descripción') }}</label>
                                 <input id="fiscal-nombre" class="form-control" name="nombre" maxlength="100" value="{{ old('nombre') }}" required>
                             </div>
                             <div class="col-md-4">
@@ -39,14 +39,14 @@
                                 <input id="fiscal-valor" class="form-control" name="valor" type="number" min="0" step="0.000001" value="{{ old('valor') }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label for="fiscal-vigencia" class="form-label">Vigente desde</label>
+                                <label for="fiscal-vigencia" class="form-label">{{ __('Vigente desde') }}</label>
                                 <input id="fiscal-vigencia" class="form-control" name="vigente_desde" type="date" value="{{ old('vigente_desde') }}" required>
                             </div>
                         </div>
                     </section>
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
-                    <a href="{{ route('configuracion.empresas.parametros') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
+                    <a href="{{ route('configuracion.empresas.parametros') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button class="btn btn-primary" type="submit">Guardar tarifa</button>
                 </div>
             </form>

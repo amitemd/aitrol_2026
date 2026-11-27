@@ -27,14 +27,14 @@
                 @elseif ($seccion === 'documentos')
                     <div class="col-sm-8">
                         <label for="tr-declaracion" class="form-label">Papel de trabajo</label>
-                        <select id="tr-declaracion" name="id_declaracion" data-select2-url="{{ route('tributario.documentos.opciones') }}" data-select2-min="0" class="form-select" required><option value="">Seleccionar</option></select>
+                        <select id="tr-declaracion" name="id_declaracion" data-select2-url="{{ route('tributario.documentos.opciones') }}" data-select2-min="0" class="form-select" required><option value="">{{ __('Seleccionar') }}</option></select>
                     </div>
                     <div class="col-sm-4"><label for="tr-tipo" class="form-label">Tipo de respaldo</label>
                         <select id="tr-tipo" name="tipo" class="form-select" required>
                             @foreach (config('tributario.archivos') as $tipo => $texto)<option value="{{ $tipo }}">{{ $texto }}</option>@endforeach
                         </select>
                     </div>
-                    <div class="col-12"><label for="tr-nombre" class="form-label">Nombre</label><input id="tr-nombre" name="nombre" maxlength="180" class="form-control" required></div>
+                    <div class="col-12"><label for="tr-nombre" class="form-label">{{ __('Nombre') }}</label><input id="tr-nombre" name="nombre" maxlength="180" class="form-control" required></div>
                     <div class="col-12">
                         @include('partials.campo-adjunto', ['campo' => 'archivo', 'nombre' => 'archivo', 'titulo' => 'Archivo de respaldo',
                             'formatos' => '.pdf,.xml,.csv,.xlsx', 'iconoAdjunto' => 'bi-file-earmark-text',
@@ -72,7 +72,7 @@
                 @endif
             </div>
             <div class="card-footer d-flex justify-content-end gap-2">
-                <a href="{{ route($ruta.'.index') }}" data-ajax-close class="btn btn-outline-secondary">Cancelar</a><button class="btn btn-primary">{{ $accion || in_array($seccion, ['documentos', 'nomina'], true) ? 'Guardar' : 'Preparar borrador' }}</button>
+                <a href="{{ route($ruta.'.index') }}" data-ajax-close class="btn btn-outline-secondary">{{ __('Cancelar') }}</a><button class="btn btn-primary">{{ $accion || in_array($seccion, ['documentos', 'nomina'], true) ? 'Guardar' : 'Preparar borrador' }}</button>
             </div>
         </form>
     </div></div>

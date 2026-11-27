@@ -11,13 +11,22 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 
 Route::get('/', [SesionController::class, 'inicio'])->middleware('auth.session')->name('dashboard');
 Route::get('/login', fn (): RedirectResponse => to_route('dashboard'))->name('login');
+Route::post('/idioma', function (Request $request): RedirectResponse {
+    $datos = $request->validate(['idioma' => ['required', 'string', Rule::in(array_keys(config('app.idiomas')))]]);
+    $request->session()->put('idioma', $datos['idioma']);
+
+    return back();
+})->name('idioma.actualizar');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::post('/asistente/vicky', VickyController::class)
         ->middleware(['empresa', 'throttle:12,1'])->name('vicky.consultar');
+    Route::post('/asistente/vicky/valoracion', [VickyController::class, 'valorar'])
+        ->middleware(['empresa', 'throttle:12,1'])->name('vicky.valorar');
     Route::get('/auditoria/bitacora', [AuditoriaController::class, 'index'])
         ->middleware(['empresa', 'permiso:auditoria.logs.index,leer'])->name('auditoria.logs.index');
     Route::post('/auditoria/navegacion', [AuditoriaController::class, 'navegacion'])

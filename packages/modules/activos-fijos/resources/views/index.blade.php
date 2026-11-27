@@ -31,13 +31,13 @@
             <div class="card clientes-directorio" data-ajax-list>
                 <form action="{{ route($ruta.'.index') }}" method="GET" data-ajax-search class="row g-2 align-items-end m-0 p-3 border-bottom">
                     <div class="col-12 col-sm-5 col-lg-4">
-                        <label for="af-buscar" class="form-label">Buscar</label>
+                        <label for="af-buscar" class="form-label">{{ __('Buscar') }}</label>
                         <input id="af-buscar" class="form-control" name="q" maxlength="120" value="{{ $filtros['q'] ?? '' }}"
                             placeholder="{{ $esRegistro ? 'Código, nombre, serie o compra' : 'Código o nombre' }}">
                     </div>
                     @if ($catalogo || $esRegistro)
                         <div class="col-6 col-sm-3 col-lg-2">
-                            <label for="af-estado" class="form-label">Estado</label>
+                            <label for="af-estado" class="form-label">{{ __('Estado') }}</label>
                             <select id="af-estado" class="form-select" name="activo">
                                 <option value="">Todos</option>
                                 <option value="1" @selected((string) ($filtros['activo'] ?? '') === '1')>Activos</option>
@@ -46,7 +46,7 @@
                         </div>
                     @elseif ($seccion === 'ordenes')
                         <div class="col-6 col-sm-3 col-lg-2">
-                            <label for="af-estado" class="form-label">Estado</label>
+                            <label for="af-estado" class="form-label">{{ __('Estado') }}</label>
                             <select id="af-estado" name="estado" class="form-select">
                                 <option value="">Todos</option>
                                 @foreach (config('activos-fijos.estados_orden') as $valor => $texto)
@@ -58,14 +58,14 @@
                     @if ($esRegistro)
                         @foreach (['desde' => 'Adquirido desde', 'hasta' => 'Adquirido hasta'] as $campo => $etiqueta)
                             <div class="col-6 col-sm-auto">
-                                <label for="af-{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
+                                <label for="af-{{ $campo }}" class="form-label">{{ __($etiqueta) }}</label>
                                 <input type="date" id="af-{{ $campo }}" class="form-control" name="{{ $campo }}" value="{{ $filtros[$campo] ?? '' }}">
                             </div>
                         @endforeach
                     @endif
                     <div class="col-auto d-flex flex-wrap gap-2">
                         <button class="btn btn-outline-primary">Filtrar</button>
-                        @if ($filtros)<a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-list-link>Limpiar</a>@endif
+                        @if ($filtros)<a href="{{ route($ruta.'.index') }}" class="btn btn-outline-secondary" data-ajax-list-link>{{ __('Limpiar') }}</a>@endif
                         @if ($resumen)<a href="{{ route('activos-fijos.reportes.exportar', $filtros) }}" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>Exportar CSV</a>@endif
                     </div>
                 </form>
@@ -73,7 +73,7 @@
                     <div class="row g-2 m-0 p-3 border-bottom">
                         @foreach (['cantidad' => 'Bienes', 'costo' => 'Costo de adquisición', 'depreciado' => 'Depreciación acumulada', 'valor_libros' => 'Valor en libros'] as $campo => $etiqueta)
                             <div class="col-6 col-lg-3"><div class="rounded border bg-body-tertiary p-3 h-100">
-                                <span class="d-block small text-body-secondary">{{ $etiqueta }}</span><strong class="fs-5">{{ $resumen[$campo] }}</strong>
+                                <span class="d-block small text-body-secondary">{{ __($etiqueta) }}</span><strong class="fs-5">{{ $resumen[$campo] }}</strong>
                             </div></div>
                         @endforeach
                     </div>
@@ -83,8 +83,8 @@
                     <table class="table table-hover align-middle mb-0">
                         <caption class="visually-hidden">{{ $titulo }}</caption>
                         <thead class="clientes-tabla-cabecera"><tr>
-                            @foreach ($campos as $etiqueta)<th scope="col">{{ $etiqueta }}</th>@endforeach
-                            @unless ($seccion === 'reportes')<th scope="col" class="text-end">Acciones</th>@endunless
+                            @foreach ($campos as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach
+                            @unless ($seccion === 'reportes')<th scope="col" class="text-end">{{ __('Acciones') }}</th>@endunless
                         </tr></thead>
                         <tbody>
                             @forelse ($registros as $fila)

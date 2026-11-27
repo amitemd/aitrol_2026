@@ -67,7 +67,7 @@ final readonly class Nomina
         }
 
         $porEmpleado = $aprobadas->groupBy('id_empleado');
-        $recurrentes = $this->datos->procedimientos('conceptos')->where('estado', 'aprobado')
+        $recurrentes = $this->datos->procedimientos('conceptos')->where('estado', 'aprobado')->where('activo', true)
             ->where('inicio', '<=', $hasta)->where(fn (Builder $q) => $q->whereNull('fin')->orWhere('fin', '>=', $hasta))
             ->orderBy('id')->get()->groupBy('id_empleado');
         foreach ($contratos as $empleado => $tramos) {

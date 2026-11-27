@@ -41,16 +41,16 @@
                         </select>
                     </div>
                     <div class="col-6 col-lg">
-                        <label class="form-label" for="auditoria-usuario">Usuario</label>
+                        <label class="form-label" for="auditoria-usuario">{{ __('Usuario') }}</label>
                         <input id="auditoria-usuario" class="form-control" name="usuario" maxlength="80"
                             placeholder="Nombre o ID" value="{{ $filtros['usuario'] ?? '' }}">
                     </div>
                     <div class="col-6 col-lg">
-                        <label class="form-label" for="auditoria-desde">Desde</label>
+                        <label class="form-label" for="auditoria-desde">{{ __('Desde') }}</label>
                         <input id="auditoria-desde" class="form-control" name="desde" type="date" value="{{ $filtros['desde'] ?? '' }}">
                     </div>
                     <div class="col-6 col-lg">
-                        <label class="form-label" for="auditoria-hasta">Hasta</label>
+                        <label class="form-label" for="auditoria-hasta">{{ __('Hasta') }}</label>
                         <input id="auditoria-hasta" class="form-control" name="hasta" type="date" value="{{ $filtros['hasta'] ?? '' }}">
                     </div>
                     <div class="col-auto">
@@ -63,11 +63,11 @@
                         <thead class="table-active">
                             <tr>
                                 <th scope="col">Fecha y hora</th>
-                                <th scope="col">Usuario</th>
+                                <th scope="col">{{ __('Usuario') }}</th>
                                 <th scope="col">Nivel</th>
                                 <th scope="col">Módulo</th>
                                 <th scope="col">Actividad</th>
-                                <th scope="col">Detalle</th>
+                                <th scope="col">{{ __('Detalle') }}</th>
                             </tr>
                         </thead>
                         <tbody>

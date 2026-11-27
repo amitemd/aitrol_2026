@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Aitrol\Comercial\Application\DocumentosComerciales;
+use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -24,9 +25,10 @@ final readonly class VickyReportes
     ) {}
 
     /** @param array{desde?: string, hasta?: string} $fechas */
-    public function consultar(string $tipo, array $fechas, ?string $tercero): array
+    public function consultar(string $tipo, array $fechas, ?string $tercero, ?Closure $alConsultar = null): array
     {
         Gate::authorize('permiso', [self::PERMISOS[$tipo], 'leer']);
+        $alConsultar?->__invoke();
 
         return match ($tipo) {
             'ventas', 'compras' => $this->comercial($tipo, $fechas),

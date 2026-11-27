@@ -346,6 +346,45 @@
     const reloaded = performance.getEntriesByType('navigation')[0]?.type === 'reload';
     activate((initialKey === 'dashboard' || reloaded) && tabs.has(saved?.active) ? saved.active : initialKey);
 
+    window.addEventListener('aitrol:abrir-destino', (event) => {
+        const { key, label, url, form } = event.detail;
+        if (url.origin !== location.origin || (form && form.origin !== location.origin)) return;
+
+        event.preventDefault();
+        const menuLink = [...navigation.querySelectorAll('a[data-workspace-link]')]
+            .find((link) => link.dataset.workspaceLink === key);
+        add(key, menuLink?.dataset.workspaceLabel || menuLink?.textContent.trim() || label, url);
+        activate(key, true, true);
+        if (!form) return;
+
+        const tab = tabs.get(key);
+        const frame = tab.panel.querySelector('iframe[data-workspace-frame]');
+        const abrirFormulario = (documento) => {
+            [...(documento?.querySelectorAll('a[data-ajax-open]') ?? [])]
+                .find((link) => link.href === form.href)?.click();
+        };
+        if (!frame) {
+            abrirFormulario(document);
+            return;
+        }
+
+        const pantallaActual = tab.cargada ? frame.contentDocument?.location.pathname : null;
+        if (pantallaActual === url.pathname) {
+            abrirFormulario(frame.contentDocument);
+            return;
+        }
+        if (tab.formularioPendiente) frame.removeEventListener('load', tab.formularioPendiente);
+        tab.formularioPendiente = () => {
+            tab.formularioPendiente = null;
+            if (active === key) abrirFormulario(frame.contentDocument);
+        };
+        frame.addEventListener('load', tab.formularioPendiente, { once: true });
+        if (tab.cargada) {
+            tab.cargada = false;
+            frame.src = url.href;
+        }
+    });
+
     const search = document.querySelector('[data-workspace-search]');
     if (search) {
         const input = search.querySelector('input');

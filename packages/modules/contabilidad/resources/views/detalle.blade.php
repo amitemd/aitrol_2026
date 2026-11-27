@@ -16,22 +16,22 @@
             <div class="card-body">
                 <dl class="row mb-2">
                     @foreach ($campos as $campo => $etiqueta)
-                        <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7">@include('contabilidad::valor', ['valor' => $registro[$campo] ?? null])</dd>
+                        <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7">@include('contabilidad::valor', ['valor' => $registro[$campo] ?? null])</dd>
                     @endforeach
                 </dl>
                 @isset($registro['lineas'])
                     <div class="table-responsive"><table class="table table-sm align-middle">
                         <caption class="visually-hidden">Detalle de partidas</caption>
-                        <thead><tr><th>Cuenta</th><th>Detalle</th><th class="text-end">Debe</th><th class="text-end">Haber</th></tr></thead>
+                        <thead><tr><th>{{ __('Cuenta') }}</th><th>{{ __('Detalle') }}</th><th class="text-end">Debe</th><th class="text-end">Haber</th></tr></thead>
                         <tbody>@foreach ($registro['lineas'] as $fila)
                             <tr><th scope="row">{{ $fila['codigo'] }} · {{ $fila['cuenta'] }}</th><td>{{ $fila['detalle'] ?? '—' }}</td>
                                 <td class="text-end">{{ $fila['debe'] }}</td><td class="text-end">{{ $fila['haber'] }}</td></tr>
                         @endforeach</tbody>
-                        <tfoot><tr><th scope="row" colspan="2" class="text-end">Total</th><td class="text-end">{{ $registro['total'] }}</td><td class="text-end">{{ $registro['total'] }}</td></tr></tfoot>
+                        <tfoot><tr><th scope="row" colspan="2" class="text-end">{{ __('Total') }}</th><td class="text-end">{{ $registro['total'] }}</td><td class="text-end">{{ $registro['total'] }}</td></tr></tfoot>
                     </table></div>
                 @endisset
             </div>
-            <div class="card-footer text-end"><a href="{{ route('contabilidad.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cerrar</a></div>
+            <div class="card-footer text-end"><a href="{{ route('contabilidad.'.$seccion.'.index') }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a></div>
         </section>
     </div></div>
 @endsection

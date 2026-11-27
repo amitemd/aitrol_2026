@@ -1,6 +1,6 @@
 @foreach (config('inventarios.cuentas_producto') as $rol => [$etiqueta, $clase])
     <div class="col-sm-6">
-        <label class="form-label" for="inv-cuenta-{{ $rol }}">{{ $etiqueta }}</label>
+        <label class="form-label" for="inv-cuenta-{{ $rol }}">{{ __($etiqueta) }}</label>
         <select id="inv-cuenta-{{ $rol }}" name="cuentas[{{ $rol }}]" class="form-select @error('cuentas.'.$rol) is-invalid @enderror">
             <option value="">Seleccionar cuenta</option>
             @foreach ($ficha['cuentas']->where('clase', $clase) as $cuenta)
