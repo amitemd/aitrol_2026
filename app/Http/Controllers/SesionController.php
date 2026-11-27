@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ContextoOperativo;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -17,12 +18,20 @@ final class SesionController extends Controller
 
     private const BLOQUEO_SEGUNDOS = 300;
 
-    public function inicio(): View
+    public function inicio(ContextoOperativo $contexto): View|RedirectResponse
     {
         $usuario = Auth::user();
-        if ($usuario === null) return view('auth.login');
+        if ($usuario === null) {
+            return view('auth.login');
+        }
+        if (! $usuario->empresa()->exists()) {
+            return view('auth.empresa-inicial');
+        }
+        if ($contexto->resolverSucursalWeb() === null) {
+            return to_route('configuracion.contexto.index');
+        }
 
-        return view($usuario->empresa()->exists() ? 'adminlte.dashboard-v2' : 'auth.empresa-inicial');
+        return view('adminlte.dashboard-v2');
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse

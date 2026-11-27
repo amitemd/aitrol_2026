@@ -3,6 +3,7 @@
 namespace Aitrol\CajaBancos\Application;
 
 use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
+use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use Closure;
 use Illuminate\Database\Query\Builder;
@@ -11,7 +12,7 @@ use stdClass;
 
 final readonly class DatosTesoreria
 {
-    public function __construct(private EmpresaActiva $empresa) {}
+    public function __construct(private EmpresaActiva $empresa, private ContextoOperativo $contexto) {}
 
     public function transaccion(Closure $trabajo): mixed
     {
@@ -20,7 +21,15 @@ final readonly class DatosTesoreria
 
     public function tabla(string $tabla): Builder
     {
-        return DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id());
+        $consulta = DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id());
+
+        return match ($tabla) {
+            'cb_cuentas', 'cb_operaciones' => $consulta->where($tabla.'.id_sucursal', $this->contexto->sucursal()->id),
+            'cb_asientos', 'cb_cierres', 'cb_extractos', 'cb_lineas_extracto' => $consulta
+                ->whereIn($tabla.'.id_cuenta', $this->tabla('cb_cuentas')->select('id')),
+            'cb_conciliaciones' => $consulta->whereIn('cb_conciliaciones.id_linea_extracto', $this->tabla('cb_lineas_extracto')->select('id')),
+            default => $consulta,
+        };
     }
 
     public function fila(string $tabla, int $id, bool $bloquear = false): stdClass
@@ -33,6 +42,9 @@ final readonly class DatosTesoreria
 
     public function crear(string $tabla, array $datos, bool $auditar = true): int
     {
+        if (in_array($tabla, ['cb_cuentas', 'cb_operaciones'], true)) {
+            $datos['id_sucursal'] = $this->contexto->sucursal()->id;
+        }
         $auditoria = $auditar ? ['id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now()] : [];
 
         return (int) DB::table($tabla)->insertGetId($datos + ['id_empresa' => $this->empresa->id()] + $auditoria);

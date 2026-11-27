@@ -6,6 +6,7 @@ use Aitrol\Contabilidad\Application\LibroContable;
 use Aitrol\Contabilidad\Infrastructure\Persistence\DatosContables;
 use Aitrol\Contabilidad\Infrastructure\Queries\ReportesContables;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
+use App\Services\ContextoOperativo;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,7 +18,7 @@ final readonly class ContableController
 {
     public function __construct(private DatosContables $datos, private LibroContable $libro, private ReportesContables $reportes) {}
 
-    public function index(Request $request)
+    public function index(Request $request, ContextoOperativo $contexto)
     {
         $seccion = $request->route('seccion');
         $filtros = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'page' => ['nullable', 'integer', 'between:1,100000'], 'per_page' => ['nullable', 'integer', 'between:1,100']]);
@@ -27,6 +28,9 @@ final readonly class ContableController
             'cuentas' => [$this->datos->cuentas(), ['co_cuentas.codigo', 'co_cuentas.nombre']],
             'periodos' => [$this->datos->tabla('co_periodos')->orderByDesc('desde'), ['nombre']],
         };
+        if ($seccion === 'asientos') {
+            $contexto->aplicarPeriodo($consulta, 'co_asientos.fecha');
+        }
         $registros = $this->datos->buscar($consulta, $filtros['q'] ?? null, $columnas)->paginate($filtros['per_page'] ?? 20)
             ->appends($filtros)->through($this->presentar(...));
 

@@ -7,6 +7,7 @@ use Aitrol\Configuracion\Domain\MenuRepository;
 use Aitrol\Configuracion\Infrastructure\Persistence\EloquentMenuRepository;
 use App\Models\User;
 use App\Services\Accesos;
+use App\Services\ContextoOperativo;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -44,6 +45,25 @@ final class ConfiguracionServiceProvider extends ServiceProvider
                 Gate::allows('administrar-configuracion'),
                 fn (string $ruta): bool => $usuario !== null && $accesos->muestra($usuario, $ruta),
             ));
+        });
+
+        View::composer('partials.adminlte-header', function (Vista $vista): void {
+            $usuario = auth()->user();
+            if ($usuario?->id_empresa !== null && ($empresa = $usuario->empresa) !== null) {
+                $contexto = app(ContextoOperativo::class);
+                $sucursal = $contexto->resolverSucursalWeb();
+                if ($sucursal === null) {
+                    return;
+                }
+                $anioActual = $contexto->anioActual();
+                $vista->with([
+                    'empresaOperativa' => $empresa->nombre_comercial ?: $empresa->razon_social,
+                    'sucursalOperativa' => $sucursal,
+                    'sucursalesOperativas' => $contexto->opciones(),
+                    'periodoOperativo' => $contexto->periodo(),
+                    'aniosPeriodoOperativo' => range($anioActual, $anioActual - 10),
+                ]);
+            }
         });
     }
 }

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}">
     <link rel="stylesheet" href="{{ asset('auth.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.min.css" crossorigin="anonymous">
 </head>
 <body class="aitrol-access" data-bs-theme="dark">
     <main class="access-shell">
@@ -34,6 +35,7 @@
     </main>
     <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('auth-showcase.js') }}" defer></script>
     <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('aitrol-brand.js') }}" defer></script>
+    @include('partials.alertas')
     @stack('scripts')
 </body>
 </html>

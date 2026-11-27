@@ -6,6 +6,7 @@ use App\Events\OperacionContabilizable;
 use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use App\Services\EmpresaActiva;
+use App\Services\ContextoOperativo;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
@@ -21,7 +22,7 @@ final readonly class RegistroActivos
         'ordenes' => 'af_ordenes',
     ];
 
-    public function __construct(private EmpresaActiva $empresa) {}
+    public function __construct(private EmpresaActiva $empresa, private ContextoOperativo $contexto) {}
 
     public function listado(string $seccion, array $filtros): Builder
     {
@@ -331,7 +332,14 @@ final readonly class RegistroActivos
 
     private function tabla(string $tabla): Builder
     {
-        return DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id());
+        $consulta = DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id());
+
+        return match ($tabla) {
+            'af_activos', 'com_documentos' => $consulta->where($tabla.'.id_sucursal', $this->contexto->sucursal()->id),
+            'af_movimientos', 'af_depreciaciones', 'af_ordenes' => $consulta
+                ->whereIn($tabla.'.id_activo', $this->tabla('af_activos')->select('id')),
+            default => $consulta,
+        };
     }
 
     private function fila(string $tabla, int $id, ?string $clase = null): stdClass
@@ -345,6 +353,9 @@ final readonly class RegistroActivos
     private function guardar(string $tabla, array $datos, ?int $id = null): int
     {
         if ($id === null) {
+            if ($tabla === 'af_activos') {
+                $datos['id_sucursal'] = $this->contexto->sucursal()->id;
+            }
             return (int) DB::table($tabla)->insertGetId($datos + [
                 'id_empresa' => $this->empresa->id(), 'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
             ]);

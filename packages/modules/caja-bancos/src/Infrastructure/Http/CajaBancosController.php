@@ -6,6 +6,7 @@ use Aitrol\CajaBancos\Application\ConciliacionBancaria;
 use Aitrol\CajaBancos\Application\DatosTesoreria;
 use Aitrol\CajaBancos\Application\LibroCaja;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
+use App\Services\ContextoOperativo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -16,11 +17,12 @@ final readonly class CajaBancosController
 {
     public function __construct(private DatosTesoreria $datos, private LibroCaja $libro, private ConciliacionBancaria $banco) {}
 
-    public function index(Request $request)
+    public function index(Request $request, ContextoOperativo $contexto)
     {
         $seccion = $request->route('seccion');
         $filtros = $this->filtros($request);
-        $registros = $this->datos->listado($seccion, $filtros)->paginate($filtros['per_page'] ?? 20)->appends($filtros)->through($this->presentar(...));
+        $filtrosConsulta = $seccion === 'reportes' ? $filtros : $contexto->acotarFechas($filtros);
+        $registros = $this->datos->listado($seccion, $filtrosConsulta)->paginate($filtros['per_page'] ?? 20)->appends($filtros)->through($this->presentar(...));
         $resumen = null;
         if ($seccion === 'reportes') {
             $resumen = $this->datos->listado('reportes', $filtros)->reorder()->select('op.moneda')

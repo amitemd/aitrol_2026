@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Str;
 use Pdo\Mysql;
+use Pdo\Sqlite;
 
 return [
 
@@ -31,6 +32,31 @@ return [
     */
 
     'connections' => [
+        'vicky_sqlite' => [
+            'driver' => 'sqlite',
+            'database' => env('VICKY_DB_DATABASE', env('DB_DATABASE', database_path('database.sqlite'))),
+            'prefix' => '',
+            'busy_timeout' => 5000,
+            'options' => [Sqlite::ATTR_OPEN_FLAGS => Sqlite::OPEN_READONLY],
+        ],
+
+        'vicky_mysql' => [
+            'driver' => 'mysql',
+            'host' => env('VICKY_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('VICKY_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('VICKY_DB_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('VICKY_DB_USERNAME', 'aitrol_vicky_lectura'),
+            'password' => env('VICKY_DB_PASSWORD', ''),
+            'unix_socket' => env('VICKY_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                Mysql::ATTR_INIT_COMMAND => 'SET SESSION TRANSACTION READ ONLY',
+            ]) : [],
+        ],
 
         'sqlite' => [
             'driver' => 'sqlite',

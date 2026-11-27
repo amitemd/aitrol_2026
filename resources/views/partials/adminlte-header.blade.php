@@ -23,6 +23,45 @@
         <div class="workspace-tabs" data-workspace-tabs role="group" aria-label="Módulos abiertos" hidden></div>
 
         <ul class="navbar-nav aitrol-toolbar-group aitrol-tools">
+            @isset($empresaOperativa)
+                <li class="nav-item dropdown">
+                    <button id="aitrol-contexto-toggle" class="nav-link aitrol-contexto" type="button"
+                        data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                        aria-label="{{ $empresaOperativa }}, sucursal {{ $sucursalOperativa->nombre }}, período {{ $periodoOperativo }}">
+                        <i class="bi bi-buildings" aria-hidden="true"></i>
+                        <span class="aitrol-contexto-empresa">{{ $empresaOperativa }}</span>
+                        <span class="aitrol-contexto-sucursal">{{ $sucursalOperativa->nombre }}</span>
+                        <span class="aitrol-contexto-periodo">{{ $periodoOperativo }}</span>
+                        <i class="bi bi-chevron-down d-none d-lg-inline" aria-hidden="true"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end aitrol-contexto-menu p-3"
+                        aria-labelledby="aitrol-contexto-toggle" data-select2-contenedor>
+                        <span class="text-body-secondary small">Empresa</span>
+                        <strong class="d-block text-break mb-3">{{ $empresaOperativa }}</strong>
+                        <form method="POST" action="{{ route('configuracion.contexto.update') }}">
+                            @csrf
+                            <label class="form-label" for="aitrol-contexto-sucursal">Sucursal</label>
+                            <select name="id_sucursal" id="aitrol-contexto-sucursal" class="form-select mb-3" data-select2-nativo required>
+                                @foreach ($sucursalesOperativas as $opcion)
+                                    <option value="{{ $opcion->id }}" @selected($sucursalOperativa->id === $opcion->id)>{{ $opcion->nombre }}</option>
+                                @endforeach
+                            </select>
+                            <label class="form-label" for="aitrol-contexto-periodo">Año del período</label>
+                            <div class="mb-3">
+                                <select class="form-select" id="aitrol-contexto-periodo" name="periodo" required>
+                                    @unless (in_array($periodoOperativo, $aniosPeriodoOperativo, true))
+                                        <option value="" selected disabled>Selecciona un año</option>
+                                    @endunless
+                                    @foreach ($aniosPeriodoOperativo as $anio)
+                                        <option value="{{ $anio }}" @selected($periodoOperativo === $anio)>{{ $anio }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button class="btn btn-primary w-100" type="submit">Aplicar contexto</button>
+                        </form>
+                    </div>
+                </li>
+            @endisset
             <li class="nav-item d-none d-md-block">
                 <button class="nav-link aitrol-tool" type="button" data-lte-toggle="fullscreen"
                     aria-label="Cambiar a pantalla completa" title="Pantalla completa">
@@ -82,7 +121,8 @@
                             </div>
                         </li>
                         <li class="aitrol-profile-actions">
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" data-accion-confirmar="¿Deseas salir del sistema?"
+                                data-confirmar-titulo="Cerrar sesión" data-confirmar-boton="Sí, cerrar sesión" data-confirmar-cancelar="Seguir trabajando">
                                 @csrf
                                 <button type="submit" class="dropdown-item aitrol-profile-signout">
                                     <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión

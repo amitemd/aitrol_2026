@@ -101,6 +101,10 @@
   @stack('styles')
   <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}" />
   <link rel="stylesheet" href="{{ asset('aitrol-shell.css') }}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.min.css" crossorigin="anonymous">
+  @auth
+    <link rel="stylesheet" href="{{ asset('vicky.css') }}" />
+  @endauth
 </head>
 
 <body class="aitrol-shell @yield('body-class', 'layout-fixed sidebar-expand-lg bg-body-tertiary')">
@@ -116,18 +120,22 @@
         <div data-workspace-initial>@yield('content')</div>
       </div>
     </main>
-    <footer class="app-footer">
-      <!--begin::To the end-->
-      <div class="float-end d-none d-sm-inline">Aitrol</div>
-      <!--end::To the end-->
-      <!--begin::Copyright-->
-      <strong>
-        Copyright &copy; <?= date('Y'); ?>&nbsp;
-      </strong>
-      All rights reserved.
-      <!--end::Copyright-->
+    <footer class="app-footer d-flex align-items-center justify-content-between gap-3">
+      <div><strong>Copyright &copy; {{ date('Y') }}</strong> All rights reserved.</div>
+      @auth
+        @if (auth()->user()->id_empresa)
+          <template data-vicky-widget>
+            @include('partials.vicky')
+          </template>
+        @endif
+      @endauth
     </footer>
   </div>
+  @auth
+    @if(auth()->user()->id_empresa)
+      <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('vicky.js') }}" defer></script>
+    @endif
+  @endauth
   <!--begin::Script-->
   <!--begin::Third Party Plugin(OverlayScrollbars)-->
   <script nonce="{{ request()->attributes->get('csp_nonce') }}"
@@ -192,6 +200,7 @@
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('clientes-ficha.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('usuarios-form.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('producto-galeria.js') }}" defer></script>
+  @include('partials.alertas')
   @stack('scripts')
 </body>
 

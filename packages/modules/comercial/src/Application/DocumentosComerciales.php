@@ -7,8 +7,10 @@ use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Application\Inventario;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
+use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +27,13 @@ final readonly class DocumentosComerciales
         private EmpresaActiva $empresa,
         private Inventario $inventario,
         private RepositorioInventario $existencias,
+        private ContextoOperativo $contexto,
     ) {}
 
     public function listar(string $modulo, string $seccion, array $filtros): LengthAwarePaginator
     {
         $consulta = $this->filtrar($this->conAsientos($this->documentos($modulo)), $filtros);
+        $this->contexto->aplicarPeriodo($consulta, 'fecha');
         if ($seccion === 'anulaciones') {
             $consulta->whereNotNull('anulado_at')->orderByDesc('anulado_at');
         } else {
@@ -43,6 +47,7 @@ final readonly class DocumentosComerciales
     public function consultar(string $modulo, string $seccion, int $id): stdClass
     {
         $consulta = $this->conAsientos($this->documentos($modulo))->where('id', $id);
+        $this->contexto->aplicarPeriodo($consulta, 'fecha');
         $seccion === 'anulaciones' ? $consulta->whereNotNull('anulado_at') : $consulta->where('tipo', $seccion);
         $documento = $consulta->first() ?? abort(404, 'Documento no encontrado.');
         $documento->lineas = $this->lineas($id)->orderBy('id')->get();
@@ -54,6 +59,10 @@ final readonly class DocumentosComerciales
 
     public function registrar(string $modulo, string $seccion, array $datos): stdClass
     {
+        $periodo = $this->contexto->periodo();
+        if ($periodo !== null && (int) substr($datos['fecha'], 0, 4) !== $periodo) {
+            throw ValidationException::withMessages(['fecha' => "La fecha debe pertenecer al período {$periodo}."]);
+        }
         $vinculado = in_array($seccion, self::VINCULADOS, true);
         try {
             return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado): stdClass {
@@ -84,6 +93,7 @@ final readonly class DocumentosComerciales
                 }
                 $id = DB::table('com_documentos')->insertGetId([
                     'id_empresa' => $this->empresa->id(), 'modulo' => $modulo, 'tipo' => $seccion,
+                    'id_sucursal' => $this->contexto->sucursal()->id,
                     'numero' => $numero, 'emisor' => $modulo === 'compras' ? $tercero : 0,
                     $campo => $tercero, 'tercero' => $nombre, 'fecha' => $datos['fecha'],
                     'id_documento_origen' => $origen?->id, 'id_bodega' => $bodega, 'subtotal' => $subtotal,
@@ -122,7 +132,8 @@ final readonly class DocumentosComerciales
             // Las notas y retenciones toman siempre el bloqueo del documento base antes del propio.
             $origen = $idOrigen === null ? null
                 : $this->documentos($modulo)->where('tipo', 'documentos')->where('id', $idOrigen)->lockForUpdate()->first();
-            $documento = $this->documentos($modulo)->where('tipo', $seccion)->where('id', $id)->lockForUpdate()->first()
+            $documento = $this->contexto->aplicarPeriodo($this->documentos($modulo), 'fecha')
+                ->where('tipo', $seccion)->where('id', $id)->lockForUpdate()->first()
                 ?? abort(404, 'Documento no encontrado.');
             abort_if($documento->anulado_at !== null, 409, 'El documento ya está anulado.');
             if ($origen !== null && $seccion === 'notas-debito') {
@@ -151,9 +162,9 @@ final readonly class DocumentosComerciales
         });
     }
 
-    public function reporte(string $modulo, array $filtros): array
+    public function reporte(string $modulo, array $filtros, ?ConnectionInterface $conexion = null): array
     {
-        $filas = $this->filtrar($this->documentos($modulo), $filtros)
+        $filas = $this->filtrar($this->documentos($modulo, $conexion), $filtros)
             ->select('tipo')->selectRaw('case when anulado_at is null then 0 else 1 end as anulado')
             ->selectRaw('count(*) as cantidad, sum(subtotal) as subtotal, sum(impuesto) as impuesto, sum(total) as total')
             ->groupBy('tipo')->groupByRaw('case when anulado_at is null then 0 else 1 end')->orderBy('tipo')->orderBy('anulado')->get();
@@ -182,6 +193,7 @@ final readonly class DocumentosComerciales
             'terceros' => $this->terceros($modulo)->select('id', 'nombre as texto', 'identificacion as codigo'),
             'origenes' => $this->documentos($modulo)->where('tipo', 'documentos')->whereNull('anulado_at')->select('id', 'tercero as texto', 'numero as codigo'),
             'bodegas', 'productos' => DB::table('inv_'.$catalogo)->where('id_empresa', $this->empresa->id())
+                ->when($catalogo === 'bodegas', fn (Builder $q) => $q->where('id_sucursal', $this->contexto->sucursal()->id))
                 ->where('activo', true)->select('id', 'nombre as texto', 'codigo'),
         };
         $campos = match ($catalogo) {
@@ -295,9 +307,11 @@ final readonly class DocumentosComerciales
             ->where('id_empresa', $this->empresa->id())->whereNull('deleted_at')->where('activo', true);
     }
 
-    private function documentos(string $modulo): Builder
+    private function documentos(string $modulo, ?ConnectionInterface $conexion = null): Builder
     {
-        return DB::table('com_documentos')->where('id_empresa', $this->empresa->id())->where('modulo', $modulo);
+        return ($conexion ?? DB::connection())->table('com_documentos')
+            ->where('id_empresa', $this->empresa->id())->where('modulo', $modulo)
+            ->when($conexion === null, fn (Builder $q) => $q->where('id_sucursal', $this->contexto->sucursal()->id));
     }
 
     private function conAsientos(Builder $consulta): Builder

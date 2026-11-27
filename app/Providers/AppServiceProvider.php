@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
@@ -38,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
         TrustProxies::at(config('seguridad.proxies', []));
         $this->limitesDeAcceso();
         Auth::provider('usuarios-activos', fn ($app, $config) => (new EloquentUserProvider($app['hash'], $config['model']))

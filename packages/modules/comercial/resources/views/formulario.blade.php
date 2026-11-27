@@ -23,7 +23,8 @@
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label" for="com-fecha">Fecha</label>
-                            <input type="date" name="fecha" class="form-control" id="com-fecha" value="{{ old('fecha', now()->toDateString()) }}" required>
+                            <input type="date" name="fecha" class="form-control" id="com-fecha" value="{{ old('fecha', $fecha) }}"
+                                min="{{ $periodo }}-01-01" max="{{ $periodo }}-12-31" required>
                         </div>
                         <div @class(['col-sm-6' => $seccion === 'documentos', 'col-12' => $seccion !== 'documentos'])>
                             <label class="form-label" for="com-tercero">{{ $vinculado ? 'Documento de origen' : $config['tercero'] }}</label>

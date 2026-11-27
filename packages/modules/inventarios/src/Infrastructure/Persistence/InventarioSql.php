@@ -4,6 +4,7 @@ namespace Aitrol\Inventarios\Infrastructure\Persistence;
 
 use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Application\RepositorioInventario;
+use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use Closure;
 use Illuminate\Database\Query\Builder;
@@ -15,7 +16,7 @@ use stdClass;
 
 final readonly class InventarioSql implements RepositorioInventario
 {
-    public function __construct(private EmpresaActiva $empresa) {}
+    public function __construct(private EmpresaActiva $empresa, private ContextoOperativo $contexto) {}
 
     public function listar(string $seccion, array $filtros): LengthAwarePaginator
     {
@@ -51,6 +52,9 @@ final readonly class InventarioSql implements RepositorioInventario
                 $actual = $id === null ? null : $this->catalogo($seccion, $id, bloquear: true);
                 $datos = $this->prepararCatalogo($seccion, $datos, $actual);
                 if ($id === null) {
+                    if ($seccion === 'bodegas') {
+                        $datos['id_sucursal'] = $this->contexto->sucursal()->id;
+                    }
                     $id = DB::table($tabla)->insertGetId($datos + [
                         'id_empresa' => $this->empresa->id(), 'id_usuario_creacion' => auth()->id(),
                         'created_at' => now(), 'updated_at' => now(),
@@ -145,7 +149,8 @@ final readonly class InventarioSql implements RepositorioInventario
 
     public function operacion(int $id): stdClass
     {
-        $consulta = $this->tabla('inv_operaciones')->select('inv_operaciones.*')->where('id', $id);
+        $consulta = $this->tabla('inv_operaciones')->select('inv_operaciones.*')->where('id', $id)
+            ->whereIn('id_bodega', $this->tabla('inv_bodegas')->select('id'));
         $operacion = ReferenciaAsiento::inventario($consulta, 'inv_operaciones.id')->first() ?? abort(404, 'Movimiento no encontrado.');
         $operacion->lineas = $this->tabla('inv_kardex')->where('id_operacion', $id)->orderBy('id')->get();
 
@@ -188,7 +193,8 @@ final readonly class InventarioSql implements RepositorioInventario
 
     private function tabla(string $tabla): Builder
     {
-        return DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id());
+        return DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id())
+            ->when($tabla === 'inv_bodegas', fn (Builder $q) => $q->where('inv_bodegas.id_sucursal', $this->contexto->sucursal()->id));
     }
 
     private function catalogos(string $seccion, array $filtros): Builder
@@ -243,11 +249,15 @@ final readonly class InventarioSql implements RepositorioInventario
         return $this->tabla($tabla)
             ->join('inv_productos as p', fn ($join) => $join->on('p.id', '=', $tabla.'.id_producto')->on('p.id_empresa', '=', $tabla.'.id_empresa'))
             ->join('inv_bodegas as b', fn ($join) => $join->on('b.id', '=', $tabla.'.id_bodega')->on('b.id_empresa', '=', $tabla.'.id_empresa'))
+            ->where('b.id_sucursal', $this->contexto->sucursal()->id)
             ->select($tabla.'.*', 'p.nombre as producto', 'p.codigo as codigo_producto', 'b.nombre as bodega');
     }
 
     private function filtrar(Builder $consulta, string $tabla, array $filtros, ?string $fecha = null): Builder
     {
+        if ($fecha !== null) {
+            $filtros = $this->contexto->acotarFechas($filtros);
+        }
         if ($fecha !== null && isset($filtros['desde'])) {
             $consulta->where($fecha, '>=', $filtros['desde'].' 00:00:00');
         }

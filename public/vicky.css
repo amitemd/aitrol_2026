@@ -1,0 +1,137 @@
+.vicky-launcher,
+.vicky-dialog {
+  --vicky-accent: #5539cd;
+  --vicky-ink: #19243a;
+  --vicky-muted: #525e75;
+  --vicky-line: #dfe3ef;
+  --vicky-surface: #fff;
+}
+
+.vicky-launcher {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: .55rem;
+  border: 1px solid #fff4;
+  border-radius: 100px;
+  padding: .35rem .85rem;
+  color: #fff;
+  background: #4730ad;
+  box-shadow: 0 8px 28px #28216045;
+  font-weight: 650;
+}
+
+.vicky-launcher i { font-size: 1.2rem; }
+
+.vicky-dialog {
+  width: min(54rem, calc(100vw - 2rem));
+  max-width: none;
+  height: min(44rem, calc(100dvh - 2rem));
+  max-height: none;
+  position: fixed;
+  padding: 0;
+  overflow: hidden;
+  color: var(--vicky-ink);
+  background: var(--vicky-surface);
+  border: 1px solid var(--vicky-line);
+  border-radius: 1.3rem;
+  box-shadow: 0 32px 96px #0e163957;
+}
+
+.vicky-dialog[open] { display: flex; flex-direction: column; }
+.vicky-dialog::backdrop { background: #151d39a3; backdrop-filter: blur(4px); }
+body:has(.vicky-dialog[open]) { overflow: hidden; }
+.vicky-dialog :focus-visible, .vicky-launcher:focus-visible { outline: 2px solid #8472fc; outline-offset: 3px; }
+
+.vicky-heading {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 1.2rem 1.4rem;
+  color: #fff;
+  background: linear-gradient(112deg, #16213a, #29234e 62%, #39246e);
+}
+
+.vicky-icon,
+.vicky-icon-button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: #ffffff17;
+  border: 1px solid #ffffff30;
+  color: inherit;
+}
+
+.vicky-icon { width: 3rem; height: 3rem; border-radius: .9rem; font-size: 1.5rem; }
+.vicky-icon-button { width: 2.4rem; height: 2.4rem; border-radius: .7rem; }
+.vicky-icon-button:hover { background: #ffffff29; }
+.vicky-heading-text { margin-inline-end: auto; }
+.vicky-heading h2 { font-size: 1.2rem; font-weight: 700; margin: 0 0 .15rem; }
+.vicky-heading p { color: #e0dcf6; font-size: .85rem; margin: 0; }
+.vicky-actions { padding: .8rem 1.4rem; border-bottom: 1px solid var(--vicky-line); }
+.vicky-access { color: var(--vicky-muted); font-size: .79rem; font-weight: 650; }
+.vicky-access i { color: #367361; margin-right: .25rem; }
+.vicky-shortcuts { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .6rem; }
+
+.vicky-shortcuts button,
+.vicky-export {
+  border: 1px solid #ded9f5;
+  border-radius: 1rem;
+  padding: .38rem .7rem;
+  background: #f9f7ff;
+  color: #3e2a90;
+  font-size: .78rem;
+  font-weight: 650;
+}
+
+.vicky-shortcuts button:hover, .vicky-export:hover { background: #ede8ff; }
+.vicky-shortcuts i, .vicky-export i { margin-right: .25rem; }
+.vicky-shortcuts button:disabled, .vicky-send:disabled { cursor: wait; opacity: .65; }
+
+.vicky-conversation {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.3rem 1.4rem;
+  background: radial-gradient(ellipse at 15% 95%, #f0edff, transparent 42%), #f4f6fa;
+}
+
+.vicky-welcome {
+  width: min(100%, 28rem);
+  margin: max(1rem, 9vh) auto 1rem;
+  text-align: center;
+  padding: 1.3rem;
+  border: 1px dashed #c8c6df;
+  border-radius: 1rem;
+  background: #ffffffbb;
+}
+
+.vicky-welcome i { font-size: 1.35rem; color: var(--vicky-accent); }
+.vicky-welcome h3 { margin: .5rem 0; font-size: 1.1rem; font-weight: 700; }
+.vicky-welcome p { margin: 0; font-size: .9rem; color: var(--vicky-muted); }
+.vicky-message { margin-bottom: .85rem; width: fit-content; max-width: min(100%, 42rem); padding: .85rem 1rem; border-radius: .9rem; background: #fff; border: 1px solid var(--vicky-line); }
+.vicky-message p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vicky-message--user { margin-left: auto; background: #eae4ff; border-color: #ddd3ff; }
+.vicky-message--status { color: var(--vicky-muted); }
+.vicky-report { margin-top: .85rem; max-height: 18rem; overflow: auto; }
+.vicky-report table { width: 100%; font-size: .83rem; }
+.vicky-report caption { caption-side: top; padding: 0 0 .3rem; font-weight: 700; color: var(--vicky-ink); }
+.vicky-report th, .vicky-report td { padding: .34rem .45rem; border-bottom: 1px solid var(--vicky-line); }
+.vicky-report th:last-child, .vicky-report td:last-child { text-align: right; white-space: nowrap; }
+.vicky-export { margin-top: .65rem; }
+.vicky-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .45rem .7rem; padding: .9rem 1.4rem; border-top: 1px solid var(--vicky-line); }
+.vicky-form textarea { width: 100%; min-height: 3.3rem; max-height: 8rem; resize: vertical; border: 1px solid #b7addd; border-radius: .8rem; padding: .65rem .8rem; color: var(--vicky-ink); background: #fff; }
+.vicky-form small { grid-column: 1 / -1; color: var(--vicky-muted); }
+.vicky-send { border: 0; border-radius: .8rem; padding: .8rem 1rem; font-weight: 650; background: var(--vicky-accent); color: #fff; white-space: nowrap; }
+
+@media (max-width: 575px) {
+  .vicky-dialog { width: calc(100vw - .8rem); height: calc(100dvh - .8rem); border-radius: .95rem; }
+  .vicky-heading, .vicky-actions, .vicky-conversation, .vicky-form { padding-inline: .75rem; }
+  .vicky-shortcuts { flex-wrap: nowrap; overflow-x: auto; padding: .2rem .2rem .45rem; }
+  .vicky-shortcuts button { white-space: nowrap; }
+  .vicky-message { padding-inline: .65rem; }
+  .vicky-send { padding-inline: .65rem; }
+  .vicky-send i, .vicky-form small { display: none; }
+}

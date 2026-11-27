@@ -9,7 +9,7 @@
     function inicializar(select, configuracion = {}) {
         const campo = $(select);
         if (campo.data('select2')) return campo;
-        const dialog = select.closest('dialog');
+        const contenedor = select.closest('dialog, [data-select2-contenedor]');
         campo.select2({
             width: '100%',
             language: {
@@ -19,7 +19,7 @@
                 errorLoading: () => 'No se pudieron cargar los resultados',
                 inputTooShort: ({ minimum, input }) => 'Escribe ' + (minimum - input.length) + ' caracteres más',
             },
-            ...(dialog ? { dropdownParent: $(dialog) } : {}),
+            ...(contenedor ? { dropdownParent: $(contenedor) } : {}),
             ...configuracion,
         });
 
@@ -27,7 +27,7 @@
     }
 
     function preparar(select) {
-        if (select.matches(geografico)) return;
+        if (select.matches(geografico + ', [data-select2-nativo]') || select.closest('.swal2-container')) return;
         const url = select.dataset.select2Url;
         inicializar(select, url ? {
             ...(select.dataset.select2Placeholder ? { placeholder: select.dataset.select2Placeholder, allowClear: true } : {}),

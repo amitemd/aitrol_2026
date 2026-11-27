@@ -96,6 +96,51 @@
 
 .aitrol-toolbar .aitrol-tool { min-width: 2.25rem; }
 
+.aitrol-toolbar .aitrol-contexto {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .35rem .55rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .55rem;
+    font-size: .82rem;
+    white-space: nowrap;
+}
+
+.aitrol-contexto-empresa, .aitrol-contexto-sucursal {
+    max-width: clamp(5rem, 10vw, 10rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aitrol-contexto-sucursal {
+    padding-inline-start: .5rem;
+    border-inline-start: 1px solid var(--bs-border-color);
+}
+
+.aitrol-contexto-periodo {
+    padding: .05rem .4rem;
+    border-radius: .3rem;
+    color: var(--bs-primary-text-emphasis);
+    background: var(--bs-primary-bg-subtle);
+    font-variant-numeric: tabular-nums;
+}
+
+.aitrol-contexto-menu { width: min(19rem, calc(100vw - 2rem)); }
+
+.swal2-popup.aitrol-alerta {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, .25);
+}
+
+.aitrol-alerta .swal2-title { font-size: 1.3rem; }
+.aitrol-alerta .swal2-html-container { white-space: pre-line; }
+
+@media (max-width: 767.98px) {
+    .aitrol-contexto-empresa, .aitrol-contexto-sucursal { display: none; }
+}
+
 .aitrol-toolbar .aitrol-avatar {
     display: grid;
     flex: none;

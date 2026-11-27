@@ -25,14 +25,6 @@
         });
     }, true);
 
-    document.addEventListener('submit', (evento) => {
-        const mensaje = evento.target.dataset.accionConfirmar;
-        if (mensaje && !window.confirm(mensaje)) {
-            evento.preventDefault();
-            evento.stopImmediatePropagation();
-        }
-    }, true);
-
     function cerrar() {
         if (activo?.matches(':popover-open')) activo.hidePopover();
     }

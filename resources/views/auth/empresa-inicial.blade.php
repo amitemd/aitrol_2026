@@ -29,7 +29,9 @@
         @endforeach
         <button class="btn btn-primary access-button" type="submit">Registrar empresa</button>
     </form>
-    <form method="POST" action="{{ route('logout') }}" class="access-company-logout">
+    <form method="POST" action="{{ route('logout') }}" class="access-company-logout"
+        data-accion-confirmar="¿Deseas salir del sistema?" data-confirmar-titulo="Cerrar sesión"
+        data-confirmar-boton="Sí, cerrar sesión" data-confirmar-cancelar="Seguir trabajando">
         @csrf
         <button type="submit" class="btn access-logout-button">Cerrar sesión</button>
     </form>

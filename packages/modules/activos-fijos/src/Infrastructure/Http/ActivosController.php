@@ -4,6 +4,7 @@ namespace Aitrol\ActivosFijos\Infrastructure\Http;
 
 use Aitrol\ActivosFijos\Application\RegistroActivos;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
+use App\Services\ContextoOperativo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -13,11 +14,22 @@ final readonly class ActivosController
 {
     public function __construct(private RegistroActivos $activos) {}
 
-    public function index(Request $request)
+    public function index(Request $request, ContextoOperativo $contexto)
     {
         $seccion = $request->route('seccion');
         $filtros = $this->filtros($request, $seccion);
-        $registros = $this->activos->listado($seccion, $filtros)->paginate($filtros['per_page'] ?? 20)->appends($filtros)
+        $filtrosConsulta = $seccion === 'adquisiciones' ? $contexto->acotarFechas($filtros) : $filtros;
+        $consulta = $this->activos->listado($seccion, $filtrosConsulta);
+        $fecha = match ($seccion) {
+            'movimientos' => 'af_movimientos.fecha',
+            'depreciaciones' => 'af_depreciaciones.periodo',
+            'ordenes' => 'af_ordenes.fecha_programada',
+            default => null,
+        };
+        if ($fecha !== null) {
+            $contexto->aplicarPeriodo($consulta, $fecha);
+        }
+        $registros = $consulta->paginate($filtros['per_page'] ?? 20)->appends($filtros)
             ->through($this->presentar(...));
         $resumen = $seccion === 'reportes' ? $this->presentar((object) $this->activos->resumen($filtros)) : null;
         if ($request->routeIs('api.*')) {

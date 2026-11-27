@@ -5,6 +5,7 @@ use Aitrol\Configuracion\Infrastructure\Http\MenuController;
 use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
 use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
+use App\Http\Controllers\ContextoOperativoController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-menu'])
@@ -20,6 +21,9 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-co
     ->prefix('configuraciones')->name('configuracion.')
     ->group(function (): void {
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+        Route::get('/sucursales', [ContextoOperativoController::class, 'index'])->name('sucursales.index');
+        Route::post('/sucursales', [ContextoOperativoController::class, 'guardar'])->name('sucursales.store');
+        Route::put('/sucursales/{sucursal}', [ContextoOperativoController::class, 'guardar'])->whereNumber('sucursal')->name('sucursales.update');
         Route::get('/usuarios/crear', [UsuarioController::class, 'create'])->name('usuarios.create');
         Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
         Route::get('/usuarios/{usuario}', [UsuarioController::class, 'detalle'])->whereNumber('usuario')->name('usuarios.show');
@@ -36,6 +40,8 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-co
     });
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configuraciones')->name('configuracion.')->group(function (): void {
+    Route::get('/contexto-operativo', [ContextoOperativoController::class, 'inicio'])->name('contexto.index');
+    Route::post('/contexto-operativo', [ContextoOperativoController::class, 'seleccionar'])->name('contexto.update');
     Route::get('/usuarios/{usuario}/foto', [UsuarioController::class, 'foto'])->whereNumber('usuario')->name('usuarios.foto');
     Route::get('/ubicaciones/opciones', [UbicacionController::class, 'opciones'])->name('ubicaciones.opciones');
     Route::get('/empresas', [EmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.index');

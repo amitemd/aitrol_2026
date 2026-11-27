@@ -4,6 +4,7 @@ namespace Aitrol\Comercial\Infrastructure\Http;
 
 use Aitrol\Comercial\Application\DocumentosComerciales;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
+use App\Services\ContextoOperativo;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -53,11 +54,14 @@ final readonly class ComercialController
         }, 'reporte-'.$modulo.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    public function crear(Request $request)
+    public function crear(Request $request, ContextoOperativo $contexto)
     {
         [$modulo, $seccion] = $this->seccion($request);
 
-        return view('comercial::formulario', compact('modulo', 'seccion'));
+        $periodo = $contexto->periodo();
+        $fecha = $periodo === $contexto->anioActual() ? now('America/Guayaquil')->toDateString() : $periodo.'-01-01';
+
+        return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha'));
     }
 
     public function show(Request $request)

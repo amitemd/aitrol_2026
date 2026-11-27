@@ -6,6 +6,7 @@ use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use Aitrol\Tributario\Application\PreparacionTributaria;
 use Aitrol\Tributario\Domain\PeriodoFiscal;
 use Aitrol\Tributario\Infrastructure\Persistence\TributarioSql;
+use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ final readonly class TributarioController
 {
     public function __construct(private TributarioSql $datos, private PreparacionTributaria $preparacion, private EmpresaActiva $empresa) {}
 
-    public function index(Request $request)
+    public function index(Request $request, ContextoOperativo $contexto)
     {
         $seccion = $request->route('seccion');
         $filtros = $this->filtros($request);
@@ -34,17 +35,20 @@ final readonly class TributarioController
         };
         $tabla = ['documentos' => 'tr_documentos', 'procesos' => 'tr_eventos'][$seccion] ?? 'tr_declaraciones';
         $consulta->whereIn($tabla === 'tr_declaraciones' ? 'formato' : 'd.formato', $this->formatosPermitidos());
+        $contexto->aplicarPeriodo($consulta, $tabla === 'tr_declaraciones' ? 'desde' : 'd.desde');
         $consulta->when($filtros['ejercicio'] ?? null, fn ($q, $anio) => $q->whereYear($tabla === 'tr_declaraciones' ? 'desde' : 'd.desde', $anio));
         $registros = $consulta->orderByDesc($tabla.'.id')->paginate($filtros['per_page'] ?? 20)->appends($filtros)->through($this->presentar(...));
 
         return $request->routeIs('api.*') ? response()->json($registros) : view('tributario::index', compact('seccion', 'filtros', 'registros'));
     }
 
-    public function nomina(Request $request)
+    public function nomina(Request $request, ContextoOperativo $contexto)
     {
         $seccion = 'nomina';
         $filtros = $this->filtros($request);
-        $registros = $this->datos->tabla('tr_nomina')->when($filtros['ejercicio'] ?? null, fn ($q, $anio) => $q->where('ejercicio', $anio))
+        $registros = $this->datos->tabla('tr_nomina')
+            ->when($contexto->periodo(), fn ($q, $anio) => $q->where('ejercicio', $anio))
+            ->when($filtros['ejercicio'] ?? null, fn ($q, $anio) => $q->where('ejercicio', $anio))
             ->orderByDesc('ejercicio')->orderBy('nombre')->paginate($filtros['per_page'] ?? 20)->appends($filtros)->through($this->presentar(...));
 
         return $request->routeIs('api.*') ? response()->json($registros) : view('tributario::index', compact('seccion', 'filtros', 'registros'));

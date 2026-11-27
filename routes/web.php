@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\EmpresaInicialController;
 use App\Http\Controllers\RecuperacionClaveController;
 use App\Http\Controllers\SesionController;
+use App\Http\Controllers\VickyController;
 use App\Services\OpenApiDocument;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,8 @@ Route::get('/', [SesionController::class, 'inicio'])->middleware('auth.session')
 Route::get('/login', fn (): RedirectResponse => to_route('dashboard'))->name('login');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
+    Route::post('/asistente/vicky', VickyController::class)
+        ->middleware(['empresa', 'throttle:12,1'])->name('vicky.consultar');
     Route::get('/auditoria/bitacora', [AuditoriaController::class, 'index'])
         ->middleware(['empresa', 'permiso:auditoria.logs.index,leer'])->name('auditoria.logs.index');
     Route::post('/auditoria/navegacion', [AuditoriaController::class, 'navegacion'])
