@@ -45,13 +45,13 @@ Esta tabla es parte del funcionamiento del chat. Cada fila declara un destino, s
 <!-- vicky:rutas -->
 | Destino | Ruta de pestaña | Ruta modal | Frases | Indicaciones |
 | --- | --- | --- | --- | --- |
-| Nuevo cliente | clientes.index | clientes.create | crear cliente; registrar cliente; nuevo cliente; agregar cliente | Ve a Clientes → Lista de clientes → Nuevo cliente. Completa la ficha y guarda. |
+| Nuevo cliente | clientes.index | clientes.create | crear cliente; crear clientes; registrar cliente; registrar clientes; nuevo cliente; agregar cliente; agregar clientes | Ve a Clientes → Lista de clientes → Nuevo cliente. Completa la ficha y guarda. |
 | Lista de clientes | clientes.index | — | clientes; lista de clientes; directorio de clientes | Abre Clientes → Lista de clientes para buscar por nombre, identificación o correo. |
 | Cuentas por cobrar | clientes.reportes.cuentas-por-cobrar | — | cuentas por cobrar; cartera de clientes | Ve a Clientes → Reportes → Cuentas por cobrar. |
-| Nuevo proveedor | proveedores.index | proveedores.create | crear proveedor; registrar proveedor; nuevo proveedor; agregar proveedor | Ve a Proveedores → Lista de proveedores → Nuevo proveedor. Completa la ficha y guarda. |
+| Nuevo proveedor | proveedores.index | proveedores.create | crear proveedor; crear proveedores; registrar proveedor; registrar proveedores; nuevo proveedor; agregar proveedor; agregar proveedores | Ve a Proveedores → Lista de proveedores → Nuevo proveedor. Completa la ficha y guarda. |
 | Lista de proveedores | proveedores.index | — | proveedores; lista de proveedores; directorio de proveedores | Abre el directorio de Proveedores para buscar y consultar sus fichas. |
 | Cuentas por pagar | proveedores.reportes.cuentas-por-pagar | — | cuentas por pagar; cartera de proveedores | Ve a Proveedores → Reportes → Cuentas por pagar. |
-| Nuevo producto | inventarios.productos.index | inventarios.productos.create | crear producto; registrar producto; nuevo producto; agregar producto | Ve a Inventarios → Productos → Nuevo producto. Completa la ficha del producto o servicio. |
+| Nuevo producto | inventarios.productos.index | inventarios.productos.create | crear producto; crear productos; registrar producto; registrar productos; nuevo producto; agregar producto; agregar productos | Ve a Inventarios → Productos → Nuevo producto. Completa la ficha del producto o servicio. |
 | Productos | inventarios.productos.index | — | productos; inventario; inventarios; catálogo de productos | Abre Inventarios → Productos. |
 | Existencias | inventarios.existencias.index | — | existencias; existencias por bodega; stock | Ve a Inventarios → Existencias para revisar el stock por producto y bodega. |
 | Ventas | ventas.documentos.index | — | ventas; lista de ventas; documentos de venta | Ve a Ventas → Lista de ventas. |
@@ -64,7 +64,7 @@ Esta tabla es parte del funcionamiento del chat. Cada fila declara un destino, s
 | Balance de comprobación | contabilidad.reportes.balance-comprobacion | — | balance de comprobación | Ve a Contabilidad → Reportes → Balance de comprobación. |
 | Registro de activos | activos-fijos.activos.index | — | activos fijos; registro de activos | Ve a Activos fijos → Registro de activos. |
 | Recursos humanos | rrhh.panel.index | — | recursos humanos; rrhh; panel de personal | Abre el panel de Recursos humanos. |
-| Nuevo empleado | rrhh.empleados.index | rrhh.empleados.create | crear empleado; registrar empleado; nuevo empleado; agregar empleado | Ve a Recursos humanos → Empleados y abre el formulario de alta. |
+| Nuevo empleado | rrhh.empleados.index | rrhh.empleados.create | crear empleado; crear empleados; registrar empleado; registrar empleados; nuevo empleado; agregar empleado; agregar empleados | Ve a Recursos humanos → Empleados y abre el formulario de alta. |
 | Empleados | rrhh.empleados.index | — | empleados; lista de empleados; directorio de personal | Ve a Recursos humanos → Empleados para consultar sus fichas. |
 | Nómina | rrhh.nomina.index | — | nómina; períodos de nómina | Ve a Recursos humanos → Nómina. |
 | Declaraciones tributarias | tributario.declaraciones.index | — | tributario; declaraciones tributarias; declaraciones | Ve a Tributario → Declaraciones. |

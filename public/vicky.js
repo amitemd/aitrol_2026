@@ -393,6 +393,9 @@
       const reply = addMessage(payload.respuesta, 'assistant');
       if (payload.reporte) addReport(reply, payload.reporte);
       if (payload.destino) addDestination(reply, payload.destino);
+      if (Array.isArray(payload.sugerencias)) {
+        payload.sugerencias.forEach((destination) => addDestination(reply, { ...destination, abrir: false }));
+      }
       if (previousGuide) addGuideFeedback(reply, payload);
     } catch (error) {
       if (controller.signal.aborted) return;
