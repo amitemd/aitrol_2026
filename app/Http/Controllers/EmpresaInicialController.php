@@ -8,6 +8,7 @@ use App\Services\EmpresaActiva;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -28,20 +29,25 @@ final class EmpresaInicialController
         ]);
 
         try {
-            DB::transaction(function () use ($request, $datos, $empresaActiva): void {
+            $usuario = DB::transaction(function () use ($request, $datos, $empresaActiva): User {
                 $usuario = User::query()->lockForUpdate()->findOrFail($request->user()->id);
-                if ($usuario->id_empresa !== null) return;
+                if ($usuario->id_empresa !== null) {
+                    return $usuario;
+                }
 
                 $empresa = EmpresaModel::query()->create($datos);
                 $empresaActiva->prepararPermisos($empresa->id);
                 $usuario->empresa()->associate($empresa);
                 $usuario->is_admin = true;
                 $usuario->save();
+
+                return $usuario;
             }, 3);
         } catch (UniqueConstraintViolationException $error) {
             throw ValidationException::withMessages(['ruc' => 'Ya existe una empresa con ese RUC.']);
         }
 
+        Auth::setUser($usuario);
         $request->session()->regenerate();
 
         return to_route('dashboard');

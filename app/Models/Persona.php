@@ -32,6 +32,20 @@ final class Persona extends Model
         });
     }
 
+    public static function buscarOCrearConBloqueo(array $documento, array $datos): self
+    {
+        $ahora = now();
+        // La clave única resuelve la creación simultánea entre empresas.
+        (new self)->newModelQuery()->getQuery()->upsert($documento + $datos + [
+            'id_usuario_creacion' => auth()->id(),
+            'id_usuario_modificacion' => auth()->id(),
+            'created_at' => $ahora,
+            'updated_at' => $ahora,
+        ], ['id_tipo_identificacion', 'identificacion'], ['identificacion']);
+
+        return self::query()->where($documento)->lockForUpdate()->firstOrFail();
+    }
+
     public function nombreCompleto(): string
     {
         return trim($this->nombre.' '.$this->apellido);

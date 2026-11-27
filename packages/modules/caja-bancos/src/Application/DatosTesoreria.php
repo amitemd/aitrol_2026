@@ -4,6 +4,7 @@ namespace Aitrol\CajaBancos\Application;
 
 use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use App\Services\EmpresaActiva;
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -11,6 +12,11 @@ use stdClass;
 final readonly class DatosTesoreria
 {
     public function __construct(private EmpresaActiva $empresa) {}
+
+    public function transaccion(Closure $trabajo): mixed
+    {
+        return $this->empresa->transaccion($trabajo);
+    }
 
     public function tabla(string $tabla): Builder
     {

@@ -20,17 +20,6 @@
                 @foreach ($navegacion[0] ?? [] as $item)
                     @include('partials.adminlte-menu-opcion', ['item' => $item])
                 @endforeach
-                @auth
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="nav-link border-0 bg-transparent text-start w-100">
-                                <i class="nav-icon bi bi-box-arrow-right" aria-hidden="true"></i>
-                                <span>Cerrar sesión</span>
-                            </button>
-                        </form>
-                    </li>
-                @endauth
             </ul>
         </nav>
     </div>

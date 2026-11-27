@@ -150,7 +150,11 @@ final class UsuarioController
                     if ($persona?->identificacion !== null && ($persona->identificacion !== $documento['identificacion'] || (int) $persona->id_tipo_identificacion !== $documento['id_tipo_identificacion'])) {
                         throw ValidationException::withMessages(['identificacion' => 'La cuenta ya está vinculada a una identificación.']);
                     }
-                    $personaEncontrada = Persona::query()->where($documento)->lockForUpdate()->first();
+                    $personaEncontrada = match (true) {
+                        $persona === null => Persona::buscarOCrearConBloqueo($documento, ['nombre' => $nombre]),
+                        $persona->identificacion !== null => $persona,
+                        default => Persona::query()->where($documento)->lockForUpdate()->first(),
+                    };
                     if ($personaEncontrada !== null && User::query()->where('id_empresa', $this->empresaActiva->id())->where('id_persona', $personaEncontrada->id)
                         ->when(! $esNuevo, fn ($consulta) => $consulta->whereKeyNot($cuenta->id))->exists()) {
                         throw ValidationException::withMessages(['identificacion' => 'Esta persona ya tiene una cuenta de usuario.']);

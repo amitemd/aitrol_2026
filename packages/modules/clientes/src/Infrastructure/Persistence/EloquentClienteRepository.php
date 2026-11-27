@@ -2,7 +2,6 @@
 
 namespace Aitrol\Clientes\Infrastructure\Persistence;
 
-use App\Services\EmpresaActiva;
 use Aitrol\Clientes\Domain\ClienteNoEncontrado;
 use Aitrol\Clientes\Domain\Entities\Cliente;
 use Aitrol\Clientes\Domain\IdentificacionDuplicada;
@@ -10,6 +9,7 @@ use Aitrol\Clientes\Domain\Repositories\ClienteRepository;
 use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
 use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use App\Models\Persona;
+use App\Services\EmpresaActiva;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 
@@ -17,8 +17,10 @@ final class EloquentClienteRepository implements ClienteRepository
 {
     public function eliminar(int $id): void
     {
-        $cliente = ClienteModel::query()->find($id) ?? throw new ClienteNoEncontrado('Cliente no encontrado.');
-        $cliente->delete();
+        app(EmpresaActiva::class)->transaccion(function () use ($id): void {
+            $cliente = ClienteModel::query()->find($id) ?? throw new ClienteNoEncontrado('Cliente no encontrado.');
+            $cliente->delete();
+        });
     }
 
     public function buscar(int $id): ?Cliente
@@ -68,7 +70,7 @@ final class EloquentClienteRepository implements ClienteRepository
                 ];
                 $documento = ['id_tipo_identificacion' => $cliente->identificacion->tipo->idCatalogo(), 'identificacion' => $cliente->identificacion->numero];
                 $persona = $model->persona()->lockForUpdate()->first()
-                    ?? Persona::query()->firstOrCreate($documento, ['nombre' => $cliente->nombre]);
+                    ?? Persona::buscarOCrearConBloqueo($documento, ['nombre' => $cliente->nombre]);
 
                 $perfil = $cliente->perfil;
                 if (isset($perfil['nombres'])) {

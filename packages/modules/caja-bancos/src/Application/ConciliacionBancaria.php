@@ -4,7 +4,6 @@ namespace Aitrol\CajaBancos\Application;
 
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use Illuminate\Database\Query\Builder;
-use App\Services\EmpresaActiva;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -15,7 +14,7 @@ final readonly class ConciliacionBancaria
 
     public function importar(array $datos): stdClass
     {
-        return app(EmpresaActiva::class)->transaccion(function () use ($datos): stdClass {
+        return $this->datos->transaccion(function () use ($datos): stdClass {
             $cuenta = $this->datos->fila('cb_cuentas', (int) $datos['id_cuenta'], true);
             abort_unless($cuenta->tipo === 'banco' && $cuenta->activo, 422, 'Selecciona una cuenta bancaria activa.');
             $extracto = $this->datos->crear('cb_extractos', [
@@ -65,7 +64,7 @@ final readonly class ConciliacionBancaria
     {
         $idCuenta = $this->datos->fila('cb_lineas_extracto', $id)->id_cuenta;
 
-        return app(EmpresaActiva::class)->transaccion(function () use ($id, $idCuenta, $asiento): stdClass {
+        return $this->datos->transaccion(function () use ($id, $idCuenta, $asiento): stdClass {
             $this->datos->fila('cb_cuentas', $idCuenta, true);
             $linea = $this->datos->fila('cb_lineas_extracto', $id, true);
             abort_if($linea->id_asiento !== null, 409, 'La línea del extracto ya está conciliada.');
@@ -83,7 +82,7 @@ final readonly class ConciliacionBancaria
     {
         $idCuenta = $this->datos->fila('cb_lineas_extracto', $id)->id_cuenta;
 
-        return app(EmpresaActiva::class)->transaccion(function () use ($id, $idCuenta, $motivo): stdClass {
+        return $this->datos->transaccion(function () use ($id, $idCuenta, $motivo): stdClass {
             $this->datos->fila('cb_cuentas', $idCuenta, true);
             $linea = $this->datos->fila('cb_lineas_extracto', $id, true);
             abort_if($linea->id_asiento === null, 409, 'La línea del extracto está pendiente.');

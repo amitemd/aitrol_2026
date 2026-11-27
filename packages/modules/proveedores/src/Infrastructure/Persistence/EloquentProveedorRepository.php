@@ -2,7 +2,6 @@
 
 namespace Aitrol\Proveedores\Infrastructure\Persistence;
 
-use App\Services\EmpresaActiva;
 use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
 use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use Aitrol\Proveedores\Domain\Entities\Proveedor;
@@ -10,6 +9,7 @@ use Aitrol\Proveedores\Domain\IdentificacionDuplicada;
 use Aitrol\Proveedores\Domain\ProveedorNoEncontrado;
 use Aitrol\Proveedores\Domain\Repositories\ProveedorRepository;
 use App\Models\Persona;
+use App\Services\EmpresaActiva;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 
@@ -17,7 +17,7 @@ final class EloquentProveedorRepository implements ProveedorRepository
 {
     public function eliminar(int $id): void
     {
-        $this->modelo($id)->delete();
+        app(EmpresaActiva::class)->transaccion(fn () => $this->modelo($id)->delete());
     }
 
     public function buscar(int $id): ?Proveedor
@@ -53,7 +53,7 @@ final class EloquentProveedorRepository implements ProveedorRepository
                 $modelo = $proveedor->id === null ? new ProveedorModel : $this->modelo($proveedor->id, bloquear: true);
                 $perfil = array_replace($modelo->perfil ?? [], $proveedor->perfil);
 
-                $persona = Persona::query()->firstOrCreate([
+                $persona = Persona::buscarOCrearConBloqueo([
                     'id_tipo_identificacion' => $proveedor->identificacion->tipo->idCatalogo(),
                     'identificacion' => $proveedor->identificacion->numero,
                 ], [
@@ -62,7 +62,6 @@ final class EloquentProveedorRepository implements ProveedorRepository
                 ]);
 
                 if (array_key_exists('id_ciudad', $perfil)) {
-                    $persona = Persona::query()->lockForUpdate()->findOrFail($persona->getKey());
                     $persona->id_ciudad = $perfil['id_ciudad'];
                     if ($persona->isDirty('id_ciudad')) {
                         $persona->save();
