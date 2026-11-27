@@ -83,7 +83,7 @@ final class RegistrarAuditoria
             $usuario = null;
         }
         $esInicio = in_array($ruta, ['login.store', 'login.alterno'], true);
-        $esAcceso = $esInicio || $ruta === 'logout';
+        $esAcceso = $esInicio || in_array($ruta, ['logout', 'password.email', 'password.update'], true);
         if (($usuario instanceof User || $esAcceso) && $ruta !== null) {
             $validacionWeb = $response->isRedirection() && $request->hasSession() && $request->session()->has('errors');
             $nivel = match (true) {
