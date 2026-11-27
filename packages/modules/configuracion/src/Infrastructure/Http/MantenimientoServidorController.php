@@ -2,13 +2,11 @@
 
 namespace Aitrol\Configuracion\Infrastructure\Http;
 
-use App\Jobs\EjecutarMantenimientoServidor;
 use App\Services\MantenimientoServidor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Bus;
 
 final readonly class MantenimientoServidorController
 {
@@ -32,7 +30,6 @@ final readonly class MantenimientoServidorController
     public function ejecutar(Request $request, string $accion): JsonResponse|RedirectResponse
     {
         $id = $this->mantenimiento->registrar($accion, $request->user());
-        Bus::dispatchAfterResponse(new EjecutarMantenimientoServidor($id));
 
         return $request->expectsJson()
             ? response()->json(['id' => $id, ...$this->mantenimiento->estado()], 202)

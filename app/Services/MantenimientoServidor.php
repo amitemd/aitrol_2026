@@ -15,7 +15,7 @@ use Throwable;
 final class MantenimientoServidor
 {
     public const ACCIONES = [
-        'git' => ['Actualizar desde Git', 'Actualiza el código desde la rama configurada.', 'bi-git'],
+        'git' => ['Desplegar desde Git', 'Actualiza desde la rama configurada, limpia las cachés de Laravel y aplica las migraciones pendientes.', 'bi-git'],
         'migrar' => ['Aplicar migraciones', 'Ejecuta las migraciones pendientes en la base configurada.', 'bi-database-up'],
         'cache' => ['Vaciar caché de aplicación', 'Elimina los valores de la caché predeterminada.', 'bi-eraser'],
         'config' => ['Limpiar configuración', 'Elimina la configuración compilada.', 'bi-sliders'],
@@ -53,20 +53,31 @@ final class MantenimientoServidor
         try {
             return (int) $this->tabla()->insertGetId([
                 'accion' => $accion, 'id_usuario' => $usuario->id, 'estado' => 'pendiente', 'bloqueo' => 1,
-                'detalle' => 'En espera de ejecución.', 'created_at' => now(), 'updated_at' => now(),
+                'detalle' => 'En espera del servicio de mantenimiento del servidor.', 'created_at' => now(), 'updated_at' => now(),
             ]);
         } catch (UniqueConstraintViolationException) {
             abort(409, 'Ya hay una acción de mantenimiento en curso.');
         }
     }
 
-    public function ejecutar(int $id): void
+    public function procesarPendiente(): ?int
+    {
+        $this->expirar();
+        $id = $this->tabla()->where('bloqueo', 1)->where('estado', 'pendiente')->value('id');
+        if ($id === null || ! $this->ejecutar((int) $id)) {
+            return null;
+        }
+
+        return (int) $id;
+    }
+
+    private function ejecutar(int $id): bool
     {
         $ejecucion = $this->tabla()->where('id', $id);
         if ((clone $ejecucion)->where('estado', 'pendiente')->update([
             'estado' => 'ejecutando', 'iniciado_at' => now(), 'updated_at' => now(),
         ]) !== 1) {
-            return;
+            return false;
         }
 
         try {
@@ -84,14 +95,16 @@ final class MantenimientoServidor
             ]), report: false);
             $detalle = function_exists('proc_open')
                 ? 'El proceso se interrumpió o superó el tiempo de espera. Revisa el servidor antes de reintentar.'
-                : 'El PHP web tiene proc_open deshabilitado y no puede iniciar comandos.';
+                : 'El PHP CLI tiene proc_open deshabilitado y no puede iniciar comandos.';
         }
 
-        $detalleExito = ($registro->accion ?? null) === 'git' ? 'Código actualizado. Revisa si hay migraciones pendientes.' : 'Acción completada.';
+        $detalleExito = ($registro->accion ?? null) === 'git' ? 'Despliegue completado. Cachés de Laravel limpias y migraciones aplicadas.' : 'Acción completada.';
         $ejecucion->where('estado', 'ejecutando')->update([
             'estado' => $detalle === null ? 'correcto' : 'fallido', 'bloqueo' => null,
             'detalle' => $detalle ?? $detalleExito, 'finalizado_at' => now(), 'updated_at' => now(),
         ]);
+
+        return true;
     }
 
     private function actualizarGit(int $id): ?string
@@ -109,11 +122,11 @@ final class MantenimientoServidor
             $salida = $this->salidaProceso($raiz);
 
             return match (true) {
-                str_contains($salida, 'dubious ownership') => 'Git bloqueó el repositorio por su propietario. Revisa la confianza de esa ruta para el usuario que ejecuta PHP web.',
-                str_contains($salida, 'not a git repository') => 'Git no encontró un repositorio en la carpeta de la aplicación. Comprueba que el usuario de PHP web puede leer .git.',
-                $this->permisoDenegado($salida) => 'El usuario de PHP web no tiene permiso para abrir el repositorio Git.',
-                $raiz->exitCode() === 127, str_contains($salida, 'command not found') => 'Git no está disponible en el entorno de PHP web. Revisa el PATH del servicio.',
-                default => 'Git no pudo determinar la raíz del repositorio desde PHP web.',
+                str_contains($salida, 'dubious ownership') => 'Git bloqueó el repositorio por su propietario. Comprueba la cuenta del servicio de mantenimiento.',
+                str_contains($salida, 'not a git repository') => 'Git no encontró el repositorio. Comprueba la ruta y la lectura de .git con la cuenta de despliegue.',
+                $this->permisoDenegado($salida) => 'La cuenta de despliegue no tiene permiso para abrir el repositorio Git.',
+                $raiz->exitCode() === 127, str_contains($salida, 'command not found') => 'Git no está disponible en el PATH del servicio de mantenimiento.',
+                default => 'Git no pudo determinar la raíz del repositorio desde el servicio de mantenimiento.',
             };
         }
         $directorio = realpath(trim($raiz->output()));
@@ -152,7 +165,7 @@ final class MantenimientoServidor
             return 'Git descargó la revisión, pero no pudo aplicarla. Revisa permisos y el estado del repositorio.';
         }
 
-        return $this->artisan($id, $this->comandos('limpiar'), 'El código se actualizó. ');
+        return $this->artisan($id, [...$this->comandos('limpiar'), ...$this->comandos('migrar')], 'El código se actualizó. ');
     }
 
     private function git(array $argumentos, int $tiempo = 15): ProcessResult
@@ -176,16 +189,16 @@ final class MantenimientoServidor
                 $causa = match (true) {
                     $comando === 'migrate' && str_contains($salida, 'aitrol_empresa_inicial') => 'La migración requiere configurar AITROL_EMPRESA_INICIAL con la empresa que recibirá los registros anteriores.',
                     str_contains($salida, 'could not find driver') => 'Al PHP CLI le falta el controlador de la base de datos.',
-                    str_contains($salida, 'readonly database'), str_contains($salida, 'read-only database') => 'La base SQLite está en modo de solo lectura para el proceso web.',
+                    str_contains($salida, 'readonly database'), str_contains($salida, 'read-only database') => 'La base SQLite está en modo de solo lectura para el servicio de mantenimiento.',
                     str_contains($salida, 'sqlstate') && str_contains($salida, 'access denied') => 'La base de datos rechazó la conexión o los permisos del usuario configurado.',
-                    str_contains($salida, 'bootstrap/cache') && (str_contains($salida, 'must be present and writable') || $this->permisoDenegado($salida)) => 'PHP web necesita escritura en bootstrap/cache.',
-                    str_contains($salida, 'storage/framework') && $this->permisoDenegado($salida) => 'PHP web necesita escritura en storage/framework.',
-                    str_contains($salida, 'storage/logs') && $this->permisoDenegado($salida) => 'PHP web necesita escritura en storage/logs.',
+                    str_contains($salida, 'bootstrap/cache') && (str_contains($salida, 'must be present and writable') || $this->permisoDenegado($salida)) => 'La cuenta de mantenimiento necesita escritura en bootstrap/cache.',
+                    str_contains($salida, 'storage/framework') && $this->permisoDenegado($salida) => 'La cuenta de mantenimiento necesita escritura en storage/framework.',
+                    str_contains($salida, 'storage/logs') && $this->permisoDenegado($salida) => 'La cuenta de mantenimiento necesita escritura en storage/logs.',
                     str_contains($salida, 'could not open input file') => 'El PHP CLI no pudo abrir el archivo artisan desde la carpeta de la aplicación.',
                     $resultado->exitCode() === 127, str_contains($salida, 'command not found') => 'PHP CLI no está disponible. Comprueba AITROL_PHP_CLI.',
                     str_contains($salida, 'sqlstate') => 'La base de datos devolvió un error. Comprueba el estado de las migraciones con el PHP CLI del servidor.',
-                    $this->permisoDenegado($salida) => 'El proceso web recibió un error de permisos. Comprueba el ejecutable, los archivos de Laravel y el contexto de SELinux.',
-                    default => 'Consulta el registro del servicio PHP o reproduce el comando con el usuario del proceso web.',
+                    $this->permisoDenegado($salida) => 'El servicio recibió un error de permisos. Comprueba el ejecutable, los archivos de Laravel y el contexto de SELinux.',
+                    default => 'Reproduce el comando con la cuenta del servicio de mantenimiento.',
                 };
 
                 return $prefijo.'Falló '.$comando.' con código '.$resultado->exitCode().'. '.$causa;
@@ -226,14 +239,12 @@ final class MantenimientoServidor
 
     private function expirar(): void
     {
-        $vencidas = $this->tabla()->where('bloqueo', 1)->where(function (Builder $consulta): void {
-            $consulta->where(fn (Builder $q) => $q->where('estado', 'pendiente')->where('created_at', '<', now()->subMinutes(2)))
-                ->orWhere(fn (Builder $q) => $q->where('estado', 'ejecutando')->where('iniciado_at', '<', now()->subMinutes(20)));
-        });
-        if ($vencidas->exists()) {
-            $vencidas->update([
-                'estado' => 'fallido', 'bloqueo' => null, 'detalle' => 'La ejecución no respondió dentro del tiempo esperado.',
-                'finalizado_at' => now(), 'updated_at' => now(),
+        foreach ([
+            ['pendiente', 'created_at', 2, 'El servicio de mantenimiento no recogió la solicitud. Comprueba que aitrol-mantenimiento.timer esté activo.'],
+            ['ejecutando', 'iniciado_at', 20, 'El servicio de mantenimiento no terminó a tiempo. Revisa su registro antes de reintentar.'],
+        ] as [$estado, $columna, $minutos, $detalle]) {
+            $this->tabla()->where('bloqueo', 1)->where('estado', $estado)->where($columna, '<', now()->subMinutes($minutos))->update([
+                'estado' => 'fallido', 'bloqueo' => null, 'detalle' => $detalle, 'finalizado_at' => now(), 'updated_at' => now(),
             ]);
         }
     }

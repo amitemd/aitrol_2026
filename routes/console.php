@@ -4,6 +4,7 @@ use Aitrol\Configuracion\Domain\MenuRepository;
 use Aitrol\Configuracion\Domain\OpcionMenu;
 use App\Models\User;
 use App\Services\CatalogoGeoNames;
+use App\Services\MantenimientoServidor;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Foundation\Console\ServeCommand;
@@ -14,6 +15,15 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+
+Artisan::command('aitrol:mantenimiento-procesar', function (MantenimientoServidor $mantenimiento): int {
+    $id = $mantenimiento->procesarPendiente();
+    if ($id !== null) {
+        $this->info('Solicitud de mantenimiento procesada #'.$id.'. Consulta su resultado en el panel.');
+    }
+
+    return 0;
+})->purpose('Procesar una solicitud de mantenimiento con la cuenta de despliegue');
 
 Event::listen(CommandStarting::class, static function (CommandStarting $evento): void {
     if ($evento->command !== 'serve') {

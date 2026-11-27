@@ -3,11 +3,12 @@
 namespace Tests\Feature;
 
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
-use App\Jobs\EjecutarMantenimientoServidor;
 use App\Models\User;
 use App\Services\MantenimientoServidor;
+use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
@@ -36,24 +37,25 @@ final class MantenimientoServidorTest extends TestCase
     public function test_serializa_ejecuciones_y_muestra_estado_y_error_sin_exponer_la_salida(): void
     {
         config(['mantenimiento.habilitado' => true]);
-        Bus::fake([EjecutarMantenimientoServidor::class]);
         Process::fake([
             '*migrate*' => Process::result(output: 'Define AITROL_EMPRESA_INICIAL. CLAVE_CONFIDENCIAL', exitCode: 1),
             '*route:clear*' => Process::result(),
         ])->preventStrayProcesses();
         $this->actingAs($this->administrador());
         $id = $this->postJson(self::RUTA.'/migrar')->assertAccepted()->assertJsonPath('estados.migrar.estado', 'pendiente')->json('id');
-        Bus::assertDispatchedAfterResponse(EjecutarMantenimientoServidor::class, fn ($trabajo): bool => $trabajo->ejecucion === $id);
+        Process::assertNothingRan();
         $this->postJson(self::RUTA.'/rutas')->assertConflict();
-        app(MantenimientoServidor::class)->ejecutar($id);
+        $this->artisan('aitrol:mantenimiento-procesar')->expectsOutputToContain('#'.$id)->assertSuccessful();
         $this->getJson(self::RUTA.'/estado')->assertOk()->assertJsonPath('ocupado', false)
             ->assertJsonPath('estados.migrar.estado', 'fallido')
             ->assertSee('AITROL_EMPRESA_INICIAL')->assertDontSee('CLAVE_CONFIDENCIAL');
         Process::assertRan(fn ($proceso): bool => in_array('--force', $proceso->command, true));
 
-        $siguiente = $this->postJson(self::RUTA.'/rutas')->assertAccepted()->json('id');
-        app(MantenimientoServidor::class)->ejecutar($siguiente);
+        $this->postJson(self::RUTA.'/rutas')->assertAccepted();
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
         $this->getJson(self::RUTA.'/estado')->assertJsonPath('estados.rutas.estado', 'correcto');
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
+        Process::assertRanTimes(fn ($proceso): bool => in_array('route:clear', $proceso->command, true), 1);
     }
 
     public function test_git_se_detiene_si_hay_cambios_locales(): void
@@ -69,7 +71,8 @@ final class MantenimientoServidorTest extends TestCase
         $this->actingAs($usuario);
         $servicio = app(MantenimientoServidor::class);
 
-        $servicio->ejecutar($servicio->registrar('git', $usuario));
+        $servicio->registrar('git', $usuario);
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
 
         $this->assertDatabaseHas('ejecuciones_mantenimiento', [
             'accion' => 'git', 'estado' => 'fallido', 'detalle' => 'El repositorio tiene cambios locales o Git no pudo comprobarlos.',
@@ -86,8 +89,10 @@ final class MantenimientoServidorTest extends TestCase
         ])->preventStrayProcesses();
         $usuario = $this->administrador();
         $servicio = app(MantenimientoServidor::class);
-        $servicio->ejecutar($servicio->registrar('git', $usuario));
-        $servicio->ejecutar($servicio->registrar('config', $usuario));
+        $servicio->registrar('git', $usuario);
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
+        $servicio->registrar('config', $usuario);
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
 
         $this->actingAs($usuario)->getJson(self::RUTA.'/estado')
             ->assertJsonPath('estados.git.estado', 'fallido')
@@ -97,9 +102,15 @@ final class MantenimientoServidorTest extends TestCase
             ->assertDontSee('RUTA_PRIVADA')->assertDontSee('RECURSO_PRIVADO');
     }
 
-    public function test_git_aplica_solo_la_revision_validada_y_limpia_el_arranque(): void
+    public function test_git_despliega_la_revision_validada_antes_de_migrar(): void
     {
         $revision = str_repeat('a', 40);
+        $pasos = [];
+        $registrarPaso = function (PendingProcess $proceso) use (&$pasos): ProcessResult {
+            $pasos[] = in_array('--ff-only', $proceso->command, true) ? 'merge' : $proceso->command[2];
+
+            return Process::result();
+        };
         config(['mantenimiento.habilitado' => true, 'mantenimiento.git' => true, 'mantenimiento.rama' => 'main', 'mantenimiento.remoto' => 'origin']);
         Process::fake([
             '*--show-toplevel*' => Process::result(output: base_path().PHP_EOL),
@@ -110,18 +121,43 @@ final class MantenimientoServidorTest extends TestCase
             '*FETCH_HEAD*' => Process::result(output: $revision),
             '*merge-base*' => Process::result(),
             '*--name-only*' => Process::result(),
-            '*--ff-only*' => Process::result(),
-            '*:clear*' => Process::result(),
+            '*--ff-only*' => $registrarPaso,
+            '*:clear*' => $registrarPaso,
+            '*migrate*' => $registrarPaso,
         ])->preventStrayProcesses();
         $usuario = $this->administrador();
         $servicio = app(MantenimientoServidor::class);
 
-        $servicio->ejecutar($servicio->registrar('git', $usuario));
+        $servicio->registrar('git', $usuario);
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
 
         $this->assertDatabaseHas('ejecuciones_mantenimiento', ['accion' => 'git', 'estado' => 'correcto']);
         Process::assertRan(fn ($proceso): bool => $proceso->command === ['git', 'fetch', '--no-tags', 'origin', 'refs/heads/main']);
         Process::assertRan(fn ($proceso): bool => $proceso->command === ['git', 'merge', '--ff-only', '--no-edit', $revision]);
-        Process::assertRan(fn ($proceso): bool => in_array('route:clear', $proceso->command, true));
+        Process::assertRan(fn ($proceso): bool => in_array('migrate', $proceso->command, true) && in_array('--force', $proceso->command, true));
+        $this->assertSame(['merge', 'config:clear', 'route:clear', 'event:clear', 'view:clear', 'migrate'], $pasos);
+    }
+
+    public function test_el_procesador_rechaza_solicitudes_revocadas_o_vencidas(): void
+    {
+        config(['mantenimiento.habilitado' => true]);
+        Process::fake()->preventStrayProcesses();
+        $usuario = $this->administrador();
+        $this->actingAs($usuario)->postJson(self::RUTA.'/rutas')->assertAccepted();
+        $usuario->forceFill(['is_admin_global' => false])->save();
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
+        $this->assertDatabaseHas('ejecuciones_mantenimiento', [
+            'accion' => 'rutas', 'estado' => 'fallido', 'detalle' => 'El usuario ya no tiene autorización para ejecutar esta acción.',
+        ]);
+
+        $usuario->forceFill(['is_admin_global' => true])->save();
+        $id = $this->postJson(self::RUTA.'/config')->assertAccepted()->json('id');
+        DB::table('ejecuciones_mantenimiento')->where('id', $id)->update(['created_at' => now()->subMinutes(3)]);
+        $this->artisan('aitrol:mantenimiento-procesar')->assertSuccessful();
+        $this->assertDatabaseHas('ejecuciones_mantenimiento', [
+            'id' => $id, 'estado' => 'fallido', 'bloqueo' => null,
+        ]);
+        Process::assertNothingRan();
     }
 
     private function administrador(bool $global = true): User

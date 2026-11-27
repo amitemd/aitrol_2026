@@ -1,0 +1,15 @@
+[Unit]
+Description=Procesa solicitudes de mantenimiento de Aitrol
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=administrador
+Group=apache
+WorkingDirectory=/var/www/html/aitrol
+ExecStart=/usr/bin/php artisan aitrol:mantenimiento-procesar --no-interaction
+TimeoutStartSec=15min
+UMask=0027
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
