@@ -22,13 +22,15 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class UsuarioController
 {
+    private const FOTO_MAX_KB = 3072;
+
     public function __construct(private readonly EmpresaActiva $empresaActiva) {}
 
     public function index(Request $request): View|JsonResponse
     {
         $datos = $request->validate(['q' => ['nullable', 'string', 'max:160'], 'page' => ['sometimes', 'integer', 'min:1', 'max:1000000']]);
         $consulta = User::query()->where('id_empresa', $this->empresaActiva->id())
-            ->select(['id', 'id_persona', 'name', 'email', 'is_admin'])->with('persona');
+            ->select(['id', 'id_persona', 'name', 'email', 'is_admin', 'activo'])->with('persona');
         $busqueda = $datos['q'] ?? '';
         if ($busqueda !== '') {
             $consulta->where(fn ($query) => $query->whereLike('name', '%'.$busqueda.'%')->orWhereLike('email', '%'.$busqueda.'%'));
@@ -46,7 +48,7 @@ final class UsuarioController
     {
         $this->empresaActiva->verificar($usuario);
 
-        return view('configuracion::usuario', ['usuario' => $usuario->load('persona'), 'tipos' => TipoIdentificacion::cases()]);
+        return $this->formulario($usuario->load('persona'));
     }
 
     public function detalle(User $usuario): View
@@ -56,13 +58,33 @@ final class UsuarioController
         return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de usuario', 'volver' => route('configuracion.usuarios.index'), 'campos' => [
             'Nombre' => $usuario->name, 'Correo electrónico' => $usuario->email,
             'Tipo de cuenta' => $usuario->is_admin ? 'Administrador' : 'Usuario',
+            'Estado' => $usuario->activo ? 'Activo' : 'Inactivo',
             'Identificación' => $usuario->persona?->identificacion, 'Teléfono' => $usuario->persona?->telefono,
         ]]);
     }
 
     public function create(): View
     {
-        return view('configuracion::usuario', ['usuario' => new User, 'tipos' => TipoIdentificacion::cases()]);
+        return $this->formulario(new User);
+    }
+
+    private function formulario(User $usuario): View
+    {
+        $limiteFoto = self::FOTO_MAX_KB * 1024;
+        $limiteSubida = ini_parse_quantity((string) ini_get('upload_max_filesize'));
+        $limitePeticion = ini_parse_quantity((string) ini_get('post_max_size'));
+
+        if ($limiteSubida > 0) {
+            $limiteFoto = min($limiteFoto, $limiteSubida);
+        }
+        if ($limitePeticion > 0) {
+            $limiteFoto = min($limiteFoto, max(1, $limitePeticion - 64 * 1024));
+        }
+
+        return view('configuracion::usuario', [
+            'usuario' => $usuario, 'tipos' => TipoIdentificacion::cases(),
+            'limiteFoto' => $limiteFoto, 'maximoFoto' => self::FOTO_MAX_KB * 1024,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse
@@ -110,7 +132,8 @@ final class UsuarioController
             'email_contacto' => ['nullable', 'email:filter', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:100'],
             'direccion' => ['nullable', 'string', 'max:255'],
-            'foto' => [Rule::excludeIf($request->routeIs('api.*')), 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'foto' => [Rule::excludeIf($request->routeIs('api.*')), 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.self::FOTO_MAX_KB],
+            'activo' => [Rule::excludeIf($request->routeIs('api.*')), 'sometimes', 'required', 'boolean'],
             ...Persona::reglasPerfil(),
             'tipo_identificacion' => ['exclude_if:identificacion,null', 'required_with:identificacion', 'nullable', Rule::enum(TipoIdentificacion::class)],
             'identificacion' => ['nullable', 'string', 'max:30'],
@@ -119,6 +142,11 @@ final class UsuarioController
                     $fallar('La contraseña debe tener hasta 72 bytes y no admitir caracteres nulos.');
                 }
             }]] : []),
+        ], [
+            'foto.uploaded' => 'No se pudo recibir la foto. Verifica el límite de carga del servidor o selecciona una imagen más ligera.',
+            'foto.image' => 'Selecciona una imagen válida.',
+            'foto.mimes' => 'La foto debe tener formato JPG, PNG o WebP.',
+            'foto.max' => 'La foto debe pesar como máximo 3 MB.',
         ]);
 
         $identificacion = null;
@@ -140,8 +168,19 @@ final class UsuarioController
         $guardado = false;
         $disco = Storage::disk('local');
         try {
-            $usuario = $this->empresaActiva->transaccion(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo, &$fotoNueva, &$fotoAnterior): User {
+            $actor = $request->user();
+            $usuario = $this->empresaActiva->transaccion(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo, $actor, &$fotoNueva, &$fotoAnterior): User {
                 $cuenta = $esNuevo ? $usuario : User::query()->lockForUpdate()->findOrFail($usuario->id);
+                if (array_key_exists('activo', $datos) && $cuenta->activo !== (bool) $datos['activo']) {
+                    if ($actor->is($cuenta) || ($cuenta->is_admin_global && ! $actor->is_admin_global)) {
+                        throw ValidationException::withMessages(['activo' => 'No puedes cambiar el estado de esta cuenta.']);
+                    }
+                    $cuenta->activo = (bool) $datos['activo'];
+                    if (! $cuenta->activo && $cuenta->exists) {
+                        $cuenta->tokens()->delete();
+                        $cuenta->setRememberToken(Str::random(60));
+                    }
+                }
                 $persona = $cuenta->persona()->lockForUpdate()->first();
                 $perfilAnterior = $persona;
 

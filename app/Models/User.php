@@ -20,6 +20,8 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $attributes = ['activo' => true];
+
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class, 'id_persona');
@@ -70,6 +72,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'is_admin' => 'boolean',
             'is_admin_global' => 'boolean',
+            'activo' => 'boolean',
             'password' => 'hashed',
         ];
     }

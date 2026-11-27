@@ -15,6 +15,7 @@ final class UsuarioResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'is_admin' => (bool) $this->is_admin,
+            'activo' => (bool) $this->activo,
             'nombres' => $this->persona?->nombre,
             'apellidos' => $this->persona?->apellido,
             'email_contacto' => $this->persona?->email,

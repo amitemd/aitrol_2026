@@ -63,7 +63,7 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'usuarios-activos',
             'model' => env('AUTH_MODEL', User::class),
         ],
 

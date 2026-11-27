@@ -295,6 +295,10 @@
           "is_admin": {
             "type": "boolean"
           },
+            "activo": {
+              "type": "boolean",
+              "description": "Estado de acceso de la cuenta."
+            },
           "nombres": {
             "type": [
               "string",

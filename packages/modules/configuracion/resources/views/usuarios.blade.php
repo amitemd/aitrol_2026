@@ -18,13 +18,14 @@
                 <div class="small text-body-secondary px-3 py-2 border-bottom">{{ $usuarios->total() }} cuentas registradas</div>
                 <div class="table-responsive">
                     <table class="table align-middle table-hover mb-0">
-                        <thead class="clientes-tabla-cabecera"><tr><th scope="col">Nombre</th><th scope="col">Correo electrónico</th><th scope="col">Tipo de cuenta</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+                        <thead class="clientes-tabla-cabecera"><tr><th scope="col">Nombre</th><th scope="col">Correo electrónico</th><th scope="col">Tipo de cuenta</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
                         <tbody>
                             @forelse ($usuarios as $usuario)
                                 <tr>
                                     <th scope="row">{{ $usuario->name }}</th>
                                     <td>{{ $usuario->email }}</td>
                                     <td><span class="badge rounded-pill text-bg-light">{{ $usuario->is_admin ? 'Administrador' : 'Usuario' }}</span></td>
+                                    <td><span class="badge rounded-pill {{ $usuario->activo ? 'text-success-emphasis bg-success-subtle' : 'text-secondary-emphasis bg-secondary-subtle' }}">{{ $usuario->activo ? 'Activo' : 'Inactivo' }}</span></td>
                                     <td class="text-end">
                                         @component('partials.acciones-fila', ['ver' => route('configuracion.usuarios.show', $usuario), 'tituloVer' => 'Detalle de usuario'])
                                             @include('partials.accion-fila-enlace', ['href' => route('configuracion.usuarios.edit', $usuario), 'etiqueta' => 'Editar', 'titulo' => 'Editar usuario'])
@@ -35,7 +36,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center text-body-secondary p-4">No hay usuarios registrados.</td></tr>
+                                <tr><td colspan="5" class="text-center text-body-secondary p-4">No hay usuarios registrados.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

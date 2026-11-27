@@ -111,6 +111,7 @@
                                         'ayuda' => 'JPG, PNG o WebP · máximo 3 MB',
                                         'accion' => $usuario->foto ? 'Cambiar fotografía' : 'Seleccionar imagen',
                                         'vistaPrevia' => true, 'urlImagen' => $usuario->foto ? route('configuracion.usuarios.foto', $usuario) : null,
+                                        'limiteOptimizado' => $limiteFoto, 'maximoOriginal' => $maximoFoto,
                                     ])
                                 </aside>
                             </section>
@@ -137,7 +138,14 @@
                                 </div>
                             </section>
                         </div>
-                        <div class="card-footer d-flex justify-content-end gap-2">
+                        <div class="card-footer d-flex flex-wrap align-items-center gap-2 ficha-acciones">
+                            <div class="me-auto">
+                                @include('partials.interruptor-activo', [
+                                    'activo' => $usuario->activo, 'etiquetaEstado' => 'Cuenta activa',
+                                    'estadoBloqueado' => auth()->user()->is($usuario) || ($usuario->is_admin_global && ! auth()->user()->is_admin_global),
+                                ])
+                                @error('activo') <div class="small text-danger">{{ $message }}</div> @enderror
+                            </div>
                             <a href="{{ route('configuracion.usuarios.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cancelar</a>
                             <button type="submit" class="btn btn-primary">Guardar cambios</button>
                         </div>
