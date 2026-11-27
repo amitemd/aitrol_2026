@@ -185,8 +185,7 @@ final readonly class RegistroActivos
                 }
                 $libro = $this->tabla('af_depreciaciones')->where('id_activo', $activo->id);
                 $ultimo = (clone $libro)->max('periodo');
-                $siguiente = $ultimo === null ? substr($activo->inicio_depreciacion, 0, 7)
-                    : Carbon::parse($ultimo)->addMonth()->format('Y-m');
+                $siguiente = $this->proximoPeriodo($activo->inicio_depreciacion, $ultimo);
                 abort_if($datos['periodo'] !== $siguiente, 409, 'El siguiente período disponible es '.$siguiente.'.');
                 $numero = $libro->count() + 1;
                 abort_if($numero > $meses, 409, 'La vida útil de este activo ya se completó.');
@@ -236,8 +235,10 @@ final readonly class RegistroActivos
             'compras' => $this->compras()->select('id', 'numero as codigo', 'tercero as nombre'),
             'responsables' => DB::table('users')->where('id_empresa', $this->empresa->id())->select('id', 'email as codigo', 'name as nombre'),
             'activos' => $this->tabla('af_activos')->whereNull('fecha_baja')->select('id', 'codigo', 'nombre'),
-            'depreciables' => $this->tabla('af_activos')->whereColumn('costo', '>', 'valor_residual')->where('vida_util_meses', '>', 0)
-                ->select('id', 'codigo', 'nombre'),
+            'depreciables' => $this->tabla('af_activos')->whereRaw('costo - valor_residual > depreciado')->where('vida_util_meses', '>', 0)
+                ->select('id', 'codigo', 'nombre', 'inicio_depreciacion')
+                ->selectSub(DB::table('af_depreciaciones')->whereColumn('af_depreciaciones.id_empresa', 'af_activos.id_empresa')
+                    ->whereColumn('af_depreciaciones.id_activo', 'af_activos.id')->selectRaw('max(periodo)'), 'ultimo_periodo'),
             default => $this->tabla('af_catalogos')->where('clase', $origen)->where('activo', true)->select('id', 'codigo', 'nombre'),
         };
         $columnas = match ($origen) {
@@ -247,6 +248,11 @@ final readonly class RegistroActivos
         };
 
         return $this->buscar($consulta, ['q' => $q], $columnas)->orderBy('nombre')->orderBy('id');
+    }
+
+    public function proximoPeriodo(string $inicio, ?string $ultimo): string
+    {
+        return $ultimo === null ? substr($inicio, 0, 7) : Carbon::parse($ultimo)->addMonth()->format('Y-m');
     }
 
     public function resumen(array $filtros): array

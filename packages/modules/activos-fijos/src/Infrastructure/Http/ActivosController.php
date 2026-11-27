@@ -54,7 +54,14 @@ final readonly class ActivosController
         $resultados = $this->activos->opciones($origen, $datos['q'] ?? null)->paginate(20);
 
         return response()->json([
-            'results' => $resultados->getCollection()->map(fn (stdClass $fila) => ['id' => $fila->id, 'text' => $fila->codigo.' · '.$fila->nombre]),
+            'results' => $resultados->getCollection()->map(function (stdClass $fila) use ($origen): array {
+                $texto = $fila->codigo.' · '.$fila->nombre;
+                if ($origen === 'depreciables') {
+                    $texto .= ' · Próximo período '.$this->activos->proximoPeriodo($fila->inicio_depreciacion, $fila->ultimo_periodo);
+                }
+
+                return ['id' => $fila->id, 'text' => $texto];
+            }),
             'pagination' => ['more' => $resultados->hasMorePages()],
         ]);
     }

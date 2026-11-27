@@ -1,0 +1,3289 @@
+{
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/activos-fijos/activos": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarActivos",
+        "summary": "Consultar activos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha inicial de adquisición"
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha final de adquisición"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFActivo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarActivos",
+        "summary": "Registrar activos",
+        "description": "Registra ficha, clasificación, ubicación y valores iniciales. Puede vincular una compra vigente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFActivoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFActivo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/activos/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleActivos",
+        "summary": "Ver detalle de activos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFActivo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosActualizarActivos",
+        "summary": "Actualizar activos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFActivoCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFActivo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/grupos": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarGrupos",
+        "summary": "Consultar grupos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFCatalogo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarGrupos",
+        "summary": "Registrar grupos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFCatalogoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/grupos/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleGrupos",
+        "summary": "Ver detalle de grupos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosActualizarGrupos",
+        "summary": "Actualizar grupos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFCatalogoCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/tipos": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarTipos",
+        "summary": "Consultar tipos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFCatalogo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarTipos",
+        "summary": "Registrar tipos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFDerivadoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/tipos/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleTipos",
+        "summary": "Ver detalle de tipos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosActualizarTipos",
+        "summary": "Actualizar tipos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFDerivadoCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/subtipos": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarSubtipos",
+        "summary": "Consultar subtipos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFCatalogo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarSubtipos",
+        "summary": "Registrar subtipos",
+        "description": "El subtipo puede sugerir la vida útil en meses. Usa 0 para bienes no depreciables.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFSubtipoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/subtipos/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleSubtipos",
+        "summary": "Ver detalle de subtipos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosActualizarSubtipos",
+        "summary": "Actualizar subtipos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFSubtipoCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/ubicaciones": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarUbicaciones",
+        "summary": "Consultar ubicaciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFCatalogo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarUbicaciones",
+        "summary": "Registrar ubicaciones",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFCatalogoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/ubicaciones/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleUbicaciones",
+        "summary": "Ver detalle de ubicaciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosActualizarUbicaciones",
+        "summary": "Actualizar ubicaciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFCatalogoCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFCatalogo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/adquisiciones": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarAdquisiciones",
+        "summary": "Consultar adquisiciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha inicial de adquisición"
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha final de adquisición"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFActivo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/adquisiciones/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleAdquisiciones",
+        "summary": "Ver detalle de adquisiciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFActivo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/movimientos": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarMovimientos",
+        "summary": "Consultar movimientos y bajas",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "id_activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del bien"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFMovimiento" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarMovimientos",
+        "summary": "Registrar movimientos y bajas",
+        "description": "Registra traslados, asignaciones o bajas. Cierra cualquier orden abierta antes de dar de baja un activo.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFMovimientoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFMovimiento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/movimientos/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleMovimientos",
+        "summary": "Ver detalle de movimientos y bajas",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFMovimiento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/depreciaciones": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarDepreciaciones",
+        "summary": "Consultar depreciaciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "id_activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del bien"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFDepreciacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarDepreciaciones",
+        "summary": "Registrar depreciaciones",
+        "description": "Registra el próximo período mensual consecutivo por línea recta hasta llegar al valor residual.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFDepreciacionAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFDepreciacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/depreciaciones/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleDepreciaciones",
+        "summary": "Ver detalle de depreciaciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFDepreciacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/ordenes": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarOrdenes",
+        "summary": "Consultar órdenes de mantenimiento",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "id_activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del bien"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pendiente",
+                "en_proceso",
+                "completada",
+                "cancelada"
+              ]
+            },
+            "description": "Estado de la orden"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFOrden" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosRegistrarOrdenes",
+        "summary": "Registrar órdenes de mantenimiento",
+        "description": "Crea una orden preventiva o correctiva en estado pendiente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFOrdenAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFOrden" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/ordenes/{registro}": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosDetalleOrdenes",
+        "summary": "Ver detalle de órdenes de mantenimiento",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFOrden" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosActualizarOrdenes",
+        "summary": "Actualizar órdenes de mantenimiento",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID del registro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AFOrdenCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AFOrden" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ActivosFijosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/reportes": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosListarReportes",
+        "summary": "Consultar reportes",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha inicial de adquisición"
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha final de adquisición"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Cantidad por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/AFPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AFActivo" }
+                        },
+                        "resumen": { "$ref": "#/components/schemas/AFResumen" }
+                      },
+                      "required": [
+                        "data",
+                        "resumen"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/activos-fijos/reportes/exportar": {
+      "get": {
+        "tags": [
+          "Activos fijos"
+        ],
+        "operationId": "activosFijosExportarReporte",
+        "summary": "Exportar reporte de activos fijos a CSV",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Código o nombre. En activos también busca por serie y documento de compra."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos o dados de baja."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha inicial de adquisición"
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha final de adquisición"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV con costo, depreciación y valor en libros por bien.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AFCatalogoAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre"
+        ]
+      },
+      "AFCatalogoCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "activo"
+        ]
+      },
+      "AFDerivadoAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "id_padre"
+        ]
+      },
+      "AFDerivadoCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "id_padre",
+          "activo"
+        ]
+      },
+      "AFSubtipoAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "vida_util_meses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 600
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "id_padre"
+        ]
+      },
+      "AFSubtipoCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "vida_util_meses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 600
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "id_padre",
+          "activo"
+        ]
+      },
+      "AFCatalogo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "clase": {
+            "type": "string",
+            "enum": [
+              "grupos",
+              "tipos",
+              "subtipos",
+              "ubicaciones"
+            ]
+          },
+          "padre": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vida_util_meses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 600
+          }
+        }
+      },
+      "AFActivoAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "marca": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "modelo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "serie": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "vida_util_meses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 600
+          },
+          "inicio_depreciacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "costo": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "valor_residual": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "id_subtipo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_ubicacion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_compra": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_responsable": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "fecha_adquisicion": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "costo",
+          "id_subtipo",
+          "id_ubicacion",
+          "fecha_adquisicion"
+        ]
+      },
+      "AFActivoCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "marca": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "modelo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "serie": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "vida_util_meses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 600
+          },
+          "inicio_depreciacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "costo": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "valor_residual": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre"
+        ]
+      },
+      "AFActivo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "marca": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "modelo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "serie": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "vida_util_meses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 600
+          },
+          "inicio_depreciacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "costo": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "valor_residual": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "id_subtipo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_ubicacion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_compra": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_responsable": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "fecha_adquisicion": {
+            "type": "string",
+            "format": "date"
+          },
+          "depreciado": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "valor_libros": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "baja"
+            ]
+          },
+          "fecha_baja": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "grupo": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "subtipo": {
+            "type": "string"
+          },
+          "ubicacion": {
+            "type": "string"
+          },
+          "responsable": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "factura": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "proveedor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "compra_anulada_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-11-26 09:30:00"
+          }
+        }
+      },
+      "AFMovimientoAlta": {
+        "type": "object",
+        "properties": {
+          "id_activo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "traslado",
+              "asignacion",
+              "baja"
+            ]
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "id_ubicacion_destino": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_responsable_destino": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id_activo",
+          "tipo",
+          "fecha",
+          "motivo"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "tipo": {
+                  "const": "traslado"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "id_ubicacion_destino"
+              ]
+            }
+          }
+        ]
+      },
+      "AFMovimiento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "id_activo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "traslado",
+              "asignacion",
+              "baja"
+            ]
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "activo": {
+            "type": "string"
+          },
+          "codigo_activo": {
+            "type": "string"
+          },
+          "id_ubicacion_anterior": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_ubicacion_destino": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_responsable_anterior": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_responsable_destino": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "ubicacion_anterior": {
+            "type": "string"
+          },
+          "ubicacion_destino": {
+            "type": "string"
+          },
+          "responsable_anterior": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "responsable_destino": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AFDepreciacionAlta": {
+        "type": "object",
+        "properties": {
+          "id_activo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "periodo": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}$",
+            "example": "2026-01"
+          }
+        },
+        "required": [
+          "id_activo",
+          "periodo"
+        ]
+      },
+      "AFDepreciacion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "id_activo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "activo": {
+            "type": "string"
+          },
+          "codigo_activo": {
+            "type": "string"
+          },
+          "periodo": {
+            "type": "string",
+            "format": "date"
+          },
+          "importe": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "acumulado": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "valor_libros": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          }
+        }
+      },
+      "AFOrdenAlta": {
+        "type": "object",
+        "properties": {
+          "id_activo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "preventivo",
+              "correctivo"
+            ]
+          },
+          "fecha_programada": {
+            "type": "string",
+            "format": "date"
+          },
+          "detalle": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id_activo",
+          "tipo",
+          "fecha_programada",
+          "detalle"
+        ]
+      },
+      "AFOrdenCambio": {
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "en_proceso",
+              "completada",
+              "cancelada"
+            ]
+          },
+          "resultado": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "costo_mantenimiento": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          }
+        },
+        "required": [
+          "estado"
+        ]
+      },
+      "AFOrden": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "id_activo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "activo": {
+            "type": "string"
+          },
+          "codigo_activo": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "preventivo",
+              "correctivo"
+            ]
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "pendiente",
+              "en_proceso",
+              "completada",
+              "cancelada"
+            ]
+          },
+          "detalle": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "fecha_programada": {
+            "type": "string",
+            "format": "date"
+          },
+          "resultado": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "finalizada_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-11-26 09:30:00"
+          },
+          "costo_mantenimiento": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          }
+        }
+      },
+      "AFResumen": {
+        "type": "object",
+        "properties": {
+          "cantidad": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "costo": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "depreciado": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          },
+          "valor_libros": {
+            "type": "string",
+            "example": "175.00",
+            "pattern": "^\\d+\\.\\d{2}$"
+          }
+        },
+        "required": [
+          "cantidad",
+          "costo",
+          "depreciado",
+          "valor_libros"
+        ]
+      },
+      "AFPaginacion": {
+        "type": "object",
+        "properties": {
+          "current_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "last_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prev_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "current_page",
+          "last_page",
+          "per_page",
+          "total"
+        ]
+      }
+    },
+    "responses": {
+      "ActivosFijosConflicto": {
+        "description": "Código duplicado, período fuera de secuencia o cambio incompatible con el estado del registro.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorApi" }
+          }
+        }
+      }
+    }
+  }
+}
