@@ -12,7 +12,7 @@ return [
     'ventas' => [
         'titulo' => 'Ventas', 'icono' => 'bi-cart-check', 'tercero' => 'Cliente',
         'secciones' => [
-            'documentos' => ['Lista de ventas', 'bi-receipt-cutoff', 'Nueva venta'],
+            'documentos' => ['Lista de ventas', 'bi-receipt-cutoff', 'Nueva factura'],
             'cotizaciones' => ['Cotizaciones', 'bi-file-earmark-text', 'Nueva cotización'],
             ...$ajustes,
         ],

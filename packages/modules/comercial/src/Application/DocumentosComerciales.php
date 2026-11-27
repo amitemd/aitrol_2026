@@ -57,7 +57,7 @@ final readonly class DocumentosComerciales
         return $documento;
     }
 
-    public function registrar(string $modulo, string $seccion, array $datos): stdClass
+    public function registrar(string $modulo, string $seccion, array $datos, ?array $factura = null): stdClass
     {
         $periodo = $this->contexto->periodo();
         if ($periodo !== null && (int) substr($datos['fecha'], 0, 4) !== $periodo) {
@@ -65,7 +65,7 @@ final readonly class DocumentosComerciales
         }
         $vinculado = in_array($seccion, self::VINCULADOS, true);
         try {
-            return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado): stdClass {
+            return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado, $factura): stdClass {
                 $origen = $vinculado ? $this->origen($modulo, (int) $datos['id_documento_origen']) : null;
                 $campo = $modulo === 'ventas' ? 'id_cliente' : 'id_proveedor';
                 $tercero = $origen?->$campo ?? (int) $datos['id_tercero'];
@@ -99,7 +99,7 @@ final readonly class DocumentosComerciales
                     'id_documento_origen' => $origen?->id, 'id_bodega' => $bodega, 'subtotal' => $subtotal,
                     'impuesto' => $impuesto, 'total' => $total, 'observacion' => $datos['observacion'] ?? null,
                     'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
-                ]);
+                ] + ($factura === null ? [] : ['datos_factura' => json_encode($factura + ['total_pago_centavos' => $total], JSON_THROW_ON_ERROR)]));
                 // El orden por producto mantiene consistente la adquisición de bloqueos de inventario.
                 $orden = array_keys($lineas);
                 usort($orden, fn (int $a, int $b) => $lineas[$a]['id_producto'] <=> $lineas[$b]['id_producto']);
@@ -116,6 +116,9 @@ final readonly class DocumentosComerciales
                 return $this->consultar($modulo, $seccion, $id);
             });
         } catch (UniqueConstraintViolationException) {
+            if ($factura !== null) {
+                throw ValidationException::withMessages(['numero' => 'Este número de factura ya está registrado.']);
+            }
             abort(409, 'El número ya está registrado para este tipo de documento y emisor.');
         }
     }
@@ -187,7 +190,7 @@ final readonly class DocumentosComerciales
         return ['filas' => $filas, 'neto' => $neto, 'retenciones' => $retenciones, 'neto_menos_retenciones' => $neto - $retenciones];
     }
 
-    public function opciones(string $modulo, string $catalogo, ?string $busqueda): LengthAwarePaginator
+    public function opciones(string $modulo, string $catalogo, ?string $busqueda, bool $factura = false): LengthAwarePaginator
     {
         $consulta = match ($catalogo) {
             'terceros' => $this->terceros($modulo)->select('id', 'nombre as texto', 'identificacion as codigo'),
@@ -196,6 +199,9 @@ final readonly class DocumentosComerciales
                 ->when($catalogo === 'bodegas', fn (Builder $q) => $q->where('id_sucursal', $this->contexto->sucursal()->id))
                 ->where('activo', true)->select('id', 'nombre as texto', 'codigo'),
         };
+        if ($factura && $catalogo === 'productos') {
+            $consulta->addSelect('precio_venta');
+        }
         $campos = match ($catalogo) {
             'terceros' => ['nombre', 'identificacion'],
             'origenes' => ['tercero', 'numero'],
@@ -246,8 +252,13 @@ final readonly class DocumentosComerciales
             $cantidad = Cantidad::unidades($linea['cantidad'], 3);
             $precio = Cantidad::unidades($linea['precio'], 4);
             $tasa = Cantidad::unidades($linea['tasa'] ?? 0, 2);
-            $subtotal = intdiv($cantidad * $precio + 50000, 100000);
-            if ($subtotal === 0) {
+            $base = intdiv($cantidad * $precio + 50000, 100000);
+            $descuento = Cantidad::unidades($linea['descuento'] ?? 0, 2);
+            if ($descuento > $base) {
+                throw ValidationException::withMessages(["lineas.$indice.descuento" => 'El descuento no puede superar el importe de la línea.']);
+            }
+            $subtotal = $base - $descuento;
+            if ($base === 0) {
                 throw ValidationException::withMessages(['lineas.'.$indice.'.precio' => 'El subtotal de cada línea debe ser al menos 0.01.']);
             }
             $impuesto = intdiv($subtotal * $tasa + 5000, 10000);

@@ -122,7 +122,7 @@ final readonly class PanelAdministrativo
             }
         }
         foreach ([
-            'ventas.documentos' => ['Nueva venta', 'bi-cart-plus'],
+            'ventas.documentos' => ['Nueva factura', 'bi-cart-plus'],
             'compras.ordenes-compra' => ['Nueva orden de compra', 'bi-clipboard-plus'],
             'caja-bancos.movimientos' => ['Nuevo movimiento', 'bi-cash-stack'],
         ] as $ruta => [$titulo, $icono]) {

@@ -122,7 +122,9 @@
                             <div class="dashboard-panel-body">
                                 <ul class="dashboard-links">
                                     @foreach ($acciones as $ruta => [$nombre, $icono])
-                                        <li><a href="{{ route($ruta) }}" data-ajax-open="{{ __($nombre) }}">
+                                        <li><a href="{{ route($ruta) }}"
+                                            @if ($ruta === 'ventas.documentos.create') data-workspace-link="{{ $ruta }}" data-workspace-label="{{ __($nombre) }}"
+                                            @else data-ajax-open="{{ __($nombre) }}" @endif>
                                             <i class="bi {{ $icono }}" aria-hidden="true"></i>{{ __($nombre) }}
                                             <i class="bi bi-plus-lg" aria-hidden="true"></i>
                                         </a></li>

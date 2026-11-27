@@ -94,7 +94,7 @@
   <!--end::Required Plugin(AdminLTE)-->
 
   <link rel="stylesheet" href="{{ asset('workspace.css') }}" />
-  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('comercial.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('comercial.js') }}?v={{ filemtime(public_path('comercial.js')) }}" defer></script>
   <link rel="stylesheet" href="{{ asset('clientes.css') }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
   <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte-select2.min.css') }}" />
@@ -184,7 +184,7 @@
      module (since 4.1) — no page script needed. Only the no-flash snippet
      in <head> stays inline, because it must run before first paint. -->
   <!--end::Color Mode Toggle-->
-  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('workspace.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('workspace.js') }}?v={{ filemtime(public_path('workspace.js')) }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('aitrol-brand.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" defer></script>

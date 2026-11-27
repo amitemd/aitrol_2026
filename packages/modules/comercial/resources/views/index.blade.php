@@ -12,6 +12,7 @@
         'titulo' => $titulo, 'subtitulo' => $config['titulo'], 'icono' => $icono,
         'crearUrl' => $alta && Gate::allows('permiso', [$ruta.'.index', 'escribir']) ? route($ruta.'.create') : null,
         'crearTexto' => $alta,
+        'crearWorkspace' => $ruta === 'ventas.documentos' ? 'ventas.documentos.create' : null,
     ])
     <div class="app-content">
         <div class="container-fluid">
@@ -31,6 +32,10 @@
                     @endforeach
                     <div class="col-auto d-flex gap-2">
                         <button class="btn btn-outline-primary">Filtrar</button>
+                        @if ($ruta === 'ventas.documentos' && Gate::allows('permiso', [$ruta.'.index', 'escribir']))
+                            <a href="{{ route('ventas.facturas-recurrentes.index') }}" class="btn btn-outline-primary"
+                                data-workspace-link="ventas.facturas-recurrentes.index" data-workspace-label="Facturas recurrentes" data-workspace-forward>Facturas recurrentes</a>
+                        @endif
                         @if ($filtros)<a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-list-link>{{ __('Limpiar') }}</a>@endif
                         @if ($reportes)
                             <a class="btn btn-outline-primary" href="{{ route($ruta.'.exportar', $filtros) }}">

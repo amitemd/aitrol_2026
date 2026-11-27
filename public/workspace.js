@@ -25,6 +25,18 @@
     window.addEventListener('aitrol:avatar-actualizado', recibirAvatar);
 
     const workspace = document.querySelector('[data-workspace]');
+    if (document.documentElement.hasAttribute('data-workspace-embedded')) {
+        document.addEventListener('click', (event) => {
+            const link = event.target.closest('a[data-workspace-forward][data-workspace-link]');
+            if (!link || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            const url = new URL(link.href);
+            if (url.origin !== location.origin) return;
+            const opened = window.parent.dispatchEvent(new CustomEvent('aitrol:abrir-destino', {
+                cancelable: true, detail: { key: link.dataset.workspaceLink, label: link.dataset.workspaceLabel, url },
+            }));
+            if (!opened) event.preventDefault();
+        });
+    }
     if (!workspace || document.documentElement.hasAttribute('data-workspace-embedded')) {
         return;
     }
@@ -259,6 +271,14 @@
 
     function add(key, label, url, panel = null) {
         if (tabs.has(key)) {
+            if (key === 'ventas.documentos.create') {
+                const tab = tabs.get(key);
+                const frame = tab.panel.querySelector('[data-workspace-frame]');
+                if (tab.cargada && frame?.contentDocument?.location.pathname !== url.pathname && frame) {
+                    tab.cargada = false;
+                    frame.src = url.href;
+                }
+            }
             return;
         }
 

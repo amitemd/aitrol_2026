@@ -4,6 +4,7 @@ use Aitrol\Configuracion\Domain\MenuRepository;
 use Aitrol\Configuracion\Domain\OpcionMenu;
 use App\Models\User;
 use App\Services\CatalogoGeoNames;
+use App\Services\FacturaVenta;
 use App\Services\MantenimientoServidor;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Console\Events\CommandStarting;
@@ -13,8 +14,17 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+
+Artisan::command('aitrol:facturas-programar', function (FacturaVenta $facturas): int {
+    $this->info('Borradores preparados: '.$facturas->generarProgramadas());
+
+    return 0;
+})->purpose('Preparar las facturas recurrentes que vencieron');
+
+Schedule::command('aitrol:facturas-programar')->everyFiveMinutes();
 
 Artisan::command('aitrol:mantenimiento-procesar', function (MantenimientoServidor $mantenimiento): int {
     $id = $mantenimiento->procesarPendiente();

@@ -16,6 +16,13 @@ foreach (config('comercial') as $modulo => $datos) {
                     $api ? [CheckAbilities::class.':'.$modulo.':'.($accion === 'leer' ? 'leer' : 'escribir')] : [],
                 );
 
+                if ($modulo === 'ventas' && ! $api) {
+                    Route::get('facturas-recurrentes', [ComercialController::class, 'recurrentes'])
+                        ->middleware($permisos('documentos', 'escribir'))->name('facturas-recurrentes.index');
+                    Route::post('facturas-recurrentes/{recurrencia}/estado', [ComercialController::class, 'estadoRecurrencia'])
+                        ->whereNumber('recurrencia')->middleware($permisos('documentos', 'actualizar'))->name('facturas-recurrentes.estado');
+                }
+
                 foreach ($datos['secciones'] as $seccion => [, , $alta]) {
                     Route::get($seccion, [ComercialController::class, 'index'])
                         ->defaults('modulo', $modulo)->defaults('seccion', $seccion)

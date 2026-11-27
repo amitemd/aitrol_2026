@@ -8,7 +8,9 @@
             </div>
         </div>
         @isset($crearUrl)
-            <a href="{{ $crearUrl }}" class="btn btn-primary listado-cabecera-alta" data-ajax-open="{{ __($crearTexto) }}" aria-label="{{ __($crearTexto) }}">
+            <a href="{{ $crearUrl }}" class="btn btn-primary listado-cabecera-alta"
+                @isset($crearWorkspace) data-workspace-link="{{ $crearWorkspace }}" data-workspace-label="{{ __($crearTexto) }}" data-workspace-forward
+                @else data-ajax-open="{{ __($crearTexto) }}" @endisset aria-label="{{ __($crearTexto) }}">
                 <i class="bi bi-plus-lg me-md-1" aria-hidden="true"></i><span class="d-none d-md-inline">{{ __($crearTexto) }}</span>
             </a>
         @endisset
