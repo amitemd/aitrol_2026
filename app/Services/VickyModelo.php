@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 final class VickyModelo
@@ -99,13 +100,23 @@ final class VickyModelo
             $datos['format'] = $formato;
         }
 
+        $espera = filter_var(config('services.vicky.timeout'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 60;
+
         try {
-            $respuesta = Http::acceptJson()->withoutRedirecting()->connectTimeout(3)->timeout(22)
+            $respuesta = Http::acceptJson()->withoutRedirecting()->connectTimeout(3)->timeout($espera)
                 ->post($url.'/api/chat', $datos);
-        } catch (ConnectionException) {
+        } catch (ConnectionException $error) {
+            preg_match('/\bcURL error (\d+)\b/', $error->getMessage(), $coincidencia);
+            Log::warning('vicky.ollama.conexion_fallida', ['codigo_curl' => $coincidencia[1] ?? null]);
+
             return null;
         }
-        $texto = $respuesta->successful() ? $respuesta->json('message.content') : null;
+        if (! $respuesta->successful()) {
+            Log::warning('vicky.ollama.http_fallido', ['estado_http' => $respuesta->status()]);
+
+            return null;
+        }
+        $texto = $respuesta->json('message.content');
 
         return is_string($texto) && trim($texto) !== '' ? Str::limit(trim($texto), 3000) : null;
     }
