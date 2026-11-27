@@ -1,7 +1,20 @@
 <?php
 
+$destinosComerciales = [];
+foreach (require __DIR__.'/comercial.php' as $modulo => $datos) {
+    foreach ($datos['secciones'] as $seccion => [$titulo]) {
+        $destinosComerciales[$modulo.'.'.$seccion.'.index'] = $datos['titulo'].' · '.$titulo;
+    }
+}
+$destinosActivos = [];
+foreach ((require __DIR__.'/activos-fijos.php')['secciones'] as $seccion => [$titulo]) {
+    $destinosActivos['activos-fijos.'.$seccion.'.index'] = 'Activos fijos · '.$titulo;
+}
+
 return [
     'destinos' => [
+        ...$destinosComerciales,
+        ...$destinosActivos,
         'dashboard' => 'Panel general',
         'clientes.index' => 'Lista de clientes',
         'clientes.create' => 'Nuevo cliente',

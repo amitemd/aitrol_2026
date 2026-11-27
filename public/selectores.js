@@ -30,6 +30,7 @@
         if (select.matches(geografico)) return;
         const url = select.dataset.select2Url;
         inicializar(select, url ? {
+            ...(select.dataset.select2Placeholder ? { placeholder: select.dataset.select2Placeholder, allowClear: true } : {}),
             minimumInputLength: Number(select.dataset.select2Min || 1),
             ajax: {
                 url,

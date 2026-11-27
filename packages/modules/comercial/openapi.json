@@ -1,0 +1,3603 @@
+{
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/ventas/reportes/exportar": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasExportarReporte",
+        "summary": "Exportar reporte de ventas a CSV",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Número o nombre de tercero."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento, inclusive."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumen por tipo y estado, seguido de los importes netos.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/NoAutenticado"
+          },
+          "403": {
+            "$ref": "#/components/responses/SinPermiso"
+          },
+          "422": {
+            "$ref": "#/components/responses/Validacion"
+          },
+          "429": {
+            "$ref": "#/components/responses/LimiteExcedido"
+          }
+        }
+      }
+    },
+    "/api/v1/compras/reportes/exportar": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasExportarReporte",
+        "summary": "Exportar reporte de compras a CSV",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Número o nombre de tercero."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento, inclusive."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumen por tipo y estado, seguido de los importes netos.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/NoAutenticado"
+          },
+          "403": {
+            "$ref": "#/components/responses/SinPermiso"
+          },
+          "422": {
+            "$ref": "#/components/responses/Validacion"
+          },
+          "429": {
+            "$ref": "#/components/responses/LimiteExcedido"
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/documentos": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarDocumentos",
+        "summary": "Lista de ventas",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasRegistrarDocumentos",
+        "summary": "Registrar venta",
+        "description": "Registra el documento. Los productos afectan al inventario de la bodega indicada y los conceptos libres se registran sin movimiento de stock. Requiere el alcance ventas:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaDocumento" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/documentos/{registro}": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasConsultarDocumentos",
+        "summary": "Consultar venta",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/documentos/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasAnularDocumentos",
+        "summary": "Anular venta",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance ventas:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/cotizaciones": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarPreliminares",
+        "summary": "Cotizaciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasRegistrarPreliminares",
+        "summary": "Registrar cotización",
+        "description": "Registro preliminar sin movimiento de inventario. Requiere el alcance ventas:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaPreliminar" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/cotizaciones/{registro}": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasConsultarPreliminares",
+        "summary": "Consultar cotización",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/cotizaciones/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasAnularPreliminares",
+        "summary": "Anular cotización",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance ventas:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/notas-credito": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarNotasCredito",
+        "summary": "Notas de crédito",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasRegistrarNotasCredito",
+        "summary": "Registrar nota de crédito",
+        "description": "Reduce el importe neto del documento de origen. Los movimientos físicos se registran por separado en Inventarios. Requiere el alcance ventas:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaNota" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/notas-credito/{registro}": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasConsultarNotasCredito",
+        "summary": "Consultar nota de crédito",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/notas-credito/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasAnularNotasCredito",
+        "summary": "Anular nota de crédito",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance ventas:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/notas-debito": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarNotasDebito",
+        "summary": "Notas de débito",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasRegistrarNotasDebito",
+        "summary": "Registrar nota de débito",
+        "description": "Aumenta el importe neto del documento de origen. Requiere el alcance ventas:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaNota" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/notas-debito/{registro}": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasConsultarNotasDebito",
+        "summary": "Consultar nota de débito",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/notas-debito/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasAnularNotasDebito",
+        "summary": "Anular nota de débito",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance ventas:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/retenciones": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarRetenciones",
+        "summary": "Retenciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasRegistrarRetenciones",
+        "summary": "Registrar retención",
+        "description": "Registra retenciones por tipo, código, base y porcentaje ingresados. Calcula el importe retenido por línea. Requiere el alcance ventas:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaRetencion" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/retenciones/{registro}": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasConsultarRetenciones",
+        "summary": "Consultar retención",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/retenciones/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasAnularRetenciones",
+        "summary": "Anular retención",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance ventas:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/anulaciones": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarAnulaciones",
+        "summary": "Anulaciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/anulaciones/{registro}": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasConsultarAnulaciones",
+        "summary": "Consultar documento anulado",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/ventas/reportes": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "ventasListarReportes",
+        "summary": "Resumen de documentos por tipo y estado",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Totales del período por tipo y estado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComReporte" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/documentos": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarDocumentos",
+        "summary": "Lista de compras",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasRegistrarDocumentos",
+        "summary": "Registrar compra",
+        "description": "Registra el documento. Los productos afectan al inventario de la bodega indicada y los conceptos libres se registran sin movimiento de stock. Requiere el alcance compras:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaDocumento" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/documentos/{registro}": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasConsultarDocumentos",
+        "summary": "Consultar compra",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/documentos/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasAnularDocumentos",
+        "summary": "Anular compra",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance compras:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarPreliminares",
+        "summary": "Órdenes de compra",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasRegistrarPreliminares",
+        "summary": "Registrar orden de compra",
+        "description": "Registro preliminar sin movimiento de inventario. Requiere el alcance compras:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaPreliminar" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/{registro}": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasConsultarPreliminares",
+        "summary": "Consultar orden de compra",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasAnularPreliminares",
+        "summary": "Anular orden de compra",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance compras:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/notas-credito": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarNotasCredito",
+        "summary": "Notas de crédito",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasRegistrarNotasCredito",
+        "summary": "Registrar nota de crédito",
+        "description": "Reduce el importe neto del documento de origen. Los movimientos físicos se registran por separado en Inventarios. Requiere el alcance compras:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaNota" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/notas-credito/{registro}": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasConsultarNotasCredito",
+        "summary": "Consultar nota de crédito",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/notas-credito/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasAnularNotasCredito",
+        "summary": "Anular nota de crédito",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance compras:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/notas-debito": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarNotasDebito",
+        "summary": "Notas de débito",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasRegistrarNotasDebito",
+        "summary": "Registrar nota de débito",
+        "description": "Aumenta el importe neto del documento de origen. Requiere el alcance compras:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaNota" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/notas-debito/{registro}": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasConsultarNotasDebito",
+        "summary": "Consultar nota de débito",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/notas-debito/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasAnularNotasDebito",
+        "summary": "Anular nota de débito",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance compras:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/retenciones": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarRetenciones",
+        "summary": "Retenciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasRegistrarRetenciones",
+        "summary": "Registrar retención",
+        "description": "Registra retenciones por tipo, código, base y porcentaje ingresados. Calcula el importe retenido por línea. Requiere el alcance compras:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAltaRetencion" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del documento",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/retenciones/{registro}": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasConsultarRetenciones",
+        "summary": "Consultar retención",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/retenciones/{registro}/anular": {
+      "post": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasAnularRetenciones",
+        "summary": "Anular retención",
+        "description": "Registra el motivo y el usuario. Si el documento afectó inventario, revierte el movimiento en la misma transacción. Requiere el alcance compras:escribir y permiso de actualización.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ComAnulacion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documento anulado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ComercialConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/anulaciones": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarAnulaciones",
+        "summary": "Anulaciones",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documentos paginados",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ComPaginacion" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/anulaciones/{registro}": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasConsultarAnulaciones",
+        "summary": "Consultar documento anulado",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "description": "ID dentro del módulo y la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento con detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/compras/reportes": {
+      "get": {
+        "tags": [
+          "Compras"
+        ],
+        "operationId": "comprasListarReportes",
+        "summary": "Resumen de documentos por tipo y estado",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca por número de documento o nombre del cliente o proveedor."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fecha del documento hasta, inclusive."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Totales del período por tipo y estado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/ComReporte" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ComAltaDocumento": {
+        "type": "object",
+        "properties": {
+          "numero": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "id_tercero": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_bodega": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComLineaEntrada" },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "numero",
+          "fecha",
+          "lineas",
+          "id_tercero"
+        ]
+      },
+      "ComAltaPreliminar": {
+        "type": "object",
+        "properties": {
+          "numero": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "id_tercero": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComLineaEntrada" },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "numero",
+          "fecha",
+          "lineas",
+          "id_tercero"
+        ]
+      },
+      "ComAltaNota": {
+        "type": "object",
+        "properties": {
+          "numero": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "id_documento_origen": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComLineaNota" },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "numero",
+          "fecha",
+          "lineas",
+          "id_documento_origen"
+        ]
+      },
+      "ComAltaRetencion": {
+        "type": "object",
+        "properties": {
+          "numero": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "id_documento_origen": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComLineaRetencion" },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "numero",
+          "fecha",
+          "lineas",
+          "id_documento_origen"
+        ]
+      },
+      "ComLineaEntrada": {
+        "type": "object",
+        "properties": {
+          "id_producto": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "cantidad": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,3})?$"
+              }
+            ],
+            "description": "Entre 0.001 y 1000000, hasta 3 decimales."
+          },
+          "precio": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.0001,
+                "maximum": 100000,
+                "multipleOf": 0.0001
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,4})?$"
+              }
+            ],
+            "description": "Entre 0.0001 y 100000, hasta 4 decimales."
+          },
+          "tasa": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,2})?$"
+              }
+            ],
+            "description": "Entre 0 y 100, hasta 2 decimales."
+          }
+        },
+        "required": [
+          "cantidad",
+          "precio"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "descripcion"
+            ],
+            "properties": {
+              "descripcion": {
+                "type": "string",
+                "maxLength": 255
+              }
+            }
+          },
+          {
+            "required": [
+              "id_producto"
+            ],
+            "properties": {
+              "id_producto": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1
+              }
+            }
+          }
+        ]
+      },
+      "ComLineaNota": {
+        "type": "object",
+        "properties": {
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "cantidad": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,3})?$"
+              }
+            ],
+            "description": "Entre 0.001 y 1000000, hasta 3 decimales."
+          },
+          "precio": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.0001,
+                "maximum": 100000,
+                "multipleOf": 0.0001
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,4})?$"
+              }
+            ],
+            "description": "Entre 0.0001 y 100000, hasta 4 decimales."
+          },
+          "tasa": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,2})?$"
+              }
+            ],
+            "description": "Entre 0 y 100, hasta 2 decimales."
+          }
+        },
+        "required": [
+          "descripcion",
+          "cantidad",
+          "precio"
+        ]
+      },
+      "ComLineaRetencion": {
+        "type": "object",
+        "properties": {
+          "descripcion": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "tipo_retencion": {
+            "type": "string",
+            "enum": [
+              "renta",
+              "iva",
+              "otra"
+            ]
+          },
+          "codigo_retencion": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "base_retencion": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 100000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,2})?$"
+              }
+            ],
+            "description": "Entre 0.01 y 100000000, hasta 2 decimales."
+          },
+          "porcentaje_retencion": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 100,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(?:\\.\\d{1,2})?$"
+              }
+            ],
+            "description": "Entre 0.01 y 100, hasta 2 decimales."
+          }
+        },
+        "required": [
+          "descripcion",
+          "tipo_retencion",
+          "codigo_retencion",
+          "base_retencion",
+          "porcentaje_retencion"
+        ]
+      },
+      "ComAnulacion": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "ComRegistro": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_empresa": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "modulo": {
+            "type": "string",
+            "enum": [
+              "ventas",
+              "compras"
+            ]
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "documentos",
+              "cotizaciones",
+              "ordenes-compra",
+              "notas-credito",
+              "notas-debito",
+              "retenciones"
+            ]
+          },
+          "numero": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "id_cliente": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_proveedor": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "tercero": {
+            "type": "string"
+          },
+          "id_documento_origen": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_bodega": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subtotal": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "impuesto": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_usuario_anulacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "anulado_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-11-26 10:30:00"
+          },
+          "motivo_anulacion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 10:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 10:30:00"
+          }
+        }
+      },
+      "ComDetalle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_empresa": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "modulo": {
+            "type": "string",
+            "enum": [
+              "ventas",
+              "compras"
+            ]
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "documentos",
+              "cotizaciones",
+              "ordenes-compra",
+              "notas-credito",
+              "notas-debito",
+              "retenciones"
+            ]
+          },
+          "numero": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "id_cliente": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_proveedor": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "tercero": {
+            "type": "string"
+          },
+          "id_documento_origen": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_bodega": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subtotal": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "impuesto": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_usuario_anulacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "anulado_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-11-26 10:30:00"
+          },
+          "motivo_anulacion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 10:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 10:30:00"
+          },
+          "numero_origen": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComLineaDetalle" }
+          }
+        }
+      },
+      "ComLineaDetalle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_empresa": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_documento": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_producto": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_operacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "id_operacion_reversa": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "cantidad": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{3}$",
+            "example": "15.000"
+          },
+          "precio": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{4}$",
+            "example": "15.0000"
+          },
+          "tasa": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "subtotal": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "impuesto": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "tipo_retencion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "renta",
+              "iva",
+              "otra"
+            ]
+          },
+          "codigo_retencion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "base_retencion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "porcentaje_retencion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      },
+      "ComReporte": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tipo": {
+                  "type": "string",
+                  "enum": [
+                    "documentos",
+                    "cotizaciones",
+                    "ordenes-compra",
+                    "notas-credito",
+                    "notas-debito",
+                    "retenciones"
+                  ]
+                },
+                "anulado": {
+                  "type": "boolean"
+                },
+                "cantidad": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "subtotal": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "example": "15.00"
+                },
+                "impuesto": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "example": "15.00"
+                },
+                "total": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "example": "15.00"
+                }
+              }
+            }
+          },
+          "neto": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "retenciones": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "neto_menos_retenciones": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      },
+      "ComPaginacion": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComRegistro" }
+          },
+          "current_page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "per_page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "last_page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prev_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "current_page",
+          "per_page",
+          "total",
+          "last_page"
+        ]
+      }
+    },
+    "responses": {
+      "ComercialConflicto": {
+        "description": "Numeración duplicada, documento ya anulado o con documentos vinculados vigentes.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorApi" }
+          }
+        }
+      }
+    }
+  }
+}

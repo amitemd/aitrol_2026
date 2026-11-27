@@ -170,8 +170,14 @@
 
 .ficha-estado-activo { color: var(--bs-success-text-emphasis); }
 .ficha-estado-inactivo { color: var(--bs-secondary-text-emphasis); }
-.ficha-estado input:not(:checked) ~ .ficha-estado-activo,
-.ficha-estado input:checked ~ .ficha-estado-inactivo { display: none; }
+.ficha-estado > .form-check-input:not(:checked) ~ .ficha-estado-activo,
+.ficha-estado > .form-check-input:checked ~ .ficha-estado-inactivo { display: none; }
+
+.ficha-activo-fijo:not(:has([name="tipo"] option[value="traslado"]:checked)) .af-destino-traslado,
+.ficha-activo-fijo:not(:has([name="tipo"] option[value="asignacion"]:checked)) .af-destino-asignacion,
+.ficha-activo-fijo:not(:has([name="estado"] option[value="completada"]:checked)) .af-costo-orden {
+    display: none;
+}
 
 .ficha-perfil {
     display: grid;

@@ -228,3 +228,63 @@ Artisan::command('inventarios:revocar-token {email} {id}', function (): int {
 
     return 0;
 })->purpose('Revocar una credencial de la API de Inventarios');
+
+Artisan::command('comercial:token {modulo} {email} {nombre} {--escritura} {--dias=90}', function (): int {
+    $modulo = $this->argument('modulo');
+    $usuario = User::query()->where('email', $this->argument('email'))->whereNotNull('id_empresa')->first();
+    $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
+    if (! in_array($modulo, ['ventas', 'compras'], true) || $usuario === null || $dias === false) {
+        $this->error('Indique ventas o compras, un usuario con empresa y una vigencia de 1 a 365 días.');
+        return 1;
+    }
+
+    $alcances = [$modulo.':leer'];
+    if ($this->option('escritura')) $alcances[] = $modulo.':escribir';
+    $this->line($usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias))->plainTextToken);
+
+    return 0;
+})->purpose('Emitir una credencial para la API de Ventas o Compras');
+
+Artisan::command('comercial:revocar-token {modulo} {email} {id}', function (): int {
+    $modulo = $this->argument('modulo');
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+    $token = $usuario?->tokens()->find($this->argument('id'));
+    if (! in_array($modulo, ['ventas', 'compras'], true) || $token === null || ! in_array($modulo.':leer', $token->abilities, true)) {
+        $this->error('No se encontró la credencial comercial para ese usuario.');
+        return 1;
+    }
+
+    $token->delete();
+    $this->info('Credencial revocada.');
+
+    return 0;
+})->purpose('Revocar una credencial de la API de Ventas o Compras');
+
+Artisan::command('activos-fijos:token {email} {nombre} {--escritura} {--dias=90}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->whereNotNull('id_empresa')->first();
+    $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
+    if ($usuario === null || $dias === false) {
+        $this->error('Indique un usuario con empresa asignada y una vigencia de 1 a 365 días.');
+        return 1;
+    }
+
+    $alcances = ['activos-fijos:leer'];
+    if ($this->option('escritura')) $alcances[] = 'activos-fijos:escribir';
+    $this->line($usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias))->plainTextToken);
+
+    return 0;
+})->purpose('Emitir una credencial para la API de Activos fijos');
+
+Artisan::command('activos-fijos:revocar-token {email} {id}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+    $token = $usuario?->tokens()->find($this->argument('id'));
+    if ($token === null || ! in_array('activos-fijos:leer', $token->abilities, true)) {
+        $this->error('No se encontró la credencial de Activos fijos.');
+        return 1;
+    }
+
+    $token->delete();
+    $this->info('Credencial revocada.');
+
+    return 0;
+})->purpose('Revocar una credencial de la API de Activos fijos');

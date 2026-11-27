@@ -23,7 +23,9 @@
     },
     "autoload": {
         "psr-4": {
+            "Aitrol\\ActivosFijos\\": "packages/modules/activos-fijos/src/",
             "Aitrol\\Clientes\\": "packages/modules/clientes/src/",
+            "Aitrol\\Comercial\\": "packages/modules/comercial/src/",
             "Aitrol\\Configuracion\\": "packages/modules/configuracion/src/",
             "Aitrol\\Inventarios\\": "packages/modules/inventarios/src/",
             "Aitrol\\Proveedores\\": "packages/modules/proveedores/src/",
