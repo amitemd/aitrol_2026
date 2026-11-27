@@ -1,5 +1,7 @@
 <?php
 
+use Aitrol\Configuracion\Domain\MenuRepository;
+use Aitrol\Configuracion\Domain\OpcionMenu;
 use App\Models\User;
 use App\Services\CatalogoGeoNames;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -9,6 +11,8 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 Event::listen(CommandStarting::class, static function (CommandStarting $evento): void {
@@ -24,6 +28,93 @@ Event::listen(CommandStarting::class, static function (CommandStarting $evento):
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('aitrol:menu {--restaurar : Agregar las opciones faltantes a sus grupos existentes}', function (MenuRepository $menu): int {
+    $modulos = [
+        'inventarios' => ['Inventarios', 'inventarios.secciones'],
+        'ventas' => ['Ventas', 'comercial.ventas.secciones'],
+        'compras' => ['Compras', 'comercial.compras.secciones'],
+        'activos-fijos' => ['Activos fijos', 'activos-fijos.secciones'],
+        'caja-bancos' => ['Caja y bancos', 'caja-bancos.secciones'],
+        'tributario' => ['Tributario', 'tributario.secciones'],
+        'rrhh' => ['Recursos humanos', 'rrhh.secciones'],
+    ];
+    $catalogo = [];
+    $sinRutas = false;
+
+    foreach ($modulos as $modulo => [$grupo, $clave]) {
+        $secciones = config($clave, []);
+        if ($secciones === []) {
+            $this->error("$grupo: no se cargó la configuración $clave.");
+            $sinRutas = true;
+        }
+
+        $orden = 10;
+        foreach ($secciones as $seccion => [$nombre, $icono]) {
+            $ruta = "$modulo.$seccion.index";
+            if (! Route::has($ruta)) {
+                $this->error("$grupo: Laravel no registró la ruta $ruta.");
+                $sinRutas = true;
+            }
+            $catalogo[$grupo][$ruta] = ['nombre' => $nombre, 'icono' => $icono, 'orden' => $orden];
+            $orden += 10;
+        }
+    }
+
+    if (! Schema::hasTable('menu')) {
+        $this->error('La tabla del menú todavía no existe. Aplica las migraciones.');
+
+        return 1;
+    }
+
+    $restaurar = $this->option('restaurar') && ! $sinRutas;
+    $pendientes = [];
+    $revisar = function () use ($menu, $catalogo, $restaurar, &$pendientes): void {
+        $pendientes = [];
+        $opciones = collect($menu->listar());
+        $rutas = $opciones->whereNotNull('ruta')->keyBy('ruta');
+
+        foreach ($catalogo as $grupo => $secciones) {
+            $padre = $opciones->first(fn (OpcionMenu $opcion): bool => $opcion->ruta === null
+                && $opcion->padreId === null && $opcion->nombre === $grupo);
+
+            foreach (array_diff_key($secciones, $rutas->all()) as $ruta => $datos) {
+                if ($restaurar && $padre !== null) {
+                    $menu->guardar(null, $datos + [
+                        'padre_id' => $padre->id, 'ruta' => $ruta, 'activo' => true, 'solo_administrador' => false,
+                    ]);
+                }
+                $pendientes[] = [$grupo, $ruta, match (true) {
+                    $padre === null => 'Falta el grupo original',
+                    $restaurar => 'Restaurada',
+                    default => 'Falta la opción',
+                }];
+            }
+        }
+    };
+
+    if ($restaurar) {
+        $menu->modificarJerarquia($revisar);
+    } else {
+        $revisar();
+    }
+
+    if ($pendientes !== []) {
+        $this->table(['Grupo', 'Ruta', 'Estado'], $pendientes);
+    }
+    if ($sinRutas) {
+        $this->error('Comprueba la revisión de Git y regenera el autoload de Composer antes de restaurar el menú.');
+
+        return 1;
+    }
+    if (collect($pendientes)->contains(fn (array $fila): bool => $fila[2] !== 'Restaurada')) {
+        return 1;
+    }
+
+    $this->info('Las rutas y opciones de los módulos revisados están registradas.');
+
+    return 0;
+})->purpose('Diagnosticar y restaurar opciones de los módulos del menú');
 
 Artisan::command('ubicaciones:importar {--directorio= : Archivos locales de GeoNames} {--completo : Todos los lugares poblados}', function (CatalogoGeoNames $catalogo): int {
     try {

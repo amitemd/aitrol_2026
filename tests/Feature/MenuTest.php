@@ -11,6 +11,38 @@ final class MenuTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_menu_command_restores_a_missing_option_and_preserves_existing_changes(): void
+    {
+        $productos = 'inventarios.productos.index';
+        $bodegas = 'inventarios.bodegas.index';
+        $grupo = DB::table('menu')->where('nombre', 'Inventarios')->whereNull('ruta')->value('id');
+        DB::table('menu')->where('ruta', $productos)->delete();
+        DB::table('menu')->where('ruta', $bodegas)->update(['nombre' => 'Almacenes', 'activo' => false]);
+
+        $this->artisan('aitrol:menu')->expectsOutputToContain('Falta la opción')->assertExitCode(1);
+        $this->assertDatabaseMissing('menu', ['ruta' => $productos]);
+
+        $this->artisan('aitrol:menu', ['--restaurar' => true])->assertSuccessful();
+        $this->artisan('aitrol:menu', ['--restaurar' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('menu', ['ruta' => $productos, 'padre_id' => $grupo, 'activo' => true]);
+        $this->assertSame(1, DB::table('menu')->where('ruta', $productos)->count());
+        $this->assertDatabaseHas('menu', ['ruta' => $bodegas, 'nombre' => 'Almacenes', 'activo' => false]);
+    }
+
+    public function test_menu_command_reports_unregistered_routes_without_changing_the_menu(): void
+    {
+        config(['inventarios.secciones.sin-ruta' => ['Ruta pendiente', 'bi-box']]);
+        DB::table('menu')->where('ruta', 'inventarios.productos.index')->delete();
+
+        $this->artisan('aitrol:menu', ['--restaurar' => true])
+            ->expectsOutputToContain('inventarios.sin-ruta.index')
+            ->assertExitCode(1);
+
+        $this->assertDatabaseMissing('menu', ['ruta' => 'inventarios.sin-ruta.index']);
+        $this->assertDatabaseMissing('menu', ['ruta' => 'inventarios.productos.index']);
+    }
+
     public function test_only_administrators_can_manage_the_menu(): void
     {
         $this->get(route('configuracion.menu.index'))->assertRedirect(route('dashboard'));

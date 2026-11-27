@@ -15,6 +15,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -43,6 +44,10 @@ final class VickyController extends Controller
             'tema_anterior' => ['nullable', 'string', Rule::in(array_keys(VickyReportes::PERMISOS))],
             'guia_anterior' => ['nullable', 'uuid'],
         ]);
+        $respuestaSocial = $this->respuestaSocial($datos['pregunta']);
+        if ($respuestaSocial !== null) {
+            return response()->json(['respuesta' => $respuestaSocial]);
+        }
         $empresa = $empresaActiva->id();
         $inicio = hrtime(true);
         $id = (string) Str::uuid();
@@ -60,8 +65,29 @@ final class VickyController extends Controller
 
             throw $error;
         } finally {
-            $core->registrar($id, $empresa, $estado, (int) ((hrtime(true) - $inicio) / 1_000_000), $ambito);
+            try {
+                $core->registrar($id, $empresa, $estado, (int) ((hrtime(true) - $inicio) / 1_000_000), $ambito);
+            } catch (Throwable $error) {
+                Log::warning('No se pudo registrar la actividad de Vicky.', [
+                    'request_id' => $id,
+                    'tipo_error' => $error::class,
+                ]);
+            }
         }
+    }
+
+    private function respuestaSocial(string $pregunta): ?string
+    {
+        $texto = Str::lower(Str::ascii($pregunta));
+        $social = Str::squish(preg_replace('/[^a-z ]+/', ' ', $texto));
+        $saludo = '(?:hola(?: vicky)?|buenos dias|buenas tardes|buenas noches)';
+        $ayuda = '(?:(?:en )?que (?:puedes hacer|me puedes ayudar)|como (?:me )?puedes ayudar)';
+        if (preg_match('/\A(?:'.$saludo.'(?: '.$ayuda.')?|'.$ayuda.')\z/', $social)) {
+            return 'Puedo orientarte sobre módulos de Aitrol, darte ejemplos y pasos, preparar listas de verificación y redactar borradores de agenda o actas. También puedo consultar reportes permitidos. ¿Qué necesitas?';
+        }
+
+        return preg_match('/\A(?:muchas )?gracias(?: vicky| por la ayuda)?\z/', $social)
+            ? 'Con gusto. ¿Qué más necesitas revisar en Aitrol?' : null;
     }
 
     public function valorar(Request $request, VickyCore $core, EmpresaActiva $empresaActiva): JsonResponse
@@ -124,18 +150,11 @@ final class VickyController extends Controller
         if (preg_match('/\b(?:users|contrasenas?|passwords?|tokens? de acceso|sesiones? activas|tabla personas)\b/', $texto)) {
             return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
         }
-        $social = Str::squish(preg_replace('/[^a-z ]+/', ' ', $texto));
-        $saludo = '(?:hola(?: vicky)?|buenos dias|buenas tardes|buenas noches)';
-        $ayuda = '(?:(?:en )?que (?:puedes hacer|me puedes ayudar)|como (?:me )?puedes ayudar)';
-        if (preg_match('/\A(?:'.$saludo.'(?: '.$ayuda.')?|'.$ayuda.')\z/', $social)) {
+        $destino = $guiaAitrol->responder($pregunta);
+        if ($destino !== null) {
             $estado = 'completed';
 
-            return response()->json(['respuesta' => 'Puedo orientarte sobre módulos de Aitrol, darte ejemplos y pasos, preparar listas de verificación y redactar borradores de agenda o actas. También puedo consultar reportes permitidos. ¿Qué necesitas?']);
-        }
-        if (preg_match('/\A\s*(?:muchas )?gracias(?: vicky| por la ayuda)?\s*\z/', $social)) {
-            $estado = 'completed';
-
-            return response()->json(['respuesta' => 'Con gusto. ¿Qué más necesitas revisar en Aitrol?']);
+            return response()->json($destino);
         }
         $anterior = $this->reciboGuia($request, $datos['guia_anterior'] ?? null, $empresa);
         $guia = VickyGuia::detectar($texto, $anterior === null ? null : array_intersect_key($anterior, array_flip(['workflow', 'permiso', 'topic'])));
@@ -170,12 +189,6 @@ final class VickyController extends Controller
         }
         if (preg_match('/\busuarios?\b/', $texto)) {
             return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
-        }
-        $destino = $guiaAitrol->responder($pregunta);
-        if ($destino !== null) {
-            $estado = 'completed';
-
-            return response()->json($destino);
         }
         $hoy = CarbonImmutable::now('America/Guayaquil')->startOfDay();
         $fechas = $this->periodo($texto, $hoy);
