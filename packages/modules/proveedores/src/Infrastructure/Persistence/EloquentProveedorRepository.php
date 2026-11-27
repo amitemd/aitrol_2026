@@ -2,6 +2,7 @@
 
 namespace Aitrol\Proveedores\Infrastructure\Persistence;
 
+use App\Services\EmpresaActiva;
 use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
 use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use Aitrol\Proveedores\Domain\Entities\Proveedor;
@@ -48,7 +49,7 @@ final class EloquentProveedorRepository implements ProveedorRepository
     public function guardar(Proveedor $proveedor): Proveedor
     {
         try {
-            return (new ProveedorModel)->getConnection()->transaction(function () use ($proveedor): Proveedor {
+            return app(EmpresaActiva::class)->transaccion(function () use ($proveedor): Proveedor {
                 $modelo = $proveedor->id === null ? new ProveedorModel : $this->modelo($proveedor->id, bloquear: true);
                 $perfil = array_replace($modelo->perfil ?? [], $proveedor->perfil);
 

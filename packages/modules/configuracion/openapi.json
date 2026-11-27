@@ -176,7 +176,7 @@
         ],
         "operationId": "actualizarUsuario",
         "summary": "Actualizar los datos de un usuario",
-        "description": "Requiere un token de administrador con usuarios:escribir. Las cuentas administradoras se editan en Configuraciones generales.",
+        "description": "Requiere un token de administrador con usuarios:escribir. Las cuentas administradoras se editan en Configuración.",
         "requestBody": {
           "required": true,
           "content": {

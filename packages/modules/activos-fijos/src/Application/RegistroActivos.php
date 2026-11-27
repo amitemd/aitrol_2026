@@ -82,7 +82,7 @@ final readonly class RegistroActivos
     public function guardarCatalogo(string $clase, array $datos, ?int $id): stdClass
     {
         try {
-            return DB::transaction(function () use ($clase, $datos, $id): stdClass {
+            return $this->empresa->transaccion(function () use ($clase, $datos, $id): stdClass {
                 $padre = config('activos-fijos.padres.'.$clase);
                 if ($padre !== null) {
                     $this->catalogoActivo($padre, (int) $datos['id_padre'], 'id_padre');
@@ -102,7 +102,7 @@ final readonly class RegistroActivos
                 }
 
                 return $this->registro($clase, $this->guardar('af_catalogos', $datos + ['clase' => $clase], $id));
-            }, 3);
+            });
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El código ya existe en este catálogo.');
         }
@@ -111,7 +111,7 @@ final readonly class RegistroActivos
     public function guardarActivo(array $datos, ?int $id): stdClass
     {
         try {
-            return DB::transaction(function () use ($datos, $id): stdClass {
+            return $this->empresa->transaccion(function () use ($datos, $id): stdClass {
                 $anterior = $id === null ? null : $this->fila('af_activos', $id);
                 abort_if($anterior?->fecha_baja !== null, 409, 'El activo está dado de baja.');
                 if ($anterior === null) {
@@ -153,7 +153,7 @@ final readonly class RegistroActivos
                 if ($id === null) event(new OperacionContabilizable('activos.alta', $activoId));
 
                 return $this->registro('activos', $activoId);
-            }, 3);
+            });
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El código de activo ya existe en tu empresa.');
         }
@@ -161,7 +161,7 @@ final readonly class RegistroActivos
 
     public function mover(array $datos): stdClass
     {
-        return DB::transaction(function () use ($datos): stdClass {
+        return $this->empresa->transaccion(function () use ($datos): stdClass {
             $activo = $this->fila('af_activos', (int) $datos['id_activo']);
             abort_if($activo->fecha_baja !== null, 409, 'El activo está dado de baja.');
             $ultima = $this->tabla('af_movimientos')->where('id_activo', $activo->id)->max('fecha') ?? $activo->fecha_adquisicion;
@@ -183,13 +183,13 @@ final readonly class RegistroActivos
             if ($datos['tipo'] === 'baja') event(new OperacionContabilizable('activos.baja', $id));
 
             return $this->registro('movimientos', $id);
-        }, 3);
+        });
     }
 
     public function depreciar(array $datos): stdClass
     {
         try {
-            return DB::transaction(function () use ($datos): stdClass {
+            return $this->empresa->transaccion(function () use ($datos): stdClass {
                 $activo = $this->fila('af_activos', (int) $datos['id_activo']);
                 $meses = (int) $activo->vida_util_meses;
                 abort_if($meses === 0 || $activo->costo <= $activo->valor_residual, 409, 'Este activo no tiene base depreciable.');
@@ -212,7 +212,7 @@ final readonly class RegistroActivos
                 event(new OperacionContabilizable('activos.depreciacion', $id));
 
                 return $this->registro('depreciaciones', $id);
-            }, 3);
+            });
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El período ya está registrado.');
         }
@@ -220,7 +220,7 @@ final readonly class RegistroActivos
 
     public function guardarOrden(array $datos, ?int $id): stdClass
     {
-        return DB::transaction(function () use ($datos, $id): stdClass {
+        return $this->empresa->transaccion(function () use ($datos, $id): stdClass {
             if ($id === null) {
                 $activo = $this->fila('af_activos', (int) $datos['id_activo']);
                 abort_if($activo->fecha_baja !== null, 409, 'El activo está dado de baja.');
@@ -241,7 +241,7 @@ final readonly class RegistroActivos
             }
 
             return $this->registro('ordenes', $this->guardar('af_ordenes', $datos, $id));
-        }, 3);
+        });
     }
 
     public function opciones(string $origen, ?string $q): Builder

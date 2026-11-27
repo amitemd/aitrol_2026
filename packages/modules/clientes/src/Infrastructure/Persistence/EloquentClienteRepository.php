@@ -2,6 +2,7 @@
 
 namespace Aitrol\Clientes\Infrastructure\Persistence;
 
+use App\Services\EmpresaActiva;
 use Aitrol\Clientes\Domain\ClienteNoEncontrado;
 use Aitrol\Clientes\Domain\Entities\Cliente;
 use Aitrol\Clientes\Domain\IdentificacionDuplicada;
@@ -57,7 +58,7 @@ final class EloquentClienteRepository implements ClienteRepository
     public function guardar(Cliente $cliente): Cliente
     {
         try {
-            return (new ClienteModel)->getConnection()->transaction(function () use ($cliente): Cliente {
+            return app(EmpresaActiva::class)->transaccion(function () use ($cliente): Cliente {
                 $model = $cliente->id === null
                     ? new ClienteModel
                     : (ClienteModel::query()->lockForUpdate()->find($cliente->id) ?? throw new ClienteNoEncontrado('Cliente no encontrado.'));

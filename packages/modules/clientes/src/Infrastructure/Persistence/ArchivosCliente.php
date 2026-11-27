@@ -2,6 +2,7 @@
 
 namespace Aitrol\Clientes\Infrastructure\Persistence;
 
+use App\Services\EmpresaActiva;
 use Aitrol\Clientes\Domain\ClienteNoEncontrado;
 use Closure;
 use Illuminate\Http\UploadedFile;
@@ -26,7 +27,7 @@ final class ArchivosCliente
         $fotoAnterior = null;
 
         try {
-            (new ClienteModel)->getConnection()->transaction(function () use ($guardarCliente, $foto, $adjuntos, &$nuevos, &$fotoAnterior): void {
+            app(EmpresaActiva::class)->transaccion(function () use ($guardarCliente, $foto, $adjuntos, &$nuevos, &$fotoAnterior): void {
                 $id = $guardarCliente()->id;
                 $cliente = ClienteModel::query()->lockForUpdate()->findOrFail($id);
                 $persona = $cliente->persona()->lockForUpdate()->firstOrFail();
@@ -50,7 +51,7 @@ final class ArchivosCliente
                     $cliente->documentos = $documentos;
                     $cliente->save();
                 }
-            });
+            }, intentos: 1);
         } catch (Throwable $error) {
             $disco->delete($nuevos);
 

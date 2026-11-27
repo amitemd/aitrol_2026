@@ -90,7 +90,7 @@ final class UsuarioController
     public function update(Request $request, User $usuario): RedirectResponse|JsonResponse
     {
         $this->empresaActiva->verificar($usuario);
-        abort_if($request->routeIs('api.*') && $usuario->is_admin, 403, 'Edita las cuentas administradoras desde Configuraciones generales.');
+        abort_if($request->routeIs('api.*') && $usuario->is_admin, 403, 'Edita las cuentas administradoras desde Configuración.');
 
         return $this->guardar($request, $usuario);
     }
@@ -140,7 +140,7 @@ final class UsuarioController
         $guardado = false;
         $disco = Storage::disk('local');
         try {
-            $usuario = $usuario->getConnection()->transaction(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo, &$fotoNueva, &$fotoAnterior): User {
+            $usuario = $this->empresaActiva->transaccion(function () use ($usuario, $datos, $identificacion, $nombre, $esNuevo, &$fotoNueva, &$fotoAnterior): User {
                 $cuenta = $esNuevo ? $usuario : User::query()->lockForUpdate()->findOrFail($usuario->id);
                 $persona = $cuenta->persona()->lockForUpdate()->first();
                 $perfilAnterior = $persona;
@@ -197,7 +197,7 @@ final class UsuarioController
                 $cuenta->save();
 
                 return $cuenta;
-            });
+            }, intentos: 1);
             $guardado = true;
         } catch (UniqueConstraintViolationException $exception) {
             $restriccion = (string) ($exception->errorInfo[2] ?? '');

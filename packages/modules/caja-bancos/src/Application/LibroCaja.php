@@ -5,7 +5,7 @@ namespace Aitrol\CajaBancos\Application;
 use App\Events\OperacionContabilizable;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Support\Facades\DB;
+use App\Services\EmpresaActiva;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
@@ -16,7 +16,7 @@ final readonly class LibroCaja
     public function cuenta(array $campos, ?int $id): stdClass
     {
         try {
-            return DB::transaction(function () use ($campos, $id): stdClass {
+            return app(EmpresaActiva::class)->transaccion(function () use ($campos, $id): stdClass {
                 if ($id === null) {
                     $id = $this->datos->crear('cb_cuentas', $campos);
                 } else {
@@ -26,7 +26,7 @@ final readonly class LibroCaja
                 }
 
                 return $this->datos->fila('cb_cuentas', $id);
-            }, 3);
+            });
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El código de cuenta ya existe en tu empresa.');
         }
@@ -34,21 +34,21 @@ final readonly class LibroCaja
 
     public function abrir(int $idCuenta): stdClass
     {
-        return DB::transaction(function () use ($idCuenta): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($idCuenta): stdClass {
             $cuenta = $this->datos->fila('cb_cuentas', $idCuenta, true);
             abort_unless($cuenta->tipo === 'caja' && $cuenta->activo, 422, 'Selecciona una caja activa.');
             abort_if($this->cajaAbierta($idCuenta), 409, 'Esta caja ya tiene una apertura vigente.');
             $id = $this->datos->crear('cb_cierres', ['id_cuenta' => $idCuenta, 'saldo_apertura' => $cuenta->saldo]);
 
             return $this->datos->detalle('cierres', $id);
-        }, 3);
+        });
     }
 
     public function cerrar(int $id, array $campos): stdClass
     {
         $idCuenta = $this->datos->fila('cb_cierres', $id)->id_cuenta;
 
-        return DB::transaction(function () use ($id, $idCuenta, $campos): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($id, $idCuenta, $campos): stdClass {
             $cuenta = $this->datos->fila('cb_cuentas', $idCuenta, true);
             $cierre = $this->datos->fila('cb_cierres', $id, true);
             abort_if($cierre->cerrado_at !== null, 409, 'La caja ya está cerrada.');
@@ -64,7 +64,7 @@ final readonly class LibroCaja
             ]);
 
             return $this->datos->detalle('cierres', $id);
-        }, 3);
+        });
     }
 
     public function registrar(string $tipo, array $campos): array
@@ -89,7 +89,7 @@ final readonly class LibroCaja
         $huella = hash('sha256', json_encode([$comprobante, $asientos], JSON_THROW_ON_ERROR));
 
         try {
-            return DB::transaction(function () use ($comprobante, $origen, $clave, $huella, $asientos): array {
+            return app(EmpresaActiva::class)->transaccion(function () use ($comprobante, $origen, $clave, $huella, $asientos): array {
                 $cuentas = $this->bloquearCuentas($asientos);
                 if ($clave !== null && ($repetida = $this->repetida($clave, $huella)) !== null) return [$repetida, true];
                 if ($comprobante['tipo'] === 'deposito') {
@@ -103,7 +103,7 @@ final readonly class LibroCaja
                 $operacion = $this->aplicar($comprobante + ['clave_operacion' => $clave, 'huella' => $huella], $cuentas, $asientos);
 
                 return [$operacion, false];
-            }, 3);
+            });
         } catch (UniqueConstraintViolationException $error) {
             $repetida = $clave === null ? null : $this->repetida($clave, $huella);
             if ($repetida === null) throw $error;
@@ -118,7 +118,7 @@ final readonly class LibroCaja
         abort_if($original->tipo === 'reversa', 409, 'Las reversiones quedan en el historial.');
         $asientos = $original->asientos->mapWithKeys(fn (stdClass $fila) => [$fila->id_cuenta => -$fila->variacion])->all();
 
-        return DB::transaction(function () use ($id, $motivo, $asientos, $original): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($id, $motivo, $asientos, $original): stdClass {
             $cuentas = $this->bloquearCuentas($asientos);
             $op = $this->datos->operacion($id);
             abort_if($op->id_reversion !== null, 409, 'La operación ya fue revertida.');
@@ -128,7 +128,7 @@ final readonly class LibroCaja
                 'tipo' => 'reversa', 'fecha' => now()->toDateString(), 'importe' => $original->importe, 'concepto' => $motivo,
                 'referencia' => 'Operación '.$id, 'id_reversa_de' => $id,
             ], $cuentas, $asientos);
-        }, 3);
+        });
     }
 
     private function aplicar(array $cabecera, array $cuentas, array $asientos): stdClass

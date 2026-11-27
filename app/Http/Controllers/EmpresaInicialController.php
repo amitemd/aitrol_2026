@@ -37,7 +37,7 @@ final class EmpresaInicialController
                 $usuario->empresa()->associate($empresa);
                 $usuario->is_admin = true;
                 $usuario->save();
-            });
+            }, 3);
         } catch (UniqueConstraintViolationException $error) {
             throw ValidationException::withMessages(['ruc' => 'Ya existe una empresa con ese RUC.']);
         }

@@ -109,7 +109,7 @@ final readonly class InventarioSql implements RepositorioInventario
 
     public function transaccion(Closure $proceso): mixed
     {
-        return DB::transaction($proceso, 3);
+        return $this->empresa->transaccion($proceso);
     }
 
     private function tabla(string $tabla): Builder

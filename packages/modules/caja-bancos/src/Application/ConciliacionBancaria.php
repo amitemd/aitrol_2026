@@ -4,7 +4,7 @@ namespace Aitrol\CajaBancos\Application;
 
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
+use App\Services\EmpresaActiva;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -15,7 +15,7 @@ final readonly class ConciliacionBancaria
 
     public function importar(array $datos): stdClass
     {
-        return DB::transaction(function () use ($datos): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($datos): stdClass {
             $cuenta = $this->datos->fila('cb_cuentas', (int) $datos['id_cuenta'], true);
             abort_unless($cuenta->tipo === 'banco' && $cuenta->activo, 422, 'Selecciona una cuenta bancaria activa.');
             $extracto = $this->datos->crear('cb_extractos', [
@@ -45,7 +45,7 @@ final readonly class ConciliacionBancaria
             $this->datos->actualizar('cb_extractos', $extracto, compact('importadas', 'omitidas'));
 
             return $this->datos->detalle('extractos', $extracto);
-        }, 3);
+        });
     }
 
     public function candidatos(int $id, ?string $q): Builder
@@ -65,7 +65,7 @@ final readonly class ConciliacionBancaria
     {
         $idCuenta = $this->datos->fila('cb_lineas_extracto', $id)->id_cuenta;
 
-        return DB::transaction(function () use ($id, $idCuenta, $asiento): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($id, $idCuenta, $asiento): stdClass {
             $this->datos->fila('cb_cuentas', $idCuenta, true);
             $linea = $this->datos->fila('cb_lineas_extracto', $id, true);
             abort_if($linea->id_asiento !== null, 409, 'La línea del extracto ya está conciliada.');
@@ -76,14 +76,14 @@ final readonly class ConciliacionBancaria
             $this->datos->crear('cb_conciliaciones', ['id_linea_extracto' => $id, 'id_asiento' => $asiento, 'accion' => 'conciliar']);
 
             return $this->datos->detalle('conciliacion', $id);
-        }, 3);
+        });
     }
 
     public function desconciliar(int $id, string $motivo): stdClass
     {
         $idCuenta = $this->datos->fila('cb_lineas_extracto', $id)->id_cuenta;
 
-        return DB::transaction(function () use ($id, $idCuenta, $motivo): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($id, $idCuenta, $motivo): stdClass {
             $this->datos->fila('cb_cuentas', $idCuenta, true);
             $linea = $this->datos->fila('cb_lineas_extracto', $id, true);
             abort_if($linea->id_asiento === null, 409, 'La línea del extracto está pendiente.');
@@ -93,6 +93,6 @@ final readonly class ConciliacionBancaria
             ]);
 
             return $this->datos->detalle('conciliacion', $id);
-        }, 3);
+        });
     }
 }

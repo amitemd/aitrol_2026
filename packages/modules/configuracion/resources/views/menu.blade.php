@@ -4,7 +4,7 @@
 
 @section('content')
     @include('partials.listado-cabecera', [
-        'titulo' => 'Administrar menú', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-list-ul',
+        'titulo' => 'Administrar menú', 'subtitulo' => 'Configuración', 'icono' => 'bi-list-ul',
         'crearUrl' => route('configuracion.menu.index', ['crear' => 1]), 'crearTexto' => 'Nueva opción',
     ])
 

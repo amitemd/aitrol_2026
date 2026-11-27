@@ -3,7 +3,7 @@
 @section('title', 'Ubicaciones')
 
 @section('content')
-    @include('partials.listado-cabecera', ['titulo' => 'Ubicaciones', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-geo-alt'])
+    @include('partials.listado-cabecera', ['titulo' => 'Ubicaciones', 'subtitulo' => 'Configuración', 'icono' => 'bi-geo-alt'])
     <div class="app-content">
         <div class="container-fluid">
             @if (session('estado')) <p class="alert alert-success" role="status">{{ session('estado') }}</p> @endif

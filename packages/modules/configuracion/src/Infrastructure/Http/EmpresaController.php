@@ -62,7 +62,7 @@ final class EmpresaController
         ]);
 
         try {
-            $empresa->fill($datos)->save();
+            $this->empresaActiva->transaccion(fn () => $empresa->fill($datos)->save());
         } catch (UniqueConstraintViolationException) {
             throw ValidationException::withMessages(['ruc' => 'Ya existe una empresa con ese RUC.']);
         }

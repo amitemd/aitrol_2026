@@ -21,11 +21,7 @@ final readonly class TributarioSql implements RepositorioTributario
 
     public function transaccion(Closure $trabajo): mixed
     {
-        return DB::transaction(function () use ($trabajo) {
-            DB::table('erp_empresas')->where('id', $this->empresa->id())->lockForUpdate()->first(['id']);
-
-            return $trabajo();
-        }, 3);
+        return $this->empresa->transaccion($trabajo);
     }
 
     public function buscarPeriodo(PeriodoFiscal $periodo): ?stdClass

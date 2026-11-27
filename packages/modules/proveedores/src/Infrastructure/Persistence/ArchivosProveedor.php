@@ -2,6 +2,7 @@
 
 namespace Aitrol\Proveedores\Infrastructure\Persistence;
 
+use App\Services\EmpresaActiva;
 use Aitrol\Proveedores\Domain\ProveedorNoEncontrado;
 use Closure;
 use Illuminate\Http\UploadedFile;
@@ -26,7 +27,7 @@ final class ArchivosProveedor
         $fotoAnterior = null;
 
         try {
-            (new ProveedorModel)->getConnection()->transaction(function () use ($guardarProveedor, $foto, $adjuntos, &$nuevos, &$fotoAnterior): void {
+            app(EmpresaActiva::class)->transaccion(function () use ($guardarProveedor, $foto, $adjuntos, &$nuevos, &$fotoAnterior): void {
                 $id = $guardarProveedor()->id;
                 $proveedor = ProveedorModel::query()->lockForUpdate()->findOrFail($id);
 
@@ -48,7 +49,7 @@ final class ArchivosProveedor
                     $proveedor->documentos = $documentos;
                 }
                 $proveedor->save();
-            });
+            }, intentos: 1);
         } catch (Throwable $error) {
             $disco->delete($nuevos);
 

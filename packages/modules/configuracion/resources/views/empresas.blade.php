@@ -4,7 +4,7 @@
 
 @section('content')
     @include('partials.listado-cabecera', [
-        'titulo' => 'Empresas', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-buildings',
+        'titulo' => 'Empresas', 'subtitulo' => 'Configuración', 'icono' => 'bi-buildings',
     ])
     <div class="app-content">
         <div class="container-fluid">

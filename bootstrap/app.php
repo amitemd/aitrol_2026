@@ -4,6 +4,7 @@ use Aitrol\Clientes\Domain\ClienteNoEncontrado;
 use Aitrol\Clientes\Domain\IdentificacionDuplicada;
 use Aitrol\Proveedores\Domain\IdentificacionDuplicada as IdentificacionProveedorDuplicada;
 use Aitrol\Proveedores\Domain\ProveedorNoEncontrado;
+use App\Http\Middleware\RegistrarAuditoria;
 use App\Http\Middleware\VerificarPermiso;
 use App\Http\Middleware\VerificarEmpresa;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(RegistrarAuditoria::class);
         $middleware->alias(['permiso' => VerificarPermiso::class, 'empresa' => VerificarEmpresa::class]);
         $middleware->redirectGuestsTo(fn (): string => route('dashboard'));
         $middleware->redirectUsersTo(fn (): string => route('dashboard'));

@@ -4,7 +4,7 @@
 
 @section('content')
     @include('partials.listado-cabecera', [
-        'titulo' => 'Roles y permisos', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-shield-lock',
+        'titulo' => 'Roles y permisos', 'subtitulo' => 'Configuración', 'icono' => 'bi-shield-lock',
         'crearUrl' => route('configuracion.roles.index', ['crear' => 1]), 'crearTexto' => 'Nuevo rol',
     ])
     <div class="app-content">

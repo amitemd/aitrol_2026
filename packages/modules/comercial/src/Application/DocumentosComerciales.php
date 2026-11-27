@@ -56,7 +56,7 @@ final readonly class DocumentosComerciales
     {
         $vinculado = in_array($seccion, self::VINCULADOS, true);
         try {
-            return DB::transaction(function () use ($modulo, $seccion, $datos, $vinculado): stdClass {
+            return app(EmpresaActiva::class)->transaccion(function () use ($modulo, $seccion, $datos, $vinculado): stdClass {
                 $origen = $vinculado ? $this->origen($modulo, (int) $datos['id_documento_origen']) : null;
                 $campo = $modulo === 'ventas' ? 'id_cliente' : 'id_proveedor';
                 $tercero = $origen?->$campo ?? (int) $datos['id_tercero'];
@@ -104,7 +104,7 @@ final readonly class DocumentosComerciales
                 event(new OperacionContabilizable('comercial.documento', $id));
 
                 return $this->consultar($modulo, $seccion, $id);
-            }, 3);
+            });
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El número ya está registrado para este tipo de documento y emisor.');
         }
@@ -118,7 +118,7 @@ final readonly class DocumentosComerciales
                 ?? abort(404, 'Documento no encontrado.');
         }
 
-        return DB::transaction(function () use ($modulo, $seccion, $id, $motivo, $idOrigen): stdClass {
+        return app(EmpresaActiva::class)->transaccion(function () use ($modulo, $seccion, $id, $motivo, $idOrigen): stdClass {
             // Las notas y retenciones toman siempre el bloqueo del documento base antes del propio.
             $origen = $idOrigen === null ? null
                 : $this->documentos($modulo)->where('tipo', 'documentos')->where('id', $idOrigen)->lockForUpdate()->first();
@@ -148,7 +148,7 @@ final readonly class DocumentosComerciales
             event(new OperacionContabilizable('comercial.anulacion', $id));
 
             return $this->consultar($modulo, 'anulaciones', $id);
-        }, 3);
+        });
     }
 
     public function reporte(string $modulo, array $filtros): array

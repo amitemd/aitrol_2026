@@ -4,7 +4,7 @@
 
 @section('content')
     @include('partials.listado-cabecera', [
-        'titulo' => 'Usuarios', 'subtitulo' => 'Configuraciones generales', 'icono' => 'bi-person-gear',
+        'titulo' => 'Usuarios', 'subtitulo' => 'Configuración', 'icono' => 'bi-person-gear',
         'crearUrl' => route('configuracion.usuarios.create'), 'crearTexto' => 'Nuevo usuario',
     ])
     <div class="app-content">

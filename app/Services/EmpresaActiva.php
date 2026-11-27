@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Support\Facades\DB;
 
 final class EmpresaActiva
@@ -13,6 +14,18 @@ final class EmpresaActiva
         abort_if($id === null, 403, 'La cuenta debe tener una empresa asignada.');
 
         return (int) $id;
+    }
+
+    public function transaccion(Closure $trabajo, int $intentos = 3): mixed
+    {
+        $id = $this->id();
+
+        return DB::transaction(function () use ($id, $trabajo): mixed {
+            $empresa = DB::table('erp_empresas')->where('id', $id)->lockForUpdate()->first(['id']);
+            abort_if($empresa === null, 403, 'La empresa asignada ya no existe.');
+
+            return $trabajo();
+        }, $intentos);
     }
 
     public function verificar(User $usuario): void

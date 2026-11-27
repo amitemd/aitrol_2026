@@ -86,11 +86,7 @@ final readonly class DatosContables implements RepositorioContable
 
     public function transaccion(Closure $trabajo): mixed
     {
-        return DB::transaction(function () use ($trabajo) {
-            $this->bloquearEmpresa();
-
-            return $trabajo();
-        }, 3);
+        return $this->empresa->transaccion($trabajo);
     }
 
     public function cuenta(int $id): stdClass

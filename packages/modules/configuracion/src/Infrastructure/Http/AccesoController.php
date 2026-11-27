@@ -52,7 +52,7 @@ final class AccesoController
         sort($permisos);
 
         try {
-            DB::transaction(function () use ($rol, $datos, $autor, $permisos): void {
+            $this->empresaActiva->transaccion(function () use ($rol, $datos, $autor, $permisos): void {
                 if ($rol === null) {
                     $id = DB::table('roles')->insertGetId([
                         'nombre' => $datos['nombre'],
@@ -90,7 +90,9 @@ final class AccesoController
 
     public function eliminarRol(Request $request, int $rol): JsonResponse|RedirectResponse
     {
-        abort_unless($this->deEmpresa('roles')->where('id', $rol)->delete(), 404);
+        $this->empresaActiva->transaccion(function () use ($rol): void {
+            abort_unless($this->deEmpresa('roles')->where('id', $rol)->delete(), 404);
+        });
 
         return $this->resultado($request, 'Rol eliminado.', 'configuracion.roles.index');
     }
@@ -124,7 +126,7 @@ final class AccesoController
             throw ValidationException::withMessages(['directos' => 'Hay permisos que ya no existen.']);
         }
 
-        DB::transaction(function () use ($usuario, $datos, $directos): void {
+        $this->empresaActiva->transaccion(function () use ($usuario, $datos, $directos): void {
             $cuenta = User::query()->where('id_empresa', $this->empresaActiva->id())->lockForUpdate()->findOrFail($usuario->id);
             abort_if($cuenta->is_admin, 403);
 
