@@ -195,3 +195,36 @@ Artisan::command('usuarios:revocar-token {email} {id}', function (): int {
 
     return 0;
 })->purpose('Revocar una credencial de la API de Usuarios');
+
+Artisan::command('inventarios:token {email} {nombre} {--escritura} {--dias=90}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->whereNotNull('id_empresa')->first();
+    $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
+    if ($usuario === null || $dias === false) {
+        $this->error('Indique un usuario con empresa asignada y una vigencia de 1 a 365 días.');
+        return 1;
+    }
+
+    $alcances = ['inventarios:leer'];
+    if ($this->option('escritura')) {
+        $alcances[] = 'inventarios:escribir';
+    }
+
+    $token = $usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias));
+    $this->line($token->plainTextToken);
+
+    return 0;
+})->purpose('Emitir una credencial para la API de Inventarios');
+
+Artisan::command('inventarios:revocar-token {email} {id}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+    $token = $usuario?->tokens()->find($this->argument('id'));
+    if ($token === null || ! in_array('inventarios:leer', $token->abilities, true)) {
+        $this->error('No se encontró la credencial de Inventarios para ese usuario.');
+        return 1;
+    }
+
+    $token->delete();
+    $this->info('Credencial revocada.');
+
+    return 0;
+})->purpose('Revocar una credencial de la API de Inventarios');

@@ -26,4 +26,7 @@ Route::prefix('api/v1/inventarios')->name('api.v1.inventarios.')
                     ->middleware([CheckAbilities::class.':inventarios:escribir', $permiso.'actualizar'])->name($seccion.'.update');
             }
         }
+        Route::get('reportes/exportar', [InventarioController::class, 'exportar'])
+            ->middleware([CheckAbilities::class.':inventarios:leer', 'permiso:inventarios.reportes.index,leer'])
+            ->name('reportes.exportar');
     });

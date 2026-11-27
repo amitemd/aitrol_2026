@@ -317,6 +317,22 @@
 
 .aitrol-shell .sidebar-menu .nav-link:is(.active, :hover) .nav-icon { color: #e4f3ff; }
 
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .aitrol-shell .sidebar-menu .nav-link:hover > .nav-icon {
+        animation: aitrol-menu-icon-float 1.4s ease-in-out infinite;
+    }
+
+    @keyframes aitrol-menu-icon-float {
+        0%, 100% { translate: 0 0; }
+        50% { translate: 0 -3px; }
+    }
+}
+
+.inventario-operacion:not(:has([name="tipo"] option[value="transferencia"]:checked)) .inventario-bodega-destino,
+.inventario-operacion:not(:has([name="tipo"] option:is([value="entrada"], [value="ajuste_entrada"]):checked)) .inventario-costo {
+    display: none;
+}
+
 
 .aitrol-shell .workspace-tab {
     border-color: var(--aitrol-border);

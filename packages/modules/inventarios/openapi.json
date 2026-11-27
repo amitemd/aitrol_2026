@@ -1,0 +1,2253 @@
+{
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/inventarios/productos": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarProductos",
+        "summary": "Listar productos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "description": "1 para activos, 0 para inactivos",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvProducto" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosRegistrarProductos",
+        "summary": "Registrar productos",
+        "description": "Requiere el alcance inventarios:escribir y el permiso de escritura de la sección.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvProductoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvProducto" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/InventarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/productos/{registro}": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosConsultarProductos",
+        "summary": "Consultar productos por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "ID del registro dentro de la empresa",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro de inventario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvProducto" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosActualizarProductos",
+        "summary": "Actualizar productos",
+        "description": "La desactivación requiere llevar la existencia a cero.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "ID del registro dentro de la empresa",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvProductoCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro de inventario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvProducto" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/InventarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/bodegas": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarBodegas",
+        "summary": "Listar bodegas",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "description": "1 para activos, 0 para inactivos",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvBodega" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosRegistrarBodegas",
+        "summary": "Registrar bodegas",
+        "description": "Requiere el alcance inventarios:escribir y el permiso de escritura de la sección.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvBodegaAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvBodega" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/InventarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/bodegas/{registro}": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosConsultarBodegas",
+        "summary": "Consultar bodegas por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "ID del registro dentro de la empresa",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro de inventario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvBodega" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosActualizarBodegas",
+        "summary": "Actualizar bodegas",
+        "description": "La desactivación requiere llevar la existencia a cero.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "ID del registro dentro de la empresa",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvBodegaCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro de inventario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvBodega" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/InventarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/existencias": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarExistencias",
+        "summary": "Listar existencias",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "id_producto",
+            "in": "query",
+            "description": "Producto de la empresa autenticada",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id_bodega",
+            "in": "query",
+            "description": "Bodega de la empresa autenticada, incluido destino en transferencias",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "bajo_minimo",
+            "in": "query",
+            "description": "1 devuelve solo existencias al mínimo o por debajo",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvExistencia" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/movimientos": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarMovimientos",
+        "summary": "Listar movimientos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "id_producto",
+            "in": "query",
+            "description": "Producto de la empresa autenticada",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id_bodega",
+            "in": "query",
+            "description": "Bodega de la empresa autenticada, incluido destino en transferencias",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "description": "Incluye movimientos desde esta fecha",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "description": "Incluye movimientos hasta esta fecha",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvOperacionListado" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosRegistrarMovimientos",
+        "summary": "Registrar movimientos",
+        "description": "Actualiza stock y Kardex en una transacción. Puede reenviarse la misma clave_operacion para recuperar la operación original. Una transferencia registra la salida y la entrada. Requiere inventarios:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvMovimientoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con esta clave",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/InventarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/movimientos/{registro}": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosConsultarMovimientos",
+        "summary": "Consultar movimientos por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "ID del registro dentro de la empresa",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro de inventario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/ajustes": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarAjustes",
+        "summary": "Listar ajustes",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "id_producto",
+            "in": "query",
+            "description": "Producto de la empresa autenticada",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id_bodega",
+            "in": "query",
+            "description": "Bodega de la empresa autenticada, incluido destino en transferencias",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "description": "Incluye movimientos desde esta fecha",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "description": "Incluye movimientos hasta esta fecha",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvOperacionListado" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosRegistrarAjustes",
+        "summary": "Registrar ajustes",
+        "description": "Actualiza stock y Kardex en una transacción. Puede reenviarse la misma clave_operacion para recuperar la operación original. Una transferencia registra la salida y la entrada. Requiere inventarios:escribir.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvAjusteAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con esta clave",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/InventarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/ajustes/{registro}": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosConsultarAjustes",
+        "summary": "Consultar ajustes por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "ID del registro dentro de la empresa",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro de inventario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/kardex": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarKardex",
+        "summary": "Listar kardex",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "id_producto",
+            "in": "query",
+            "description": "Producto de la empresa autenticada",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id_bodega",
+            "in": "query",
+            "description": "Bodega de la empresa autenticada, incluido destino en transferencias",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "description": "Incluye movimientos desde esta fecha",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "description": "Incluye movimientos hasta esta fecha",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvKardex" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/reportes": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarReportes",
+        "summary": "Consultar valoración y stock mínimo por bodega",
+        "description": "Valor por producto y bodega. Se calcula multiplicando la existencia registrada por su costo promedio.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "id_producto",
+            "in": "query",
+            "description": "Producto de la empresa autenticada",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id_bodega",
+            "in": "query",
+            "description": "Bodega de la empresa autenticada, incluido destino en transferencias",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Registros por página",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "bajo_minimo",
+            "in": "query",
+            "description": "1 devuelve solo existencias al mínimo o por debajo",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InvPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/InvExistencia" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/inventarios/reportes/exportar": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosExportarReporte",
+        "summary": "Exportar valoración y stock mínimo a CSV",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "id_producto",
+            "in": "query",
+            "description": "Producto de la empresa autenticada",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id_bodega",
+            "in": "query",
+            "description": "Bodega de la empresa autenticada, incluido destino en transferencias",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          {
+            "name": "bajo_minimo",
+            "in": "query",
+            "description": "1 devuelve solo existencias al mínimo o por debajo",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV con las existencias que cumplen los filtros",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "InvProductoAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "unidad": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "categoria": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "codigo_barras": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "stock_minimo": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]{1,3})?$"
+              }
+            ],
+            "description": "De 0 a 1000000, hasta 3 decimales.",
+            "example": "5.000"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "unidad"
+        ]
+      },
+      "InvProductoCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "unidad": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "categoria": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "codigo_barras": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "stock_minimo": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]{1,3})?$"
+              }
+            ],
+            "description": "De 0 a 1000000, hasta 3 decimales.",
+            "example": "5.000"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "unidad",
+          "activo"
+        ]
+      },
+      "InvBodegaAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre"
+        ]
+      },
+      "InvBodegaCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "activo"
+        ]
+      },
+      "InvProducto": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "unidad": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "categoria": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "codigo_barras": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          },
+          "stock_minimo": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          }
+        }
+      },
+      "InvBodega": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          }
+        }
+      },
+      "InvExistencia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "producto": {
+            "type": "string"
+          },
+          "codigo_producto": {
+            "type": "string"
+          },
+          "bodega": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "cantidad": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "stock_minimo": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "costo_promedio": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          },
+          "bajo_minimo": {
+            "type": "boolean"
+          },
+          "valor_existencia": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{7}$",
+            "example": "12.0000000"
+          }
+        }
+      },
+      "InvKardex": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_operacion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "variacion": {
+            "type": "string",
+            "pattern": "^-?[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "saldo_anterior": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "saldo": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "costo_unitario": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          },
+          "costo_promedio": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          },
+          "producto": {
+            "type": "string"
+          },
+          "codigo_producto": {
+            "type": "string"
+          },
+          "bodega": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "salida",
+              "transferencia",
+              "ajuste_entrada",
+              "ajuste_salida"
+            ]
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          }
+        }
+      },
+      "InvOperacion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "salida",
+              "transferencia",
+              "ajuste_entrada",
+              "ajuste_salida"
+            ]
+          },
+          "id_bodega_destino": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cantidad": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "costo_unitario": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InvLinea" }
+          }
+        }
+      },
+      "InvOperacionListado": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "salida",
+              "transferencia",
+              "ajuste_entrada",
+              "ajuste_salida"
+            ]
+          },
+          "id_bodega_destino": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cantidad": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "costo_unitario": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 09:30:00"
+          },
+          "producto": {
+            "type": "string"
+          },
+          "codigo_producto": {
+            "type": "string"
+          },
+          "bodega": {
+            "type": "string"
+          },
+          "bodega_destino": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "InvLinea": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_operacion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "variacion": {
+            "type": "string",
+            "pattern": "^-?[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "saldo_anterior": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "saldo": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{3}$",
+            "example": "12.000"
+          },
+          "costo_unitario": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          },
+          "costo_promedio": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]{4}$",
+            "example": "12.0000"
+          }
+        }
+      },
+      "InvMovimientoAlta": {
+        "type": "object",
+        "properties": {
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega_destino": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cantidad": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]{1,3})?$"
+              }
+            ],
+            "description": "De 0.001 a 1000000, hasta 3 decimales.",
+            "example": "10.500"
+          },
+          "costo_unitario": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.0001
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]{1,4})?$"
+              }
+            ],
+            "description": "De 0 a 100000, hasta 4 decimales.",
+            "example": "2.5000"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "salida",
+              "transferencia"
+            ]
+          }
+        },
+        "required": [
+          "tipo",
+          "id_producto",
+          "id_bodega",
+          "cantidad",
+          "motivo"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "tipo": {
+                  "const": "transferencia"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "id_bodega_destino"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "tipo": {
+                  "const": "entrada"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "costo_unitario"
+              ]
+            }
+          }
+        ]
+      },
+      "InvAjusteAlta": {
+        "type": "object",
+        "properties": {
+          "id_producto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_bodega": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cantidad": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.001,
+                "maximum": 1000000,
+                "multipleOf": 0.001
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]{1,3})?$"
+              }
+            ],
+            "description": "De 0.001 a 1000000, hasta 3 decimales.",
+            "example": "10.500"
+          },
+          "costo_unitario": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100000,
+                "multipleOf": 0.0001
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]{1,4})?$"
+              }
+            ],
+            "description": "De 0 a 100000, hasta 4 decimales.",
+            "example": "2.5000"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "ajuste_entrada",
+              "ajuste_salida"
+            ]
+          }
+        },
+        "required": [
+          "tipo",
+          "id_producto",
+          "id_bodega",
+          "cantidad",
+          "motivo"
+        ]
+      },
+      "InvPaginacion": {
+        "type": "object",
+        "properties": {
+          "current_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "last_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "next_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prev_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "current_page",
+          "per_page",
+          "total",
+          "last_page"
+        ]
+      }
+    },
+    "responses": {
+      "InventarioConflicto": {
+        "description": "Código duplicado o clave de operación ya utilizada con otros datos",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorApi" }
+          }
+        }
+      }
+    }
+  }
+}

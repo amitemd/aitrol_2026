@@ -6,6 +6,7 @@ use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
 use stdClass;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final readonly class Inventario
 {
@@ -29,18 +30,18 @@ final readonly class Inventario
 
         try {
             return $this->repositorio->transaccion(function () use ($operacion, $clave, $huella): array {
-                $producto = $this->repositorio->catalogo('productos', $operacion['id_producto'], bloquear: true);
+                $producto = $this->catalogo('productos', $operacion['id_producto'], 'id_producto');
                 if ($clave !== null && ($existente = $this->repositorio->porClave($clave)) !== null) {
                     return $this->repetida($existente, $huella);
                 }
+                $this->verificarActivo($producto, 'id_producto');
 
                 $bodegas = array_filter([$operacion['id_bodega'], $operacion['id_bodega_destino']]);
                 sort($bodegas, SORT_NUMERIC);
                 foreach ($bodegas as $id) {
-                    $bodega = $this->repositorio->catalogo('bodegas', $id, bloquear: true);
-                    if (! $bodega->activo) throw ValidationException::withMessages(['id_bodega' => 'La bodega debe estar activa.']);
+                    $campo = $id === $operacion['id_bodega'] ? 'id_bodega' : 'id_bodega_destino';
+                    $this->verificarActivo($this->catalogo('bodegas', $id, $campo), $campo);
                 }
-                if (! $producto->activo) throw ValidationException::withMessages(['id_producto' => 'El producto debe estar activo.']);
 
                 $origen = $this->repositorio->saldo($producto->id, $operacion['id_bodega']);
                 $suma = in_array($operacion['tipo'], ['entrada', 'ajuste_entrada'], true);
@@ -61,6 +62,22 @@ final readonly class Inventario
             if ($existente === null) throw $error;
 
             return $this->repetida($existente, $huella);
+        }
+    }
+
+    private function catalogo(string $catalogo, int $id, string $campo): stdClass
+    {
+        try {
+            return $this->repositorio->catalogo($catalogo, $id, bloquear: true);
+        } catch (NotFoundHttpException) {
+            throw ValidationException::withMessages([$campo => 'Selecciona un registro activo de tu empresa.']);
+        }
+    }
+
+    private function verificarActivo(stdClass $registro, string $campo): void
+    {
+        if (! $registro->activo) {
+            throw ValidationException::withMessages([$campo => 'Selecciona un registro activo de tu empresa.']);
         }
     }
 

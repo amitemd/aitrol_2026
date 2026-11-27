@@ -49,7 +49,8 @@ final readonly class InventarioSql implements RepositorioInventario
                 $tabla = 'inv_'.$seccion;
                 if ($id === null) {
                     $id = DB::table($tabla)->insertGetId($datos + [
-                        'id_empresa' => $this->empresa->id(), 'created_at' => now(), 'updated_at' => now(),
+                        'id_empresa' => $this->empresa->id(), 'id_usuario_creacion' => auth()->id(),
+                        'created_at' => now(), 'updated_at' => now(),
                     ]);
                 } else {
                     $this->catalogo($seccion, $id, bloquear: true);
@@ -57,7 +58,7 @@ final readonly class InventarioSql implements RepositorioInventario
                     if (! $datos['activo'] && $this->tabla('inv_existencias')->where($columna, $id)->where('cantidad', '>', 0)->exists()) {
                         throw ValidationException::withMessages(['activo' => 'Lleva la existencia a cero antes de desactivar este registro.']);
                     }
-                    $this->tabla($tabla)->where('id', $id)->update($datos + ['updated_at' => now()]);
+                    $this->tabla($tabla)->where('id', $id)->update($datos + ['id_usuario_modificacion' => auth()->id(), 'updated_at' => now()]);
                 }
 
                 return $this->catalogo($seccion, $id);

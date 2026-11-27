@@ -56,8 +56,21 @@ final readonly class InventarioController
         $id = $request->route('registro');
         $registro = $id ? $this->presentar($this->repositorio->catalogo($seccion, (int) $id)) : null;
         $tipos = $this->tipos($seccion);
+        $selecciones = [];
+        if (in_array($seccion, ['movimientos', 'ajustes'], true)) {
+            foreach (['id_producto' => 'productos', 'id_bodega' => 'bodegas', 'id_bodega_destino' => 'bodegas'] as $campo => $catalogo) {
+                $valor = filter_var($request->old($campo), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                if ($valor !== false) {
+                    try {
+                        $selecciones[$campo] = $this->repositorio->catalogo($catalogo, $valor);
+                    } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                        // El registro ya no está disponible para esta empresa.
+                    }
+                }
+            }
+        }
 
-        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos'));
+        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones'));
     }
 
     public function store(Request $request)

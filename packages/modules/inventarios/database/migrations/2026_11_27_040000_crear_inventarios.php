@@ -16,6 +16,8 @@ return new class extends Migration
                 $table->string('nombre', 160);
                 $table->string('descripcion', 500)->nullable();
                 $table->boolean('activo')->default(true);
+                $table->foreignId('id_usuario_creacion')->nullable()->constrained('users')->nullOnDelete();
+                $table->foreignId('id_usuario_modificacion')->nullable()->constrained('users')->nullOnDelete();
                 if ($catalogo === 'productos') {
                     $table->string('unidad', 30);
                     $table->string('categoria', 100)->nullable();
