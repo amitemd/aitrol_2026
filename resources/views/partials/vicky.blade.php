@@ -36,6 +36,17 @@
       @can('permiso', ['proveedores.reportes.cuentas-por-pagar', 'leer'])
         <button type="button" data-vicky-question="¿Cuánto tengo en cuentas por pagar?"><i class="bi bi-receipt" aria-hidden="true"></i> Por pagar</button>
       @endcan
+      @can('permiso', ['clientes.lista', 'leer'])
+        <button type="button" data-vicky-question="Listado de clientes"><i class="bi bi-people" aria-hidden="true"></i> Clientes</button>
+      @endcan
+      @can('permiso', ['proveedores.lista', 'leer'])
+        <button type="button" data-vicky-question="Listado de proveedores"><i class="bi bi-truck" aria-hidden="true"></i> Proveedores</button>
+      @endcan
+      @if (config('services.vicky.pacientes'))
+        @can('permiso', ['pacientes.reportes', 'leer'])
+          <button type="button" data-vicky-question="Listado de pacientes"><i class="bi bi-person-vcard" aria-hidden="true"></i> Pacientes</button>
+        @endcan
+      @endif
       <button type="button" data-vicky-question="Dame tres ideas para aumentar las ventas."><i class="bi bi-lightbulb" aria-hidden="true"></i> Estrategia de ventas</button>
     </div>
   </div>
@@ -43,7 +54,7 @@
     <div class="vicky-welcome">
       <i class="bi bi-chat-square-text" aria-hidden="true"></i>
       <h3>¿Qué quieres consultar?</h3>
-      <p>Pregunta por tus ventas, saldos bancarios o cartera. También puedes pedir ideas para vender más.</p>
+      <p>Pide un listado, un total o un reporte de clientes, proveedores, inventario o ventas de tu empresa.</p>
     </div>
   </section>
   <form class="vicky-form">

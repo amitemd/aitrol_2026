@@ -8,13 +8,16 @@
 }
 
 .vicky-launcher {
+  position: fixed;
+  z-index: 1040;
+  inset-inline-end: max(clamp(.75rem, 2vw, 1.4rem), env(safe-area-inset-right));
+  inset-block-end: max(1.4rem, env(safe-area-inset-bottom));
   display: inline-flex;
-  flex-shrink: 0;
   align-items: center;
   gap: .55rem;
   border: 1px solid #fff4;
   border-radius: 100px;
-  padding: .35rem .85rem;
+  padding: .7rem 1.1rem;
   color: #fff;
   background: #4730ad;
   box-shadow: 0 8px 28px #28216045;

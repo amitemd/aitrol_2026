@@ -122,17 +122,13 @@
     </main>
     <footer class="app-footer d-flex align-items-center justify-content-between gap-3">
       <div><strong>Copyright &copy; {{ date('Y') }}</strong> All rights reserved.</div>
-      @auth
-        @if (auth()->user()->id_empresa)
-          <template data-vicky-widget>
-            @include('partials.vicky')
-          </template>
-        @endif
-      @endauth
     </footer>
   </div>
   @auth
-    @if(auth()->user()->id_empresa)
+    @if (auth()->user()->id_empresa)
+      <template data-vicky-widget>
+        @include('partials.vicky')
+      </template>
       <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('vicky.js') }}" defer></script>
     @endif
   @endauth

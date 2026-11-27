@@ -119,9 +119,17 @@ final readonly class VickyReportes
             ['Tercero', 'Vencimiento', 'Pendiente'], $filas);
     }
 
+    public function tablaOperativa(string $fuente): Builder
+    {
+        $tabla = config("vicky-reportes.{$fuente}.tabla");
+        abort_unless(is_string($tabla), 404);
+
+        return $this->tabla($tabla);
+    }
+
     private function tabla(string $tabla): Builder
     {
-        return $this->conexion()->table($tabla)->where('id_empresa', $this->empresa->id());
+        return $this->conexion()->table($tabla)->where($tabla.'.id_empresa', $this->empresa->id());
     }
 
     private function conexion(): ConnectionInterface

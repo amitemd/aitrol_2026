@@ -40,6 +40,7 @@ return [
         'model' => env('VICKY_OLLAMA_MODEL', 'qwen3.8:27b-q4_K_M'),
         'cartera_cobrar' => env('VICKY_CARTERA_COBRAR', false),
         'cartera_pagar' => env('VICKY_CARTERA_PAGAR', false),
+        'pacientes' => env('VICKY_PACIENTES', false),
     ],
 
 ];

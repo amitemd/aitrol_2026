@@ -126,7 +126,10 @@
     font-variant-numeric: tabular-nums;
 }
 
-.aitrol-contexto-menu { width: min(19rem, calc(100vw - 2rem)); }
+.aitrol-contexto-menu {
+    width: min(19rem, calc(100vw - 2rem));
+    overflow: visible;
+}
 
 .swal2-popup.aitrol-alerta {
     border: 1px solid var(--bs-border-color);

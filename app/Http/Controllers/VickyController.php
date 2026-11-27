@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\VickyConsultaOperativa;
 use App\Services\VickyModelo;
 use App\Services\VickyReportes;
 use Carbon\CarbonImmutable;
@@ -18,7 +19,7 @@ final class VickyController extends Controller
         'julio' => 7, 'agosto' => 8, 'septiembre' => 9, 'setiembre' => 9, 'octubre' => 10, 'noviembre' => 11, 'diciembre' => 12,
     ];
 
-    public function __invoke(Request $request, VickyReportes $reportes, VickyModelo $modelo): JsonResponse
+    public function __invoke(Request $request, VickyReportes $reportes, VickyModelo $modelo, VickyConsultaOperativa $operativa): JsonResponse
     {
         $datos = $request->validate([
             'pregunta' => ['required', 'string', 'max:1000'],
@@ -26,21 +27,29 @@ final class VickyController extends Controller
         ]);
         $pregunta = trim($datos['pregunta']);
         $texto = Str::lower(Str::ascii($pregunta));
+        if (preg_match('/\b(?:users|usuarios?|contrasenas?|passwords?|tokens? de acceso|sesiones? activas|tabla personas)\b/', $texto)) {
+            return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
+        }
         $hoy = CarbonImmutable::now('America/Guayaquil')->startOfDay();
         $fechas = $this->periodo($texto, $hoy);
         $tipo = $this->tema($texto);
         $tercero = null;
+        $plan = $operativa->consultaDirecta($pregunta);
+        if ($plan !== null) {
+            $tipo = 'operativa';
+        }
 
         if ($tipo === null && $fechas !== [] && preg_match('/^\s*¿?\s*(?:y\s+)?(?:en |del? |desde |el |la |este |esta |ultimos |ayer|hoy|\d)/', $texto)) {
             $tipo = $datos['tema_anterior'] ?? null;
         }
-        if ($tipo === null) {
-            $interpretacion = $modelo->interpretar($pregunta, $hoy->toDateString());
+        if ($tipo === null || $tipo === 'desglose') {
+            $interpretacion = $modelo->interpretar($pregunta, $hoy->toDateString(), $operativa->catalogoVisible());
             if ($interpretacion === null) {
-                return response()->json(['message' => 'El modelo de Vicky no está disponible. Puedes usar los accesos rápidos o preguntar directamente por ventas, compras, saldo bancario o cartera.'], 503);
+                return response()->json(['message' => 'El modelo de Vicky no está disponible. Puedes usar los accesos rápidos o pedir directamente un listado de clientes, proveedores, productos o existencias.'], 503);
             }
             $tipo = $interpretacion['tipo'] ?? 'otro';
             $tercero = $interpretacion['tercero'] ?? null;
+            $plan = $interpretacion['reporte'] ?? null;
             if ($fechas === [] && is_string($interpretacion['desde'] ?? null) && is_string($interpretacion['hasta'] ?? null)
                 && ($interpretacion['desde'] !== '' || $interpretacion['hasta'] !== '')) {
                 $fechas = $this->rango($interpretacion['desde'], $interpretacion['hasta']);
@@ -55,7 +64,7 @@ final class VickyController extends Controller
 
             return response()->json(['respuesta' => "Sugerencias comerciales\n\n".$respuesta]);
         }
-        if (! is_string($tipo) || ! array_key_exists($tipo, VickyReportes::PERMISOS)) {
+        if ($tipo !== 'operativa' && (! is_string($tipo) || ! array_key_exists($tipo, VickyReportes::PERMISOS))) {
             return response()->json(['respuesta' => 'Prueba con una sola consulta de ventas, compras, saldo bancario actual, cuentas por cobrar o cuentas por pagar. También puedes pedirme ideas para vender más.']);
         }
         if ($fechas === null) {
@@ -74,6 +83,10 @@ final class VickyController extends Controller
         $tercero = $this->tercero($tipo, $pregunta, $tercero);
 
         try {
+            if ($tipo === 'operativa') {
+                return response()->json($operativa->consultar(is_array($plan) ? $plan : [], $fechas));
+            }
+
             return response()->json($reportes->consultar($tipo, $fechas, $tercero) + ['tema' => $tipo]);
         } catch (QueryException) {
             return response()->json(['message' => 'La fuente de lectura del informe no está disponible. Revisa la conexión y sus permisos.'], 503);
@@ -85,8 +98,11 @@ final class VickyController extends Controller
         if (preg_match('/\b(?:estrategia[s]?|ideas|consejos|vender mas|aumentar (?:las )?ventas)\b/', $texto)) {
             return 'estrategia';
         }
-        if (preg_match('/\b(?:borra|elimina|modifica|actualiza|registra|ejecuta|transfiere|paga|inserta|por producto|por vendedor|por cliente|por provincia|compara|comparativo|vs|versus|saldo historico)\b/', $texto)) {
+        if (preg_match('/\b(?:borra|elimina|modifica|actualiza|registra|ejecuta|transfiere|paga|inserta|saldo historico)\b/', $texto)) {
             return 'otro';
+        }
+        if (preg_match('/\b(?:por producto|por vendedor|por cliente|por proveedor|por provincia|por categoria|por bodega|compara|comparativo|vs|versus|top|ranking|lista|listado|listar|detalle)\b/', $texto)) {
+            return 'desglose';
         }
 
         $patrones = [
@@ -98,7 +114,7 @@ final class VickyController extends Controller
         ];
         $temas = array_keys(array_filter($patrones, fn (string $patron): bool => preg_match($patron, $texto) === 1));
         if ($temas === ['ventas'] && preg_match('/\ba(?:l)? cliente\b/', $texto)) {
-            return 'otro';
+            return 'desglose';
         }
 
         return match (count($temas)) {
