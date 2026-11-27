@@ -1,31 +1,36 @@
 {{-- Adaptado del Dashboard v2 de AdminLTE 4, licencia MIT en public/adminlte/LICENSE. --}}
 @extends('layouts.adminlte')
 
-@section('title', 'Dashboard v2')
+@section('title', 'Panel general')
 
 @section('content')
         <!--begin::App Content Header-->
         <div class="app-content-header">
-          <!--begin::Container-->
           <div class="container-fluid">
-            <!--begin::Row-->
-            <div class="row">
-              <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Dashboard v2</h1>
-                <span class="small text-body-secondary">Datos de demostración</span>
+            @php
+                $accesosRapidos = collect($navegacion ?? [])->flatten(1)->keyBy('ruta')
+                    ->only(['clientes.index', 'configuracion.empresas.index', 'configuracion.usuarios.index'])
+                    ->filter(fn ($opcion) => Route::has($opcion->ruta));
+            @endphp
+            <div class="aitrol-overview">
+              <div class="aitrol-overview-heading">
+                <h1>Panel general</h1>
+                <p>Dashboard v2 · Datos de demostración</p>
               </div>
-              <div class="col-sm-6">
-                <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb float-sm-end">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Inicio</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Dashboard v2</li>
-                  </ol>
+              @if ($accesosRapidos->isNotEmpty())
+                <nav class="aitrol-shortcuts" aria-label="Accesos rápidos">
+                  @foreach ($accesosRapidos as $opcion)
+                    <a href="{{ route($opcion->ruta) }}" data-workspace-link="{{ $opcion->ruta }}"
+                        data-workspace-label="{{ $opcion->nombre }}">
+                      <i class="bi {{ $opcion->icono }}" aria-hidden="true"></i>
+                      {{ $opcion->nombre }}
+                      <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                    </a>
+                  @endforeach
                 </nav>
-              </div>
+              @endif
             </div>
-            <!--end::Row-->
           </div>
-          <!--end::Container-->
         </div>
         <div class="app-content">
           <!--begin::Container-->
@@ -39,7 +44,7 @@
                   </span>
 
                   <div class="info-box-content">
-                    <span class="info-box-text">CPU Traffic</span>
+                    <span class="info-box-text">Uso de CPU</span>
                     <span class="info-box-number">
                       10
                       <small>%</small>
@@ -57,7 +62,7 @@
                   </span>
 
                   <div class="info-box-content">
-                    <span class="info-box-text">Likes</span>
+                    <span class="info-box-text">Reacciones</span>
                     <span class="info-box-number">41,410</span>
                   </div>
                   <!-- /.info-box-content -->
@@ -76,7 +81,7 @@
                   </span>
 
                   <div class="info-box-content">
-                    <span class="info-box-text">Sales</span>
+                    <span class="info-box-text">Ventas</span>
                     <span class="info-box-number">760</span>
                   </div>
                   <!-- /.info-box-content -->
@@ -91,7 +96,7 @@
                   </span>
 
                   <div class="info-box-content">
-                    <span class="info-box-text">New Members</span>
+                    <span class="info-box-text">Nuevos miembros</span>
                     <span class="info-box-number">2,000</span>
                   </div>
                   <!-- /.info-box-content -->
@@ -107,7 +112,7 @@
               <div class="col-md-12">
                 <div class="card mb-4">
                   <div class="card-header">
-                    <h5 class="card-title">Monthly Recap Report</h5>
+                    <h2 class="card-title">Resumen mensual</h2>
 
                     <div class="card-tools">
                       <button

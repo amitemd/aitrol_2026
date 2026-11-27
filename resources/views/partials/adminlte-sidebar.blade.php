@@ -6,9 +6,12 @@
         </a>
     </div>
     <div class="sidebar-search" role="search">
-        <label for="sidebar-search-input" class="visually-hidden">Filtrar menú</label>
-        <input type="search" id="sidebar-search-input" class="form-control form-control-sm"
-            placeholder="Filtrar menú…" autocomplete="off" data-lte-toggle="sidebar-search" data-lte-target="#navigation">
+        <label for="sidebar-search-input" class="visually-hidden">Buscar en el menú</label>
+        <div class="aitrol-menu-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" id="sidebar-search-input" class="form-control form-control-sm"
+                placeholder="Buscar en el menú" autocomplete="off" data-lte-toggle="sidebar-search" data-lte-target="#navigation">
+        </div>
         <p class="fs-7 text-secondary mt-2 mb-0" data-lte-search-empty role="status" hidden>Sin coincidencias.</p>
     </div>
     <div class="sidebar-wrapper">
