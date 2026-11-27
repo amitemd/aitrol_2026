@@ -190,6 +190,17 @@
     align-items: start;
 }
 
+.ficha-detalle-foto {
+    width: clamp(4rem, 23vw, 9rem);
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: var(--aitrol-field, var(--bs-tertiary-bg));
+    border: 1px solid var(--aitrol-border, var(--bs-border-color));
+    border-radius: .85rem;
+}
+
+
 .ficha-foto {
     display: grid;
     place-items: center;

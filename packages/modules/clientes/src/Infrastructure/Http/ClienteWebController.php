@@ -39,11 +39,16 @@ final readonly class ClienteWebController
     {
         $ficha = $this->clientes->consultar($cliente);
 
-        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de cliente', 'volver' => route('clientes.index'), 'campos' => [
-            'Nombre' => $ficha->nombre, $ficha->identificacion->tipo->etiqueta() => $ficha->identificacion->numero,
-            'Correo electrónico' => $ficha->email, 'Teléfono' => $ficha->telefono, 'Dirección' => $ficha->direccion,
-            'Estado' => $ficha->activo ? 'Activo' : 'Inactivo',
-        ]]);
+        return view('partials.detalle-ficha-simple', [
+            'titulo' => 'Detalle de cliente',
+            'volver' => route('clientes.index'),
+            'fotoUrl' => $this->archivos->ficha($cliente)['tieneFoto'] ? route('clientes.foto', $cliente) : null,
+            'campos' => [
+                'Nombre' => $ficha->nombre, $ficha->identificacion->tipo->etiqueta() => $ficha->identificacion->numero,
+                'Correo electrónico' => $ficha->email, 'Teléfono' => $ficha->telefono, 'Dirección' => $ficha->direccion,
+                'Estado' => $ficha->activo ? 'Activo' : 'Inactivo',
+            ],
+        ]);
     }
 
     public function store(GuardarClienteRequest $request): JsonResponse|RedirectResponse

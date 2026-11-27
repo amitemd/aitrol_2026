@@ -67,7 +67,7 @@ final class ArchivosProveedor
             ?? throw new ProveedorNoEncontrado('Proveedor no encontrado.');
 
         return [
-            'tieneFoto' => $proveedor->foto !== null,
+            'tieneFoto' => $proveedor->foto && Storage::disk('local')->exists($proveedor->foto),
             'documentos' => $proveedor->documentos ?? [],
         ];
     }

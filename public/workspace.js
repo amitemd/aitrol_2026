@@ -1,6 +1,26 @@
 (() => {
     'use strict';
 
+    const fotosCuenta = document.querySelectorAll('[data-aitrol-avatar]');
+    for (const foto of fotosCuenta) {
+        const mostrarFoto = () => {
+            foto.hidden = !foto.complete || foto.naturalWidth === 0;
+            foto.previousElementSibling.hidden = !foto.hidden;
+        };
+        foto.addEventListener('load', mostrarFoto);
+        foto.addEventListener('error', mostrarFoto);
+        mostrarFoto();
+    }
+
+    function actualizarAvatar(url) {
+        for (const foto of fotosCuenta) {
+            foto.src = url;
+        }
+    }
+
+    const recibirAvatar = (evento) => actualizarAvatar(evento.detail);
+    window.addEventListener('aitrol:avatar-actualizado', recibirAvatar);
+
     const workspace = document.querySelector('[data-workspace]');
     if (!workspace || document.documentElement.hasAttribute('data-workspace-embedded')) {
         return;
@@ -146,6 +166,9 @@
                 const tab = tabs.get(key);
                 if (tab) tab.cargada = true;
                 frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
+                frame.contentWindow?.addEventListener('aitrol:avatar-actualizado', recibirAvatar);
+                const avatarGuardado = frame.contentDocument?.querySelector('[data-avatar-guardado]')?.dataset.avatarGuardado;
+                if (avatarGuardado) actualizarAvatar(avatarGuardado);
                 if (frame.contentDocument?.querySelector('[data-login-form], [data-empresa-inicial]')) {
                     location.assign(dashboard);
                 } else if (frame.contentDocument?.querySelector('[data-workspace-menu-changed]')) {

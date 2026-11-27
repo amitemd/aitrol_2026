@@ -67,9 +67,10 @@ final class ArchivosCliente
     {
         $cliente = ClienteModel::query()->with('persona')->find($id)
             ?? throw new ClienteNoEncontrado('Cliente no encontrado.');
+        $ruta = $cliente->persona?->foto;
 
         return [
-            'tieneFoto' => $cliente->persona?->foto !== null,
+            'tieneFoto' => $ruta && Storage::disk('local')->exists($ruta),
             'documentos' => $cliente->documentos ?? [],
         ];
     }

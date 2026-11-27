@@ -55,12 +55,19 @@ final class UsuarioController
     {
         $this->empresaActiva->verificar($usuario);
 
-        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de usuario', 'volver' => route('configuracion.usuarios.index'), 'campos' => [
-            'Nombre' => $usuario->name, 'Correo electrónico' => $usuario->email,
-            'Tipo de cuenta' => $usuario->is_admin ? 'Administrador' : 'Usuario',
-            'Estado' => $usuario->activo ? 'Activo' : 'Inactivo',
-            'Identificación' => $usuario->persona?->identificacion, 'Teléfono' => $usuario->persona?->telefono,
-        ]]);
+        return view('partials.detalle-ficha-simple', [
+            'titulo' => 'Detalle de usuario',
+            'volver' => route('configuracion.usuarios.index'),
+            'fotoUrl' => $usuario->foto && Storage::disk('local')->exists($usuario->foto)
+                ? route('configuracion.usuarios.foto', $usuario)
+                : null,
+            'campos' => [
+                'Nombre' => $usuario->name, 'Correo electrónico' => $usuario->email,
+                'Tipo de cuenta' => $usuario->is_admin ? 'Administrador' : 'Usuario',
+                'Estado' => $usuario->activo ? 'Activo' : 'Inactivo',
+                'Identificación' => $usuario->persona?->identificacion, 'Teléfono' => $usuario->persona?->telefono,
+            ],
+        ]);
     }
 
     public function create(): View
@@ -258,11 +265,17 @@ final class UsuarioController
         if ($fotoAnterior !== null) $disco->delete($fotoAnterior);
 
         $mensaje = $esNuevo ? 'Usuario creado.' : 'Usuario actualizado.';
+        $avatar = $fotoNueva !== null && $actor->is($usuario)
+            ? route('configuracion.usuarios.foto', ['usuario' => $usuario, 'v' => hash('sha256', $fotoNueva)], absolute: false)
+            : null;
         if ($request->expectsJson() || $request->routeIs('api.*')) {
-            return (new UsuarioResource($usuario))->additional(['message' => $mensaje])
+            return (new UsuarioResource($usuario))->additional([
+                'message' => $mensaje,
+                ...($avatar ? ['avatarActualizado' => $avatar] : []),
+            ])
                 ->response()->setStatusCode($esNuevo ? 201 : 200)->header('Cache-Control', 'no-store');
         }
 
-        return to_route('configuracion.usuarios.index')->with('estado', $mensaje);
+        return to_route('configuracion.usuarios.index')->with(['estado' => $mensaje, 'avatarActualizado' => $avatar]);
     }
 }

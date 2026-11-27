@@ -100,6 +100,8 @@
     display: grid;
     flex: none;
     place-items: center;
+    position: relative;
+    overflow: hidden;
     width: 1.65rem;
     height: 1.65rem;
     border: 1px solid var(--aitrol-border);
@@ -107,6 +109,14 @@
     background: var(--aitrol-tab-active);
     color: var(--aitrol-accent);
     font-weight: 700;
+}
+
+.aitrol-toolbar .aitrol-avatar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .aitrol-account-name {

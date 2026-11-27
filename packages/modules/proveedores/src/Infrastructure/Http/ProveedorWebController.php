@@ -39,11 +39,16 @@ final readonly class ProveedorWebController
     {
         $ficha = $this->proveedores->consultar($proveedor);
 
-        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de proveedor', 'volver' => route('proveedores.index'), 'campos' => [
-            'Nombre' => $ficha->nombre, $ficha->identificacion->tipo->etiqueta() => $ficha->identificacion->numero,
-            'Correo electrónico' => $ficha->email, 'Teléfono' => $ficha->telefono, 'Dirección' => $ficha->direccion,
-            'Estado' => $ficha->activo ? 'Activo' : 'Inactivo',
-        ]]);
+        return view('partials.detalle-ficha-simple', [
+            'titulo' => 'Detalle de proveedor',
+            'volver' => route('proveedores.index'),
+            'fotoUrl' => $this->archivos->ficha($proveedor)['tieneFoto'] ? route('proveedores.foto', $proveedor) : null,
+            'campos' => [
+                'Nombre' => $ficha->nombre, $ficha->identificacion->tipo->etiqueta() => $ficha->identificacion->numero,
+                'Correo electrónico' => $ficha->email, 'Teléfono' => $ficha->telefono, 'Dirección' => $ficha->direccion,
+                'Estado' => $ficha->activo ? 'Activo' : 'Inactivo',
+            ],
+        ]);
     }
 
     public function store(GuardarProveedorRequest $request): JsonResponse|RedirectResponse

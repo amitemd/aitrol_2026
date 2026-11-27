@@ -1,4 +1,5 @@
-<nav class="app-header navbar navbar-expand" aria-label="Barra de herramientas">
+<nav class="app-header navbar navbar-expand" aria-label="Barra de herramientas"
+    @if (session('avatarActualizado')) data-avatar-guardado="{{ session('avatarActualizado') }}" @endif>
     <div class="container-fluid aitrol-toolbar">
         <div class="aitrol-toolbar-group">
             <button class="nav-link aitrol-tool" type="button" data-lte-toggle="sidebar"
@@ -53,19 +54,20 @@
             @auth
                 @php
                     $cuenta = auth()->user();
+                    $fotoPerfil = $cuenta->foto ? route('configuracion.usuarios.foto', $cuenta, absolute: false) : null;
                     $iniciales = Str::of($cuenta->name)->squish()->explode(' ')->take(2)
                         ->map(fn (string $parte): string => Str::upper(Str::substr($parte, 0, 1)))->implode('');
                 @endphp
                 <li class="nav-item dropdown">
                     <button id="aitrol-account-toggle" type="button" class="nav-link aitrol-account" data-bs-toggle="dropdown"
                         aria-expanded="false" aria-label="Menú de usuario">
-                        <span class="aitrol-avatar" aria-hidden="true">{{ $iniciales }}</span>
+                        @include('partials.avatar-cuenta')
                         <span class="aitrol-account-name d-none d-sm-inline">{{ $cuenta->name }}</span>
                         <i class="bi bi-chevron-down aitrol-account-chevron" aria-hidden="true"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end aitrol-profile-menu" aria-labelledby="aitrol-account-toggle">
                         <li class="aitrol-profile-identity">
-                            <span class="aitrol-avatar aitrol-profile-avatar" aria-hidden="true">{{ $iniciales }}</span>
+                            @include('partials.avatar-cuenta', ['claseAvatar' => 'aitrol-profile-avatar'])
                             <strong class="aitrol-profile-name">{{ $cuenta->name }}</strong>
                             <span class="aitrol-profile-role">
                                 <i class="bi {{ $cuenta->is_admin ? 'bi-shield-check' : 'bi-person' }}" aria-hidden="true"></i>

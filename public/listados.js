@@ -155,6 +155,9 @@
             if (dialog.open) dialog.close();
             notify(result.message);
             if (result.menuChanged) window.dispatchEvent(new Event('aitrol:menu-changed'));
+            if (result.avatarActualizado) {
+                window.dispatchEvent(new CustomEvent('aitrol:avatar-actualizado', { detail: result.avatarActualizado }));
+            }
             await loadList(listUrl, true);
         } catch {
             showErrors(['No se pudo confirmar el cambio. Revisa el listado antes de volver a intentar.'], form, {});
