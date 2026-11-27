@@ -74,14 +74,26 @@
         });
     }
 
-    function activate(key, focus = false) {
+    function activate(key, focus = false, registrar = false) {
+        const selected = tabs.get(key);
+        if (registrar && active !== key && selected.cargada && workspace.dataset.workspaceAudit) {
+            fetch(workspace.dataset.workspaceAudit, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': workspace.dataset.workspaceCsrf,
+                },
+                body: JSON.stringify({ ruta: key }),
+                keepalive: true,
+            }).catch(() => {});
+        }
         active = key;
         bar.hidden = tabs.size === 1;
         for (const [id, tab] of tabs) {
             tab.panel.hidden = id !== key;
             tab.button.setAttribute('aria-pressed', String(id === key));
         }
-        const selected = tabs.get(key);
         if (focus && !bar.hidden) {
             selected.button.focus({ preventScroll: true });
             selected.item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -98,7 +110,7 @@
         tab.panel.remove();
         tabs.delete(key);
         if (tab.panel === initial) history.replaceState(history.state, '', dashboard);
-        activate(active === key ? next : active, true);
+        activate(active === key ? next : active, true, true);
     }
 
     async function refreshSidebar() {
@@ -131,6 +143,8 @@
             frame.setAttribute('data-workspace-frame', '');
             frame.addEventListener('load', () => {
                 syncFrameTheme(frame);
+                const tab = tabs.get(key);
+                if (tab) tab.cargada = true;
                 frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
                 if (frame.contentDocument?.querySelector('[data-login-form], [data-empresa-inicial]')) {
                     location.assign(dashboard);
@@ -151,7 +165,7 @@
         button.className = 'btn btn-sm px-2';
         button.textContent = label;
         button.setAttribute('aria-controls', panel.id);
-        button.addEventListener('click', () => activate(key));
+        button.addEventListener('click', () => activate(key, false, true));
         item.append(button);
 
         if (key !== 'dashboard') {
@@ -165,7 +179,7 @@
         }
 
         bar.append(item);
-        tabs.set(key, { item, button, panel, url });
+        tabs.set(key, { item, button, panel, url, cargada: panel === initial });
     }
 
     const initialKey = workspace.dataset.workspaceKey || 'dashboard';
@@ -274,6 +288,6 @@
             search.querySelector('[data-search-status]').textContent = '';
             if (tabs.size === 1) search.querySelector('input').focus();
         }
-        activate(key, true);
+        activate(key, true, true);
     });
 })();

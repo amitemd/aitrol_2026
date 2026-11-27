@@ -17,6 +17,8 @@ Route::get('/login', fn (): RedirectResponse => to_route('dashboard'))->name('lo
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::get('/auditoria/bitacora', [AuditoriaController::class, 'index'])
         ->middleware(['empresa', 'permiso:auditoria.logs.index,leer'])->name('auditoria.logs.index');
+    Route::post('/auditoria/navegacion', [AuditoriaController::class, 'navegacion'])
+        ->middleware(['empresa', 'throttle:90,1'])->name('auditoria.navegacion');
     Route::view('/panel-anterior', 'dashboard')->middleware('empresa')->name('dashboard.previous');
     Route::post('/empresa-inicial', [EmpresaInicialController::class, 'store'])->middleware('throttle:10,1')->name('empresa.inicial');
     Route::post('/logout', [SesionController::class, 'destroy'])->name('logout');

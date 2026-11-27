@@ -110,7 +110,8 @@
     @include('partials.adminlte-sidebar')
     <main class="app-main" data-workspace data-workspace-key="{{ request()->route()?->getName() }}"
       data-workspace-session="{{ hash_hmac('sha256', session()->getId().':'.auth()->id().':'.auth()->user()?->id_empresa, (string) config('app.key')) }}"
-      data-workspace-dashboard="{{ route('dashboard') }}">
+      data-workspace-dashboard="{{ route('dashboard') }}"
+      data-workspace-audit="{{ route('auditoria.navegacion') }}" data-workspace-csrf="{{ csrf_token() }}">
       <div class="aitrol-red-fondo" aria-hidden="true"><canvas data-red-fondo></canvas></div>
       <div data-workspace-content>
         <div data-workspace-initial>@yield('content')</div>

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\TrazaAuditoria;
 use Closure;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ final class RegistrarAuditoria
     public function handle(Request $request, Closure $next): Response
     {
         $request->attributes->set(self::EVENTOS, []);
+        $request->attributes->set(TrazaAuditoria::class, new TrazaAuditoria);
 
         return $next($request);
     }
@@ -46,6 +48,9 @@ final class RegistrarAuditoria
         }
 
         $error = $mensaje->context['exception'] ?? null;
+        if ($error instanceof Throwable) {
+            TrazaAuditoria::actual()?->registrarError($error);
+        }
         $detalle = $error instanceof Throwable ? Str::limit(get_class($error), 180, '') : 'Mensaje del registro de aplicación';
         $eventos[] = ['nivel' => $nivel, 'origen' => 'aplicacion', 'evento' => $detalle];
         $request->attributes->set(self::EVENTOS, $eventos);
@@ -62,10 +67,13 @@ final class RegistrarAuditoria
     {
         $eventos = $request->attributes->get(self::EVENTOS, []);
         $request->attributes->remove(self::EVENTOS);
-        $ruta = $request->route()?->getName();
+        $traza = $request->attributes->get(TrazaAuditoria::class);
+        $request->attributes->remove(TrazaAuditoria::class);
+        $rutaActual = $request->route();
+        $ruta = $rutaActual?->getName();
+        $pestana = $request->attributes->get('auditoria.pestana');
         $estado = $response->getStatusCode();
-        $esEscritura = in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'], true);
-        if ($eventos === [] && ($ruta === null || (! $esEscritura && $estado < 400))) {
+        if ($eventos === [] && ($ruta === null || $request->isMethod('OPTIONS') || $request->isMethod('HEAD'))) {
             return;
         }
 
@@ -75,17 +83,21 @@ final class RegistrarAuditoria
             $usuario = null;
         }
         $esAcceso = $ruta === 'login.store' || $ruta === 'logout';
-        if (($usuario instanceof User || $esAcceso) && $ruta !== null && ($esEscritura || $estado >= 400)) {
+        if (($usuario instanceof User || $esAcceso) && $ruta !== null) {
             $validacionWeb = $response->isRedirection() && $request->hasSession() && $request->session()->has('errors');
             $nivel = match (true) {
                 $estado >= 500 => 'error',
                 $estado >= 400, $validacionWeb => 'warning',
                 default => 'info',
             };
-            $evento = match ($nivel) {
-                'error' => 'Error al procesar la solicitud',
-                'warning' => 'Solicitud rechazada',
-                'info' => 'Solicitud procesada',
+            $evento = match (true) {
+                $nivel === 'error' => 'Error al procesar la solicitud',
+                $nivel === 'warning' => 'Solicitud rechazada',
+                $pestana !== null => 'Volvió a una pestaña abierta',
+                $ruta === 'logout' => 'Cerró sesión',
+                $ruta === 'login.store' => 'Inició sesión',
+                $request->isMethod('GET') => $request->is('api/*') ? 'Consultó por API' : 'Abrió o consultó una pantalla',
+                default => 'Procesó una operación',
             };
             $eventos[] = ['nivel' => $nivel, 'origen' => 'http', 'evento' => $evento];
         }
@@ -96,12 +108,20 @@ final class RegistrarAuditoria
         $datos = [
             'id_empresa' => $usuario instanceof User ? $usuario->id_empresa : null,
             'id_usuario' => $usuario instanceof User ? $usuario->id : null,
+            'usuario_nombre' => $usuario instanceof User ? $usuario->name : null,
             'solicitud' => (string) Str::uuid(),
-            'ruta' => $ruta,
-            'metodo' => $request->method(),
+            'ruta' => $pestana?->getName() ?? $ruta,
+            'modulo' => TrazaAuditoria::modulo($pestana?->getName() ?? $ruta ?? ''),
+            'canal' => $request->is('api/*') ? 'API' : 'Web',
+            'destino' => $rutaActual ? Str::limit('/'.ltrim(($pestana ?? $rutaActual)->uri(), '/'), 255, '') : null,
+            'controlador' => $pestana === null && $rutaActual?->getControllerClass() ? $rutaActual->getActionName() : null,
+            'metodo' => Str::limit($request->method(), 12, ''),
             'estado_http' => $estado,
             'created_at' => now(),
         ];
+        if ($traza instanceof TrazaAuditoria && $pestana === null) {
+            $datos += $traza->resumen();
+        }
 
         try {
             DB::table('auditoria_eventos')->insert(array_map(
