@@ -30,15 +30,13 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-co
         Route::delete('/roles/{rol}', [AccesoController::class, 'eliminarRol'])->whereNumber('rol')->name('roles.destroy');
         Route::get('/usuarios/{usuario}/permisos', [AccesoController::class, 'permisosUsuario'])->whereNumber('usuario')->name('usuarios.permisos');
         Route::put('/usuarios/{usuario}/permisos', [AccesoController::class, 'guardarUsuario'])->whereNumber('usuario')->name('usuarios.permisos.update');
-        Route::get('/ubicaciones', [UbicacionController::class, 'index'])->name('ubicaciones.index');
-        Route::post('/ubicaciones', [UbicacionController::class, 'store'])->name('ubicaciones.store');
+        Route::get('/ubicaciones', [UbicacionController::class, 'index'])->middleware('can:administrar-menu')->name('ubicaciones.index');
+        Route::post('/ubicaciones', [UbicacionController::class, 'store'])->middleware('can:administrar-menu')->name('ubicaciones.store');
     });
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configuraciones')->name('configuracion.')->group(function (): void {
     Route::get('/ubicaciones/opciones', [UbicacionController::class, 'opciones'])->name('ubicaciones.opciones');
     Route::get('/empresas', [EmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.index');
-    Route::post('/empresas', [EmpresaController::class, 'store'])->middleware('permiso:empresas,escribir')->name('empresas.store');
     Route::get('/empresas/{empresa}/editar', [EmpresaController::class, 'edit'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.edit');
     Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.update');
-    Route::delete('/empresas/{empresa}', [EmpresaController::class, 'destroy'])->whereNumber('empresa')->middleware('permiso:empresas,eliminar')->name('empresas.destroy');
 });

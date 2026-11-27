@@ -37,6 +37,7 @@ final class Accesos
     {
         return match ($ruta) {
             'dashboard' => true,
+            'configuracion.menu.index', 'configuracion.ubicaciones.index' => $usuario->is_admin_global === true,
             'clientes.index' => $this->permite($usuario, 'clientes.lista', 'leer'),
             'clientes.create' => $this->permite($usuario, 'clientes.lista', 'escribir'),
             'proveedores.index' => $this->permite($usuario, 'proveedores.lista', 'leer'),

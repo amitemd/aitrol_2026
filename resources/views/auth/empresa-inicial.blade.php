@@ -29,8 +29,8 @@
         @endforeach
         <button class="btn btn-primary access-button" type="submit">Registrar empresa</button>
     </form>
-    <form method="POST" action="{{ route('logout') }}" class="mt-3">
+    <form method="POST" action="{{ route('logout') }}" class="access-company-logout">
         @csrf
-        <button type="submit" class="btn btn-outline-light btn-sm">Cerrar sesión</button>
+        <button type="submit" class="btn access-logout-button">Cerrar sesión</button>
     </form>
 @endsection

@@ -31,8 +31,7 @@ final class ConfiguracionServiceProvider extends ServiceProvider
         $this->loadViewsFrom($modulo.'/resources/views', 'configuracion');
 
         $esAdministrador = fn (User $usuario): bool => $usuario->is_admin === true && $usuario->id_empresa !== null;
-        Gate::define('administrar-menu', fn (User $usuario): bool => $esAdministrador($usuario)
-            && (int) $usuario->id_empresa === (int) \Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel::query()->min('id'));
+        Gate::define('administrar-menu', fn (User $usuario): bool => $esAdministrador($usuario) && $usuario->is_admin_global === true);
         Gate::define('administrar-configuracion', $esAdministrador);
         Gate::define('permiso', fn (User $usuario, string $opcion, string $accion): bool => app(Accesos::class)->permite($usuario, $opcion, $accion));
         Gate::define('integrar-usuarios', fn (User $usuario): bool =>
@@ -42,7 +41,7 @@ final class ConfiguracionServiceProvider extends ServiceProvider
             $usuario = auth()->user();
             $accesos = app(Accesos::class);
             $vista->with('navegacion', $this->app->make(MenuService::class)->navegacion(
-                Gate::allows('administrar-menu'),
+                Gate::allows('administrar-configuracion'),
                 fn (string $ruta): bool => $usuario !== null && $accesos->muestra($usuario, $ruta),
             ));
         });
