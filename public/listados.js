@@ -9,10 +9,18 @@
     const title = dialog.querySelector('[data-ajax-title]');
     const body = dialog.querySelector('[data-ajax-body]');
     const errors = dialog.querySelector('[data-ajax-errors]');
+    const dialogHome = dialog.parentElement;
+    const frame = window.frameElement;
+    const host = frame?.hasAttribute('data-workspace-frame') ? frame.ownerDocument.body : null;
+    if (host && frame.parentElement.id) {
+        title.id += '-' + frame.parentElement.id;
+        dialog.setAttribute('aria-labelledby', title.id);
+    }
     let listUrl = new URL(location.href);
     let listRequest;
     let formRequest;
     let saving = false;
+    let opener;
 
     function notify(message, failure = false) {
         status.classList.toggle('alert-danger', failure);
@@ -48,13 +56,13 @@
         const fieldName = (name) => name.split('.').map((part, index) => index ? '[' + part + ']' : part).join('');
         for (const name of Object.keys(fields)) {
             const input = form.elements.namedItem(fieldName(name)) ?? form.elements.namedItem(name.split('.')[0] + '[]');
-            if (input instanceof HTMLElement) {
+            if (input instanceof form.ownerDocument.defaultView.HTMLElement) {
                 input.classList.add('is-invalid');
                 input.setAttribute('aria-invalid', 'true');
             }
         }
         const first = form.querySelector('[aria-invalid="true"]');
-        first?.closest('[data-ficha-panel]')?.dispatchEvent(new CustomEvent('aitrol:ficha-error', { bubbles: true }));
+        first?.closest('[data-ficha-panel], [data-usuario-panel]')?.dispatchEvent(new CustomEvent('aitrol:ficha-error', { bubbles: true }));
         first?.focus();
     }
 
@@ -91,16 +99,19 @@
         formRequest?.abort();
         const controller = new AbortController();
         formRequest = controller;
+        opener = link;
         title.textContent = link.dataset.ajaxOpen;
         clearErrors();
         body.textContent = 'Cargando formulario…';
+        host?.prepend(dialog);
         dialog.showModal();
 
         try {
             const page = await loadHtml(link.href, controller.signal);
-            const form = page.querySelector('[data-ajax-form]');
-            if (!form) throw new Error('No se pudo abrir el formulario.');
+            const fetchedForm = page.querySelector('[data-ajax-form]');
+            if (!fetchedForm) throw new Error('No se pudo abrir el formulario.');
             if (controller.signal.aborted) return;
+            const form = dialog.ownerDocument.importNode(fetchedForm, true);
             form.querySelector(':scope > .card-header')?.remove();
             body.replaceChildren(form);
             form.dispatchEvent(new Event('aitrol:form-ready', { bubbles: true }));
@@ -114,7 +125,7 @@
         if (saving) return;
         saving = true;
         clearErrors(form);
-        const buttons = [...form.querySelectorAll('button'), dialog.querySelector('.btn-close')];
+        const buttons = [...form.querySelectorAll('button'), dialog.querySelector('.cliente-dialog-cerrar')];
         buttons.forEach((button) => { button.disabled = true; });
         try {
             const response = await fetch(form.action, {
@@ -153,13 +164,21 @@
         }
     }
 
-    document.addEventListener('click', (event) => {
+    dialog.addEventListener('click', (event) => {
         const close = event.target.closest('[data-ajax-close]');
         if (close && dialog.contains(close)) {
             event.preventDefault();
             if (!saving) dialog.close();
-            return;
         }
+    });
+
+    dialog.addEventListener('submit', (event) => {
+        if (!event.target.matches('[data-ajax-form]')) return;
+        event.preventDefault();
+        save(event.target);
+    });
+
+    document.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
 
         const link = event.target.closest('a[data-ajax-open], a[data-ajax-list-link], .pagination a[href]');
@@ -181,7 +200,7 @@
             const search = new FormData(form).get('q')?.trim();
             if (search) url.searchParams.set('q', search);
             loadList(url);
-        } else if ((dialog.contains(form) && form.matches('[data-ajax-form]')) || form.matches('[data-ajax-action]')) {
+        } else if (form.matches('[data-ajax-action]')) {
             event.preventDefault();
             save(form);
         }
@@ -193,5 +212,8 @@
     dialog.addEventListener('close', () => {
         formRequest?.abort();
         body.replaceChildren();
+        if (host) dialogHome.append(dialog);
+        if (opener?.isConnected) opener.focus({ preventScroll: true });
+        opener = undefined;
     });
 })();

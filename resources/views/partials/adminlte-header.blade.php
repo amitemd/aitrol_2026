@@ -5,14 +5,23 @@
                 aria-label="Mostrar u ocultar menú" title="Menú">
                 <i class="bi bi-list" aria-hidden="true"></i>
             </button>
-            <a class="nav-link aitrol-home" href="{{ route('dashboard') }}" data-workspace-link="dashboard"
-                aria-label="Panel general" title="Panel general">
-                <i class="bi bi-grid-1x2" aria-hidden="true"></i>
-                <span class="d-none d-sm-inline">Inicio</span>
-            </a>
         </div>
 
-        <ul class="navbar-nav aitrol-toolbar-group ms-auto">
+        <form class="aitrol-header-search" role="search" aria-label="Buscar módulos" data-workspace-search hidden>
+            <label class="visually-hidden" for="navbar-search-input">Buscar módulos</label>
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input class="form-control" id="navbar-search-input" type="search" maxlength="120"
+                placeholder="Buscar módulos…" autocomplete="off" aria-controls="workspace-search-results">
+            <div class="aitrol-search-results" id="workspace-search-results" hidden>
+                <p class="aitrol-search-empty mb-0" data-search-empty>Sin coincidencias.</p>
+                <ul class="list-unstyled mb-0" aria-label="Resultados de búsqueda" data-search-links></ul>
+            </div>
+            <span class="visually-hidden" role="status" data-search-status></span>
+        </form>
+
+        <div class="workspace-tabs" data-workspace-tabs role="group" aria-label="Módulos abiertos" hidden></div>
+
+        <ul class="navbar-nav aitrol-toolbar-group aitrol-tools">
             <li class="nav-item d-none d-md-block">
                 <button class="nav-link aitrol-tool" type="button" data-lte-toggle="fullscreen"
                     aria-label="Cambiar a pantalla completa" title="Pantalla completa">
@@ -23,8 +32,8 @@
             <li class="nav-item dropdown">
                 <button class="nav-link aitrol-tool" type="button" id="bd-theme" data-bs-toggle="dropdown"
                     aria-label="Cambiar tema visual" aria-expanded="false" title="Tema visual">
-                    <i class="bi bi-sun-fill" data-lte-theme-icon="light" aria-hidden="true"></i>
-                    <i class="bi bi-moon-fill d-none" data-lte-theme-icon="dark" aria-hidden="true"></i>
+                    <i class="bi bi-sun" data-lte-theme-icon="light" aria-hidden="true"></i>
+                    <i class="bi bi-moon-stars d-none" data-lte-theme-icon="dark" aria-hidden="true"></i>
                     <i class="bi bi-circle-half d-none" data-lte-theme-icon="auto" aria-hidden="true"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme">
@@ -42,27 +51,39 @@
             </li>
 
             @auth
-                @php($cuenta = auth()->user())
+                @php
+                    $cuenta = auth()->user();
+                    $iniciales = Str::of($cuenta->name)->squish()->explode(' ')->take(2)
+                        ->map(fn (string $parte): string => Str::upper(Str::substr($parte, 0, 1)))->implode('');
+                @endphp
                 <li class="nav-item dropdown">
-                    <button type="button" class="nav-link aitrol-account" data-bs-toggle="dropdown"
+                    <button id="aitrol-account-toggle" type="button" class="nav-link aitrol-account" data-bs-toggle="dropdown"
                         aria-expanded="false" aria-label="Menú de usuario">
-                        <span class="aitrol-avatar" aria-hidden="true">{{ Str::upper(Str::substr(trim($cuenta->name), 0, 1)) }}</span>
+                        <span class="aitrol-avatar" aria-hidden="true">{{ $iniciales }}</span>
                         <span class="aitrol-account-name d-none d-sm-inline">{{ $cuenta->name }}</span>
-                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                        <i class="bi bi-chevron-down aitrol-account-chevron" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li class="px-3 py-2 text-break">
-                            <strong class="d-block">{{ $cuenta->name }}</strong>
-                            @if ($cuenta->is_admin)
-                                <small class="text-body-secondary">Administrador</small>
-                            @endif
+                    <ul class="dropdown-menu dropdown-menu-end aitrol-profile-menu" aria-labelledby="aitrol-account-toggle">
+                        <li class="aitrol-profile-identity">
+                            <span class="aitrol-avatar aitrol-profile-avatar" aria-hidden="true">{{ $iniciales }}</span>
+                            <strong class="aitrol-profile-name">{{ $cuenta->name }}</strong>
+                            <span class="aitrol-profile-role">
+                                <i class="bi {{ $cuenta->is_admin ? 'bi-shield-check' : 'bi-person' }}" aria-hidden="true"></i>
+                                {{ $cuenta->is_admin ? 'Administrador' : 'Usuario' }}
+                            </span>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
+                        <li class="aitrol-profile-email">
+                            <i class="bi bi-envelope" aria-hidden="true"></i>
+                            <div>
+                                <span class="d-block small text-body-secondary">Correo electrónico</span>
+                                {{ $cuenta->email }}
+                            </div>
+                        </li>
+                        <li class="aitrol-profile-actions">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="dropdown-item">
-                                    <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i> Cerrar sesión
+                                <button type="submit" class="dropdown-item aitrol-profile-signout">
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
                                 </button>
                             </form>
                         </li>

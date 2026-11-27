@@ -2,6 +2,8 @@
 
 use Aitrol\Clientes\Domain\ClienteNoEncontrado;
 use Aitrol\Clientes\Domain\IdentificacionDuplicada;
+use Aitrol\Proveedores\Domain\IdentificacionDuplicada as IdentificacionProveedorDuplicada;
+use Aitrol\Proveedores\Domain\ProveedorNoEncontrado;
 use App\Http\Middleware\VerificarPermiso;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,8 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->map(ClienteNoEncontrado::class, fn (ClienteNoEncontrado $error): NotFoundHttpException => new NotFoundHttpException($error->getMessage(), $error));
-        $exceptions->dontReport(IdentificacionDuplicada::class);
-        $exceptions->render(function (IdentificacionDuplicada $error, Request $request): JsonResponse|RedirectResponse {
+        $exceptions->map(ProveedorNoEncontrado::class, fn (ProveedorNoEncontrado $error): NotFoundHttpException => new NotFoundHttpException($error->getMessage(), $error));
+        $exceptions->dontReport([IdentificacionDuplicada::class, IdentificacionProveedorDuplicada::class]);
+        $exceptions->render(function (IdentificacionDuplicada|IdentificacionProveedorDuplicada $error, Request $request): JsonResponse|RedirectResponse {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json(['message' => $error->getMessage()], 409);
             }

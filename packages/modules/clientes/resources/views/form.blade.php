@@ -2,14 +2,6 @@
 
 @section('title', $cliente ? 'Editar cliente' : 'Nuevo cliente')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('clientes.css') }}">
-@endpush
-
-@push('scripts')
-    <script src="{{ asset('clientes-ficha.js') }}" defer></script>
-@endpush
-
 @section('content')
     <div class="app-content-header">
         <div class="container-fluid">

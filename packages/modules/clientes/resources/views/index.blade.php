@@ -2,10 +2,6 @@
 
 @section('title', 'Clientes')
 
-@push('scripts')
-    <script src="{{ asset('clientes-ficha.js') }}" defer></script>
-@endpush
-
 @section('content')
     @include('partials.listado-cabecera', [
         'titulo' => 'Clientes', 'subtitulo' => 'Directorio de clientes', 'icono' => 'bi-people',
@@ -15,7 +11,7 @@
 
     <div class="app-content">
         <div class="container-fluid">
-            @include('partials.listado-modal')
+            @include('partials.listado-modal', ['iconoModal' => 'bi-people'])
             @if (session('status'))
                 <p class="alert alert-success" role="status">{{ session('status') }}</p>
             @endif

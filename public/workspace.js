@@ -6,7 +6,10 @@
         return;
     }
 
-    const bar = workspace.querySelector('[data-workspace-tabs]');
+    const bar = document.querySelector('[data-workspace-tabs]');
+    const navigation = document.querySelector('#navigation');
+    if (!bar || !navigation) return;
+
     const content = workspace.querySelector('[data-workspace-content]');
     const initial = workspace.querySelector('[data-workspace-initial]');
     const dashboard = new URL(workspace.dataset.workspaceDashboard, location.href);
@@ -15,7 +18,6 @@
     let panelNumber = 0;
 
     function updateSidebar() {
-        const navigation = document.querySelector('#navigation');
         navigation.querySelectorAll('.menu-open > .nav-link.active').forEach((toggle) => {
             toggle.classList.remove('active');
         });
@@ -71,7 +73,7 @@
             const page = new DOMParser().parseFromString(await result.text(), 'text/html');
             const updated = page.querySelector('#navigation');
             if (updated) {
-                document.querySelector('#navigation').replaceChildren(...updated.childNodes);
+                navigation.replaceChildren(...updated.childNodes);
                 updateSidebar();
             }
         } catch {
@@ -137,6 +139,66 @@
     }
     activate(initialKey);
 
+    const search = document.querySelector('[data-workspace-search]');
+    if (search) {
+        const input = search.querySelector('input');
+        const results = search.querySelector('#workspace-search-results');
+        const links = search.querySelector('[data-search-links]');
+        const empty = search.querySelector('[data-search-empty]');
+        const status = search.querySelector('[data-search-status]');
+        const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+
+        function renderSearch() {
+            const term = normalize(input.value);
+            results.hidden = !term;
+            links.replaceChildren();
+            status.textContent = '';
+            if (!term) return;
+
+            const matches = [...navigation.querySelectorAll('a[data-workspace-link]')]
+                .filter((link) => normalize(link.dataset.workspaceLabel || link.textContent).includes(term))
+                .slice(0, 8);
+
+            for (const option of matches) {
+                const row = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = option.href;
+                link.dataset.workspaceLink = option.dataset.workspaceLink;
+                link.textContent = option.dataset.workspaceLabel || option.textContent.trim();
+                row.append(link);
+                links.append(row);
+            }
+            empty.hidden = matches.length > 0;
+            status.textContent = matches.length === 1 ? '1 resultado.' : `${matches.length} resultados.`;
+        }
+
+        input.addEventListener('input', renderSearch);
+        input.addEventListener('focus', renderSearch);
+        search.addEventListener('focusout', (event) => {
+            if (!search.contains(event.relatedTarget)) results.hidden = true;
+        });
+        search.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !results.hidden) {
+                event.preventDefault();
+                input.focus();
+                results.hidden = true;
+                status.textContent = '';
+            } else if (event.key === 'ArrowDown' && event.target === input && !results.hidden) {
+                const first = links.querySelector('a');
+                if (first) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            }
+        });
+        search.addEventListener('submit', (event) => {
+            event.preventDefault();
+            renderSearch();
+            links.querySelector('a')?.click();
+        });
+        search.hidden = false;
+    }
+
     document.addEventListener('click', (event) => {
         const link = event.target.closest('a[data-workspace-link]');
         if (!link || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
@@ -151,6 +213,12 @@
         event.preventDefault();
         const key = link.dataset.workspaceLink;
         add(key, link.dataset.workspaceLabel || link.textContent.trim(), url);
+        if (search?.contains(link)) {
+            search.reset();
+            search.querySelector('#workspace-search-results').hidden = true;
+            search.querySelector('[data-search-status]').textContent = '';
+            if (tabs.size === 1) search.querySelector('input').focus();
+        }
         activate(key, true);
     });
 })();

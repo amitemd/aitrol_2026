@@ -1,0 +1,818 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Aitrol ERP · Proveedores",
+        "version": "1.0.0",
+        "description": "Directorio de proveedores del ERP. Usa un token Bearer emitido por Aitrol."
+    },
+    "security": [
+        {
+            "BearerToken": []
+        }
+    ],
+    "paths": {
+        "/api/v1/proveedores": {
+            "get": {
+                "operationId": "listarProveedores",
+                "summary": "Buscar y listar proveedores",
+                "description": "Requiere el alcance proveedores:leer del token y permiso Leer en la lista de Proveedores.",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 160
+                        },
+                        "description": "Búsqueda por nombre, identificación o correo."
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000000,
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Página de proveedores.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Proveedor"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ],
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "format": "uri"
+                                                }
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ],
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ],
+                                                                "format": "uri"
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/Validacion"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Proveedores"
+                ]
+            },
+            "post": {
+                "operationId": "registrarProveedor",
+                "summary": "Registrar proveedor",
+                "description": "Requiere el alcance proveedores:escribir del token y permiso Escribir en la lista de Proveedores. El estado predeterminado es activo.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DatosProveedor"
+                            },
+                            "example": {
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Proveedor de ejemplo",
+                                "email": "proveedor@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": true
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/ProveedorCreado"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/IdentificacionDuplicada"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/Validacion"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Proveedores"
+                ]
+            }
+        },
+        "/api/v1/proveedores/{proveedor}": {
+            "parameters": [
+                {
+                    "name": "proveedor",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer",
+                        "format": "int64",
+                        "minimum": 1,
+                        "maximum": 1000000000000000000
+                    }
+                }
+            ],
+            "get": {
+                "operationId": "consultarProveedor",
+                "summary": "Consultar proveedor",
+                "description": "Requiere el alcance proveedores:leer del token y permiso Leer en la lista de Proveedores.",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Proveedor"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ProveedorNoEncontrado"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Proveedores"
+                ]
+            },
+            "put": {
+                "operationId": "actualizarProveedor",
+                "summary": "Actualizar o desactivar proveedor",
+                "description": "Requiere el alcance proveedores:escribir del token y permiso Actualizar en la lista de Proveedores. Reemplaza los datos editables. Los campos de contacto omitidos se limpian.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/DatosProveedor"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "required": [
+                                            "activo"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "example": {
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Proveedor de ejemplo",
+                                "email": "proveedor@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": false
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Proveedor"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ProveedorNoEncontrado"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/IdentificacionDuplicada"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/Validacion"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                },
+                "tags": [
+                    "Proveedores"
+                ]
+            },
+            "delete": {
+                "operationId": "eliminarProveedor",
+                "summary": "Dar de baja un proveedor",
+                "description": "Realiza una baja lógica. Requiere el alcance proveedores:eliminar del token y el permiso Eliminar en la lista de Proveedores.",
+                "tags": [
+                    "Proveedores"
+                ],
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Proveedor dado de baja."
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/NoAutenticado"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/SinPermiso"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ProveedorNoEncontrado"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/LimiteExcedido"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "responses": {
+            "Proveedor": {
+                "description": "Datos del proveedor.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RespuestaProveedor"
+                        },
+                        "example": {
+                            "data": {
+                                "id": 1,
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Proveedor de ejemplo",
+                                "email": "proveedor@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": true
+                            }
+                        }
+                    }
+                }
+            },
+            "ProveedorCreado": {
+                "description": "Proveedor registrado.",
+                "headers": {
+                    "Location": {
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        }
+                    }
+                },
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RespuestaProveedor"
+                        },
+                        "example": {
+                            "data": {
+                                "id": 1,
+                                "tipo_identificacion": "pasaporte",
+                                "identificacion": "DEMO-001",
+                                "nombre": "Proveedor de ejemplo",
+                                "email": "proveedor@example.test",
+                                "telefono": null,
+                                "direccion": null,
+                                "activo": true
+                            }
+                        }
+                    }
+                }
+            },
+            "ProveedorNoEncontrado": {
+                "description": "Proveedor inexistente.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorApi"
+                        }
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "RespuestaProveedor": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/Proveedor"
+                    }
+                }
+            },
+            "Proveedor": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "tipo_identificacion",
+                    "identificacion",
+                    "nombre",
+                    "activo"
+                ],
+                "properties": {
+                    "tipo_identificacion": {
+                        "type": "string",
+                        "enum": [
+                            "cedula",
+                            "ruc",
+                            "pasaporte"
+                        ]
+                    },
+                    "identificacion": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "description": "Cédula de 10 dígitos, RUC de 13 dígitos o pasaporte alfanumérico con guiones."
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "telefono": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 30
+                    },
+                    "direccion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "activo": {
+                        "type": "boolean"
+                    },
+                    "nombres": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "apellidos": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "ciudad": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "provincia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "contactos": {
+                        "type": "array",
+                        "maxItems": 10,
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "nombre": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 120
+                                },
+                                "cargo": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 80
+                                },
+                                "email": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "email"
+                                },
+                                "telefono": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 30
+                                }
+                            }
+                        }
+                    },
+                    "celular": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "id_ciudad": {
+                        "description": "Ciudad de la persona vinculada al proveedor.",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "observacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 3000
+                    },
+                    "urbanizacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "etapa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "manzana": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "villa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "referencia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 1000
+                    },
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "id_persona": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    }
+                }
+            },
+            "DatosProveedor": {
+                "type": "object",
+                "required": [
+                    "tipo_identificacion",
+                    "identificacion"
+                ],
+                "properties": {
+                    "tipo_identificacion": {
+                        "type": "string",
+                        "enum": [
+                            "cedula",
+                            "ruc",
+                            "pasaporte"
+                        ]
+                    },
+                    "identificacion": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "description": "Cédula de 10 dígitos, RUC de 13 dígitos o pasaporte alfanumérico con guiones."
+                    },
+                    "nombre": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "telefono": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 30
+                    },
+                    "direccion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "activo": {
+                        "type": "boolean"
+                    },
+                    "nombres": {
+                        "type": "string",
+                        "maxLength": 160
+                    },
+                    "apellidos": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "ciudad": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "provincia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "contactos": {
+                        "type": "array",
+                        "maxItems": 10,
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "nombre": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 120
+                                },
+                                "cargo": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 80
+                                },
+                                "email": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "email"
+                                },
+                                "telefono": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 30
+                                }
+                            }
+                        }
+                    },
+                    "celular": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "id_ciudad": {
+                        "description": "Actualiza la ciudad en personas. Si se omite, se conserva el valor asignado. El valor null elimina la selección.",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "observacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 3000
+                    },
+                    "urbanizacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "etapa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "manzana": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "villa": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "referencia": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 1000
+                    }
+                },
+                "anyOf": [
+                    {
+                        "required": [
+                            "nombre"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "nombres"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

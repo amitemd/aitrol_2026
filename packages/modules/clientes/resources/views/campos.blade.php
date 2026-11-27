@@ -1,24 +1,36 @@
-@php($perfil = $cliente?->perfil ?? [])
+@php
+    $perfil = $cliente?->perfil ?? [];
+    $modulo = $modulo ?? 'clientes';
+    $esProveedor = $modulo === 'proveedores';
+    $entidad = $esProveedor ? 'proveedor' : 'cliente';
+    $panelUbicacion = $esProveedor ? 'ubicacion' : 'distribucion';
+    $tituloUbicacion = $esProveedor ? 'Ubicación' : 'Distribución';
+    $pestanas = [
+        'generales' => ['Datos generales', 'bi-person-vcard'],
+        $panelUbicacion => [$tituloUbicacion, $esProveedor ? 'bi-geo-alt' : 'bi-signpost-2'],
+        'contactos' => ['Contactos', 'bi-person-lines-fill'],
+        'documentos' => ['Documentos', 'bi-folder2-open'],
+    ];
+@endphp
 <nav class="nav nav-pills ficha-tabs gap-1 mb-3" aria-label="Secciones de la ficha">
-    @foreach (['generales' => 'Datos generales', 'distribucion' => 'Distribución', 'contactos' => 'Contactos', 'documentos' => 'Documentos'] as $panel => $etiqueta)
+    @foreach ($pestanas as $panel => [$etiqueta, $icono])
         <button type="button" class="nav-link @if($loop->first) active @endif" data-ficha-tab="{{ $panel }}"
-            aria-controls="ficha-{{ $panel }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $etiqueta }}</button>
+            aria-controls="ficha-{{ $panel }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
+            <i class="bi {{ $icono }}" aria-hidden="true"></i>{{ $etiqueta }}
+        </button>
     @endforeach
 </nav>
 
 <section id="ficha-generales" data-ficha-panel="generales" aria-label="Datos generales">
-    <div class="ficha-identidad mb-3">
-        <div class="ficha-foto" aria-hidden="true">
-            <i class="bi bi-person fs-3"></i>
-            <img data-ficha-foto @if ($tieneFoto ?? false) src="{{ route('clientes.foto', $cliente->id) }}" @else hidden @endif alt="">
-        </div>
-        <div class="flex-grow-1">
-            <label for="foto" class="form-label fw-semibold">Foto del cliente</label>
-            <input id="foto" name="foto" type="file" class="form-control" accept="image/jpeg,image/png,image/webp">
-            <div class="form-text">JPG, PNG o WebP · hasta 3 MB</div>
-            @error('foto') <div class="text-danger small">{{ $message }}</div> @enderror
-        </div>
-    </div>
+    <div class="ficha-perfil">
+        <aside class="ficha-perfil-foto">
+        @include('partials.campo-adjunto', [
+            'campo' => 'foto', 'nombre' => 'foto', 'titulo' => $esProveedor ? 'Foto o logotipo del proveedor' : 'Foto del cliente',
+            'iconoAdjunto' => $esProveedor ? 'bi-truck' : 'bi-person', 'formatos' => 'image/jpeg,image/png,image/webp',
+            'ayuda' => 'JPG, PNG o WebP · máximo 3 MB', 'accion' => ($tieneFoto ?? false) ? 'Cambiar fotografía' : 'Seleccionar imagen',
+            'vistaPrevia' => true, 'urlImagen' => ($tieneFoto ?? false) ? route($modulo.'.foto', $cliente->id) : null,
+        ])
+        </aside>
     <div class="row g-3">
         <div class="col-md-4">
             <label for="tipo_identificacion" class="form-label">Tipo de identificación</label>
@@ -42,45 +54,54 @@
         </div>
         @include('clientes::campo-ficha', ['campo' => 'nombres', 'etiqueta' => 'Nombres o razón social', 'valor' => $perfil['nombres'] ?? old('nombre'), 'limite' => 160, 'obligatorio' => true])
         @include('clientes::campo-ficha', ['campo' => 'apellidos', 'etiqueta' => 'Apellidos', 'valor' => $perfil['apellidos'] ?? null, 'limite' => 100])
-        <div class="col-md-6">
-            <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
-            <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
-                value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
-        </div>
+        @unless ($esProveedor)
+            <div class="col-md-6">
+                <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+                <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
+                    value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
+            </div>
+        @endunless
         <div class="col-12">
             <label for="observacion" class="form-label">Observación</label>
             <textarea id="observacion" name="observacion" class="form-control" rows="2" maxlength="3000">{{ old('observacion', $perfil['observacion'] ?? null) }}</textarea>
         </div>
     </div>
+    </div>
 </section>
 
-<section id="ficha-distribucion" data-ficha-panel="distribucion" aria-label="Distribución">
+<section id="ficha-{{ $panelUbicacion }}" data-ficha-panel="{{ $panelUbicacion }}" aria-label="{{ $tituloUbicacion }}">
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'direccion', 'etiqueta' => 'Dirección', 'valor' => $cliente?->direccion, 'limite' => 255, 'ancho' => 'col-12'])
         @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $perfil['id_ciudad'] ?? null)])
-        @foreach (['zona' => 'Zona de distribución'] as $campo => $etiqueta)
-            @include('clientes::campo-ficha', ['campo' => $campo, 'etiqueta' => $etiqueta, 'valor' => $perfil[$campo] ?? null, 'limite' => 100, 'ancho' => 'col-md-4'])
-        @endforeach
+        @unless ($esProveedor)
+            @include('clientes::campo-ficha', ['campo' => 'zona', 'etiqueta' => 'Zona de distribución', 'valor' => $perfil['zona'] ?? null, 'limite' => 100, 'ancho' => 'col-md-4'])
+        @endunless
         @foreach (['urbanizacion' => 'Urbanización', 'etapa' => 'Etapa', 'manzana' => 'Manzana', 'villa' => 'Villa'] as $campo => $etiqueta)
             @include('clientes::campo-ficha', ['campo' => $campo, 'etiqueta' => $etiqueta, 'valor' => $perfil[$campo] ?? null, 'limite' => 100, 'ancho' => 'col-md-3'])
         @endforeach
         <div class="col-12">
-            <label for="referencia" class="form-label">Referencia de entrega</label>
+            <label for="referencia" class="form-label">{{ $esProveedor ? 'Referencia de la dirección' : 'Referencia de entrega' }}</label>
             <textarea id="referencia" name="referencia" class="form-control" rows="2" maxlength="1000">{{ old('referencia', $perfil['referencia'] ?? null) }}</textarea>
         </div>
-        @foreach (['latitud' => ['Latitud', 90], 'longitud' => ['Longitud', 180]] as $campo => [$etiqueta, $rango])
+        @unless ($esProveedor)
+            @foreach (['latitud' => ['Latitud', 90], 'longitud' => ['Longitud', 180]] as $campo => [$etiqueta, $rango])
             <div class="col-md-6">
                 <label for="{{ $campo }}" class="form-label">{{ $etiqueta }}</label>
                 <input id="{{ $campo }}" class="form-control" name="{{ $campo }}" type="number" step="any"
                     min="{{ -$rango }}" max="{{ $rango }}" value="{{ old($campo, $perfil[$campo] ?? null) }}">
             </div>
-        @endforeach
+            @endforeach
+        @endunless
     </div>
-    <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
-        <button type="button" class="btn btn-outline-primary btn-sm" data-ficha-mapa-abrir><i class="bi bi-geo-alt me-1"></i> Abrir mapa</button>
-        <span class="small text-body-secondary" data-ficha-mapa-estado role="status">Selecciona un punto en el mapa o ingresa las coordenadas.</span>
-    </div>
-    <div class="ficha-mapa mt-3" data-ficha-mapa hidden aria-label="Mapa de ubicación del cliente"></div>
+    @unless ($esProveedor)
+        <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-ficha-mapa-abrir>
+                <i class="bi bi-map me-1" aria-hidden="true"></i> Abrir mapa
+            </button>
+            <span class="small text-body-secondary" data-ficha-mapa-estado role="status">Selecciona un punto en el mapa o ingresa las coordenadas.</span>
+        </div>
+        <div class="ficha-mapa mt-3" data-ficha-mapa hidden aria-label="Mapa de ubicación del cliente"></div>
+    @endunless
 </section>
 
 <section id="ficha-contactos" data-ficha-panel="contactos" aria-label="Contactos">
@@ -91,7 +112,9 @@
     </div>
     <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
         <h3 class="fs-6 fw-semibold mb-0">Contactos adicionales</h3>
-        <button type="button" class="btn btn-sm btn-outline-primary" data-ficha-contacto-agregar>Agregar contacto</button>
+        <button type="button" class="btn btn-sm btn-outline-primary" data-ficha-contacto-agregar>
+            <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Agregar contacto
+        </button>
     </div>
     <input type="hidden" name="contactos_presentes" value="1">
     <div data-ficha-contactos>
@@ -105,15 +128,19 @@
 </section>
 
 <section id="ficha-documentos" data-ficha-panel="documentos" aria-label="Documentos">
-    <label for="adjuntos" class="form-label">Adjuntar documentos</label>
-    <input id="adjuntos" type="file" name="adjuntos[]" class="form-control" multiple accept="application/pdf,image/jpeg,image/png">
-    <div class="form-text">PDF, JPG o PNG · hasta 5 archivos por carga, de 8 MB cada uno.</div>
-    <h3 class="fs-6 fw-semibold mt-4">Archivos del cliente</h3>
+    @include('partials.campo-adjunto', [
+        'campo' => 'adjuntos', 'nombre' => 'adjuntos[]', 'titulo' => 'Adjuntar documentos', 'iconoAdjunto' => 'bi-paperclip',
+        'formatos' => 'application/pdf,image/jpeg,image/png', 'ayuda' => 'PDF, JPG o PNG · hasta 5 archivos de 8 MB cada uno',
+        'accion' => 'Seleccionar archivos', 'multiple' => true,
+    ])
+    <h3 class="fs-6 fw-semibold mt-4">Archivos del {{ $entidad }}</h3>
     <ul class="list-group list-group-flush">
         @forelse ($documentos ?? [] as $documento)
             <li class="list-group-item px-0">
-                <a href="{{ route('clientes.documento', [$cliente->id, $documento['id']]) }}">
-                    <i class="bi bi-download me-1" aria-hidden="true"></i>{{ $documento['nombre'] }}
+                <a class="ficha-archivo-guardado" href="{{ route($modulo.'.documento', [$cliente->id, $documento['id']]) }}">
+                    <i class="bi {{ Str::endsWith(Str::lower($documento['nombre']), '.pdf') ? 'bi-file-earmark-pdf' : 'bi-file-earmark-image' }}" aria-hidden="true"></i>
+                    <span>{{ $documento['nombre'] }}</span>
+                    <i class="bi bi-download ms-auto" aria-hidden="true"></i>
                 </a>
             </li>
         @empty

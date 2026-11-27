@@ -3,6 +3,7 @@
     --aitrol-glow: #d6e6ff;
     --aitrol-grid: #466c9d0e;
     --aitrol-surface: #fbfdff;
+    --aitrol-field: #ecf3fc;
     --aitrol-border: #ccd9eb;
     --aitrol-tab-active: #deeaff;
     --aitrol-accent: #255fcc;
@@ -14,6 +15,7 @@
     --aitrol-glow: #152e50;
     --aitrol-grid: #89bdf513;
     --aitrol-surface: #122137;
+    --aitrol-field: #0c182b;
     --aitrol-border: #2b405c;
     --aitrol-tab-active: #1c365e;
     --aitrol-accent: #83bdff;
@@ -23,17 +25,236 @@
 .aitrol-shell .app-main {
     min-width: 0;
     background:
+        linear-gradient(var(--aitrol-grid) 1px, transparent 1px) 0 0 / 2rem 2rem,
+        linear-gradient(90deg, var(--aitrol-grid) 1px, transparent 1px) 0 0 / 2rem 2rem,
         radial-gradient(ellipse at top right, var(--aitrol-glow), transparent 42rem),
         var(--aitrol-canvas);
 }
 
-.aitrol-shell :is(.app-header, .app-footer, .workspace-tabs) {
+.aitrol-shell :is(.app-header, .app-footer) {
     background-color: var(--aitrol-surface);
     border-color: var(--aitrol-border);
 }
 
 .aitrol-shell .app-header {
-    box-shadow: inset 0 2px var(--aitrol-accent);
+    background-image: linear-gradient(110deg, transparent, var(--aitrol-grid));
+    box-shadow: inset 0 2px var(--aitrol-accent), var(--aitrol-card-shadow);
+    padding-block: .45rem;
+}
+
+.aitrol-shell .app-header > .aitrol-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(8rem, 15rem) minmax(0, 1fr) auto;
+    gap: .2rem clamp(.375rem, 1.2vw, 1rem);
+    padding-inline: clamp(.5rem, 1.2vw, 1rem);
+}
+
+.aitrol-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.aitrol-toolbar .aitrol-tools { grid-column: 4; }
+.aitrol-toolbar .aitrol-header-search { grid-column: 2; }
+
+.aitrol-shell .aitrol-toolbar :is(.aitrol-tool, .aitrol-account) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding-inline: .45rem;
+    border-radius: .55rem;
+    white-space: nowrap;
+}
+
+.aitrol-toolbar .aitrol-tool { min-width: 2.25rem; }
+
+.aitrol-toolbar .aitrol-avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 1px solid var(--aitrol-border);
+    border-radius: .48rem;
+    background: var(--aitrol-tab-active);
+    color: var(--aitrol-accent);
+    font-weight: 700;
+}
+
+.aitrol-account-name {
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aitrol-account-chevron { font-size: .75rem; }
+.aitrol-account[aria-expanded="true"] .aitrol-account-chevron { transform: rotate(180deg); }
+.aitrol-toolbar .aitrol-account > .aitrol-avatar { font-size: .72rem; }
+
+.aitrol-toolbar .aitrol-profile-menu {
+    --bs-dropdown-bg: var(--aitrol-surface);
+    --bs-dropdown-border-color: var(--aitrol-border);
+    width: min(19rem, calc(100vw - 1rem));
+    padding: 0;
+    overflow: hidden;
+    border-radius: .95rem;
+    box-shadow: 0 .85rem 2.2rem #07132656;
+}
+
+.aitrol-profile-identity {
+    display: grid;
+    justify-items: center;
+    gap: .65rem;
+    padding: 1.15rem 1rem .95rem;
+    text-align: center;
+    color: #f6faff;
+    background:
+        linear-gradient(#8fc3ff13 1px, transparent 1px) 50% 0 / 1.4rem 1.4rem,
+        linear-gradient(90deg, #8fc3ff13 1px, transparent 1px) 50% 0 / 1.4rem 1.4rem,
+        radial-gradient(ellipse at 50% 0, #285c99, transparent 76%),
+        #112640;
+    box-shadow: inset 0 2px #70b5ff;
+}
+
+.aitrol-toolbar .aitrol-profile-avatar {
+    width: 3.4rem;
+    height: 3.4rem;
+    border-color: #90c5ff;
+    border-radius: 1rem;
+    background: linear-gradient(145deg, #2b64ac, #123056);
+    box-shadow: 0 0 1.15rem #69acff55, inset 0 1px #c7e2ff4d;
+    color: #fff;
+    font-size: 1.3rem;
+}
+
+.aitrol-profile-name { font-size: 1.1rem; overflow-wrap: anywhere; }
+
+.aitrol-profile-role {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .15rem .55rem;
+    border: 1px solid #8bc2ff61;
+    border-radius: 1rem;
+    background: #091d37b0;
+    color: #cde5ff;
+    font-size: .8rem;
+}
+
+.aitrol-profile-email {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .7rem;
+    padding: .85rem 1rem;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.aitrol-profile-email > .bi { color: var(--aitrol-accent); }
+
+.aitrol-profile-actions {
+    padding: .55rem;
+    border-top: 1px solid var(--aitrol-border);
+}
+
+.aitrol-profile-actions .aitrol-profile-signout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    min-height: 2.5rem;
+    padding-inline: .65rem;
+    border-radius: .55rem;
+    color: var(--bs-danger-text-emphasis);
+}
+
+.aitrol-profile-signout:is(:hover, :focus-visible) { background: var(--bs-danger-bg-subtle); }
+
+@media (prefers-reduced-motion: no-preference) {
+    .aitrol-account-chevron { transition: transform .16s ease; }
+}
+
+.aitrol-toolbar :is(.aitrol-tool, .aitrol-account):is(:hover, [aria-expanded="true"]) {
+    color: var(--aitrol-accent);
+    background: var(--aitrol-tab-active);
+}
+
+.aitrol-header-search,
+.aitrol-menu-search { position: relative; min-width: 0; }
+
+:is(.aitrol-header-search, .aitrol-menu-search) > .bi-search {
+    position: absolute;
+    inset: 0 auto 0 .75rem;
+    display: grid;
+    place-items: center;
+    color: var(--aitrol-accent);
+    pointer-events: none;
+}
+
+.aitrol-shell :is(.aitrol-header-search, .aitrol-menu-search) .form-control {
+    min-height: 2.25rem;
+    padding-inline-start: 2.1rem;
+    border-radius: .65rem;
+}
+
+.aitrol-header-search .form-control {
+    background: var(--aitrol-field);
+    border-color: var(--aitrol-border);
+    font-size: .9rem;
+}
+
+.aitrol-header-search .form-control:focus {
+    border-color: var(--aitrol-accent);
+    background: var(--aitrol-surface);
+}
+
+.aitrol-search-results {
+    position: absolute;
+    inset: calc(100% + .4rem) auto auto 0;
+    z-index: 1040;
+    width: max(100%, 15rem);
+    max-width: calc(100vw - 6rem);
+    max-height: min(22rem, 65dvh);
+    overflow: auto;
+    padding: .3rem;
+    background: var(--aitrol-surface);
+    border: 1px solid var(--aitrol-border);
+    border-radius: .75rem;
+    box-shadow: 0 .65rem 1.8rem #03112840;
+}
+
+.aitrol-search-results a,
+.aitrol-search-empty {
+    display: block;
+    padding: .48rem .65rem;
+    color: var(--bs-body-color);
+}
+
+.aitrol-search-empty[hidden] { display: none; }
+
+.aitrol-search-results a {
+    border-radius: .5rem;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+
+.aitrol-search-results a:is(:hover, :focus-visible) {
+    background: var(--aitrol-tab-active);
+    color: var(--aitrol-accent);
+}
+
+@media (max-width: 767.98px) {
+    .aitrol-shell .app-header > .aitrol-toolbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .aitrol-toolbar .aitrol-tools { grid-area: 1 / 3; }
+    .aitrol-toolbar .aitrol-header-search { grid-area: 1 / 2; }
+    .aitrol-toolbar .workspace-tabs { grid-column: 1 / -1; }
+    .aitrol-header-search .form-control { font-size: 1rem; }
 }
 
 .aitrol-shell .app-sidebar {
@@ -62,10 +283,20 @@
     letter-spacing: -.025em;
 }
 
+.aitrol-shell .sidebar-search { padding: .75rem .75rem .35rem; }
+
+.aitrol-menu-search > .bi-search { color: #a9c9f4; }
+
 .aitrol-shell .sidebar-search .form-control {
     color: #f1f6ff;
     background-color: #08172ab8;
     border-color: #91b7e44f;
+}
+
+.aitrol-shell .sidebar-search .form-control:focus {
+    background-color: #132d4d;
+    border-color: #8ac2ff;
+    box-shadow: 0 0 0 .15rem #69acff28;
 }
 
 .aitrol-shell .sidebar-search .form-control::placeholder {
@@ -77,14 +308,25 @@
     box-shadow: inset 3px 0 #72b6ff;
 }
 
+.aitrol-shell .sidebar-menu .nav-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    color: #a9c9f4;
+}
+
+.aitrol-shell .sidebar-menu .nav-link:is(.active, :hover) .nav-icon { color: #e4f3ff; }
+
 .aitrol-shell .workspace-tab {
     border-color: var(--aitrol-border);
     background-color: var(--aitrol-surface);
+    border-radius: .55rem;
 }
 
 .aitrol-shell .workspace-tab:has([aria-pressed="true"]) {
     border-color: var(--aitrol-accent);
     background-color: var(--aitrol-tab-active);
+    box-shadow: inset 0 -2px var(--aitrol-accent);
 }
 
 .aitrol-shell .workspace-tab [aria-pressed="true"] {
@@ -96,16 +338,18 @@
     box-shadow: var(--aitrol-card-shadow);
 }
 
-.aitrol-shell .app-main :is(.card, .cliente-dialog) {
+.aitrol-shell :is(.app-main .card, .cliente-dialog) {
     border-color: var(--aitrol-border);
 }
 
-@media (min-width: 768px) {
-    .aitrol-shell .app-main {
-        background-image:
-            linear-gradient(var(--aitrol-grid) 1px, transparent 1px),
-            linear-gradient(90deg, var(--aitrol-grid) 1px, transparent 1px),
-            radial-gradient(ellipse at top right, var(--aitrol-glow), transparent 42rem);
-        background-size: 2rem 2rem, 2rem 2rem, auto;
-    }
+.aitrol-shell .cliente-dialog::backdrop { background: #071327a8; }
+
+.cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
+
+.usuario-tabs {
+    gap: .4rem;
+    margin-bottom: 1rem;
 }
+
+.usuario-tabs[hidden],
+[data-usuario-panel][hidden] { display: none; }

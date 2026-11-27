@@ -12,7 +12,7 @@
             @if (session('estado'))
                 <div class="alert alert-success" role="status">{{ session('estado') }}</div>
             @endif
-            @include('partials.listado-modal')
+                @include('partials.listado-modal', ['iconoModal' => 'bi-person-vcard'])
             <section class="card clientes-directorio" data-ajax-list>
                 @include('partials.listado-busqueda', ['listadoUrl' => route('configuracion.usuarios.index'), 'placeholder' => 'Nombre o correo electrónico'])
                 <div class="small text-body-secondary px-3 py-2 border-bottom">{{ $usuarios->total() }} cuentas registradas</div>

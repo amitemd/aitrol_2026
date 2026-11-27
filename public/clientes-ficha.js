@@ -146,20 +146,7 @@
             }
         }, true);
 
-        const photo = form.elements.namedItem('foto');
-        const preview = form.querySelector('[data-ficha-foto]');
-        const original = preview.getAttribute('src');
-        let previewUrl;
-        photo.addEventListener('change', () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
-            previewUrl = photo.files[0] ? URL.createObjectURL(photo.files[0]) : null;
-            const src = previewUrl ?? original;
-            if (src) preview.src = src;
-            else preview.removeAttribute('src');
-            preview.hidden = !src;
-        });
         form.closest('dialog')?.addEventListener('close', () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
             state.map?.remove();
         }, { once: true });
     }

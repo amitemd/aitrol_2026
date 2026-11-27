@@ -37,6 +37,8 @@ final class Accesos
             'dashboard' => true,
             'clientes.index' => $this->permite($usuario, 'clientes.lista', 'leer'),
             'clientes.create' => $this->permite($usuario, 'clientes.lista', 'escribir'),
+            'proveedores.index' => $this->permite($usuario, 'proveedores.lista', 'leer'),
+            'proveedores.create' => $this->permite($usuario, 'proveedores.lista', 'escribir'),
             'configuracion.empresas.index' => $this->permite($usuario, 'empresas', 'leer'),
             default => array_key_exists($ruta, config('accesos'))
                 ? $this->permite($usuario, $ruta, 'leer')
