@@ -12,7 +12,10 @@ final class SesionController extends Controller
 {
     public function inicio(): View
     {
-        return view(Auth::check() ? 'adminlte.dashboard-v2' : 'auth.login');
+        $usuario = Auth::user();
+        if ($usuario === null) return view('auth.login');
+
+        return view($usuario->empresa()->exists() ? 'adminlte.dashboard-v2' : 'auth.empresa-inicial');
     }
 
     public function store(Request $request): RedirectResponse
@@ -28,6 +31,8 @@ final class SesionController extends Controller
         }
 
         $request->session()->regenerate();
+
+        if (! $request->user()->empresa()->exists()) return to_route('dashboard');
 
         return redirect()->intended(route('dashboard'));
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmpresaInicialController;
 use App\Http\Controllers\RecuperacionClaveController;
 use App\Http\Controllers\SesionController;
 use App\Services\OpenApiDocument;
@@ -13,7 +14,8 @@ Route::get('/', [SesionController::class, 'inicio'])->middleware('auth.session')
 Route::get('/login', fn (): RedirectResponse => to_route('dashboard'))->name('login');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
-    Route::view('/panel-anterior', 'dashboard')->name('dashboard.previous');
+    Route::view('/panel-anterior', 'dashboard')->middleware('empresa')->name('dashboard.previous');
+    Route::post('/empresa-inicial', [EmpresaInicialController::class, 'store'])->middleware('throttle:10,1')->name('empresa.inicial');
     Route::post('/logout', [SesionController::class, 'destroy'])->name('logout');
 });
 

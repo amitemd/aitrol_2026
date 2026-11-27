@@ -11,6 +11,8 @@ final class Accesos
 
     public function permite(User $usuario, string $opcion, string $accion): bool
     {
+        if ($usuario->id_empresa === null) return false;
+
         if ($usuario->is_admin) {
             return true;
         }
@@ -50,6 +52,7 @@ final class Accesos
     {
         $directos = [];
         foreach (DB::table('permiso_usuario')->join('permisos', 'permisos.id', '=', 'permiso_usuario.id_permiso')
+            ->where('permiso_usuario.id_empresa', $usuario->id_empresa)->where('permisos.id_empresa', $usuario->id_empresa)
             ->where('id_usuario', $usuario->id)->get(['opcion', 'accion', 'permitido']) as $regla) {
             $directos[$regla->opcion][$regla->accion] = (bool) $regla->permitido;
         }
@@ -57,6 +60,8 @@ final class Accesos
         $roles = [];
         foreach (DB::table('rol_usuario')->join('permiso_rol', 'permiso_rol.id_rol', '=', 'rol_usuario.id_rol')
             ->join('permisos', 'permisos.id', '=', 'permiso_rol.id_permiso')
+            ->where('rol_usuario.id_empresa', $usuario->id_empresa)->where('permiso_rol.id_empresa', $usuario->id_empresa)
+            ->where('permisos.id_empresa', $usuario->id_empresa)
             ->where('id_usuario', $usuario->id)->distinct()->get(['opcion', 'accion']) as $regla) {
             $roles[$regla->opcion][$regla->accion] = true;
         }

@@ -3,7 +3,7 @@
 use Aitrol\Proveedores\Infrastructure\Http\ProveedorWebController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['web', 'auth', 'auth.session'])->group(function (): void {
+Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->group(function (): void {
     Route::get('/proveedores', [ProveedorWebController::class, 'index'])->middleware('permiso:proveedores.lista,leer')->name('proveedores.index');
     Route::get('/proveedores/create', [ProveedorWebController::class, 'create'])->middleware('permiso:proveedores.lista,escribir')->name('proveedores.create');
     Route::post('/proveedores', [ProveedorWebController::class, 'store'])->middleware('permiso:proveedores.lista,escribir')->name('proveedores.store');

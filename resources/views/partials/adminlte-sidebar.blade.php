@@ -1,4 +1,4 @@
-<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+<aside class="app-sidebar bg-body-secondary shadow">
     <div class="sidebar-brand">
         <a href="{{ route('dashboard') }}" class="brand-link" data-workspace-link="dashboard">
             @include('partials.aitrol-mark')

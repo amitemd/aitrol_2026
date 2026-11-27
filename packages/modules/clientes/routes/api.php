@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
 Route::prefix('api/v1/clientes')->name('api.v1.clientes.')
-    ->middleware(['api', 'auth:sanctum', 'throttle:clientes-api'])
+    ->middleware(['api', 'auth:sanctum', 'empresa', 'throttle:clientes-api'])
     ->group(function (): void {
         Route::get('/', [ClienteApiController::class, 'index'])
             ->middleware([CheckAbilities::class.':clientes:leer', 'permiso:clientes.lista,leer'])->name('index');

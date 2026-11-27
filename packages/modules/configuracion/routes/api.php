@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
 Route::prefix('api/v1/usuarios')->name('api.v1.usuarios.')
-    ->middleware(['api', 'auth:sanctum', 'can:integrar-usuarios', 'throttle:60,1'])
+    ->middleware(['api', 'auth:sanctum', 'empresa', 'can:integrar-usuarios', 'throttle:60,1'])
     ->group(function (): void {
         Route::get('/', [UsuarioController::class, 'index'])
             ->middleware(CheckAbilities::class.':usuarios:leer')->name('index');

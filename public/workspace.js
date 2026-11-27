@@ -17,6 +17,18 @@
     let active;
     let panelNumber = 0;
 
+    function syncFrameTheme(frame) {
+        const root = frame.contentDocument?.documentElement;
+        if (!root?.hasAttribute('data-workspace-embedded')) return;
+        const theme = document.documentElement.dataset.bsTheme;
+        root.dataset.bsTheme = theme;
+        root.style.colorScheme = theme;
+    }
+
+    new MutationObserver(() => {
+        content.querySelectorAll('[data-workspace-frame]').forEach(syncFrameTheme);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
+
     function updateSidebar() {
         navigation.querySelectorAll('.menu-open > .nav-link.active').forEach((toggle) => {
             toggle.classList.remove('active');
@@ -95,6 +107,7 @@
             frame.title = label;
             frame.setAttribute('data-workspace-frame', '');
             frame.addEventListener('load', () => {
+                syncFrameTheme(frame);
                 frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
                 if (frame.contentDocument?.querySelector('[data-login-form]')) {
                     location.assign(dashboard);

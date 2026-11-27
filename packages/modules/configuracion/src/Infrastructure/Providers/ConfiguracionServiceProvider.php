@@ -30,8 +30,9 @@ final class ConfiguracionServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom($modulo.'/database/migrations');
         $this->loadViewsFrom($modulo.'/resources/views', 'configuracion');
 
-        $esAdministrador = fn (User $usuario): bool => $usuario->is_admin === true;
-        Gate::define('administrar-menu', $esAdministrador);
+        $esAdministrador = fn (User $usuario): bool => $usuario->is_admin === true && $usuario->id_empresa !== null;
+        Gate::define('administrar-menu', fn (User $usuario): bool => $esAdministrador($usuario)
+            && (int) $usuario->id_empresa === (int) \Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel::query()->min('id'));
         Gate::define('administrar-configuracion', $esAdministrador);
         Gate::define('permiso', fn (User $usuario, string $opcion, string $accion): bool => app(Accesos::class)->permite($usuario, $opcion, $accion));
         Gate::define('integrar-usuarios', fn (User $usuario): bool =>

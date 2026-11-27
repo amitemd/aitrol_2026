@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,6 +23,11 @@ class User extends Authenticatable
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class, 'id_persona');
+    }
+
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(EmpresaModel::class, 'id_empresa');
     }
 
     public function save(array $options = []): bool

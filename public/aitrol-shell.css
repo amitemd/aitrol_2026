@@ -317,6 +317,39 @@
 
 .aitrol-shell .sidebar-menu .nav-link:is(.active, :hover) .nav-icon { color: #e4f3ff; }
 
+[data-bs-theme="light"] .aitrol-shell .app-sidebar {
+    --lte-sidebar-color: #304b6c;
+    --lte-sidebar-hover-color: #163c71;
+    --lte-sidebar-hover-bg: #bedaff77;
+    --lte-sidebar-active-color: #163c71;
+    --lte-sidebar-menu-active-color: #163c71;
+    --lte-sidebar-menu-active-bg: #cadaf2;
+    color: #203f64;
+    background-image: linear-gradient(155deg, #ebf4ff, #dfeaf9 78%);
+    border-color: #c0d1e8;
+}
+
+[data-bs-theme="light"] .aitrol-shell .app-sidebar .brand-link,
+[data-bs-theme="light"] .aitrol-shell .app-sidebar .nav-icon,
+[data-bs-theme="light"] .aitrol-shell .aitrol-menu-search > .bi-search {
+    color: #28558a;
+}
+
+[data-bs-theme="light"] .aitrol-shell .sidebar-brand { border-color: #c0d1e8; }
+
+[data-bs-theme="light"] .aitrol-shell .sidebar-search .form-control {
+    color: #203f64;
+    border-color: #bdcee7;
+    background: #f8fbff;
+}
+
+[data-bs-theme="light"] .aitrol-shell .sidebar-search .form-control::placeholder { color: #4f6480; }
+
+[data-bs-theme="light"] .aitrol-shell .sidebar-menu .nav-link.active {
+    background: linear-gradient(90deg, #aacaf2a8, #cfdef4);
+    box-shadow: inset 3px 0 #3778c6;
+}
+
 .aitrol-shell .workspace-tab {
     border-color: var(--aitrol-border);
     background-color: var(--aitrol-surface);

@@ -6,6 +6,7 @@ use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
 use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use App\Models\Persona;
 use App\Models\User;
+use App\Services\EmpresaActiva;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -18,10 +19,13 @@ use InvalidArgumentException;
 
 final class UsuarioController
 {
+    public function __construct(private readonly EmpresaActiva $empresaActiva) {}
+
     public function index(Request $request): View|JsonResponse
     {
         $datos = $request->validate(['q' => ['nullable', 'string', 'max:160'], 'page' => ['sometimes', 'integer', 'min:1', 'max:1000000']]);
-        $consulta = User::query()->select(['id', 'id_persona', 'name', 'email', 'is_admin'])->with('persona');
+        $consulta = User::query()->where('id_empresa', $this->empresaActiva->id())
+            ->select(['id', 'id_persona', 'name', 'email', 'is_admin'])->with('persona');
         $busqueda = $datos['q'] ?? '';
         if ($busqueda !== '') {
             $consulta->where(fn ($query) => $query->whereLike('name', '%'.$busqueda.'%')->orWhereLike('email', '%'.$busqueda.'%'));
@@ -37,6 +41,8 @@ final class UsuarioController
 
     public function edit(User $usuario): View
     {
+        $this->empresaActiva->verificar($usuario);
+
         return view('configuracion::usuario', ['usuario' => $usuario->load('persona'), 'tipos' => TipoIdentificacion::cases()]);
     }
 
@@ -52,11 +58,14 @@ final class UsuarioController
 
     public function show(User $usuario): JsonResponse
     {
+        $this->empresaActiva->verificar($usuario);
+
         return (new UsuarioResource($usuario))->response()->header('Cache-Control', 'no-store');
     }
 
     public function update(Request $request, User $usuario): RedirectResponse|JsonResponse
     {
+        $this->empresaActiva->verificar($usuario);
         abort_if($request->routeIs('api.*') && $usuario->is_admin, 403, 'Edita las cuentas administradoras desde Configuraciones generales.');
 
         return $this->guardar($request, $usuario);
@@ -113,7 +122,7 @@ final class UsuarioController
                         throw ValidationException::withMessages(['identificacion' => 'La cuenta ya está vinculada a una identificación.']);
                     }
                     $personaEncontrada = Persona::query()->where($documento)->lockForUpdate()->first();
-                    if ($personaEncontrada !== null && User::query()->where('id_persona', $personaEncontrada->id)
+                    if ($personaEncontrada !== null && User::query()->where('id_empresa', $this->empresaActiva->id())->where('id_persona', $personaEncontrada->id)
                         ->when(! $esNuevo, fn ($consulta) => $consulta->whereKeyNot($cuenta->id))->exists()) {
                         throw ValidationException::withMessages(['identificacion' => 'Esta persona ya tiene una cuenta de usuario.']);
                     }
@@ -144,6 +153,7 @@ final class UsuarioController
                 $cuenta->persona()->associate($persona);
                 $cuenta->fill(['name' => $nombre, 'email' => $datos['email']]);
                 if ($esNuevo) {
+                    $cuenta->id_empresa = $this->empresaActiva->id();
                     $cuenta->password = $datos['password'];
                 }
                 if ($cuenta->isDirty('email')) {

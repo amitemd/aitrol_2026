@@ -7,7 +7,7 @@ use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['web', 'auth', 'auth.session', 'can:administrar-menu'])
+Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-menu'])
     ->prefix('configuraciones/menu')->name('configuracion.menu.')
     ->group(function (): void {
         Route::get('/', [MenuController::class, 'index'])->name('index');
@@ -16,7 +16,7 @@ Route::middleware(['web', 'auth', 'auth.session', 'can:administrar-menu'])
         Route::delete('/{menu}', [MenuController::class, 'destroy'])->whereNumber('menu')->name('destroy');
     });
 
-Route::middleware(['web', 'auth', 'auth.session', 'can:administrar-configuracion'])
+Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-configuracion'])
     ->prefix('configuraciones')->name('configuracion.')
     ->group(function (): void {
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
@@ -34,7 +34,7 @@ Route::middleware(['web', 'auth', 'auth.session', 'can:administrar-configuracion
         Route::post('/ubicaciones', [UbicacionController::class, 'store'])->name('ubicaciones.store');
     });
 
-Route::middleware(['web', 'auth', 'auth.session'])->prefix('configuraciones')->name('configuracion.')->group(function (): void {
+Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configuraciones')->name('configuracion.')->group(function (): void {
     Route::get('/ubicaciones/opciones', [UbicacionController::class, 'opciones'])->name('ubicaciones.opciones');
     Route::get('/empresas', [EmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.index');
     Route::post('/empresas', [EmpresaController::class, 'store'])->middleware('permiso:empresas,escribir')->name('empresas.store');

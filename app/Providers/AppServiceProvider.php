@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\TokenAcceso;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Sanctum::usePersonalAccessTokenModel(TokenAcceso::class);
         ResetPassword::toMailUsing(function (CanResetPassword $usuario, string $token): MailMessage {
             $ruta = route('password.reset', [
                 'token' => $token,
