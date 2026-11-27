@@ -1,6 +1,9 @@
 (() => {
     'use strict';
 
+    const idioma = document.querySelector('[data-idioma-inmediato]');
+    idioma?.addEventListener('change', () => idioma.form.requestSubmit());
+
     const fotosCuenta = document.querySelectorAll('[data-aitrol-avatar]');
     for (const foto of fotosCuenta) {
         const mostrarFoto = () => {

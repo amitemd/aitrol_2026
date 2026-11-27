@@ -17,7 +17,7 @@ class AplicarIdioma
     public function handle(Request $request, Closure $next): Response
     {
         $idioma = $request->session()->get('idioma', 'es');
-        App::setLocale(is_string($idioma) && array_key_exists($idioma, config('app.idiomas')) ? $idioma : 'es');
+        App::setLocale(is_string($idioma) && array_key_exists($idioma, (array) config('app.idiomas')) ? $idioma : 'es');
 
         return $next($request);
     }

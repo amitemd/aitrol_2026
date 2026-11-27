@@ -121,17 +121,20 @@
                             </div>
                         </li>
                         <li class="aitrol-profile-language">
-                            <span class="aitrol-profile-language-title">
+                            <label for="aitrol-profile-language" class="aitrol-profile-language-title">
                                 <i class="bi bi-translate" aria-hidden="true"></i>
                                 {{ __('Idioma') }}
-                            </span>
-                            <form class="aitrol-profile-language-options" method="POST" action="{{ route('idioma.actualizar') }}">
+                            </label>
+                            <form class="mt-2" method="POST" action="{{ route('idioma.actualizar') }}">
                                 @csrf
-                                @foreach (config('app.idiomas') as $codigo => $nombreIdioma)
-                                    <button type="submit" name="idioma" value="{{ $codigo }}" lang="{{ str_replace('_', '-', $codigo) }}"
-                                        @class(['btn btn-sm', 'btn-primary' => app()->getLocale() === $codigo, 'btn-outline-secondary' => app()->getLocale() !== $codigo])
-                                        @if (app()->getLocale() === $codigo) aria-current="true" @endif>{{ $nombreIdioma }}</button>
-                                @endforeach
+                                <select id="aitrol-profile-language" class="form-select form-select-sm" name="idioma"
+                                    data-select2-nativo data-idioma-inmediato>
+                                    @foreach (config('app.idiomas') ?? ['es' => 'Español'] as $codigo => $nombreIdioma)
+                                        <option value="{{ $codigo }}" lang="{{ str_replace('_', '-', $codigo) }}"
+                                            @selected(app()->getLocale() === $codigo)>{{ $nombreIdioma }}</option>
+                                    @endforeach
+                                </select>
+                                <noscript><button type="submit" class="btn btn-sm btn-outline-secondary mt-2">{{ __('Aplicar') }}</button></noscript>
                             </form>
                         </li>
                         <li class="aitrol-profile-actions">

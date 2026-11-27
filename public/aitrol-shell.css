@@ -255,18 +255,6 @@
 
 .aitrol-profile-language-title > .bi { color: var(--aitrol-accent); }
 
-.aitrol-profile-language-options {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .35rem;
-    margin-top: .55rem;
-}
-
-.aitrol-profile-language-options .btn {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .aitrol-profile-actions {
     padding: .55rem;
     border-top: 1px solid var(--aitrol-border);

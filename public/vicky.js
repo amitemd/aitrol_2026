@@ -227,9 +227,9 @@
     if (status === 401 || status === 419) return 'La sesión caducó. Recarga Aitrol para volver a consultar.';
     if (status === 403) return 'Tu usuario no tiene permiso de lectura para esta consulta.';
     if (status === 429) return 'Llegaste al límite de consultas. Espera un minuto antes de volver a intentar.';
-    return [404, 422, 503].includes(status) && payload?.message
-      ? payload.message
-      : 'No pude completar la consulta. Intenta de nuevo.';
+    if ([404, 422, 503].includes(status) && payload?.message) return payload.message;
+    if (status >= 500) return 'El servidor de Aitrol no pudo procesar la consulta. Intenta de nuevo.';
+    return 'No pude completar la consulta. Intenta de nuevo.';
   }
 
   function addGuideFeedback(message, payload) {

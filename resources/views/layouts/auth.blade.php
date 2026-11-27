@@ -32,7 +32,7 @@
                 <form class="d-flex justify-content-end gap-2 mb-3" method="POST" action="{{ route('idioma.actualizar') }}">
                     @csrf
                     <select class="form-select form-select-sm w-auto" name="idioma" aria-label="{{ __('Idioma') }}">
-                        @foreach (config('app.idiomas') as $codigo => $nombreIdioma)
+                        @foreach (config('app.idiomas') ?? ['es' => 'Español'] as $codigo => $nombreIdioma)
                             <option value="{{ $codigo }}" lang="{{ str_replace('_', '-', $codigo) }}" @selected(app()->getLocale() === $codigo)>{{ $nombreIdioma }}</option>
                         @endforeach
                     </select>

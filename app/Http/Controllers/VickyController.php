@@ -124,8 +124,10 @@ final class VickyController extends Controller
         if (preg_match('/\b(?:users|contrasenas?|passwords?|tokens? de acceso|sesiones? activas|tabla personas)\b/', $texto)) {
             return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
         }
-        $social = preg_replace('/[^a-z ]+/', '', $texto);
-        if (preg_match('/\A\s*(?:hola(?: vicky)?|buenos dias|buenas tardes|buenas noches|(?:en )?que (?:puedes hacer|me puedes ayudar)|como (?:me )?puedes ayudar)\s*\z/', $social)) {
+        $social = Str::squish(preg_replace('/[^a-z ]+/', ' ', $texto));
+        $saludo = '(?:hola(?: vicky)?|buenos dias|buenas tardes|buenas noches)';
+        $ayuda = '(?:(?:en )?que (?:puedes hacer|me puedes ayudar)|como (?:me )?puedes ayudar)';
+        if (preg_match('/\A(?:'.$saludo.'(?: '.$ayuda.')?|'.$ayuda.')\z/', $social)) {
             $estado = 'completed';
 
             return response()->json(['respuesta' => 'Puedo orientarte sobre módulos de Aitrol, darte ejemplos y pasos, preparar listas de verificación y redactar borradores de agenda o actas. También puedo consultar reportes permitidos. ¿Qué necesitas?']);

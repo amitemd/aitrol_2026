@@ -16,7 +16,8 @@ use Illuminate\Validation\Rule;
 Route::get('/', [SesionController::class, 'inicio'])->middleware('auth.session')->name('dashboard');
 Route::get('/login', fn (): RedirectResponse => to_route('dashboard'))->name('login');
 Route::post('/idioma', function (Request $request): RedirectResponse {
-    $datos = $request->validate(['idioma' => ['required', 'string', Rule::in(array_keys(config('app.idiomas')))]]);
+    $idiomas = config('app.idiomas') ?? ['es' => 'Español'];
+    $datos = $request->validate(['idioma' => ['required', 'string', Rule::in(array_keys($idiomas))]]);
     $request->session()->put('idioma', $datos['idioma']);
 
     return back();

@@ -11,6 +11,13 @@ class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_missing_cached_language_catalog_keeps_the_login_available_in_spanish(): void
+    {
+        config(['app.idiomas' => null]);
+
+        $this->withSession(['idioma' => 'fr'])->get('/')->assertOk()->assertSee('lang="es"', false)->assertSee('Español');
+    }
+
     public function test_it_saves_the_chosen_language_and_rejects_unsupported_values(): void
     {
         $this->get('/')->assertOk()->assertSee('lang="es"', false)->assertSee('Iniciar sesión');
