@@ -11,6 +11,12 @@ return new class extends Migration
 
     public function up(): void
     {
+        foreach (['erp_empresas', ...$this->tablas] as $tabla) {
+            if (! Schema::hasTable($tabla)) {
+                throw new RuntimeException("Falta la tabla {$tabla}. Revisa migrate:status y aplica su migración de creación antes de separar los datos por empresa.");
+            }
+        }
+
         $empresa = config('tenencia.empresa_legacy');
         if ($empresa !== null && ! DB::table('erp_empresas')->where('id', $empresa)->whereNull('deleted_at')->exists()) {
             throw new RuntimeException('AITROL_EMPRESA_INICIAL debe identificar una empresa activa.');
@@ -23,40 +29,55 @@ return new class extends Migration
         }
 
         foreach ($this->tablas as $tabla) {
-            Schema::table($tabla, function (Blueprint $table): void {
-                $table->foreignId('id_empresa')->nullable()->index()->constrained('erp_empresas')->restrictOnDelete();
-            });
-            if ($empresa !== null) DB::table($tabla)->update(['id_empresa' => $empresa]);
+            $this->prepararEmpresa($tabla);
+            if ($empresa !== null) {
+                DB::table($tabla)->whereNull('id_empresa')->update(['id_empresa' => $empresa]);
+            }
         }
         foreach (['users', 'erp_clientes'] as $tabla) {
-            Schema::table($tabla, fn (Blueprint $table) => $table->index('id_persona'));
+            if (! Schema::hasIndex($tabla, $tabla.'_id_persona_index')) {
+                Schema::table($tabla, fn (Blueprint $table) => $table->index('id_persona'));
+            }
         }
-        Schema::table('users', function (Blueprint $table): void {
-            $table->string('foto')->nullable();
-            $table->dropUnique(['id_persona']);
-            $table->unique(['id_empresa', 'id_persona']);
-        });
-        Schema::table('erp_clientes', function (Blueprint $table): void {
-            $table->dropUnique('erp_clientes_identificacion_unique');
-            $table->dropUnique(['id_persona']);
-            $table->unique(['id_empresa', 'tipo_identificacion', 'identificacion'], 'erp_clientes_identificacion_empresa');
-            $table->unique(['id_empresa', 'id_persona']);
-        });
-        Schema::table('erp_proveedores', function (Blueprint $table): void {
-            $table->dropUnique('erp_proveedores_identificacion_unique');
-            $table->unique(['id_empresa', 'tipo_identificacion', 'identificacion'], 'erp_proveedores_identificacion_empresa');
-        });
-        Schema::table('roles', function (Blueprint $table): void {
-            $table->dropUnique(['nombre']);
-            $table->unique(['id_empresa', 'nombre']);
-        });
-        Schema::table('permisos', function (Blueprint $table): void {
-            $table->dropUnique(['opcion', 'accion']);
-            $table->unique(['id_empresa', 'opcion', 'accion']);
-        });
+        if (! Schema::hasColumn('users', 'foto')) {
+            Schema::table('users', fn (Blueprint $table) => $table->string('foto')->nullable());
+        }
+        $this->reemplazarUnico('users', 'users_id_persona_unique', ['id_empresa', 'id_persona']);
+        $this->reemplazarUnico('erp_clientes', 'erp_clientes_identificacion_unique', ['id_empresa', 'tipo_identificacion', 'identificacion'], 'erp_clientes_identificacion_empresa');
+        $this->reemplazarUnico('erp_clientes', 'erp_clientes_id_persona_unique', ['id_empresa', 'id_persona']);
+        $this->reemplazarUnico('erp_proveedores', 'erp_proveedores_identificacion_unique', ['id_empresa', 'tipo_identificacion', 'identificacion'], 'erp_proveedores_identificacion_empresa');
+        $this->reemplazarUnico('roles', 'roles_nombre_unique', ['id_empresa', 'nombre']);
+        $this->reemplazarUnico('permisos', 'permisos_opcion_accion_unique', ['id_empresa', 'opcion', 'accion']);
 
         // Sin asignaciones previas, estos registros solo eran el catálogo inicial.
         DB::table('permisos')->whereNull('id_empresa')->delete();
+    }
+
+    private function prepararEmpresa(string $tabla): void
+    {
+        if (! Schema::hasColumn($tabla, 'id_empresa')) {
+            Schema::table($tabla, fn (Blueprint $table) => $table->foreignId('id_empresa')->nullable());
+        }
+        if (! Schema::hasIndex($tabla, $tabla.'_id_empresa_index')) {
+            Schema::table($tabla, fn (Blueprint $table) => $table->index('id_empresa'));
+        }
+        $tieneForanea = collect(Schema::getForeignKeys($tabla))->contains(
+            fn (array $foranea): bool => $foranea['columns'] === ['id_empresa']
+                && $foranea['foreign_table'] === 'erp_empresas' && $foranea['foreign_columns'] === ['id'],
+        );
+        if (! $tieneForanea) {
+            Schema::table($tabla, fn (Blueprint $table) => $table->foreign('id_empresa')->references('id')->on('erp_empresas')->restrictOnDelete());
+        }
+    }
+
+    private function reemplazarUnico(string $tabla, string $anterior, array $columnas, ?string $nombre = null): void
+    {
+        if (! Schema::hasIndex($tabla, $columnas, 'unique')) {
+            Schema::table($tabla, fn (Blueprint $table) => $table->unique($columnas, $nombre));
+        }
+        if (Schema::hasIndex($tabla, $anterior, 'unique')) {
+            Schema::table($tabla, fn (Blueprint $table) => $table->dropUnique($anterior));
+        }
     }
 
     public function down(): void

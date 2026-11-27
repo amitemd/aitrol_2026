@@ -26,6 +26,7 @@
 !/tests/Feature/IdentidadEmpresaTest.php
 !/tests/Feature/MantenimientoServidorTest.php
 !/tests/Feature/RecursosHumanosTest.php
+!/tests/Feature/TenenciaMigracionTest.php
 /vendor/
 _ide_helper.php
 Homestead.json
