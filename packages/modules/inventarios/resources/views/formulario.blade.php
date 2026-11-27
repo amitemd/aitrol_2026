@@ -18,7 +18,7 @@
     <div class="app-content py-3">
         <div class="container-fluid">
             <form @class(['card', 'inventario-operacion' => !$catalogo]) method="POST" data-ajax-form
-                @if ($seccion === 'productos') data-usuario-form data-ficha-producto @endif
+                @if ($seccion === 'productos') data-usuario-form data-ficha-producto enctype="multipart/form-data" @endif
                 action="{{ $registro ? route($ruta.'.update', $registro['id']) : route($ruta.'.store') }}">
                 @csrf
                 @if ($registro)

@@ -26,16 +26,11 @@
                                     </ul>
                                 </div>
                             @endif
-                            <div class="usuario-tabs nav nav-pills ficha-tabs" role="tablist" aria-label="Ficha del usuario" hidden>
-                                <button type="button" class="nav-link active" id="usuario-tab-generales" role="tab"
-                                    aria-controls="usuario-generales" aria-selected="true" data-usuario-tab="generales">
-                                    <i class="bi bi-person-vcard me-1" aria-hidden="true"></i> Datos generales
-                                </button>
-                                <button type="button" class="nav-link" id="usuario-tab-ubicacion" role="tab"
-                                    aria-controls="usuario-ubicacion" aria-selected="false" tabindex="-1" data-usuario-tab="ubicacion">
-                                    <i class="bi bi-geo-alt me-1" aria-hidden="true"></i> Ubicación
-                                </button>
-                            </div>
+                            @include('partials.pestanas-ficha', [
+                                'pestanas' => ['generales' => ['Datos generales', 'bi-person-vcard'], 'ubicacion' => ['Ubicación', 'bi-geo-alt']],
+                                'contexto' => 'usuario',
+                                'etiquetaPestanas' => 'Ficha del usuario',
+                            ])
                             <section id="usuario-generales" role="tabpanel" aria-labelledby="usuario-tab-generales"
                                 class="ficha-perfil" data-usuario-panel="generales">
                                 <div class="row g-3">

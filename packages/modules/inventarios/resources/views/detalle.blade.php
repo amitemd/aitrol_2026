@@ -33,6 +33,14 @@
                 @if (!empty($fila['ficha_tecnica_url']))
                     <a href="{{ $fila['ficha_tecnica_url'] }}" target="_blank" rel="noopener noreferrer">Abrir ficha técnica</a>
                 @endif
+                @if ($galeria && $galeria['imagenes']->isNotEmpty())
+                    <h2 class="h6 mt-3">Imágenes</h2>
+                    <div class="producto-galeria">
+                        @foreach ($galeria['imagenes'] as $imagen)
+                            <img class="producto-galeria-foto" src="{{ $imagen['url'] }}" alt="Imagen {{ $loop->iteration }} del producto" loading="lazy">
+                        @endforeach
+                    </div>
+                @endif
                 @isset($fila['lineas'])
                     <div class="table-responsive"><table class="table table-sm">
                         <caption class="visually-hidden">Movimientos de existencias</caption>

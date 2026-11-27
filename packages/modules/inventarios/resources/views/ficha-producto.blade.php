@@ -3,6 +3,7 @@
         'generales' => ['General', 'bi-box-seam'],
         'contabilidad' => ['Cuentas contables', 'bi-journal-bookmark'],
         'precios' => ['Precios y costos', 'bi-tags'],
+        'imagenes' => ['Imágenes', 'bi-images'],
         'documentos' => ['Documentación', 'bi-folder2-open'],
     ];
     $cuentasPorId = $ficha['cuentas']->keyBy('id');
@@ -100,6 +101,10 @@
                 @endforeach
             </div>
         </div>
+    </section>
+
+    <section id="producto-imagenes" role="tabpanel" aria-labelledby="producto-tab-imagenes" data-usuario-panel="imagenes" class="ficha-producto-panel">
+        @include('inventarios::galeria-producto')
     </section>
 
     <section id="producto-documentos" role="tabpanel" aria-labelledby="producto-tab-documentos" data-usuario-panel="documentos" class="ficha-producto-panel">

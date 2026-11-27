@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('inventarios')->name('inventarios.')
     ->middleware(['web', 'auth', 'auth.session', 'empresa'])
     ->group(function (): void {
+        Route::get('productos/{producto}/imagenes/{imagen}', [InventarioController::class, 'imagen'])
+            ->whereNumber(['producto', 'imagen'])->middleware('permiso:inventarios.productos.index,leer')->name('productos.imagen');
+
         foreach (array_keys(config('inventarios.secciones')) as $seccion) {
             $permiso = 'permiso:inventarios.'.$seccion.'.index,';
             Route::get($seccion, [InventarioController::class, 'index'])->defaults('seccion', $seccion)

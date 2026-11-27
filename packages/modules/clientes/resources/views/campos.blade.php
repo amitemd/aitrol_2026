@@ -15,8 +15,10 @@
 <nav class="nav nav-pills ficha-tabs gap-1 mb-3" aria-label="Secciones de la ficha">
     @foreach ($pestanas as $panel => [$etiqueta, $icono])
         <button type="button" class="nav-link @if($loop->first) active @endif" data-ficha-tab="{{ $panel }}"
-            aria-controls="ficha-{{ $panel }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">
-            <i class="bi {{ $icono }}" aria-hidden="true"></i>{{ $etiqueta }}
+            aria-controls="ficha-{{ $panel }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}"
+            aria-label="{{ $etiqueta }}" title="{{ $etiqueta }}">
+            <i class="bi {{ $icono }}" aria-hidden="true"></i>
+            <span class="ficha-tab-etiqueta">{{ $etiqueta }}</span>
         </button>
     @endforeach
 </nav>

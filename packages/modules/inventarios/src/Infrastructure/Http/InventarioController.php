@@ -5,6 +5,7 @@ namespace Aitrol\Inventarios\Infrastructure\Http;
 use Aitrol\Inventarios\Application\Inventario;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
+use Aitrol\Inventarios\Infrastructure\Persistence\GaleriaProducto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -13,7 +14,11 @@ use stdClass;
 
 final readonly class InventarioController
 {
-    public function __construct(private RepositorioInventario $repositorio, private Inventario $inventario) {}
+    public function __construct(
+        private RepositorioInventario $repositorio,
+        private Inventario $inventario,
+        private GaleriaProducto $galeria,
+    ) {}
 
     public function index(Request $request)
     {
@@ -56,7 +61,9 @@ final readonly class InventarioController
         $cuentas = in_array($seccion, ['productos', 'plantillas-contables'], true)
             ? $this->repositorio->opcionesFicha()['cuentas']->keyBy('id') : collect();
 
-        return view('inventarios::detalle', compact('seccion', 'fila', 'cuentas'));
+        $galeria = $seccion === 'productos' ? $this->galeria->ficha($id) : null;
+
+        return view('inventarios::detalle', compact('seccion', 'fila', 'cuentas', 'galeria'));
     }
 
     public function formulario(Request $request)
@@ -81,8 +88,14 @@ final readonly class InventarioController
 
         $ficha = in_array($seccion, ['productos', 'categorias', 'plantillas-contables'], true)
             ? $this->repositorio->opcionesFicha() : [];
+        $galeria = $seccion === 'productos' ? $this->galeria->ficha($id ? (int) $id : null) : null;
 
-        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones', 'ficha'));
+        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones', 'ficha', 'galeria'));
+    }
+
+    public function imagen(int $producto, int $imagen)
+    {
+        return $this->galeria->imagen($producto, $imagen);
     }
 
     public function store(Request $request)
@@ -170,6 +183,10 @@ final readonly class InventarioController
                 'marca' => ['nullable', 'string', 'max:100'],
                 'modelo' => ['nullable', 'string', 'max:100'],
                 'ficha_tecnica_url' => ['nullable', 'url:https', 'max:500'],
+                'version_fotos' => ['required_with:orden_fotos,fotos_nuevas', 'string', 'size:64'],
+                'orden_fotos' => ['required_with:version_fotos,fotos_nuevas', 'string', 'json', 'max:300'],
+                'fotos_nuevas' => ['sometimes', 'array', 'max:'.GaleriaProducto::MAXIMO],
+                'fotos_nuevas.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             ];
             foreach (config('inventarios.valores_producto') as $campo => [, $maximo, $decimales]) {
                 $reglas[$campo] = ['nullable', 'numeric', 'decimal:0,'.$decimales, 'min:0', 'max:'.$maximo];
@@ -192,7 +209,19 @@ final readonly class InventarioController
         if ($seccion === 'productos' && ($id === null || array_key_exists('stock_minimo', $datos))) {
             $datos['stock_minimo'] = Cantidad::unidades($datos['stock_minimo'] ?? 0, 3);
         }
-        $registro = $this->repositorio->guardarCatalogo($seccion, $id, $datos);
+        $galeria = array_intersect_key($datos, array_flip(['version_fotos', 'orden_fotos', 'fotos_nuevas']));
+        $campos = array_diff_key($datos, $galeria);
+        $guardar = fn () => $this->repositorio->guardarCatalogo($seccion, $id, $campos);
+        if (isset($galeria['orden_fotos'])) {
+            $orden = json_decode($galeria['orden_fotos'], true);
+            if (! is_array($orden) || ! array_is_list($orden)
+                || array_filter($orden, fn ($clave) => ! is_string($clave) || ! preg_match('/^[en]:[0-9]{1,19}$/D', $clave))) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['orden_fotos' => 'El orden de las imágenes no es válido.']);
+            }
+            $registro = $this->galeria->guardar($guardar, $id, $galeria['version_fotos'], $orden, $galeria['fotos_nuevas'] ?? []);
+        } else {
+            $registro = $guardar();
+        }
 
         return $this->respuesta($request, $seccion, $registro, $id ? 200 : 201, 'Registro guardado.');
     }

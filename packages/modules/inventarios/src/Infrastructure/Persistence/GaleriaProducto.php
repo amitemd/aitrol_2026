@@ -27,7 +27,7 @@ final readonly class GaleriaProducto
         return [
             'version' => $this->version($fotos),
             'imagenes' => $fotos->values()->map(fn (stdClass $foto) => [
-                'id' => $foto->id,
+                'id' => (string) $foto->id,
                 'url' => route('inventarios.productos.imagen', [$foto->id_producto, $foto->id], absolute: false),
             ]),
         ];

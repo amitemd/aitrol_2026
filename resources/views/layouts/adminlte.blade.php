@@ -191,6 +191,7 @@
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('red-fondo.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('clientes-ficha.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('usuarios-form.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('producto-galeria.js') }}" defer></script>
   @stack('scripts')
 </body>
 
