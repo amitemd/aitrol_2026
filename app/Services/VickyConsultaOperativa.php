@@ -15,7 +15,10 @@ final readonly class VickyConsultaOperativa
 
     public const COMPARACIONES = ['igual', 'contiene', 'mayor', 'menor'];
 
-    private const NO_DISPONIBLE = ['respuesta' => 'No puedo formar ese informe con las fuentes y campos disponibles. Indica qué dato quieres consultar y cómo quieres agruparlo.'];
+    private const NO_DISPONIBLE = [
+        'respuesta' => 'No puedo formar ese informe con las fuentes y campos disponibles. Indica qué dato quieres consultar y cómo quieres agruparlo.',
+        'estado_informe' => 'rejected',
+    ];
 
     public function __construct(private VickyReportes $reportes) {}
 
@@ -110,7 +113,10 @@ final readonly class VickyConsultaOperativa
         $fuente = $catalogo[$clave];
         Gate::authorize('permiso', [$fuente['permiso'], 'leer']);
         if (! $this->disponible($clave)) {
-            return ['respuesta' => 'El registro de pacientes aún no tiene una fuente habilitada para consultas por empresa en Aitrol.'];
+            return [
+                'respuesta' => 'El registro de pacientes aún no tiene una fuente habilitada para consultas por empresa en Aitrol.',
+                'estado_informe' => 'failed',
+            ];
         }
 
         $datos = $this->validar($plan, $fuente);

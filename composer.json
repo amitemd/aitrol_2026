@@ -31,6 +31,7 @@
             "Aitrol\\Contabilidad\\": "packages/modules/contabilidad/src/",
             "Aitrol\\Inventarios\\": "packages/modules/inventarios/src/",
             "Aitrol\\Proveedores\\": "packages/modules/proveedores/src/",
+            "Aitrol\\Rrhh\\": "packages/modules/rrhh/src/",
             "Aitrol\\Tributario\\": "packages/modules/tributario/src/",
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",

@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'secciones' => [
+        'panel' => ['Panel de RR. HH.', 'bi-grid'],
+        'empleados' => ['Empleados', 'bi-people'],
+        'contratos' => ['Contratos', 'bi-file-earmark-text'],
+        'organizacion' => ['Organización y configuración', 'bi-diagram-3'],
+        'asistencia' => ['Asistencia y horas extra', 'bi-clock'],
+        'permisos' => ['Vacaciones y permisos', 'bi-calendar-check'],
+        'saldos-vacaciones' => ['Saldos de vacaciones', 'bi-calendar-plus'],
+        'conceptos' => ['Conceptos recurrentes de nómina', 'bi-sliders'],
+        'novedades' => ['Novedades de nómina', 'bi-list-check'],
+        'prestamos' => ['Préstamos y anticipos', 'bi-wallet2'],
+        'decimos' => ['Décimos y beneficios', 'bi-gift'],
+        'nomina' => ['Nómina', 'bi-calculator'],
+        'roles' => ['Roles de pago', 'bi-receipt'],
+        'reclutamiento' => ['Reclutamiento', 'bi-person-plus'],
+        'incorporacion' => ['Incorporación y salida', 'bi-person-badge'],
+        'desempeno' => ['Desempeño', 'bi-bullseye'],
+        'capacitacion' => ['Capacitación', 'bi-mortarboard'],
+        'reportes' => ['Reportes', 'bi-bar-chart'],
+    ],
+
+    'procesos' => [
+        'organizacion' => ['tipos' => ['departamento' => 'Departamento', 'cargo' => 'Cargo', 'turno' => 'Turno', 'centro-costo' => 'Centro de costo']],
+        'asistencia' => ['empleado' => true, 'tipos' => ['jornada' => 'Jornada', 'extra' => 'Horas extra', 'atraso' => 'Atraso', 'ausencia' => 'Ausencia'], 'cantidad' => 'Horas', 'fecha' => 'Fecha de asistencia'],
+        'permisos' => ['empleado' => true, 'tipos' => ['vacaciones' => 'Vacaciones', 'licencia' => 'Licencia', 'permiso' => 'Permiso'], 'fecha' => 'Desde', 'fin' => 'Hasta'],
+        'saldos-vacaciones' => ['empleado' => true, 'tipos' => ['credito' => 'Abono de días'], 'fecha' => 'Fecha de disponibilidad', 'cantidad' => 'Días calendario'],
+        'conceptos' => ['empleado' => true, 'tipos' => ['ingreso-fijo' => 'Ingreso fijo', 'descuento-fijo' => 'Descuento fijo', 'ingreso-porcentual' => 'Ingreso porcentual', 'descuento-porcentual' => 'Descuento porcentual'],
+            'fecha' => 'Vigente desde', 'fin' => 'Vigente hasta', 'importe' => true, 'cantidad' => 'Porcentaje sobre el sueldo base'],
+        'novedades' => ['empleado' => true, 'tipos' => ['ingreso' => 'Ingreso', 'descuento' => 'Descuento', 'cuota' => 'Cuota de préstamo o anticipo'], 'fecha' => 'Fecha de aplicación', 'importe' => true],
+        'prestamos' => ['empleado' => true, 'tipos' => ['prestamo' => 'Préstamo', 'anticipo' => 'Anticipo'], 'fecha' => 'Fecha de desembolso', 'importe' => true],
+        'decimos' => ['empleado' => true, 'tipos' => ['decimo-tercero' => 'Décimo tercero', 'decimo-cuarto' => 'Décimo cuarto', 'beneficio' => 'Otro beneficio'], 'fecha' => 'Fecha de pago en nómina', 'importe' => true],
+        'reclutamiento' => ['tipos' => ['vacante' => 'Vacante', 'candidatura' => 'Candidatura'], 'fecha' => 'Fecha de registro', 'fin' => 'Fecha límite', 'estados' => ['pendiente' => 'En revisión', 'aprobado' => 'Seleccionado o cubierto', 'rechazado' => 'Descartado']],
+        'incorporacion' => ['empleado' => true, 'tipos' => ['ingreso' => 'Tarea de incorporación', 'salida' => 'Tarea de desvinculación'], 'fecha' => 'Fecha programada', 'estados' => ['pendiente' => 'Por completar', 'aprobado' => 'Completado', 'rechazado' => 'Cancelado']],
+        'desempeno' => ['empleado' => true, 'tipos' => ['objetivo' => 'Objetivo', 'evaluacion' => 'Evaluación'], 'fecha' => 'Fecha de evaluación', 'cantidad' => 'Puntuación sobre 100'],
+        'capacitacion' => ['empleado' => true, 'tipos' => ['curso' => 'Curso', 'certificacion' => 'Certificación'], 'fecha' => 'Fecha de capacitación', 'fin' => 'Fecha de vencimiento', 'cantidad' => 'Horas'],
+    ],
+];

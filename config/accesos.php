@@ -13,6 +13,11 @@ foreach ((require __DIR__.'/activos-fijos.php')['secciones'] as $seccion => [$ti
 }
 
 return [
+    'rrhh' => 'Recursos humanos · todo el módulo',
+    ...array_combine(
+        array_map(fn (string $seccion): string => 'rrhh.'.$seccion.'.index', array_keys((require __DIR__.'/rrhh.php')['secciones'])),
+        array_map(fn (array $opcion): string => 'Recursos humanos · '.$opcion[0], (require __DIR__.'/rrhh.php')['secciones']),
+    ),
     'auditoria.logs.index' => 'Auditoría · Bitácora',
     'tributario' => 'Tributario · todo el módulo',
     ...array_combine(

@@ -38,6 +38,9 @@ return [
     'vicky' => [
         'url' => env('VICKY_OLLAMA_URL', 'http://100.106.113.53:11434'),
         'model' => env('VICKY_OLLAMA_MODEL', 'qwen3.8:27b-q4_K_M'),
+        'core_url' => env('VICKY_CORE_URL'),
+        'core_erp_token' => env('VICKY_CORE_ERP_TOKEN'),
+        'core_connection_file' => env('VICKY_CORE_CONNECTION_FILE'),
         'cartera_cobrar' => env('VICKY_CARTERA_COBRAR', false),
         'cartera_pagar' => env('VICKY_CARTERA_PAGAR', false),
         'pacientes' => env('VICKY_PACIENTES', false),

@@ -2,6 +2,7 @@
 
 use Aitrol\Configuracion\Infrastructure\Http\EmpresaController;
 use Aitrol\Configuracion\Infrastructure\Http\MenuController;
+use Aitrol\Configuracion\Infrastructure\Http\ParametrosEmpresaController;
 use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
 use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
@@ -22,6 +23,9 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-co
     ->group(function (): void {
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
         Route::get('/sucursales', [ContextoOperativoController::class, 'index'])->name('sucursales.index');
+        Route::get('/sucursales/crear', [ContextoOperativoController::class, 'formulario'])->name('sucursales.create');
+        Route::get('/sucursales/{sucursal}', [ContextoOperativoController::class, 'detalle'])->whereNumber('sucursal')->name('sucursales.show');
+        Route::get('/sucursales/{sucursal}/editar', [ContextoOperativoController::class, 'formulario'])->whereNumber('sucursal')->name('sucursales.edit');
         Route::post('/sucursales', [ContextoOperativoController::class, 'guardar'])->name('sucursales.store');
         Route::put('/sucursales/{sucursal}', [ContextoOperativoController::class, 'guardar'])->whereNumber('sucursal')->name('sucursales.update');
         Route::get('/usuarios/crear', [UsuarioController::class, 'create'])->name('usuarios.create');
@@ -45,6 +49,10 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configura
     Route::get('/usuarios/{usuario}/foto', [UsuarioController::class, 'foto'])->whereNumber('usuario')->name('usuarios.foto');
     Route::get('/ubicaciones/opciones', [UbicacionController::class, 'opciones'])->name('ubicaciones.opciones');
     Route::get('/empresas', [EmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.index');
+    Route::get('/empresas/parametros', [ParametrosEmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.parametros');
+    Route::get('/empresas/parametros/crear', [ParametrosEmpresaController::class, 'create'])->middleware('permiso:empresas,actualizar')->name('empresas.parametros.create');
+    Route::post('/empresas/parametros', [ParametrosEmpresaController::class, 'guardar'])->middleware('permiso:empresas,actualizar')->name('empresas.parametros.store');
+    Route::get('/empresas/{empresa}/logo', [EmpresaController::class, 'logo'])->whereNumber('empresa')->middleware('permiso:empresas,leer')->name('empresas.logo');
     Route::get('/empresas/{empresa}', [EmpresaController::class, 'detalle'])->whereNumber('empresa')->middleware('permiso:empresas,leer')->name('empresas.show');
     Route::get('/empresas/{empresa}/editar', [EmpresaController::class, 'edit'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.edit');
     Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.update');

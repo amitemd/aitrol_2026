@@ -38,6 +38,13 @@
     const tabs = new Map();
     let active;
     let panelNumber = 0;
+    const menuTabs = document.createElement('div');
+    menuTabs.className = 'workspace-context-menu';
+    menuTabs.setAttribute('role', 'menu');
+    menuTabs.setAttribute('aria-label', 'Opciones de pestañas');
+    menuTabs.hidden = true;
+    document.body.append(menuTabs);
+    let origenMenu;
 
     function savedWorkspace() {
         if (!session) return null;
@@ -123,15 +130,112 @@
     }
 
     function close(key) {
-        const tab = tabs.get(key);
-        const keys = [...tabs.keys()];
-        const next = keys[keys.indexOf(key) - 1] || 'dashboard';
-        tab.item.remove();
-        tab.panel.remove();
-        tabs.delete(key);
-        if (tab.panel === initial) history.replaceState(history.state, '', dashboard);
-        activate(active === key ? next : active, true, true);
+        cerrarPestanas([key]);
     }
+
+    function colapsarMenuLateral() {
+        const buscador = navigation.closest('.app-sidebar')?.querySelector('[data-lte-toggle="sidebar-search"]');
+        if (buscador?.value) {
+            buscador.value = '';
+            buscador.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        const grupos = [...navigation.querySelectorAll('.nav-item.menu-open')].reverse();
+        for (const grupo of grupos) {
+            globalThis.adminlte.Treeview.getOrCreateInstance(grupo).close();
+            grupo.querySelector(':scope > .nav-link')?.classList.remove('active');
+        }
+    }
+
+    function cerrarPestanas(seleccionadas) {
+        const cerrar = new Set(seleccionadas.filter((key) => key !== 'dashboard' && tabs.has(key)));
+        if (cerrar.size === 0) return;
+
+        const keys = [...tabs.keys()];
+        const next = cerrar.has(active)
+            ? keys.slice(0, keys.indexOf(active)).reverse().find((key) => !cerrar.has(key)) ?? 'dashboard'
+            : active;
+        for (const key of cerrar) {
+            const tab = tabs.get(key);
+            tab.item.remove();
+            tab.panel.remove();
+            tabs.delete(key);
+            if (tab.panel === initial) history.replaceState(history.state, '', dashboard);
+        }
+        activate(next, true, true);
+        if (tabs.size === 1) colapsarMenuLateral();
+    }
+
+    function ocultarMenuTabs(devolverFoco = false) {
+        if (menuTabs.hidden) return;
+        menuTabs.hidden = true;
+        if (devolverFoco && origenMenu?.isConnected) origenMenu.focus({ preventScroll: true });
+    }
+
+    function abrirMenuTabs(key, x, y) {
+        const keys = [...tabs.keys()];
+        const posicion = keys.indexOf(key);
+        const opciones = [
+            ['Cerrar esta pestaña', 'bi-x-lg', [key]],
+            ['Cerrar otras pestañas', 'bi-window-stack', keys.filter((id) => id !== key)],
+            ['Cerrar pestañas a la derecha', 'bi-arrow-right', keys.slice(posicion + 1)],
+            ['Cerrar pestañas a la izquierda', 'bi-arrow-left', keys.slice(0, posicion)],
+            ['Cerrar todas las pestañas', 'bi-x-square', keys],
+        ];
+
+        origenMenu = tabs.get(key).button;
+        menuTabs.replaceChildren();
+        const titulo = document.createElement('div');
+        titulo.className = 'workspace-context-title';
+        titulo.textContent = origenMenu.textContent;
+        menuTabs.append(titulo);
+        for (const [etiqueta, icono, ids] of opciones) {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.tabIndex = -1;
+            boton.setAttribute('role', 'menuitem');
+            boton.disabled = !ids.some((id) => id !== 'dashboard');
+            const simbolo = document.createElement('i');
+            simbolo.className = 'bi ' + icono;
+            simbolo.setAttribute('aria-hidden', 'true');
+            boton.append(simbolo, etiqueta);
+            boton.addEventListener('click', () => {
+                ocultarMenuTabs();
+                cerrarPestanas(ids);
+            });
+            menuTabs.append(boton);
+        }
+        menuTabs.hidden = false;
+        menuTabs.style.left = Math.max(8, Math.min(x, document.documentElement.clientWidth - menuTabs.offsetWidth - 8)) + 'px';
+        menuTabs.style.top = Math.max(8, Math.min(y, window.innerHeight - menuTabs.offsetHeight - 8)) + 'px';
+        menuTabs.querySelector('button:enabled')?.focus({ preventScroll: true });
+    }
+
+    menuTabs.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            ocultarMenuTabs(true);
+            return;
+        }
+        if (event.key === 'Tab') {
+            ocultarMenuTabs(true);
+            return;
+        }
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+        const botones = [...menuTabs.querySelectorAll('button:enabled')];
+        const actual = botones.indexOf(document.activeElement);
+        const paso = event.key === 'ArrowUp' ? -1 : 1;
+        const siguiente = event.key === 'Home' ? 0 : event.key === 'End' ? botones.length - 1
+            : (actual + paso + botones.length) % botones.length;
+        event.preventDefault();
+        botones[siguiente]?.focus();
+    });
+    document.addEventListener('pointerdown', (event) => {
+        if (!menuTabs.contains(event.target)) ocultarMenuTabs();
+    });
+    bar.addEventListener('scroll', () => ocultarMenuTabs());
+    window.addEventListener('resize', () => ocultarMenuTabs());
+    window.addEventListener('blur', () => ocultarMenuTabs());
 
     async function refreshSidebar() {
         try {
@@ -190,6 +294,17 @@
         button.setAttribute('aria-controls', panel.id);
         button.addEventListener('click', () => activate(key, false, true));
         item.append(button);
+        item.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            const posicion = button.getBoundingClientRect();
+            abrirMenuTabs(key, event.clientX || posicion.left, event.clientY || posicion.bottom);
+        });
+        item.addEventListener('keydown', (event) => {
+            if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+            event.preventDefault();
+            const posicion = button.getBoundingClientRect();
+            abrirMenuTabs(key, posicion.left, posicion.bottom + 4);
+        });
 
         if (key !== 'dashboard') {
             const remove = document.createElement('button');

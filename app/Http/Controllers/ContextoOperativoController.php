@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ContextoOperativo;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -42,7 +43,24 @@ final readonly class ContextoOperativoController
         return view('configuracion.sucursales', ['sucursales' => $this->contexto->opciones()]);
     }
 
-    public function guardar(Request $request, ?int $sucursal = null): RedirectResponse
+    public function formulario(?int $sucursal = null): View
+    {
+        $registro = $sucursal === null ? null : ($this->contexto->opciones()->get($sucursal) ?? abort(404));
+
+        return view('configuracion.sucursal-formulario', ['sucursal' => $registro]);
+    }
+
+    public function detalle(int $sucursal): View
+    {
+        $registro = $this->contexto->opciones()->get($sucursal) ?? abort(404);
+
+        return view('partials.detalle-ficha-simple', [
+            'titulo' => 'Detalle de sucursal', 'volver' => route('configuracion.sucursales.index'),
+            'campos' => ['Código' => $registro->codigo, 'Nombre' => $registro->nombre, 'Dirección' => $registro->direccion],
+        ]);
+    }
+
+    public function guardar(Request $request, ?int $sucursal = null): RedirectResponse|JsonResponse
     {
         $datos = $request->validate([
             'codigo' => ['required', 'string', 'max:30', 'regex:/^[a-zA-Z0-9_-]+$/'],
@@ -51,6 +69,10 @@ final readonly class ContextoOperativoController
         ]);
         $primeraSucursal = $this->contexto->opciones()->isEmpty();
         $this->contexto->guardarSucursal($sucursal, $datos);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Sucursal guardada.']);
+        }
 
         if ($primeraSucursal) {
             return to_route('dashboard')->with('estado', 'Sucursal creada.');

@@ -95,16 +95,20 @@
         }
     }
 
-    async function openForm(link) {
+    async function openForm(link, continuar = false) {
         formRequest?.abort();
         const controller = new AbortController();
         formRequest = controller;
-        opener = link;
-        title.textContent = link.dataset.ajaxOpen;
+        if (!continuar) {
+            opener = link;
+            title.textContent = link.dataset.ajaxOpen;
+        }
         clearErrors();
         body.textContent = 'Cargando formulario…';
-        host?.prepend(dialog);
-        dialog.showModal();
+        if (!dialog.open) {
+            host?.prepend(dialog);
+            dialog.showModal();
+        }
 
         try {
             const page = await loadHtml(link.href, controller.signal);
@@ -168,6 +172,17 @@
     }
 
     dialog.addEventListener('click', (event) => {
+        const pagina = event.target.closest('[data-ajax-modal-page] a[href]');
+        if (pagina && pagina.origin === location.origin && !saving) {
+            event.preventDefault();
+            openForm(pagina, true);
+            return;
+        }
+        if (event.target.closest('a[data-workspace-link]') && event.button === 0
+            && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && !saving) {
+            dialog.close();
+            return;
+        }
         const close = event.target.closest('[data-ajax-close]');
         if (close && dialog.contains(close)) {
             event.preventDefault();

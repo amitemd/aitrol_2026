@@ -20,7 +20,11 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/tests/
+/tests/*
+!/tests/Feature/
+/tests/Feature/*
+!/tests/Feature/IdentidadEmpresaTest.php
+!/tests/Feature/RecursosHumanosTest.php
 /vendor/
 _ide_helper.php
 Homestead.json

@@ -11,5 +11,10 @@ final class EmpresaModel extends Model
 
     protected $table = 'erp_empresas';
 
-    protected $fillable = ['ruc', 'razon_social', 'nombre_comercial', 'email', 'telefono', 'direccion'];
+    protected $fillable = ['ruc', 'razon_social', 'nombre_comercial', 'email', 'telefono', 'direccion', 'activo'];
+
+    protected function casts(): array
+    {
+        return ['activo' => 'boolean'];
+    }
 }

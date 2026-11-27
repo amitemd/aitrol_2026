@@ -86,7 +86,10 @@ final readonly class VickyReportes
     {
         $titulo = $tipo === 'cobrar' ? 'Cuentas por cobrar' : 'Cuentas por pagar';
         if (! config('services.vicky.cartera_'.$tipo)) {
-            return ['respuesta' => "{$titulo} aún no tiene una fuente de saldos y vencimientos conectada en Aitrol. El importe pendiente queda sin determinar."];
+            return [
+                'respuesta' => "{$titulo} aún no tiene una fuente de saldos y vencimientos conectada en Aitrol. El importe pendiente queda sin determinar.",
+                'estado_informe' => 'failed',
+            ];
         }
 
         $consulta = $this->tabla('vicky_cartera_'.$tipo)->where('saldo_centavos', '>', 0);
@@ -97,7 +100,10 @@ final readonly class VickyReportes
             $consulta->whereRaw("tercero LIKE ? ESCAPE '!'", [$this->patron($tercero)]);
             $coincidencias = (clone $consulta)->select('tercero')->distinct()->orderBy('tercero')->limit(2)->pluck('tercero');
             if ($coincidencias->count() > 1) {
-                return ['respuesta' => 'Hay más de un tercero con ese nombre. Escribe la razón social completa para precisar la consulta.'];
+                return [
+                    'respuesta' => 'Hay más de un tercero con ese nombre. Escribe la razón social completa para precisar la consulta.',
+                    'estado_informe' => 'rejected',
+                ];
             }
         }
         $totales = (clone $consulta)->select('moneda')->selectRaw('SUM(saldo_centavos) AS saldo')

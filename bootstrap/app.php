@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend([RegistrarAuditoria::class, ProtegerRespuesta::class]);
         $middleware->append(ExigirHttps::class);
+        $middleware->trimStrings(except: ['clave_firma']);
         $middleware->trustHosts(fn (): array => array_map(
             fn (string $host): string => '^'.preg_quote($host, '/').'$',
             config('seguridad.hosts') ?: array_filter([parse_url(config('app.url'), PHP_URL_HOST)]),
@@ -36,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn (): string => route('dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash(['clave_firma']);
         $exceptions->map(ClienteNoEncontrado::class, fn (ClienteNoEncontrado $error): NotFoundHttpException => new NotFoundHttpException($error->getMessage(), $error));
         $exceptions->map(ProveedorNoEncontrado::class, fn (ProveedorNoEncontrado $error): NotFoundHttpException => new NotFoundHttpException($error->getMessage(), $error));
         $exceptions->dontReport([IdentificacionDuplicada::class, IdentificacionProveedorDuplicada::class]);

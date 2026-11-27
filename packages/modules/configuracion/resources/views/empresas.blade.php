@@ -19,7 +19,7 @@
                         <div class="small text-body-secondary px-3 py-2 border-bottom">{{ $empresas->total() }} empresas registradas</div>
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
-                                <thead class="clientes-tabla-cabecera"><tr><th scope="col">Razón social</th><th scope="col">RUC</th><th scope="col">Contacto</th><th scope="col" class="text-end">Acciones</th></tr></thead>
+                                <thead class="clientes-tabla-cabecera"><tr><th scope="col">Razón social</th><th scope="col">RUC</th><th scope="col">Contacto</th><th scope="col">Estado</th><th scope="col" class="text-end">Acciones</th></tr></thead>
                                 <tbody>
                                     @forelse ($empresas as $empresa)
                                         <tr>
@@ -35,7 +35,8 @@
                                                 @if ($empresa->telefono) <div>{{ $empresa->telefono }}</div> @endif
                                                 @if (!$empresa->email && !$empresa->telefono) <span class="text-body-secondary">Sin contacto</span> @endif
                                             </td>
-                                                                                    <td class="text-end">
+                                            <td><span class="badge {{ $empresa->activo ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $empresa->activo ? 'Activa' : 'Inactiva' }}</span></td>
+                                            <td class="text-end">
                                                 @component('partials.acciones-fila', ['ver' => route('configuracion.empresas.show', $empresa), 'tituloVer' => 'Detalle de empresa'])
                                                     @can('permiso', ['empresas', 'actualizar'])
                                                         @include('partials.accion-fila-enlace', ['href' => route('configuracion.empresas.edit', $empresa), 'etiqueta' => 'Editar', 'titulo' => 'Editar empresa'])
@@ -44,7 +45,7 @@
                                             </td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="4" class="p-4 text-center text-body-secondary">Todavía no hay empresas registradas.</td></tr>
+                                        <tr><td colspan="5" class="p-4 text-center text-body-secondary">Todavía no hay empresas registradas.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>

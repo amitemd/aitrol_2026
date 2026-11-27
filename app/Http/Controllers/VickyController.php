@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\EmpresaActiva;
 use App\Services\VickyConsultaOperativa;
+use App\Services\VickyCore;
 use App\Services\VickyModelo;
 use App\Services\VickyReportes;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 final class VickyController extends Controller
 {
@@ -19,16 +24,65 @@ final class VickyController extends Controller
         'julio' => 7, 'agosto' => 8, 'septiembre' => 9, 'setiembre' => 9, 'octubre' => 10, 'noviembre' => 11, 'diciembre' => 12,
     ];
 
-    public function __invoke(Request $request, VickyReportes $reportes, VickyModelo $modelo, VickyConsultaOperativa $operativa): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        VickyReportes $reportes,
+        VickyModelo $modelo,
+        VickyConsultaOperativa $operativa,
+        VickyCore $core,
+        EmpresaActiva $empresaActiva,
+    ): JsonResponse {
         $datos = $request->validate([
             'pregunta' => ['required', 'string', 'max:1000'],
             'tema_anterior' => ['nullable', 'string', Rule::in(array_keys(VickyReportes::PERMISOS))],
         ]);
+        $empresa = $empresaActiva->id();
+        $inicio = hrtime(true);
+        $estado = 'rejected';
+        $ambito = null;
+
+        try {
+            return $this->responder($datos, $reportes, $modelo, $operativa, $core, $empresa, $estado, $ambito);
+        } catch (AuthorizationException $error) {
+            $estado = 'rejected';
+
+            throw $error;
+        } catch (Throwable $error) {
+            $estado = 'failed';
+
+            throw $error;
+        } finally {
+            $core->registrar($empresa, $estado, (int) ((hrtime(true) - $inicio) / 1_000_000), $ambito);
+        }
+    }
+
+    /**
+     * @param  array{pregunta: string, tema_anterior?: string|null}  $datos
+     * @param  array{workflow: string, operation: string}|null  $ambito
+     */
+    private function responder(
+        array $datos,
+        VickyReportes $reportes,
+        VickyModelo $modelo,
+        VickyConsultaOperativa $operativa,
+        VickyCore $core,
+        int $empresa,
+        string &$estado,
+        ?array &$ambito,
+    ): JsonResponse {
         $pregunta = trim($datos['pregunta']);
         $texto = Str::lower(Str::ascii($pregunta));
         if (preg_match('/\b(?:users|usuarios?|contrasenas?|passwords?|tokens? de acceso|sesiones? activas|tabla personas)\b/', $texto)) {
             return response()->json(['message' => 'La información de usuarios y acceso está fuera de los reportes de Vicky.'], 403);
+        }
+        $guia = $core->guiaSolicitada($texto);
+        if ($guia !== null && Gate::allows('permiso', [$guia['permiso'], 'leer'])) {
+            $respuesta = $core->consultarGuia($empresa, $guia['workflow']);
+            if ($respuesta !== null) {
+                $estado = 'completed';
+
+                return response()->json(['respuesta' => $respuesta]);
+            }
         }
         $hoy = CarbonImmutable::now('America/Guayaquil')->startOfDay();
         $fechas = $this->periodo($texto, $hoy);
@@ -45,6 +99,8 @@ final class VickyController extends Controller
         if ($tipo === null || $tipo === 'desglose') {
             $interpretacion = $modelo->interpretar($pregunta, $hoy->toDateString(), $operativa->catalogoVisible());
             if ($interpretacion === null) {
+                $estado = 'failed';
+
                 return response()->json(['message' => 'El modelo de Vicky no está disponible. Puedes usar los accesos rápidos o pedir directamente un listado de clientes, proveedores, productos o existencias.'], 503);
             }
             $tipo = $interpretacion['tipo'] ?? 'otro';
@@ -59,8 +115,12 @@ final class VickyController extends Controller
         if ($tipo === 'estrategia') {
             $respuesta = $modelo->estrategia($pregunta);
             if ($respuesta === null) {
+                $estado = 'failed';
+
                 return response()->json(['respuesta' => "El modelo de Vicky está temporalmente fuera de alcance. Puedes empezar con estas acciones:\n\n1. Contacta a clientes que dejaron de comprar y registra por qué se alejaron.\n2. Da seguimiento a las cotizaciones abiertas y mide cuántas terminan en venta.\n3. Prueba una oferta complementaria y mide su efecto en el importe promedio por venta."]);
             }
+
+            $estado = 'completed';
 
             return response()->json(['respuesta' => "Sugerencias comerciales\n\n".$respuesta]);
         }
@@ -81,14 +141,20 @@ final class VickyController extends Controller
             $fechas = $this->fechas($hoy->startOfMonth(), $hoy->endOfMonth());
         }
         $tercero = $this->tercero($tipo, $pregunta, $tercero);
+        $plan = is_array($plan) ? $plan : [];
+        $ambito = $core->ambito($tipo, $plan['fuente'] ?? null, $plan['operacion'] ?? null);
 
         try {
-            if ($tipo === 'operativa') {
-                return response()->json($operativa->consultar(is_array($plan) ? $plan : [], $fechas));
-            }
+            $resultado = $tipo === 'operativa'
+                ? $operativa->consultar($plan, $fechas)
+                : $reportes->consultar($tipo, $fechas, $tercero) + ['tema' => $tipo];
+            $estado = $resultado['estado_informe'] ?? 'completed';
+            unset($resultado['estado_informe']);
 
-            return response()->json($reportes->consultar($tipo, $fechas, $tercero) + ['tema' => $tipo]);
+            return response()->json($resultado);
         } catch (QueryException) {
+            $estado = 'failed';
+
             return response()->json(['message' => 'La fuente de lectura del informe no está disponible. Revisa la conexión y sus permisos.'], 503);
         }
     }

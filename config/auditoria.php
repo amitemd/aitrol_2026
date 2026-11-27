@@ -13,6 +13,7 @@ return [
         'caja-bancos' => 'Caja y bancos',
         'contabilidad' => 'Contabilidad',
         'tributario' => 'Tributario',
+        'rrhh' => 'Recursos humanos',
         'configuracion' => 'Configuración',
         'auditoria' => 'Auditoría',
         'swagger' => 'Documentación API',

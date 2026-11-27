@@ -28,7 +28,7 @@ final class VerificarEmpresa
             abort_unless((int) $token->id_empresa === (int) $usuario->id_empresa, 403, 'El token no corresponde a la empresa activa.');
         }
 
-        if ($request->routeIs('ventas.*', 'compras.*', 'inventarios.*', 'activos-fijos.*', 'caja-bancos.*', 'contabilidad.*', 'tributario.*')
+        if ($request->routeIs('ventas.*', 'compras.*', 'inventarios.*', 'activos-fijos.*', 'caja-bancos.*', 'contabilidad.*', 'tributario.*', 'rrhh.*')
             && $this->contexto->resolverSucursalWeb() === null) {
             if ($request->expectsJson()) {
                 abort(409, 'Selecciona una sucursal para continuar.');
