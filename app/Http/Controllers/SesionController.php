@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -33,14 +35,21 @@ final class SesionController extends Controller
             return to_route('configuracion.contexto.index');
         }
 
-        $productosRecientes = Gate::allows('permiso', ['inventarios.productos.index', 'leer'])
-            ? DB::table('inv_productos')->where('id_empresa', $usuario->id_empresa)
-                ->select(['id', 'codigo', 'nombre', 'descripcion', 'precio_venta'])
-                ->addSelect(['id_imagen' => DB::table('inv_producto_imagenes')
+        $productosRecientes = null;
+        if (Gate::allows('permiso', ['inventarios.productos.index', 'leer'])
+            && Route::has(['inventarios.productos.index', 'inventarios.productos.show'])
+            && Schema::hasColumn('inv_productos', 'precio_venta')) {
+            $consulta = DB::table('inv_productos')->where('id_empresa', $usuario->id_empresa)
+                ->select(['id', 'codigo', 'nombre', 'descripcion', 'precio_venta']);
+
+            if (Route::has('inventarios.productos.imagen') && Schema::hasTable('inv_producto_imagenes')) {
+                $consulta->addSelect(['id_imagen' => DB::table('inv_producto_imagenes')
                     ->whereColumn('id_empresa', 'inv_productos.id_empresa')
-                    ->whereColumn('id_producto', 'inv_productos.id')->orderBy('orden')->orderBy('id')->limit(1)->select('id')])
-                ->orderByDesc('created_at')->orderByDesc('id')->limit(4)->get()
-            : null;
+                    ->whereColumn('id_producto', 'inv_productos.id')->orderBy('orden')->orderBy('id')->limit(1)->select('id')]);
+            }
+
+            $productosRecientes = $consulta->orderByDesc('created_at')->orderByDesc('id')->limit(4)->get();
+        }
 
         return view('adminlte.dashboard-v2', compact('productosRecientes'));
     }

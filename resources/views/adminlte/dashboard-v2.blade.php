@@ -994,7 +994,7 @@
               <ul class="list-group list-group-flush">
                 @forelse ($productosRecientes as $producto)
                   <li class="list-group-item d-flex gap-3 align-items-center">
-                    @if ($producto->id_imagen)
+                    @if ($producto->id_imagen ?? null)
                       <img width="48" height="48" class="rounded object-fit-contain" loading="lazy" alt=""
                         src="{{ route('inventarios.productos.imagen', [$producto->id, $producto->id_imagen]) }}">
                     @else

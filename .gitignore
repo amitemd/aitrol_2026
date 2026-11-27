@@ -23,6 +23,7 @@
 /tests/*
 !/tests/Feature/
 /tests/Feature/*
+!/tests/Feature/DashboardInventarioTest.php
 !/tests/Feature/FichaProductosMigracionTest.php
 !/tests/Feature/IdentidadEmpresaTest.php
 !/tests/Feature/MantenimientoServidorTest.php
