@@ -1,6 +1,7 @@
 <?php
 
 use Aitrol\ActivosFijos\Infrastructure\ActivosFijosServiceProvider;
+use Aitrol\CajaBancos\Infrastructure\CajaBancosServiceProvider;
 
 use Aitrol\Clientes\Infrastructure\Providers\ClientesServiceProvider;
 use Aitrol\Comercial\Infrastructure\ComercialServiceProvider;
@@ -12,6 +13,7 @@ use App\Providers\AppServiceProvider;
 return [
     AppServiceProvider::class,
     ActivosFijosServiceProvider::class,
+    CajaBancosServiceProvider::class,
     ClientesServiceProvider::class,
     ComercialServiceProvider::class,
     ConfiguracionServiceProvider::class,

@@ -13,6 +13,11 @@ foreach ((require __DIR__.'/activos-fijos.php')['secciones'] as $seccion => [$ti
 }
 
 return [
+    'caja-bancos' => 'Caja y bancos · todo el módulo',
+    ...array_combine(
+        array_map(fn ($seccion) => 'caja-bancos.'.$seccion.'.index', array_keys((require __DIR__.'/caja-bancos.php')['secciones'])),
+        array_map(fn ($datos) => 'Caja y bancos · '.$datos[0], (require __DIR__.'/caja-bancos.php')['secciones']),
+    ),
     ...$accesosComerciales,
     ...$accesosActivos,
     'clientes' => 'Clientes · todo el módulo',

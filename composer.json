@@ -24,6 +24,7 @@
     "autoload": {
         "psr-4": {
             "Aitrol\\ActivosFijos\\": "packages/modules/activos-fijos/src/",
+            "Aitrol\\CajaBancos\\": "packages/modules/caja-bancos/src/",
             "Aitrol\\Clientes\\": "packages/modules/clientes/src/",
             "Aitrol\\Comercial\\": "packages/modules/comercial/src/",
             "Aitrol\\Configuracion\\": "packages/modules/configuracion/src/",
