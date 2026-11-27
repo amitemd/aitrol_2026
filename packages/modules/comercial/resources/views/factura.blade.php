@@ -52,15 +52,6 @@
                             <input id="factura-fecha" type="date" name="fecha" class="form-control" required
                                 min="{{ $periodo }}-01-01" max="{{ $cierre }}" value="{{ old('fecha', $fecha) }}">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="factura-bodega">Bodega</label>
-                            <select id="factura-bodega" name="id_bodega" class="form-select">
-                                <option value="">Sin movimiento de inventario</option>
-                                @foreach ($bodegas as $id => $nombre)
-                                    <option value="{{ $id }}" @selected((string) old('id_bodega', $datos['id_bodega'] ?? '') === (string) $id)>{{ $nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
                     </div>
                 </section>
                 <section class="factura-seccion factura-detalle" aria-labelledby="factura-encabezado-detalle">
@@ -68,7 +59,7 @@
                         <h2 id="factura-encabezado-detalle"><i class="bi bi-box-seam" aria-hidden="true"></i> Productos y servicios</h2>
                         <button type="button" class="btn btn-outline-primary btn-sm" data-comercial-agregar><i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Agregar línea</button>
                     </div>
-                    <p class="small text-body-secondary">Para un servicio, escribe el concepto. Para un producto de inventario, selecciona una bodega.</p>
+                    <p class="small text-body-secondary">Elige la bodega de salida de cada producto. El IVA se toma de su ficha. Si ingresas un servicio manual, indica su tratamiento de IVA.</p>
                     <div class="d-grid gap-2" data-comercial-lineas>
                         @foreach ($lineas ?: [[]] as $indice => $linea)
                             @include('comercial::factura-linea', ['indice' => $indice, 'linea' => is_array($linea) ? $linea : []])
@@ -130,6 +121,13 @@
                         <div><dt>Descuento</dt><dd data-factura-total="descuento">$0.00</dd></div>
                         <div><dt>Base sin impuestos</dt><dd data-factura-total="base">$0.00</dd></div>
                         <div><dt>IVA</dt><dd data-factura-total="iva">$0.00</dd></div>
+                        <div>
+                            <dt><label for="factura-propina" class="d-flex align-items-center gap-2">
+                                <input id="factura-propina" class="form-check-input mt-0" type="checkbox" name="aplicar_propina" value="1" @checked(old('aplicar_propina', $datos['aplicar_propina'] ?? false))>
+                                Propina (10 %)
+                            </label></dt>
+                            <dd data-factura-total="propina">$0.00</dd>
+                        </div>
                         <div class="factura-total"><dt>Total</dt><dd data-factura-total="total">$0.00</dd></div>
                     </dl>
                     <button class="btn btn-primary w-100"><i class="bi bi-check2-circle me-1" aria-hidden="true"></i> Registrar factura</button>

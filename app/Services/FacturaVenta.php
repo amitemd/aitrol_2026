@@ -15,6 +15,15 @@ final readonly class FacturaVenta
 {
     public const IVA = [0 => 0, 2 => 12, 3 => 14, 4 => 15, 5 => 5, 6 => 0, 7 => 0, 10 => 13];
 
+    public static function etiquetaIva(int $codigo): string
+    {
+        return match ($codigo) {
+            6 => 'No objeto de IVA',
+            7 => 'Exento de IVA',
+            default => self::IVA[$codigo].' %',
+        };
+    }
+
     public const PAGOS = [
         '01' => 'Sin utilización del sistema financiero',
         '15' => 'Compensación de deudas',
@@ -56,9 +65,32 @@ final readonly class FacturaVenta
                 throw ValidationException::withMessages(['id_tercero' => 'Elige un cliente activo con cédula de 10 dígitos, RUC de 13 dígitos o pasaporte válido.']);
             }
 
-            $lineas = $datos['lineas'];
             $tarifas = $this->tarifas($datos['fecha']);
+            $productos = DB::table('inv_productos')->where('id_empresa', $this->empresa->id())->where('activo', true)
+                ->whereIn('id', array_filter(array_column($datos['lineas'], 'id_producto')))
+                ->get(['id', 'tipo_producto', 'iva_codigo'])->keyBy('id');
+            $bodegas = DB::table('inv_bodegas')->where('id_empresa', $this->empresa->id())
+                ->where('id_sucursal', $this->contexto->sucursal()->id)->where('activo', true)
+                ->whereIn('id', array_filter(array_column($datos['lineas'], 'id_bodega')))->pluck('id')->flip();
             foreach ($datos['lineas'] as $indice => &$linea) {
+                $esFisico = false;
+                if (isset($linea['id_producto'])) {
+                    $producto = $productos->get($linea['id_producto']);
+                    if ($producto === null) {
+                        throw ValidationException::withMessages(["lineas.$indice.id_producto" => 'Selecciona un producto o servicio activo de esta empresa.']);
+                    }
+                    if ($producto->iva_codigo === null) {
+                        throw ValidationException::withMessages(["lineas.$indice.iva_codigo" => 'Configura el tratamiento de IVA en la ficha de este producto o servicio.']);
+                    }
+                    $linea['iva_codigo'] = $producto->iva_codigo;
+                    $esFisico = $producto->tipo_producto !== 'servicio';
+                    if ($esFisico && ! $bodegas->has($linea['id_bodega'] ?? 0)) {
+                        throw ValidationException::withMessages(["lineas.$indice.id_bodega" => 'Selecciona una bodega activa de esta sucursal para el producto.']);
+                    }
+                }
+                if (! $esFisico && isset($linea['id_bodega'])) {
+                    throw ValidationException::withMessages(["lineas.$indice.id_bodega" => 'Solo los productos físicos pueden salir de una bodega.']);
+                }
                 $codigo = (int) $linea['iva_codigo'];
                 if (! isset($tarifas[$codigo])) {
                     throw ValidationException::withMessages(["lineas.$indice.iva_codigo" => 'Selecciona una tarifa de IVA configurada y vigente para la fecha.']);
@@ -66,6 +98,7 @@ final readonly class FacturaVenta
                 $linea['tasa'] = $tarifas[$codigo];
             }
             unset($linea);
+            $lineas = array_map(fn (array $linea): array => array_diff_key($linea, ['tasa' => true]), $datos['lineas']);
 
             $fiscal = [
                 'emisor' => (array) $emisor,
@@ -94,7 +127,7 @@ final readonly class FacturaVenta
                     'id_documento' => $documento->id, 'frecuencia' => $datos['frecuencia'],
                     'primera_fecha' => $datos['primera_fecha'], 'proxima_fecha' => $datos['primera_fecha'],
                     'datos' => json_encode([
-                        ...array_intersect_key($datos, array_flip(['id_tercero', 'id_bodega', 'forma_pago', 'plazo_dias', 'observacion'])),
+                        ...array_intersect_key($datos, array_flip(['id_tercero', 'forma_pago', 'plazo_dias', 'observacion', 'aplicar_propina'])),
                         'lineas' => $lineas,
                     ], JSON_THROW_ON_ERROR),
                     'created_at' => now(), 'updated_at' => now(),

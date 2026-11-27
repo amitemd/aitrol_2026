@@ -92,6 +92,18 @@
         <div class="ficha-bloque">
             <h2 class="h6"><i class="bi bi-tags me-2" aria-hidden="true"></i>Precios y descuentos de referencia</h2>
             <div class="row g-3">
+                <div class="col-sm-6">
+                    <label class="form-label" for="producto-iva">Tratamiento de IVA</label>
+                    <select id="producto-iva" name="iva_codigo" class="form-select" data-select2-nativo>
+                        <option value="">Pendiente de configurar</option>
+                        @foreach (array_keys(\App\Services\FacturaVenta::IVA) as $codigo)
+                            <option value="{{ $codigo }}" @selected((string) old('iva_codigo', $registro['iva_codigo'] ?? '') === (string) $codigo)>
+                                {{ \App\Services\FacturaVenta::etiquetaIva($codigo) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="form-text mb-0">La factura utiliza este tratamiento al seleccionar el producto o servicio.</p>
+                </div>
                 @foreach (config('inventarios.valores_producto') as $campo => [$etiqueta, $maximo, $decimales])
                     <div class="col-sm-6">
                         <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}</label>

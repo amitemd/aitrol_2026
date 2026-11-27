@@ -10,6 +10,7 @@ use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -50,7 +51,11 @@ final readonly class DocumentosComerciales
         $this->contexto->aplicarPeriodo($consulta, 'fecha');
         $seccion === 'anulaciones' ? $consulta->whereNotNull('anulado_at') : $consulta->where('tipo', $seccion);
         $documento = $consulta->first() ?? abort(404, 'Documento no encontrado.');
-        $documento->lineas = $this->lineas($id)->orderBy('id')->get();
+        $documento->lineas = $this->lineas($id)
+            ->leftJoin('inv_bodegas as bodega', function (JoinClause $join): void {
+                $join->on('bodega.id_empresa', '=', 'com_lineas.id_empresa')
+                    ->on('bodega.id', '=', 'com_lineas.id_bodega');
+            })->orderBy('com_lineas.id')->get(['com_lineas.*', 'bodega.nombre as nombre_bodega']);
         $documento->numero_origen = $documento->id_documento_origen === null ? null
             : $this->documentos($modulo)->where('id', $documento->id_documento_origen)->value('numero');
 
@@ -73,7 +78,8 @@ final readonly class DocumentosComerciales
                 $lineas = $seccion === 'retenciones' ? $this->prepararRetenciones($datos['lineas']) : $this->prepararLineas($datos['lineas']);
                 $subtotal = array_sum(array_column($lineas, 'subtotal'));
                 $impuesto = array_sum(array_column($lineas, 'impuesto'));
-                $total = $subtotal + $impuesto;
+                $propina = $factura !== null && ($datos['aplicar_propina'] ?? false) ? intdiv($subtotal + 5, 10) : 0;
+                $total = $subtotal + $impuesto + $propina;
                 if ($origen !== null) {
                     if ($datos['fecha'] < $origen->fecha) {
                         throw ValidationException::withMessages(['fecha' => 'La fecha debe ser igual o posterior a la del documento de origen.']);
@@ -84,7 +90,7 @@ final readonly class DocumentosComerciales
                 if ($bodega !== null && ! collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null)) {
                     throw ValidationException::withMessages(['id_bodega' => 'Agrega al menos un producto de inventario para usar una bodega.']);
                 }
-                if ($seccion === 'documentos' && $bodega === null && collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null)) {
+                if ($factura === null && $seccion === 'documentos' && $bodega === null && collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null)) {
                     throw ValidationException::withMessages(['id_bodega' => 'Selecciona una bodega para los productos de inventario.']);
                 }
                 $numero = Str::upper($datos['numero']);
@@ -99,13 +105,18 @@ final readonly class DocumentosComerciales
                     'id_documento_origen' => $origen?->id, 'id_bodega' => $bodega, 'subtotal' => $subtotal,
                     'impuesto' => $impuesto, 'total' => $total, 'observacion' => $datos['observacion'] ?? null,
                     'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
-                ] + ($factura === null ? [] : ['datos_factura' => json_encode($factura + ['total_pago_centavos' => $total], JSON_THROW_ON_ERROR)]));
+                ] + ($factura === null ? [] : [
+                    'propina' => $propina,
+                    'datos_factura' => json_encode($factura + ['propina_centavos' => $propina, 'total_pago_centavos' => $total], JSON_THROW_ON_ERROR),
+                ]));
                 // El orden por producto mantiene consistente la adquisición de bloqueos de inventario.
                 $orden = array_keys($lineas);
-                usort($orden, fn (int $a, int $b) => $lineas[$a]['id_producto'] <=> $lineas[$b]['id_producto']);
+                usort($orden, fn (int $a, int $b) => [$lineas[$a]['id_producto'], $lineas[$a]['id_bodega'] ?? $bodega]
+                    <=> [$lineas[$b]['id_producto'], $lineas[$b]['id_bodega'] ?? $bodega]);
                 foreach ($orden as $indice) {
-                    if ($bodega !== null && $lineas[$indice]['id_producto'] !== null) {
-                        $lineas[$indice]['id_operacion'] = $this->afectarInventario($modulo, $bodega, $id, $lineas[$indice]);
+                    $bodegaLinea = $lineas[$indice]['id_bodega'] ?? $bodega;
+                    if ($bodegaLinea !== null && $lineas[$indice]['id_producto'] !== null) {
+                        $lineas[$indice]['id_operacion'] = $this->afectarInventario($modulo, $bodegaLinea, $id, $lineas[$indice]);
                     }
                 }
                 foreach ($lineas as $linea) {
@@ -145,11 +156,11 @@ final readonly class DocumentosComerciales
             abort_if($this->documentos($modulo)->where('id_documento_origen', $id)->whereNull('anulado_at')->lockForUpdate()->first(['id']) !== null, 409,
                 'Anula primero las notas o retenciones vigentes vinculadas al documento.');
 
-            foreach ($this->lineas($id)->whereNotNull('id_operacion')->orderBy('id_producto')->orderBy('id')->get() as $linea) {
+            foreach ($this->lineas($id)->whereNotNull('id_operacion')->orderBy('id_producto')->orderBy('id_bodega')->orderBy('id')->get() as $linea) {
                 $movimiento = $this->existencias->operacion((int) $linea->id_operacion);
                 $esEntrada = $modulo === 'ventas';
                 $reversa = $this->inventario->registrar([
-                    'tipo' => $esEntrada ? 'entrada' : 'salida', 'id_producto' => $linea->id_producto, 'id_bodega' => $documento->id_bodega,
+                    'tipo' => $esEntrada ? 'entrada' : 'salida', 'id_producto' => $linea->id_producto, 'id_bodega' => $movimiento->id_bodega,
                     'cantidad' => Cantidad::decimal((int) $linea->cantidad, 3),
                     'costo_unitario' => $esEntrada ? Cantidad::decimal((int) $movimiento->costo_unitario, 4) : null,
                     'motivo' => 'Anulación de '.($modulo === 'ventas' ? 'venta' : 'compra'), 'referencia' => $modulo.'/'.$id,
@@ -200,7 +211,7 @@ final readonly class DocumentosComerciales
                 ->where('activo', true)->select('id', 'nombre as texto', 'codigo'),
         };
         if ($factura && $catalogo === 'productos') {
-            $consulta->addSelect('precio_venta');
+            $consulta->addSelect('precio_venta', 'iva_codigo', 'tipo_producto');
         }
         $campos = match ($catalogo) {
             'terceros' => ['nombre', 'identificacion'],
@@ -265,7 +276,7 @@ final readonly class DocumentosComerciales
             $preparadas[] = [
                 'id_producto' => $producto, 'descripcion' => $descripcion, 'cantidad' => $cantidad, 'precio' => $precio,
                 'tasa' => $tasa, 'subtotal' => $subtotal, 'impuesto' => $impuesto, 'total' => $subtotal + $impuesto,
-            ];
+            ] + (isset($linea['id_bodega']) ? ['id_bodega' => (int) $linea['id_bodega']] : []);
         }
 
         return $preparadas;
@@ -335,7 +346,7 @@ final readonly class DocumentosComerciales
 
     private function lineas(int $id): Builder
     {
-        return DB::table('com_lineas')->where('id_empresa', $this->empresa->id())->where('id_documento', $id);
+        return DB::table('com_lineas')->where('com_lineas.id_empresa', $this->empresa->id())->where('com_lineas.id_documento', $id);
     }
 
     private function filtrar(Builder $consulta, array $filtros): Builder

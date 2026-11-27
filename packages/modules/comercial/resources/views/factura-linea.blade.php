@@ -2,6 +2,9 @@
     $iva = \App\Services\FacturaVenta::IVA;
     $prefijo = 'factura-linea-'.$indice;
     $producto = $linea['id_producto'] ?? null;
+    $ficha = $productos->get($producto);
+    $bodegaLinea = $linea['id_bodega'] ?? ($ficha && $ficha->tipo_producto !== 'servicio' ? $datos['id_bodega'] ?? null : null);
+    $ivaLinea = $ficha ? $ficha->iva_codigo : ($linea['iva_codigo'] ?? null);
 @endphp
 <div data-comercial-linea class="factura-linea">
     <div class="factura-linea-conceptos">
@@ -10,9 +13,18 @@
             <select id="{{ $prefijo }}-producto" name="lineas[{{ $indice }}][id_producto]" class="form-select" data-factura-producto
                 data-select2-url="{{ route('ventas.documentos.opciones', ['catalogo' => 'productos', 'factura' => 1]) }}" data-select2-min="0" data-select2-placeholder="Buscar producto">
                 <option value=""></option>
-                @if (isset($productos[$producto]))
-                    <option value="{{ $producto }}" selected>{{ $productos[$producto] }}</option>
+                @if ($ficha)
+                    <option value="{{ $producto }}" data-tipo-producto="{{ $ficha->tipo_producto }}" data-iva-codigo="{{ $ficha->iva_codigo }}" selected>{{ $ficha->nombre }}</option>
                 @endif
+            </select>
+        </div>
+        <div data-factura-bodega-bloque @if (! $ficha || $ficha->tipo_producto === 'servicio') hidden @endif>
+            <label for="{{ $prefijo }}-bodega" class="form-label">Bodega de salida</label>
+            <select id="{{ $prefijo }}-bodega" name="lineas[{{ $indice }}][id_bodega]" class="form-select" data-select2-nativo data-factura-bodega>
+                <option value="">Elegir bodega</option>
+                @foreach ($bodegas as $id => $nombre)
+                    <option value="{{ $id }}" @selected((string) $bodegaLinea === (string) $id)>{{ $nombre }}</option>
+                @endforeach
             </select>
         </div>
         <div>
@@ -31,14 +43,15 @@
         @endforeach
         <div>
             <label for="{{ $prefijo }}-iva" class="form-label">IVA</label>
-            <select id="{{ $prefijo }}-iva" name="lineas[{{ $indice }}][iva_codigo]" class="form-select" data-select2-nativo data-factura-iva required>
+            <select id="{{ $prefijo }}-iva" name="lineas[{{ $indice }}][iva_codigo]" class="form-select" data-select2-nativo data-factura-iva @disabled($ficha) @required(! $ficha)>
                 <option value="">Elegir</option>
                 @foreach ($iva as $codigo => $tasa)
-                    <option value="{{ $codigo }}" data-tasa="{{ $tasa }}" @selected((string) ($linea['iva_codigo'] ?? '') === (string) $codigo)>
-                        {{ match ($codigo) { 6 => 'No objeto', 7 => 'Exento', default => $tasa.' %' } }}
+                    <option value="{{ $codigo }}" data-tasa="{{ $tasa }}" @selected((string) $ivaLinea === (string) $codigo)>
+                        {{ \App\Services\FacturaVenta::etiquetaIva($codigo) }}
                     </option>
                 @endforeach
             </select>
+            <small class="text-body-secondary" data-factura-iva-origen @unless($ficha) hidden @endunless>{{ $ficha && $ficha->iva_codigo === null ? 'Configura el IVA en la ficha.' : 'IVA de la ficha' }}</small>
         </div>
         <div class="factura-linea-total">
             <span class="form-label">Total línea</span>

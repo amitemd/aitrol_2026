@@ -76,7 +76,7 @@ final readonly class ComercialController
             $cliente = $facturas->cliente((int) $request->old('id_tercero', $datos['id_tercero'] ?? 0));
             $lineas = array_values((array) $request->old('lineas', $datos['lineas'] ?? [[]]));
             $productos = DB::table('inv_productos')->where('id_empresa', $empresa->id())->where('activo', true)
-                ->whereIn('id', array_filter(array_column($lineas, 'id_producto')))->pluck('nombre', 'id');
+                ->whereIn('id', array_filter(array_column($lineas, 'id_producto')))->get(['id', 'nombre', 'tipo_producto', 'iva_codigo'])->keyBy('id');
             $bodegas = DB::table('inv_bodegas')->where('id_empresa', $empresa->id())->where('id_sucursal', $contexto->sucursal()->id)
                 ->where('activo', true)->orderBy('nombre')->pluck('nombre', 'id');
 
@@ -124,7 +124,10 @@ final readonly class ComercialController
 
         return response()->json([
             'results' => $opciones->getCollection()->map(fn (stdClass $fila) => ['id' => $fila->id, 'text' => $fila->codigo.' · '.$fila->texto]
-                + (isset($fila->precio_venta) ? ['precio' => (string) $fila->precio_venta] : [])),
+                + (isset($fila->tipo_producto) ? [
+                    'precio' => $fila->precio_venta === null ? null : (string) $fila->precio_venta,
+                    'iva_codigo' => $fila->iva_codigo, 'tipo_producto' => $fila->tipo_producto,
+                ] : [])),
             'pagination' => ['more' => $opciones->hasMorePages()],
         ]);
     }
@@ -172,11 +175,14 @@ final readonly class ComercialController
             $reglas = array_replace($reglas, [
                 'numero' => ['required', 'regex:/\A(?!000)\d{3}-(?!000)\d{3}-(?!000000000)\d{9}\z/'],
                 'fecha' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.now('America/Guayaquil')->toDateString()],
-                'lineas.*' => ['required', 'array:id_producto,descripcion,cantidad,precio,iva_codigo,descuento'],
-                'lineas.*.iva_codigo' => ['required', Rule::in(array_keys(FacturaVenta::IVA))],
+                'id_bodega' => ['prohibited'],
+                'lineas.*' => ['required', 'array:id_producto,id_bodega,descripcion,cantidad,precio,iva_codigo,descuento'],
+                'lineas.*.id_bodega' => ['nullable', 'integer', 'min:1'],
+                'lineas.*.iva_codigo' => ['nullable', 'required_without:lineas.*.id_producto', Rule::in(array_keys(FacturaVenta::IVA))],
                 'lineas.*.descuento' => ['nullable', 'numeric', 'decimal:0,2', 'between:0,100000000000'],
                 'forma_pago' => ['required', Rule::in(array_keys(FacturaVenta::PAGOS))],
                 'plazo_dias' => ['nullable', 'integer', 'between:0,3650'],
+                'aplicar_propina' => ['sometimes', 'boolean'],
                 'borrador' => ['nullable', 'integer', 'min:1'],
                 'frecuencia' => ['nullable', Rule::prohibitedIf($request->filled('borrador')), Rule::in(array_keys(FacturaVenta::FRECUENCIAS))],
                 'primera_fecha' => ['nullable', 'required_with:frecuencia', 'exclude_without:frecuencia', 'date_format:Y-m-d', 'after:fecha', 'after_or_equal:'.now('America/Guayaquil')->toDateString()],
@@ -187,6 +193,7 @@ final readonly class ComercialController
             'numero.regex' => 'Ingresa establecimiento, punto de emisión y secuencial, por ejemplo 001-001-000000001.',
             'forma_pago.required' => 'Selecciona una forma de pago.',
             'lineas.*.iva_codigo.required' => 'Selecciona el tratamiento de IVA de cada línea.',
+            'lineas.*.iva_codigo.required_without' => 'Selecciona el tratamiento de IVA del servicio manual.',
         ]);
         foreach ($datos['lineas'] as $posicion => $linea) {
             if (! isset($linea['id_producto']) && ! isset($linea['descripcion'])) {
@@ -254,7 +261,7 @@ final readonly class ComercialController
     {
         $datos = (array) $registro;
         unset($datos['emisor'], $datos['datos_factura']);
-        foreach (['subtotal' => 2, 'impuesto' => 2, 'total' => 2, 'precio' => 4, 'tasa' => 2, 'base_retencion' => 2, 'porcentaje_retencion' => 2] as $campo => $decimales) {
+        foreach (['subtotal' => 2, 'impuesto' => 2, 'propina' => 2, 'total' => 2, 'precio' => 4, 'tasa' => 2, 'base_retencion' => 2, 'porcentaje_retencion' => 2] as $campo => $decimales) {
             if (isset($datos[$campo])) $datos[$campo] = Cantidad::decimal((int) $datos[$campo], $decimales);
         }
         if (isset($datos['id_documento'])) $datos['cantidad'] = Cantidad::decimal((int) $datos['cantidad'], 3);

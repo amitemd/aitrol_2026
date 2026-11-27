@@ -40,6 +40,7 @@
                                 @foreach ($documento['lineas'] as $linea)
                                     <tr>
                                         <th scope="row">{{ $linea['descripcion'] }}
+                                            @if ($linea['nombre_bodega'])<small class="d-block text-body-secondary">Bodega: {{ $linea['nombre_bodega'] }}</small>@endif
                                             @if ($retencion)<small class="d-block text-body-secondary">{{ Str::upper($linea['tipo_retencion']) }} · {{ $linea['codigo_retencion'] }}</small>@endif
                                         </th>
                                         <td class="text-end">{{ $retencion ? $linea['base_retencion'] : $linea['cantidad'] }}</td>
@@ -52,6 +53,9 @@
                                 @if (!$retencion)
                                     <tr><th scope="row" colspan="3" class="text-end">Subtotal</th><td class="text-end">{{ $documento['subtotal'] }}</td></tr>
                                     <tr><th scope="row" colspan="3" class="text-end">{{ __('Impuesto') }}</th><td class="text-end">{{ $documento['impuesto'] }}</td></tr>
+                                    @if ((float) $documento['propina'] > 0)
+                                        <tr><th scope="row" colspan="3" class="text-end">Propina</th><td class="text-end">{{ $documento['propina'] }}</td></tr>
+                                    @endif
                                 @endif
                                 <tr><th scope="row" colspan="3" class="text-end">{{ $retencion ? 'Total retenido' : 'Total' }}</th><td class="text-end fw-semibold">{{ $documento['total'] }}</td></tr>
                             </tfoot>

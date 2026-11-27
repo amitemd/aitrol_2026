@@ -31,6 +31,46 @@ final class FacturacionVentaTest extends TestCase
             ->assertRedirect(route('ventas.documentos.create'))->assertSessionHasErrors('numero');
     }
 
+    public function test_descuenta_por_bodega_reusa_el_iva_del_producto_y_reversa_la_salida(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $sucursal = DB::table('erp_sucursales')->where('id_empresa', $usuario->id_empresa)->value('id');
+        $this->actingAs($usuario);
+        $producto = DB::table('inv_productos')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'P1', 'nombre' => 'Producto fiscal', 'unidad' => 'unidad',
+        ]);
+        $this->putJson(route('inventarios.productos.update', $producto), [
+            'codigo' => 'P1', 'nombre' => 'Producto fiscal', 'unidad' => 'unidad', 'activo' => true, 'iva_codigo' => '4',
+        ])->assertSuccessful();
+
+        $datos['lineas'] = [];
+        foreach (['Principal', 'Auxiliar'] as $nombre) {
+            $bodega = DB::table('inv_bodegas')->insertGetId([
+                'id_empresa' => $usuario->id_empresa, 'id_sucursal' => $sucursal, 'codigo' => $nombre, 'nombre' => $nombre,
+            ]);
+            DB::table('inv_existencias')->insert([
+                'id_empresa' => $usuario->id_empresa, 'id_producto' => $producto, 'id_bodega' => $bodega,
+                'cantidad' => 5000, 'costo_promedio' => 10000,
+            ]);
+            $datos['lineas'][] = ['id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => '1', 'precio' => '10', 'iva_codigo' => '0'];
+        }
+
+        $datos['aplicar_propina'] = '1';
+        $datos['lineas'][1]['descuento'] = '2';
+        $this->post(route('ventas.documentos.store'), $datos)->assertRedirect(route('ventas.documentos.index'));
+        $this->assertDatabaseHas('com_documentos', ['numero' => $datos['numero'], 'impuesto' => 270, 'propina' => 180, 'total' => 2250]);
+        $documento = DB::table('com_documentos')->value('id');
+        $this->get(route('ventas.documentos.show', $documento))->assertOk()
+            ->assertSee('Bodega: Principal')->assertSee('Bodega: Auxiliar')->assertSee('Propina');
+        foreach ($datos['lineas'] as $linea) {
+            $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $linea['id_bodega'], 'cantidad' => 4000]);
+        }
+        $this->postJson(route('ventas.documentos.anular', $documento), ['motivo' => 'Corrección de cantidad'])->assertSuccessful();
+        foreach ($datos['lineas'] as $linea) {
+            $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $linea['id_bodega'], 'cantidad' => 5000]);
+        }
+    }
+
     public function test_rechaza_iva_no_configurado_y_rebaja_superior_al_importe(): void
     {
         [$usuario, $datos] = $this->prepararFactura();

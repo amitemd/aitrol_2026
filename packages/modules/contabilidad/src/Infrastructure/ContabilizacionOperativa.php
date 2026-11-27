@@ -59,6 +59,7 @@ final readonly class ContabilizacionOperativa
             $this->linea($lineas, $reglas, 'clientes', (int) $doc->total);
             $this->linea($lineas, $reglas, 'ventas', -(int) $doc->subtotal);
             $this->linea($lineas, $reglas, 'impuesto_ventas', -(int) $doc->impuesto);
+            $this->linea($lineas, $reglas, 'propinas_por_pagar', -(int) $doc->propina);
             $costo = 0;
             foreach ($this->lineasComerciales($doc->id)->get() as $fila) {
                 if ($fila->id_operacion !== null) $costo += $this->valorInventario($this->datos->fila('inv_operaciones', $fila->id_operacion));

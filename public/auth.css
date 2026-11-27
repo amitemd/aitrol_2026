@@ -2,16 +2,28 @@
     --access-accent: #83bdff;
     --access-muted: #aebed0;
     --access-stroke: #91b7e43d;
+    position: relative;
+    isolation: isolate;
     min-height: 100vh;
     min-height: 100dvh;
     margin: 0;
     display: grid;
     place-items: center;
     padding: clamp(1rem, 5vw, 4.5rem);
+    background: linear-gradient(to right, #0c192d 0%, #152b48 28%, #233f60 66%, #345777 100%);
+}
+
+.aitrol-access::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
     background:
-        radial-gradient(ellipse at 15% 22%, #17458069, transparent 52%),
-        radial-gradient(ellipse at 84% 86%, #1536645c, transparent 52%),
-        #080f1c;
+        linear-gradient(#a7d9ff12 1px, transparent 1px),
+        linear-gradient(to right, #a7d9ff12 1px, transparent 1px);
+    background-size: 3rem 3rem;
+    mask-image: linear-gradient(to right, #000, transparent 78%);
+    content: "";
 }
 
 .access-shell {
@@ -23,7 +35,7 @@
     border: 1px solid var(--access-stroke);
     border-radius: 1.5rem;
     background: #0c1627;
-    box-shadow: 0 1.75rem 5rem #0308129c, 0 0 3rem #3079e214;
+    box-shadow: 0 1.75rem 5rem #03081280, 0 0 2.5rem #549de51f;
 }
 
 .access-brand {
@@ -184,15 +196,15 @@
     place-items: center;
     padding: clamp(1.4rem, 4vw, 3.5rem);
     border-inline-start: 1px solid var(--access-stroke);
-    background: radial-gradient(ellipse at 70% 0%, #245d9c44, transparent 65%), #0c1627;
+    background: linear-gradient(to right, #0e1b2e, #172e4b);
 }
 .login-box {
     width: min(100%, 25rem);
     padding: clamp(1.35rem, 3vw, 2.15rem);
     border: 1px solid var(--access-stroke);
     border-radius: 1.12rem;
-    background: linear-gradient(145deg, #182f4aaa, #101d32e8 62%);
-    box-shadow: inset 0 1px #cde7ff14, 0 .9rem 2.2rem #030a1461;
+    background: linear-gradient(to right, #111f33, #182c45);
+    box-shadow: inset 0 1px #cde7ff24, 0 .9rem 2.2rem #030a1459;
 }
 .access-heading { margin-bottom: 1.6rem; }
 .access-heading::before { display: block; width: 2.25rem; height: .19rem; margin-bottom: 1.15rem; border-radius: 1rem; background: var(--access-accent); box-shadow: 0 0 1rem #489bff8f; content: ""; }

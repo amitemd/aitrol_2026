@@ -23,6 +23,7 @@ return [
         'clientes' => ['Cuentas por cobrar', 'activo'], 'proveedores' => ['Cuentas por pagar', 'pasivo'],
         'ventas' => ['Ingresos por ventas', 'ingreso'], 'compras' => ['Compras sin inventario', 'gasto'],
         'impuesto_ventas' => ['Impuesto de ventas', 'pasivo'], 'impuesto_compras' => ['Impuesto de compras', 'activo'],
+        'propinas_por_pagar' => ['Propinas por pagar', 'pasivo'],
         'retencion_ventas' => ['Retenciones por cobrar', 'activo'], 'retencion_compras' => ['Retenciones por pagar', 'pasivo'],
         'inventario' => ['Inventario', 'activo'], 'costo_ventas' => ['Costo de ventas', 'gasto'],
         'ajustes_inventario' => ['Contrapartida de ajustes de inventario', 'gasto'],

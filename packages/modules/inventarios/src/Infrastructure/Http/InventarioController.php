@@ -180,6 +180,7 @@ final readonly class InventarioController
                 'codigo_barras' => ['nullable', 'string', 'max:80'],
                 'stock_minimo' => ['nullable', 'numeric', 'decimal:0,3', 'min:0', 'max:1000000'],
                 'tipo_producto' => ['sometimes', 'required', Rule::in(array_keys(config('inventarios.tipos_producto')))],
+                'iva_codigo' => ['sometimes', 'nullable', Rule::in(array_keys(\App\Services\FacturaVenta::IVA))],
                 'marca' => ['nullable', 'string', 'max:100'],
                 'modelo' => ['nullable', 'string', 'max:100'],
                 'ficha_tecnica_url' => ['nullable', 'url:https', 'max:500'],
