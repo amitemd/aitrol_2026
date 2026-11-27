@@ -24,6 +24,7 @@
 !/tests/Feature/
 /tests/Feature/*
 !/tests/Feature/IdentidadEmpresaTest.php
+!/tests/Feature/MantenimientoServidorTest.php
 !/tests/Feature/RecursosHumanosTest.php
 /vendor/
 _ide_helper.php

@@ -1,6 +1,7 @@
 <?php
 
 use Aitrol\Configuracion\Infrastructure\Http\EmpresaController;
+use Aitrol\Configuracion\Infrastructure\Http\MantenimientoServidorController;
 use Aitrol\Configuracion\Infrastructure\Http\MenuController;
 use Aitrol\Configuracion\Infrastructure\Http\ParametrosEmpresaController;
 use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
@@ -8,6 +9,15 @@ use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
 use App\Http\Controllers\ContextoOperativoController;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-servidor'])
+    ->prefix('configuraciones/mantenimiento')->name('configuracion.mantenimiento.')
+    ->group(function (): void {
+        Route::get('/', [MantenimientoServidorController::class, 'index'])->name('index');
+        Route::get('/estado', [MantenimientoServidorController::class, 'estado'])->name('estado');
+        Route::post('/{accion}', [MantenimientoServidorController::class, 'ejecutar'])
+            ->where('accion', '[a-z]+')->middleware('throttle:12,1')->name('ejecutar');
+    });
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-menu'])
     ->prefix('configuraciones/menu')->name('configuracion.menu.')
