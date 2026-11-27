@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Process;
 use LogicException;
-use RuntimeException;
 use Throwable;
 
 final class MantenimientoServidor
@@ -80,10 +79,12 @@ final class MantenimientoServidor
                 default => $this->artisan($id, $this->comandos($registro->accion)),
             };
         } catch (Throwable $error) {
-            logger()->warning('La ejecución de mantenimiento se interrumpió.', [
+            rescue(fn () => logger()->warning('La ejecución de mantenimiento se interrumpió.', [
                 'ejecucion' => $id, 'tipo' => $error::class,
-            ]);
-            $detalle = 'El proceso se interrumpió o superó el tiempo de espera. Revisa el servidor antes de reintentar.';
+            ]), report: false);
+            $detalle = function_exists('proc_open')
+                ? 'El proceso se interrumpió o superó el tiempo de espera. Revisa el servidor antes de reintentar.'
+                : 'El PHP web tiene proc_open deshabilitado y no puede iniciar comandos.';
         }
 
         $detalleExito = ($registro->accion ?? null) === 'git' ? 'Código actualizado. Revisa si hay migraciones pendientes.' : 'Acción completada.';
@@ -104,8 +105,19 @@ final class MantenimientoServidor
 
         $this->paso($id, 'Comprobando el repositorio y la rama.');
         $raiz = $this->git(['rev-parse', '--show-toplevel']);
-        $directorio = $raiz->successful() ? realpath(trim($raiz->output())) : false;
-        if ($directorio !== realpath(base_path())) {
+        if ($raiz->failed()) {
+            $salida = $this->salidaProceso($raiz);
+
+            return match (true) {
+                str_contains($salida, 'dubious ownership') => 'Git bloqueó el repositorio por su propietario. Revisa la confianza de esa ruta para el usuario que ejecuta PHP web.',
+                str_contains($salida, 'not a git repository') => 'Git no encontró un repositorio en la carpeta de la aplicación. Comprueba que el usuario de PHP web puede leer .git.',
+                $this->permisoDenegado($salida) => 'El usuario de PHP web no tiene permiso para abrir el repositorio Git.',
+                $raiz->exitCode() === 127, str_contains($salida, 'command not found') => 'Git no está disponible en el entorno de PHP web. Revisa el PATH del servicio.',
+                default => 'Git no pudo determinar la raíz del repositorio desde PHP web.',
+            };
+        }
+        $directorio = realpath(trim($raiz->output()));
+        if ($directorio === false || $directorio !== realpath(base_path())) {
             return 'La carpeta de la aplicación debe ser la raíz del repositorio Git.';
         }
         $actual = $this->git(['symbolic-ref', '--quiet', '--short', 'HEAD']);
@@ -160,15 +172,37 @@ final class MantenimientoServidor
             }
             $resultado = Process::path(base_path())->timeout($comando === 'migrate' ? 420 : 35)->run($argumentos);
             if ($resultado->failed()) {
-                if ($comando === 'migrate' && str_contains($resultado->output().$resultado->errorOutput(), 'AITROL_EMPRESA_INICIAL')) {
-                    return 'La migración requiere configurar AITROL_EMPRESA_INICIAL con la empresa que recibirá los registros anteriores.';
-                }
+                $salida = $this->salidaProceso($resultado);
+                $causa = match (true) {
+                    $comando === 'migrate' && str_contains($salida, 'aitrol_empresa_inicial') => 'La migración requiere configurar AITROL_EMPRESA_INICIAL con la empresa que recibirá los registros anteriores.',
+                    str_contains($salida, 'could not find driver') => 'Al PHP CLI le falta el controlador de la base de datos.',
+                    str_contains($salida, 'readonly database'), str_contains($salida, 'read-only database') => 'La base SQLite está en modo de solo lectura para el proceso web.',
+                    str_contains($salida, 'sqlstate') && str_contains($salida, 'access denied') => 'La base de datos rechazó la conexión o los permisos del usuario configurado.',
+                    str_contains($salida, 'bootstrap/cache') && (str_contains($salida, 'must be present and writable') || $this->permisoDenegado($salida)) => 'PHP web necesita escritura en bootstrap/cache.',
+                    str_contains($salida, 'storage/framework') && $this->permisoDenegado($salida) => 'PHP web necesita escritura en storage/framework.',
+                    str_contains($salida, 'storage/logs') && $this->permisoDenegado($salida) => 'PHP web necesita escritura en storage/logs.',
+                    str_contains($salida, 'could not open input file') => 'El PHP CLI no pudo abrir el archivo artisan desde la carpeta de la aplicación.',
+                    $resultado->exitCode() === 127, str_contains($salida, 'command not found') => 'PHP CLI no está disponible. Comprueba AITROL_PHP_CLI.',
+                    str_contains($salida, 'sqlstate') => 'La base de datos devolvió un error. Comprueba el estado de las migraciones con el PHP CLI del servidor.',
+                    $this->permisoDenegado($salida) => 'El proceso web recibió un error de permisos. Comprueba el ejecutable, los archivos de Laravel y el contexto de SELinux.',
+                    default => 'Consulta el registro del servicio PHP o reproduce el comando con el usuario del proceso web.',
+                };
 
-                return $prefijo.'Falló '.$comando.' con código '.$resultado->exitCode().'. Revisa el registro de Laravel.';
+                return $prefijo.'Falló '.$comando.' con código '.$resultado->exitCode().'. '.$causa;
             }
         }
 
         return null;
+    }
+
+    private function salidaProceso(ProcessResult $resultado): string
+    {
+        return strtolower(str_replace('\\', '/', $resultado->errorOutput()."\n".$resultado->output()));
+    }
+
+    private function permisoDenegado(string $salida): bool
+    {
+        return str_contains($salida, 'permission denied') || str_contains($salida, 'operation not permitted');
     }
 
     private function comandos(string $accion): array

@@ -77,6 +77,26 @@ final class MantenimientoServidorTest extends TestCase
         Process::assertDidntRun(fn ($proceso): bool => in_array('fetch', $proceso->command, true));
     }
 
+    public function test_identifica_errores_de_permisos_web_sin_publicar_la_salida_del_proceso(): void
+    {
+        config(['mantenimiento.habilitado' => true, 'mantenimiento.git' => true]);
+        Process::fake([
+            '*--show-toplevel*' => Process::result(errorOutput: 'fatal: detected dubious ownership in repository at RUTA_PRIVADA', exitCode: 128),
+            '*config:clear*' => Process::result(errorOutput: 'unlink(bootstrap/cache/config.php): Permission denied RECURSO_PRIVADO', exitCode: 1),
+        ])->preventStrayProcesses();
+        $usuario = $this->administrador();
+        $servicio = app(MantenimientoServidor::class);
+        $servicio->ejecutar($servicio->registrar('git', $usuario));
+        $servicio->ejecutar($servicio->registrar('config', $usuario));
+
+        $this->actingAs($usuario)->getJson(self::RUTA.'/estado')
+            ->assertJsonPath('estados.git.estado', 'fallido')
+            ->assertJsonPath('estados.config.estado', 'fallido')
+            ->assertJsonPath('estados.git.detalle', fn (string $detalle): bool => str_contains($detalle, 'Git bloqueó el repositorio por su propietario'))
+            ->assertJsonPath('estados.config.detalle', fn (string $detalle): bool => str_contains($detalle, 'escritura en bootstrap/cache'))
+            ->assertDontSee('RUTA_PRIVADA')->assertDontSee('RECURSO_PRIVADO');
+    }
+
     public function test_git_aplica_solo_la_revision_validada_y_limpia_el_arranque(): void
     {
         $revision = str_repeat('a', 40);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\EmpresaInicialController;
+use App\Http\Controllers\PreferenciasDashboardController;
 use App\Http\Controllers\RecuperacionClaveController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\VickyController;
@@ -24,6 +25,8 @@ Route::post('/idioma', function (Request $request): RedirectResponse {
 })->name('idioma.actualizar');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
+    Route::put('/panel/preferencias', PreferenciasDashboardController::class)
+        ->middleware('empresa')->name('dashboard.preferencias');
     Route::post('/asistente/vicky', VickyController::class)
         ->middleware(['empresa', 'throttle:12,1'])->name('vicky.consultar');
     Route::post('/asistente/vicky/valoracion', [VickyController::class, 'valorar'])

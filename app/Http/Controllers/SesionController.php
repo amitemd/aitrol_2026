@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ContextoOperativo;
+use App\Services\PanelAdministrativo;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +23,7 @@ final class SesionController extends Controller
 
     private const BLOQUEO_SEGUNDOS = 300;
 
-    public function inicio(ContextoOperativo $contexto): View|RedirectResponse
+    public function inicio(ContextoOperativo $contexto, PanelAdministrativo $panel): View|RedirectResponse
     {
         $usuario = Auth::user();
         if ($usuario === null) {
@@ -31,7 +32,8 @@ final class SesionController extends Controller
         if (! $usuario->empresa()->exists()) {
             return view('auth.empresa-inicial');
         }
-        if ($contexto->resolverSucursalWeb() === null) {
+        $sucursal = $contexto->resolverSucursalWeb();
+        if ($sucursal === null) {
             return to_route('configuracion.contexto.index');
         }
 
@@ -51,7 +53,18 @@ final class SesionController extends Controller
             $productosRecientes = $consulta->orderByDesc('created_at')->orderByDesc('id')->limit(4)->get();
         }
 
-        return view('adminlte.dashboard-v2', compact('productosRecientes'));
+        $periodo = $contexto->periodo() ?? $contexto->anioActual();
+
+        return view('adminlte.dashboard-v2', [
+            ...$panel->datos($periodo, $sucursal->id),
+            'productosRecientes' => $productosRecientes,
+            'personalizable' => $panel->personalizable(),
+            'preferencias' => $panel->preferencias($usuario->id),
+            'ordenInicial' => PanelAdministrativo::ORDEN,
+            'tiposGrafico' => PanelAdministrativo::GRAFICOS,
+            'periodo' => $periodo,
+            'sucursal' => $sucursal,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse
