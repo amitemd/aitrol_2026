@@ -1,22 +1,25 @@
 .aitrol-mark {
-    display: inline-grid;
+    position: relative;
+    display: inline-block;
     flex: 0 0 auto;
-    grid-template-columns: repeat(2, 15%);
-    grid-template-rows: repeat(2, 15%);
-    place-content: center;
-    gap: 8%;
     width: var(--aitrol-mark-size, 2.8rem);
-    height: var(--aitrol-mark-size, 2.8rem);
-    border-radius: .28em;
-    background: linear-gradient(145deg, #4d97ff, #1755e2);
-    box-shadow: inset 0 1px #d3e8ff57, 0 0 .95rem #3988ff55;
+    aspect-ratio: 1;
+    border-radius: 26%;
+    background: linear-gradient(145deg, #16466a, #0a213e 70%);
+    box-shadow: inset 0 0 0 1px #87e4ff4d, 0 .15rem .6rem #071a2f80;
 }
 
-.aitrol-mark span {
-    border-radius: .1rem;
-    background: #fff;
+.aitrol-mark :is(img, canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
-.aitrol-mark span:last-child {
-    opacity: .56;
+.aitrol-mark [hidden] { display: none; }
+
+.aitrol-wordmark {
+    font-weight: 800;
+    letter-spacing: .17em;
+    text-transform: uppercase;
 }

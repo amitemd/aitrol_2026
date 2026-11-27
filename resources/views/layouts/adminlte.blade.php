@@ -5,14 +5,15 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>@yield('title', 'Panel general') · Aitrol</title>
-  <script>
+  <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     if (window.frameElement?.hasAttribute('data-workspace-frame')) {
       document.documentElement.setAttribute('data-workspace-embedded', '');
     }
   </script>
 
   <!--begin::Theme Init (prevents flash of incorrect theme on load, #6043)-->
-  <script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     (() => {
       'use strict';
       const root = document.documentElement;
@@ -71,9 +72,7 @@
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.3.1/index.css"
     integrity="sha256-VzMk9RVNVApO0cXfOO7il3dD8OPyu0aDyyLDd8EEGk8="
-    crossorigin="anonymous"
-    media="print"
-    onload="this.media = 'all'" />
+    crossorigin="anonymous" />
   <!--end::Fonts-->
 
   <!--begin::Third Party Plugin(OverlayScrollbars)-->
@@ -95,7 +94,7 @@
   <!--end::Required Plugin(AdminLTE)-->
 
   <link rel="stylesheet" href="{{ asset('workspace.css') }}" />
-  <script src="{{ asset('comercial.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('comercial.js') }}" defer></script>
   <link rel="stylesheet" href="{{ asset('clientes.css') }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
   <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte-select2.min.css') }}" />
@@ -131,22 +130,22 @@
   </div>
   <!--begin::Script-->
   <!--begin::Third Party Plugin(OverlayScrollbars)-->
-  <script
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}"
     src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.17.0/browser/overlayscrollbars.browser.es6.min.js"
     crossorigin="anonymous"></script>
   <!--end::Third Party Plugin(OverlayScrollbars)--><!--begin::Required Plugin(popperjs for Bootstrap 5)-->
-  <script
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}"
     src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
     crossorigin="anonymous"></script>
   <!--end::Required Plugin(popperjs for Bootstrap 5)--><!--begin::Required Plugin(Bootstrap 5)-->
-  <script
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}"
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.min.js"
     crossorigin="anonymous"></script>
   <!--end::Required Plugin(Bootstrap 5)--><!--begin::Required Plugin(AdminLTE)-->
-  <script src="{{ asset('adminlte/js/adminlte.min.js') }}"></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('adminlte/js/adminlte.min.js') }}"></script>
   <!--end::Required Plugin(AdminLTE)-->
   <!--begin::OverlayScrollbars Configure-->
-  <script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}">
     const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
     const Default = {
       scrollbarTheme: 'os-theme-light',
@@ -181,16 +180,17 @@
      module (since 4.1) — no page script needed. Only the no-flash snippet
      in <head> stays inline, because it must run before first paint. -->
   <!--end::Color Mode Toggle-->
-  <script src="{{ asset('workspace.js') }}" defer></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" defer></script>
-  <script src="{{ asset('selectores.js') }}" defer></script>
-  <script src="{{ asset('ubicacion.js') }}" defer></script>
-  <script src="{{ asset('adjuntos.js') }}" defer></script>
-  <script src="{{ asset('acciones-fila.js') }}" defer></script>
-  <script src="{{ asset('red-fondo.js') }}" defer></script>
-  <script src="{{ asset('clientes-ficha.js') }}" defer></script>
-  <script src="{{ asset('usuarios-form.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('workspace.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('aitrol-brand.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('selectores.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('ubicacion.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('adjuntos.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('acciones-fila.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('red-fondo.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('clientes-ficha.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('usuarios-form.js') }}" defer></script>
   @stack('scripts')
 </body>
 

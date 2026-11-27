@@ -82,7 +82,8 @@ final class RegistrarAuditoria
         } catch (Throwable) {
             $usuario = null;
         }
-        $esAcceso = $ruta === 'login.store' || $ruta === 'logout';
+        $esInicio = in_array($ruta, ['login.store', 'login.alterno'], true);
+        $esAcceso = $esInicio || $ruta === 'logout';
         if (($usuario instanceof User || $esAcceso) && $ruta !== null) {
             $validacionWeb = $response->isRedirection() && $request->hasSession() && $request->session()->has('errors');
             $nivel = match (true) {
@@ -95,7 +96,7 @@ final class RegistrarAuditoria
                 $nivel === 'warning' => 'Solicitud rechazada',
                 $pestana !== null => 'Volvió a una pestaña abierta',
                 $ruta === 'logout' => 'Cerró sesión',
-                $ruta === 'login.store' => 'Inició sesión',
+                $esInicio => 'Inició sesión',
                 $request->isMethod('GET') => $request->is('api/*') ? 'Consultó por API' : 'Abrió o consultó una pantalla',
                 str_ends_with($ruta, '.store') => 'Registró datos',
                 str_ends_with($ruta, '.update') => 'Actualizó datos',

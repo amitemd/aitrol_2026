@@ -51,6 +51,14 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 ## Security Vulnerabilities
 
+### Despliegue de Aitrol
+
+- Sirve únicamente el directorio `public/`. Usa un certificado TLS válido y configura el proxy o Apache para redirigir HTTP y rechazar solicitudes HTTP que lleven credenciales. El proceso de PHP debe poder escribir en `storage/` y `bootstrap/cache/`. El código y `.env` deben quedar fuera de sus permisos de escritura.
+- En producción configura `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<dominio>`, `AITROL_REQUIRE_HTTPS=true`, `SESSION_SECURE_COOKIE=true` y `SESSION_ENCRYPT=true`. Puedes definir `AITROL_TRUSTED_HOSTS` con los nombres exactos y `AITROL_TRUSTED_PROXIES` con las IP o redes de los proxies que sustituyen las cabeceras reenviadas. Regenera la caché de configuración y verifica el acceso HTTPS antes de habilitar el servicio.
+- Usa una caché compartida entre las instancias de la aplicación para que el límite de intentos se aplique en todos los nodos.
+- Guarda copias cifradas de la base de datos y archivos privados fuera del servidor, con retención inmutable y credenciales distintas de las de Aitrol. Conserva la clave de aplicación en un respaldo seguro y verifica que puedes restaurar datos y archivos en una instancia aislada.
+- Ejecuta PHP con una cuenta de servicio sin privilegios administrativos y concede al usuario de base de datos solo los permisos que necesita la aplicación. Separa la cuenta usada para administrar el esquema. Mantén actualizado el sistema operativo, PHP y las dependencias.
+
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License

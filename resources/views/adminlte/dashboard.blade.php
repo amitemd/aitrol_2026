@@ -512,13 +512,13 @@
 
 @push('scripts')
 <!-- sortablejs -->
-    <script
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}"
       src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js"
       crossorigin="anonymous"
     ></script>
 
     <!-- sortablejs -->
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
       if (typeof Sortable !== 'undefined') {
         new Sortable(document.querySelector('.connectedSortable'), {
           group: 'shared',
@@ -534,14 +534,14 @@
 
     <!-- Chart.js + AdminLTE chart theme -->
     <!--begin::Third Party Plugin(Chart.js)-->
-    <script
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}"
       src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"
       integrity="sha256-hzZMwrKnamaEkp59a4Cxiol3lNs4QAyv8fzxeRxpJdI="
       crossorigin="anonymous"
     ></script>
     <!--end::Third Party Plugin(Chart.js)-->
     <!--begin::Chart.js theme preset-->
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
       // Styles every Chart.js chart on the page from AdminLTE's CSS variables —
       // font, text, gridlines, tooltip and legend — and keeps them in step with the
       // colour mode (ColorMode, the OS in auto mode, or your own code) and with
@@ -696,7 +696,7 @@
     <!--end::Chart.js theme preset-->
 
     <!-- Chart.js -->
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
       (() => {
         if (!globalThis.Chart || !globalThis.lteChartTheme) return;
         const { areaFill } = globalThis.lteChartTheme;
@@ -749,19 +749,19 @@
     </script>
 
     <!-- jsvectormap -->
-    <script
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}"
       src="https://cdn.jsdelivr.net/npm/jsvectormap@1.7.0/dist/jsvectormap.min.js"
       integrity="sha256-yjoBT8ZtgknE2gcA8yvWExzw8LsIAfj6/r/XAw889Qw="
       crossorigin="anonymous"
     ></script>
-    <script
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}"
       src="https://cdn.jsdelivr.net/npm/jsvectormap@1.7.0/dist/maps/world.js"
       integrity="sha256-3jwsIc9jvdlaTPxHelZqSxiVedrrJhV+jssQEAAiTt0="
       crossorigin="anonymous"
     ></script>
 
     <!-- jsvectormap -->
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
       // World map by jsVectorMap
       if (typeof jsVectorMap !== 'undefined') {
         new jsVectorMap({

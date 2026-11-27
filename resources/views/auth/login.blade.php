@@ -45,5 +45,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('auth.js') }}" defer></script>
+<script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('auth.js') }}" defer></script>
 @endpush

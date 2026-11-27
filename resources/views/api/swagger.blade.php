@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Documentación API · Aitrol</title>
@@ -22,8 +23,8 @@
         <p id="api-status" role="status">Cargando Swagger UI…</p>
         <div id="swagger-ui" data-spec="{{ route('swagger.spec') }}"></div>
     </main>
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.36.0/swagger-ui-bundle.js"></script>
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.36.0/swagger-ui-bundle.js"></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         const panel = document.getElementById('swagger-ui');
         const statusMessage = document.getElementById('api-status');
 

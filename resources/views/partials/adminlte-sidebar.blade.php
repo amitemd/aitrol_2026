@@ -2,7 +2,7 @@
     <div class="sidebar-brand">
         <a href="{{ route('dashboard') }}" class="brand-link" data-workspace-link="dashboard">
             @include('partials.aitrol-mark')
-            <span class="brand-text">Aitrol</span>
+            <span class="brand-text aitrol-wordmark">Aitrol</span>
         </a>
     </div>
     <div class="sidebar-search" role="search">

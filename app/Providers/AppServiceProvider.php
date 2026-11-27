@@ -11,11 +11,16 @@ use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
@@ -33,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        TrustProxies::at(config('seguridad.proxies', []));
+        $this->limitesDeAcceso();
         Auth::provider('usuarios-activos', fn ($app, $config) => (new EloquentUserProvider($app['hash'], $config['model']))
             ->withQuery(fn ($consulta) => $consulta->where('activo', true)));
         Event::listen(MessageLogged::class, RegistrarAuditoria::registrarMensaje(...));
@@ -54,5 +61,24 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Cambiar contraseña', rtrim((string) config('app.url'), '/').$ruta)
                 ->line('Si no solicitaste el cambio, puedes ignorar este mensaje.');
         });
+    }
+
+    private function limitesDeAcceso(): void
+    {
+        foreach ([
+            'inicio-sesion' => [6, 6],
+            'solicitar-clave' => [5, 4],
+            'restablecer-clave' => [6, 6],
+        ] as $nombre => [$porIp, $porCuenta]) {
+            RateLimiter::for($nombre, function (Request $request) use ($porIp, $porCuenta): array {
+                $limites = [Limit::perMinute($porIp)->by('ip:'.$request->ip())];
+                $email = $request->input('email');
+                if (is_string($email) && strlen($email) <= 255 && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $limites[] = Limit::perMinute($porCuenta)->by('cuenta:'.hash('sha256', Str::lower($email)));
+                }
+
+                return $limites;
+            });
+        }
     }
 }

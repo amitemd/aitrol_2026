@@ -68,9 +68,12 @@ final class RecuperacionClaveController extends Controller
         ]);
 
         $resultado = Password::reset($datos, function (User $usuario, string $clave): void {
-            $usuario->password = $clave;
-            $usuario->setRememberToken(Str::random(60));
-            $usuario->save();
+            $usuario->getConnection()->transaction(function () use ($usuario, $clave): void {
+                $usuario->password = $clave;
+                $usuario->setRememberToken(Str::random(60));
+                $usuario->save();
+                $usuario->tokens()->delete();
+            });
 
             event(new PasswordReset($usuario));
         });

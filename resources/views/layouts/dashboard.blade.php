@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#192b39">
     <title>@yield('title', 'Panel general') · Aitrol</title>
     <link rel="stylesheet" href="{{ asset('dashboard.css') }}">
-    <script src="{{ asset('dashboard.js') }}" defer></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('dashboard.js') }}" defer></script>
 </head>
 <body>
     @include('partials.dashboard-icons')

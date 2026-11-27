@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="no-referrer">
     <title>@yield('title') · Aitrol</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.min.css') }}">
     <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}">
     <link rel="stylesheet" href="{{ asset('auth.css') }}">
@@ -15,7 +16,7 @@
             <div class="access-logo">
                 @include('partials.aitrol-mark')
                 <div>
-                    <strong>Aitrol</strong>
+                    <strong class="aitrol-wordmark">Aitrol</strong>
                     <span class="access-product">ERP administrativo</span>
                 </div>
             </div>
@@ -31,7 +32,8 @@
             </div>
         </section>
     </main>
-    <script src="{{ asset('auth-showcase.js') }}" defer></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('auth-showcase.js') }}" defer></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('aitrol-brand.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

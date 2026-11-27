@@ -1,5 +1,5 @@
 @push('scripts')
-    <script src="{{ asset('listados.js') }}" defer></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('listados.js') }}" defer></script>
 @endpush
 
 <p class="alert" role="status" data-ajax-status hidden></p>

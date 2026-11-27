@@ -25,14 +25,14 @@ Route::middleware(['auth', 'auth.session'])->group(function (): void {
 });
 
 Route::middleware('guest')->group(function (): void {
-    Route::post('/', [SesionController::class, 'store'])->middleware('throttle:6,1')->name('login.store');
-    Route::post('/login', [SesionController::class, 'store'])->middleware('throttle:6,1');
+    Route::post('/', [SesionController::class, 'store'])->middleware('throttle:inicio-sesion')->name('login.store');
+    Route::post('/login', [SesionController::class, 'store'])->middleware('throttle:inicio-sesion')->name('login.alterno');
     Route::get('/forgot-password', [RecuperacionClaveController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [RecuperacionClaveController::class, 'store'])
-        ->middleware('throttle:5,1')->name('password.email');
+        ->middleware('throttle:solicitar-clave')->name('password.email');
     Route::get('/reset-password/{token}', [RecuperacionClaveController::class, 'edit'])->name('password.reset');
     Route::post('/reset-password', [RecuperacionClaveController::class, 'update'])
-        ->middleware('throttle:6,1')->name('password.update');
+        ->middleware('throttle:restablecer-clave')->name('password.update');
 });
 
 Route::view('/docs/api', 'api.swagger')->name('swagger.index');
@@ -42,6 +42,7 @@ Route::get('/openapi.json', function (Request $request, OpenApiDocument $documen
 })->name('swagger.spec');
 
 Route::get('/adminlte/{page}', function (string $page): Response {
+    abort_unless(app()->isLocal(), 404);
     $file = resource_path('views/adminlte/demo/'.$page);
 
     abort_unless(is_file($file), Response::HTTP_NOT_FOUND);
