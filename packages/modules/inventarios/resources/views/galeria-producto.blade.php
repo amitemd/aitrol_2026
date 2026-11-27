@@ -1,4 +1,4 @@
-<div class="ficha-producto-bloque" data-galeria-producto data-imagenes="{{ $galeria['imagenes']->toJson() }}">
+<div class="ficha-bloque" data-galeria-producto data-imagenes="{{ $galeria['imagenes']->toJson() }}">
     <h2 class="h6 d-flex align-items-center justify-content-between gap-2">
         <span><i class="bi bi-images me-2" aria-hidden="true"></i>Galería del producto</span>
         <span class="badge rounded-pill text-bg-secondary" data-galeria-contador>{{ $galeria['imagenes']->count() }} / 8</span>

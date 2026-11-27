@@ -32,10 +32,9 @@
                                 'etiquetaPestanas' => 'Ficha del usuario',
                             ])
                             <section id="usuario-generales" role="tabpanel" aria-labelledby="usuario-tab-generales"
-                                class="ficha-perfil" data-usuario-panel="generales">
-                                @include('partials.ficha-panel-intro', [
-                                    'tituloPanel' => 'Datos generales', 'descripcionPanel' => 'Edita la identidad, el correo de acceso y la foto de la cuenta.',
-                                ])
+                                class="ficha-bloque" data-usuario-panel="generales">
+                                @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Identificación y acceso', 'iconoBloque' => 'bi-person-vcard'])
+                                <div class="ficha-perfil">
                                 <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="nombres" class="form-label fw-semibold">Nombres</label>
@@ -111,12 +110,12 @@
                                         'vistaPrevia' => true, 'urlImagen' => $usuario->foto ? route('configuracion.usuarios.foto', $usuario) : null,
                                     ])
                                 </aside>
+                                </div>
                             </section>
                             <section id="usuario-ubicacion" role="tabpanel" aria-labelledby="usuario-tab-ubicacion"
-                                class="row g-3" data-usuario-panel="ubicacion">
-                                @include('partials.ficha-panel-intro', [
-                                    'tituloPanel' => 'Ubicación', 'descripcionPanel' => 'Registra el país, la ciudad y las referencias de la dirección.', 'claseIntro' => 'col-12',
-                                ])
+                                class="ficha-bloque" data-usuario-panel="ubicacion">
+                                @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Ubicación', 'iconoBloque' => 'bi-geo-alt'])
+                                <div class="row g-3">
                                 @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $usuario->persona?->id_ciudad)])
                                 @foreach ([
                                     'direccion' => ['Dirección', 255, 'col-12', 'street-address'],
@@ -135,6 +134,7 @@
                                 <div class="col-12">
                                     <label for="referencia" class="form-label fw-semibold">Referencia</label>
                                     <textarea id="referencia" name="referencia" class="form-control" rows="2" maxlength="1000">{{ old('referencia', $usuario->persona?->referencia) }}</textarea>
+                                </div>
                                 </div>
                             </section>
                         </div>

@@ -17,11 +17,8 @@
     @include('partials.pestanas-ficha', ['pestanas' => $pestanas, 'contexto' => 'producto'])
 
     <section id="producto-generales" role="tabpanel" aria-labelledby="producto-tab-generales" data-usuario-panel="generales" class="ficha-producto-panel">
-        @include('partials.ficha-panel-intro', [
-            'tituloPanel' => 'General', 'descripcionPanel' => 'Define el código, la categoría y los datos de inventario del producto.',
-        ])
-        <div class="ficha-producto-bloque">
-            <h2 class="h6"><i class="bi bi-upc-scan me-2" aria-hidden="true"></i>Identificación</h2>
+        <div class="ficha-bloque">
+            @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Identificación', 'iconoBloque' => 'bi-upc-scan'])
             <div class="row g-3">
                 @foreach (['codigo' => ['Código', 60, 'col-sm-4'], 'nombre' => ['Nombre', 160, 'col-sm-8'],
                     'codigo_barras' => ['Código de barras', 80, 'col-sm-4'], 'marca' => ['Marca', 100, 'col-sm-4'], 'modelo' => ['Modelo', 100, 'col-sm-4']] as $campo => [$etiqueta, $maximo, $ancho])
@@ -33,7 +30,7 @@
                 @endforeach
             </div>
         </div>
-        <div class="ficha-producto-bloque">
+        <div class="ficha-bloque">
             <h2 class="h6"><i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>Clasificación e inventario</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
@@ -73,10 +70,7 @@
     </section>
 
     <section id="producto-contabilidad" role="tabpanel" aria-labelledby="producto-tab-contabilidad" data-usuario-panel="contabilidad" class="ficha-producto-panel">
-        @include('partials.ficha-panel-intro', [
-            'tituloPanel' => 'Cuentas contables', 'descripcionPanel' => 'Consulta la plantilla de la categoría o asigna cuentas si la categoría no tiene plantilla.',
-        ])
-        <div class="ficha-producto-bloque" data-producto-herencia data-plantillas="{{ $descripcionPlantillas->toJson(JSON_UNESCAPED_UNICODE) }}" hidden>
+        <div class="ficha-bloque" data-producto-herencia data-plantillas="{{ $descripcionPlantillas->toJson(JSON_UNESCAPED_UNICODE) }}" hidden>
             <h2 class="h6"><i class="bi bi-journal-check me-2" aria-hidden="true"></i><span data-producto-plantilla></span></h2>
             <p class="text-body-secondary small">Estas cuentas se heredan de la categoría.</p>
             <dl class="row mb-0">
@@ -85,7 +79,7 @@
                 @endforeach
             </dl>
         </div>
-        <div class="ficha-producto-bloque" data-producto-manual>
+        <div class="ficha-bloque" data-producto-manual>
             <h2 class="h6"><i class="bi bi-sliders me-2" aria-hidden="true"></i>Asignación manual</h2>
             <p class="text-body-secondary small">Disponible cuando la categoría carece de plantilla.</p>
             <div class="row g-3">
@@ -95,10 +89,7 @@
     </section>
 
     <section id="producto-precios" role="tabpanel" aria-labelledby="producto-tab-precios" data-usuario-panel="precios" class="ficha-producto-panel">
-        @include('partials.ficha-panel-intro', [
-            'tituloPanel' => 'Precios y costos', 'descripcionPanel' => 'Registra los valores de referencia y los límites de descuento.',
-        ])
-        <div class="ficha-producto-bloque">
+        <div class="ficha-bloque">
             <h2 class="h6"><i class="bi bi-tags me-2" aria-hidden="true"></i>Precios y descuentos de referencia</h2>
             <div class="row g-3">
                 @foreach (config('inventarios.valores_producto') as $campo => [$etiqueta, $maximo, $decimales])
@@ -113,17 +104,11 @@
     </section>
 
     <section id="producto-imagenes" role="tabpanel" aria-labelledby="producto-tab-imagenes" data-usuario-panel="imagenes" class="ficha-producto-panel">
-        @include('partials.ficha-panel-intro', [
-            'tituloPanel' => 'Imágenes', 'descripcionPanel' => 'Ordena la galería y elige la foto que servirá de portada.',
-        ])
         @include('inventarios::galeria-producto')
     </section>
 
     <section id="producto-documentos" role="tabpanel" aria-labelledby="producto-tab-documentos" data-usuario-panel="documentos" class="ficha-producto-panel">
-        @include('partials.ficha-panel-intro', [
-            'tituloPanel' => 'Documentación', 'descripcionPanel' => 'Vincula la ficha técnica y registra la descripción del producto.',
-        ])
-        <div class="ficha-producto-bloque">
+        <div class="ficha-bloque">
             <h2 class="h6"><i class="bi bi-file-earmark-text me-2" aria-hidden="true"></i>Ficha técnica</h2>
             <label class="form-label" for="producto-url">Enlace al documento (HTTPS)</label>
             <input id="producto-url" name="ficha_tecnica_url" class="form-control mb-3" type="url" maxlength="500" value="{{ old('ficha_tecnica_url', $registro['ficha_tecnica_url'] ?? '') }}">

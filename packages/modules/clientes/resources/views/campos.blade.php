@@ -14,10 +14,8 @@
 @endphp
 @include('partials.pestanas-ficha', ['pestanas' => $pestanas, 'contexto' => 'ficha', 'navegacionFicha' => true])
 
-<section id="ficha-generales" data-ficha-panel="generales" aria-label="Datos generales">
-    @include('partials.ficha-panel-intro', [
-        'tituloPanel' => 'Datos generales', 'descripcionPanel' => 'Registra la identificación, el nombre y la imagen de la ficha.',
-    ])
+<section id="ficha-generales" class="ficha-bloque" data-ficha-panel="generales" aria-label="Datos generales">
+    @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Identificación', 'iconoBloque' => 'bi-person-vcard'])
     <div class="ficha-perfil">
         <div class="row g-3">
             <div class="col-md-6">
@@ -58,11 +56,8 @@
     </div>
 </section>
 
-<section id="ficha-{{ $panelUbicacion }}" data-ficha-panel="{{ $panelUbicacion }}" aria-label="{{ $tituloUbicacion }}">
-    @include('partials.ficha-panel-intro', [
-        'tituloPanel' => $tituloUbicacion,
-        'descripcionPanel' => $esProveedor ? 'Registra la dirección y la ubicación del proveedor.' : 'Define la dirección, la zona y la ubicación en el mapa.',
-    ])
+<section id="ficha-{{ $panelUbicacion }}" class="ficha-bloque" data-ficha-panel="{{ $panelUbicacion }}" aria-label="{{ $tituloUbicacion }}">
+    @include('partials.ficha-bloque-titulo', ['tituloBloque' => $tituloUbicacion, 'iconoBloque' => $pestanas[$panelUbicacion][1]])
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'direccion', 'etiqueta' => 'Dirección', 'valor' => $cliente?->direccion, 'limite' => 255, 'ancho' => 'col-12'])
         @include('partials.ubicacion-selects', ['idCiudad' => old('id_ciudad', $perfil['id_ciudad'] ?? null)])
@@ -97,10 +92,8 @@
     @endunless
 </section>
 
-<section id="ficha-contactos" data-ficha-panel="contactos" aria-label="Contactos">
-    @include('partials.ficha-panel-intro', [
-        'tituloPanel' => 'Contactos', 'descripcionPanel' => 'Guarda los datos de contacto y las personas de referencia.',
-    ])
+<section id="ficha-contactos" class="ficha-bloque" data-ficha-panel="contactos" aria-label="Contactos">
+    @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Datos de contacto', 'iconoBloque' => 'bi-person-lines-fill'])
     <div class="row g-3">
         @include('clientes::campo-ficha', ['campo' => 'email', 'etiqueta' => 'Correo electrónico', 'valor' => $cliente?->email, 'limite' => 254, 'tipo' => 'email'])
         @include('clientes::campo-ficha', ['campo' => 'telefono', 'etiqueta' => 'Teléfono', 'valor' => $cliente?->telefono, 'limite' => 30, 'tipo' => 'tel'])
@@ -123,10 +116,8 @@
     </template>
 </section>
 
-<section id="ficha-documentos" data-ficha-panel="documentos" aria-label="Documentos">
-    @include('partials.ficha-panel-intro', [
-        'tituloPanel' => 'Documentos', 'descripcionPanel' => 'Adjunta los archivos que respaldan este registro.',
-    ])
+<section id="ficha-documentos" class="ficha-bloque" data-ficha-panel="documentos" aria-label="Documentos">
+    @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Documentos', 'iconoBloque' => 'bi-folder2-open'])
     @include('partials.campo-adjunto', [
         'campo' => 'adjuntos', 'nombre' => 'adjuntos[]', 'titulo' => 'Adjuntar documentos', 'iconoAdjunto' => 'bi-paperclip',
         'formatos' => 'application/pdf,image/jpeg,image/png', 'ayuda' => 'PDF, JPG o PNG · hasta 5 archivos de 8 MB cada uno',
