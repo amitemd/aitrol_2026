@@ -20,6 +20,8 @@ interface RepositorioTributario
 
     public function tieneConstancia(int $id): bool;
 
+    public function existeEntregaSolapada(stdClass $declaracion): bool;
+
     public function evento(int $id, string $accion, ?string $detalle = null): void;
 
     public function guardarNomina(array $datos): stdClass;

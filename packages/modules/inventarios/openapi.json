@@ -1676,6 +1676,20 @@
       "InvKardex": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,
@@ -1765,6 +1779,20 @@
       "InvOperacion": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,
@@ -1852,6 +1880,20 @@
       "InvOperacionListado": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,

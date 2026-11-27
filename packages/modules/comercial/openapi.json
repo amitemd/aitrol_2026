@@ -3097,6 +3097,34 @@
       "ComRegistro": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "id_asiento_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "format": "int64",
@@ -3230,6 +3258,34 @@
       "ComDetalle": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "id_asiento_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "format": "int64",

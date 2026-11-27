@@ -166,6 +166,9 @@ final readonly class ContableController
             'reglas' => ['nullable', 'array:'.implode(',', $reglas)], 'reglas.*' => ['nullable', 'integer', 'min:1'],
             'tesoreria' => ['nullable', 'array'], 'tesoreria.*' => ['nullable', 'integer', 'min:1'],
         ]);
+        if ($entrada['activa'] && empty($entrada['fecha_inicio'])) {
+            throw ValidationException::withMessages(['fecha_inicio' => 'Indica desde cuándo se contabilizarán las operaciones.']);
+        }
         foreach (array_keys($entrada['tesoreria'] ?? []) as $clave) {
             if (! preg_match('/^[1-9][0-9]{0,17}$/', (string) $clave)) throw ValidationException::withMessages(['tesoreria' => 'Usa como clave el ID de la caja o banco.']);
         }

@@ -315,3 +315,32 @@ Artisan::command('caja-bancos:revocar-token {email} {id}', function (): int {
 
     return 0;
 })->purpose('Revocar una credencial para Caja y bancos');
+
+foreach (['contabilidad', 'tributario'] as $moduloFinanciero) {
+    Artisan::command($moduloFinanciero.':token {email} {nombre} {--escritura} {--dias=90}', function () use ($moduloFinanciero): int {
+        $usuario = User::query()->where('email', $this->argument('email'))->whereNotNull('id_empresa')->first();
+        $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
+        if ($usuario === null || $dias === false) {
+            $this->error('Indique un usuario con empresa asignada y una vigencia de 1 a 365 días.');
+            return 1;
+        }
+        $alcances = [$moduloFinanciero.':leer'];
+        if ($this->option('escritura')) $alcances[] = $moduloFinanciero.':escribir';
+        $this->line($usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias))->plainTextToken);
+
+        return 0;
+    })->purpose('Emitir una credencial del módulo '.$moduloFinanciero);
+
+    Artisan::command($moduloFinanciero.':revocar-token {email} {id}', function () use ($moduloFinanciero): int {
+        $usuario = User::query()->where('email', $this->argument('email'))->first();
+        $token = $usuario?->tokens()->find($this->argument('id'));
+        if ($token === null || ! in_array($moduloFinanciero.':leer', $token->abilities, true)) {
+            $this->error('No se encontró la credencial para ese usuario.');
+            return 1;
+        }
+        $token->delete();
+        $this->info('Credencial revocada.');
+
+        return 0;
+    })->purpose('Revocar una credencial del módulo '.$moduloFinanciero);
+}

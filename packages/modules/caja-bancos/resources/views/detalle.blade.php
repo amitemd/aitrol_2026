@@ -21,7 +21,7 @@
             <h1 class="card-header fs-5">Detalle del registro</h1>
             <div class="card-body">
                 <dl class="row">
-                    @if (!empty($registro['numero_asiento']))
+                    @if (!empty($registro['numero_asiento']) || !empty($registro['numero_asiento_contable']))
                         <dt class="col-sm-5">Contabilidad</dt><dd class="col-sm-7">@include('partials.referencia-asiento', ['registroAsiento' => $registro])</dd>
                     @endif
                     @foreach ($campos as $campo => $etiqueta)

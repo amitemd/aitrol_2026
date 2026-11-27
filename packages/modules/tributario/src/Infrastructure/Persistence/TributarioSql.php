@@ -48,6 +48,13 @@ final readonly class TributarioSql implements RepositorioTributario
         return $this->tabla('tr_documentos')->where('id_declaracion', $id)->where('tipo', 'acuse')->exists();
     }
 
+    public function existeEntregaSolapada(stdClass $declaracion): bool
+    {
+        return $this->tabla('tr_declaraciones')->where('formato', $declaracion->formato)->where('id', '<>', $declaracion->id)
+            ->whereIn('estado', ['presentado', 'entregado'])->where('desde', '<=', $declaracion->hasta)
+            ->where('hasta', '>=', $declaracion->desde)->exists();
+    }
+
     public function evento(int $id, string $accion, ?string $detalle = null): void
     {
         $this->guardar('tr_eventos', ['id_declaracion' => $id, 'accion' => $accion, 'detalle' => $detalle]);

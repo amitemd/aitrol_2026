@@ -1,5 +1,5 @@
 @php
-    $nroAsiento = data_get($registroAsiento, 'numero_asiento');
+    $nroAsiento = data_get($registroAsiento, 'numero_asiento') ?? data_get($registroAsiento, 'numero_asiento_contable');
     $nroReversion = data_get($registroAsiento, 'numero_asiento_reversion');
 @endphp
 @if ($nroAsiento || $nroReversion)

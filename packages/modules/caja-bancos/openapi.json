@@ -2707,6 +2707,19 @@
       "CBMovimientoAlta": {
         "type": "object",
         "properties": {
+          "flujo_contable": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "operacion",
+              "inversion",
+              "financiacion",
+              "apertura",
+              null
+            ]
+          },
           "id_cuenta": {
             "type": "integer",
             "minimum": 1,
@@ -2877,6 +2890,34 @@
       "CBOperacion": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "id_asiento_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,
@@ -2993,6 +3034,20 @@
       "CBAsiento": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,
@@ -3425,6 +3480,20 @@
       "CBConciliacion": {
         "type": "object",
         "properties": {
+          "id_asiento_contable": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento_contable": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,

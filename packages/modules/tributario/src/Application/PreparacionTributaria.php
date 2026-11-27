@@ -39,7 +39,7 @@ final readonly class PreparacionTributaria
             abort_unless($anterior->estado === $origen, 409, 'La acción no está disponible para el estado actual.');
             if ($accion === 'registrar-entrega') {
                 abort_unless($this->repositorio->tieneConstancia($id), 422, 'Adjunta una constancia de presentación o entrega en Gestión documental.');
-                abort_if($campos['fecha_externa'] < $anterior->hasta, 422, 'La fecha de entrega debe ser igual o posterior al cierre del período.');
+                abort_if($this->repositorio->existeEntregaSolapada($anterior), 409, 'Ya hay una constancia registrada para parte de ese período.');
             }
             $this->repositorio->guardarDeclaracion(['estado' => $destino] + array_intersect_key($campos, array_flip(['referencia_externa', 'fecha_externa'])), $id);
             $this->repositorio->evento($id, $destino, $campos['motivo'] ?? $campos['referencia_externa'] ?? null);

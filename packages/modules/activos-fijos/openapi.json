@@ -2592,6 +2592,20 @@
       "AFActivo": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,
@@ -2844,6 +2858,20 @@
       "AFMovimiento": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,
@@ -2973,6 +3001,20 @@
       "AFDepreciacion": {
         "type": "object",
         "properties": {
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "numero_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
           "id": {
             "type": "integer",
             "minimum": 1,

@@ -72,7 +72,7 @@ final readonly class DatosTesoreria
         if ($seccion === 'conciliacion' && isset($filtros['id_extracto'])) $consulta->where('cb_lineas_extracto.id_extracto', $filtros['id_extracto']);
         if ($seccion === 'conciliacion') {
             $consulta->leftJoin('cb_asientos as conciliado', 'conciliado.id', '=', 'cb_lineas_extracto.id_asiento');
-            ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'conciliado.id_operacion');
+            ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'conciliado.id_operacion', 'asiento_contable');
         }
         if (isset($filtros['id_cuenta'])) {
             if ($cuenta === null) {
