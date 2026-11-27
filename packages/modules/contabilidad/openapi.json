@@ -1,0 +1,2867 @@
+{
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/contabilidad/asientos": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadListarAsientos",
+        "summary": "Listar asientos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por nombre, concepto, código o referencia, según la sección."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/COPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/COAsiento" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadRegistrarAsientos",
+        "summary": "Registrar asientos",
+        "description": "Registra un asiento balanceado en USD dentro de un período abierto. Las operaciones repetidas con la misma clave devuelven el registro original.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COAsientoCrear" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COAsiento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COAsiento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ContabilidadConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/asientos/{registro}": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadDetalleAsientos",
+        "summary": "Consultar asientos por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COAsiento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/asientos/{registro}/revertir": {
+      "post": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadrevertirAsientos",
+        "summary": "Revertir asientos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COReversion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COAsiento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ContabilidadConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/cuentas": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadListarCuentas",
+        "summary": "Listar cuentas",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por nombre, concepto, código o referencia, según la sección."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/COPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/COCuenta" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadRegistrarCuentas",
+        "summary": "Registrar cuentas",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COCuentaCrear" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COCuenta" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ContabilidadConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/cuentas/{registro}": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadDetalleCuentas",
+        "summary": "Consultar cuentas por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COCuenta" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadeditarCuentas",
+        "summary": "Editar cuentas",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COCuentaEditar" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COCuenta" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ContabilidadConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/periodos": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadListarPeriodos",
+        "summary": "Listar períodos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por nombre, concepto, código o referencia, según la sección."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/COPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/COPeriodo" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadRegistrarPeriodos",
+        "summary": "Registrar períodos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COPeriodoCrear" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COPeriodo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ContabilidadConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/periodos/{registro}": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadDetallePeriodos",
+        "summary": "Consultar períodos por ID",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COPeriodo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/periodos/{registro}/cerrar": {
+      "post": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadcerrarPeriodos",
+        "summary": "Cerrar períodos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COCierre" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COPeriodo" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/ContabilidadConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/integraciones": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadObtenerIntegraciones",
+        "summary": "Consultar reglas de contabilización automática",
+        "responses": {
+          "200": {
+            "description": "Configuración de la empresa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COIntegracion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadActualizarIntegraciones",
+        "summary": "Configurar reglas y activar contabilización automática",
+        "description": "Reglas por clave y cuentas de tesorería asociadas por ID de caja o banco. Al activar, indica fecha de inicio. Solo registra operaciones nuevas desde esa fecha.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/COIntegracion" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuración actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/COIntegracion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/libro-diario": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadDiario",
+        "summary": "Libro diario",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "debe": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "haber": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COLinea" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/libro-diario/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadDiarioCsv",
+        "summary": "Exportar Libro diario a CSV",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/mayorizacion": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadMayor",
+        "summary": "Mayorización",
+        "description": "El saldo final y los saldos por movimiento se expresan como Debe menos Haber.",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Cuenta auxiliar. Se requiere para obtener movimientos o exportar."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "apertura": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "debe": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "haber": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "cierre": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COMayor" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/mayorizacion/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadMayorCsv",
+        "summary": "Exportar Mayorización a CSV",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Cuenta auxiliar. Se requiere para obtener movimientos o exportar."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/balance-comprobacion": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadComprobacion",
+        "summary": "Balance de comprobación",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "apertura": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "debe": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "haber": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "cierre": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COComprobacion" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/balance-comprobacion/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadComprobacionCsv",
+        "summary": "Exportar Balance de comprobación a CSV",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/estado-resultados": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadResultados",
+        "summary": "Estado de resultados",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "ingresos": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "gastos": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "resultado": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COImporteCuenta" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/estado-resultados/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadResultadosCsv",
+        "summary": "Exportar Estado de resultados a CSV",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/balance-financiero": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadSituacion",
+        "summary": "Estado de situación financiera",
+        "parameters": [
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "activos": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "pasivos": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "patrimonio_registrado": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "resultado_acumulado": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "patrimonio": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "pasivo_patrimonio": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "diferencia": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COImporteCuenta" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/balance-financiero/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadSituacionCsv",
+        "summary": "Exportar Estado de situación financiera a CSV",
+        "parameters": [
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/flujo-caja": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadFlujo",
+        "summary": "Estado de flujo de caja",
+        "description": "Método directo, según la actividad registrada. Se excluyen traslados entre cuentas de efectivo.",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "apertura": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "cierre": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "neto": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "diferencia": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COFlujo" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/flujo-caja/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadFlujoCsv",
+        "summary": "Exportar Estado de flujo de caja a CSV",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/cambios-patrimonio": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadPatrimonio",
+        "summary": "Estado de cambios en el patrimonio",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte contable en USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moneda": {
+                      "const": "USD"
+                    },
+                    "desde": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date"
+                    },
+                    "hasta": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "totales": {
+                      "type": "object",
+                      "properties": {
+                        "apertura": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "aporte": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "retiro": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "distribucion": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "traspaso_resultado": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "otro": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "registro_inicial": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "resultado": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        },
+                        "cierre": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "example": "15.00"
+                        }
+                      }
+                    },
+                    "requiere_cuenta": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/COPatrimonio" }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "current_page": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "format": "int64"
+                    }
+                  },
+                  "required": [
+                    "moneda",
+                    "hasta",
+                    "totales",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/contabilidad/reportes/cambios-patrimonio/exportar": {
+      "get": {
+        "tags": [
+          "Contabilidad"
+        ],
+        "operationId": "contabilidadPatrimonioCsv",
+        "summary": "Exportar Estado de cambios en el patrimonio a CSV",
+        "parameters": [
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inicio inclusive. Por defecto, primero de enero del año de la fecha de corte."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Corte inclusive. Por defecto, fecha actual."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo CSV",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "COCuentaCrear": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "clase": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "pasivo",
+              "patrimonio",
+              "ingreso",
+              "gasto"
+            ]
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "auxiliar": {
+            "type": "boolean"
+          },
+          "efectivo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "clase"
+        ]
+      },
+      "COCuentaEditar": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "activo"
+        ]
+      },
+      "COCuenta": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "clase": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "pasivo",
+              "patrimonio",
+              "ingreso",
+              "gasto"
+            ]
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "auxiliar": {
+            "type": "boolean"
+          },
+          "efectivo": {
+            "type": "boolean"
+          },
+          "id_padre": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "codigo_padre": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "padre": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "COPeriodoCrear": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "nombre",
+          "desde",
+          "hasta"
+        ]
+      },
+      "COPeriodo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "cerrado_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-11-26 14:30:00"
+          },
+          "motivo_cierre": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "COAsientoCrear": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "concepto": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "flujo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "operacion",
+              "inversion",
+              "financiacion",
+              "apertura",
+              "traslado",
+              null
+            ]
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/COLineaCrear" },
+            "minItems": 2,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "fecha",
+          "concepto",
+          "lineas"
+        ]
+      },
+      "COLineaCrear": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "debe": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "haber": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detalle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 250
+          },
+          "movimiento_patrimonio": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "aporte",
+              "retiro",
+              "distribucion",
+              "traspaso_resultado",
+              "apertura",
+              "otro",
+              null
+            ]
+          }
+        },
+        "required": [
+          "id_cuenta"
+        ]
+      },
+      "COLinea": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_asiento": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "debe": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "haber": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "detalle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 250
+          },
+          "movimiento_patrimonio": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "aporte",
+              "retiro",
+              "distribucion",
+              "traspaso_resultado",
+              "apertura",
+              "otro",
+              null
+            ]
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "numero": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "concepto": {
+            "type": "string"
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "clase": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "pasivo",
+              "patrimonio",
+              "ingreso",
+              "gasto"
+            ]
+          },
+          "efectivo": {
+            "type": "boolean"
+          },
+          "flujo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "operacion",
+              "inversion",
+              "financiacion",
+              "apertura",
+              "traslado",
+              null
+            ]
+          }
+        }
+      },
+      "COAsiento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "concepto": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "flujo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "operacion",
+              "inversion",
+              "financiacion",
+              "apertura",
+              "traslado",
+              null
+            ]
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "id_periodo": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "periodo": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "id_reversa_de": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "numero_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "origen": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id_origen": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/COLinea" }
+          }
+        }
+      },
+      "COReversion": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "fecha",
+          "motivo"
+        ]
+      },
+      "COCierre": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "COIntegracion": {
+        "type": "object",
+        "properties": {
+          "activa": {
+            "type": "boolean"
+          },
+          "fecha_inicio": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "reglas": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "format": "int64"
+            }
+          },
+          "tesoreria": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "format": "int64"
+            }
+          }
+        },
+        "required": [
+          "activa"
+        ]
+      },
+      "COPaginacion": {
+        "type": "object",
+        "properties": {
+          "current_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "last_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "COMayor": {
+        "allOf": [
+          { "$ref": "#/components/schemas/COLinea" },
+          {
+            "type": "object",
+            "properties": {
+              "saldo": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "example": "15.00"
+              }
+            }
+          }
+        ]
+      },
+      "COComprobacion": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "clase": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "pasivo",
+              "patrimonio",
+              "ingreso",
+              "gasto"
+            ]
+          },
+          "apertura": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "debe": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "haber": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "cierre": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      },
+      "COImporteCuenta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "clase": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "pasivo",
+              "patrimonio",
+              "ingreso",
+              "gasto"
+            ]
+          },
+          "importe": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      },
+      "COFlujo": {
+        "type": "object",
+        "properties": {
+          "flujo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "operacion",
+              "inversion",
+              "financiacion",
+              "apertura",
+              "traslado",
+              null
+            ]
+          },
+          "ingresos": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "egresos": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "neto": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      },
+      "COPatrimonio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "apertura": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "aporte": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "retiro": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "distribucion": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "traspaso_resultado": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "otro": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "registro_inicial": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "resultado": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "cierre": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      }
+    },
+    "responses": {
+      "ContabilidadConflicto": {
+        "description": "Período cerrado o ausente, código duplicado, reversión existente u otro conflicto.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorApi" }
+          }
+        }
+      }
+    }
+  }
+}

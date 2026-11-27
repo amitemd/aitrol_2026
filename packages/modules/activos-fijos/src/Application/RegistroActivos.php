@@ -3,6 +3,7 @@
 namespace Aitrol\ActivosFijos\Application;
 
 use App\Events\OperacionContabilizable;
+use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use App\Services\EmpresaActiva;
 use Illuminate\Database\Query\Builder;
@@ -45,7 +46,9 @@ final readonly class RegistroActivos
                     ->leftJoin('users as previo', fn ($join) => $join->on('previo.id', '=', 'af_movimientos.id_responsable_anterior')->on('previo.id_empresa', '=', 'af_movimientos.id_empresa'))
                     ->leftJoin('users as nuevo', fn ($join) => $join->on('nuevo.id', '=', 'af_movimientos.id_responsable_destino')->on('nuevo.id_empresa', '=', 'af_movimientos.id_empresa'))
                     ->addSelect('anterior.nombre as ubicacion_anterior', 'destino.nombre as ubicacion_destino', 'previo.name as responsable_anterior', 'nuevo.name as responsable_destino');
+                ReferenciaAsiento::agregar($consulta, 'activos.baja', 'af_movimientos.id');
             }
+            if ($seccion === 'depreciaciones') ReferenciaAsiento::agregar($consulta, 'activos.depreciacion', 'af_depreciaciones.id');
 
             return $this->buscar($consulta, $filtros, ['bien.codigo', 'bien.nombre']);
         }
@@ -61,6 +64,7 @@ final readonly class RegistroActivos
         if (isset($filtros['activo'])) {
             $filtros['activo'] ? $consulta->whereNull('af_activos.fecha_baja') : $consulta->whereNotNull('af_activos.fecha_baja');
         }
+        ReferenciaAsiento::agregar($consulta, 'activos.alta', 'af_activos.id');
         if (isset($filtros['desde'])) $consulta->where('af_activos.fecha_adquisicion', '>=', $filtros['desde']);
         if (isset($filtros['hasta'])) $consulta->where('af_activos.fecha_adquisicion', '<=', $filtros['hasta']);
 

@@ -2,6 +2,7 @@
 
 namespace Aitrol\CajaBancos\Application;
 
+use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use App\Services\EmpresaActiva;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -38,13 +39,15 @@ final readonly class DatosTesoreria
 
     public function libro(): Builder
     {
-        return $this->tabla('cb_asientos')
+        $consulta = $this->tabla('cb_asientos')
             ->join('cb_operaciones as op', 'op.id', '=', 'cb_asientos.id_operacion')
             ->join('cb_cuentas as cuenta', 'cuenta.id', '=', 'cb_asientos.id_cuenta')
             ->leftJoin('cb_lineas_extracto as extracto', 'extracto.id_asiento', '=', 'cb_asientos.id')
             ->leftJoin('cb_operaciones as reversa', 'reversa.id_reversa_de', '=', 'op.id')
             ->select('cb_asientos.*', 'op.tipo', 'op.fecha', 'op.moneda', 'op.concepto', 'op.referencia', 'op.id_reversa_de',
                 'cuenta.nombre as cuenta', 'cuenta.codigo as codigo_cuenta', 'extracto.id as linea_conciliada', 'reversa.id as id_reversion');
+
+        return ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'cb_asientos.id_operacion');
     }
 
     public function listado(string $seccion, array $filtros): Builder
@@ -87,7 +90,9 @@ final readonly class DatosTesoreria
             if (isset($filtros['hasta'])) $consulta->whereDate($fecha, '<=', $filtros['hasta']);
         }
 
-        return $consulta;
+        ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'cb_operaciones.id');
+
+        return ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'reversa.id', 'asiento_reversion');
     }
 
     public function detalle(string $seccion, int $id): stdClass

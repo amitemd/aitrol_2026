@@ -2,6 +2,7 @@
 
 namespace Aitrol\Inventarios\Infrastructure\Persistence;
 
+use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use App\Services\EmpresaActiva;
 use Closure;
@@ -70,7 +71,8 @@ final readonly class InventarioSql implements RepositorioInventario
 
     public function operacion(int $id): stdClass
     {
-        $operacion = $this->tabla('inv_operaciones')->where('id', $id)->first() ?? abort(404, 'Movimiento no encontrado.');
+        $consulta = $this->tabla('inv_operaciones')->select('inv_operaciones.*')->where('id', $id);
+        $operacion = ReferenciaAsiento::inventario($consulta, 'inv_operaciones.id')->first() ?? abort(404, 'Movimiento no encontrado.');
         $operacion->lineas = $this->tabla('inv_kardex')->where('id_operacion', $id)->orderBy('id')->get();
 
         return $operacion;
@@ -147,6 +149,7 @@ final readonly class InventarioSql implements RepositorioInventario
         })->addSelect('destino.nombre as bodega_destino')->orderByDesc($tabla.'.id');
         $tipos = ['ajuste_entrada', 'ajuste_salida'];
         $seccion === 'ajustes' ? $consulta->whereIn($tabla.'.tipo', $tipos) : $consulta->whereNotIn($tabla.'.tipo', $tipos);
+        ReferenciaAsiento::inventario($consulta, $tabla.'.id');
 
         return $this->filtrar($consulta, $tabla, $filtros, $tabla.'.created_at');
     }
@@ -156,6 +159,7 @@ final readonly class InventarioSql implements RepositorioInventario
         $consulta = $this->conCatalogos('inv_kardex')->join('inv_operaciones as o', function ($join): void {
             $join->on('o.id', '=', 'inv_kardex.id_operacion')->on('o.id_empresa', '=', 'inv_kardex.id_empresa');
         })->addSelect('o.tipo', 'o.motivo', 'o.referencia', 'o.created_at')->orderByDesc('inv_kardex.id');
+        ReferenciaAsiento::inventario($consulta, 'inv_kardex.id_operacion');
 
         return $this->filtrar($consulta, 'inv_kardex', $filtros, 'o.created_at');
     }

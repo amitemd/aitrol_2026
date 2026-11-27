@@ -2,6 +2,7 @@
     --aitrol-canvas: #eff4fb;
     --aitrol-glow: #d6e6ff;
     --aitrol-grid: #466c9d0e;
+    --aitrol-punto-fondo: #285d9d40;
     --aitrol-surface: #fbfdff;
     --aitrol-field: #ecf3fc;
     --aitrol-border: #ccd9eb;
@@ -14,6 +15,7 @@
     --aitrol-canvas: #0c1626;
     --aitrol-glow: #152e50;
     --aitrol-grid: #89bdf513;
+    --aitrol-punto-fondo: #a6d2ff59;
     --aitrol-surface: #122137;
     --aitrol-field: #0c182b;
     --aitrol-border: #2b405c;
@@ -29,6 +31,33 @@
         linear-gradient(90deg, var(--aitrol-grid) 1px, transparent 1px) 0 0 / 2rem 2rem,
         radial-gradient(ellipse at top right, var(--aitrol-glow), transparent 42rem),
         var(--aitrol-canvas);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .aitrol-shell .app-main {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .aitrol-shell .app-main::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+            radial-gradient(circle at 17% 24%, var(--aitrol-punto-fondo) 1px, transparent 2px),
+            radial-gradient(circle at 73% 68%, var(--aitrol-punto-fondo) 1px, transparent 2px),
+            radial-gradient(circle at 45% 77%, var(--aitrol-punto-fondo) .7px, transparent 1.6px),
+            radial-gradient(circle at 84% 19%, var(--aitrol-punto-fondo) .8px, transparent 1.7px);
+        background-size: 18rem 15rem, 23rem 20rem, 27rem 17rem, 20rem 26rem;
+        animation: aitrol-puntos-fondo 34s ease-in-out infinite alternate;
+    }
+
+    @keyframes aitrol-puntos-fondo {
+        from { background-position: 0 0, 3rem 2rem, 6rem 1rem, 2rem 7rem; opacity: .55; }
+        to { background-position: 3rem 2rem, 1rem 5rem, 8rem 0, 0 10rem; opacity: .85; }
+    }
 }
 
 .aitrol-shell :is(.app-header, .app-footer) {

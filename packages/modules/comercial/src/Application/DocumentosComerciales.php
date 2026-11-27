@@ -3,6 +3,7 @@
 namespace Aitrol\Comercial\Application;
 
 use App\Events\OperacionContabilizable;
+use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Application\Inventario;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
@@ -28,7 +29,7 @@ final readonly class DocumentosComerciales
 
     public function listar(string $modulo, string $seccion, array $filtros): LengthAwarePaginator
     {
-        $consulta = $this->filtrar($this->documentos($modulo), $filtros);
+        $consulta = $this->filtrar($this->conAsientos($this->documentos($modulo)), $filtros);
         if ($seccion === 'anulaciones') {
             $consulta->whereNotNull('anulado_at')->orderByDesc('anulado_at');
         } else {
@@ -41,7 +42,7 @@ final readonly class DocumentosComerciales
 
     public function consultar(string $modulo, string $seccion, int $id): stdClass
     {
-        $consulta = $this->documentos($modulo)->where('id', $id);
+        $consulta = $this->conAsientos($this->documentos($modulo))->where('id', $id);
         $seccion === 'anulaciones' ? $consulta->whereNotNull('anulado_at') : $consulta->where('tipo', $seccion);
         $documento = $consulta->first() ?? abort(404, 'Documento no encontrado.');
         $documento->lineas = $this->lineas($id)->orderBy('id')->get();
@@ -297,6 +298,14 @@ final readonly class DocumentosComerciales
     private function documentos(string $modulo): Builder
     {
         return DB::table('com_documentos')->where('id_empresa', $this->empresa->id())->where('modulo', $modulo);
+    }
+
+    private function conAsientos(Builder $consulta): Builder
+    {
+        $consulta->select('com_documentos.*');
+        ReferenciaAsiento::agregar($consulta, 'comercial.documento', 'com_documentos.id');
+
+        return ReferenciaAsiento::agregar($consulta, 'comercial.anulacion', 'com_documentos.id', 'asiento_reversion');
     }
 
     private function lineas(int $id): Builder
