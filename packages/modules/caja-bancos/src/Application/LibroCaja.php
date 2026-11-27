@@ -2,6 +2,7 @@
 
 namespace Aitrol\CajaBancos\Application;
 
+use App\Events\OperacionContabilizable;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -83,6 +84,7 @@ final readonly class LibroCaja
             'tipo' => $tipo, 'fecha' => $campos['fecha'], 'importe' => $importe, 'concepto' => $campos['concepto'],
             'referencia' => $campos['referencia'] ?? null,
         ];
+        if (isset($campos['flujo_contable'])) $comprobante['flujo_contable'] = $campos['flujo_contable'];
         $clave = isset($campos['clave_operacion']) ? strtolower($campos['clave_operacion']) : null;
         $huella = hash('sha256', json_encode([$comprobante, $asientos], JSON_THROW_ON_ERROR));
 
@@ -155,6 +157,7 @@ final readonly class LibroCaja
             $this->datos->crear('cb_asientos', $fila + ['id_operacion' => $op], false);
             $this->datos->actualizar('cb_cuentas', $fila['id_cuenta'], ['saldo' => $fila['saldo']]);
         }
+        event(new OperacionContabilizable('tesoreria.operacion', $op));
 
         return $this->datos->operacion($op);
     }

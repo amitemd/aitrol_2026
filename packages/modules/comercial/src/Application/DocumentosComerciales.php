@@ -2,6 +2,7 @@
 
 namespace Aitrol\Comercial\Application;
 
+use App\Events\OperacionContabilizable;
 use Aitrol\Inventarios\Application\Inventario;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
@@ -99,6 +100,7 @@ final readonly class DocumentosComerciales
                 foreach ($lineas as $linea) {
                     DB::table('com_lineas')->insert($linea + ['id_empresa' => $this->empresa->id(), 'id_documento' => $id]);
                 }
+                event(new OperacionContabilizable('comercial.documento', $id));
 
                 return $this->consultar($modulo, $seccion, $id);
             }, 3);
@@ -136,12 +138,13 @@ final readonly class DocumentosComerciales
                     'cantidad' => Cantidad::decimal((int) $linea->cantidad, 3),
                     'costo_unitario' => $esEntrada ? Cantidad::decimal((int) $movimiento->costo_unitario, 4) : null,
                     'motivo' => 'Anulación de '.($modulo === 'ventas' ? 'venta' : 'compra'), 'referencia' => $modulo.'/'.$id,
-                ]);
+                ], contabilizar: false);
                 $this->lineas($id)->where('id', $linea->id)->update(['id_operacion_reversa' => $reversa['operacion']->id]);
             }
             $this->documentos($modulo)->where('id', $id)->update([
                 'anulado_at' => now(), 'motivo_anulacion' => $motivo, 'id_usuario_anulacion' => auth()->id(), 'updated_at' => now(),
             ]);
+            event(new OperacionContabilizable('comercial.anulacion', $id));
 
             return $this->consultar($modulo, 'anulaciones', $id);
         }, 3);
@@ -274,7 +277,7 @@ final readonly class DocumentosComerciales
             'cantidad' => Cantidad::decimal($linea['cantidad'], 3),
             'costo_unitario' => $compra ? Cantidad::decimal($linea['precio'], 4) : null,
             'motivo' => $compra ? 'Registro de compra' : 'Registro de venta', 'referencia' => $modulo.'/'.$documento,
-        ]);
+        ], contabilizar: false);
 
         return (int) $movimiento['operacion']->id;
     }

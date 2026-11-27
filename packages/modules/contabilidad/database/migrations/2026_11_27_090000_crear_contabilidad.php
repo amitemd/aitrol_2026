@@ -42,9 +42,12 @@ return new class extends Migration
             $table->unsignedBigInteger('total');
             $table->uuid('clave_operacion')->nullable();
             $table->string('huella', 64)->nullable();
+            $table->string('origen', 45)->nullable();
+            $table->unsignedBigInteger('id_origen')->nullable();
             $table->unique(['id_empresa', 'numero']);
             $table->unique(['id_empresa', 'id_reversa_de']);
             $table->unique(['id_empresa', 'clave_operacion']);
+            $table->unique(['id_empresa', 'origen', 'id_origen'], 'co_asientos_origen_unico');
             $table->index(['id_empresa', 'fecha', 'numero']);
             $this->auditoria($table);
         });
@@ -58,11 +61,20 @@ return new class extends Migration
             $table->string('movimiento_patrimonio', 30)->nullable();
             $table->index(['id_empresa', 'id_cuenta', 'id_asiento']);
         });
+        Schema::create('co_integraciones', function (Blueprint $table): void {
+            $this->identificar($table);
+            $table->boolean('activa')->default(false);
+            $table->date('fecha_inicio')->nullable();
+            $table->json('reglas');
+            $table->json('tesoreria');
+            $table->unique('id_empresa');
+            $this->auditoria($table);
+        });
     }
 
     public function down(): void
     {
-        foreach (['co_lineas', 'co_asientos', 'co_periodos', 'co_cuentas'] as $tabla) {
+        foreach (['co_integraciones', 'co_lineas', 'co_asientos', 'co_periodos', 'co_cuentas'] as $tabla) {
             Schema::dropIfExists($tabla);
         }
     }

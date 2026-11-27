@@ -2,6 +2,7 @@
 
 namespace Aitrol\Inventarios\Application;
 
+use App\Events\OperacionContabilizable;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
@@ -13,7 +14,7 @@ final readonly class Inventario
     public function __construct(private RepositorioInventario $repositorio) {}
 
     /** @return array{operacion: stdClass, repetida: bool} */
-    public function registrar(array $datos): array
+    public function registrar(array $datos, bool $contabilizar = true): array
     {
         $operacion = [
             'tipo' => $datos['tipo'],
@@ -29,7 +30,7 @@ final readonly class Inventario
         $huella = hash('sha256', json_encode($operacion, JSON_THROW_ON_ERROR));
 
         try {
-            return $this->repositorio->transaccion(function () use ($operacion, $clave, $huella): array {
+            return $this->repositorio->transaccion(function () use ($operacion, $clave, $huella, $contabilizar): array {
                 $producto = $this->catalogo('productos', $operacion['id_producto'], 'id_producto');
                 if ($clave !== null && ($existente = $this->repositorio->porClave($clave)) !== null) {
                     return $this->repetida($existente, $huella);
@@ -53,9 +54,12 @@ final readonly class Inventario
                     $lineas[] = $this->linea($destino, $cantidad, $costo);
                 }
 
-                return ['operacion' => $this->repositorio->registrar(array_replace($operacion, [
+                $registro = $this->repositorio->registrar(array_replace($operacion, [
                     'costo_unitario' => $costo, 'clave_operacion' => $clave, 'huella' => $huella,
-                ]), $lineas), 'repetida' => false];
+                ]), $lineas);
+                if ($contabilizar) event(new OperacionContabilizable('inventario.movimiento', (int) $registro->id));
+
+                return ['operacion' => $registro, 'repetida' => false];
             });
         } catch (UniqueConstraintViolationException $error) {
             $existente = $clave === null ? null : $this->repositorio->porClave($clave);

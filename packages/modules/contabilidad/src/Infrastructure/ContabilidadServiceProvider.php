@@ -2,6 +2,8 @@
 
 namespace Aitrol\Contabilidad\Infrastructure;
 
+use App\Events\OperacionContabilizable;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 final class ContabilidadServiceProvider extends ServiceProvider
@@ -12,5 +14,6 @@ final class ContabilidadServiceProvider extends ServiceProvider
         $this->loadRoutesFrom($modulo.'/routes/contabilidad.php');
         $this->loadMigrationsFrom($modulo.'/database/migrations');
         $this->loadViewsFrom($modulo.'/resources/views', 'contabilidad');
+        Event::listen(OperacionContabilizable::class, ContabilizacionOperativa::class);
     }
 }

@@ -92,10 +92,11 @@ final readonly class LibroContable
         });
     }
 
-    public function revertir(int $id, array $entrada): stdClass
+    public function revertir(int $id, array $entrada, array $origen = []): stdClass
     {
-        return $this->escribir(function () use ($id, $entrada): stdClass {
+        return $this->escribir(function () use ($id, $entrada, $origen): stdClass {
             $original = $this->datos->asiento($id);
+            abort_if($original->origen !== null && $origen === [], 409, 'Revierte la operación desde su módulo de origen.');
             abort_if($original->id_reversa_de !== null || $original->id_reversion !== null, 409, 'El asiento ya fue revertido o es una reversión.');
             if ($entrada['fecha'] < $original->fecha) $this->invalido('fecha', 'La fecha de reversión debe ser igual o posterior al asiento original.');
             $lineas = $original->lineas->map(fn (stdClass $fila) => [
@@ -106,8 +107,56 @@ final readonly class LibroContable
             return $this->insertar([
                 'fecha' => $entrada['fecha'], 'concepto' => $entrada['motivo'], 'referencia' => 'Reversión del asiento '.$original->numero,
                 'flujo' => $original->flujo, 'id_reversa_de' => $id,
-            ], $lineas);
+            ] + $origen, $lineas);
         });
+    }
+
+    public function registrarAutomatico(string $origen, int $id, array $cabecera, array $lineas): stdClass
+    {
+        return $this->escribir(function () use ($origen, $id, $cabecera, $lineas): stdClass {
+            $previo = $this->datos->tabla('co_asientos')->where('origen', $origen)->where('id_origen', $id)->value('id');
+            if ($previo !== null) return $this->datos->asiento($previo);
+            $lineas = $this->validarLineas($lineas, $cabecera['flujo'] ?? null);
+
+            return $this->insertar($cabecera + ['origen' => $origen, 'id_origen' => $id], $lineas);
+        });
+    }
+
+    public function guardarIntegracion(array $entrada): void
+    {
+        $this->escribir(function () use ($entrada): void {
+            $reglas = $entrada['reglas'] ?? [];
+            $tesoreria = $entrada['tesoreria'] ?? [];
+            foreach ($reglas as $clave => $id) {
+                if ($id === null) continue;
+                [, $clase] = config('contabilidad.reglas.'.$clave);
+                $this->validarMapeo((int) $id, $clase, false, 'reglas.'.$clave);
+            }
+            foreach ($tesoreria as $idCaja => $idCuenta) {
+                if ($idCuenta === null) continue;
+                $caja = $this->datos->tabla('cb_cuentas')->where('id', $idCaja)->where('moneda', 'USD')->first();
+                if ($caja === null) $this->invalido('tesoreria.'.$idCaja, 'Selecciona una caja o banco en USD de tu empresa.');
+                $this->validarMapeo((int) $idCuenta, 'activo', true, 'tesoreria.'.$idCaja);
+            }
+            $usadas = array_filter($tesoreria, fn ($id) => $id !== null);
+            if (count($usadas) !== count(array_unique($usadas))) {
+                $this->invalido('tesoreria', 'Cada caja o banco debe tener una cuenta de efectivo diferente.');
+            }
+            $campos = [
+                'activa' => $entrada['activa'], 'fecha_inicio' => $entrada['fecha_inicio'] ?? null,
+                'reglas' => json_encode(array_filter($reglas, fn ($id) => $id !== null), JSON_THROW_ON_ERROR),
+                'tesoreria' => json_encode($usadas, JSON_THROW_ON_ERROR),
+            ];
+            $id = $this->datos->tabla('co_integraciones')->value('id');
+            $id === null ? $this->datos->crear('co_integraciones', $campos) : $this->datos->actualizar('co_integraciones', $id, $campos);
+        });
+    }
+
+    private function validarMapeo(int $id, ?string $clase, bool $efectivo, string $campo): void
+    {
+        $cuenta = $this->datos->tabla('co_cuentas')->where('id', $id)->where('activo', true)->where('auxiliar', true)
+            ->where('efectivo', $efectivo)->when($clase, fn ($q) => $q->where('clase', $clase))->first();
+        if ($cuenta === null) $this->invalido($campo, 'Selecciona una cuenta auxiliar activa de la clase indicada.');
     }
 
     private function validarLineas(array $lineas, ?string $flujo): array

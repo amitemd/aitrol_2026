@@ -134,6 +134,17 @@
                             <label for="cb-referencia" class="form-label">Referencia</label>
                             <input id="cb-referencia" name="referencia" maxlength="120" value="{{ old('referencia') }}" class="form-control">
                         </div>
+                        @if ($seccion === 'movimientos')
+                            <div class="col-sm-6">
+                                <label for="cb-flujo" class="form-label">Actividad contable</label>
+                                <select id="cb-flujo" name="flujo_contable" class="form-select">
+                                    <option value="">Operación (predeterminada)</option>
+                                    @foreach (['inversion' => 'Inversión', 'financiacion' => 'Financiación', 'apertura' => 'Saldos iniciales'] as $valor => $etiqueta)
+                                        <option value="{{ $valor }}" @selected(old('flujo_contable') === $valor)>{{ $etiqueta }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                     @endif
                 @endif
             </div>

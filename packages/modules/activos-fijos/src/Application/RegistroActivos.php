@@ -2,6 +2,7 @@
 
 namespace Aitrol\ActivosFijos\Application;
 
+use App\Events\OperacionContabilizable;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use App\Services\EmpresaActiva;
 use Illuminate\Database\Query\Builder;
@@ -141,7 +142,13 @@ final readonly class RegistroActivos
                     }
                 }
 
-                return $this->registro('activos', $this->guardar('af_activos', $datos, $id));
+                if ($anterior !== null && (int) $anterior->costo !== (int) $datos['costo']) {
+                    event(new OperacionContabilizable('activos.costo', $id));
+                }
+                $activoId = $this->guardar('af_activos', $datos, $id);
+                if ($id === null) event(new OperacionContabilizable('activos.alta', $activoId));
+
+                return $this->registro('activos', $activoId);
             }, 3);
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El código de activo ya existe en tu empresa.');
@@ -168,7 +175,10 @@ final readonly class RegistroActivos
             $datos['id_responsable_destino'] = array_key_exists('id_responsable', $cambios) ? $cambios['id_responsable'] : $activo->id_responsable;
             $this->guardar('af_activos', $cambios, $activo->id);
 
-            return $this->registro('movimientos', $this->guardar('af_movimientos', $datos));
+            $id = $this->guardar('af_movimientos', $datos);
+            if ($datos['tipo'] === 'baja') event(new OperacionContabilizable('activos.baja', $id));
+
+            return $this->registro('movimientos', $id);
         }, 3);
     }
 
@@ -195,6 +205,7 @@ final readonly class RegistroActivos
                     'id_activo' => $activo->id, 'periodo' => $periodo, 'importe' => $acumulado - $activo->depreciado,
                     'acumulado' => $acumulado, 'valor_libros' => $activo->costo - $acumulado,
                 ]);
+                event(new OperacionContabilizable('activos.depreciacion', $id));
 
                 return $this->registro('depreciaciones', $id);
             }, 3);

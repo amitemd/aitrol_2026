@@ -198,7 +198,10 @@ final readonly class CajaBancosController
         if (in_array($seccion, ['transferencias', 'depositos'], true)) {
             $reglas['id_destino'] = ['required', 'integer', 'min:1', 'different:id_cuenta'];
         }
-        if ($seccion === 'movimientos') $reglas['tipo'] = ['required', 'in:ingreso,egreso'];
+        if ($seccion === 'movimientos') {
+            $reglas['tipo'] = ['required', 'in:ingreso,egreso'];
+            $reglas['flujo_contable'] = ['nullable', 'in:operacion,inversion,financiacion,apertura'];
+        }
 
         return $request->validate($reglas);
     }
