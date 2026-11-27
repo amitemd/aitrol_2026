@@ -10,7 +10,7 @@
     @endif
     <label class="ficha-adjunto-selector">
         <input id="{{ $campo }}" name="{{ $nombre }}" type="file" class="visually-hidden @error($campo) is-invalid @enderror"
-            accept="{{ $formatos }}" @if ($multiple ?? false) multiple @endif
+            accept="{{ $formatos }}" @if ($multiple ?? false) multiple @endif @required($requerido ?? false)
             aria-labelledby="{{ $campo }}-titulo {{ $campo }}-accion" aria-describedby="{{ $campo }}-ayuda">
         @unless ($vistaPrevia ?? false)
             <span class="clientes-icono" aria-hidden="true"><i class="bi {{ $iconoAdjunto }}"></i></span>

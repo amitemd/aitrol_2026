@@ -72,7 +72,13 @@ final readonly class LibroCaja
         $origen = (int) $campos['id_cuenta'];
         $esEntrada = in_array($tipo, ['ingreso', 'credito'], true);
         $asientos = [$origen => $esEntrada ? $importe : -$importe];
-        if (isset($campos['id_destino'])) $asientos[(int) $campos['id_destino']] = $importe;
+        if (isset($campos['id_destino'])) {
+            $destino = (int) $campos['id_destino'];
+            if ($destino === $origen) {
+                throw ValidationException::withMessages(['id_destino' => 'Selecciona una cuenta distinta del origen.']);
+            }
+            $asientos[$destino] = $importe;
+        }
         $comprobante = [
             'tipo' => $tipo, 'fecha' => $campos['fecha'], 'importe' => $importe, 'concepto' => $campos['concepto'],
             'referencia' => $campos['referencia'] ?? null,
@@ -131,10 +137,11 @@ final readonly class LibroCaja
             abort_unless($cuenta->activo, 422, 'Todas las cuentas de la operación deben estar activas.');
             abort_unless($cuenta->moneda === $moneda, 422, 'El origen y el destino deben usar la misma moneda.');
             $saldo = $cuenta->saldo + $asientos[$id];
-            if ($saldo < 0) {
-                throw ValidationException::withMessages(['importe' => 'La cuenta '.$cuenta->codigo.' tiene saldo insuficiente.']);
+            if ($saldo < 0 || $saldo > 100_000_000_000) {
+                $mensaje = $saldo < 0 ? ' tiene saldo insuficiente.' : ' superaría el saldo máximo admitido.';
+                throw ValidationException::withMessages(['importe' => 'La cuenta '.$cuenta->codigo.$mensaje]);
             }
-            $ultimo = $this->datos->libro()->where('cb_asientos.id_cuenta', $id)->orderByDesc('cb_asientos.id')->value('op.fecha');
+            $ultimo = $this->datos->libro()->where('cb_asientos.id_cuenta', $id)->orderByDesc('cb_asientos.id')->select('op.fecha')->value('op.fecha');
             if ($ultimo !== null && $cabecera['fecha'] < $ultimo) {
                 throw ValidationException::withMessages(['fecha' => 'La fecha debe ser igual o posterior al último movimiento de '.$cuenta->codigo.'.']);
             }

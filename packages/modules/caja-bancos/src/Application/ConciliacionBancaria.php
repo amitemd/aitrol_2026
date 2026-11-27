@@ -57,7 +57,8 @@ final readonly class ConciliacionBancaria
             $consulta->where(fn (Builder $b) => $b->whereLike('op.concepto', '%'.$q.'%')->orWhereLike('op.referencia', '%'.$q.'%'));
         }
 
-        return $consulta->orderByDesc('op.fecha')->orderByDesc('cb_asientos.id');
+        return $consulta->orderByRaw('case when upper(op.referencia) = ? then 0 when op.fecha = ? then 1 else 2 end', [$linea->referencia, $linea->fecha])
+            ->orderByDesc('op.fecha')->orderByDesc('cb_asientos.id');
     }
 
     public function conciliar(int $id, int $asiento): stdClass

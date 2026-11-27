@@ -1,0 +1,3653 @@
+{
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/caja-bancos/cuentas": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarCuentas",
+        "summary": "Consultar cajas y cuentas",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para activos, 0 para inactivos."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBCuenta" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarCuentas",
+        "summary": "Registrar cajas y cuentas",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBCuentaAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBCuenta" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/cuentas/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleCuentas",
+        "summary": "Ver detalle de cajas y cuentas",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBCuenta" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "put": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancoseditarCuentas",
+        "summary": "Editar cajas y cuentas",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBCuentaCambio" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBCuenta" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/movimientos": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarMovimientos",
+        "summary": "Consultar ingresos y egresos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBOperacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarMovimientos",
+        "summary": "Registrar ingresos y egresos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMovimientoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con la misma clave.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/movimientos/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleMovimientos",
+        "summary": "Ver detalle de ingresos y egresos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/movimientos/{registro}/revertir": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosrevertirMovimientos",
+        "summary": "Revertir ingresos y egresos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMotivo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/transferencias": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarTransferencias",
+        "summary": "Consultar transferencias",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBOperacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarTransferencias",
+        "summary": "Registrar transferencias",
+        "description": "Debita el origen y acredita el destino en una transacción. Ambos usan la misma moneda.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBTransferenciaAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con la misma clave.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/transferencias/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleTransferencias",
+        "summary": "Ver detalle de transferencias",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/transferencias/{registro}/revertir": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosrevertirTransferencias",
+        "summary": "Revertir transferencias",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMotivo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/depositos": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarDepositos",
+        "summary": "Consultar depósitos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBOperacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarDepositos",
+        "summary": "Registrar depósitos",
+        "description": "Mueve efectivo desde una caja abierta a una cuenta bancaria de la misma moneda.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBTransferenciaAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con la misma clave.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/depositos/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleDepositos",
+        "summary": "Ver detalle de depósitos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/depositos/{registro}/revertir": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosrevertirDepositos",
+        "summary": "Revertir depósitos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMotivo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/notas-debito": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarDebito",
+        "summary": "Consultar notas de débito bancarias",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBOperacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarDebito",
+        "summary": "Registrar notas de débito bancarias",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBNotaAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con la misma clave.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/notas-debito/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleDebito",
+        "summary": "Ver detalle de notas de débito bancarias",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/notas-debito/{registro}/revertir": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosrevertirDebito",
+        "summary": "Revertir notas de débito bancarias",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMotivo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/notas-credito": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarCredito",
+        "summary": "Consultar notas de crédito bancarias",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBOperacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarCredito",
+        "summary": "Registrar notas de crédito bancarias",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBNotaAlta" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación ya registrada con la misma clave.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/notas-credito/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleCredito",
+        "summary": "Ver detalle de notas de crédito bancarias",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/notas-credito/{registro}/revertir": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosrevertirCredito",
+        "summary": "Revertir notas de crédito bancarias",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMotivo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBOperacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/cierres": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarCierres",
+        "summary": "Consultar aperturas y cierres",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBCierre" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarCierres",
+        "summary": "Registrar aperturas y cierres",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBApertura" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBCierre" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/cierres/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleCierres",
+        "summary": "Ver detalle de aperturas y cierres",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBCierre" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/cierres/{registro}/cerrar": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancoscerrarCierres",
+        "summary": "Cerrar aperturas y cierres",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBCierreEntrada" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registro actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBCierre" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/extractos": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarExtractos",
+        "summary": "Consultar extractos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBExtracto" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosRegistrarExtractos",
+        "summary": "Registrar extractos",
+        "description": "Importa el estado bancario. Las referencias idénticas se omiten. Una referencia con datos distintos causa conflicto.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBExtractoAlta" }
+            },
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/CBExtractoCsv" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBExtracto" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL del registro creado.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/extractos/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleExtractos",
+        "summary": "Ver detalle de extractos",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBExtracto" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/conciliacion": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarConciliacion",
+        "summary": "Consultar líneas de conciliación",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "conciliado",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "description": "1 para conciliado, 0 para pendiente."
+          },
+          {
+            "name": "id_extracto",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar a un extracto."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBConciliacion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/conciliacion/{registro}": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosDetalleConciliacion",
+        "summary": "Ver detalle de líneas de conciliación",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del registro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBConciliacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/reportes": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosListarReportes",
+        "summary": "Consultar libro de caja y bancos",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBAsiento" }
+                        },
+                        "resumen": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBResumen" }
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "resumen"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/conciliacion/{registro}/conciliar": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosconciliar",
+        "summary": "Conciliar línea y asiento",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBConciliar" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conciliación actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBConciliacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/conciliacion/{registro}/desconciliar": {
+      "post": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosdesconciliar",
+        "summary": "Retirar la conciliación con motivo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CBMotivo" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conciliación actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CBConciliacion" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/CajaBancosConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/conciliacion/{registro}/candidatos": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosCandidatos",
+        "summary": "Consultar asientos compatibles",
+        "description": "Considera el importe firmado, la cuenta y que el asiento esté pendiente. Requiere permiso de actualización de conciliación.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Identificador dentro de la empresa autenticada."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64",
+              "maximum": 100000
+            },
+            "description": "Página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros paginados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/CBPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/CBAsiento" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/caja-bancos/reportes/exportar": {
+      "get": {
+        "tags": [
+          "Caja y bancos"
+        ],
+        "operationId": "cajaBancosExportar",
+        "summary": "Exportar libro de caja y bancos a CSV",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Buscar por código, nombre, concepto o referencia, según la sección."
+          },
+          {
+            "name": "id_cuenta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Limitar el resultado a una cuenta."
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Desde, inclusive."
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Hasta, inclusive."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Libro detallado por cuenta con cargos, abonos y saldos.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CBCuentaAlta": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "caja",
+              "banco"
+            ]
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "banco": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "ultimos_digitos": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}$"
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "tipo",
+          "moneda"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "tipo": {
+                  "const": "banco"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "banco"
+              ]
+            }
+          }
+        ]
+      },
+      "CBCuentaCambio": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "banco": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "ultimos_digitos": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}$"
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "activo"
+        ]
+      },
+      "CBCuenta": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "codigo": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "caja",
+              "banco"
+            ]
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "banco": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "ultimos_digitos": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}$"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "saldo": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          }
+        }
+      },
+      "CBMovimientoAlta": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "importe": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "concepto": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "ingreso",
+              "egreso"
+            ]
+          }
+        },
+        "required": [
+          "id_cuenta",
+          "fecha",
+          "importe",
+          "concepto",
+          "tipo"
+        ]
+      },
+      "CBTransferenciaAlta": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "importe": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "concepto": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "id_destino": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id_cuenta",
+          "fecha",
+          "importe",
+          "concepto",
+          "id_destino"
+        ]
+      },
+      "CBNotaAlta": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "importe": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "concepto": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id_cuenta",
+          "fecha",
+          "importe",
+          "concepto"
+        ]
+      },
+      "CBOperacion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "ingreso",
+              "egreso",
+              "transferencia",
+              "deposito",
+              "debito",
+              "credito",
+              "reversa"
+            ]
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "importe": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "concepto": {
+            "type": "string"
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clave_operacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "id_reversa_de": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "origen": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "destino": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "asientos": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CBAsiento" }
+          }
+        }
+      },
+      "CBAsiento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_operacion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_cierre": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "variacion": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "saldo_anterior": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "saldo": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "ingreso",
+              "egreso",
+              "transferencia",
+              "deposito",
+              "debito",
+              "credito",
+              "reversa"
+            ]
+          },
+          "concepto": {
+            "type": "string"
+          },
+          "referencia": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "codigo_cuenta": {
+            "type": "string"
+          },
+          "linea_conciliada": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_reversa_de": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_reversion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          }
+        }
+      },
+      "CBApertura": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id_cuenta"
+        ]
+      },
+      "CBCierreEntrada": {
+        "type": "object",
+        "properties": {
+          "efectivo_contado": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "efectivo_contado"
+        ]
+      },
+      "CBCierre": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "saldo_actual": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "saldo_apertura": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "saldo_cierre": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "efectivo_contado": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "diferencia": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "observacion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cerrado_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-11-26 14:30:00"
+          }
+        }
+      },
+      "CBExtractoAlta": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "lineas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CBLineaEntrada" },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "id_cuenta",
+          "nombre",
+          "lineas"
+        ]
+      },
+      "CBExtractoCsv": {
+        "type": "object",
+        "properties": {
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "archivo": {
+            "type": "string",
+            "format": "binary",
+            "description": "Fecha, referencia, descripción e importe firmado. CSV UTF-8 de hasta 1.000 líneas."
+          }
+        },
+        "required": [
+          "id_cuenta",
+          "nombre",
+          "archivo"
+        ]
+      },
+      "CBLineaEntrada": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "importe": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": -1000000000,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "referencia": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "fecha",
+          "referencia",
+          "descripcion",
+          "importe"
+        ]
+      },
+      "CBExtracto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "importadas": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "omitidas": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "CBConciliar": {
+        "type": "object",
+        "properties": {
+          "id_asiento": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id_asiento"
+        ]
+      },
+      "CBMotivo": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "CBConciliacion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "importe": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "referencia": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "id_extracto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_cuenta": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_asiento": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "cuenta": {
+            "type": "string"
+          },
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "historial": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CBEvento" }
+          }
+        }
+      },
+      "CBEvento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_modificacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2026-11-26 14:30:00"
+          },
+          "id_linea_extracto": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_asiento": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "accion": {
+            "type": "string",
+            "enum": [
+              "conciliar",
+              "desconciliar"
+            ]
+          },
+          "motivo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CBResumen": {
+        "type": "object",
+        "properties": {
+          "moneda": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP"
+            ]
+          },
+          "ingresos": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          },
+          "egresos": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "45.20"
+          }
+        }
+      },
+      "CBPaginacion": {
+        "type": "object",
+        "properties": {
+          "current_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "last_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prev_page_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "current_page",
+          "last_page",
+          "per_page",
+          "total"
+        ]
+      }
+    },
+    "responses": {
+      "CajaBancosConflicto": {
+        "description": "Cuenta duplicada, caja cerrada, conciliación existente u otra incompatibilidad con el estado.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorApi" }
+          }
+        }
+      }
+    }
+  }
+}

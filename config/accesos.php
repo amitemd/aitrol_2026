@@ -13,6 +13,16 @@ foreach ((require __DIR__.'/activos-fijos.php')['secciones'] as $seccion => [$ti
 }
 
 return [
+    'contabilidad' => 'Contabilidad · todo el módulo',
+    'contabilidad.reportes' => 'Contabilidad · todos los reportes',
+    ...array_combine(
+        array_map(fn ($s) => 'contabilidad.'.$s.'.index', array_keys((require __DIR__.'/contabilidad.php')['secciones'])),
+        array_map(fn ($d) => 'Contabilidad · '.$d[0], (require __DIR__.'/contabilidad.php')['secciones']),
+    ),
+    ...array_combine(
+        array_map(fn ($s) => 'contabilidad.reportes.'.$s, array_keys((require __DIR__.'/contabilidad.php')['reportes'])),
+        array_map(fn ($d) => 'Contabilidad · '.$d[0], (require __DIR__.'/contabilidad.php')['reportes']),
+    ),
     'caja-bancos' => 'Caja y bancos · todo el módulo',
     ...array_combine(
         array_map(fn ($seccion) => 'caja-bancos.'.$seccion.'.index', array_keys((require __DIR__.'/caja-bancos.php')['secciones'])),

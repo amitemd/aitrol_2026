@@ -22,7 +22,9 @@
                 for (const archivo of campo.files) {
                     const fila = document.createElement('li');
                     const icono = document.createElement('i');
-                    icono.className = 'bi ' + (/\.pdf$/i.test(archivo.name) ? 'bi-file-earmark-pdf' : 'bi-image');
+                    const iconoArchivo = /\.pdf$/i.test(archivo.name) ? 'bi-file-earmark-pdf'
+                        : archivo.type.startsWith('image/') ? 'bi-image' : 'bi-file-earmark';
+                    icono.className = 'bi ' + iconoArchivo;
                     icono.setAttribute('aria-hidden', 'true');
                     const nombre = document.createElement('span');
                     nombre.textContent = archivo.name;

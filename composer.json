@@ -28,6 +28,7 @@
             "Aitrol\\Clientes\\": "packages/modules/clientes/src/",
             "Aitrol\\Comercial\\": "packages/modules/comercial/src/",
             "Aitrol\\Configuracion\\": "packages/modules/configuracion/src/",
+            "Aitrol\\Contabilidad\\": "packages/modules/contabilidad/src/",
             "Aitrol\\Inventarios\\": "packages/modules/inventarios/src/",
             "Aitrol\\Proveedores\\": "packages/modules/proveedores/src/",
             "App\\": "app/",

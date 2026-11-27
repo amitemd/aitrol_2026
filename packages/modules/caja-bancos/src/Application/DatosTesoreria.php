@@ -52,7 +52,7 @@ final readonly class DatosTesoreria
         [$consulta, $buscables, $cuenta, $fecha] = match ($seccion) {
             'cuentas' => [$this->tabla('cb_cuentas')->orderBy('nombre'), ['nombre', 'codigo', 'banco'], 'cb_cuentas.id', null],
             'cierres' => [$this->tabla('cb_cierres')->join('cb_cuentas as c', 'c.id', '=', 'cb_cierres.id_cuenta')
-                ->select('cb_cierres.*', 'c.nombre as cuenta', 'c.moneda')->orderByDesc('cb_cierres.id'), ['c.codigo', 'c.nombre'], 'cb_cierres.id_cuenta', 'cb_cierres.created_at'],
+                ->select('cb_cierres.*', 'c.nombre as cuenta', 'c.moneda', 'c.saldo as saldo_actual')->orderByDesc('cb_cierres.id'), ['c.codigo', 'c.nombre'], 'cb_cierres.id_cuenta', 'cb_cierres.created_at'],
             'extractos' => [$this->tabla('cb_extractos')->join('cb_cuentas as c', 'c.id', '=', 'cb_extractos.id_cuenta')
                 ->select('cb_extractos.*', 'c.nombre as cuenta', 'c.moneda')->orderByDesc('cb_extractos.id'), ['cb_extractos.nombre', 'c.nombre'], 'cb_extractos.id_cuenta', 'cb_extractos.created_at'],
             'conciliacion' => [$this->tabla('cb_lineas_extracto')->join('cb_cuentas as c', 'c.id', '=', 'cb_lineas_extracto.id_cuenta')
@@ -66,6 +66,7 @@ final readonly class DatosTesoreria
         if ($seccion === 'conciliacion' && isset($filtros['conciliado'])) {
             $filtros['conciliado'] ? $consulta->whereNotNull('cb_lineas_extracto.id_asiento') : $consulta->whereNull('cb_lineas_extracto.id_asiento');
         }
+        if ($seccion === 'conciliacion' && isset($filtros['id_extracto'])) $consulta->where('cb_lineas_extracto.id_extracto', $filtros['id_extracto']);
         if (isset($filtros['id_cuenta'])) {
             if ($cuenta === null) {
                 $consulta->whereExists(fn (Builder $q) => $q->selectRaw('1')->from('cb_asientos')
@@ -116,8 +117,16 @@ final readonly class DatosTesoreria
 
     private function operaciones(): Builder
     {
-        return $this->tabla('cb_operaciones')
+        $consulta = $this->tabla('cb_operaciones')
             ->leftJoin('cb_operaciones as reversa', 'reversa.id_reversa_de', '=', 'cb_operaciones.id')
             ->select('cb_operaciones.*', 'reversa.id as id_reversion');
+        foreach (['origen' => '<', 'destino' => '>'] as $alias => $signo) {
+            $consulta->selectSub(DB::table('cb_asientos')
+                ->join('cb_cuentas', 'cb_cuentas.id', '=', 'cb_asientos.id_cuenta')
+                ->whereColumn('cb_asientos.id_operacion', 'cb_operaciones.id')->where('cb_asientos.variacion', $signo, 0)
+                ->select('cb_cuentas.nombre')->orderBy('cb_asientos.id')->limit(1), $alias);
+        }
+
+        return $consulta;
     }
 }

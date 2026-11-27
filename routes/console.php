@@ -288,3 +288,30 @@ Artisan::command('activos-fijos:revocar-token {email} {id}', function (): int {
 
     return 0;
 })->purpose('Revocar una credencial de la API de Activos fijos');
+
+Artisan::command('caja-bancos:token {email} {nombre} {--escritura} {--dias=90}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->whereNotNull('id_empresa')->first();
+    $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
+    if ($usuario === null || $dias === false) {
+        $this->error('Indique un usuario con empresa asignada y una vigencia de 1 a 365 días.');
+        return 1;
+    }
+    $alcances = ['caja-bancos:leer'];
+    if ($this->option('escritura')) $alcances[] = 'caja-bancos:escribir';
+    $this->line($usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias))->plainTextToken);
+
+    return 0;
+})->purpose('Emitir una credencial para Caja y bancos');
+
+Artisan::command('caja-bancos:revocar-token {email} {id}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+    $token = $usuario?->tokens()->find($this->argument('id'));
+    if ($token === null || ! in_array('caja-bancos:leer', $token->abilities, true)) {
+        $this->error('No se encontró la credencial de Caja y bancos.');
+        return 1;
+    }
+    $token->delete();
+    $this->info('Credencial revocada.');
+
+    return 0;
+})->purpose('Revocar una credencial para Caja y bancos');
