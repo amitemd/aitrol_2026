@@ -1,0 +1,2735 @@
+{
+  "security": [
+    {
+      "BearerToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/tributario/formulario-103": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListar103",
+        "summary": "Consultar Formulario 103",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "borrador",
+                "revisado",
+                "presentado",
+                "entregado"
+              ]
+            },
+            "description": "Estado del papel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRDeclaracion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioPreparar103",
+        "summary": "Preparar Formulario 103",
+        "description": "Genera o refresca un papel de trabajo interno en borrador. No transmite información a la administración tributaria.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRPreparar103" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Papel preparado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-103/{registro}": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioDetalle103",
+        "summary": "Consultar detalle de Formulario 103",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Papel de trabajo y observaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-103/{registro}/exportar": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioCsv103",
+        "summary": "Exportar Formulario 103 a CSV de trabajo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV para revisión interna. Debe completarse y validarse con el formato oficial antes de presentar.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-103/{registro}/revisar": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioRevisar103",
+        "summary": "Marcar revisado de Formulario 103",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-103/{registro}/reabrir": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioReabrir103",
+        "summary": "Reabrir borrador de Formulario 103",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-103/{registro}/registrar-entrega": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioEntrega103",
+        "summary": "Registrar constancia externa de Formulario 103",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TREntrega" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-104": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListar104",
+        "summary": "Consultar Formulario 104",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "borrador",
+                "revisado",
+                "presentado",
+                "entregado"
+              ]
+            },
+            "description": "Estado del papel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRDeclaracion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioPreparar104",
+        "summary": "Preparar Formulario 104",
+        "description": "Genera o refresca un papel de trabajo interno en borrador. No transmite información a la administración tributaria.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRPreparar104" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Papel preparado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-104/{registro}": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioDetalle104",
+        "summary": "Consultar detalle de Formulario 104",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Papel de trabajo y observaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-104/{registro}/exportar": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioCsv104",
+        "summary": "Exportar Formulario 104 a CSV de trabajo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV para revisión interna. Debe completarse y validarse con el formato oficial antes de presentar.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-104/{registro}/revisar": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioRevisar104",
+        "summary": "Marcar revisado de Formulario 104",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-104/{registro}/reabrir": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioReabrir104",
+        "summary": "Reabrir borrador de Formulario 104",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-104/{registro}/registrar-entrega": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioEntrega104",
+        "summary": "Registrar constancia externa de Formulario 104",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TREntrega" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListar107",
+        "summary": "Consultar Formulario 107",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "borrador",
+                "revisado",
+                "presentado",
+                "entregado"
+              ]
+            },
+            "description": "Estado del papel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRDeclaracion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioPreparar107",
+        "summary": "Preparar Formulario 107",
+        "description": "Genera o refresca un papel de trabajo interno en borrador. No transmite información a la administración tributaria.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRPreparar107" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Papel preparado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107/{registro}": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioDetalle107",
+        "summary": "Consultar detalle de Formulario 107",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Papel de trabajo y observaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107/{registro}/exportar": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioCsv107",
+        "summary": "Exportar Formulario 107 a CSV de trabajo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV para revisión interna. Debe completarse y validarse con el formato oficial antes de presentar.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107/{registro}/revisar": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioRevisar107",
+        "summary": "Marcar revisado de Formulario 107",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107/{registro}/reabrir": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioReabrir107",
+        "summary": "Reabrir borrador de Formulario 107",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107/{registro}/registrar-entrega": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioEntrega107",
+        "summary": "Registrar constancia externa de Formulario 107",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TREntrega" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/ats": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListarAts",
+        "summary": "Consultar ATS",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "borrador",
+                "revisado",
+                "presentado",
+                "entregado"
+              ]
+            },
+            "description": "Estado del papel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRDeclaracion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioPrepararAts",
+        "summary": "Preparar ATS",
+        "description": "Genera o refresca un papel de trabajo interno en borrador. No transmite información a la administración tributaria.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRPrepararAts" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Papel preparado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/ats/{registro}": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioDetalleAts",
+        "summary": "Consultar detalle de ATS",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Papel de trabajo y observaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/ats/{registro}/exportar": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioCsvAts",
+        "summary": "Exportar ATS a CSV de trabajo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV para revisión interna. Debe completarse y validarse con el formato oficial antes de presentar.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/ats/{registro}/revisar": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioRevisarAts",
+        "summary": "Marcar revisado de ATS",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/ats/{registro}/reabrir": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioReabrirAts",
+        "summary": "Reabrir borrador de ATS",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/ats/{registro}/registrar-entrega": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioEntregaAts",
+        "summary": "Registrar constancia externa de ATS",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TREntrega" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/declaraciones": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListarDeclaraciones",
+        "summary": "Consultar declaraciones",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "borrador",
+                "revisado",
+                "presentado",
+                "entregado"
+              ]
+            },
+            "description": "Estado del papel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRDeclaracion" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/declaraciones/{registro}": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioDetalleDeclaraciones",
+        "summary": "Consultar detalle de declaraciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Papel de trabajo y observaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/declaraciones/{registro}/exportar": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioCsvDeclaraciones",
+        "summary": "Exportar declaraciones a CSV de trabajo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV para revisión interna. Debe completarse y validarse con el formato oficial antes de presentar.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/declaraciones/{registro}/revisar": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioRevisarDeclaraciones",
+        "summary": "Marcar revisado de declaraciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/declaraciones/{registro}/reabrir": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioReabrirDeclaraciones",
+        "summary": "Reabrir borrador de declaraciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRRevision" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/declaraciones/{registro}/registrar-entrega": {
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioEntregaDeclaraciones",
+        "summary": "Registrar constancia externa de declaraciones",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TREntrega" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDetalle" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/formulario-107/nomina": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListarNomina",
+        "summary": "Consultar datos anuales de nómina",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRNomina" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioGuardarNomina",
+        "summary": "Registrar o actualizar datos anuales de un trabajador",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TRNominaEntrada" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Datos de nómina guardados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRNomina" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/documentos": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioListarDocumentos",
+        "summary": "Consultar respaldos tributarios",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TRDocumento" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioAdjuntar",
+        "summary": "Cargar respaldo tributario privado",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/TRDocumentoAlta" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documento adjunto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/TRDocumento" }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "409": { "$ref": "#/components/responses/TributarioConflicto" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/documentos/{registro}/descargar": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioDescargar",
+        "summary": "Descargar respaldo",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "ID dentro de la empresa autenticada."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo de respaldo de la empresa.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "404": { "$ref": "#/components/responses/NoEncontrado" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    },
+    "/api/v1/tributario/procesos": {
+      "get": {
+        "tags": [
+          "Tributario"
+        ],
+        "operationId": "tributarioProcesos",
+        "summary": "Consultar historial de los procesos tributarios",
+        "parameters": [
+          {
+            "name": "ejercicio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900
+            },
+            "description": "Año fiscal"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            },
+            "description": "Página"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Registros por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado paginado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/TRPaginacion" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TREvento" }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NoAutenticado" },
+          "403": { "$ref": "#/components/responses/SinPermiso" },
+          "422": { "$ref": "#/components/responses/Validacion" },
+          "429": { "$ref": "#/components/responses/LimiteExcedido" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TRDeclaracion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "formato": {
+            "type": "string",
+            "enum": [
+              "formulario-103",
+              "formulario-104",
+              "formulario-107",
+              "ats"
+            ]
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "borrador",
+              "revisado",
+              "presentado",
+              "entregado"
+            ]
+          },
+          "referencia_externa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "fecha_externa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        }
+      },
+      "TRDetalle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "formato": {
+            "type": "string",
+            "enum": [
+              "formulario-103",
+              "formulario-104",
+              "formulario-107",
+              "ats"
+            ]
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "borrador",
+              "revisado",
+              "presentado",
+              "entregado"
+            ]
+          },
+          "referencia_externa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "fecha_externa": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "resumen": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "detalle": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          },
+          "observaciones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TRPreparar103": {
+        "type": "object",
+        "properties": {
+          "ejercicio": {
+            "type": "integer",
+            "minimum": 1900
+          },
+          "mes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "base_nomina": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "retencion_nomina": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ejercicio",
+          "mes"
+        ]
+      },
+      "TRPreparar104": {
+        "type": "object",
+        "properties": {
+          "ejercicio": {
+            "type": "integer",
+            "minimum": 1900
+          },
+          "mes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "semestral": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ejercicio",
+          "mes"
+        ]
+      },
+      "TRPreparar107": {
+        "type": "object",
+        "properties": {
+          "ejercicio": {
+            "type": "integer",
+            "minimum": 1900
+          }
+        },
+        "required": [
+          "ejercicio"
+        ]
+      },
+      "TRPrepararAts": {
+        "type": "object",
+        "properties": {
+          "ejercicio": {
+            "type": "integer",
+            "minimum": 1900
+          },
+          "mes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          }
+        },
+        "required": [
+          "ejercicio",
+          "mes"
+        ]
+      },
+      "TRNominaEntrada": {
+        "type": "object",
+        "properties": {
+          "ejercicio": {
+            "type": "integer",
+            "minimum": 1900
+          },
+          "identificacion": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "ingresos_gravados": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "ingresos_exentos": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "aporte_personal": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          },
+          "retencion": {
+            "oneOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1000000000,
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d{1,2})?$"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ejercicio",
+          "identificacion",
+          "nombre",
+          "ingresos_gravados",
+          "ingresos_exentos",
+          "aporte_personal",
+          "retencion"
+        ]
+      },
+      "TRNomina": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_empresa": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "ejercicio": {
+            "type": "integer",
+            "minimum": 1900
+          },
+          "identificacion": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "ingresos_gravados": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "ingresos_exentos": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "aporte_personal": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          },
+          "retencion": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "example": "15.00"
+          }
+        }
+      },
+      "TRDocumentoAlta": {
+        "type": "object",
+        "properties": {
+          "id_declaracion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "respaldo",
+              "acuse",
+              "xml"
+            ]
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "archivo": {
+            "type": "string",
+            "format": "binary",
+            "description": "PDF, XML, CSV o XLSX, hasta 10 MB."
+          }
+        },
+        "required": [
+          "id_declaracion",
+          "tipo",
+          "nombre",
+          "archivo"
+        ]
+      },
+      "TRDocumento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_declaracion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "respaldo",
+              "acuse",
+              "xml"
+            ]
+          },
+          "extension": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "formato": {
+            "type": "string",
+            "enum": [
+              "formulario-103",
+              "formulario-104",
+              "formulario-107",
+              "ats"
+            ]
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      },
+      "TREvento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_declaracion": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "id_usuario_creacion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "format": "int64"
+          },
+          "accion": {
+            "type": "string"
+          },
+          "detalle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "formato": {
+            "type": "string",
+            "enum": [
+              "formulario-103",
+              "formulario-104",
+              "formulario-107",
+              "ats"
+            ]
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      },
+      "TRRevision": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "TREntrega": {
+        "type": "object",
+        "properties": {
+          "referencia_externa": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "fecha_externa": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "referencia_externa",
+          "fecha_externa"
+        ]
+      },
+      "TRPaginacion": {
+        "type": "object",
+        "properties": {
+          "current_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "last_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "per_page": {
+            "type": "integer",
+            "minimum": 1,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "responses": {
+      "TributarioConflicto": {
+        "description": "El estado no admite este cambio o el respaldo ya está adjunto.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorApi" }
+          }
+        }
+      }
+    }
+  }
+}

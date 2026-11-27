@@ -12,7 +12,7 @@
         'existencias' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Estado'],
         'reportes' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Valor de existencia'],
         'kardex' => ['Fecha', 'Producto', 'Bodega', 'Operación', 'Variación', 'Saldo anterior', 'Saldo', 'Costo promedio'],
-        default => ['Fecha', 'Producto', 'Tipo', 'Bodega', 'Cantidad', 'Motivo'],
+        default => ['Fecha', 'Producto', 'Tipo', 'Bodega', 'Cantidad', 'Motivo', 'Acciones'],
     };
 @endphp
 
@@ -114,11 +114,12 @@
                                         @endif
                                         <td><span @class(['badge rounded-pill', 'text-bg-success' => $fila['activo'], 'text-bg-secondary' => !$fila['activo']])>{{ $fila['activo'] ? 'Activo' : 'Inactivo' }}</span></td>
                                         <td>
-                                            @can('permiso', [$ruta.'.index', 'actualizar'])
-                                                <a href="{{ route($ruta.'.edit', $fila['id']) }}" class="btn btn-sm btn-outline-secondary" data-ajax-open="Editar {{ $seccion === 'productos' ? 'producto' : 'bodega' }}">
-                                                    <i class="bi bi-pencil me-1" aria-hidden="true"></i>Editar
-                                                </a>
-                                            @endcan
+                                            @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
+                                                @can('permiso', [$ruta.'.index', 'actualizar'])
+                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.edit', $fila['id']), 'etiqueta' => 'Editar',
+                                                        'titulo' => 'Editar '.($seccion === 'productos' ? 'producto' : 'bodega')])
+                                                @endcan
+                                            @endcomponent
                                         </td>
                                     @elseif ($existencias)
                                         <th scope="row">{{ $fila['producto'] }} <small class="d-block text-body-secondary">{{ $fila['codigo_producto'] }}</small></th>
@@ -150,6 +151,7 @@
                                             <td>{{ $fila['motivo'] }} @if ($fila['referencia']) <small class="d-block text-body-secondary">{{ $fila['referencia'] }}</small>@endif
                                                 @include('partials.referencia-asiento', ['registroAsiento' => $fila])
                                             </td>
+                                            <td>@component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])@endcomponent</td>
                                         @endif
                                     @endif
                                 </tr>

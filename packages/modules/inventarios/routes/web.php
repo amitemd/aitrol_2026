@@ -24,6 +24,10 @@ Route::prefix('inventarios')->name('inventarios.')
                 Route::put($seccion.'/{registro}', [InventarioController::class, 'update'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'actualizar')->name($seccion.'.update');
             }
+            if (in_array($seccion, ['productos', 'bodegas', 'movimientos', 'ajustes'], true)) {
+                Route::get($seccion.'/{registro}', [InventarioController::class, 'show'])->defaults('seccion', $seccion)
+                    ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'leer')->name($seccion.'.show');
+            }
 
             Route::get($seccion.'/opciones/{catalogo}', [InventarioController::class, 'opciones'])->defaults('seccion', $seccion)
                 ->whereIn('catalogo', ['productos', 'bodegas'])->name($seccion.'.opciones');

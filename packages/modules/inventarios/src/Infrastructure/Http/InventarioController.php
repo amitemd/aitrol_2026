@@ -47,7 +47,10 @@ final readonly class InventarioController
             abort_unless(str_starts_with($registro->tipo, 'ajuste_') === ($seccion === 'ajustes'), 404);
         }
 
-        return response()->json(['data' => $this->presentar($registro)]);
+        $fila = $this->presentar($registro);
+        if ($request->routeIs('api.*')) return response()->json(['data' => $fila]);
+
+        return view('inventarios::detalle', compact('seccion', 'fila'));
     }
 
     public function formulario(Request $request)
