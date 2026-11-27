@@ -53,10 +53,10 @@
         </div>
         <aside class="ficha-perfil-foto">
             @include('partials.campo-adjunto', [
-            'campo' => 'foto', 'nombre' => 'foto', 'titulo' => $esProveedor ? 'Foto o logotipo del proveedor' : 'Foto del cliente',
-            'iconoAdjunto' => $esProveedor ? 'bi-truck' : 'bi-person', 'formatos' => 'image/jpeg,image/png,image/webp',
-            'ayuda' => 'JPG, PNG o WebP · máximo 3 MB', 'accion' => ($tieneFoto ?? false) ? 'Cambiar fotografía' : 'Seleccionar imagen',
-            'vistaPrevia' => true, 'urlImagen' => ($tieneFoto ?? false) ? route($modulo.'.foto', $cliente->id) : null,
+                'campo' => 'foto', 'nombre' => 'foto', 'titulo' => $esProveedor ? 'Foto o logotipo del proveedor' : 'Foto del cliente',
+                'iconoAdjunto' => $esProveedor ? 'bi-truck' : 'bi-person', 'formatos' => 'image/jpeg,image/png,image/webp',
+                'ayuda' => 'JPG, PNG o WebP · máximo 3 MB', 'accion' => ($tieneFoto ?? false) ? 'Cambiar fotografía' : 'Seleccionar imagen',
+                'vistaPrevia' => true, 'urlImagen' => ($tieneFoto ?? false) ? route($modulo.'.foto', $cliente->id) : null,
             ])
         </aside>
     </div>

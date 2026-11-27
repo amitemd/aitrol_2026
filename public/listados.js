@@ -197,8 +197,9 @@
         if (form.matches('[data-ajax-search]')) {
             event.preventDefault();
             const url = new URL(form.action);
-            const search = new FormData(form).get('q')?.trim();
-            if (search) url.searchParams.set('q', search);
+            for (const [key, value] of new FormData(form)) {
+                if (typeof value === 'string' && value.trim()) url.searchParams.append(key, value.trim());
+            }
             loadList(url);
         } else if (form.matches('[data-ajax-action]')) {
             event.preventDefault();

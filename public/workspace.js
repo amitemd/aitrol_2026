@@ -13,9 +13,30 @@
     const content = workspace.querySelector('[data-workspace-content]');
     const initial = workspace.querySelector('[data-workspace-initial]');
     const dashboard = new URL(workspace.dataset.workspaceDashboard, location.href);
+    const storageKey = 'aitrol.workspace';
+    const session = workspace.dataset.workspaceSession;
     const tabs = new Map();
     let active;
     let panelNumber = 0;
+
+    function savedWorkspace() {
+        if (!session) return null;
+        try {
+            const saved = JSON.parse(sessionStorage.getItem(storageKey));
+            return saved?.session === session && Array.isArray(saved.keys) ? saved : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function saveWorkspace() {
+        if (!session) return;
+        try {
+            sessionStorage.setItem(storageKey, JSON.stringify({ session, keys: [...tabs.keys()], active }));
+        } catch {
+            // Las pestañas siguen funcionando si el navegador bloquea el almacenamiento.
+        }
+    }
 
     function syncFrameTheme(frame) {
         const root = frame.contentDocument?.documentElement;
@@ -66,6 +87,7 @@
             selected.item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
         }
         updateSidebar();
+        saveWorkspace();
     }
 
     function close(key) {
@@ -75,6 +97,7 @@
         tab.item.remove();
         tab.panel.remove();
         tabs.delete(key);
+        if (tab.panel === initial) history.replaceState(history.state, '', dashboard);
         activate(active === key ? next : active, true);
     }
 
@@ -146,11 +169,30 @@
     }
 
     const initialKey = workspace.dataset.workspaceKey || 'dashboard';
+    const initialLabel = document.title.split(' · Aitrol')[0].trim();
+    const saved = savedWorkspace();
+    const available = new Map([...navigation.querySelectorAll('a[data-workspace-link]')]
+        .map((link) => [link.dataset.workspaceLink, link]));
+
     add('dashboard', 'Panel general', dashboard, initialKey === 'dashboard' ? initial : null);
-    if (initialKey !== 'dashboard') {
-        add(initialKey, document.title.split(' · Aitrol')[0].trim(), new URL(location.href), initial);
+    for (const key of saved?.keys ?? []) {
+        if (key === 'dashboard') continue;
+        if (key === initialKey) {
+            add(key, initialLabel, new URL(location.href), initial);
+            continue;
+        }
+        const link = available.get(key);
+        if (!link) continue;
+        const url = new URL(link.href, location.href);
+        if (url.origin === location.origin && link.target !== '_blank') {
+            add(key, link.dataset.workspaceLabel || link.textContent.trim(), url);
+        }
     }
-    activate(initialKey);
+    if (initialKey !== 'dashboard') {
+        add(initialKey, initialLabel, new URL(location.href), initial);
+    }
+    const reloaded = performance.getEntriesByType('navigation')[0]?.type === 'reload';
+    activate((initialKey === 'dashboard' || reloaded) && tabs.has(saved?.active) ? saved.active : initialKey);
 
     const search = document.querySelector('[data-workspace-search]');
     if (search) {

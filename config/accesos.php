@@ -11,5 +11,10 @@ return [
     'proveedores.documentos' => 'Proveedores · todos los documentos',
     'proveedores.reportes' => 'Proveedores · todos los reportes',
     ...array_map(fn (string $titulo): string => 'Proveedores · '.$titulo, (require __DIR__.'/proveedores.php')['secciones']),
+    'inventarios' => 'Inventarios · todo el módulo',
+    ...array_combine(
+        array_map(fn (string $seccion): string => 'inventarios.'.$seccion.'.index', array_keys((require __DIR__.'/inventarios.php')['secciones'])),
+        array_map(fn (array $seccion): string => 'Inventarios · '.$seccion[0], (require __DIR__.'/inventarios.php')['secciones']),
+    ),
     'empresas' => 'Configuraciones · empresas',
 ];
