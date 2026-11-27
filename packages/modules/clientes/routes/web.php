@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->group(function (): void {
     Route::get('/clientes', [ClienteWebController::class, 'index'])->middleware('permiso:clientes.lista,leer')->name('clientes.index');
     Route::get('/clientes/create', [ClienteWebController::class, 'create'])->middleware('permiso:clientes.lista,escribir')->name('clientes.create');
+    Route::get('/clientes/{cliente}', [ClienteWebController::class, 'show'])
+        ->where('cliente', '[1-9][0-9]{0,17}')->middleware('permiso:clientes.lista,leer')->name('clientes.show');
     Route::post('/clientes', [ClienteWebController::class, 'store'])->middleware('permiso:clientes.lista,escribir')->name('clientes.store');
     Route::get('/clientes/{cliente}/edit', [ClienteWebController::class, 'edit'])
         ->where('cliente', '[1-9][0-9]{0,17}')->middleware('permiso:clientes.lista,actualizar')->name('clientes.edit');

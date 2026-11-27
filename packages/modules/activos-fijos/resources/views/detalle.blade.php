@@ -28,6 +28,9 @@
             <h1 class="card-header fs-5">Detalle del registro</h1>
             <div class="card-body">
                 <dl class="row mb-0">
+                    @if (!empty($registro['numero_asiento']))
+                        <dt class="col-sm-5">Contabilidad</dt><dd class="col-sm-7">@include('partials.referencia-asiento', ['registroAsiento' => $registro])</dd>
+                    @endif
                     @foreach (array_intersect_key($campos, $registro) as $campo => $etiqueta)
                         @continue($registro[$campo] === null)
                         <dt class="col-sm-5">{{ $etiqueta }}</dt>

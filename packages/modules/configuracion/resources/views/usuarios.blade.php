@@ -26,12 +26,12 @@
                                     <td>{{ $usuario->email }}</td>
                                     <td><span class="badge rounded-pill text-bg-light">{{ $usuario->is_admin ? 'Administrador' : 'Usuario' }}</span></td>
                                     <td class="text-end">
-                                        @unless ($usuario->is_admin)
-                                            <a href="{{ route('configuracion.usuarios.permisos', $usuario) }}" data-ajax-open="Permisos de usuario" class="btn btn-sm btn-outline-secondary">Permisos</a>
-                                        @endunless
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.usuarios.edit', $usuario) }}" data-ajax-open="Editar usuario" aria-label="Editar {{ $usuario->name }}">
-                                            <i class="bi bi-pencil me-1" aria-hidden="true"></i> Editar
-                                        </a>
+                                        @component('partials.acciones-fila', ['ver' => route('configuracion.usuarios.show', $usuario), 'tituloVer' => 'Detalle de usuario'])
+                                            @include('partials.accion-fila-enlace', ['href' => route('configuracion.usuarios.edit', $usuario), 'etiqueta' => 'Editar', 'titulo' => 'Editar usuario'])
+                                            @unless ($usuario->is_admin)
+                                                @include('partials.accion-fila-enlace', ['href' => route('configuracion.usuarios.permisos', $usuario), 'etiqueta' => 'Permisos', 'titulo' => 'Permisos de usuario', 'icono' => 'bi-shield-lock'])
+                                            @endunless
+                                        @endcomponent
                                     </td>
                                 </tr>
                             @empty

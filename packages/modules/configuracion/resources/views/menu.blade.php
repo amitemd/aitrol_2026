@@ -61,17 +61,10 @@
                                                 @if ($item->protegido)
                                                     <span class="text-body-secondary">Protegida</span>
                                                 @else
-                                                    <div class="d-inline-flex gap-2">
-                                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.menu.index', ['editar' => $item->id]) }}" data-ajax-open="Editar opción" aria-label="Editar {{ $item->nombre }}">Editar</a>
-                                                        <details class="text-start">
-                                                            <summary class="btn btn-sm btn-outline-danger">Eliminar</summary>
-                                                            <form method="POST" action="{{ route('configuracion.menu.destroy', $item->id) }}" class="mt-2" data-ajax-action>
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-danger" aria-label="Confirmar eliminación de {{ $item->nombre }}">Confirmar</button>
-                                                            </form>
-                                                        </details>
-                                                    </div>
+                                                    @component('partials.acciones-fila')
+                                                        @include('partials.accion-fila-enlace', ['href' => route('configuracion.menu.index', ['editar' => $item->id]), 'etiqueta' => 'Editar', 'titulo' => 'Editar opción'])
+                                                        @include('partials.accion-fila-eliminar', ['href' => route('configuracion.menu.destroy', $item->id), 'confirmar' => '¿Eliminar la opción '.$item->nombre.'?'])
+                                                    @endcomponent
                                                 @endif
                                             </td>
                                         </tr>

@@ -49,6 +49,17 @@ final class UsuarioController
         return view('configuracion::usuario', ['usuario' => $usuario->load('persona'), 'tipos' => TipoIdentificacion::cases()]);
     }
 
+    public function detalle(User $usuario): View
+    {
+        $this->empresaActiva->verificar($usuario);
+
+        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de usuario', 'volver' => route('configuracion.usuarios.index'), 'campos' => [
+            'Nombre' => $usuario->name, 'Correo electrónico' => $usuario->email,
+            'Tipo de cuenta' => $usuario->is_admin ? 'Administrador' : 'Usuario',
+            'Identificación' => $usuario->persona?->identificacion, 'Teléfono' => $usuario->persona?->telefono,
+        ]]);
+    }
+
     public function create(): View
     {
         return view('configuracion::usuario', ['usuario' => new User, 'tipos' => TipoIdentificacion::cases()]);

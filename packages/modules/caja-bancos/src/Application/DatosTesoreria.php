@@ -70,6 +70,10 @@ final readonly class DatosTesoreria
             $filtros['conciliado'] ? $consulta->whereNotNull('cb_lineas_extracto.id_asiento') : $consulta->whereNull('cb_lineas_extracto.id_asiento');
         }
         if ($seccion === 'conciliacion' && isset($filtros['id_extracto'])) $consulta->where('cb_lineas_extracto.id_extracto', $filtros['id_extracto']);
+        if ($seccion === 'conciliacion') {
+            $consulta->leftJoin('cb_asientos as conciliado', 'conciliado.id', '=', 'cb_lineas_extracto.id_asiento');
+            ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'conciliado.id_operacion');
+        }
         if (isset($filtros['id_cuenta'])) {
             if ($cuenta === null) {
                 $consulta->whereExists(fn (Builder $q) => $q->selectRaw('1')->from('cb_asientos')
@@ -90,9 +94,7 @@ final readonly class DatosTesoreria
             if (isset($filtros['hasta'])) $consulta->whereDate($fecha, '<=', $filtros['hasta']);
         }
 
-        ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'cb_operaciones.id');
-
-        return ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'reversa.id', 'asiento_reversion');
+        return $consulta;
     }
 
     public function detalle(string $seccion, int $id): stdClass
@@ -132,6 +134,8 @@ final readonly class DatosTesoreria
                 ->select('cb_cuentas.nombre')->orderBy('cb_asientos.id')->limit(1), $alias);
         }
 
-        return $consulta;
+        ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'cb_operaciones.id');
+
+        return ReferenciaAsiento::agregar($consulta, 'tesoreria.operacion', 'reversa.id', 'asiento_reversion');
     }
 }

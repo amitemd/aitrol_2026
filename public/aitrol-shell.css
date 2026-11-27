@@ -2,7 +2,7 @@
     --aitrol-canvas: #eff4fb;
     --aitrol-glow: #d6e6ff;
     --aitrol-grid: #466c9d0e;
-    --aitrol-punto-fondo: #285d9d40;
+    --aitrol-red-fondo: 35, 82, 143;
     --aitrol-surface: #fbfdff;
     --aitrol-field: #ecf3fc;
     --aitrol-border: #ccd9eb;
@@ -15,7 +15,7 @@
     --aitrol-canvas: #0c1626;
     --aitrol-glow: #152e50;
     --aitrol-grid: #89bdf513;
-    --aitrol-punto-fondo: #a6d2ff59;
+    --aitrol-red-fondo: 166, 210, 255;
     --aitrol-surface: #122137;
     --aitrol-field: #0c182b;
     --aitrol-border: #2b405c;
@@ -33,31 +33,28 @@
         var(--aitrol-canvas);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .aitrol-shell .app-main {
-        position: relative;
-        isolation: isolate;
-    }
+.aitrol-shell .app-main {
+    position: relative;
+    isolation: isolate;
+}
 
-    .aitrol-shell .app-main::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background-image:
-            radial-gradient(circle at 17% 24%, var(--aitrol-punto-fondo) 1px, transparent 2px),
-            radial-gradient(circle at 73% 68%, var(--aitrol-punto-fondo) 1px, transparent 2px),
-            radial-gradient(circle at 45% 77%, var(--aitrol-punto-fondo) .7px, transparent 1.6px),
-            radial-gradient(circle at 84% 19%, var(--aitrol-punto-fondo) .8px, transparent 1.7px);
-        background-size: 18rem 15rem, 23rem 20rem, 27rem 17rem, 20rem 26rem;
-        animation: aitrol-puntos-fondo 34s ease-in-out infinite alternate;
-    }
+.aitrol-red-fondo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
 
-    @keyframes aitrol-puntos-fondo {
-        from { background-position: 0 0, 3rem 2rem, 6rem 1rem, 2rem 7rem; opacity: .55; }
-        to { background-position: 3rem 2rem, 1rem 5rem, 8rem 0, 0 10rem; opacity: .85; }
-    }
+.aitrol-red-fondo canvas {
+    position: sticky;
+    top: 0;
+    display: block;
+    width: 100%;
+    height: min(100%, 100dvh);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aitrol-red-fondo { display: none; }
 }
 
 .aitrol-shell :is(.app-header, .app-footer) {
@@ -389,6 +386,35 @@
 }
 
 .aitrol-shell .cliente-dialog::backdrop { background: #071327a8; }
+
+.accion-fila-icono {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+}
+
+.acciones-fila-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    min-width: 10rem;
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+    overflow: auto;
+    padding: .35rem;
+    color: var(--bs-body-color);
+    background: var(--aitrol-surface, var(--bs-body-bg));
+    border: 1px solid var(--aitrol-border, var(--bs-border-color));
+    border-radius: .6rem;
+    box-shadow: 0 .55rem 1.5rem #0003;
+}
+
+.acciones-fila-menu .dropdown-item {
+    border-radius: .35rem;
+    padding: .45rem .65rem;
+}
 
 .cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
 

@@ -32,7 +32,6 @@
                                     <td>@include('contabilidad::valor', ['valor' => $fila[$campo] ?? null])</td>
                                 @endforeach
                                 <td class="text-end text-nowrap">
-                                    <a href="{{ route($ruta.'.show', $fila['id']) }}" data-ajax-open="Detalle contable" class="btn btn-sm btn-outline-secondary">Ver</a>
                                     @php
                                         $accion = match ($seccion) {
                                             'cuentas' => ['editar', 'Editar'],
@@ -40,9 +39,12 @@
                                             'asientos' => $fila['id_reversion'] || $fila['id_reversa_de'] || $fila['origen'] ? null : ['revertir', 'Revertir'],
                                         };
                                     @endphp
-                                    @if ($accion && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
-                                        <a href="{{ route($ruta.'.'.$accion[0].'.formulario', $fila['id']) }}" data-ajax-open="{{ $accion[1] }}" class="btn btn-sm btn-outline-primary">{{ $accion[1] }}</a>
-                                    @endif
+                                    @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => 'Detalle contable'])
+                                        @if ($accion && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
+                                            @include('partials.accion-fila-enlace', ['href' => route($ruta.'.'.$accion[0].'.formulario', $fila['id']),
+                                                'etiqueta' => $accion[1], 'icono' => ['editar' => 'bi-pencil', 'cerrar' => 'bi-lock', 'revertir' => 'bi-arrow-counterclockwise'][$accion[0]]])
+                                        @endif
+                                    @endcomponent
                                 </td>
                             </tr>
                         @empty

@@ -111,6 +111,7 @@
     <main class="app-main" data-workspace data-workspace-key="{{ request()->route()?->getName() }}"
       data-workspace-session="{{ hash_hmac('sha256', session()->getId().':'.auth()->id().':'.auth()->user()?->id_empresa, (string) config('app.key')) }}"
       data-workspace-dashboard="{{ route('dashboard') }}">
+      <div class="aitrol-red-fondo" aria-hidden="true"><canvas data-red-fondo></canvas></div>
       <div data-workspace-content>
         <div data-workspace-initial>@yield('content')</div>
       </div>
@@ -185,6 +186,8 @@
   <script src="{{ asset('selectores.js') }}" defer></script>
   <script src="{{ asset('ubicacion.js') }}" defer></script>
   <script src="{{ asset('adjuntos.js') }}" defer></script>
+  <script src="{{ asset('acciones-fila.js') }}" defer></script>
+  <script src="{{ asset('red-fondo.js') }}" defer></script>
   <script src="{{ asset('clientes-ficha.js') }}" defer></script>
   <script src="{{ asset('usuarios-form.js') }}" defer></script>
   @stack('scripts')

@@ -13,6 +13,11 @@ foreach ((require __DIR__.'/activos-fijos.php')['secciones'] as $seccion => [$ti
 }
 
 return [
+    'tributario' => 'Tributario · todo el módulo',
+    ...array_combine(
+        array_map(fn ($s) => 'tributario.'.$s.'.index', array_keys((require __DIR__.'/tributario.php')['secciones'])),
+        array_map(fn ($d) => 'Tributario · '.$d[0], (require __DIR__.'/tributario.php')['secciones']),
+    ),
     'contabilidad' => 'Contabilidad · todo el módulo',
     'contabilidad.reportes' => 'Contabilidad · todos los reportes',
     ...array_combine(

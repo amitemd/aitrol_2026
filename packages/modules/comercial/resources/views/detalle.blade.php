@@ -9,6 +9,9 @@
                 <div class="card-body">
                     <dl class="row">
                         <dt class="col-sm-4">Número</dt><dd class="col-sm-8">{{ $documento['numero'] }}</dd>
+                        @if ($documento['numero_asiento'] || $documento['numero_asiento_reversion'])
+                            <dt class="col-sm-4">Contabilidad</dt><dd class="col-sm-8">@include('partials.referencia-asiento', ['registroAsiento' => $documento])</dd>
+                        @endif
                         <dt class="col-sm-4">Fecha</dt><dd class="col-sm-8">{{ $documento['fecha'] }}</dd>
                         <dt class="col-sm-4">{{ config('comercial.'.$modulo.'.tercero') }}</dt><dd class="col-sm-8">{{ $documento['tercero'] }}</dd>
                         @if ($documento['numero_origen'])

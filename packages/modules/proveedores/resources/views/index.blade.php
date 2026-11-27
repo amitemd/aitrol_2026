@@ -50,19 +50,14 @@
                                         </td>
                                         <td><span @class(['badge rounded-pill', 'bg-success-subtle text-success-emphasis' => $proveedor->activo, 'bg-secondary-subtle text-secondary-emphasis' => !$proveedor->activo])>{{ $proveedor->activo ? 'Activo' : 'Inactivo' }}</span></td>
                                         <td class="text-end">
-                                            @can('permiso', ['proveedores.lista', 'actualizar'])
-                                            <a href="{{ route('proveedores.edit', $proveedor->id) }}" class="btn btn-sm btn-outline-secondary"
-                                                data-ajax-open="Editar proveedor" aria-label="Editar {{ $proveedor->nombre }}"><i class="bi bi-pencil me-1" aria-hidden="true"></i> Editar</a>
-                                            @endcan
-                                            @can('permiso', ['proveedores.lista', 'eliminar'])
-                                                <details class="d-inline-block">
-                                                    <summary class="btn btn-sm btn-outline-danger">Eliminar</summary>
-                                                    <form method="POST" data-ajax-action action="{{ route('proveedores.destroy', $proveedor->id) }}">
-                                                        @csrf @method('DELETE')
-                                                        <button class="btn btn-sm btn-danger mt-2">Confirmar</button>
-                                                    </form>
-                                                </details>
-                                            @endcan
+                                            @component('partials.acciones-fila', ['ver' => route('proveedores.show', $proveedor->id), 'tituloVer' => 'Detalle de proveedor'])
+                                                @can('permiso', ['proveedores.lista', 'actualizar'])
+                                                    @include('partials.accion-fila-enlace', ['href' => route('proveedores.edit', $proveedor->id), 'etiqueta' => 'Editar', 'titulo' => 'Editar proveedor'])
+                                                @endcan
+                                                @can('permiso', ['proveedores.lista', 'eliminar'])
+                                                    @include('partials.accion-fila-eliminar', ['href' => route('proveedores.destroy', $proveedor->id), 'confirmar' => '¿Eliminar proveedor '.$proveedor->nombre.'?'])
+                                                @endcan
+                                            @endcomponent
                                         </td>
                                     </tr>
                                 @empty

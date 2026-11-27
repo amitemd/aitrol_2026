@@ -99,15 +99,15 @@
                         @forelse ($registros as $fila)
                             <tr>
                                 @foreach ($campos as $campo => $etiqueta)
-                                    <td>@include('caja-bancos::valor', ['valor' => $fila[$campo] ?? null])</td>
+                                    <td>
+                                        @include('caja-bancos::valor', ['valor' => $fila[$campo] ?? null])
+                                        @if (in_array($campo, ['concepto', 'referencia'], true))
+                                            @include('partials.referencia-asiento', ['registroAsiento' => $fila])
+                                        @endif
+                                    </td>
                                 @endforeach
                                 @unless ($seccion === 'reportes')
                                     <td class="text-end text-nowrap">
-                                        <a href="{{ route($ruta.'.show', $fila['id']) }}" data-ajax-open="Detalle del registro" class="btn btn-sm btn-outline-secondary">Ver</a>
-                                        @if ($seccion === 'extractos' && Gate::allows('permiso', ['caja-bancos.conciliacion.index', 'leer']))
-                                            <a href="{{ route('caja-bancos.conciliacion.index', ['id_extracto' => $fila['id']]) }}" class="btn btn-sm btn-outline-secondary"
-                                                data-workspace-link="caja-bancos.conciliacion.index" data-workspace-label="Conciliación bancaria">Ver líneas</a>
-                                        @endif
                                         @php
                                             $acciones = match ($seccion) {
                                                 'cuentas' => ['editar' => 'Editar'],
@@ -116,11 +116,18 @@
                                                 default => $operacion && !$fila['id_reversion'] && $fila['tipo'] !== 'reversa' ? ['revertir' => 'Revertir'] : [],
                                             };
                                         @endphp
-                                        @can('permiso', [$ruta.'.index', 'actualizar'])
-                                            @foreach ($acciones as $accion => $etiqueta)
-                                                <a href="{{ route($ruta.'.'.$accion.'.formulario', $fila['id']) }}" data-ajax-open="{{ $etiqueta }}" class="btn btn-sm btn-outline-primary">{{ $etiqueta }}</a>
-                                            @endforeach
-                                        @endcan
+                                        @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
+                                            @if ($seccion === 'extractos' && Gate::allows('permiso', ['caja-bancos.conciliacion.index', 'leer']))
+                                                @include('partials.accion-fila-enlace', ['href' => route('caja-bancos.conciliacion.index', ['id_extracto' => $fila['id']]),
+                                                    'etiqueta' => 'Ver líneas', 'modal' => false, 'workspace' => 'caja-bancos.conciliacion.index', 'workspaceLabel' => 'Conciliación bancaria', 'icono' => 'bi-list-ul'])
+                                            @endif
+                                            @can('permiso', [$ruta.'.index', 'actualizar'])
+                                                @foreach ($acciones as $accion => $etiqueta)
+                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.'.$accion.'.formulario', $fila['id']), 'etiqueta' => $etiqueta,
+                                                        'icono' => ['editar' => 'bi-pencil', 'cerrar' => 'bi-lock', 'conciliar' => 'bi-check2-square', 'desconciliar' => 'bi-unlock', 'revertir' => 'bi-arrow-counterclockwise'][$accion]])
+                                                @endforeach
+                                            @endcan
+                                        @endcomponent
                                     </td>
                                 @endunless
                             </tr>

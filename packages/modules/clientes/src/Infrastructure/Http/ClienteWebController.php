@@ -35,6 +35,17 @@ final readonly class ClienteWebController
         ] + $this->archivos->ficha($cliente));
     }
 
+    public function show(int $cliente): View
+    {
+        $ficha = $this->clientes->consultar($cliente);
+
+        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de cliente', 'volver' => route('clientes.index'), 'campos' => [
+            'Nombre' => $ficha->nombre, $ficha->identificacion->tipo->etiqueta() => $ficha->identificacion->numero,
+            'Correo electrónico' => $ficha->email, 'Teléfono' => $ficha->telefono, 'Dirección' => $ficha->direccion,
+            'Estado' => $ficha->activo ? 'Activo' : 'Inactivo',
+        ]]);
+    }
+
     public function store(GuardarClienteRequest $request): JsonResponse|RedirectResponse
     {
         $datos = $request->datos();

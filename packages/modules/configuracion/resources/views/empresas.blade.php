@@ -36,9 +36,11 @@
                                                 @if (!$empresa->email && !$empresa->telefono) <span class="text-body-secondary">Sin contacto</span> @endif
                                             </td>
                                                                                     <td class="text-end">
-                                                @can('permiso', ['empresas', 'actualizar'])
-                                                    <a href="{{ route('configuracion.empresas.edit', $empresa) }}" class="btn btn-sm btn-outline-primary" data-ajax-open="Editar empresa">Editar</a>
-                                                @endcan
+                                                @component('partials.acciones-fila', ['ver' => route('configuracion.empresas.show', $empresa), 'tituloVer' => 'Detalle de empresa'])
+                                                    @can('permiso', ['empresas', 'actualizar'])
+                                                        @include('partials.accion-fila-enlace', ['href' => route('configuracion.empresas.edit', $empresa), 'etiqueta' => 'Editar', 'titulo' => 'Editar empresa'])
+                                                    @endcan
+                                                @endcomponent
                                             </td>
                                         </tr>
                                     @empty

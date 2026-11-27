@@ -79,6 +79,7 @@
                                 @forelse ($registros as $fila)
                                     <tr>
                                         <th scope="row">{{ $fila['numero'] }}
+                                            @include('partials.referencia-asiento', ['registroAsiento' => $fila])
                                             @if ($seccion === 'anulaciones')
                                                 <small class="d-block text-body-secondary">{{ $config['secciones'][$fila['tipo']][0] }}</small>
                                             @endif
@@ -91,10 +92,11 @@
                                             @if ($seccion === 'anulaciones') <small class="d-block text-body-secondary">{{ $fila['anulado_at'] }}</small> @endif
                                         </td>
                                         <td class="text-end">
-                                            <a href="{{ route($ruta.'.show', $fila['id']) }}" data-ajax-open="Documento {{ $fila['numero'] }}" class="btn btn-sm btn-outline-secondary">Ver</a>
-                                            @if (!$fila['anulado_at'] && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
-                                                <a href="{{ route($ruta.'.confirmar', $fila['id']) }}" data-ajax-open="Anular documento" class="btn btn-sm btn-outline-danger">Anular</a>
-                                            @endif
+                                            @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => 'Documento '.$fila['numero']])
+                                                @if (!$fila['anulado_at'] && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
+                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.confirmar', $fila['id']), 'etiqueta' => 'Anular', 'titulo' => 'Anular documento', 'icono' => 'bi-x-circle'])
+                                                @endif
+                                            @endcomponent
                                         </td>
                                     </tr>
                                 @empty

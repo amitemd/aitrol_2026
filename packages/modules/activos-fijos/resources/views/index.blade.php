@@ -90,16 +90,21 @@
                             @forelse ($registros as $fila)
                                 <tr>
                                     @foreach ($campos as $campo => $etiqueta)
-                                        <td>@include('activos-fijos::valor', ['valor' => $fila[$campo] ?? null])</td>
+                                        <td>
+                                            @include('activos-fijos::valor', ['valor' => $fila[$campo] ?? null])
+                                            @if (($esRegistro && $campo === 'codigo') || (!$esRegistro && $campo === 'codigo_activo'))
+                                                @include('partials.referencia-asiento', ['registroAsiento' => $fila])
+                                            @endif
+                                        </td>
                                     @endforeach
                                     @unless ($seccion === 'reportes')
                                         <td class="text-end text-nowrap">
-                                            <a href="{{ route($ruta.'.show', $fila['id']) }}" data-ajax-open="Detalle del registro" class="btn btn-sm btn-outline-secondary">Ver</a>
-                                            @if (($catalogo || ($seccion === 'activos' && !$fila['fecha_baja']) || ($seccion === 'ordenes' && in_array($fila['estado'], ['pendiente', 'en_proceso'], true))) && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
-                                                <a href="{{ route($ruta.'.edit', $fila['id']) }}" data-ajax-open="{{ $seccion === 'ordenes' ? 'Actualizar orden' : 'Editar registro' }}" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-pencil me-1" aria-hidden="true"></i>{{ $seccion === 'ordenes' ? 'Actualizar' : 'Editar' }}
-                                                </a>
-                                            @endif
+                                            @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
+                                                @if (($catalogo || ($seccion === 'activos' && !$fila['fecha_baja']) || ($seccion === 'ordenes' && in_array($fila['estado'], ['pendiente', 'en_proceso'], true))) && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
+                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.edit', $fila['id']),
+                                                        'etiqueta' => $seccion === 'ordenes' ? 'Actualizar' : 'Editar'])
+                                                @endif
+                                            @endcomponent
                                         </td>
                                     @endunless
                                 </tr>

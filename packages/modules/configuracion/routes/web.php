@@ -22,6 +22,7 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-co
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
         Route::get('/usuarios/crear', [UsuarioController::class, 'create'])->name('usuarios.create');
         Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+        Route::get('/usuarios/{usuario}', [UsuarioController::class, 'detalle'])->whereNumber('usuario')->name('usuarios.show');
         Route::get('/usuarios/{usuario}/editar', [UsuarioController::class, 'edit'])->whereNumber('usuario')->name('usuarios.edit');
         Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'])->whereNumber('usuario')->name('usuarios.update');
         Route::get('/roles', [AccesoController::class, 'index'])->name('roles.index');
@@ -38,6 +39,7 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configura
     Route::get('/usuarios/{usuario}/foto', [UsuarioController::class, 'foto'])->whereNumber('usuario')->name('usuarios.foto');
     Route::get('/ubicaciones/opciones', [UbicacionController::class, 'opciones'])->name('ubicaciones.opciones');
     Route::get('/empresas', [EmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.index');
+    Route::get('/empresas/{empresa}', [EmpresaController::class, 'detalle'])->whereNumber('empresa')->middleware('permiso:empresas,leer')->name('empresas.show');
     Route::get('/empresas/{empresa}/editar', [EmpresaController::class, 'edit'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.edit');
     Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.update');
 });

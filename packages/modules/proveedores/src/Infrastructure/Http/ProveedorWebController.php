@@ -35,6 +35,17 @@ final readonly class ProveedorWebController
         ] + $this->archivos->ficha($proveedor));
     }
 
+    public function show(int $proveedor): View
+    {
+        $ficha = $this->proveedores->consultar($proveedor);
+
+        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de proveedor', 'volver' => route('proveedores.index'), 'campos' => [
+            'Nombre' => $ficha->nombre, $ficha->identificacion->tipo->etiqueta() => $ficha->identificacion->numero,
+            'Correo electrónico' => $ficha->email, 'Teléfono' => $ficha->telefono, 'Dirección' => $ficha->direccion,
+            'Estado' => $ficha->activo ? 'Activo' : 'Inactivo',
+        ]]);
+    }
+
     public function store(GuardarProveedorRequest $request): JsonResponse|RedirectResponse
     {
         $datos = $request->datos();

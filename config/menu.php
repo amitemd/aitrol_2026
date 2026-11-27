@@ -14,6 +14,10 @@ foreach ((require __DIR__.'/activos-fijos.php')['secciones'] as $seccion => [$ti
 return [
     'destinos' => [
         ...array_combine(
+            array_map(fn ($s) => 'tributario.'.$s.'.index', array_keys((require __DIR__.'/tributario.php')['secciones'])),
+            array_map(fn ($d) => 'Tributario · '.$d[0], (require __DIR__.'/tributario.php')['secciones']),
+        ),
+        ...array_combine(
             array_map(fn ($s) => 'contabilidad.'.$s.'.index', array_keys((require __DIR__.'/contabilidad.php')['secciones'])),
             array_map(fn ($d) => $d[0], (require __DIR__.'/contabilidad.php')['secciones']),
         ),

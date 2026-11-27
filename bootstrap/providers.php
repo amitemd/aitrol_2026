@@ -9,6 +9,7 @@ use Aitrol\Configuracion\Infrastructure\Providers\ConfiguracionServiceProvider;
 use Aitrol\Contabilidad\Infrastructure\ContabilidadServiceProvider;
 use Aitrol\Inventarios\Infrastructure\InventariosServiceProvider;
 use Aitrol\Proveedores\Infrastructure\Providers\ProveedoresServiceProvider;
+use Aitrol\Tributario\Infrastructure\TributarioServiceProvider;
 use App\Providers\AppServiceProvider;
 
 return [
@@ -21,4 +22,5 @@ return [
     ContabilidadServiceProvider::class,
     InventariosServiceProvider::class,
     ProveedoresServiceProvider::class,
+    TributarioServiceProvider::class,
 ];

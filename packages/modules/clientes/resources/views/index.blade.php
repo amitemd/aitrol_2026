@@ -50,19 +50,14 @@
                                         </td>
                                         <td><span @class(['badge rounded-pill', 'bg-success-subtle text-success-emphasis' => $cliente->activo, 'bg-secondary-subtle text-secondary-emphasis' => !$cliente->activo])>{{ $cliente->activo ? 'Activo' : 'Inactivo' }}</span></td>
                                         <td class="text-end">
-                                            @can('permiso', ['clientes.lista', 'actualizar'])
-                                            <a href="{{ route('clientes.edit', $cliente->id) }}" class="btn btn-sm btn-outline-secondary"
-                                                data-ajax-open="Editar cliente" aria-label="Editar {{ $cliente->nombre }}"><i class="bi bi-pencil me-1" aria-hidden="true"></i> Editar</a>
-                                            @endcan
-                                            @can('permiso', ['clientes.lista', 'eliminar'])
-                                                <details class="d-inline-block">
-                                                    <summary class="btn btn-sm btn-outline-danger">Eliminar</summary>
-                                                    <form method="POST" data-ajax-action action="{{ route('clientes.destroy', $cliente->id) }}">
-                                                        @csrf @method('DELETE')
-                                                        <button class="btn btn-sm btn-danger mt-2">Confirmar</button>
-                                                    </form>
-                                                </details>
-                                            @endcan
+                                            @component('partials.acciones-fila', ['ver' => route('clientes.show', $cliente->id), 'tituloVer' => 'Detalle de cliente'])
+                                                @can('permiso', ['clientes.lista', 'actualizar'])
+                                                    @include('partials.accion-fila-enlace', ['href' => route('clientes.edit', $cliente->id), 'etiqueta' => 'Editar', 'titulo' => 'Editar cliente'])
+                                                @endcan
+                                                @can('permiso', ['clientes.lista', 'eliminar'])
+                                                    @include('partials.accion-fila-eliminar', ['href' => route('clientes.destroy', $cliente->id), 'confirmar' => '¿Eliminar cliente '.$cliente->nombre.'?'])
+                                                @endcan
+                                            @endcomponent
                                         </td>
                                     </tr>
                                 @empty

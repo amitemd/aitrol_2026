@@ -38,6 +38,16 @@ final class EmpresaController
         return view('configuracion::editar-empresa', ['seleccionada' => $empresa]);
     }
 
+    public function detalle(EmpresaModel $empresa): View
+    {
+        abort_unless((int) $empresa->id === $this->empresaActiva->id(), 404);
+
+        return view('partials.detalle-ficha-simple', ['titulo' => 'Detalle de empresa', 'volver' => route('configuracion.empresas.index'), 'campos' => [
+            'Razón social' => $empresa->razon_social, 'Nombre comercial' => $empresa->nombre_comercial, 'RUC' => $empresa->ruc,
+            'Correo electrónico' => $empresa->email, 'Teléfono' => $empresa->telefono, 'Dirección' => $empresa->direccion,
+        ]]);
+    }
+
     public function update(Request $request, EmpresaModel $empresa): RedirectResponse|JsonResponse
     {
         abort_unless((int) $empresa->id === $this->empresaActiva->id(), 404);

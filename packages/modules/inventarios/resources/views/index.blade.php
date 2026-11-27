@@ -136,7 +136,9 @@
                                         <th scope="row">{{ $fila['producto'] }} <small class="d-block text-body-secondary">{{ $fila['codigo_producto'] }}</small></th>
                                         @if ($seccion === 'kardex')
                                             <td>{{ $fila['bodega'] }}</td>
-                                            <td>{{ config('inventarios.tipos.'.$fila['tipo']) }} <small class="d-block text-body-secondary">{{ $fila['motivo'] }}</small></td>
+                                            <td>{{ config('inventarios.tipos.'.$fila['tipo']) }} <small class="d-block text-body-secondary">{{ $fila['motivo'] }}</small>
+                                                @include('partials.referencia-asiento', ['registroAsiento' => $fila])
+                                            </td>
                                             <td @class(['text-nowrap', 'text-success-emphasis' => $fila['variacion'] > 0, 'text-danger-emphasis' => $fila['variacion'] < 0])>{{ $fila['variacion'] > 0 ? '+' : '' }}{{ $fila['variacion'] }}</td>
                                             <td>{{ $fila['saldo_anterior'] }}</td>
                                             <td>{{ $fila['saldo'] }}</td>
@@ -145,7 +147,9 @@
                                             <td>{{ config('inventarios.tipos.'.$fila['tipo']) }}</td>
                                             <td>{{ $fila['bodega'] }}@if ($fila['bodega_destino']) <i class="bi bi-arrow-right" aria-label="a"></i> {{ $fila['bodega_destino'] }}@endif</td>
                                             <td>{{ $fila['cantidad'] }}</td>
-                                            <td>{{ $fila['motivo'] }} @if ($fila['referencia']) <small class="d-block text-body-secondary">{{ $fila['referencia'] }}</small>@endif</td>
+                                            <td>{{ $fila['motivo'] }} @if ($fila['referencia']) <small class="d-block text-body-secondary">{{ $fila['referencia'] }}</small>@endif
+                                                @include('partials.referencia-asiento', ['registroAsiento' => $fila])
+                                            </td>
                                         @endif
                                     @endif
                                 </tr>

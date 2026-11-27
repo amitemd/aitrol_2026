@@ -38,14 +38,10 @@
                                         </td>
                                     @endforeach
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-primary" href="{{ route('configuracion.roles.index', ['editar' => $item->id]) }}" data-ajax-open="Editar rol">Editar</a>
-                                        <details class="d-inline-block">
-                                            <summary class="btn btn-sm btn-outline-danger">Eliminar</summary>
-                                            <form method="POST" data-ajax-action action="{{ route('configuracion.roles.destroy', $item->id) }}">
-                                                @csrf @method('DELETE')
-                                                <button class="btn btn-sm btn-danger mt-2">Confirmar</button>
-                                            </form>
-                                        </details>
+                                        @component('partials.acciones-fila')
+                                            @include('partials.accion-fila-enlace', ['href' => route('configuracion.roles.index', ['editar' => $item->id]), 'etiqueta' => 'Editar', 'titulo' => 'Editar rol'])
+                                            @include('partials.accion-fila-eliminar', ['href' => route('configuracion.roles.destroy', $item->id), 'confirmar' => '¿Eliminar el rol '.$item->nombre.'?'])
+                                        @endcomponent
                                     </td>
                                 </tr>
                             @empty
