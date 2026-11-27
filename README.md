@@ -1,66 +1,98 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Aitrol 2026
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aitrol es un ERP administrativo multiempresa. Centraliza la operación comercial, financiera, contable, tributaria y de recursos humanos. Cada sesión trabaja con su empresa activa. Las pantallas operativas que aplican contexto usan también la sucursal y el período seleccionados.
 
-## About Laravel
+<!-- vicky:resumen -->
+Aitrol 2026 es un ERP administrativo multiempresa organizado en 10 módulos: Activos fijos, Caja y bancos, Clientes, Comercial, Configuración, Contabilidad, Inventarios, Proveedores, Recursos humanos y Tributario. Comercial reúne Ventas y Compras en un mismo paquete.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+La arquitectura es un monolito modular en Laravel 13 y PHP 8.4. Los paquetes organizan los casos de uso en Application y las rutas, controladores y persistencia en Infrastructure. Algunos módulos también tienen una capa Domain. La interfaz usa Blade, AdminLTE y JavaScript. El espacio de trabajo abre las pantallas en pestañas internas y las altas compatibles en ventanas modales.
+<!-- /vicky:resumen -->
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Módulos registrados
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Módulo | Paquete | Responsabilidad |
+| --- | --- | --- |
+| Activos fijos | `activos-fijos` | Registro de activos, ubicaciones, movimientos, bajas, depreciaciones y mantenimiento. |
+| Caja y bancos | `caja-bancos` | Cuentas, ingresos y egresos, transferencias, depósitos, cierres, extractos y conciliación. |
+| Clientes | `clientes` | Directorio y fichas de clientes, con secciones para sus documentos y reportes. |
+| Comercial | `comercial` | Ventas, compras, cotizaciones, órdenes de compra, ajustes, retenciones y reportes. |
+| Configuración | `configuracion` | Empresas, sucursales, ubicaciones, usuarios, roles, permisos, menú y contexto operativo. |
+| Contabilidad | `contabilidad` | Plan de cuentas, asientos, períodos, integración con otros módulos y estados financieros. |
+| Inventarios | `inventarios` | Productos y servicios, bodegas, categorías, existencias, movimientos y kárdex. |
+| Proveedores | `proveedores` | Directorio y fichas de proveedores, con secciones para sus documentos y reportes. |
+| Recursos humanos | `rrhh` | Empleados, organización, contratos, asistencia, permisos, vacaciones, nómina, décimos y otros procesos de personal. |
+| Tributario | `tributario` | Preparación de formularios, ATS, registro de declaraciones y documentos de respaldo. |
 
-## Learning Laravel
+El inventario corresponde a los paquetes de `packages/modules/` registrados en `bootstrap/providers.php`. Algunas secciones existen en el menú y todavía dependen de una fuente de datos. Vicky puede indicar la pantalla de cartera si el usuario tiene permiso. Los importes pendientes requieren las vistas correspondientes. Pacientes exige una fuente operativa habilitada por empresa.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Organización del código
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Ubicación | Contenido |
+| --- | --- |
+| `packages/modules/<módulo>/src/` | Casos de uso, reglas de dominio cuando existen y adaptadores de infraestructura. |
+| `packages/modules/<módulo>/routes/` | Rutas web y API del módulo, registradas desde su proveedor. |
+| `packages/modules/<módulo>/database/migrations/` | Esquema de datos propio del módulo. |
+| `app/` y `routes/web.php` | Sesión, empresa activa, permisos, auditoría, navegación y servicios compartidos como Vicky. |
+| `resources/views/` y `public/` | Layouts Blade, componentes compartidos y scripts del espacio de trabajo. |
+| `config/` | Menús funcionales, permisos, fuentes de informes y conexiones a datos y servicios. |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Laravel Sanctum protege los endpoints que usan tokens de API. La sesión web mantiene la empresa activa y los permisos se evalúan por sección y acción. El catálogo de informes de Vicky vive en `config/vicky-reportes.php` y usa la conexión de lectura configurada para el asistente.
 
-## Agentic Development
+## Guía de navegación para Vicky
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Esta tabla es parte del funcionamiento del chat. Cada fila declara un destino, su nombre de ruta Laravel y las expresiones para encontrarlo. La ruta de pestaña abre la pantalla base. Una ruta modal identifica el formulario que se abre desde esa pantalla. Usa `—` cuando la acción solo requiere abrir una pestaña.
+
+<!-- vicky:rutas -->
+| Destino | Ruta de pestaña | Ruta modal | Frases | Indicaciones |
+| --- | --- | --- | --- | --- |
+| Nuevo cliente | clientes.index | clientes.create | crear cliente; registrar cliente; nuevo cliente; agregar cliente | Ve a Clientes → Lista de clientes → Nuevo cliente. Completa la ficha y guarda. |
+| Lista de clientes | clientes.index | — | clientes; lista de clientes; directorio de clientes | Abre Clientes → Lista de clientes para buscar por nombre, identificación o correo. |
+| Cuentas por cobrar | clientes.reportes.cuentas-por-cobrar | — | cuentas por cobrar; cartera de clientes | Ve a Clientes → Reportes → Cuentas por cobrar. |
+| Nuevo proveedor | proveedores.index | proveedores.create | crear proveedor; registrar proveedor; nuevo proveedor; agregar proveedor | Ve a Proveedores → Lista de proveedores → Nuevo proveedor. Completa la ficha y guarda. |
+| Lista de proveedores | proveedores.index | — | proveedores; lista de proveedores; directorio de proveedores | Abre el directorio de Proveedores para buscar y consultar sus fichas. |
+| Cuentas por pagar | proveedores.reportes.cuentas-por-pagar | — | cuentas por pagar; cartera de proveedores | Ve a Proveedores → Reportes → Cuentas por pagar. |
+| Nuevo producto | inventarios.productos.index | inventarios.productos.create | crear producto; registrar producto; nuevo producto; agregar producto | Ve a Inventarios → Productos → Nuevo producto. Completa la ficha del producto o servicio. |
+| Productos | inventarios.productos.index | — | productos; inventario; inventarios; catálogo de productos | Abre Inventarios → Productos. |
+| Existencias | inventarios.existencias.index | — | existencias; existencias por bodega; stock | Ve a Inventarios → Existencias para revisar el stock por producto y bodega. |
+| Ventas | ventas.documentos.index | — | ventas; lista de ventas; documentos de venta | Ve a Ventas → Lista de ventas. |
+| Reportes de ventas | ventas.reportes.index | — | reportes de ventas; reporte de ventas; informe de ventas | Ve a Ventas → Reportes y aplica el período que necesitas. |
+| Compras | compras.documentos.index | — | compras; lista de compras; documentos de compra | Ve a Compras → Lista de compras. |
+| Órdenes de compra | compras.ordenes-compra.index | — | órdenes de compra; ordenes de compra | Ve a Compras → Órdenes de compra. |
+| Cajas y cuentas bancarias | caja-bancos.cuentas.index | — | caja y bancos; cuentas bancarias; bancos | Ve a Caja y bancos → Cajas y cuentas bancarias. |
+| Conciliación bancaria | caja-bancos.conciliacion.index | — | conciliación bancaria; conciliación | Ve a Caja y bancos → Conciliación bancaria. |
+| Asientos contables | contabilidad.asientos.index | — | contabilidad; asientos contables; libro de asientos | Ve a Contabilidad → Asientos contables. |
+| Balance de comprobación | contabilidad.reportes.balance-comprobacion | — | balance de comprobación | Ve a Contabilidad → Reportes → Balance de comprobación. |
+| Registro de activos | activos-fijos.activos.index | — | activos fijos; registro de activos | Ve a Activos fijos → Registro de activos. |
+| Recursos humanos | rrhh.panel.index | — | recursos humanos; rrhh; panel de personal | Abre el panel de Recursos humanos. |
+| Nuevo empleado | rrhh.empleados.index | rrhh.empleados.create | crear empleado; registrar empleado; nuevo empleado; agregar empleado | Ve a Recursos humanos → Empleados y abre el formulario de alta. |
+| Empleados | rrhh.empleados.index | — | empleados; lista de empleados; directorio de personal | Ve a Recursos humanos → Empleados para consultar sus fichas. |
+| Nómina | rrhh.nomina.index | — | nómina; períodos de nómina | Ve a Recursos humanos → Nómina. |
+| Declaraciones tributarias | tributario.declaraciones.index | — | tributario; declaraciones tributarias; declaraciones | Ve a Tributario → Declaraciones. |
+| ATS | tributario.ats.index | — | ats; anexo transaccional simplificado | Ve a Tributario → ATS. |
+| Empresas | configuracion.empresas.index | — | empresas; configuración de empresas | Ve a Configuración → Empresas. |
+| Sucursales | configuracion.sucursales.index | — | sucursales; configuración de sucursales | Ve a Configuración → Sucursales. |
+<!-- /vicky:rutas -->
+
+En el chat, «¿Dónde creo un cliente?» devuelve los pasos y un botón. «Abre nuevo cliente» abre la pestaña y el formulario si la sesión tiene permiso. Abrir un formulario deja su envío bajo control del usuario. La orientación de esta tabla se resuelve en Aitrol y está disponible aunque Ollama o Vicky Core estén fuera de alcance.
+
+## Desarrollo local
+
+Usa PHP 8.4 con PDO SQLite, Composer y Node.js. Copia `.env.example` a `.env` al preparar una instalación nueva. Crea `database/database.sqlite` si todavía no existe y selecciona `DB_CONNECTION=sqlite` en el entorno.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+php artisan key:generate
+php artisan migrate --no-interaction
+npm install --ignore-scripts
+npm run build
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Las rutas desplegadas se consultan con `php artisan route:list`. La especificación de API está disponible en `/docs/api` y `/openapi.json`. Las pruebas de aplicación usan PHPUnit.
 
-## Contributing
+## Despliegue
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-### Despliegue de Aitrol
-
-- Sirve únicamente el directorio `public/`. Usa un certificado TLS válido y configura el proxy o Apache para redirigir HTTP y rechazar solicitudes HTTP que lleven credenciales. El proceso de PHP debe poder escribir en `storage/` y `bootstrap/cache/`. El código y `.env` deben quedar fuera de sus permisos de escritura.
-- En producción configura `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<dominio>`, `AITROL_REQUIRE_HTTPS=true`, `SESSION_SECURE_COOKIE=true` y `SESSION_ENCRYPT=true`. Puedes definir `AITROL_TRUSTED_HOSTS` con los nombres exactos y `AITROL_TRUSTED_PROXIES` con las IP o redes de los proxies que sustituyen las cabeceras reenviadas. Regenera la caché de configuración y verifica el acceso HTTPS antes de habilitar el servicio.
-- Usa una caché compartida entre las instancias de la aplicación para que el límite de intentos se aplique en todos los nodos.
-- Guarda copias cifradas de la base de datos y archivos privados fuera del servidor, con retención inmutable y credenciales distintas de las de Aitrol. Conserva la clave de aplicación en un respaldo seguro y verifica que puedes restaurar datos y archivos en una instancia aislada.
-- Ejecuta PHP con una cuenta de servicio sin privilegios administrativos y concede al usuario de base de datos solo los permisos que necesita la aplicación. Separa la cuenta usada para administrar el esquema. Mantén actualizado el sistema operativo, PHP y las dependencias.
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Sirve el directorio `public/` por HTTPS. El proceso de PHP necesita escritura en `storage/` y `bootstrap/cache/`.
+- Usa `APP_ENV=production`, `APP_DEBUG=false` y la URL HTTPS del despliegue. Configura las cookies de sesión seguras y, cuando aplique, los proxies de confianza antes de regenerar la caché de configuración.
+- Mantén respaldos cifrados de la base de datos, archivos privados y clave de aplicación. Comprueba la restauración en una instancia aislada.
+- Usa credenciales distintas para desplegar, operar la aplicación y consultar los informes de Vicky. La conexión de reportes debe quedar en solo lectura.

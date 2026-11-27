@@ -168,7 +168,9 @@ final class VickyCore
     {
         $url = config('services.vicky.core_url');
         $token = config('services.vicky.core_erp_token');
-        if (($url === null || $url === '') && ($token === null || $token === '')) {
+        $faltaUrl = $url === null || $url === '';
+        $faltaToken = $token === null || $token === '';
+        if ($faltaUrl || $faltaToken) {
             $ruta = config('services.vicky.core_connection_file')
                 ?: VickyCoreOutbox::directorioPrivado().DIRECTORY_SEPARATOR.'aitrol_2026.json';
             if (! is_string($ruta)) {
@@ -182,11 +184,15 @@ final class VickyCore
                 return null;
             }
             $datos = json_decode($documento, true, depth: 3);
-            if (! is_array($datos) || count($datos) !== 2) {
+            if (! is_array($datos) || count($datos) !== 2 || ! is_string($datos['url'] ?? null) || ! is_string($datos['token'] ?? null)) {
                 return null;
             }
-            $url = $datos['url'] ?? null;
-            $token = $datos['token'] ?? null;
+            if ((! $faltaUrl && (! is_string($url) || rtrim($url, '/') !== rtrim($datos['url'], '/')))
+                || (! $faltaToken && (! is_string($token) || ! hash_equals($datos['token'], $token)))) {
+                return null;
+            }
+            $url = $faltaUrl ? $datos['url'] : $url;
+            $token = $faltaToken ? $datos['token'] : $token;
         }
         if (! is_string($url) || ! is_string($token)) {
             return null;

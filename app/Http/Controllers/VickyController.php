@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\EmpresaActiva;
 use App\Services\VickyConsultaOperativa;
 use App\Services\VickyCore;
+use App\Services\VickyGuiaAitrol;
 use App\Services\VickyModelo;
 use App\Services\VickyReportes;
 use Carbon\CarbonImmutable;
@@ -31,6 +32,7 @@ final class VickyController extends Controller
         VickyConsultaOperativa $operativa,
         VickyCore $core,
         EmpresaActiva $empresaActiva,
+        VickyGuiaAitrol $guiaAitrol,
     ): JsonResponse {
         $datos = $request->validate([
             'pregunta' => ['required', 'string', 'max:1000'],
@@ -42,6 +44,13 @@ final class VickyController extends Controller
         $ambito = null;
 
         try {
+            $guia = $guiaAitrol->responder($datos['pregunta']);
+            if ($guia !== null) {
+                $estado = 'completed';
+
+                return response()->json($guia);
+            }
+
             return $this->responder($datos, $reportes, $modelo, $operativa, $core, $empresa, $estado, $ambito);
         } catch (AuthorizationException $error) {
             $estado = 'rejected';
