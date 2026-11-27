@@ -1292,6 +1292,308 @@
           "429": { "$ref": "#/components/responses/LimiteExcedido" }
         }
       }
+    },
+    "/api/v1/inventarios/categorias": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarInvCategoria",
+        "summary": "Listar categorías",
+        "responses": {
+          "200": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/InvCategoria" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosCrearInvCategoria",
+        "summary": "Registrar categorías",
+        "responses": {
+          "201": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvCategoria" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          },
+          "422": {
+            "description": "Datos inválidos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvCategoriaAlta" }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventarios/categorias/{registro}": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosConsultarInvCategoria",
+        "summary": "Consultar categorías",
+        "responses": {
+          "200": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvCategoria" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          }
+        },
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosActualizarInvCategoria",
+        "summary": "Actualizar categorías",
+        "responses": {
+          "200": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvCategoria" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          },
+          "422": {
+            "description": "Datos inválidos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvCategoriaCambio" }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/inventarios/plantillas-contables": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosListarInvPlantilla",
+        "summary": "Listar plantillas contables",
+        "responses": {
+          "200": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/InvPlantilla" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosCrearInvPlantilla",
+        "summary": "Registrar plantillas contables",
+        "responses": {
+          "201": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvPlantilla" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          },
+          "422": {
+            "description": "Datos inválidos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvPlantillaAlta" }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventarios/plantillas-contables/{registro}": {
+      "get": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosConsultarInvPlantilla",
+        "summary": "Consultar plantillas contables",
+        "responses": {
+          "200": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvPlantilla" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          }
+        },
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Inventarios"
+        ],
+        "operationId": "inventariosActualizarInvPlantilla",
+        "summary": "Actualizar plantillas contables",
+        "responses": {
+          "200": {
+            "description": "Operación correcta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/InvPlantilla" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permiso insuficiente"
+          },
+          "422": {
+            "description": "Datos inválidos"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvPlantillaCambio" }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1350,6 +1652,80 @@
             ],
             "description": "De 0 a 1000000, hasta 3 decimales.",
             "example": "5.000"
+          },
+          "id_categoria": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "tipo_producto": {
+            "type": "string",
+            "enum": [
+              "producto",
+              "servicio"
+            ],
+            "default": "producto"
+          },
+          "marca": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "modelo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "ficha_tecnica_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "maxLength": 500
+          },
+          "cuentas": { "$ref": "#/components/schemas/InvCuentasProducto" },
+          "precio_venta": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "costo_reposicion": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "descuento_comercial": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "descuento_financiero": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
           }
         },
         "required": [
@@ -1553,7 +1929,88 @@
           "updated_at": {
             "type": "string",
             "example": "2026-11-26 09:30:00"
-          }
+          },
+          "id_categoria": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "tipo_producto": {
+            "type": "string",
+            "enum": [
+              "producto",
+              "servicio"
+            ],
+            "default": "producto"
+          },
+          "marca": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "modelo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "ficha_tecnica_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "maxLength": 500
+          },
+          "cuentas": { "$ref": "#/components/schemas/InvCuentasProducto" },
+          "precio_venta": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "costo_reposicion": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "descuento_comercial": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "descuento_financiero": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "plantilla_contable": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cuentas_efectivas": { "$ref": "#/components/schemas/InvCuentasProducto" }
         }
       },
       "InvBodega": {
@@ -2279,6 +2736,207 @@
           "total",
           "last_page"
         ]
+      },
+      "InvCuentasProducto": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "description": "Cuentas auxiliares de la empresa. La plantilla de la categoría prevalece sobre la asignación manual.",
+        "additionalProperties": false,
+        "properties": {
+          "inventario": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "compras": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "ventas": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "costo_ventas": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "devolucion": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "ajustes_inventario": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        }
+      },
+      "InvCategoriaAlta": {
+        "type": "object",
+        "required": [
+          "codigo",
+          "nombre"
+        ],
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_plantilla_contable": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        }
+      },
+      "InvCategoriaCambio": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvCategoriaAlta" },
+          {
+            "required": [
+              "activo"
+            ]
+          }
+        ]
+      },
+      "InvCategoria": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "id_empresa": {
+            "type": "integer"
+          },
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "id_plantilla_contable": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        }
+      },
+      "InvPlantillaAlta": {
+        "type": "object",
+        "required": [
+          "codigo",
+          "nombre",
+          "cuentas"
+        ],
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "cuentas": { "$ref": "#/components/schemas/InvCuentasProducto" }
+        }
+      },
+      "InvPlantillaCambio": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvPlantillaAlta" },
+          {
+            "required": [
+              "activo"
+            ]
+          }
+        ]
+      },
+      "InvPlantilla": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "id_empresa": {
+            "type": "integer"
+          },
+          "codigo": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "descripcion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "cuentas": { "$ref": "#/components/schemas/InvCuentasProducto" }
+        }
       }
     },
     "responses": {

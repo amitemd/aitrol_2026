@@ -1,9 +1,11 @@
 @extends('layouts.adminlte')
 
 @php
-    $catalogo = in_array($seccion, config('inventarios.catalogos'), true);
+    $catalogo = in_array($seccion, config('inventarios.catalogos', ['productos', 'bodegas']), true);
     $titulo = match ($seccion) {
         'productos' => $registro ? 'Editar producto' : 'Nuevo producto',
+        'categorias' => $registro ? 'Editar categoría' : 'Nueva categoría',
+        'plantillas-contables' => $registro ? 'Editar plantilla contable' : 'Nueva plantilla contable',
         'bodegas' => $registro ? 'Editar bodega' : 'Nueva bodega',
         'ajustes' => 'Nuevo ajuste',
         default => 'Nuevo movimiento',
@@ -16,6 +18,7 @@
     <div class="app-content py-3">
         <div class="container-fluid">
             <form @class(['card', 'inventario-operacion' => !$catalogo]) method="POST" data-ajax-form
+                @if ($seccion === 'productos') data-usuario-form data-ficha-producto @endif
                 action="{{ $registro ? route($ruta.'.update', $registro['id']) : route($ruta.'.store') }}">
                 @csrf
                 @if ($registro)
@@ -27,6 +30,9 @@
                         <ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                     </div>
                 @endif
+                @if ($seccion === 'productos')
+                    @include('inventarios::ficha-producto')
+                @else
                 <div class="card-body row g-3">
                     @if ($catalogo)
                         <div class="col-sm-4">
@@ -35,20 +41,22 @@
                         </div>
                         <div class="col-sm-8">
                             <label class="form-label" for="inv-nombre">Nombre</label>
-                            <input class="form-control" name="nombre" id="inv-nombre" maxlength="160" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
+                            <input class="form-control" name="nombre" id="inv-nombre" maxlength="{{ $seccion === 'categorias' ? 100 : 160 }}" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
                         </div>
-                        @if ($seccion === 'productos')
-                            @foreach (['codigo_barras' => ['Código de barras', 80], 'categoria' => ['Categoría', 100], 'unidad' => ['Unidad de medida', 30]] as $campo => [$etiqueta, $limite])
-                                <div class="col-sm-6">
-                                    <label class="form-label" for="inv-{{ $campo }}">{{ $etiqueta }}</label>
-                                    <input class="form-control" id="inv-{{ $campo }}" name="{{ $campo }}" maxlength="{{ $limite }}"
-                                        value="{{ old($campo, $registro[$campo] ?? '') }}" @required($campo === 'unidad')>
-                                </div>
-                            @endforeach
-                            <div class="col-sm-6">
-                                <label class="form-label" for="inv-minimo">Stock mínimo por bodega</label>
-                                <input class="form-control" type="number" id="inv-minimo" name="stock_minimo" min="0" max="1000000" step="0.001" value="{{ old('stock_minimo', $registro['stock_minimo'] ?? '0') }}">
+                        @if ($seccion === 'categorias')
+                            <div class="col-12">
+                                <label class="form-label" for="inv-plantilla">Plantilla contable</label>
+                                <select name="id_plantilla_contable" id="inv-plantilla" class="form-select">
+                                    <option value="">Sin plantilla</option>
+                                    @foreach ($ficha['plantillas'] as $plantilla)
+                                        @continue(!$plantilla->activo && (int) ($registro['id_plantilla_contable'] ?? 0) !== (int) $plantilla->id)
+                                        <option value="{{ $plantilla->id }}" @selected((int) old('id_plantilla_contable', $registro['id_plantilla_contable'] ?? 0) === (int) $plantilla->id)>{{ $plantilla->nombre }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="form-text">Los productos de esta categoría usarán estas cuentas.</p>
                             </div>
+                        @elseif ($seccion === 'plantillas-contables')
+                            @include('inventarios::campos-cuentas')
                         @endif
                         <div class="col-12">
                             <label class="form-label" for="inv-descripcion">Descripción</label>
@@ -96,6 +104,7 @@
                         </div>
                     @endif
                 </div>
+                @endif
                 <div class="card-footer ficha-acciones d-flex flex-wrap align-items-center gap-2">
                     @if ($catalogo)
                         @include('partials.interruptor-activo', ['activo' => $registro['activo'] ?? true])

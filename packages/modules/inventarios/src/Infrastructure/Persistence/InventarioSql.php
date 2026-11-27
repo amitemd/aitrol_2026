@@ -63,6 +63,9 @@ final readonly class InventarioSql implements RepositorioInventario
                         throw ValidationException::withMessages([$campo => 'Lleva la existencia a cero antes de cambiar este campo.']);
                     }
                     $this->tabla($tabla)->where('id', $id)->update($datos + ['id_usuario_modificacion' => auth()->id(), 'updated_at' => now()]);
+                    if ($seccion === 'categorias' && $actual->nombre !== $datos['nombre']) {
+                        $this->tabla('inv_productos')->where('id_categoria', $id)->update(['categoria' => $datos['nombre']]);
+                    }
                 }
 
                 return $this->catalogo($seccion, $id);
@@ -89,7 +92,7 @@ final readonly class InventarioSql implements RepositorioInventario
 
         return [
             'plantilla_contable' => $plantilla?->nombre,
-            'cuentas_efectivas' => json_decode($cuentas ?? '[]', true, flags: JSON_THROW_ON_ERROR),
+            'cuentas_efectivas' => (object) json_decode($cuentas ?? '{}', true, flags: JSON_THROW_ON_ERROR),
         ];
     }
 

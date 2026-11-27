@@ -36,6 +36,9 @@ final readonly class Inventario
                     return $this->repetida($existente, $huella);
                 }
                 $this->verificarActivo($producto, 'id_producto');
+                if (($producto->tipo_producto ?? 'producto') === 'servicio') {
+                    throw ValidationException::withMessages(['id_producto' => 'Los servicios no manejan existencias.']);
+                }
 
                 $bodegas = array_filter([$operacion['id_bodega'], $operacion['id_bodega_destino']]);
                 sort($bodegas, SORT_NUMERIC);

@@ -46,6 +46,29 @@
         const invalid = form.querySelector('.is-invalid')?.closest('[data-usuario-panel]');
         select(invalid?.dataset.usuarioPanel ?? 'generales');
         tablist.hidden = false;
+
+        if (form.hasAttribute('data-ficha-producto')) {
+            const categoria = form.querySelector('[data-producto-categoria]');
+            const herencia = form.querySelector('[data-producto-herencia]');
+            const manual = form.querySelector('[data-producto-manual]');
+            const plantillas = JSON.parse(herencia.dataset.plantillas);
+            const nombre = herencia.querySelector('[data-producto-plantilla]');
+            const cuentas = herencia.querySelectorAll('[data-producto-cuenta]');
+
+            function actualizarCuentas() {
+                const plantilla = plantillas[categoria.selectedOptions[0]?.dataset.plantilla];
+                herencia.hidden = !plantilla;
+                manual.hidden = Boolean(plantilla);
+                if (!plantilla) return;
+                nombre.textContent = plantilla.nombre;
+                for (const cuenta of cuentas) {
+                    cuenta.textContent = plantilla.cuentas[cuenta.dataset.productoCuenta] ?? 'Sin asignar';
+                }
+            }
+
+            categoria.addEventListener('change', actualizarCuentas);
+            actualizarCuentas();
+        }
     }
 
     document.querySelectorAll('[data-usuario-form]').forEach(setup);

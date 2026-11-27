@@ -39,7 +39,7 @@ final readonly class InventarioController
     {
         $seccion = $request->route('seccion');
         $id = (int) $request->route('registro');
-        $registro = in_array($seccion, config('inventarios.catalogos'), true)
+        $registro = in_array($seccion, config('inventarios.catalogos', ['productos', 'bodegas']), true)
             ? $this->repositorio->catalogo($seccion, $id)
             : $this->repositorio->operacion($id);
 
@@ -48,9 +48,15 @@ final readonly class InventarioController
         }
 
         $fila = $this->presentar($registro);
+        if ($seccion === 'productos') {
+            $fila += $this->repositorio->cuentasProducto($registro);
+        }
         if ($request->routeIs('api.*')) return response()->json(['data' => $fila]);
 
-        return view('inventarios::detalle', compact('seccion', 'fila'));
+        $cuentas = in_array($seccion, ['productos', 'plantillas-contables'], true)
+            ? $this->repositorio->opcionesFicha()['cuentas']->keyBy('id') : collect();
+
+        return view('inventarios::detalle', compact('seccion', 'fila', 'cuentas'));
     }
 
     public function formulario(Request $request)
@@ -73,13 +79,16 @@ final readonly class InventarioController
             }
         }
 
-        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones'));
+        $ficha = in_array($seccion, ['productos', 'categorias', 'plantillas-contables'], true)
+            ? $this->repositorio->opcionesFicha() : [];
+
+        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones', 'ficha'));
     }
 
     public function store(Request $request)
     {
         $seccion = $request->route('seccion');
-        if (in_array($seccion, config('inventarios.catalogos'), true)) {
+        if (in_array($seccion, config('inventarios.catalogos', ['productos', 'bodegas']), true)) {
             return $this->guardarCatalogo($request, $seccion, null);
         }
 
@@ -146,7 +155,7 @@ final readonly class InventarioController
     {
         $reglas = [
             'codigo' => ['required', 'string', 'max:60'],
-            'nombre' => ['required', 'string', 'max:160'],
+            'nombre' => ['required', 'string', $seccion === 'categorias' ? 'max:100' : 'max:160'],
             'descripcion' => ['nullable', 'string', 'max:500'],
             'activo' => [$id ? 'required' : 'sometimes', 'boolean'],
         ];
@@ -154,9 +163,25 @@ final readonly class InventarioController
             $reglas += [
                 'unidad' => ['required', 'string', 'max:30'],
                 'categoria' => ['nullable', 'string', 'max:100'],
+                'id_categoria' => ['sometimes', 'nullable', 'integer', 'min:1'],
                 'codigo_barras' => ['nullable', 'string', 'max:80'],
                 'stock_minimo' => ['nullable', 'numeric', 'decimal:0,3', 'min:0', 'max:1000000'],
+                'tipo_producto' => ['sometimes', 'required', Rule::in(array_keys(config('inventarios.tipos_producto')))],
+                'marca' => ['nullable', 'string', 'max:100'],
+                'modelo' => ['nullable', 'string', 'max:100'],
+                'ficha_tecnica_url' => ['nullable', 'url:https', 'max:500'],
             ];
+            foreach (config('inventarios.valores_producto') as $campo => [, $maximo, $decimales]) {
+                $reglas[$campo] = ['nullable', 'numeric', 'decimal:0,'.$decimales, 'min:0', 'max:'.$maximo];
+            }
+        }
+        if ($seccion === 'categorias') {
+            $reglas['id_plantilla_contable'] = ['sometimes', 'nullable', 'integer', 'min:1'];
+        }
+        if (in_array($seccion, ['productos', 'plantillas-contables'], true)) {
+            $reglas['cuentas'] = [$seccion === 'plantillas-contables' ? 'required' : 'sometimes',
+                'array:'.implode(',', array_keys(config('inventarios.cuentas_producto')))];
+            $reglas['cuentas.*'] = ['nullable', 'integer', 'min:1'];
         }
         $datos = $request->validate($reglas);
         $datos['codigo'] = Str::upper($datos['codigo']);
@@ -164,7 +189,7 @@ final readonly class InventarioController
             throw \Illuminate\Validation\ValidationException::withMessages(['codigo' => 'El código debe tener hasta 60 caracteres en mayúsculas.']);
         }
         $datos['activo'] ??= true;
-        if ($seccion === 'productos') {
+        if ($seccion === 'productos' && ($id === null || array_key_exists('stock_minimo', $datos))) {
             $datos['stock_minimo'] = Cantidad::unidades($datos['stock_minimo'] ?? 0, 3);
         }
         $registro = $this->repositorio->guardarCatalogo($seccion, $id, $datos);
@@ -179,7 +204,7 @@ final readonly class InventarioController
             'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
         ];
-        if (in_array($seccion, config('inventarios.catalogos'), true)) {
+        if (in_array($seccion, config('inventarios.catalogos', ['productos', 'bodegas']), true)) {
             $reglas['activo'] = ['nullable', 'boolean'];
         } else {
             $reglas['id_producto'] = $reglas['id_bodega'] = ['nullable', 'integer', 'min:1'];
@@ -205,6 +230,7 @@ final readonly class InventarioController
     {
         $datos = (array) $registro;
         unset($datos['huella']);
+        if (isset($datos['cuentas'])) $datos['cuentas'] = json_decode($datos['cuentas'], true, flags: JSON_THROW_ON_ERROR);
         if (isset($datos['activo'])) $datos['activo'] = (bool) $datos['activo'];
         if (isset($datos['stock_minimo'], $datos['cantidad'])) {
             $datos['bajo_minimo'] = $datos['cantidad'] <= $datos['stock_minimo'];
@@ -223,7 +249,10 @@ final readonly class InventarioController
         if ($request->routeIs('api.*')) {
             $cabeceras = $estado === 201 ? ['Location' => route('api.v1.inventarios.'.$seccion.'.show', $registro->id)] : [];
 
-            return response()->json(['data' => $this->presentar($registro)], $estado, $cabeceras);
+            $datos = $this->presentar($registro);
+            if ($seccion === 'productos') $datos += $this->repositorio->cuentasProducto($registro);
+
+            return response()->json(['data' => $datos], $estado, $cabeceras);
         }
         if ($request->expectsJson()) {
             return response()->json(['message' => $mensaje], $estado);

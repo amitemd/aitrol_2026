@@ -9,13 +9,30 @@
                 @include('partials.referencia-asiento', ['registroAsiento' => $fila])
                 <dl class="row mb-0 mt-3">
                     @foreach (['codigo' => 'Código', 'nombre' => 'Nombre', 'descripcion' => 'Descripción', 'codigo_barras' => 'Código de barras',
-                        'categoria' => 'Categoría', 'unidad' => 'Unidad', 'stock_minimo' => 'Stock mínimo', 'tipo' => 'Tipo', 'cantidad' => 'Cantidad',
+                        'categoria' => 'Categoría', 'plantilla_contable' => 'Plantilla contable', 'tipo_producto' => 'Tipo de producto', 'marca' => 'Marca', 'modelo' => 'Modelo',
+                        'unidad' => 'Unidad', 'stock_minimo' => 'Stock mínimo', 'tipo' => 'Tipo', 'cantidad' => 'Cantidad',
                         'costo_unitario' => 'Costo unitario', 'motivo' => 'Motivo', 'referencia' => 'Referencia', 'created_at' => 'Fecha de registro'] as $campo => $etiqueta)
                         @isset($fila[$campo])
-                            <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7">{{ $campo === 'tipo' ? config('inventarios.tipos.'.$fila[$campo]) : $fila[$campo] }}</dd>
+                            <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7">{{ match ($campo) {
+                                'tipo' => config('inventarios.tipos.'.$fila[$campo]),
+                                'tipo_producto' => config('inventarios.tipos_producto.'.$fila[$campo]),
+                                default => $fila[$campo],
+                            } }}</dd>
                         @endisset
                     @endforeach
                 </dl>
+                @if ((array) ($fila['cuentas_efectivas'] ?? $fila['cuentas'] ?? []))
+                    <h2 class="h6 mt-3">Cuentas contables</h2>
+                    <dl class="row mb-0">
+                        @foreach (($fila['cuentas_efectivas'] ?? $fila['cuentas']) as $rol => $id)
+                            <dt class="col-sm-5">{{ config('inventarios.cuentas_producto.'.$rol.'.0') }}</dt>
+                            <dd class="col-sm-7">{{ $cuentas->has($id) ? $cuentas[$id]->codigo.' · '.$cuentas[$id]->nombre : '#'.$id }}</dd>
+                        @endforeach
+                    </dl>
+                @endif
+                @if (!empty($fila['ficha_tecnica_url']))
+                    <a href="{{ $fila['ficha_tecnica_url'] }}" target="_blank" rel="noopener noreferrer">Abrir ficha técnica</a>
+                @endif
                 @isset($fila['lineas'])
                     <div class="table-responsive"><table class="table table-sm">
                         <caption class="visually-hidden">Movimientos de existencias</caption>

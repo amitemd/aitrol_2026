@@ -3,12 +3,13 @@
 @php
     [$titulo, $icono] = config('inventarios.secciones.'.$seccion);
     $ruta = 'inventarios.'.$seccion;
-    $catalogo = in_array($seccion, config('inventarios.catalogos'), true);
+    $catalogo = in_array($seccion, config('inventarios.catalogos', ['productos', 'bodegas']), true);
     $existencias = in_array($seccion, ['existencias', 'reportes'], true);
-    $alta = ['productos' => 'Nuevo producto', 'bodegas' => 'Nueva bodega', 'movimientos' => 'Nuevo movimiento', 'ajustes' => 'Nuevo ajuste'];
+    $alta = ['productos' => 'Nuevo producto', 'bodegas' => 'Nueva bodega', 'movimientos' => 'Nuevo movimiento',
+        'ajustes' => 'Nuevo ajuste', 'categorias' => 'Nueva categoría', 'plantillas-contables' => 'Nueva plantilla contable'];
     $columnas = match ($seccion) {
         'productos' => ['Código', 'Producto', 'Categoría', 'Unidad', 'Stock mínimo', 'Estado', 'Acciones'],
-        'bodegas' => ['Código', 'Bodega', 'Descripción', 'Estado', 'Acciones'],
+        'bodegas', 'categorias', 'plantillas-contables' => ['Código', 'Nombre', 'Descripción', 'Estado', 'Acciones'],
         'existencias' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Estado'],
         'reportes' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Valor de existencia'],
         'kardex' => ['Fecha', 'Producto', 'Bodega', 'Operación', 'Variación', 'Saldo anterior', 'Saldo', 'Costo promedio'],
@@ -117,7 +118,7 @@
                                             @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
                                                 @can('permiso', [$ruta.'.index', 'actualizar'])
                                                     @include('partials.accion-fila-enlace', ['href' => route($ruta.'.edit', $fila['id']), 'etiqueta' => 'Editar',
-                                                        'titulo' => 'Editar '.($seccion === 'productos' ? 'producto' : 'bodega')])
+                                                        'titulo' => str_replace(['Nuevo ', 'Nueva '], 'Editar ', $alta[$seccion])])
                                                 @endcan
                                             @endcomponent
                                         </td>
