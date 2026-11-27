@@ -20,7 +20,7 @@ final readonly class InventarioSql implements RepositorioInventario
     public function listar(string $seccion, array $filtros): LengthAwarePaginator
     {
         $consulta = match ($seccion) {
-            'productos', 'bodegas' => $this->catalogos($seccion, $filtros),
+            'productos', 'bodegas', 'categorias', 'plantillas-contables' => $this->catalogos($seccion, $filtros),
             'existencias', 'reportes' => $this->existencias($filtros),
             'movimientos', 'ajustes' => $this->operaciones($seccion, $filtros),
             'kardex' => $this->kardex($filtros),
@@ -37,7 +37,7 @@ final readonly class InventarioSql implements RepositorioInventario
 
     public function catalogo(string $seccion, int $id, bool $bloquear = false): stdClass
     {
-        $consulta = $this->tabla('inv_'.$seccion)->where('id', $id);
+        $consulta = $this->tabla('inv_'.str_replace('-', '_', $seccion))->where('id', $id);
         if ($bloquear) $consulta->lockForUpdate();
 
         return $consulta->first() ?? abort(404, 'Registro de inventario no encontrado.');
@@ -47,17 +47,20 @@ final readonly class InventarioSql implements RepositorioInventario
     {
         try {
             return $this->transaccion(function () use ($seccion, $id, $datos): stdClass {
-                $tabla = 'inv_'.$seccion;
+                $tabla = 'inv_'.str_replace('-', '_', $seccion);
+                $actual = $id === null ? null : $this->catalogo($seccion, $id, bloquear: true);
+                $datos = $this->prepararCatalogo($seccion, $datos, $actual);
                 if ($id === null) {
                     $id = DB::table($tabla)->insertGetId($datos + [
                         'id_empresa' => $this->empresa->id(), 'id_usuario_creacion' => auth()->id(),
                         'created_at' => now(), 'updated_at' => now(),
                     ]);
                 } else {
-                    $this->catalogo($seccion, $id, bloquear: true);
                     $columna = $seccion === 'productos' ? 'id_producto' : 'id_bodega';
-                    if (! $datos['activo'] && $this->tabla('inv_existencias')->where($columna, $id)->where('cantidad', '>', 0)->exists()) {
-                        throw ValidationException::withMessages(['activo' => 'Lleva la existencia a cero antes de desactivar este registro.']);
+                    if (in_array($seccion, ['productos', 'bodegas'], true) && (! $datos['activo'] || ($datos['tipo_producto'] ?? null) === 'servicio')
+                        && $this->tabla('inv_existencias')->where($columna, $id)->where('cantidad', '>', 0)->exists()) {
+                        $campo = ! $datos['activo'] ? 'activo' : 'tipo_producto';
+                        throw ValidationException::withMessages([$campo => 'Lleva la existencia a cero antes de cambiar este campo.']);
                     }
                     $this->tabla($tabla)->where('id', $id)->update($datos + ['id_usuario_modificacion' => auth()->id(), 'updated_at' => now()]);
                 }
@@ -67,6 +70,74 @@ final readonly class InventarioSql implements RepositorioInventario
         } catch (UniqueConstraintViolationException $error) {
             abort(409, 'El código o código de barras ya existe en esta empresa.');
         }
+    }
+
+    public function opcionesFicha(): array
+    {
+        return [
+            'categorias' => $this->tabla('inv_categorias')->orderBy('nombre')->get(['id', 'nombre', 'activo', 'id_plantilla_contable']),
+            'plantillas' => $this->tabla('inv_plantillas_contables')->orderBy('nombre')->get(['id', 'nombre', 'activo', 'cuentas'])->keyBy('id'),
+            'cuentas' => $this->tabla('co_cuentas')->where('auxiliar', true)->orderBy('codigo')->get(['id', 'codigo', 'nombre', 'clase', 'activo']),
+        ];
+    }
+
+    public function cuentasProducto(stdClass $producto): array
+    {
+        $categoria = isset($producto->id_categoria) ? $this->catalogo('categorias', $producto->id_categoria) : null;
+        $plantilla = isset($categoria->id_plantilla_contable) ? $this->catalogo('plantillas-contables', $categoria->id_plantilla_contable) : null;
+        $cuentas = $plantilla ? $plantilla->cuentas : ($producto->cuentas ?? null);
+
+        return [
+            'plantilla_contable' => $plantilla?->nombre,
+            'cuentas_efectivas' => json_decode($cuentas ?? '[]', true, flags: JSON_THROW_ON_ERROR),
+        ];
+    }
+
+    private function prepararCatalogo(string $seccion, array $datos, ?stdClass $actual): array
+    {
+        $campo = match ($seccion) {
+            'productos' => 'id_categoria',
+            'categorias' => 'id_plantilla_contable',
+            default => null,
+        };
+        $relacion = null;
+        if ($campo !== null && ($id = $datos[$campo] ?? (! array_key_exists($campo, $datos) ? $actual?->{$campo} : null)) !== null) {
+            $tabla = $seccion === 'productos' ? 'inv_categorias' : 'inv_plantillas_contables';
+            $relacion = $this->tabla($tabla)->where('id', $id)->first();
+            if (! $relacion || (! $relacion->activo && (int) $id !== (int) $actual?->{$campo})) {
+                throw ValidationException::withMessages([$campo => 'Selecciona un registro activo de esta empresa.']);
+            }
+        }
+
+        if ($seccion === 'productos' && $relacion) {
+            $datos['categoria'] = $relacion->nombre;
+            if ($relacion->id_plantilla_contable !== null) {
+                $datos['cuentas'] = null;
+            }
+        } elseif ($seccion === 'productos' && array_key_exists('id_categoria', $datos) && ! array_key_exists('categoria', $datos)) {
+            $datos['categoria'] = null;
+        }
+
+        if (isset($datos['cuentas'])) {
+            $cuentas = array_filter($datos['cuentas'], fn ($valor) => $valor !== null);
+            $validas = $this->tabla('co_cuentas')->where('activo', true)->where('auxiliar', true)
+                ->whereIn('id', array_values($cuentas))->pluck('clase', 'id');
+            foreach ($cuentas as $rol => $id) {
+                if ($validas->get($id) !== config('inventarios.cuentas_producto.'.$rol.'.1')) {
+                    throw ValidationException::withMessages(['cuentas.'.$rol => 'Selecciona una cuenta auxiliar activa, de la clase indicada y de esta empresa.']);
+                }
+            }
+            if ($seccion === 'plantillas-contables' && $cuentas === []) {
+                throw ValidationException::withMessages(['cuentas' => 'Selecciona al menos una cuenta contable.']);
+            }
+            $datos['cuentas'] = json_encode((object) $cuentas, JSON_THROW_ON_ERROR);
+        }
+
+        if ($seccion === 'productos' && ($datos['tipo_producto'] ?? $actual?->tipo_producto) === 'servicio') {
+            $datos['stock_minimo'] = 0;
+        }
+
+        return $datos;
     }
 
     public function operacion(int $id): stdClass
@@ -119,7 +190,7 @@ final readonly class InventarioSql implements RepositorioInventario
 
     private function catalogos(string $seccion, array $filtros): Builder
     {
-        $consulta = $this->tabla('inv_'.$seccion)->orderBy('nombre')->orderBy('id');
+        $consulta = $this->tabla('inv_'.str_replace('-', '_', $seccion))->orderBy('nombre')->orderBy('id');
         if (! empty($filtros['q'])) {
             $consulta->where(function (Builder $q) use ($filtros, $seccion): void {
                 $patron = '%'.$filtros['q'].'%';

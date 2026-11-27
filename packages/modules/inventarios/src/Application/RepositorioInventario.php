@@ -8,6 +8,10 @@ use stdClass;
 
 interface RepositorioInventario
 {
+    public function opcionesFicha(): array;
+
+    public function cuentasProducto(stdClass $producto): array;
+
     public function listar(string $seccion, array $filtros): LengthAwarePaginator;
 
     public function reporte(array $filtros): iterable;
