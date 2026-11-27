@@ -247,6 +247,7 @@
 .aitrol-profile-language-title {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: .45rem;
     color: var(--bs-secondary-color);
     font-size: .82rem;
@@ -254,6 +255,17 @@
 }
 
 .aitrol-profile-language-title > .bi { color: var(--aitrol-accent); }
+
+.aitrol-profile-language > form {
+    max-width: 14rem;
+    margin-inline: auto;
+    text-align: center;
+}
+
+.aitrol-profile-language .form-select {
+    padding-inline: 2.25rem;
+    text-align-last: center;
+}
 
 .aitrol-profile-actions {
     padding: .55rem;
