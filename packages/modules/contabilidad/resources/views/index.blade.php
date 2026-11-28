@@ -7,6 +7,7 @@
         'asientos' => ['numero' => 'Asiento', 'fecha' => 'Fecha', 'concepto' => 'Concepto', 'origen' => 'Origen', 'total' => 'Importe USD', 'id_reversion' => 'Estado'],
         'cuentas' => [],
         'periodos' => ['nombre' => 'Período', 'desde' => 'Desde', 'hasta' => 'Hasta', 'cerrado_at' => 'Estado'],
+        'centros-costos' => ['codigo' => 'Código', 'nombre' => 'Centro de costos', 'descripcion' => 'Descripción', 'activo' => 'Estado'],
     };
 @endphp
 @if ($seccion === 'cuentas')
@@ -58,13 +59,14 @@
                                     @php
                                         $accion = match ($seccion) {
                                             'periodos' => $fila['cerrado_at'] ? null : ['cerrar', 'Cerrar período'],
+                                            'centros-costos' => ['editar', 'Editar centro de costos'],
                                             'asientos' => $fila['id_reversion'] || $fila['id_reversa_de'] || $fila['origen'] ? null : ['revertir', 'Revertir'],
                                         };
                                     @endphp
                                     @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => 'Detalle contable'])
                                         @if ($accion && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
                                             @include('partials.accion-fila-enlace', ['href' => route($ruta.'.'.$accion[0].'.formulario', $fila['id']),
-                                                'etiqueta' => $accion[1], 'icono' => ['cerrar' => 'bi-lock', 'revertir' => 'bi-arrow-counterclockwise'][$accion[0]]])
+                                                'etiqueta' => $accion[1], 'icono' => ['editar' => 'bi-pencil', 'cerrar' => 'bi-lock', 'revertir' => 'bi-arrow-counterclockwise'][$accion[0]]])
                                         @endif
                                     @endcomponent
                                 </td>

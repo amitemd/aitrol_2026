@@ -6,6 +6,7 @@ use Aitrol\Contabilidad\Application\Puertos\RepositorioContable;
 use App\Services\EmpresaActiva;
 use Closure;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -67,8 +68,31 @@ final readonly class DatosContables implements RepositorioContable
         return $this->tabla('co_lineas')
             ->join('co_asientos as asiento', 'asiento.id', '=', 'co_lineas.id_asiento')
             ->join('co_cuentas as cuenta', 'cuenta.id', '=', 'co_lineas.id_cuenta')
+            ->leftJoin('co_centros_costos as centro', function (JoinClause $union): void {
+                $union->on('centro.id', '=', 'co_lineas.id_centro_costo')->on('centro.id_empresa', '=', 'co_lineas.id_empresa');
+            })
             ->select('co_lineas.*', 'asiento.fecha', 'asiento.numero', 'asiento.concepto', 'asiento.referencia',
-                'asiento.flujo', 'cuenta.codigo', 'cuenta.nombre as cuenta', 'cuenta.clase', 'cuenta.efectivo');
+                'asiento.flujo', 'cuenta.codigo', 'cuenta.nombre as cuenta', 'cuenta.clase', 'cuenta.efectivo',
+                'centro.codigo as centro_codigo', 'centro.nombre as centro_costo');
+    }
+
+    public function centrosActivos(array $ids): array
+    {
+        return $ids === [] ? [] : $this->tabla('co_centros_costos')->where('activo', true)->whereIn('id', $ids)->pluck('id', 'id')->all();
+    }
+
+    public function guardarCentroCosto(array $datos, ?int $id): stdClass
+    {
+        return $this->transaccion(function () use ($datos, $id): stdClass {
+            if ($id === null) {
+                $id = $this->crear('co_centros_costos', $datos);
+            } else {
+                $this->fila('co_centros_costos', $id);
+                $this->actualizar('co_centros_costos', $id, $datos);
+            }
+
+            return $this->fila('co_centros_costos', $id);
+        });
     }
 
     public function buscar(Builder $consulta, ?string $buscar, array $columnas): Builder

@@ -16,6 +16,15 @@
             <input id="co-{{ $indice }}-detalle" maxlength="250" name="lineas[{{ $indice }}][detalle]" class="form-control" value="{{ $fila['detalle'] ?? '' }}">
         </div>
         <div class="col-sm">
+            <label class="form-label" for="co-{{ $indice }}-centro">Centro de costos</label>
+            <select id="co-{{ $indice }}-centro" name="lineas[{{ $indice }}][id_centro_costo]" class="form-select">
+                <option value="">Sin centro asignado</option>
+                @foreach ($centros as $centro)
+                    <option value="{{ $centro->id }}" @selected((int) ($fila['id_centro_costo'] ?? 0) === (int) $centro->id)>{{ $centro->codigo }} · {{ $centro->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-sm">
             <label class="form-label" for="co-{{ $indice }}-patrimonio">Movimiento de patrimonio</label>
             <select id="co-{{ $indice }}-patrimonio" name="lineas[{{ $indice }}][movimiento_patrimonio]" class="form-select">
                 <option value="">Sin clasificar</option>

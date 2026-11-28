@@ -23,7 +23,41 @@ final readonly class ReportesContables
             'balance-financiero' => $this->situacion($hasta),
             'flujo-caja' => $this->efectivo($desde, $hasta),
             'cambios-patrimonio' => $this->patrimonio($desde, $hasta),
+            'resultados-centros-costos', 'movimientos-centros-costos' => $this->porCentro(
+                $desde, $hasta, isset($filtros['id_centro_costo']) ? (int) $filtros['id_centro_costo'] : null,
+                $reporte === 'resultados-centros-costos',
+            ),
         };
+    }
+
+    private function porCentro(string $desde, string $hasta, ?int $centro, bool $resumen): array
+    {
+        $consulta = $this->datos->lineas()->whereBetween('asiento.fecha', [$desde, $hasta]);
+        if ($centro === 0) {
+            $consulta->whereNull('co_lineas.id_centro_costo');
+        } elseif ($centro !== null) {
+            $this->datos->fila('co_centros_costos', $centro);
+            $consulta->where('co_lineas.id_centro_costo', $centro);
+        }
+
+        if (! $resumen) {
+            $totales = (clone $consulta)->select([])->selectRaw('coalesce(sum(co_lineas.debe),0) as debe, coalesce(sum(co_lineas.haber),0) as haber')->first();
+            $consulta->orderBy('asiento.fecha')->orderBy('asiento.numero')->orderBy('co_lineas.id');
+
+            return ['filas' => $consulta, 'totales' => (array) $totales];
+        }
+
+        $neto = 'cast(co_lineas.haber as decimal(30,0)) - cast(co_lineas.debe as decimal(30,0))';
+        $movimientos = $consulta->whereIn('cuenta.clase', ['ingreso', 'gasto'])->select([])
+            ->selectRaw("coalesce(sum(case when cuenta.clase = 'ingreso' then ($neto) else 0 end),0) as ingresos")
+            ->selectRaw("coalesce(sum(case when cuenta.clase = 'gasto' then -($neto) else 0 end),0) as gastos")
+            ->selectRaw("coalesce(sum($neto),0) as resultado");
+        $totales = (clone $movimientos)->first();
+        $filas = $movimientos->addSelect('centro.codigo as centro_codigo', 'centro.nombre as centro_costo')
+            ->groupBy('co_lineas.id_centro_costo', 'centro.codigo', 'centro.nombre')
+            ->orderByRaw('case when co_lineas.id_centro_costo is null then 1 else 0 end')->orderBy('centro.codigo');
+
+        return ['filas' => $filas, 'totales' => (array) $totales];
     }
 
     private function diario(string $desde, string $hasta): array

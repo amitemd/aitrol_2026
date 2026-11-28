@@ -6,6 +6,7 @@ return [
         'cuentas' => ['Plan de cuentas', 'bi-diagram-3', 'Nueva cuenta'],
         'periodos' => ['Períodos contables', 'bi-calendar-range', 'Nuevo período'],
         'integraciones' => ['Contabilización automática', 'bi-diagram-2', null],
+        'centros-costos' => ['Centros de costos', 'bi-bullseye', 'Nuevo centro de costos'],
     ],
     'reportes' => [
         'libro-diario' => ['Libro diario', 'bi-journal-text'],
@@ -15,6 +16,8 @@ return [
         'balance-financiero' => ['Estado de situación financiera', 'bi-bar-chart-line'],
         'flujo-caja' => ['Estado de flujo de caja', 'bi-cash-stack'],
         'cambios-patrimonio' => ['Estado de cambios en el patrimonio', 'bi-arrow-left-right'],
+        'resultados-centros-costos' => ['Resultados por centro de costos', 'bi-pie-chart'],
+        'movimientos-centros-costos' => ['Movimientos por centro de costos', 'bi-list-ul'],
     ],
     'clases' => ['activo' => 'Activo', 'pasivo' => 'Pasivo', 'patrimonio' => 'Patrimonio', 'ingreso' => 'Ingreso', 'gasto' => 'Gasto'],
     'flujos' => ['operacion' => 'Operación', 'inversion' => 'Inversión', 'financiacion' => 'Financiación', 'apertura' => 'Saldos iniciales', 'traslado' => 'Traslado interno'],

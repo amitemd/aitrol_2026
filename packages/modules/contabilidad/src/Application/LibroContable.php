@@ -121,7 +121,7 @@ final readonly class LibroContable
                     'id_cuenta' => (int) $fila['id_cuenta'], 'debe' => Decimal::unidades($fila['debe'] ?? 0, 2),
                     'haber' => Decimal::unidades($fila['haber'] ?? 0, 2), 'detalle' => $fila['detalle'] ?? null,
                     'movimiento_patrimonio' => $fila['movimiento_patrimonio'] ?? null,
-                ];
+                ] + (isset($fila['id_centro_costo']) ? ['id_centro_costo' => (int) $fila['id_centro_costo']] : []);
             }
             $clave = isset($entrada['clave_operacion']) ? strtolower($entrada['clave_operacion']) : null;
             $cabecera = ['fecha' => $entrada['fecha'], 'concepto' => $entrada['concepto'], 'referencia' => $entrada['referencia'] ?? null, 'flujo' => $entrada['flujo'] ?? null];
@@ -147,6 +147,7 @@ final readonly class LibroContable
             $lineas = $original->lineas->map(fn (stdClass $fila) => [
                 'id_cuenta' => $fila->id_cuenta, 'debe' => $fila->haber, 'haber' => $fila->debe, 'detalle' => $fila->detalle,
                 'movimiento_patrimonio' => $fila->movimiento_patrimonio,
+                'id_centro_costo' => $fila->id_centro_costo,
             ])->all();
 
             return $this->insertar([
@@ -207,6 +208,12 @@ final readonly class LibroContable
     {
         $cuentas = $this->datos->auxiliares(array_unique(array_column($lineas, 'id_cuenta')));
         $errores = PartidaDoble::errores($lineas, $cuentas, $flujo);
+        $centros = $this->datos->centrosActivos(array_unique(array_filter(array_column($lineas, 'id_centro_costo'))));
+        foreach ($lineas as $indice => $fila) {
+            if (isset($fila['id_centro_costo']) && ! isset($centros[$fila['id_centro_costo']])) {
+                $errores['lineas.'.$indice.'.id_centro_costo'] = 'Selecciona un centro de costos activo de tu empresa.';
+            }
+        }
         if ($errores !== []) throw ValidationException::withMessages($errores);
         foreach ($lineas as &$fila) {
             if ($cuentas[$fila['id_cuenta']]->clase === 'patrimonio') {

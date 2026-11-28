@@ -8,6 +8,7 @@ use Aitrol\Contabilidad\Infrastructure\Queries\ReportesContables;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use App\Services\ContextoOperativo;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -29,6 +30,7 @@ final readonly class ContableController
             'asientos' => [$this->datos->asientos()->orderByDesc('co_asientos.fecha')->orderByDesc('co_asientos.numero'), ['co_asientos.concepto', 'co_asientos.referencia']],
             'cuentas' => [$this->datos->cuentas(), ['co_cuentas.codigo', 'co_cuentas.nombre']],
             'periodos' => [$this->datos->tabla('co_periodos')->orderByDesc('desde'), ['nombre']],
+            'centros-costos' => [$this->datos->tabla('co_centros_costos')->orderBy('codigo'), ['codigo', 'nombre']],
         };
         if ($seccion === 'asientos') {
             $contexto->aplicarPeriodo($consulta, 'co_asientos.fecha');
@@ -113,7 +115,10 @@ final readonly class ContableController
             }
         }
 
-        return view('contabilidad::formulario', compact('seccion', 'accion', 'registro', 'padre', 'codigoSugerido', 'mensajeCodigo'));
+        $centros = $seccion === 'asientos' && $accion === null
+            ? $this->datos->tabla('co_centros_costos')->where('activo', true)->orderBy('codigo')->get(['id', 'codigo', 'nombre']) : collect();
+
+        return view('contabilidad::formulario', compact('seccion', 'accion', 'registro', 'padre', 'codigoSugerido', 'mensajeCodigo', 'centros'));
     }
 
     public function codigoAuxiliar(Request $request): JsonResponse
@@ -156,6 +161,8 @@ final readonly class ContableController
             if (! isset($entrada['codigo'])) {
                 $mensaje = 'Cuenta auxiliar '.$registro->codigo.' guardada.';
             }
+        } elseif ($seccion === 'centros-costos') {
+            $registro = $this->guardarCentroCosto($request, null);
         } else {
             $registro = $this->libro->abrirPeriodo($request->validate([
                 'nombre' => ['required', 'string', 'max:120'], 'desde' => ['required', 'date_format:Y-m-d'], 'hasta' => ['required', 'date_format:Y-m-d', 'after_or_equal:desde'],
@@ -170,12 +177,30 @@ final readonly class ContableController
         $seccion = $request->route('seccion');
         $id = (int) $request->route('registro');
         $registro = match ($request->route('accion')) {
-            'editar' => $this->libro->cuenta($this->camposCuenta($request, true), $id),
+            'editar' => $seccion === 'centros-costos'
+                ? $this->guardarCentroCosto($request, $id) : $this->libro->cuenta($this->camposCuenta($request, true), $id),
             'cerrar' => $this->libro->cerrarPeriodo($id, $request->validate(['motivo' => ['required', 'string', 'max:250']])['motivo']),
             'revertir' => $this->libro->revertir($id, $request->validate(['fecha' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'], 'motivo' => ['required', 'string', 'max:250']])),
         };
 
         return $this->responder($request, $seccion, $registro, 200, 'Cambio registrado.');
+    }
+
+    private function guardarCentroCosto(Request $request, ?int $id): stdClass
+    {
+        $datos = $request->validate([
+            'codigo' => ['required', 'string', 'max:40', 'regex:/\A[A-Za-z0-9][A-Za-z0-9._-]*\z/'],
+            'nombre' => ['required', 'string', 'max:160'],
+            'descripcion' => ['nullable', 'string', 'max:500'],
+            'activo' => [$id === null ? 'sometimes' : 'required', 'boolean'],
+        ], ['codigo.regex' => 'Usa letras o números al inicio. Puedes incluir puntos, guiones y guiones bajos.']);
+        $datos['codigo'] = Str::upper($datos['codigo']);
+        $datos['nombre'] = Str::squish($datos['nombre']);
+        try {
+            return $this->datos->guardarCentroCosto($datos, $id);
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['codigo' => 'Ya existe un centro de costos con ese código en tu empresa.']);
+        }
     }
 
     public function reporte(Request $request)
@@ -195,7 +220,10 @@ final readonly class ContableController
                 'totales' => (object) $totales, 'requiere_cuenta' => $requiereCuenta] + ($registros instanceof \Illuminate\Pagination\LengthAwarePaginator ? $registros->toArray() : ['data' => $registros]));
         }
 
-        return view('contabilidad::reporte', compact('reporte', 'filtros', 'columnas', 'registros', 'totales', 'cuenta', 'requiereCuenta'));
+        $filtraCentro = in_array($reporte, ['resultados-centros-costos', 'movimientos-centros-costos'], true);
+        $centros = $filtraCentro ? $this->datos->tabla('co_centros_costos')->orderBy('codigo')->get(['id', 'codigo', 'nombre', 'activo']) : collect();
+
+        return view('contabilidad::reporte', compact('reporte', 'filtros', 'columnas', 'registros', 'totales', 'cuenta', 'requiereCuenta', 'filtraCentro', 'centros'));
     }
 
     public function exportar(Request $request)
@@ -215,8 +243,8 @@ final readonly class ContableController
                 $fila = $this->presentar($fila);
                 $salida = [];
                 foreach ($columnas as $campo => $etiqueta) {
-                    $valor = $fila[$campo] ?? '';
-                    $salida[] = in_array($campo, ['codigo', 'cuenta', 'concepto', 'detalle', 'clase', 'flujo'], true)
+                    $valor = $fila[$campo] ?? ($campo === 'centro_costo' ? 'Sin centro asignado' : '');
+                    $salida[] = in_array($campo, ['codigo', 'cuenta', 'concepto', 'detalle', 'clase', 'flujo', 'centro_codigo', 'centro_costo'], true)
                         && preg_match('/^[\x00-\x20]*[=+@-]|^[\t\r\n]/', (string) $valor) ? "'".$valor : $valor;
                 }
                 fputcsv($archivo, $salida, ';', '"', '');
@@ -272,6 +300,7 @@ final readonly class ContableController
     {
         return match ($seccion) {
             'asientos' => $this->datos->asiento($id), 'cuentas' => $this->datos->cuenta($id), 'periodos' => $this->datos->periodo($id),
+            'centros-costos' => $this->datos->fila('co_centros_costos', $id),
         };
     }
 
@@ -283,7 +312,8 @@ final readonly class ContableController
             'fecha' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'], 'concepto' => ['required', 'string', 'max:250'],
             'referencia' => ['nullable', 'string', 'max:120'], 'flujo' => ['nullable', Rule::in(array_keys(config('contabilidad.flujos')))],
             'clave_operacion' => ['nullable', 'uuid'], 'lineas' => ['required', 'list', 'min:2', 'max:100'],
-            'lineas.*' => ['required', 'array:id_cuenta,debe,haber,detalle,movimiento_patrimonio'], 'lineas.*.id_cuenta' => ['required', 'integer', 'min:1'],
+            'lineas.*' => ['required', 'array:id_cuenta,id_centro_costo,debe,haber,detalle,movimiento_patrimonio'], 'lineas.*.id_cuenta' => ['required', 'integer', 'min:1'],
+            'lineas.*.id_centro_costo' => ['nullable', 'integer', 'min:1'],
             'lineas.*.debe' => $importe, 'lineas.*.haber' => $importe, 'lineas.*.detalle' => ['nullable', 'string', 'max:250'],
             'lineas.*.movimiento_patrimonio' => ['nullable', Rule::in(array_keys(config('contabilidad.patrimonio')))],
         ];
@@ -312,7 +342,8 @@ final readonly class ContableController
     {
         $filtros = $request->validate([
             'desde' => ['nullable', 'date_format:Y-m-d'], 'hasta' => ['nullable', 'date_format:Y-m-d'],
-            'id_cuenta' => ['nullable', 'integer', 'min:1'], 'page' => ['nullable', 'integer', 'between:1,100000'], 'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'id_cuenta' => ['nullable', 'integer', 'min:1'], 'id_centro_costo' => ['nullable', 'integer', 'min:0'],
+            'page' => ['nullable', 'integer', 'between:1,100000'], 'per_page' => ['nullable', 'integer', 'between:1,100'],
         ]);
         unset($filtros['page']);
         $filtros['hasta'] ??= now()->toDateString();
@@ -331,6 +362,10 @@ final readonly class ContableController
                 'haber' => 'Haber del período', 'cierre' => 'Saldo final'],
             'estado-resultados', 'balance-financiero' => ['codigo' => 'Código', 'cuenta' => 'Cuenta', 'clase' => 'Clase', 'importe' => 'Importe'],
             'flujo-caja' => ['flujo' => 'Actividad', 'ingresos' => 'Entradas', 'egresos' => 'Salidas', 'neto' => 'Flujo neto'],
+            'resultados-centros-costos' => ['centro_codigo' => 'Código', 'centro_costo' => 'Centro de costos',
+                'ingresos' => 'Ingresos', 'gastos' => 'Costos y gastos', 'resultado' => 'Resultado'],
+            'movimientos-centros-costos' => ['fecha' => 'Fecha', 'numero' => 'Asiento', 'centro_codigo' => 'Código del centro', 'centro_costo' => 'Centro de costos',
+                'codigo' => 'Código de cuenta', 'cuenta' => 'Cuenta', 'concepto' => 'Concepto', 'detalle' => 'Detalle', 'debe' => 'Debe', 'haber' => 'Haber'],
             'cambios-patrimonio' => ['codigo' => 'Código', 'cuenta' => 'Componente', 'apertura' => 'Saldo inicial']
                 + array_diff_key(config('contabilidad.patrimonio'), ['apertura' => true])
                 + ['registro_inicial' => 'Aperturas registradas', 'resultado' => 'Variación del resultado acumulado', 'cierre' => 'Saldo final'],

@@ -3,7 +3,8 @@
 @php
     $ruta = 'contabilidad.'.$seccion;
     $titulo = match ($accion) {
-        'editar' => 'Editar cuenta', 'cerrar' => 'Cerrar período', 'revertir' => 'Revertir asiento',
+        'editar' => $seccion === 'centros-costos' ? 'Editar centro de costos' : 'Editar cuenta',
+        'cerrar' => 'Cerrar período', 'revertir' => 'Revertir asiento',
         default => $seccion === 'cuentas' ? 'Nueva cuenta auxiliar' : config('contabilidad.secciones.'.$seccion.'.2'),
     };
 @endphp
@@ -54,6 +55,19 @@
                             <label class="form-check"><input type="checkbox" name="efectivo" value="1" class="form-check-input" @checked(old('efectivo'))> Efectivo o equivalente</label>
                         </div>
                     @endunless
+                @elseif ($seccion === 'centros-costos')
+                    <div class="col-sm-4">
+                        <label class="form-label" for="co-centro-codigo">Código</label>
+                        <input id="co-centro-codigo" name="codigo" class="form-control" maxlength="40" required autofocus value="{{ old('codigo', $registro['codigo'] ?? '') }}">
+                    </div>
+                    <div class="col-sm-8">
+                        <label class="form-label" for="co-centro-nombre">Nombre</label>
+                        <input id="co-centro-nombre" name="nombre" class="form-control" maxlength="160" required value="{{ old('nombre', $registro['nombre'] ?? '') }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="co-centro-descripcion">Descripción</label>
+                        <textarea id="co-centro-descripcion" name="descripcion" class="form-control" maxlength="500" rows="3">{{ old('descripcion', $registro['descripcion'] ?? '') }}</textarea>
+                    </div>
                 @elseif ($accion)
                     <div class="col-12">
                         <p class="mb-0">{{ $seccion === 'asientos' ? 'Asiento '.$registro['numero'].' · '.$registro['concepto'] : $registro['nombre'].' · '.$registro['desde'].' a '.$registro['hasta'] }}</p>
@@ -94,7 +108,7 @@
                 @endif
             </div>
             <div class="card-footer d-flex align-items-center flex-wrap gap-2">
-                @if ($seccion === 'cuentas')@include('partials.interruptor-activo', ['activo' => $registro['activo'] ?? true])@endif
+                @if (in_array($seccion, ['cuentas', 'centros-costos'], true))@include('partials.interruptor-activo', ['activo' => $registro['activo'] ?? true])@endif
                 <div class="ms-auto d-flex gap-2"><a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-close>{{ __('Cancelar') }}</a>
                     <button class="btn btn-primary">{{ $accion ? 'Confirmar' : 'Guardar' }}</button>
                 </div>

@@ -26,6 +26,20 @@
                         </select>
                     </div>
                 @endif
+                @if ($filtraCentro)
+                    <div class="col-sm-6 col-xl-3">
+                        <label class="form-label" for="co-filtro-centro">Centro de costos</label>
+                        <select id="co-filtro-centro" name="id_centro_costo" class="form-select">
+                            <option value="">Todos los centros</option>
+                            <option value="0" @selected((string) ($filtros['id_centro_costo'] ?? '') === '0')>Sin centro asignado</option>
+                            @foreach ($centros as $centro)
+                                <option value="{{ $centro->id }}" @selected((int) ($filtros['id_centro_costo'] ?? 0) === (int) $centro->id)>
+                                    {{ $centro->codigo }} · {{ $centro->nombre }}{{ $centro->activo ? '' : ' (inactivo)' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
                 @foreach ($reporte === 'balance-financiero' ? ['hasta' => 'Fecha de corte'] : ['desde' => 'Desde', 'hasta' => 'Hasta'] as $campo => $etiqueta)
                     <div class="col-sm-auto">
                         <label class="form-label" for="co-{{ $campo }}">{{ __($etiqueta) }}</label>
@@ -57,7 +71,7 @@
                     <tbody>
                         @forelse ($registros as $fila)
                             <tr>@foreach ($columnas as $campo => $etiqueta)
-                                <td>@include('contabilidad::valor', ['valor' => $fila[$campo] ?? null])</td>
+                                <td>@include('contabilidad::valor', ['valor' => $fila[$campo] ?? ($campo === 'centro_costo' ? 'Sin centro asignado' : null)])</td>
                             @endforeach</tr>
                         @empty
                             <tr><td colspan="{{ count($columnas) }}">@include('contabilidad::vacio', ['texto' => $requiereCuenta ? 'Selecciona una cuenta para consultar el mayor' : 'No hay movimientos para el período seleccionado'])</td></tr>

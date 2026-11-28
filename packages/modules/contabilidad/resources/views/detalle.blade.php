@@ -6,6 +6,7 @@
             'total' => 'Importe USD', 'flujo' => 'Flujo de efectivo', 'origen' => 'Origen', 'id_origen' => 'N.º de operación de origen', 'numero_reversion' => 'Asiento de reversión', 'created_at' => 'Registrado el'],
         'cuentas' => ['codigo' => 'Código', 'nombre' => 'Cuenta', 'clase' => 'Clase', 'padre' => 'Cuenta superior', 'auxiliar' => 'Nivel', 'efectivo' => 'Efectivo', 'activo' => 'Estado'],
         'periodos' => ['nombre' => 'Período', 'desde' => 'Desde', 'hasta' => 'Hasta', 'cerrado_at' => 'Estado', 'motivo_cierre' => 'Motivo de cierre'],
+        'centros-costos' => ['codigo' => 'Código', 'nombre' => 'Centro de costos', 'descripcion' => 'Descripción', 'activo' => 'Estado'],
     };
 @endphp
 @section('title', 'Detalle contable')
@@ -19,10 +20,10 @@
                         <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7">@include('contabilidad::valor', ['valor' => $registro[$campo] ?? null])</dd>
                     @endforeach
                 </dl>
-                @if ($seccion === 'cuentas')
+                @if (in_array($seccion, ['cuentas', 'centros-costos'], true))
                     <h2 class="fs-6 mt-3">Auditoría</h2>
                     <div class="table-responsive">
-                        <table class="table table-sm align-middle mb-0" aria-label="Auditoría de la cuenta">
+                        <table class="table table-sm align-middle mb-0" aria-label="Auditoría del registro">
                             <thead><tr>@include('partials.auditoria-cabeceras')</tr></thead>
                             <tbody><tr>@include('partials.auditoria-celdas', ['filaAuditoria' => $registro])</tr></tbody>
                         </table>
@@ -31,12 +32,13 @@
                 @isset($registro['lineas'])
                     <div class="table-responsive"><table class="table table-sm align-middle">
                         <caption class="visually-hidden">Detalle de partidas</caption>
-                        <thead><tr><th>{{ __('Cuenta') }}</th><th>{{ __('Detalle') }}</th><th class="text-end">Debe</th><th class="text-end">Haber</th></tr></thead>
+                        <thead><tr><th>{{ __('Cuenta') }}</th><th>Centro de costos</th><th>{{ __('Detalle') }}</th><th class="text-end">Debe</th><th class="text-end">Haber</th></tr></thead>
                         <tbody>@foreach ($registro['lineas'] as $fila)
-                            <tr><th scope="row">{{ $fila['codigo'] }} · {{ $fila['cuenta'] }}</th><td>{{ $fila['detalle'] ?? '—' }}</td>
+                            <tr><th scope="row">{{ $fila['codigo'] }} · {{ $fila['cuenta'] }}</th>
+                                <td>{{ $fila['centro_costo'] ? $fila['centro_codigo'].' · '.$fila['centro_costo'] : '-' }}</td><td>{{ $fila['detalle'] ?? '-' }}</td>
                                 <td class="text-end">{{ $fila['debe'] }}</td><td class="text-end">{{ $fila['haber'] }}</td></tr>
                         @endforeach</tbody>
-                        <tfoot><tr><th scope="row" colspan="2" class="text-end">{{ __('Total') }}</th><td class="text-end">{{ $registro['total'] }}</td><td class="text-end">{{ $registro['total'] }}</td></tr></tfoot>
+                        <tfoot><tr><th scope="row" colspan="3" class="text-end">{{ __('Total') }}</th><td class="text-end">{{ $registro['total'] }}</td><td class="text-end">{{ $registro['total'] }}</td></tr></tfoot>
                     </table></div>
                 @endisset
             </div>

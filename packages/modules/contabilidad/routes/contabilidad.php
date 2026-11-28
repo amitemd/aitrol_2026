@@ -12,14 +12,14 @@ foreach ([false, true] as $api) {
                 'permiso:contabilidad.'.$opcion.','.$accion,
                 ...($api ? [CheckAbilities::class.':contabilidad:'.($accion === 'leer' ? 'leer' : 'escribir')] : []),
             ];
-            foreach (['asientos', 'cuentas', 'periodos'] as $seccion) {
+            foreach (['asientos', 'cuentas', 'periodos', 'centros-costos'] as $seccion) {
                 Route::get($seccion, [ContableController::class, 'index'])->defaults('seccion', $seccion)
                     ->middleware($permiso($seccion.'.index', 'leer'))->name($seccion.'.index');
                 Route::post($seccion, [ContableController::class, 'store'])->defaults('seccion', $seccion)
                     ->middleware($permiso($seccion.'.index', 'escribir'))->name($seccion.'.store');
                 Route::get($seccion.'/{registro}', [ContableController::class, 'show'])->defaults('seccion', $seccion)->where('registro', '[1-9][0-9]{0,17}')
                     ->middleware($permiso($seccion.'.index', 'leer'))->name($seccion.'.show');
-                $accion = ['asientos' => 'revertir', 'cuentas' => 'editar', 'periodos' => 'cerrar'][$seccion];
+                $accion = ['asientos' => 'revertir', 'cuentas' => 'editar', 'periodos' => 'cerrar', 'centros-costos' => 'editar'][$seccion];
                 Route::match([$accion === 'editar' ? 'PUT' : 'POST'], $seccion.'/{registro}'.($accion === 'editar' ? '' : '/'.$accion), [ContableController::class, 'accion'])
                     ->defaults('seccion', $seccion)->defaults('accion', $accion)->where('registro', '[1-9][0-9]{0,17}')
                     ->middleware($permiso($seccion.'.index', 'actualizar'))->name($seccion.'.'.$accion);
@@ -28,8 +28,10 @@ foreach ([false, true] as $api) {
                         ->middleware($permiso($seccion.'.index', 'escribir'))->name($seccion.'.create');
                     Route::get($seccion.'/{registro}/'.$accion, [ContableController::class, 'formulario'])->where('registro', '[1-9][0-9]{0,17}')
                         ->defaults('seccion', $seccion)->defaults('accion', $accion)->middleware($permiso($seccion.'.index', 'actualizar'))->name($seccion.'.'.$accion.'.formulario');
-                    Route::get($seccion.'/opciones/cuentas', [ContableController::class, 'opciones'])->defaults('clase_opcion', $seccion === 'cuentas' ? 'grupos' : 'asientos')
-                        ->middleware($permiso($seccion.'.index', 'escribir'))->name($seccion.'.opciones');
+                    if ($seccion !== 'centros-costos') {
+                        Route::get($seccion.'/opciones/cuentas', [ContableController::class, 'opciones'])->defaults('clase_opcion', $seccion === 'cuentas' ? 'grupos' : 'asientos')
+                            ->middleware($permiso($seccion.'.index', 'escribir'))->name($seccion.'.opciones');
+                    }
                 }
             }
             if (! $api) {

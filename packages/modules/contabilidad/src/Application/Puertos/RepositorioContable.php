@@ -17,6 +17,8 @@ interface RepositorioContable
 
     public function auxiliares(array $ids): array;
 
+    public function centrosActivos(array $ids): array;
+
     public function tieneSubcuentasActivas(int $id): bool;
 
     public function periodoEnFecha(string $fecha): ?stdClass;
