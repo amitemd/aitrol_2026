@@ -172,7 +172,16 @@
                                                 @include('partials.referencia-asiento', ['registroAsiento' => $fila])
                                             </td>
                                             @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
-                                            <td>@component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])@endcomponent</td>
+                                            <td>
+                                                @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
+                                                    @if ($seccion === 'ajustes' && $fila['id_asiento'] && Gate::allows('permiso', ['contabilidad.asientos.index', 'leer']))
+                                                        @include('partials.accion-fila-enlace', [
+                                                            'href' => route('contabilidad.asientos.show', $fila['id_asiento']),
+                                                            'etiqueta' => 'Ver asiento', 'icono' => 'bi-journal-text',
+                                                        ])
+                                                    @endif
+                                                @endcomponent
+                                            </td>
                                         @endif
                                     @endif
                                 </tr>

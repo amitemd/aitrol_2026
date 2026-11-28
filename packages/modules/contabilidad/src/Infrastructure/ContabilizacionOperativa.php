@@ -4,13 +4,19 @@ namespace Aitrol\Contabilidad\Infrastructure;
 
 use Aitrol\Contabilidad\Application\LibroContable;
 use Aitrol\Contabilidad\Infrastructure\Persistence\DatosContables;
+use Aitrol\Inventarios\Application\RepositorioInventario;
 use App\Events\OperacionContabilizable;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
 final readonly class ContabilizacionOperativa
 {
-    public function __construct(private DatosContables $datos, private LibroContable $libro) {}
+    public function __construct(
+        private DatosContables $datos,
+        private LibroContable $libro,
+        private RepositorioInventario $inventario,
+    ) {}
 
     public function handle(OperacionContabilizable $evento): void
     {
@@ -39,7 +45,7 @@ final readonly class ContabilizacionOperativa
         $config = $this->datos->tabla('co_integraciones')->lockForUpdate()->first();
         if (! $config || (! $config->activa && ! $esReversa)) {
             if ($obligatorio) {
-                $this->falta('Activa la contabilización automática y configura las cuentas de ventas en Contabilidad.');
+                $this->falta('Activa la contabilización automática en Contabilidad antes de registrar esta operación.');
             }
 
             return;
@@ -47,7 +53,7 @@ final readonly class ContabilizacionOperativa
         $reglas = json_decode($config->reglas, true, flags: JSON_THROW_ON_ERROR);
         $tesoreria = json_decode($config->tesoreria, true, flags: JSON_THROW_ON_ERROR);
         if ($this->asientoOrigen($evento->origen, $evento->id) !== null) return;
-        if ($obligatorio) {
+        if ($obligatorio && $evento->origen === 'comercial.documento') {
             $factura = $this->datos->fila('com_documentos', $evento->id);
             if (blank($config->fecha_inicio) || $factura->fecha < $config->fecha_inicio) {
                 $this->falta('La contabilización automática debe estar vigente desde la fecha de la factura.');
@@ -104,11 +110,11 @@ final readonly class ContabilizacionOperativa
             $this->linea($lineas, $reglas, 'ventas', -(int) $doc->subtotal);
             $this->linea($lineas, $reglas, 'impuesto_ventas', -(int) $doc->impuesto);
             $this->linea($lineas, $reglas, 'propinas_por_pagar', -(int) $doc->propina);
-            $costo = 0;
-            foreach ($this->lineasComerciales($doc->id)->get() as $fila) {
-                if ($fila->id_operacion !== null) $costo += $this->valorInventario($this->datos->fila('inv_operaciones', $fila->id_operacion));
+            $porProducto = $this->lineasComerciales($doc->id)->whereNotNull('id_operacion')->get()->groupBy('id_producto');
+            foreach ($porProducto as $idProducto => $movimientos) {
+                $costo = $movimientos->sum(fn (stdClass $fila): int => $this->valorInventario($this->datos->fila('inv_operaciones', $fila->id_operacion)));
+                $this->par($lineas, $this->cuentasInventario((int) $idProducto, $reglas), 'costo_ventas', 'inventario', $costo);
             }
-            $this->par($lineas, $reglas, 'costo_ventas', 'inventario', $costo);
         } else {
             $inventario = $doc->tipo === 'documentos'
                 ? (int) $this->lineasComerciales($doc->id)->whereNotNull('id_operacion')->sum('subtotal') : 0;
@@ -150,11 +156,34 @@ final readonly class ContabilizacionOperativa
     {
         $op = $this->datos->fila('inv_operaciones', $evento->id);
         $fecha = substr($op->created_at, 0, 10);
+        $valor = $this->valorInventario($op);
+        if ($evento->contabilizacionObligatoria) {
+            $fecha = Carbon::parse($op->created_at, config('app.timezone'))->setTimezone('America/Guayaquil')->toDateString();
+            if ($fecha < $inicio) {
+                $this->falta('La contabilización automática debe estar vigente en la fecha del ajuste.');
+            }
+            $periodo = $this->datos->periodoEnFecha($fecha);
+            if ($periodo === null || $periodo->cerrado_at !== null) {
+                $this->falta('Abre un período contable que incluya la fecha del ajuste.');
+            }
+            if ($valor === 0) {
+                $this->falta('El ajuste debe tener un valor de al menos USD 0,01. Revisa el costo unitario o el costo promedio de la bodega.');
+            }
+            $reglas = $this->cuentasInventario((int) $op->id_producto, $reglas);
+        }
         if ($fecha < $inicio || $op->tipo === 'transferencia') return;
         $signo = in_array($op->tipo, ['entrada', 'ajuste_entrada'], true) ? 1 : -1;
         $lineas = [];
-        $this->par($lineas, $reglas, 'inventario', 'ajustes_inventario', $signo * $this->valorInventario($op));
+        $this->par($lineas, $reglas, 'inventario', 'ajustes_inventario', $signo * $valor);
         $this->publicar($evento, $fecha, $op->motivo, $lineas);
+    }
+
+    private function cuentasInventario(int $idProducto, array $reglas): array
+    {
+        $producto = $this->inventario->catalogo('productos', $idProducto);
+        $cuentas = (array) $this->inventario->cuentasProducto($producto)['cuentas_efectivas'];
+
+        return array_filter(array_intersect_key($cuentas, array_flip(['inventario', 'costo_ventas', 'ajustes_inventario']))) + $reglas;
     }
 
     private function tesoreria(OperacionContabilizable $evento, string $inicio, array $reglas, array $tesoreria): void

@@ -5,9 +5,11 @@ namespace Aitrol\Comercial\Infrastructure\Http;
 use Aitrol\Comercial\Application\DocumentosComerciales;
 use Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
+use App\Services\AutorizacionSri;
 use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use App\Services\FacturaVenta;
+use App\Services\PdfFacturaAutorizada;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use stdClass;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ComercialController
 {
@@ -40,9 +43,11 @@ final readonly class ComercialController
                 : view('comercial::index', compact('modulo', 'seccion', 'filtros', 'reporte'));
         }
 
-        $registros = $this->documentos->listar($modulo, $seccion, $filtros)->through($this->decimales(...));
+        $api = $request->routeIs('api.*');
+        $registros = $this->documentos->listar($modulo, $seccion, $filtros, incluirSri: ! $api)
+            ->through($api ? $this->decimales(...) : $this->detalleDocumento(...));
 
-        return $request->routeIs('api.*') ? response()->json($registros)
+        return $api ? response()->json($registros)
             : view('comercial::index', compact('modulo', 'seccion', 'filtros', 'registros'));
     }
 
@@ -143,6 +148,45 @@ final readonly class ComercialController
         return $this->decimales($registro) + array_intersect_key($fiscal, [
             'clave_acceso' => true, 'ambiente' => true, 'forma_pago' => true, 'plazo_dias' => true, 'informacion_adicional' => true,
         ]);
+    }
+
+    public function logSri(int $registro, AutorizacionSri $sri): View
+    {
+        $factura = $this->facturaSri($registro);
+        $identidad = $sri->identidad($factura->datos_factura) ?? abort(404);
+        $consultas = $sri->consultas($registro)->latest('id')->paginate(20, ['estado', 'mensajes', 'created_at']);
+        $estado = $consultas->currentPage() === 1 ? $consultas->first()?->estado : $sri->consultas($registro)->latest('id')->value('estado');
+
+        return view('comercial::log-sri', compact('factura', 'identidad', 'consultas', 'estado'));
+    }
+
+    public function consultarSri(int $registro, AutorizacionSri $sri): RedirectResponse
+    {
+        $factura = $this->facturaSri($registro);
+        $identidad = $sri->identidad($factura->datos_factura) ?? abort(404);
+        $estado = $sri->consultar($registro, $identidad['clave'], $identidad['ambiente']);
+
+        return to_route('ventas.documentos.sri.log', $registro)->with('status', AutorizacionSri::ESTADOS[$estado]);
+    }
+
+    public function descargarSri(int $registro, string $formato, AutorizacionSri $sri, PdfFacturaAutorizada $pdf): StreamedResponse
+    {
+        $factura = $this->facturaSri($registro);
+        $identidad = $sri->identidad($factura->datos_factura) ?? abort(404);
+        $autorizacion = $sri->autorizado($registro) ?? abort(404, 'El comprobante aún no tiene autorización confirmada.');
+        $contenido = $formato === 'pdf' ? $pdf->generar($autorizacion->xml_autorizado) : $autorizacion->xml_autorizado;
+
+        return response()->streamDownload(fn () => print($contenido), 'factura-'.$identidad['clave'].'.'.$formato, [
+            'Content-Type' => $formato === 'pdf' ? 'application/pdf' : 'application/xml',
+        ]);
+    }
+
+    private function facturaSri(int $id): stdClass
+    {
+        abort_unless(Gate::allows('permiso', ['ventas.documentos.index', 'leer'])
+            || Gate::allows('permiso', ['clientes.documentos.facturas', 'leer']), 403);
+
+        return $this->documentos->consultar('ventas', 'documentos', $id);
     }
 
     public function contactoFactura(int $cliente, FacturaVenta $facturas): JsonResponse

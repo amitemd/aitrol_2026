@@ -7,11 +7,148 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 final class FacturacionVentaTest extends TestCase
 {
     use LazilyRefreshDatabase;
+
+    public function test_factura_con_existencia_insuficiente_mantiene_los_datos_adicionales_plegados(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $producto = DB::table('inv_productos')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'P1', 'nombre' => 'Producto fiscal', 'unidad' => 'unidad', 'iva_codigo' => '4',
+        ]);
+        $bodega = DB::table('inv_bodegas')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'id_sucursal' => DB::table('erp_sucursales')->where('id_empresa', $usuario->id_empresa)->value('id'),
+            'codigo' => 'B01', 'nombre' => 'Principal',
+        ]);
+        $datos['lineas'][0] += ['id_producto' => $producto, 'id_bodega' => $bodega];
+        $datos['informacion_adicional'] = array_fill(0, 5, ['nombre' => '', 'valor' => '']);
+        $datos['informacion_adicional'][0] = ['nombre' => 'Pedido', 'valor' => 'REF-123'];
+        $formulario = route('ventas.documentos.create');
+
+        $this->actingAs($usuario)->from($formulario)->post(route('ventas.documentos.store'), $datos)
+            ->assertRedirect($formulario)->assertSessionHasErrors(['cantidad' => 'La existencia disponible es insuficiente.']);
+        $this->withSession(['_old_input' => $datos])->get($formulario)->assertOk()
+            ->assertSee('<details>', false)->assertDontSee('<details open', false)->assertSee('value="REF-123"', false);
+        $this->assertDatabaseCount('com_documentos', 0);
+    }
+
+    public function test_los_ajustes_y_la_venta_contabilizan_con_las_cuentas_del_producto(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $empresa = $usuario->id_empresa;
+        $integracion = DB::table('co_integraciones')->where('id_empresa', $empresa);
+        $reglas = json_decode($integracion->value('reglas'), true, flags: JSON_THROW_ON_ERROR);
+        $cuentas = array_intersect_key($reglas, array_flip(['inventario', 'costo_ventas', 'ajustes_inventario']));
+        $integracion->update(['reglas' => json_encode(array_diff_key($reglas, $cuentas), JSON_THROW_ON_ERROR)]);
+        $plantilla = DB::table('inv_plantillas_contables')->insertGetId([
+            'id_empresa' => $empresa, 'codigo' => 'PROD-001', 'nombre' => 'Partes de PC',
+            'cuentas' => json_encode($cuentas, JSON_THROW_ON_ERROR),
+        ]);
+        $categoria = DB::table('inv_categorias')->insertGetId([
+            'id_empresa' => $empresa, 'codigo' => 'PC', 'nombre' => 'Partes de PC', 'id_plantilla_contable' => $plantilla,
+        ]);
+        $producto = DB::table('inv_productos')->insertGetId([
+            'id_empresa' => $empresa, 'codigo' => 'SSD', 'nombre' => 'Disco SSD', 'unidad' => 'unidad',
+            'id_categoria' => $categoria, 'iva_codigo' => '4',
+        ]);
+        $bodega = DB::table('inv_bodegas')->insertGetId([
+            'id_empresa' => $empresa, 'id_sucursal' => DB::table('erp_sucursales')->where('id_empresa', $empresa)->value('id'),
+            'codigo' => 'B01', 'nombre' => 'Principal',
+        ]);
+        $ajustes = route('inventarios.ajustes.store');
+        $entrada = ['tipo' => 'ajuste_entrada', 'id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => 4,
+            'costo_unitario' => 10, 'motivo' => 'Ajuste de entrada', 'clave_operacion' => '408b9e48-8cb3-4a34-ba45-d8275e6f7f25'];
+
+        $this->actingAs($usuario)->postJson($ajustes, $entrada)->assertCreated();
+        $this->postJson($ajustes, $entrada)->assertOk();
+        $this->postJson($ajustes, array_replace($entrada, ['tipo' => 'ajuste_salida', 'cantidad' => 1, 'motivo' => 'Ajuste de salida', 'clave_operacion' => null]))
+            ->assertCreated();
+        $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => 3000, 'costo_promedio' => 100000]);
+        $this->assertDatabaseCount('inv_kardex', 2);
+
+        $asientos = DB::table('co_asientos')->where('origen', 'inventario.movimiento')->orderBy('id')->pluck('id');
+        $this->assertCount(2, $asientos);
+        $this->get(route('inventarios.ajustes.index'))->assertOk()
+            ->assertSee('Ver asiento')->assertSee(route('contabilidad.asientos.show', $asientos[0]));
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientos[0], 'id_cuenta' => $cuentas['inventario'], 'debe' => 4000, 'haber' => 0]);
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientos[0], 'id_cuenta' => $cuentas['ajustes_inventario'], 'debe' => 0, 'haber' => 4000]);
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientos[1], 'id_cuenta' => $cuentas['inventario'], 'debe' => 0, 'haber' => 1000]);
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientos[1], 'id_cuenta' => $cuentas['ajustes_inventario'], 'debe' => 1000, 'haber' => 0]);
+
+        $datos['lineas'][0] += ['id_producto' => $producto, 'id_bodega' => $bodega];
+        $this->post(route('ventas.documentos.store'), $datos)->assertRedirect(route('ventas.documentos.index'));
+        $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => 1000]);
+        $asientoVenta = DB::table('co_asientos')->where('origen', 'comercial.documento')->value('id');
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientoVenta, 'id_cuenta' => $cuentas['costo_ventas'], 'debe' => 2000, 'haber' => 0]);
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientoVenta, 'id_cuenta' => $cuentas['inventario'], 'debe' => 0, 'haber' => 2000]);
+
+        DB::table('co_periodos')->where('id_empresa', $empresa)->update(['cerrado_at' => now()]);
+        $this->postJson($ajustes, array_replace($entrada, ['clave_operacion' => null]))
+            ->assertUnprocessable()->assertJsonValidationErrors('contabilidad');
+        $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => 1000]);
+        $this->assertDatabaseCount('inv_kardex', 3);
+        $this->assertDatabaseCount('co_asientos', 3);
+    }
+
+    public function test_sri_publica_archivos_solo_despues_de_confirmar_la_clave_de_la_factura(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos)->assertRedirect();
+        $factura = DB::table('com_documentos')->first();
+        $clave = json_decode($factura->datos_factura, true, flags: JSON_THROW_ON_ERROR)['clave_acceso'];
+        $ruta = 'ventas.documentos.sri.';
+        $urlLog = route($ruta.'log', $factura->id);
+        $urlConsultar = route($ruta.'consultar', $factura->id);
+        $urlXml = route($ruta.'descargar', [$factura->id, 'xml']);
+        $urlPdf = route($ruta.'descargar', [$factura->id, 'pdf']);
+
+        $xml = <<<XML
+            <factura><infoTributaria><ambiente>1</ambiente><razonSocial>Empresa de prueba</razonSocial>
+            <claveAcceso>{$clave}</claveAcceso><estab>001</estab><ptoEmi>001</ptoEmi><secuencial>000000001</secuencial></infoTributaria>
+            <infoFactura><razonSocialComprador>Cliente de prueba</razonSocialComprador><importeTotal>20.70</importeTotal><moneda>USD</moneda></infoFactura>
+            <detalles><detalle><descripcion>Servicio de soporte</descripcion></detalle></detalles></factura>
+            XML;
+        $inicio = '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>'
+            .'<autorizacionComprobanteResponse xmlns:sri="http://ec.gob.sri.ws.autorizacion"><RespuestaAutorizacionComprobante>'
+            ."<claveAccesoConsultada>{$clave}</claveAccesoConsultada>";
+        $fin = '</RespuestaAutorizacionComprobante></autorizacionComprobanteResponse></soap:Body></soap:Envelope>';
+        $autorizacion = '<numeroComprobantes>1</numeroComprobantes><autorizaciones><autorizacion><estado>AUTORIZADO</estado>'
+            ."<numeroAutorizacion>{$clave}</numeroAutorizacion><fechaAutorizacion>2026-01-15T12:01:00-05:00</fechaAutorizacion>"
+            .'<comprobante><![CDATA['.$xml.']]></comprobante></autorizacion></autorizaciones>';
+        $xmlAjeno = str_replace($clave, str_repeat('9', 49), $xml);
+        $rechazo = '<numeroComprobantes>1</numeroComprobantes><autorizaciones><autorizacion><estado>NO AUTORIZADO</estado>'
+            .'<mensajes><mensaje><identificador>43</identificador><mensaje>Firma inválida</mensaje></mensaje></mensajes></autorizacion></autorizaciones>';
+        Http::preventStrayRequests();
+        Http::fakeSequence('https://celcer.sri.gob.ec/*')
+            ->push($inicio.$rechazo.$fin)
+            ->push($inicio.str_replace($xml, $xmlAjeno, $autorizacion).$fin)
+            ->push($inicio.$autorizacion.$fin);
+
+        $this->get(route('ventas.documentos.index'))->assertOk()->assertSee('Ver log')->assertDontSee('Descargar XML');
+        $this->get($urlXml)->assertNotFound();
+        $this->post($urlConsultar)->assertRedirect($urlLog);
+        $this->get($urlLog)->assertOk()->assertSee('No autorizado')->assertSee('Firma inválida')->assertDontSee('Descargar PDF');
+        $this->post($urlConsultar)->assertRedirect($urlLog);
+        $this->get($urlPdf)->assertNotFound();
+        $this->post($urlConsultar)->assertRedirect($urlLog);
+        $this->get(route('ventas.documentos.index'))->assertOk()->assertSee('Descargar XML')->assertSee('Descargar PDF');
+        $this->get($urlLog)->assertOk()->assertSee('Autorizado')->assertSee('Consulta fallida')->assertSee('Firma inválida');
+        $this->assertStringContainsString($xml, $this->get($urlXml)->assertDownload('factura-'.$clave.'.xml')->streamedContent());
+        $pdf = $this->get($urlPdf)->assertDownload('factura-'.$clave.'.pdf')->streamedContent();
+        $this->assertStringStartsWith('%PDF-1.4', $pdf);
+        $this->assertStringContainsString('Servicio de soporte', $pdf);
+        $this->post($urlConsultar)->assertRedirect($urlLog);
+        Http::assertSentCount(3);
+
+        $empresaAjena = EmpresaModel::create(['ruc' => '1000000000002', 'razon_social' => 'Empresa ajena']);
+        DB::table('erp_sucursales')->insert(['id_empresa' => $empresaAjena->id, 'codigo' => '001', 'nombre' => 'Matriz']);
+        $ajeno = User::factory()->create(['id_empresa' => $empresaAjena->id, 'is_admin' => true]);
+        $this->actingAs($ajeno)->get($urlXml)->assertNotFound();
+    }
 
     public function test_registra_factura_con_descuento_y_tarifa_fiscal_sin_modal(): void
     {
@@ -310,7 +447,7 @@ final class FacturacionVentaTest extends TestCase
         $usuario = User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]);
         $reglas = [];
         foreach (['clientes' => 'activo', 'ventas' => 'ingreso', 'impuesto_ventas' => 'pasivo', 'propinas_por_pagar' => 'pasivo',
-            'costo_ventas' => 'gasto', 'inventario' => 'activo', 'retencion_ventas' => 'activo'] as $regla => $clase) {
+            'costo_ventas' => 'gasto', 'inventario' => 'activo', 'ajustes_inventario' => 'gasto', 'retencion_ventas' => 'activo'] as $regla => $clase) {
             $reglas[$regla] = DB::table('co_cuentas')->insertGetId([
                 'id_empresa' => $empresa->id, 'codigo' => $regla, 'nombre' => $regla, 'clase' => $clase,
             ]);

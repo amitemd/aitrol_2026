@@ -6,12 +6,16 @@
     <link rel="stylesheet" href="{{ asset('archivo-documentos.css') }}?v={{ filemtime(public_path('archivo-documentos.css')) }}">
 @endpush
 
+@push('scripts')
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('archivo-documentos.js') }}?v={{ filemtime(public_path('archivo-documentos.js')) }}" defer></script>
+@endpush
+
 @section('content')
     @include('partials.listado-cabecera', [
         'titulo' => $titulo, 'subtitulo' => ucfirst($directorio).' / Documentos', 'icono' => 'bi-file-earmark-text',
     ])
 
-    <div class="app-content archivo-documentos">
+    <div class="app-content archivo-documentos" data-archivo-documentos>
         <div class="container-fluid">
             <form method="GET" action="{{ route($ruta) }}" class="card card-body mb-3">
                 @if ($errors->any())
@@ -41,39 +45,56 @@
             </form>
 
             <p class="small text-body-secondary mb-2">{{ $documentos->total() }} {{ $documentos->total() === 1 ? 'documento' : 'documentos' }}</p>
-            <div class="d-grid gap-2">
+            <div class="archivo-documentos__cuadricula">
                 @forelse ($documentos as $documento)
-                    <details class="card archivo-documentos__ficha mb-0">
-                        <summary class="archivo-documentos__resumen">
-                            <span class="archivo-documentos__icono" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
-                            <span class="archivo-documentos__identidad">
+                    <div class="archivo-documentos__ficha">
+                        <button type="button" class="card archivo-documentos__tarjeta mb-0"
+                            data-archivo-abrir="{{ $tipoDocumento }} {{ $documento['numero'] }}" aria-haspopup="dialog">
+                            <span class="archivo-documentos__portada" aria-hidden="true">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </span>
+                            <span class="archivo-documentos__datos">
+                                <span class="small archivo-documentos__tipo">{{ $tipoDocumento }}</span>
                                 <strong class="d-block text-break">{{ $documento['numero'] }}</strong>
-                                <span class="text-body-secondary text-break">{{ $documento['tercero'] }}</span>
+                                <span class="small text-body-secondary text-break">{{ $documento['tercero'] }}</span>
+                                <span class="small text-body-secondary">
+                                    Emisión <time datetime="{{ $documento['fecha'] }}">{{ \Illuminate\Support\Carbon::parse($documento['fecha'])->format('d/m/Y') }}</time>
+                                </span>
+                                <span class="archivo-documentos__pie">
+                                    <span class="badge rounded-pill {{ $documento['anulado_at'] ? 'text-bg-secondary' : 'text-bg-success' }}">
+                                        {{ $documento['anulado_at'] ? 'Anulado' : 'Vigente' }}
+                                    </span>
+                                    <strong class="archivo-documentos__total">USD {{ $documento['total'] }}</strong>
+                                </span>
                             </span>
-                            <span class="archivo-documentos__fecha text-body-secondary">
-                                <time datetime="{{ $documento['fecha'] }}">{{ \Illuminate\Support\Carbon::parse($documento['fecha'])->format('d/m/Y') }}</time>
-                            </span>
-                            <span class="badge rounded-pill {{ $documento['anulado_at'] ? 'text-bg-secondary' : 'text-bg-success' }}">
-                                {{ $documento['anulado_at'] ? 'Anulado' : 'Vigente' }}
-                            </span>
-                            <strong class="archivo-documentos__total text-end">USD {{ $documento['total'] }}</strong>
-                            <i class="bi bi-chevron-down archivo-documentos__flecha" aria-hidden="true"></i>
-                        </summary>
-                        <div class="archivo-documentos__visor">
-                            <article class="archivo-documentos__hoja" data-bs-theme="light" aria-label="{{ $documento['numero'] }}">
-                                <header class="archivo-documentos__encabezado">
-                                    <h2 class="h5 mb-0">{{ $tipoDocumento }}</h2>
-                                </header>
+                        </button>
+                        <template>
+                            <article class="archivo-documentos__hoja" data-bs-theme="light">
+                                @include('comercial::estado-sri', ['documentoSri' => $documento])
                                 @include('comercial::contenido-documento')
                             </article>
-                        </div>
-                    </details>
+                        </template>
+                    </div>
                 @empty
-                    <div class="card">
+                    <div class="card archivo-documentos__vacio">
                         <p class="card-body text-center text-body-secondary mb-0">No hay documentos para los filtros y el contexto seleccionados.</p>
                     </div>
                 @endforelse
             </div>
+            @if ($documentos->isNotEmpty())
+                <dialog class="cliente-dialog cliente-dialog-redisenado archivo-documentos__dialogo" data-archivo-dialogo
+                    aria-labelledby="archivo-documentos-titulo">
+                    <div class="d-flex align-items-center justify-content-between gap-3 cliente-dialog-cabecera">
+                        <h2 id="archivo-documentos-titulo" class="fs-5 fw-semibold mb-0"></h2>
+                        <form method="dialog">
+                            <button type="submit" class="cliente-dialog-cerrar" aria-label="Cerrar" autofocus>
+                                <i class="bi bi-x-lg" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="cliente-dialog-cuerpo archivo-documentos__visor" data-archivo-contenido></div>
+                </dialog>
+            @endif
             @if ($documentos->hasPages())
                 <div class="mt-3">{{ $documentos->links('pagination::bootstrap-5') }}</div>
             @endif

@@ -207,15 +207,15 @@ final readonly class ContableController
     {
         $reporte = $request->route('reporte');
         $filtros = $this->filtros($request);
-        $datos = $this->reportes->consulta($reporte, $filtros);
+        $datos = $this->reportes->consulta($reporte, $filtros, mayorGeneral: ! $request->routeIs('api.*'));
         $columnas = $this->columnas($reporte);
         $registros = $datos['filas'] instanceof Builder
             ? $datos['filas']->paginate($filtros['per_page'] ?? 30)->appends($filtros)->through($this->presentar(...))
             : ($datos['filas'] ?? collect())->map($this->presentar(...));
         $totales = $this->presentar($datos['totales']);
         $cuenta = $reporte === 'mayorizacion' && isset($filtros['id_cuenta']) ? $this->datos->cuenta((int) $filtros['id_cuenta']) : null;
-        $requiereCuenta = $reporte === 'mayorizacion' && $cuenta === null;
         if ($request->routeIs('api.*')) {
+            $requiereCuenta = $reporte === 'mayorizacion' && $cuenta === null;
             return response()->json(['moneda' => 'USD', 'desde' => $reporte === 'balance-financiero' ? null : $filtros['desde'], 'hasta' => $filtros['hasta'],
                 'totales' => (object) $totales, 'requiere_cuenta' => $requiereCuenta] + ($registros instanceof \Illuminate\Pagination\LengthAwarePaginator ? $registros->toArray() : ['data' => $registros]));
         }
@@ -223,14 +223,14 @@ final readonly class ContableController
         $filtraCentro = in_array($reporte, ['resultados-centros-costos', 'movimientos-centros-costos'], true);
         $centros = $filtraCentro ? $this->datos->tabla('co_centros_costos')->orderBy('codigo')->get(['id', 'codigo', 'nombre', 'activo']) : collect();
 
-        return view('contabilidad::reporte', compact('reporte', 'filtros', 'columnas', 'registros', 'totales', 'cuenta', 'requiereCuenta', 'filtraCentro', 'centros'));
+        return view('contabilidad::reporte', compact('reporte', 'filtros', 'columnas', 'registros', 'totales', 'cuenta', 'filtraCentro', 'centros'));
     }
 
     public function exportar(Request $request)
     {
         $reporte = $request->route('reporte');
         $filtros = $this->filtros($request);
-        $datos = $this->reportes->consulta($reporte, $filtros);
+        $datos = $this->reportes->consulta($reporte, $filtros, mayorGeneral: ! $request->routeIs('api.*'));
         $columnas = $this->columnas($reporte);
         if ($datos['filas'] === null) throw ValidationException::withMessages(['id_cuenta' => 'Selecciona una cuenta contable para exportar el mayor.']);
 

@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 final class ClientesModuleTest extends TestCase
@@ -34,7 +36,9 @@ final class ClientesModuleTest extends TestCase
     {
         $this->get(route('clientes.documentos.facturas'))->assertRedirect(route('dashboard'));
 
-        $this->actingAs(User::factory()->create());
+        $empresa = EmpresaModel::create(['ruc' => '1000000000001', 'razon_social' => 'Empresa de prueba']);
+        DB::table('erp_sucursales')->insert(['id_empresa' => $empresa->id, 'codigo' => 'MATRIZ', 'nombre' => 'Matriz']);
+        $this->actingAs(User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]));
         $this->get(route('dashboard'))->assertOk()
             ->assertSeeInOrder([
                 'Lista de clientes', 'Documentos', 'Facturas', 'Comprobantes de pago',

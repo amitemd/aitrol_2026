@@ -10,14 +10,14 @@ final readonly class ReportesContables
 {
     public function __construct(private DatosContables $datos) {}
 
-    public function consulta(string $reporte, array $filtros): array
+    public function consulta(string $reporte, array $filtros, bool $mayorGeneral = false): array
     {
         $desde = $filtros['desde'];
         $hasta = $filtros['hasta'];
 
         return match ($reporte) {
             'libro-diario' => $this->diario($desde, $hasta),
-            'mayorizacion' => $this->mayor($desde, $hasta, $filtros['id_cuenta'] ?? null),
+            'mayorizacion' => $this->mayor($desde, $hasta, $filtros['id_cuenta'] ?? null, $mayorGeneral),
             'balance-comprobacion' => $this->comprobacion($desde, $hasta),
             'estado-resultados' => $this->resultados($desde, $hasta),
             'balance-financiero' => $this->situacion($hasta),
@@ -68,17 +68,25 @@ final readonly class ReportesContables
         return ['filas' => $consulta->orderBy('asiento.fecha')->orderBy('asiento.numero')->orderBy('co_lineas.id'), 'totales' => (array) $totales];
     }
 
-    private function mayor(string $desde, string $hasta, int|string|null $cuenta): array
+    private function mayor(string $desde, string $hasta, int|string|null $cuenta, bool $mayorGeneral): array
     {
-        if ($cuenta === null) {
+        if ($cuenta === null && ! $mayorGeneral) {
             return ['filas' => null, 'totales' => []];
         }
-        $this->datos->fila('co_cuentas', (int) $cuenta);
-        $orden = $this->datos->lineas()->where('co_lineas.id_cuenta', $cuenta)->where('asiento.fecha', '<=', $hasta)
-            ->selectRaw('sum(debe - haber) over (order by asiento.fecha, asiento.numero, co_lineas.id rows unbounded preceding) as saldo');
-        $filas = DB::query()->fromSub($orden, 'mayor')->where('fecha', '>=', $desde)->orderBy('fecha')->orderBy('numero')->orderBy('id');
-        $saldos = $this->acumulados($hasta)->where('co_lineas.id_cuenta', $cuenta)
-            ->select([])->selectRaw('coalesce(sum(case when asiento.fecha < ? then debe - haber else 0 end),0) as apertura', [$desde])
+        $movimientos = $this->acumulados($hasta);
+        if ($cuenta !== null) {
+            $this->datos->fila('co_cuentas', (int) $cuenta);
+            $movimientos->where('co_lineas.id_cuenta', $cuenta);
+        }
+
+        $neto = 'cast(co_lineas.debe as decimal(30,0)) - cast(co_lineas.haber as decimal(30,0))';
+        $orden = (clone $movimientos)->selectRaw("sum($neto) over (
+            partition by co_lineas.id_cuenta order by asiento.fecha, asiento.numero, co_lineas.id rows unbounded preceding
+        ) as saldo");
+        $filas = DB::query()->fromSub($orden, 'mayor')->where('fecha', '>=', $desde)
+            ->orderBy('codigo')->orderBy('id_cuenta')->orderBy('fecha')->orderBy('numero')->orderBy('id');
+        $saldos = $movimientos
+            ->select([])->selectRaw("coalesce(sum(case when asiento.fecha < ? then $neto else 0 end),0) as apertura", [$desde])
             ->selectRaw('coalesce(sum(case when asiento.fecha >= ? then debe else 0 end),0) as debe', [$desde])
             ->selectRaw('coalesce(sum(case when asiento.fecha >= ? then haber else 0 end),0) as haber', [$desde])->first();
 

@@ -104,7 +104,7 @@
                             <textarea id="factura-observacion" name="observacion" rows="2" maxlength="500" class="form-control">{{ old('observacion', $datos['observacion'] ?? '') }}</textarea>
                         </div>
                         <div class="col-12">
-                            <details @if(old('informacion_adicional', $datos['informacion_adicional'] ?? [])) open @endif>
+                            <details>
                                 <summary>Datos adicionales (hasta 5)</summary>
                                 @for ($i = 0; $i < 5; $i++)
                                     <div class="row g-2 mt-1">

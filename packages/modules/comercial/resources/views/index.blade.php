@@ -96,6 +96,9 @@
                                         <td class="text-end">{{ $fila['total'] }}</td>
                                         <td>
                                             <span @class(['badge rounded-pill', 'text-bg-secondary' => $fila['anulado_at'], 'text-bg-success' => !$fila['anulado_at']])>{{ $fila['anulado_at'] ? 'Anulado' : 'Vigente' }}</span>
+                                            @if ($modulo === 'ventas' && $seccion === 'documentos')
+                                                @include('comercial::estado-sri', ['documentoSri' => $fila])
+                                            @endif
                                             @if ($seccion === 'anulaciones') <small class="d-block text-body-secondary">{{ $fila['anulado_at'] }}</small> @endif
                                         </td>
                                         @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])

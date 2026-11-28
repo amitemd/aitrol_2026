@@ -31,9 +31,14 @@ final readonly class DocumentosComerciales
         private ContextoOperativo $contexto,
     ) {}
 
-    public function listar(string $modulo, string $seccion, array $filtros, int $porPagina = 20): LengthAwarePaginator
+    public function listar(string $modulo, string $seccion, array $filtros, int $porPagina = 20, bool $incluirSri = false): LengthAwarePaginator
     {
         $consulta = $this->filtrar($this->conAsientos($this->documentos($modulo)), $filtros);
+        if ($incluirSri && $modulo === 'ventas' && $seccion === 'documentos') {
+            $consulta->addSelect(['estado_sri' => DB::table('com_sri_consultas')->select('estado')
+                ->whereColumn('id_empresa', 'com_documentos.id_empresa')->whereColumn('id_documento', 'com_documentos.id')
+                ->latest('id')->limit(1)]);
+        }
         $this->contexto->aplicarPeriodo($consulta, 'fecha');
         if ($seccion === 'anulaciones') {
             $consulta->whereNotNull('anulado_at')->orderByDesc('anulado_at');
@@ -61,7 +66,7 @@ final readonly class DocumentosComerciales
     public function listarConDetalle(string $modulo, string $seccion, array $filtros): LengthAwarePaginator
     {
         unset($filtros['per_page']);
-        $documentos = $this->listar($modulo, $seccion, $filtros, porPagina: 12);
+        $documentos = $this->listar($modulo, $seccion, $filtros, porPagina: 12, incluirSri: true);
         $registros = $documentos->getCollection();
         if ($registros->isEmpty()) {
             return $documentos;

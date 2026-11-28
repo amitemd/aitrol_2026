@@ -20,8 +20,9 @@
                 @if ($reporte === 'mayorizacion')
                     <div class="col-sm-6 col-xl-3">
                         <label class="form-label" for="co-filtro-cuenta">{{ __('Cuenta') }}</label>
-                        <select id="co-filtro-cuenta" name="id_cuenta" data-select2-min="0" data-select2-url="{{ route('contabilidad.reportes.opciones') }}" class="form-select" required>
-                            <option value="">{{ __('Seleccionar') }}</option>
+                        <select id="co-filtro-cuenta" name="id_cuenta" data-select2-min="0" data-select2-placeholder="Todas las cuentas"
+                            data-select2-url="{{ route('contabilidad.reportes.opciones') }}" class="form-select">
+                            <option value="">Todas las cuentas</option>
                             @if ($cuenta)<option value="{{ $cuenta->id }}" selected>{{ $cuenta->codigo }} · {{ $cuenta->nombre }}</option>@endif
                         </select>
                     </div>
@@ -48,9 +49,7 @@
                 @endforeach
                 <div class="col-auto d-flex gap-2">
                     <button class="btn btn-outline-primary">Consultar</button>
-                    @unless ($requiereCuenta)
-                        <a href="{{ route($ruta.'.exportar', $filtros) }}" class="btn btn-outline-secondary"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV</a>
-                    @endunless
+                    <a href="{{ route($ruta.'.exportar', $filtros) }}" class="btn btn-outline-secondary"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV</a>
                 </div>
             </form>
             @if ($totales)
@@ -74,12 +73,12 @@
                                 <td>@include('contabilidad::valor', ['valor' => $fila[$campo] ?? ($campo === 'centro_costo' ? 'Sin centro asignado' : null)])</td>
                             @endforeach</tr>
                         @empty
-                            <tr><td colspan="{{ count($columnas) }}">@include('contabilidad::vacio', ['texto' => $requiereCuenta ? 'Selecciona una cuenta para consultar el mayor' : 'No hay movimientos para el período seleccionado'])</td></tr>
+                            <tr><td colspan="{{ count($columnas) }}">@include('contabilidad::vacio', ['texto' => 'No hay movimientos para el período seleccionado'])</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            @if ($registros instanceof IlluminatePaginationLengthAwarePaginator && $registros->hasPages())
+            @if ($registros instanceof \Illuminate\Pagination\LengthAwarePaginator && $registros->hasPages())
                 <div class="card-footer">{{ $registros->links('pagination::bootstrap-5') }}</div>
             @endif
         </div>

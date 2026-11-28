@@ -124,7 +124,9 @@
                         <div class="col-12">
                             <label class="form-label" for="inv-motivo">Motivo</label>
                             <textarea class="form-control" name="motivo" id="inv-motivo" maxlength="250" rows="2" required>{{ old('motivo') }}</textarea>
-                            <p class="form-text mb-0">Al guardar, se actualizará la existencia y quedará el registro en Kardex.</p>
+                            <p class="form-text mb-0">
+                                {{ $seccion === 'ajustes' ? 'Al guardar, se actualizará la existencia y se registrarán el Kardex y el asiento contable.' : 'Al guardar, se actualizará la existencia y quedará el registro en Kardex.' }}
+                            </p>
                         </div>
                     @endif
                 </div>

@@ -60,7 +60,13 @@ final readonly class Inventario
                 $registro = $this->repositorio->registrar(array_replace($operacion, [
                     'costo_unitario' => $costo, 'clave_operacion' => $clave, 'huella' => $huella,
                 ]), $lineas);
-                if ($contabilizar) event(new OperacionContabilizable('inventario.movimiento', (int) $registro->id));
+                if ($contabilizar) {
+                    $obligatoria = in_array($registro->tipo, ['ajuste_entrada', 'ajuste_salida'], true);
+                    event(new OperacionContabilizable('inventario.movimiento', (int) $registro->id, $obligatoria));
+                    if ($obligatoria) {
+                        $registro = $this->repositorio->operacion((int) $registro->id);
+                    }
+                }
 
                 return ['operacion' => $registro, 'repetida' => false];
             });

@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Services;
+
+use DOMDocument;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use SimpleXMLElement;
+use stdClass;
+
+final readonly class AutorizacionSri
+{
+    private const SERVICIOS = ['1' => 'celcer.sri.gob.ec', '2' => 'cel.sri.gob.ec'];
+
+    public const ESTADOS = [
+        'PENDIENTE' => 'Pendiente de consulta',
+        'SIN_RESPUESTA' => 'Sin registro en el SRI',
+        'EN_PROCESO' => 'En proceso',
+        'ERROR' => 'Consulta fallida',
+        'NO_AUTORIZADO' => 'No autorizado',
+        'AUTORIZADO' => 'Autorizado',
+    ];
+
+    public function __construct(private EmpresaActiva $empresa) {}
+
+    /** @return array{clave: string, ambiente: string}|null */
+    public function identidad(?string $datos): ?array
+    {
+        $fiscal = json_decode($datos ?? '{}', true);
+        $clave = (string) ($fiscal['clave_acceso'] ?? '');
+        $ambiente = (string) ($fiscal['ambiente'] ?? '');
+        if (! isset(self::SERVICIOS[$ambiente]) || ! preg_match('/\A[0-9]{49}\z/', $clave) || $clave[23] !== $ambiente) {
+            return null;
+        }
+
+        return ['clave' => $clave, 'ambiente' => $ambiente];
+    }
+
+    public function consultas(int $id): Builder
+    {
+        return DB::table('com_sri_consultas')->where('id_empresa', $this->empresa->id())->where('id_documento', $id);
+    }
+
+    public function autorizado(int $id): ?stdClass
+    {
+        return $this->consultas($id)->where('estado', 'AUTORIZADO')->whereNotNull('xml_autorizado')->latest('id')->first();
+    }
+
+    public function consultar(int $id, string $clave, string $ambiente): string
+    {
+        if ($this->autorizado($id) !== null) {
+            return 'AUTORIZADO';
+        }
+
+        $consulta = <<<XML
+            <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sri="http://ec.gob.sri.ws.autorizacion">
+              <soap:Body><sri:autorizacionComprobante><claveAccesoComprobante>{$clave}</claveAccesoComprobante></sri:autorizacionComprobante></soap:Body>
+            </soap:Envelope>
+            XML;
+        $resultado = ['estado' => 'ERROR', 'mensajes' => ['No se pudo consultar el servicio de autorización del SRI.']];
+        try {
+            $respuesta = Http::connectTimeout(4)->timeout(12)->withoutRedirecting()
+                ->withHeader('SOAPAction', '""')->withBody($consulta, 'text/xml; charset=UTF-8')
+                ->post('https://'.self::SERVICIOS[$ambiente].'/comprobantes-electronicos-ws/AutorizacionComprobantesOffline');
+            if ($respuesta->successful()) {
+                $resultado = $this->interpretar($respuesta->body(), $clave, $ambiente);
+            }
+        } catch (ConnectionException) {
+            $resultado['mensajes'] = ['El servicio de autorización del SRI no respondió a tiempo o no está disponible.'];
+        }
+
+        return $this->empresa->transaccion(function () use ($id, $resultado): string {
+            if ($this->autorizado($id) !== null) {
+                return 'AUTORIZADO';
+            }
+            DB::table('com_sri_consultas')->insert([
+                'id_empresa' => $this->empresa->id(), 'id_documento' => $id, 'id_usuario' => auth()->id(),
+                'estado' => $resultado['estado'], 'mensajes' => json_encode($resultado['mensajes'], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE),
+                'xml_autorizado' => $resultado['xml'] ?? null, 'created_at' => now(),
+            ]);
+
+            return $resultado['estado'];
+        });
+    }
+
+    /** @return array{estado: string, mensajes: list<string>, xml?: string} */
+    private function interpretar(string $cuerpo, string $clave, string $ambiente): array
+    {
+        $invalida = ['estado' => 'ERROR', 'mensajes' => ['La respuesta del SRI no contiene una autorización verificable para esta clave.']];
+        $respuesta = self::leerXml($cuerpo)?->xpath('//*[local-name()="RespuestaAutorizacionComprobante"]')[0] ?? null;
+        if ($respuesta === null || trim((string) $respuesta->claveAccesoConsultada) !== $clave) {
+            return $invalida;
+        }
+        if (trim((string) $respuesta->numeroComprobantes) === '0') {
+            return ['estado' => 'SIN_RESPUESTA', 'mensajes' => ['El SRI todavía no devuelve un resultado para la clave consultada.']];
+        }
+
+        $resultado = $invalida;
+        foreach ($respuesta->autorizaciones->autorizacion ?? [] as $autorizacion) {
+            $estado = str_replace(' ', '_', trim((string) $autorizacion->estado));
+            $mensajes = [];
+            foreach ($autorizacion->mensajes->mensaje ?? [] as $mensaje) {
+                $texto = trim(implode(' ', [(string) $mensaje->identificador, (string) $mensaje->mensaje, (string) $mensaje->informacionAdicional]));
+                $mensajes[] = Str::limit($texto, 600);
+            }
+            if ($estado === 'AUTORIZADO') {
+                $documento = self::leerXml((string) $autorizacion->comprobante);
+                if ($documento?->getName() !== 'factura'
+                    || (string) $documento->infoTributaria->claveAcceso !== $clave
+                    || (string) $documento->infoTributaria->ambiente !== $ambiente
+                    || trim((string) $autorizacion->numeroAutorizacion) !== $clave
+                    || trim((string) $autorizacion->fechaAutorizacion) === '') {
+                    continue;
+                }
+                $xml = new DOMDocument('1.0', 'UTF-8');
+                $xml->appendChild($xml->importNode(dom_import_simplexml($autorizacion), true));
+
+                return ['estado' => $estado, 'mensajes' => $mensajes, 'xml' => $xml->saveXML()];
+            }
+            if (in_array($estado, ['NO_AUTORIZADO', 'EN_PROCESO'], true)) {
+                $resultado = ['estado' => $estado, 'mensajes' => $mensajes];
+            }
+        }
+
+        return $resultado;
+    }
+
+    public static function leerXml(string $xml): ?SimpleXMLElement
+    {
+        if ($xml === '' || strlen($xml) > 2_000_000 || stripos($xml, '<!DOCTYPE') !== false || str_contains($xml, "\0")) {
+            return null;
+        }
+
+        $resultado = @simplexml_load_string($xml, SimpleXMLElement::class, LIBXML_NONET);
+
+        return $resultado === false ? null : $resultado;
+    }
+}

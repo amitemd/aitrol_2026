@@ -17,6 +17,13 @@ foreach (config('comercial') as $modulo => $datos) {
                 );
 
                 if ($modulo === 'ventas' && ! $api) {
+                    Route::get('documentos/{registro}/sri', [ComercialController::class, 'logSri'])
+                        ->whereNumber('registro')->name('documentos.sri.log');
+                    Route::post('documentos/{registro}/sri/consultar', [ComercialController::class, 'consultarSri'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'actualizar'), 'throttle:12,1'])
+                        ->name('documentos.sri.consultar');
+                    Route::get('documentos/{registro}/sri/{formato}', [ComercialController::class, 'descargarSri'])
+                        ->whereNumber('registro')->whereIn('formato', ['pdf', 'xml'])->name('documentos.sri.descargar');
                     Route::get('documentos/{registro}/trazabilidad', [ComercialController::class, 'trazabilidadVenta'])
                         ->whereNumber('registro')->middleware($permisos('documentos', 'leer'))->name('documentos.trazabilidad');
                     Route::post('documentos/{registro}/contabilizar', [ComercialController::class, 'contabilizarVenta'])
