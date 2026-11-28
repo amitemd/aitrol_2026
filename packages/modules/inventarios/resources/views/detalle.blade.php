@@ -11,7 +11,9 @@
                     @foreach (['codigo' => 'Código', 'nombre' => 'Nombre', 'descripcion' => 'Descripción', 'codigo_barras' => 'Código de barras',
                         'categoria' => 'Categoría', 'plantilla_contable' => 'Plantilla contable', 'tipo_producto' => 'Tipo de producto', 'marca' => 'Marca', 'modelo' => 'Modelo',
                         'unidad' => 'Unidad', 'stock_minimo' => 'Stock mínimo', 'tipo' => 'Tipo', 'cantidad' => 'Cantidad',
-                        'costo_unitario' => 'Costo unitario', 'motivo' => 'Motivo', 'referencia' => 'Referencia', 'created_at' => 'Fecha de registro'] as $campo => $etiqueta)
+                        'origen_movimiento' => 'Bodega de origen', 'destino_movimiento' => 'Bodega de destino',
+                        'costo_unitario' => 'Costo unitario', 'motivo' => 'Motivo', 'numero_documento' => 'Documento comercial',
+                        'referencia' => 'Referencia', 'created_at' => 'Fecha de registro'] as $campo => $etiqueta)
                         @isset($fila[$campo])
                             <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7">{{ match ($campo) {
                                 'tipo' => config('inventarios.tipos.'.$fila[$campo]),
@@ -69,7 +71,7 @@
                         <caption class="visually-hidden">Movimientos de existencias</caption>
                         <thead><tr><th>{{ __('Bodega') }}</th><th>Variación</th><th>Saldo anterior</th><th>Saldo</th></tr></thead>
                         <tbody>@foreach ($fila['lineas'] as $linea)
-                            <tr><td>{{ $linea['id_bodega'] }}</td><td>{{ $linea['variacion'] }}</td><td>{{ $linea['saldo_anterior'] }}</td><td>{{ $linea['saldo'] }}</td></tr>
+                            <tr><td>{{ $linea['bodega'] }}</td><td>{{ $linea['variacion'] }}</td><td>{{ $linea['saldo_anterior'] }}</td><td>{{ $linea['saldo'] }}</td></tr>
                         @endforeach</tbody>
                     </table></div>
                 @endisset

@@ -14,7 +14,7 @@
         'existencias' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Estado'],
         'reportes' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Valor de existencia'],
         'kardex' => ['Fecha', 'Producto', 'Bodega', 'Operación', 'Variación', 'Saldo anterior', 'Saldo', 'Costo promedio'],
-        default => ['Fecha', 'Producto', 'Tipo', 'Bodega', 'Cantidad', 'Motivo', 'Acciones'],
+        default => ['Fecha', 'Producto', 'Tipo', 'Bodega de origen', 'Bodega de destino', 'Cantidad', 'Motivo / documento', 'Acciones'],
     };
 @endphp
 
@@ -166,9 +166,13 @@
                                             <td>{{ $fila['costo_promedio'] }}</td>
                                         @else
                                             <td>{{ config('inventarios.tipos.'.$fila['tipo']) }}</td>
-                                            <td>{{ $fila['bodega'] }}@if ($fila['bodega_destino']) <i class="bi bi-arrow-right" aria-label="a"></i> {{ $fila['bodega_destino'] }}@endif</td>
+                                            <td>{{ $fila['origen_movimiento'] ?? '—' }}</td>
+                                            <td>{{ $fila['destino_movimiento'] ?? '—' }}</td>
                                             <td>{{ $fila['cantidad'] }}</td>
-                                            <td>{{ $fila['motivo'] }} @if ($fila['referencia']) <small class="d-block text-body-secondary">{{ $fila['referencia'] }}</small>@endif
+                                            <td>{{ $fila['motivo'] }}
+                                                @if ($referencia = $fila['numero_documento'] ?? $fila['referencia'])
+                                                    <small class="d-block text-body-secondary">{{ $referencia }}</small>
+                                                @endif
                                                 @include('partials.referencia-asiento', ['registroAsiento' => $fila])
                                             </td>
                                             @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])

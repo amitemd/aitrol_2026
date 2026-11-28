@@ -122,10 +122,21 @@ final readonly class DocumentosComerciales
                     $this->verificarImportes($modulo, $origen, $seccion, $total);
                 }
                 $bodega = $seccion === 'documentos' && isset($datos['id_bodega']) ? (int) $datos['id_bodega'] : null;
-                if ($bodega !== null && ! collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null)) {
+                $tieneProducto = collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null);
+                if ($bodega !== null && ! $tieneProducto) {
                     throw ValidationException::withMessages(['id_bodega' => 'Agrega al menos un producto de inventario para usar una bodega.']);
                 }
-                if ($factura === null && $seccion === 'documentos' && $bodega === null && collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null)) {
+                if ($modulo === 'compras' && $seccion === 'documentos' && $tieneProducto) {
+                    $principal = $this->existencias->bodegaPrincipal();
+                    if ($principal === null) {
+                        throw ValidationException::withMessages(['id_bodega' => 'Registra una bodega principal activa para recibir la mercadería de esta compra.']);
+                    }
+                    if ($bodega !== null && $bodega !== (int) $principal->id) {
+                        throw ValidationException::withMessages(['id_bodega' => 'Selecciona la bodega principal de la empresa para recibir la compra.']);
+                    }
+                    $bodega = (int) $principal->id;
+                }
+                if ($factura === null && $seccion === 'documentos' && $bodega === null && $tieneProducto) {
                     throw ValidationException::withMessages(['id_bodega' => 'Selecciona una bodega para los productos de inventario.']);
                 }
                 $numero = Str::upper($datos['numero']);
@@ -201,14 +212,14 @@ final readonly class DocumentosComerciales
                 'Anula primero las notas o retenciones vigentes vinculadas al documento.');
 
             foreach ($this->lineas($id)->whereNotNull('id_operacion')->orderBy('id_producto')->orderBy('id_bodega')->orderBy('id')->get() as $linea) {
-                $movimiento = $this->existencias->operacion((int) $linea->id_operacion);
+                $movimiento = $this->existencias->operacion((int) $linea->id_operacion, todaEmpresa: $modulo === 'compras');
                 $esEntrada = $movimiento->tipo === 'salida';
                 $reversa = $this->inventario->registrar([
                     'tipo' => $esEntrada ? 'entrada' : 'salida', 'id_producto' => $linea->id_producto, 'id_bodega' => $movimiento->id_bodega,
                     'cantidad' => Cantidad::decimal((int) $linea->cantidad, 3),
                     'costo_unitario' => $esEntrada ? Cantidad::decimal((int) $movimiento->costo_unitario, 4) : null,
                     'motivo' => 'Anulación de '.($modulo === 'ventas' ? 'venta' : 'compra'), 'referencia' => $modulo.'/'.$id,
-                ], contabilizar: false);
+                ], contabilizar: false, bodegaOrigenExterna: $modulo === 'compras');
                 $this->lineas($id)->where('id', $linea->id)->update(['id_operacion_reversa' => $reversa['operacion']->id]);
             }
             $this->documentos($modulo)->where('id', $id)->update([
@@ -373,7 +384,7 @@ final readonly class DocumentosComerciales
             'cantidad' => Cantidad::decimal($linea['cantidad'], 3),
             'costo_unitario' => $compra ? Cantidad::decimal($linea['precio'], 4) : null,
             'motivo' => $compra ? 'Registro de compra' : 'Registro de venta', 'referencia' => $modulo.'/'.$documento,
-        ], contabilizar: false);
+        ], contabilizar: false, bodegaOrigenExterna: $compra);
 
         return (int) $movimiento['operacion']->id;
     }

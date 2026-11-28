@@ -64,6 +64,10 @@ final readonly class InventarioSql implements RepositorioInventario
                     throw ValidationException::withMessages(['nombre' => 'Ya existe un registro con este nombre en tu empresa.']);
                 }
                 $datos = $this->prepararCatalogo($seccion, $datos, $actual);
+                if ($seccion === 'bodegas') {
+                    $marcarPrincipal = (bool) ($datos['es_principal'] ?? false);
+                    $datos['es_principal'] = $this->definirPrincipal($actual, (bool) $datos['activo'], $marcarPrincipal);
+                }
                 if ($id === null) {
                     if ($seccion === 'bodegas') {
                         $datos['id_sucursal'] = $this->contexto->sucursal()->id;
@@ -125,12 +129,38 @@ final readonly class InventarioSql implements RepositorioInventario
                 return $actual;
             }
             $this->verificarExistenciaCatalogo($seccion, $id, ['activo' => $activo]);
-            $this->tabla('inv_'.str_replace('-', '_', $seccion))->where('id', $id)->update([
+            $datos = [
                 'activo' => $activo, 'id_usuario_modificacion' => auth()->id(), 'updated_at' => now(),
-            ]);
+            ];
+            if ($seccion === 'bodegas') {
+                $datos['es_principal'] = $this->definirPrincipal($actual, $activo, false);
+            }
+            $this->tabla('inv_'.str_replace('-', '_', $seccion))->where('id', $id)->update($datos);
 
             return $this->catalogo($seccion, $id);
         });
+    }
+
+    private function definirPrincipal(?stdClass $actual, bool $activa, bool $marcar): ?bool
+    {
+        if (! $activa && ($marcar || ($actual->es_principal ?? false))) {
+            throw ValidationException::withMessages(['es_principal' => 'La bodega principal debe estar activa. Designa otra bodega antes de desactivarla.']);
+        }
+        $principal = $this->bodegaPrincipal();
+        if (! $activa && $actual === null && $principal === null) {
+            throw ValidationException::withMessages(['activo' => 'Registra una bodega activa para que pueda ser la principal de la empresa.']);
+        }
+        if ($activa && ($marcar || $principal === null || $principal->id === ($actual->id ?? null))) {
+            if ($principal !== null && $principal->id !== ($actual->id ?? null)) {
+                $this->tabla('inv_bodegas', todaEmpresa: true)->where('id', $principal->id)->update([
+                    'es_principal' => null, 'id_usuario_modificacion' => auth()->id(), 'updated_at' => now(),
+                ]);
+            }
+
+            return true;
+        }
+
+        return null;
     }
 
     private function verificarExistenciaCatalogo(string $seccion, int $id, array $datos): void
@@ -310,12 +340,25 @@ final readonly class InventarioSql implements RepositorioInventario
         return $datos;
     }
 
-    public function operacion(int $id): stdClass
+    public function bodegaPrincipal(): ?stdClass
     {
-        $consulta = $this->tabla('inv_operaciones')->select('inv_operaciones.*')->where('id', $id)
-            ->whereIn('id_bodega', $this->tabla('inv_bodegas')->select('id'));
-        $operacion = ReferenciaAsiento::inventario($consulta, 'inv_operaciones.id')->first() ?? abort(404, 'Movimiento no encontrado.');
-        $operacion->lineas = $this->tabla('inv_kardex')->where('id_operacion', $id)->orderBy('id')->get();
+        return $this->tabla('inv_bodegas', todaEmpresa: true)->where('es_principal', true)->where('activo', true)->first();
+    }
+
+    public function bodegaEmpresa(int $id, bool $bloquear = false): stdClass
+    {
+        return $this->tabla('inv_bodegas', todaEmpresa: true)->where('id', $id)
+            ->when($bloquear, fn (Builder $consulta) => $consulta->lockForUpdate())->first()
+            ?? abort(404, 'Bodega no encontrada.');
+    }
+
+    public function operacion(int $id, bool $todaEmpresa = false): stdClass
+    {
+        $operacion = $this->consultaOperaciones($todaEmpresa)->where('inv_operaciones.id', $id)->first() ?? abort(404, 'Movimiento no encontrado.');
+        $operacion->lineas = $this->tabla('inv_kardex')->where('id_operacion', $id)
+            ->join('inv_bodegas as bodega_linea', fn ($join) => $join->on('bodega_linea.id', '=', 'inv_kardex.id_bodega')
+                ->on('bodega_linea.id_empresa', '=', 'inv_kardex.id_empresa'))
+            ->orderBy('inv_kardex.id')->get(['inv_kardex.*', 'bodega_linea.nombre as bodega']);
 
         return $operacion;
     }
@@ -346,7 +389,7 @@ final readonly class InventarioSql implements RepositorioInventario
             DB::table('inv_kardex')->insert($clave + $linea + ['id_operacion' => $id]);
         }
 
-        return $this->operacion((int) $id);
+        return $this->operacion((int) $id, todaEmpresa: true);
     }
 
     public function transaccion(Closure $proceso): mixed
@@ -354,15 +397,15 @@ final readonly class InventarioSql implements RepositorioInventario
         return $this->empresa->transaccion($proceso);
     }
 
-    private function tabla(string $tabla): Builder
+    private function tabla(string $tabla, bool $todaEmpresa = false): Builder
     {
         return DB::table($tabla)->where($tabla.'.id_empresa', $this->empresa->id())
-            ->when($tabla === 'inv_bodegas', fn (Builder $q) => $q->where('inv_bodegas.id_sucursal', $this->contexto->sucursal()->id));
+            ->when($tabla === 'inv_bodegas' && ! $todaEmpresa, fn (Builder $q) => $q->where('inv_bodegas.id_sucursal', $this->contexto->sucursal()->id));
     }
 
     private function catalogos(string $seccion, array $filtros): Builder
     {
-        $consulta = $this->tabla('inv_'.str_replace('-', '_', $seccion))->orderBy('nombre')->orderBy('id');
+        $consulta = $this->tabla('inv_'.str_replace('-', '_', $seccion), $filtros['toda_empresa'] ?? false)->orderBy('nombre')->orderBy('id');
         if (! empty($filtros['q'])) {
             $consulta->where(function (Builder $q) use ($filtros, $seccion): void {
                 $patron = '%'.$filtros['q'].'%';
@@ -390,14 +433,32 @@ final readonly class InventarioSql implements RepositorioInventario
     private function operaciones(string $seccion, array $filtros): Builder
     {
         $tabla = 'inv_operaciones';
-        $consulta = $this->conCatalogos($tabla)->leftJoin('inv_bodegas as destino', function ($join): void {
-            $join->on('destino.id', '=', 'inv_operaciones.id_bodega_destino')->on('destino.id_empresa', '=', 'inv_operaciones.id_empresa');
-        })->addSelect('destino.nombre as bodega_destino')->orderByDesc($tabla.'.id');
-        $tipos = ['ajuste_entrada', 'ajuste_salida'];
-        $seccion === 'ajustes' ? $consulta->whereIn($tabla.'.tipo', $tipos) : $consulta->whereNotIn($tabla.'.tipo', $tipos);
-        ReferenciaAsiento::inventario($consulta, $tabla.'.id');
+        $consulta = $this->consultaOperaciones()->orderByDesc($tabla.'.id');
+        if ($seccion === 'ajustes') {
+            $consulta->whereIn($tabla.'.tipo', ['ajuste_entrada', 'ajuste_salida']);
+        }
 
         return $this->filtrar($consulta, $tabla, $filtros, $tabla.'.created_at');
+    }
+
+    private function consultaOperaciones(bool $todaEmpresa = false): Builder
+    {
+        $consulta = $this->conCatalogos('inv_operaciones', limitarSucursal: false)->leftJoin('inv_bodegas as destino', function ($join): void {
+            $join->on('destino.id', '=', 'inv_operaciones.id_bodega_destino')->on('destino.id_empresa', '=', 'inv_operaciones.id_empresa');
+        })->addSelect('destino.nombre as bodega_destino');
+        if (! $todaEmpresa) {
+            $sucursal = $this->contexto->sucursal()->id;
+            $consulta->where(fn (Builder $q) => $q->where('b.id_sucursal', $sucursal)->orWhere('destino.id_sucursal', $sucursal));
+        }
+        $documento = DB::table('com_lineas as partida')->join('com_documentos as documento', function ($join): void {
+            $join->on('documento.id', '=', 'partida.id_documento')->on('documento.id_empresa', '=', 'partida.id_empresa');
+        })->whereColumn('partida.id_empresa', 'inv_operaciones.id_empresa')
+            ->where(fn (Builder $q): Builder => $q->whereColumn('partida.id_operacion', 'inv_operaciones.id')
+                ->orWhereColumn('partida.id_operacion_reversa', 'inv_operaciones.id'))
+            ->select('documento.numero')->orderBy('partida.id')->limit(1);
+        $consulta->addSelect(['numero_documento' => $documento]);
+
+        return ReferenciaAsiento::inventario($consulta, 'inv_operaciones.id');
     }
 
     private function kardex(array $filtros): Builder
@@ -410,12 +471,12 @@ final readonly class InventarioSql implements RepositorioInventario
         return $this->filtrar($consulta, 'inv_kardex', $filtros, 'o.created_at');
     }
 
-    private function conCatalogos(string $tabla): Builder
+    private function conCatalogos(string $tabla, bool $limitarSucursal = true): Builder
     {
         return $this->tabla($tabla)
             ->join('inv_productos as p', fn ($join) => $join->on('p.id', '=', $tabla.'.id_producto')->on('p.id_empresa', '=', $tabla.'.id_empresa'))
             ->join('inv_bodegas as b', fn ($join) => $join->on('b.id', '=', $tabla.'.id_bodega')->on('b.id_empresa', '=', $tabla.'.id_empresa'))
-            ->where('b.id_sucursal', $this->contexto->sucursal()->id)
+            ->when($limitarSucursal, fn (Builder $q) => $q->where('b.id_sucursal', $this->contexto->sucursal()->id))
             ->select($tabla.'.*', 'p.nombre as producto', 'p.codigo as codigo_producto', 'b.nombre as bodega');
     }
 

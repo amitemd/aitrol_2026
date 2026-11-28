@@ -24,7 +24,11 @@ interface RepositorioInventario
 
     public function cambiarEstadoCatalogo(string $seccion, int $id, bool $activo): stdClass;
 
-    public function operacion(int $id): stdClass;
+    public function bodegaPrincipal(): ?stdClass;
+
+    public function bodegaEmpresa(int $id, bool $bloquear = false): stdClass;
+
+    public function operacion(int $id, bool $todaEmpresa = false): stdClass;
 
     public function porClave(string $clave): ?stdClass;
 

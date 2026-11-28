@@ -14,7 +14,7 @@ final readonly class Inventario
     public function __construct(private RepositorioInventario $repositorio) {}
 
     /** @return array{operacion: stdClass, repetida: bool} */
-    public function registrar(array $datos, bool $contabilizar = true): array
+    public function registrar(array $datos, bool $contabilizar = true, bool $bodegaOrigenExterna = false): array
     {
         $operacion = [
             'tipo' => $datos['tipo'],
@@ -30,7 +30,7 @@ final readonly class Inventario
         $huella = hash('sha256', json_encode($operacion, JSON_THROW_ON_ERROR));
 
         try {
-            return $this->repositorio->transaccion(function () use ($operacion, $clave, $huella, $contabilizar): array {
+            return $this->repositorio->transaccion(function () use ($operacion, $clave, $huella, $contabilizar, $bodegaOrigenExterna): array {
                 $producto = $this->catalogo('productos', $operacion['id_producto'], 'id_producto');
                 if ($clave !== null && ($existente = $this->repositorio->porClave($clave)) !== null) {
                     return $this->repetida($existente, $huella);
@@ -44,7 +44,8 @@ final readonly class Inventario
                 sort($bodegas, SORT_NUMERIC);
                 foreach ($bodegas as $id) {
                     $campo = $id === $operacion['id_bodega'] ? 'id_bodega' : 'id_bodega_destino';
-                    $this->verificarActivo($this->catalogo('bodegas', $id, $campo), $campo);
+                    $todaEmpresa = $campo === 'id_bodega_destino' || $bodegaOrigenExterna;
+                    $this->verificarActivo($this->catalogo('bodegas', $id, $campo, $todaEmpresa), $campo);
                 }
 
                 $origen = $this->repositorio->saldo($producto->id, $operacion['id_bodega']);
@@ -78,10 +79,11 @@ final readonly class Inventario
         }
     }
 
-    private function catalogo(string $catalogo, int $id, string $campo): stdClass
+    private function catalogo(string $catalogo, int $id, string $campo, bool $todaEmpresa = false): stdClass
     {
         try {
-            return $this->repositorio->catalogo($catalogo, $id, bloquear: true);
+            return $todaEmpresa ? $this->repositorio->bodegaEmpresa($id, bloquear: true)
+                : $this->repositorio->catalogo($catalogo, $id, bloquear: true);
         } catch (NotFoundHttpException) {
             throw ValidationException::withMessages([$campo => 'Selecciona un registro activo de tu empresa.']);
         }

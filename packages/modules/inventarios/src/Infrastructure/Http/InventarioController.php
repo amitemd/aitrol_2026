@@ -53,8 +53,8 @@ final readonly class InventarioController
             ? $this->repositorio->catalogo($seccion, $id)
             : $this->repositorio->operacion($id);
 
-        if (in_array($seccion, ['movimientos', 'ajustes'], true)) {
-            abort_unless(str_starts_with($registro->tipo, 'ajuste_') === ($seccion === 'ajustes'), 404);
+        if ($seccion === 'ajustes') {
+            abort_unless(str_starts_with($registro->tipo, 'ajuste_'), 404);
         }
 
         $fila = $this->presentar($registro);
@@ -327,6 +327,11 @@ final readonly class InventarioController
     {
         $datos = (array) $registro;
         unset($datos['huella']);
+        if (array_key_exists('bodega_destino', $datos)) {
+            $entrada = in_array($datos['tipo'], ['entrada', 'ajuste_entrada'], true);
+            $datos['origen_movimiento'] = $entrada ? null : $datos['bodega'];
+            $datos['destino_movimiento'] = $entrada ? $datos['bodega'] : $datos['bodega_destino'];
+        }
         if (isset($datos['cuentas'])) $datos['cuentas'] = json_decode($datos['cuentas'], true, flags: JSON_THROW_ON_ERROR);
         if (isset($datos['activo'])) $datos['activo'] = (bool) $datos['activo'];
         if (isset($datos['stock_minimo'], $datos['cantidad'])) {
