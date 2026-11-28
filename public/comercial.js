@@ -16,7 +16,9 @@
             const cantidad = unidades(linea.querySelector('[data-compra-campo="cantidad"]'), 1000);
             const precio = unidades(linea.querySelector('[data-compra-campo="precio"]'), 10000);
             const tasa = unidades(linea.querySelector('[data-compra-campo="tasa"]'), 100);
-            const base = (cantidad * precio + 50000n) / 100000n;
+            const descuento = unidades(linea.querySelector('[data-compra-campo="descuento"]'), 100);
+            const bruto = (cantidad * precio + 50000n) / 100000n;
+            const base = descuento <= bruto ? bruto - descuento : 0n;
             const tributo = (base * tasa + 5000n) / 10000n;
             subtotal += base;
             impuesto += tributo;

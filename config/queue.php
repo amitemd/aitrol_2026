@@ -31,6 +31,15 @@ return [
 
     'connections' => [
 
+        'personas' => [
+            'driver' => 'database',
+            'connection' => null,
+            'table' => 'jobs',
+            'queue' => 'importaciones-personas',
+            'retry_after' => 960,
+            'after_commit' => false,
+        ],
+
         'sync' => [
             'driver' => 'sync',
         ],

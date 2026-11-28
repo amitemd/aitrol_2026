@@ -33,6 +33,11 @@ final class ConfiguracionServiceProvider extends ServiceProvider
 
         $esAdministrador = fn (User $usuario): bool => $usuario->is_admin === true && $usuario->id_empresa !== null;
         Gate::define('administrar-menu', fn (User $usuario): bool => $esAdministrador($usuario) && $usuario->is_admin_global === true);
+        Gate::define('administrar-personas', fn (User $usuario): bool => $esAdministrador($usuario) && $usuario->is_admin_global === true);
+        Gate::define('consultar-personas', fn (User $usuario): bool =>
+            Gate::forUser($usuario)->allows('administrar-personas')
+            && $usuario->currentAccessToken() instanceof PersonalAccessToken
+            && in_array('personas:leer', $usuario->currentAccessToken()->abilities, true));
         Gate::define('administrar-servidor', fn (User $usuario): bool => $esAdministrador($usuario) && $usuario->is_admin_global === true);
         Gate::define('administrar-configuracion', $esAdministrador);
         Gate::define('permiso', fn (User $usuario, string $opcion, string $accion): bool => app(Accesos::class)->permite($usuario, $opcion, $accion));

@@ -9,6 +9,7 @@ use App\Services\MantenimientoServidor;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Foundation\Console\ServeCommand;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+
+DevCommands::register('php -d memory_limit=256M artisan queue:work personas --timeout=900 --memory=240 --no-interaction', 'personas');
 
 Artisan::command('aitrol:facturas-programar', function (FacturaVenta $facturas): int {
     $this->info('Borradores preparados: '.$facturas->generarProgramadas());
@@ -208,6 +211,36 @@ Artisan::command('aitrol:enlace-recuperacion {email}', function (): int {
 
     return 0;
 })->purpose('Generar un enlace de recuperación desde la consola');
+
+Artisan::command('personas:token {email} {nombre} {--dias=90}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))
+        ->where('activo', true)->whereNotNull('id_empresa')->first();
+    $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 90]]);
+    if ($usuario === null || $usuario->cannot('administrar-personas') || $dias === false) {
+        $this->error('Indique un administrador global activo y una vigencia de 1 a 90 días.');
+
+        return 1;
+    }
+
+    $this->line($usuario->createToken($this->argument('nombre'), ['personas:leer'], now()->addDays($dias))->plainTextToken);
+
+    return 0;
+})->purpose('Emitir una credencial de solo lectura para la API de Personas');
+
+Artisan::command('personas:revocar-token {email} {id}', function (): int {
+    $usuario = User::query()->where('email', $this->argument('email'))->first();
+    $token = $usuario?->tokens()->find($this->argument('id'));
+    if ($token === null || $token->abilities !== ['personas:leer']) {
+        $this->error('No se encontró la credencial de Personas para ese usuario.');
+
+        return 1;
+    }
+
+    $token->delete();
+    $this->info('Credencial revocada.');
+
+    return 0;
+})->purpose('Revocar una credencial de la API de Personas');
 
 Artisan::command('clientes:token {email} {nombre} {--escritura} {--dias=90}', function (): int {
     $usuario = User::query()->where('email', $this->argument('email'))->first();

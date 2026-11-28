@@ -37,6 +37,8 @@
 !/tests/Feature/MantenimientoServidorTest.php
 !/tests/Feature/RecursosHumanosTest.php
 !/tests/Feature/TenenciaMigracionTest.php
+!/tests/Feature/PersonaApiTest.php
+!/tests/Feature/PersonasImportacionTest.php
 /vendor/
 _ide_helper.php
 Homestead.json

@@ -151,7 +151,9 @@ final readonly class DocumentosComerciales
                     'id_documento_origen' => $origen?->id, 'id_bodega' => $bodega, 'subtotal' => $subtotal,
                     'impuesto' => $impuesto, 'total' => $total, 'observacion' => $datos['observacion'] ?? null,
                     'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
-                ] + ($creditoTotal ? ['propina' => $propina, 'datos_factura' => json_encode(['credito_total' => true], JSON_THROW_ON_ERROR)] : []) + ($factura === null ? [] : [
+                ] + (empty($datos['datos_compra']) ? [] : [
+                    'datos_factura' => json_encode($datos['datos_compra'], JSON_THROW_ON_ERROR),
+                ]) + ($creditoTotal ? ['propina' => $propina, 'datos_factura' => json_encode(['credito_total' => true], JSON_THROW_ON_ERROR)] : []) + ($factura === null ? [] : [
                     'propina' => $propina,
                     'datos_factura' => json_encode($factura + ['propina_centavos' => $propina, 'total_pago_centavos' => $total], JSON_THROW_ON_ERROR),
                 ]));
@@ -379,10 +381,14 @@ final readonly class DocumentosComerciales
     private function afectarInventario(string $modulo, int $bodega, int $documento, array $linea): int
     {
         $compra = $modulo === 'compras';
+        $costo = $linea['precio'];
+        if ($compra && $linea['subtotal'] < intdiv($linea['cantidad'] * $costo + 50000, 100000)) {
+            $costo = intdiv($linea['subtotal'] * 100000 + intdiv($linea['cantidad'], 2), $linea['cantidad']);
+        }
         $movimiento = $this->inventario->registrar([
             'tipo' => $compra ? 'entrada' : 'salida', 'id_producto' => $linea['id_producto'], 'id_bodega' => $bodega,
             'cantidad' => Cantidad::decimal($linea['cantidad'], 3),
-            'costo_unitario' => $compra ? Cantidad::decimal($linea['precio'], 4) : null,
+            'costo_unitario' => $compra ? Cantidad::decimal($costo, 4) : null,
             'motivo' => $compra ? 'Registro de compra' : 'Registro de venta', 'referencia' => $modulo.'/'.$documento,
         ], contabilizar: false, bodegaOrigenExterna: $compra);
 

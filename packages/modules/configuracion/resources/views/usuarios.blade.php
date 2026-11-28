@@ -9,6 +9,13 @@
     ])
     <div class="app-content">
         <div class="container-fluid">
+            @can('administrar-personas')
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{{ route('configuracion.personas.importaciones.index') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark-arrow-up me-1" aria-hidden="true"></i> Importar personas
+                    </a>
+                </div>
+            @endcan
             @if (session('estado'))
                 <div class="alert alert-success" role="status">{{ session('estado') }}</div>
             @endif

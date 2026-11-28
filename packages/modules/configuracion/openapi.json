@@ -5,6 +5,64 @@
     }
   ],
   "paths": {
+    "/api/v1/personas/consultar": {
+      "post": {
+        "tags": ["Personas"],
+        "operationId": "consultarPersonaPorIdentificacion",
+        "summary": "Consultar una persona por identificación",
+        "description": "Requiere un administrador global y un token con personas:leer.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["identificacion"],
+                "properties": {
+                  "identificacion": {"type": "string", "maxLength": 30, "example": "0920000001"},
+                  "tipo_identificacion": {"type": "string", "enum": ["cedula", "ruc", "pasaporte"]}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Identificación, nombres y apellidos de la persona",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["identificacion", "tipo_identificacion", "nombres", "apellidos", "primer_nombre", "segundo_nombre", "primer_apellido", "segundo_apellido"],
+                      "properties": {
+                        "identificacion": {"type": "string"},
+                        "tipo_identificacion": {"type": "string", "enum": ["cedula", "ruc", "pasaporte"]},
+                        "nombres": {"type": "string"},
+                        "apellidos": {"type": ["string", "null"]},
+                        "primer_nombre": {"type": ["string", "null"]},
+                        "segundo_nombre": {"type": ["string", "null"]},
+                        "primer_apellido": {"type": ["string", "null"]},
+                        "segundo_apellido": {"type": ["string", "null"]}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"description": "Token ausente, vencido o inválido"},
+          "403": {"description": "La cuenta o el token no tienen el permiso requerido"},
+          "404": {"description": "Identificación inexistente"},
+          "409": {"description": "La identificación coincide con varios tipos de documento"},
+          "422": {"description": "Campos de consulta inválidos"},
+          "429": {"description": "Límite de solicitudes alcanzado"}
+        }
+      }
+    },
     "/api/v1/usuarios": {
       "get": {
         "tags": [

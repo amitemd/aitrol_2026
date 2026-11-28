@@ -18,8 +18,44 @@
             </div>
         </header>
         @include('comercial::errores')
+        <section class="factura-seccion mb-3" aria-labelledby="compra-importar">
+            <h2 id="compra-importar"><i class="bi bi-file-earmark-code" aria-hidden="true"></i>Importar factura electrónica</h2>
+            <div class="row g-3">
+                <form method="POST" action="{{ route('compras.documentos.importar') }}" enctype="multipart/form-data" class="col-lg-6">
+                    @csrf
+                    <label for="compra-xml" class="form-label">Archivo XML recibido</label>
+                    <div class="input-group">
+                        <input id="compra-xml" name="xml_compra" type="file" accept=".xml,text/xml,application/xml" class="form-control" required>
+                        <button type="submit" class="btn btn-outline-primary">Cargar XML</button>
+                    </div>
+                </form>
+                <form method="POST" action="{{ route('compras.documentos.importar') }}" class="col-lg-6">
+                    @csrf
+                    <label for="compra-clave" class="form-label">Clave de acceso o número de autorización del SRI</label>
+                    <div class="input-group">
+                        <input id="compra-clave" name="clave_compra" inputmode="numeric" pattern="[0-9]{49}" maxlength="49"
+                            value="{{ old('clave_compra') }}" placeholder="49 dígitos" class="form-control" required>
+                        <button type="submit" class="btn btn-outline-primary">Consultar SRI</button>
+                    </div>
+                </form>
+            </div>
+            @if ($importacion)
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+                    <span>{{ $importacion['fiscal']['fuente_compra'] === 'sri' ? 'XML autorizado recibido del SRI' : 'XML del proveedor cargado' }}</span>
+                    <a href="{{ route('compras.documentos.create') }}" class="btn btn-sm btn-outline-secondary">Empezar otra compra</a>
+                </div>
+                @unless ($proveedor)
+                    <p class="alert alert-warning mt-3 mb-0">Registra o activa al proveedor {{ $importacion['proveedor'] }} con RUC {{ $importacion['ruc_emisor'] }} antes de guardar esta compra.</p>
+                @endunless
+            @elseif (filled($token))
+                <p class="alert alert-warning mt-3 mb-0">La importación ya no está disponible. Carga nuevamente el XML o consulta al SRI.</p>
+            @endif
+        </section>
         <form method="POST" action="{{ route('compras.documentos.store') }}" class="factura-distribucion" data-comercial-documento data-compra>
             @csrf
+            @if ($importacion)
+                <input type="hidden" name="importacion_compra" value="{{ $token }}">
+            @endif
             <div class="factura-cuerpo">
                 <section class="factura-seccion" aria-labelledby="compra-datos">
                     <h2 id="compra-datos"><i class="bi bi-receipt" aria-hidden="true"></i> Proveedor y comprobante recibido</h2>
@@ -36,12 +72,32 @@
                         </div>
                         <div class="col-sm-6 col-md-5">
                             <label class="form-label" for="compra-fecha">Fecha de emisión</label>
-                            <input id="compra-fecha" name="fecha" type="date" class="form-control" value="{{ old('fecha', $fecha) }}"
-                                min="{{ $periodo }}-01-01" max="{{ $periodo }}-12-31" required>
+                            <input id="compra-fecha" name="fecha" type="date" class="form-control" value="{{ $importacion['fecha'] ?? old('fecha', $fecha) }}"
+                                min="{{ $periodo }}-01-01" max="{{ $periodo }}-12-31" required @readonly($importacion !== null)>
                         </div>
                         <div class="col-md-7">
                             <label class="form-label" for="compra-numero">Número del comprobante</label>
-                            <input id="compra-numero" name="numero" class="form-control" maxlength="60" value="{{ old('numero') }}" required>
+                            <input id="compra-numero" name="numero" class="form-control" maxlength="60" value="{{ $importacion['numero'] ?? old('numero') }}" required @readonly($importacion !== null)>
+                        </div>
+                        <div class="col-md-7">
+                            @if (!empty($importacion['fiscal']['pagos']))
+                                <span class="form-label d-block">Formas de pago del comprobante</span>
+                                <ul class="mb-0">
+                                    @foreach ($importacion['fiscal']['pagos'] as $pago)
+                                        <li>{{ $pago['codigo'] }} · {{ \App\Services\FacturaVenta::PAGOS[$pago['codigo']] }} · USD {{ $pago['importe'] }}
+                                            @if (filled($pago['plazo'])) · {{ $pago['plazo'] }} {{ $pago['unidad_tiempo'] }} @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <label class="form-label" for="compra-pago">Forma de pago</label>
+                                <select id="compra-pago" name="forma_pago" class="form-select" required>
+                                    <option value="">Seleccionar</option>
+                                    @foreach (\App\Services\FacturaVenta::PAGOS as $codigo => $nombre)
+                                        <option value="{{ $codigo }}" @selected((string) old('forma_pago') === (string) $codigo)>{{ $codigo }} · {{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                         <div class="col-md-5">
                             <label class="form-label" for="compra-recepcion">Bodega de recepción</label>
@@ -53,11 +109,13 @@
                 <section class="factura-seccion factura-detalle" aria-labelledby="compra-detalle">
                     <div class="factura-seccion-barra">
                         <h2 id="compra-detalle"><i class="bi bi-box-seam" aria-hidden="true"></i> Productos y servicios</h2>
-                        <button type="button" class="btn btn-outline-primary btn-sm" data-comercial-agregar><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Agregar línea</button>
+                        @unless ($importacion)
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-comercial-agregar><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Agregar línea</button>
+                        @endunless
                     </div>
                     <p class="form-text">La mercadería se recibe en la bodega principal de la empresa. Para servicios, escribe el concepto y deja el producto vacío.</p>
                     @php
-                        $opcionesLinea = ['ruta' => 'compras.documentos', 'retencion' => false, 'vinculado' => false, 'compra' => true];
+                        $opcionesLinea = ['ruta' => 'compras.documentos', 'retencion' => false, 'vinculado' => false, 'compra' => true, 'importada' => $importacion !== null];
                     @endphp
                     <div class="d-grid gap-2" data-comercial-lineas>
                         @foreach ($lineas as $indice => $linea)

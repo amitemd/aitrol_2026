@@ -16,7 +16,7 @@
         <div @class(['col-sm-6' => !$vinculado, 'col-12' => $vinculado])>
             <label class="form-label" for="com-{{ $indice }}-descripcion">Concepto</label>
             <input id="com-{{ $indice }}-descripcion" name="lineas[{{ $indice }}][descripcion]" class="form-control"
-                value="{{ $linea['descripcion'] ?? '' }}" maxlength="255" @required($vinculado)>
+                value="{{ $linea['descripcion'] ?? '' }}" maxlength="255" @required($vinculado) @readonly($importada ?? false)>
         </div>
         @if ($retencion)
             <div class="col-sm-6 col-xl-3">
@@ -36,13 +36,17 @@
             $importes = $retencion
                 ? ['base_retencion' => ['Base retenida', 0.01, 100000000, 0.01, ''], 'porcentaje_retencion' => ['Retención (%)', 0.01, 100, 0.01, '']]
                 : ['cantidad' => ['Cantidad', 0.001, 1000000, 0.001, 1], 'precio' => ['Precio unitario', 0.0001, 100000, 0.0001, ''], 'tasa' => ['Impuesto (%)', 0, 100, 0.01, 0]];
+            if ($compra ?? false) {
+                $importes += ['descuento' => ['Descuento USD', 0, 100000000000, 0.01, 0]];
+            }
         @endphp
         @foreach ($importes as $campo => [$etiqueta, $min, $max, $paso, $predeterminado])
             <div class="col-6 col-sm">
                 <label class="form-label" for="com-{{ $indice }}-{{ $campo }}">{{ __($etiqueta) }}</label>
                 <input class="form-control" type="number" min="{{ $min }}" max="{{ $max }}" step="{{ $paso }}"
                     id="com-{{ $indice }}-{{ $campo }}" name="lineas[{{ $indice }}][{{ $campo }}]" value="{{ $linea[$campo] ?? $predeterminado }}"
-                    @if ($compra ?? false) data-compra-campo="{{ $campo }}" @endif @required($campo !== 'tasa')>
+                    @if ($compra ?? false) data-compra-campo="{{ $campo }}" @endif
+                    @required(in_array($campo, ['cantidad', 'precio', 'base_retencion', 'porcentaje_retencion'], true)) @readonly($importada ?? false)>
             </div>
         @endforeach
         @if ($compra ?? false)
@@ -51,8 +55,10 @@
                 <strong data-compra-linea-total>$0,00</strong>
             </div>
         @endif
-        <div class="col-auto align-self-end">
-            <button type="button" data-comercial-quitar class="btn btn-outline-danger" aria-label="Quitar línea"><i class="bi bi-trash3" aria-hidden="true"></i></button>
-        </div>
+        @unless ($importada ?? false)
+            <div class="col-auto align-self-end">
+                <button type="button" data-comercial-quitar class="btn btn-outline-danger" aria-label="Quitar línea"><i class="bi bi-trash3" aria-hidden="true"></i></button>
+            </div>
+        @endunless
     </div>
 </fieldset>

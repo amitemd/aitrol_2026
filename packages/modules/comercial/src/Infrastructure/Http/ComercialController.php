@@ -11,12 +11,14 @@ use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use App\Services\FacturaVenta;
 use App\Services\PdfFacturaAutorizada;
+use App\Services\XmlCompra;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -101,14 +103,24 @@ final readonly class ComercialController
 
         if ($modulo === 'compras' && $seccion === 'documentos') {
             $bodegaPrincipal = $inventario->bodegaPrincipal();
+            $token = $request->old('importacion_compra', $request->query('importacion'));
+            $importacion = $this->importacionCompra($request, $token);
             $proveedor = DB::table('erp_proveedores')->where('id_empresa', $empresa->id())->where('activo', true)
-                ->whereNull('deleted_at')->where('id', (int) $request->old('id_tercero'))->first(['id', 'identificacion', 'nombre']);
+                ->whereNull('deleted_at')->when($importacion !== null,
+                    fn ($q) => $q->where('identificacion', $importacion['ruc_emisor'])->where('tipo_identificacion', 'ruc'),
+                    fn ($q) => $q->where('id', (int) $request->old('id_tercero')))->first(['id', 'identificacion', 'nombre']);
             $lineas = array_map(fn ($linea): array => is_array($linea) ? array_filter($linea, 'is_scalar') : [],
-                array_values((array) $request->old('lineas'))) ?: [[]];
+                array_values((array) $request->old('lineas', $importacion['lineas'] ?? []))) ?: [[]];
+            if ($importacion !== null) {
+                foreach ($importacion['lineas'] as $indice => $linea) {
+                    $lineas[$indice] = $linea + ['id_producto' => $lineas[$indice]['id_producto'] ?? null];
+                }
+                $lineas = array_slice($lineas, 0, count($importacion['lineas']));
+            }
             $productos = DB::table('inv_productos')->where('id_empresa', $empresa->id())->where('activo', true)
                 ->whereIn('id', array_filter(array_column($lineas, 'id_producto'), 'is_scalar'))->get(['id', 'codigo', 'nombre'])->keyBy('id');
 
-            return view('comercial::compra', compact('periodo', 'fecha', 'bodegaPrincipal', 'proveedor', 'lineas', 'productos'));
+            return view('comercial::compra', compact('periodo', 'fecha', 'bodegaPrincipal', 'proveedor', 'lineas', 'productos', 'importacion', 'token'));
         }
 
         $idOrigen = $request->validate(['origen' => ['nullable', 'integer', 'min:1']])['origen'] ?? null;
@@ -121,6 +133,59 @@ final readonly class ComercialController
         abort_if($origen?->anulado_at !== null, 409, 'La factura de origen ya está anulada.');
 
         return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha', 'origen', 'creditoTotal'));
+    }
+
+    public function importarCompra(Request $request, EmpresaActiva $empresa, AutorizacionSri $sri, XmlCompra $lector): RedirectResponse
+    {
+        $datos = $request->validate([
+            'xml_compra' => ['required_without:clave_compra', 'prohibits:clave_compra', 'nullable', 'file', 'max:1024'],
+            'clave_compra' => ['required_without:xml_compra', 'nullable', 'string', 'regex:/\A[0-9]{49}\z/'],
+        ]);
+        $desdeSri = isset($datos['clave_compra']);
+        if ($desdeSri) {
+            $resultado = $sri->buscar($datos['clave_compra']);
+            if ($resultado['estado'] !== 'AUTORIZADO' || empty($resultado['xml'])) {
+                throw ValidationException::withMessages([
+                    'clave_compra' => 'No se obtuvo un XML autorizado del SRI. '.AutorizacionSri::ESTADOS[$resultado['estado']].'.',
+                ]);
+            }
+            $xml = $resultado['xml'];
+        } else {
+            $xml = $datos['xml_compra']->get();
+        }
+        $ruc = DB::table('erp_empresas')->where('id', $empresa->id())->value('ruc');
+        $importacion = $lector->leer($xml, (string) $ruc);
+        $importacion['fiscal']['fuente_compra'] = $desdeSri ? 'sri' : 'archivo';
+        $token = (string) Str::uuid();
+        $request->session()->put('xml_compra', [
+            'token' => $token, 'empresa' => $empresa->id(), 'usuario' => $request->user()->id, 'vence' => now()->addMinutes(30)->timestamp,
+            'datos' => $importacion,
+        ]);
+
+        return to_route('compras.documentos.create', ['importacion' => $token]);
+    }
+
+    public function descargarXmlCompra(int $registro): StreamedResponse
+    {
+        abort_unless(Gate::allows('permiso', ['compras.documentos.index', 'leer'])
+            || Gate::allows('permiso', ['proveedores.documentos.facturas', 'leer']), 403);
+        $compra = $this->documentos->consultar('compras', 'documentos', $registro);
+        $fiscal = json_decode($compra->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+        $xml = $fiscal['xml_recibido'] ?? abort(404, 'Esta compra no tiene un XML adjunto.');
+
+        return response()->streamDownload(fn () => print($xml), 'compra-'.$compra->id.'.xml', ['Content-Type' => 'application/xml']);
+    }
+
+    private function importacionCompra(Request $request, mixed $token): ?array
+    {
+        $guardada = $request->session()->get('xml_compra');
+        if (! is_string($token) || $guardada === null || $guardada['token'] !== $token
+            || $guardada['empresa'] !== (int) $request->user()->id_empresa || $guardada['usuario'] !== $request->user()->id
+            || $guardada['vence'] < now()->timestamp) {
+            return null;
+        }
+
+        return $guardada['datos'];
     }
 
     public function show(Request $request)
@@ -160,6 +225,7 @@ final readonly class ComercialController
 
         return $this->decimales($registro) + array_intersect_key($fiscal, [
             'clave_acceso' => true, 'ambiente' => true, 'forma_pago' => true, 'plazo_dias' => true, 'informacion_adicional' => true,
+            'pagos' => true, 'fuente_compra' => true,
         ]);
     }
 
@@ -177,7 +243,7 @@ final readonly class ComercialController
     {
         $factura = $this->facturaSri($registro);
         $identidad = $sri->identidad($factura->datos_factura) ?? abort(404);
-        $estado = $sri->consultar($registro, $identidad['clave'], $identidad['ambiente']);
+        $estado = $sri->consultar($registro, $identidad['clave']);
 
         return to_route('ventas.documentos.sri.log', $registro)->with('status', AutorizacionSri::ESTADOS[$estado]);
     }
@@ -265,6 +331,13 @@ final readonly class ComercialController
         [$modulo, $seccion] = $this->seccion($request);
         $vinculado = in_array($seccion, DocumentosComerciales::VINCULADOS, true);
         $retencion = $seccion === 'retenciones';
+        $compra = $modulo === 'compras' && $seccion === 'documentos';
+        $compraWeb = $compra && ! $request->routeIs('api.*');
+        $tokenCompra = $compraWeb ? $request->input('importacion_compra') : null;
+        $importacion = $compraWeb ? $this->importacionCompra($request, $tokenCompra) : null;
+        if ($tokenCompra !== null && $importacion === null) {
+            throw ValidationException::withMessages(['importacion_compra' => 'La importación venció. Vuelve a cargar el XML o consulta el SRI.']);
+        }
         $creditoTotal = $modulo === 'ventas' && $seccion === 'notas-credito' && ! $request->routeIs('api.*') && $request->boolean('credito_total');
         if ($creditoTotal) {
             Gate::authorize('permiso', ['ventas.documentos.index', 'actualizar']);
@@ -289,6 +362,11 @@ final readonly class ComercialController
         }
         if ($seccion === 'documentos') {
             $reglas['id_bodega'] = ['nullable', 'integer', 'min:1'];
+        }
+        if ($compra) {
+            $reglas['forma_pago'] = [$compraWeb && empty($importacion['fiscal']['pagos']) ? 'required' : 'nullable', Rule::in(array_keys(FacturaVenta::PAGOS))];
+            $reglas['lineas.*'] = ['required', 'array:id_producto,descripcion,cantidad,precio,tasa,descuento'];
+            $reglas['lineas.*.descuento'] = ['nullable', 'numeric', 'decimal:0,2', 'between:0,100000000000'];
         }
         if ($retencion) {
             $reglas = array_replace(array_diff_key($reglas, array_flip(['lineas.*.cantidad', 'lineas.*.precio', 'lineas.*.tasa', 'lineas.*.id_producto'])), [
@@ -334,6 +412,28 @@ final readonly class ComercialController
             'lineas.*.iva_codigo.required' => 'Selecciona el tratamiento de IVA de cada línea.',
             'lineas.*.iva_codigo.required_without' => 'Selecciona el tratamiento de IVA del servicio manual.',
         ]);
+        if ($compra) {
+            if ($importacion !== null) {
+                $proveedor = DB::table('erp_proveedores')->where('id_empresa', $request->user()->id_empresa)->where('id', $datos['id_tercero'])
+                    ->where('activo', true)->whereNull('deleted_at')->where('tipo_identificacion', 'ruc')
+                    ->where('identificacion', $importacion['ruc_emisor'])->exists();
+                if (! $proveedor) {
+                    throw ValidationException::withMessages(['id_tercero' => 'Selecciona el proveedor que corresponde al RUC del XML.']);
+                }
+                if (count($datos['lineas']) !== count($importacion['lineas'])) {
+                    throw ValidationException::withMessages(['lineas' => 'Conserva todas las líneas de la factura importada.']);
+                }
+                foreach ($importacion['lineas'] as $indice => $linea) {
+                    $datos['lineas'][$indice] = $linea + ['id_producto' => $datos['lineas'][$indice]['id_producto'] ?? null];
+                }
+                $datos['numero'] = $importacion['numero'];
+                $datos['fecha'] = $importacion['fecha'];
+            }
+            $datos['datos_compra'] = $importacion['fiscal'] ?? [];
+            if (empty($datos['datos_compra']['pagos']) && isset($datos['forma_pago'])) {
+                $datos['datos_compra']['forma_pago'] = (string) $datos['forma_pago'];
+            }
+        }
         if (isset($datos['informacion_adicional'])) {
             $datos['informacion_adicional'] = array_values(array_filter($datos['informacion_adicional'], fn (array $fila): bool => isset($fila['nombre'], $fila['valor'])));
         }
@@ -343,6 +443,9 @@ final readonly class ComercialController
             }
         }
         $documento = $factura ? $facturas->registrar($datos) : $this->documentos->registrar($modulo, $seccion, $datos, creditoTotal: $creditoTotal);
+        if ($importacion !== null) {
+            $request->session()->forget('xml_compra');
+        }
 
         if ($factura && ! $request->expectsJson()) {
             return to_route('ventas.documentos.index')->with('status', 'Factura '.$documento->numero.' registrada en Aitrol.');

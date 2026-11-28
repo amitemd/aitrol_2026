@@ -8,7 +8,16 @@ use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
 use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
 use App\Http\Controllers\ContextoOperativoController;
+use App\Http\Controllers\PersonaImportacionController;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-personas'])
+    ->prefix('configuraciones/personas/importaciones')->name('configuracion.personas.importaciones.')
+    ->group(function (): void {
+        Route::get('/', [PersonaImportacionController::class, 'index'])->name('index');
+        Route::get('/estado', [PersonaImportacionController::class, 'estado'])->middleware('throttle:60,1')->name('estado');
+        Route::post('/', [PersonaImportacionController::class, 'store'])->middleware('throttle:6,1')->name('store');
+    });
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-servidor'])
     ->prefix('configuraciones/mantenimiento')->name('configuracion.mantenimiento.')

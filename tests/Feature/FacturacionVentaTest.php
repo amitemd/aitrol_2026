@@ -131,7 +131,7 @@ final class FacturacionVentaTest extends TestCase
         $this->assertDatabaseHas('inv_bodegas', ['id' => $principal, 'es_principal' => true]);
 
         $this->post($seleccionar, ['id_sucursal' => $matriz, 'periodo' => 2026])->assertRedirect();
-        $compra = ['numero' => 'FAC-001', 'fecha' => '2026-01-15', 'id_tercero' => $proveedor,
+        $compra = ['numero' => 'FAC-001', 'fecha' => '2026-01-15', 'id_tercero' => $proveedor, 'forma_pago' => '20',
             'lineas' => [['id_producto' => $producto, 'cantidad' => 2, 'precio' => 10]]];
         $this->get(route('compras.documentos.index'))->assertOk()->assertSee('data-workspace-link="compras.documentos.create"', false);
         $this->get(route('compras.documentos.create'))->assertOk()->assertSee('Almacén Norte')
@@ -141,6 +141,8 @@ final class FacturacionVentaTest extends TestCase
         $this->post(route('compras.documentos.store'), $compra)->assertRedirect(route('compras.documentos.index'));
         $this->assertDatabaseHas('com_documentos', ['numero' => 'FAC-001', 'id_sucursal' => $matriz, 'id_bodega' => $principal]);
         $this->assertDatabaseHas('inv_existencias', ['id_bodega' => $principal, 'id_producto' => $producto, 'cantidad' => 2000]);
+        $idCompra = DB::table('com_documentos')->where('numero', 'FAC-001')->value('id');
+        $this->get(route('compras.documentos.show', $idCompra))->assertOk()->assertSee('Otros con utilización del sistema financiero');
 
         $this->post($seleccionar, ['id_sucursal' => $norte, 'periodo' => 2026])->assertRedirect();
         $this->postJson(route('inventarios.movimientos.store'), [
@@ -152,6 +154,71 @@ final class FacturacionVentaTest extends TestCase
         $this->post($seleccionar, ['id_sucursal' => $matriz, 'periodo' => 2026])->assertRedirect();
         $this->get(route('inventarios.movimientos.show', $traslado))->assertOk()
             ->assertSeeInOrder(['Bodega de origen', 'Almacén Norte', 'Bodega de destino', 'Almacén Matriz']);
+    }
+
+    public function test_compra_carga_xml_y_consulta_la_clave_sri_solo_para_la_empresa_activa(): void
+    {
+        [$usuario] = $this->prepararFactura();
+        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['activa' => false]);
+        $persona = DB::table('personas')->insertGetId(['nombre' => 'Proveedor XML']);
+        $ruc = '0991234567001';
+        $proveedor = DB::table('erp_proveedores')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'id_persona' => $persona, 'tipo_identificacion' => 'ruc', 'identificacion' => $ruc,
+            'nombre' => 'Proveedor XML',
+        ]);
+        $clave = '15012026'.'01'.$ruc.'1'.'001001000000009'.'12345678'.'10';
+        $xml = <<<XML
+            <factura>
+              <infoTributaria><ambiente>1</ambiente><razonSocial>Proveedor XML</razonSocial><ruc>{$ruc}</ruc>
+                <claveAcceso>{$clave}</claveAcceso><estab>001</estab><ptoEmi>001</ptoEmi><secuencial>000000009</secuencial></infoTributaria>
+              <infoFactura><fechaEmision>15/01/2026</fechaEmision><identificacionComprador>1000000000001</identificacionComprador>
+                <moneda>DOLAR</moneda><totalSinImpuestos>18.00</totalSinImpuestos><importeTotal>20.70</importeTotal>
+                <pagos><pago><formaPago>19</formaPago><total>10.70</total></pago><pago><formaPago>20</formaPago><total>10.00</total></pago></pagos>
+              </infoFactura>
+              <detalles><detalle><descripcion>Soporte importado</descripcion><cantidad>2.000000</cantidad><precioUnitario>10.000000</precioUnitario>
+                <descuento>2.00</descuento><precioTotalSinImpuesto>18.00</precioTotalSinImpuesto>
+                <impuestos><impuesto><codigo>2</codigo><tarifa>15.00</tarifa><valor>2.70</valor></impuesto></impuestos>
+              </detalle></detalles>
+            </factura>
+            XML;
+        $formulario = route('compras.documentos.create');
+        $importar = route('compras.documentos.importar');
+        $this->actingAs($usuario)->from($formulario)->post($importar, [
+            'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('ajena.xml', str_replace('1000000000001', '1000000000002', $xml)),
+        ])->assertSessionHasErrors('xml_compra');
+        $archivo = $this->post($importar, ['xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('factura.xml', $xml)]);
+        $archivo->assertRedirect();
+        $this->get($archivo->headers->get('Location'))->assertOk()->assertSee('XML del proveedor cargado')
+            ->assertSee('Proveedor XML')->assertSee('Soporte importado')->assertSee('Tarjeta de crédito');
+        $this->assertDatabaseCount('com_documentos', 0);
+
+        $respuesta = <<<XML
+            <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><RespuestaAutorizacionComprobante>
+              <claveAccesoConsultada>{$clave}</claveAccesoConsultada><numeroComprobantes>1</numeroComprobantes>
+              <autorizaciones><autorizacion><estado>AUTORIZADO</estado><numeroAutorizacion>{$clave}</numeroAutorizacion>
+                <fechaAutorizacion>2026-01-15T12:00:00-05:00</fechaAutorizacion><comprobante><![CDATA[{$xml}]]></comprobante>
+              </autorizacion></autorizaciones>
+            </RespuestaAutorizacionComprobante></soap:Body></soap:Envelope>
+            XML;
+        Http::preventStrayRequests();
+        Http::fake(['https://celcer.sri.gob.ec/*' => Http::response($respuesta)]);
+        $consulta = $this->post($importar, ['clave_compra' => $clave]);
+        $consulta->assertRedirect();
+        $this->get($consulta->headers->get('Location'))->assertOk()->assertSee('XML autorizado recibido del SRI');
+        Http::assertSent(fn ($peticion) => str_contains($peticion->body(), '<claveAccesoComprobante>'.$clave.'</claveAccesoComprobante>'));
+        $token = session('xml_compra.token');
+        $this->post(route('compras.documentos.store'), [
+            'importacion_compra' => $token, 'numero' => '001-001-000000009', 'fecha' => '2026-01-15', 'id_tercero' => $proveedor,
+            'lineas' => [['descripcion' => 'Soporte importado', 'cantidad' => 2, 'precio' => 10, 'descuento' => 2, 'tasa' => 15]],
+        ])->assertRedirect(route('compras.documentos.index'));
+        $compra = DB::table('com_documentos')->sole();
+        $this->assertDatabaseHas('com_documentos', ['id' => $compra->id, 'subtotal' => 1800, 'impuesto' => 270, 'total' => 2070]);
+        $datos = json_decode($compra->datos_factura, true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame($clave, $datos['clave_acceso']);
+        $this->assertSame(['19', '20'], array_column($datos['pagos'], 'codigo'));
+        $this->assertStringContainsString('<autorizacion>', $datos['xml_recibido']);
+        $this->assertSame($datos['xml_recibido'], $this->get(route('compras.documentos.xml', $compra->id))
+            ->assertDownload('compra-'.$compra->id.'.xml')->streamedContent());
     }
 
     public function test_sri_publica_archivos_solo_despues_de_confirmar_la_clave_de_la_factura(): void

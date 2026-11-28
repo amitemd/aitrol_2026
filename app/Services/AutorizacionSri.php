@@ -49,12 +49,35 @@ final readonly class AutorizacionSri
         return $this->consultas($id)->where('estado', 'AUTORIZADO')->whereNotNull('xml_autorizado')->latest('id')->first();
     }
 
-    public function consultar(int $id, string $clave, string $ambiente): string
+    public function consultar(int $id, string $clave): string
     {
         if ($this->autorizado($id) !== null) {
             return 'AUTORIZADO';
         }
 
+        $resultado = $this->buscar($clave);
+
+        return $this->empresa->transaccion(function () use ($id, $resultado): string {
+            if ($this->autorizado($id) !== null) {
+                return 'AUTORIZADO';
+            }
+            DB::table('com_sri_consultas')->insert([
+                'id_empresa' => $this->empresa->id(), 'id_documento' => $id, 'id_usuario' => auth()->id(),
+                'estado' => $resultado['estado'], 'mensajes' => json_encode($resultado['mensajes'], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE),
+                'xml_autorizado' => $resultado['xml'] ?? null, 'created_at' => now(),
+            ]);
+
+            return $resultado['estado'];
+        });
+    }
+
+    /** @return array{estado: string, mensajes: list<string>, xml?: string} */
+    public function buscar(string $clave): array
+    {
+        if (! preg_match('/\A[0-9]{49}\z/', $clave) || ! isset(self::SERVICIOS[$clave[23]])) {
+            return ['estado' => 'ERROR', 'mensajes' => ['La clave de acceso debe tener 49 dígitos y un ambiente SRI válido.']];
+        }
+        $ambiente = $clave[23];
         $consulta = <<<XML
             <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sri="http://ec.gob.sri.ws.autorizacion">
               <soap:Body><sri:autorizacionComprobante><claveAccesoComprobante>{$clave}</claveAccesoComprobante></sri:autorizacionComprobante></soap:Body>
@@ -72,18 +95,7 @@ final readonly class AutorizacionSri
             $resultado['mensajes'] = ['El servicio de autorización del SRI no respondió a tiempo o no está disponible.'];
         }
 
-        return $this->empresa->transaccion(function () use ($id, $resultado): string {
-            if ($this->autorizado($id) !== null) {
-                return 'AUTORIZADO';
-            }
-            DB::table('com_sri_consultas')->insert([
-                'id_empresa' => $this->empresa->id(), 'id_documento' => $id, 'id_usuario' => auth()->id(),
-                'estado' => $resultado['estado'], 'mensajes' => json_encode($resultado['mensajes'], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE),
-                'xml_autorizado' => $resultado['xml'] ?? null, 'created_at' => now(),
-            ]);
-
-            return $resultado['estado'];
-        });
+        return $resultado;
     }
 
     /** @return array{estado: string, mensajes: list<string>, xml?: string} */
@@ -101,6 +113,9 @@ final readonly class AutorizacionSri
         $resultado = $invalida;
         foreach ($respuesta->autorizaciones->autorizacion ?? [] as $autorizacion) {
             $estado = str_replace(' ', '_', trim((string) $autorizacion->estado));
+            if ($estado === 'RECHAZADO') {
+                $estado = 'NO_AUTORIZADO';
+            }
             $mensajes = [];
             foreach ($autorizacion->mensajes->mensaje ?? [] as $mensaje) {
                 $texto = trim(implode(' ', [(string) $mensaje->identificador, (string) $mensaje->mensaje, (string) $mensaje->informacionAdicional]));
