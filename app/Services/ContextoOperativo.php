@@ -143,6 +143,11 @@ final class ContextoOperativo
             if ($this->sucursales()->where('codigo', $codigo)->when($id !== null, fn (Builder $q) => $q->where('id', '!=', $id))->exists()) {
                 throw ValidationException::withMessages(['codigo' => 'El código ya existe en esta empresa.']);
             }
+            if (isset($datos['establecimiento_sri'], $datos['punto_emision_sri']) && $this->sucursales()
+                ->where('establecimiento_sri', $datos['establecimiento_sri'])->where('punto_emision_sri', $datos['punto_emision_sri'])
+                ->when($id !== null, fn (Builder $q) => $q->where('id', '!=', $id))->exists()) {
+                throw ValidationException::withMessages(['punto_emision_sri' => 'Esta combinación de establecimiento y punto de emisión ya está asignada a otra sucursal de la empresa.']);
+            }
 
             $datos['codigo'] = $codigo;
             $datos['updated_at'] = now();

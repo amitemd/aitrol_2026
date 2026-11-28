@@ -188,12 +188,46 @@ final class FacturacionVentaTest extends TestCase
         $this->assertDatabaseCount('inv_kardex', 0);
     }
 
+    public function test_factura_con_la_serie_sri_de_la_sucursal_activa(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario);
+        $matriz = DB::table('erp_sucursales')->where('id_empresa', $usuario->id_empresa)->value('id');
+        $edicion = route('configuracion.sucursales.update', $matriz);
+        $altaFactura = route('ventas.documentos.store');
+        $cambios = ['codigo' => 'PRINCIPAL', 'nombre' => 'Matriz', 'establecimiento_sri' => '007', 'punto_emision_sri' => '009'];
+        $this->get(route('configuracion.sucursales.edit', $matriz))->assertOk()
+            ->assertSee('Establecimiento SRI')->assertSee('Punto de emisión SRI');
+        $this->putJson($edicion, array_replace($cambios, ['punto_emision_sri' => '000']))
+            ->assertUnprocessable()->assertJsonValidationErrors('punto_emision_sri');
+        $this->putJson($edicion, array_replace($cambios, ['establecimiento_sri' => null, 'punto_emision_sri' => null]))->assertOk();
+        $this->postJson($altaFactura, $datos)->assertUnprocessable()->assertJsonValidationErrors('emisor');
+        $this->putJson($edicion, $cambios)->assertOk();
+        $this->assertDatabaseHas('erp_sucursales', ['id' => $matriz] + $cambios);
+        $this->post($altaFactura, $datos)->assertRedirect(route('ventas.documentos.index'));
+        $this->assertDatabaseHas('com_documentos', ['id_sucursal' => $matriz, 'numero' => '007-009-000000001']);
+        $fiscal = json_decode(DB::table('com_documentos')->where('id_sucursal', $matriz)->value('datos_factura'), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('007009', substr($fiscal['clave_acceso'], 24, 6));
+
+        $nueva = route('configuracion.sucursales.store');
+        $segunda = array_replace($cambios, ['codigo' => 'NORTE', 'nombre' => 'Sucursal Norte']);
+        $this->postJson($nueva, $segunda)->assertUnprocessable()->assertJsonValidationErrors('punto_emision_sri');
+        $this->postJson($nueva, array_replace($segunda, ['punto_emision_sri' => '010']))->assertOk();
+        $norte = DB::table('erp_sucursales')->where('id_empresa', $usuario->id_empresa)->where('codigo', 'NORTE')->value('id');
+        $this->post(route('configuracion.contexto.update'), ['id_sucursal' => $norte, 'periodo' => 2026])->assertRedirect(route('dashboard'));
+        $this->post($altaFactura, $datos)->assertRedirect(route('ventas.documentos.index'));
+        $this->assertDatabaseHas('com_documentos', ['id_sucursal' => $norte, 'numero' => '007-010-000000001']);
+    }
+
     /** @return array{User, array} */
     private function prepararFactura(): array
     {
         $this->travelTo(Carbon::parse('2026-01-15 12:00', 'America/Guayaquil'));
         $empresa = EmpresaModel::create(['ruc' => '1000000000001', 'razon_social' => 'Empresa de pruebas', 'direccion' => 'Av. Central']);
-        DB::table('erp_sucursales')->insert(['id_empresa' => $empresa->id, 'codigo' => '001', 'nombre' => 'Matriz']);
+        DB::table('erp_sucursales')->insert([
+            'id_empresa' => $empresa->id, 'codigo' => 'PRINCIPAL', 'nombre' => 'Matriz',
+            'establecimiento_sri' => '001', 'punto_emision_sri' => '001',
+        ]);
         $usuario = User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]);
         $cliente = DB::table('erp_clientes')->insertGetId([
             'id_empresa' => $empresa->id, 'tipo_identificacion' => 'cedula', 'identificacion' => '0912345678', 'nombre' => 'Cliente de pruebas',

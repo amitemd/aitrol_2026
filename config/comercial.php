@@ -13,6 +13,7 @@ return [
         'titulo' => 'Ventas', 'icono' => 'bi-cart-check', 'tercero' => 'Cliente',
         'facturacion_electronica' => [
             'ambiente' => env('SRI_AMBIENTE', '1'),
+            // Punto anterior, usado durante la migración a series por sucursal.
             'punto_emision' => env('SRI_PUNTO_EMISION', '001'),
             'secuencial_inicial' => env('SRI_SECUENCIAL_INICIAL', '1'),
         ],

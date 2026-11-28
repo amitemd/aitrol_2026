@@ -170,21 +170,22 @@ final readonly class FacturaVenta
     /** @return array{numero: string, clave_acceso: string, ambiente: string, tipo_emision: string} */
     private function identidadElectronica(string $fecha, string $ruc): array
     {
-        $establecimiento = (string) $this->contexto->sucursal()->codigo;
+        $sucursal = $this->contexto->sucursal();
+        $establecimiento = (string) ($sucursal->establecimiento_sri ?? '');
+        $punto = (string) ($sucursal->punto_emision_sri ?? '');
+        if (! preg_match('/\A(?!000)[0-9]{3}\z/', $establecimiento) || ! preg_match('/\A(?!000)[0-9]{3}\z/', $punto)) {
+            throw ValidationException::withMessages(['emisor' => 'En Configuración → Sucursales, edita la sucursal activa y completa el establecimiento y el punto de emisión SRI con tres dígitos cada uno.']);
+        }
         $configuracion = config('comercial.ventas.facturacion_electronica');
         if (! is_array($configuracion)) {
             throw ValidationException::withMessages(['emisor' => 'La configuración de facturación electrónica no está cargada. Pide al administrador que actualice la caché de configuración del servidor.']);
         }
-        $punto = (string) ($configuracion['punto_emision'] ?? '');
         $ambiente = (string) ($configuracion['ambiente'] ?? '');
         $inicio = filter_var($configuracion['secuencial_inicial'] ?? null, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1, 'max_range' => 999999999],
         ]);
-        if (! preg_match('/\A(?!000)[0-9]{3}\z/', $establecimiento)) {
-            throw ValidationException::withMessages(['emisor' => 'Configura el código SRI de la sucursal con tres dígitos entre 001 y 999.']);
-        }
-        if (! preg_match('/\A(?!000)[0-9]{3}\z/', $punto) || ! in_array($ambiente, ['1', '2'], true) || $inicio === false) {
-            throw ValidationException::withMessages(['emisor' => 'Revisa el ambiente, punto de emisión y secuencial inicial del SRI en la configuración del servidor.']);
+        if (! in_array($ambiente, ['1', '2'], true) || $inicio === false) {
+            throw ValidationException::withMessages(['emisor' => 'Revisa el ambiente y el secuencial inicial del SRI en la configuración del servidor.']);
         }
 
         $serie = $establecimiento.'-'.$punto.'-';
