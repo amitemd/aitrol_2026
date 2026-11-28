@@ -23,7 +23,6 @@ return new class extends Migration
                 DB::table('inv_bodegas')->whereIn('id', $bodegas->pluck('id'))->update(['es_principal' => true]);
             }, 'id_empresa');
     }
-
     /**
      * Reverse the migrations.
      */
