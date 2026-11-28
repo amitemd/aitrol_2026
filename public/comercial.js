@@ -63,10 +63,98 @@
         bloque.querySelector('input').disabled = bloque.hidden;
     }
 
+    function prepararContactoFactura(formulario) {
+        const cliente = formulario.querySelector('[data-factura-cliente]');
+        const bloque = formulario.querySelector('[data-factura-contacto]');
+        const campos = [...bloque.querySelectorAll('[data-contacto-campo]')];
+        const guardar = bloque.querySelector('[data-contacto-guardar]');
+        const estado = bloque.querySelector('[data-contacto-estado]');
+        let solicitud;
+        let guardando = false;
+
+        const hayCambios = () => campos.some(campo => campo.value !== campo.defaultValue);
+        const url = () => cliente.dataset.contactoUrl.replace('__CLIENTE__', encodeURIComponent(cliente.value));
+
+        cliente.onchange = async () => {
+            solicitud?.abort();
+            bloque.hidden = !cliente.value;
+            if (guardar) guardar.disabled = true;
+            for (const campo of campos) {
+                campo.value = campo.defaultValue = '';
+                campo.disabled = true;
+            }
+            if (!cliente.value) return;
+
+            const actual = new AbortController();
+            solicitud = actual;
+            estado.textContent = 'Cargando datos del cliente…';
+            try {
+                const respuesta = await fetch(url(), { headers: { Accept: 'application/json' }, signal: actual.signal });
+                if (!respuesta.ok) throw new Error();
+                const datos = await respuesta.json();
+                if (actual.signal.aborted) return;
+                for (const campo of campos) {
+                    campo.value = campo.defaultValue = datos[campo.dataset.contactoCampo] ?? '';
+                    campo.disabled = false;
+                }
+                estado.textContent = '';
+            } catch {
+                if (!actual.signal.aborted) estado.textContent = 'No se pudieron cargar los datos. Vuelve a seleccionar el cliente.';
+            }
+        };
+
+        if (!guardar) return;
+        bloque.addEventListener('input', () => { guardar.disabled = guardando || !hayCambios(); });
+        guardar.addEventListener('click', async () => {
+            if (!cliente.value || !hayCambios() || guardando || !campos.every(campo => campo.reportValidity())) return;
+            guardando = true;
+            guardar.disabled = true;
+            estado.textContent = 'Guardando datos…';
+            const contactoUrl = url();
+            const carga = solicitud;
+            const datos = Object.fromEntries(campos.map(campo => [campo.dataset.contactoCampo, campo.value.trim() || null]));
+            try {
+                const respuesta = await fetch(contactoUrl, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': formulario.elements._token.value,
+                    },
+                    body: JSON.stringify(datos),
+                });
+                const resultado = await respuesta.json();
+                if (bloque.hidden || carga !== solicitud) return;
+                if (!respuesta.ok) {
+                    estado.textContent = Object.values(resultado.errors ?? {}).flat()[0] ?? 'No se pudieron actualizar los datos del cliente.';
+                    return;
+                }
+                for (const campo of campos) {
+                    const valorGuardado = datos[campo.dataset.contactoCampo] ?? '';
+                    if (campo.value.trim() === valorGuardado) campo.value = valorGuardado;
+                    campo.defaultValue = valorGuardado;
+                }
+                estado.textContent = resultado.message;
+            } catch {
+                if (!bloque.hidden && carga === solicitud) estado.textContent = 'No se pudieron actualizar los datos. Intenta de nuevo.';
+            } finally {
+                guardando = false;
+                guardar.disabled = !hayCambios();
+            }
+        });
+        formulario.addEventListener('submit', (evento) => {
+            if (!guardando && !hayCambios()) return;
+            evento.preventDefault();
+            estado.textContent = guardando ? 'Espera a que se guarden los datos.' : 'Pulsa Actualizar datos del cliente antes de registrar la factura.';
+            guardar.focus();
+        });
+    }
+
     for (const formulario of document.querySelectorAll('[data-factura]')) {
         formulario.querySelectorAll('[data-comercial-linea]').forEach(actualizarProducto);
         actualizarFactura(formulario);
         actualizarRecurrencia(formulario);
+        prepararContactoFactura(formulario);
         formulario.addEventListener('input', () => actualizarFactura(formulario));
         formulario.addEventListener('change', (event) => {
             if (event.target.matches('[data-factura-producto]')) {

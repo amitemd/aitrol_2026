@@ -17,6 +17,11 @@ foreach (config('comercial') as $modulo => $datos) {
                 );
 
                 if ($modulo === 'ventas' && ! $api) {
+                    Route::get('documentos/cliente/{cliente}/contacto', [ComercialController::class, 'contactoFactura'])
+                        ->whereNumber('cliente')->middleware($permisos('documentos', 'escribir'))->name('documentos.contacto');
+                    Route::patch('documentos/cliente/{cliente}/contacto', [ComercialController::class, 'actualizarContactoFactura'])
+                        ->whereNumber('cliente')->middleware([...$permisos('documentos', 'escribir'), 'permiso:clientes.lista,actualizar'])
+                        ->name('documentos.contacto.actualizar');
                     Route::get('facturas-recurrentes', [ComercialController::class, 'recurrentes'])
                         ->middleware($permisos('documentos', 'escribir'))->name('facturas-recurrentes.index');
                     Route::post('facturas-recurrentes/{recurrencia}/estado', [ComercialController::class, 'estadoRecurrencia'])

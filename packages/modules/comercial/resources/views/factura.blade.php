@@ -34,23 +34,37 @@
                 <section class="factura-seccion" aria-labelledby="factura-encabezado-datos">
                     <h2 id="factura-encabezado-datos"><i class="bi bi-person-vcard" aria-hidden="true"></i> Cliente y comprobante</h2>
                     <div class="row g-3">
-                        <div class="col-lg-5">
+                        <div class="col-lg-8">
                             <label class="form-label" for="factura-cliente">Cliente</label>
-                            <select id="factura-cliente" name="id_tercero" class="form-select" required
+                            <select id="factura-cliente" name="id_tercero" class="form-select" required data-factura-cliente
+                                data-contacto-url="{{ route('ventas.documentos.contacto', ['cliente' => '__CLIENTE__']) }}"
                                 data-select2-url="{{ route('ventas.documentos.opciones', 'terceros') }}" data-select2-min="0" data-select2-placeholder="Busca por nombre o identificación">
                                 <option value=""></option>
                                 @if ($cliente)<option value="{{ $cliente->id }}" selected>{{ $cliente->identificacion }} · {{ $cliente->nombre }}</option>@endif
                             </select>
                         </div>
-                        <div class="col-sm-7 col-lg-4">
-                            <label class="form-label" for="factura-numero">Número de factura</label>
-                            <input id="factura-numero" name="numero" class="form-control" value="{{ old('numero') }}" required
-                                placeholder="001-001-000000001" maxlength="17" pattern="[0-9]{3}-[0-9]{3}-[0-9]{9}">
-                        </div>
-                        <div class="col-sm-5 col-lg-3">
+                        <div class="col-sm-5 col-lg-4">
                             <label class="form-label" for="factura-fecha">Fecha de emisión</label>
                             <input id="factura-fecha" type="date" name="fecha" class="form-control" required
                                 min="{{ $periodo }}-01-01" max="{{ $cierre }}" value="{{ old('fecha', $fecha) }}">
+                        </div>
+                        <div class="col-12" data-factura-contacto @if(!$cliente) hidden @endif>
+                            <div class="row g-3">
+                                @foreach (['direccion' => ['Dirección', 'text', 255], 'telefono' => ['Teléfono', 'tel', 30], 'email' => ['Correo electrónico', 'email', 254]] as $campo => [$etiqueta, $tipo, $maximo])
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="factura-contacto-{{ $campo }}">{{ $etiqueta }}</label>
+                                        <input id="factura-contacto-{{ $campo }}" type="{{ $tipo }}" maxlength="{{ $maximo }}" class="form-control"
+                                            data-contacto-campo="{{ $campo }}" value="{{ $cliente?->{$campo} }}" placeholder="Sin registrar"
+                                            @cannot('permiso', ['clientes.lista', 'actualizar']) readonly @endcannot>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                @can('permiso', ['clientes.lista', 'actualizar'])
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-contacto-guardar disabled>Actualizar datos del cliente</button>
+                                @endcan
+                                <span class="small text-body-secondary" data-contacto-estado role="status"></span>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -77,7 +91,7 @@
                             <select id="factura-pago" name="forma_pago" class="form-select" required>
                                 <option value="">Selecciona una forma de pago</option>
                                 @foreach (FacturaVenta::PAGOS as $codigo => $nombre)
-                                    <option value="{{ $codigo }}" @selected((string) old('forma_pago', $datos['forma_pago'] ?? '') === (string) $codigo)>{{ $nombre }}</option>
+                                    <option value="{{ $codigo }}" @selected((string) old('forma_pago', $datos['forma_pago'] ?? '') === (string) $codigo)>{{ $codigo }} - {{ $nombre }}</option>
                                 @endforeach
                             </select>
                         </div>

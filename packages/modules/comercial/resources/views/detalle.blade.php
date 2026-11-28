@@ -9,6 +9,10 @@
                 <div class="card-body">
                     <dl class="row">
                         <dt class="col-sm-4">Número</dt><dd class="col-sm-8">{{ $documento['numero'] }}</dd>
+                        @isset($documento['clave_acceso'])
+                            <dt class="col-sm-4">Clave de acceso</dt><dd class="col-sm-8 text-break font-monospace">{{ $documento['clave_acceso'] }}</dd>
+                            <dt class="col-sm-4">Ambiente SRI</dt><dd class="col-sm-8">{{ $documento['ambiente'] === '2' ? 'Producción' : 'Pruebas' }}</dd>
+                        @endisset
                         @if ($documento['numero_asiento'] || $documento['numero_asiento_reversion'])
                             <dt class="col-sm-4">{{ __('Contabilidad') }}</dt><dd class="col-sm-8">@include('partials.referencia-asiento', ['registroAsiento' => $documento])</dd>
                         @endif

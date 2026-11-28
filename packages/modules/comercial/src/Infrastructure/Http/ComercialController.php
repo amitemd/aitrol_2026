@@ -8,6 +8,7 @@ use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use App\Services\FacturaVenta;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -89,10 +90,34 @@ final readonly class ComercialController
     public function show(Request $request)
     {
         [$modulo, $seccion] = $this->seccion($request);
-        $documento = $this->decimales($this->documentos->consultar($modulo, $seccion, (int) $request->route('registro')));
+        $registro = $this->documentos->consultar($modulo, $seccion, (int) $request->route('registro'));
+        $documento = $this->decimales($registro);
+        $fiscal = json_decode($registro->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+        $documento += array_intersect_key($fiscal, ['clave_acceso' => true, 'ambiente' => true]);
 
         return $request->routeIs('api.*') ? response()->json(['data' => $documento])
             : view('comercial::detalle', compact('modulo', 'seccion', 'documento'));
+    }
+
+    public function contactoFactura(int $cliente, FacturaVenta $facturas): JsonResponse
+    {
+        $registro = $facturas->cliente($cliente) ?? abort(404);
+
+        return response()->json([
+            'direccion' => $registro->direccion, 'telefono' => $registro->telefono, 'email' => $registro->email,
+        ])->header('Cache-Control', 'no-store');
+    }
+
+    public function actualizarContactoFactura(Request $request, int $cliente, FacturaVenta $facturas): JsonResponse
+    {
+        $contacto = $request->validate([
+            'direccion' => ['present', 'nullable', 'string', 'max:255'],
+            'telefono' => ['present', 'nullable', 'string', 'max:30'],
+            'email' => ['present', 'nullable', 'string', 'email:filter', 'max:254'],
+        ], ['email.email' => 'Escribe un correo electrónico válido.']);
+        $facturas->actualizarContacto($cliente, $contacto);
+
+        return response()->json(['message' => 'Datos de contacto actualizados.']);
     }
 
     public function recurrentes(FacturaVenta $facturas): View
@@ -171,9 +196,8 @@ final readonly class ComercialController
 
         $factura = $modulo === 'ventas' && $seccion === 'documentos' && ! $request->routeIs('api.*');
         if ($factura) {
-            unset($reglas['lineas.*.tasa']);
+            unset($reglas['numero'], $reglas['lineas.*.tasa']);
             $reglas = array_replace($reglas, [
-                'numero' => ['required', 'regex:/\A(?!000)\d{3}-(?!000)\d{3}-(?!000000000)\d{9}\z/'],
                 'fecha' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.now('America/Guayaquil')->toDateString()],
                 'id_bodega' => ['prohibited'],
                 'lineas.*' => ['required', 'array:id_producto,id_bodega,descripcion,cantidad,precio,iva_codigo,descuento'],
@@ -190,7 +214,6 @@ final readonly class ComercialController
         }
 
         $datos = $request->validate($reglas, [
-            'numero.regex' => 'Ingresa establecimiento, punto de emisión y secuencial, por ejemplo 001-001-000000001.',
             'forma_pago.required' => 'Selecciona una forma de pago.',
             'lineas.*.iva_codigo.required' => 'Selecciona el tratamiento de IVA de cada línea.',
             'lineas.*.iva_codigo.required_without' => 'Selecciona el tratamiento de IVA del servicio manual.',
@@ -203,7 +226,7 @@ final readonly class ComercialController
         $documento = $factura ? $facturas->registrar($datos) : $this->documentos->registrar($modulo, $seccion, $datos);
 
         if ($factura && ! $request->expectsJson()) {
-            return to_route('ventas.documentos.index')->with('status', 'Factura registrada en Aitrol.');
+            return to_route('ventas.documentos.index')->with('status', 'Factura '.$documento->numero.' registrada en Aitrol.');
         }
 
         return $this->responder($request, $modulo, $seccion, $documento, 201, 'Documento registrado.');

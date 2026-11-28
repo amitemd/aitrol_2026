@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
 use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
+use Aitrol\Clientes\Infrastructure\Persistence\ClienteModel;
 use Aitrol\Comercial\Application\DocumentosComerciales;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
@@ -93,7 +94,12 @@ final readonly class FacturaVenta
                 }
                 $codigo = (int) $linea['iva_codigo'];
                 if (! isset($tarifas[$codigo])) {
-                    throw ValidationException::withMessages(["lineas.$indice.iva_codigo" => 'Selecciona una tarifa de IVA configurada y vigente para la fecha.']);
+                    $fecha = Carbon::parse($datos['fecha'])->format('d/m/Y');
+                    $nombreIva = self::IVA[$codigo] ?? null;
+                    $mensaje = $nombreIva === null
+                        ? 'El tratamiento de IVA de esta línea no corresponde al catálogo. Revisa la ficha del producto o servicio.'
+                        : 'La línea '.($indice + 1)." usa IVA {$nombreIva} % (código {$codigo}). Registra o corrige esa tarifa en Configuración de empresa → Parámetros fiscales con vigencia al {$fecha}.";
+                    throw ValidationException::withMessages(["lineas.$indice.iva_codigo" => $mensaje]);
                 }
                 $linea['tasa'] = $tarifas[$codigo];
             }
@@ -109,14 +115,16 @@ final readonly class FacturaVenta
                         TipoIdentificacion::Cedula => '05',
                         TipoIdentificacion::Pasaporte => '06',
                     },
-                    'direccion' => $cliente->direccion, 'email' => $cliente->email,
+                    'direccion' => $cliente->direccion, 'telefono' => $cliente->telefono, 'email' => $cliente->email,
                 ],
                 'forma_pago' => $datos['forma_pago'], 'plazo_dias' => (int) ($datos['plazo_dias'] ?? 0),
                 'lineas' => array_map(fn (array $linea): array => [
                     'iva_codigo' => $linea['iva_codigo'], 'descuento' => $linea['descuento'] ?? 0,
                 ], $lineas),
             ];
-            $documento = $this->documentos->registrar('ventas', 'documentos', $datos, $fiscal);
+            $identidad = $this->identidadElectronica($datos['fecha'], $emisor->ruc);
+            $datos['numero'] = $identidad['numero'];
+            $documento = $this->documentos->registrar('ventas', 'documentos', $datos, $fiscal + $identidad);
             if ($borrador !== null) {
                 DB::table('com_facturas_programadas')->where('id', $borrador->id)
                     ->update(['id_documento' => $documento->id, 'updated_at' => now()]);
@@ -140,8 +148,69 @@ final readonly class FacturaVenta
 
     public function cliente(int $id): ?stdClass
     {
-        return DB::table('erp_clientes')->where('id_empresa', $this->empresa->id())->where('id', $id)
-            ->where('activo', true)->whereNull('deleted_at')->first(['id', 'nombre', 'tipo_identificacion', 'identificacion', 'direccion', 'email']);
+        return DB::table('erp_clientes as cliente')->leftJoin('personas as persona', 'persona.id', '=', 'cliente.id_persona')
+            ->where('cliente.id_empresa', $this->empresa->id())->where('cliente.id', $id)
+            ->where('cliente.activo', true)->whereNull('cliente.deleted_at')
+            ->select(['cliente.id', 'cliente.nombre', 'cliente.tipo_identificacion', 'cliente.identificacion'])
+            ->selectRaw('case when persona.id is null then cliente.direccion else persona.direccion end as direccion')
+            ->selectRaw('case when persona.id is null then cliente.telefono else persona.telefono end as telefono')
+            ->selectRaw('case when persona.id is null then cliente.email else persona.email end as email')->first();
+    }
+
+    public function actualizarContacto(int $id, array $contacto): void
+    {
+        $this->empresa->transaccion(function () use ($id, $contacto): void {
+            $cliente = ClienteModel::query()->where('activo', true)->lockForUpdate()->findOrFail($id);
+            $persona = $cliente->persona()->lockForUpdate()->first();
+            $persona?->fill($contacto)->save();
+            $cliente->fill($contacto)->save();
+        });
+    }
+
+    /** @return array{numero: string, clave_acceso: string, ambiente: string, tipo_emision: string} */
+    private function identidadElectronica(string $fecha, string $ruc): array
+    {
+        $establecimiento = (string) $this->contexto->sucursal()->codigo;
+        $configuracion = config('comercial.ventas.facturacion_electronica');
+        $punto = (string) $configuracion['punto_emision'];
+        $ambiente = (string) $configuracion['ambiente'];
+        $inicio = filter_var($configuracion['secuencial_inicial'], FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => 999999999],
+        ]);
+        if (! preg_match('/\A(?!000)[0-9]{3}\z/', $establecimiento)) {
+            throw ValidationException::withMessages(['emisor' => 'Configura el código SRI de la sucursal con tres dígitos entre 001 y 999.']);
+        }
+        if (! preg_match('/\A(?!000)[0-9]{3}\z/', $punto) || ! in_array($ambiente, ['1', '2'], true) || $inicio === false) {
+            throw ValidationException::withMessages(['emisor' => 'Revisa el ambiente, punto de emisión y secuencial inicial del SRI en la configuración del servidor.']);
+        }
+
+        $serie = $establecimiento.'-'.$punto.'-';
+        $numeros = DB::table('com_documentos')->where([
+            'id_empresa' => $this->empresa->id(), 'modulo' => 'ventas', 'tipo' => 'documentos', 'emisor' => 0,
+        ])->whereBetween('numero', [$serie.'000000001', $serie.'999999999'])->orderByDesc('numero')->cursor();
+        $ultimo = $numeros->first(fn (stdClass $fila): bool => str_starts_with($fila->numero, $serie)
+            && preg_match('/\A[0-9]{9}\z/', substr($fila->numero, strlen($serie))));
+        $siguiente = max($inicio, 1 + (int) substr($ultimo?->numero ?? '', strlen($serie)));
+        if ($siguiente > 999999999) {
+            throw ValidationException::withMessages(['emisor' => 'Se agotó el secuencial de este punto de emisión. Configura otro punto autorizado.']);
+        }
+
+        $secuencial = sprintf('%09d', $siguiente);
+        $tipoEmision = '1';
+        $base = Carbon::parse($fecha)->format('dmY').'01'.$ruc.$ambiente.$establecimiento.$punto
+            .$secuencial.sprintf('%08d', random_int(0, 99999999)).$tipoEmision;
+        $suma = 0;
+        for ($i = 47; $i >= 0; $i--) {
+            $suma += (int) $base[$i] * (2 + (47 - $i) % 6);
+        }
+        $verificador = 11 - $suma % 11;
+        $digito = match ($verificador) {
+            11 => 0,
+            10 => 1,
+            default => $verificador,
+        };
+
+        return ['numero' => $serie.$secuencial, 'clave_acceso' => $base.$digito, 'ambiente' => $ambiente, 'tipo_emision' => $tipoEmision];
     }
 
     public function tarifas(string $fecha): array
@@ -149,8 +218,10 @@ final readonly class FacturaVenta
         $tarifas = [0 => 0, 6 => 0, 7 => 0];
         $vigentes = DB::table('erp_parametros_fiscales')->where('id_empresa', $this->empresa->id())
             ->where('concepto', 'iva')->where('unidad', 'porcentaje')->where('vigente_desde', '<=', $fecha)
-            ->whereIn('codigo', array_map('strval', array_keys(self::IVA)))->orderByDesc('vigente_desde')->get(['codigo', 'valor']);
-        foreach ($vigentes->unique('codigo') as $tarifa) {
+            ->orderByDesc('vigente_desde')->orderByDesc('id')->get(['codigo', 'valor'])
+            ->filter(fn (stdClass $tarifa): bool => ctype_digit($tarifa->codigo) && array_key_exists((int) $tarifa->codigo, self::IVA))
+            ->unique(fn (stdClass $tarifa): int => (int) $tarifa->codigo);
+        foreach ($vigentes as $tarifa) {
             $codigo = (int) $tarifa->codigo;
             if ((float) $tarifa->valor === (float) self::IVA[$codigo]) {
                 $tarifas[$codigo] = self::IVA[$codigo];
