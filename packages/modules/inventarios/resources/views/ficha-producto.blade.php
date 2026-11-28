@@ -51,6 +51,30 @@
             </div>
         </div>
         <div class="ficha-bloque">
+            @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Trazabilidad y referencias externas', 'iconoBloque' => 'bi-qr-code'])
+            <div class="row g-3">
+                @foreach (config('inventarios.trazabilidad_producto') as $campo => [$etiqueta, $longitud])
+                    <div class="{{ $campo === 'codigo_qr' ? 'col-12' : 'col-sm-6' }}">
+                        <label class="form-label" for="producto-{{ $campo }}">{{ $etiqueta }}</label>
+                        @if ($campo === 'codigo_qr')
+                            <textarea id="producto-{{ $campo }}" name="{{ $campo }}" rows="2" maxlength="{{ $longitud }}"
+                                class="form-control @error($campo) is-invalid @enderror"
+                                aria-describedby="producto-qr-ayuda">{{ old($campo, $registro[$campo] ?? '') }}</textarea>
+                            <p id="producto-qr-ayuda" class="form-text mb-0">Pega el contenido leído al escanear el QR.</p>
+                        @else
+                            <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control @error($campo) is-invalid @enderror"
+                                type="{{ $longitud === null ? 'date' : 'text' }}" value="{{ old($campo, $registro[$campo] ?? '') }}"
+                                @if ($longitud !== null) maxlength="{{ $longitud }}" @else min="1900-01-01" aria-describedby="producto-vencimiento-ayuda" @endif>
+                            @if ($longitud === null)
+                                <p id="producto-vencimiento-ayuda" class="form-text mb-0">Fecha de referencia del catálogo. Cada lote puede tener su propio vencimiento.</p>
+                            @endif
+                        @endif
+                        @error($campo) <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        <div class="ficha-bloque">
             <h2 class="h6"><i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>Clasificación e inventario</h2>
             <div class="row g-3">
                 <div class="col-sm-6">

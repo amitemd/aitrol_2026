@@ -17,7 +17,7 @@
         @endisset
     </div>
     @if (request()->routeIs('configuracion.personas.importaciones.index', 'configuracion.importaciones.productos.index',
-        'configuracion.sucursales.index', 'inventarios.bodegas.index',
+        'configuracion.sucursales.index', 'inventarios.bodegas.index', 'inventarios.categorias.index', 'inventarios.plantillas-contables.index',
         'clientes.index', 'proveedores.index', 'contabilidad.integraciones.index'))
         @can('administrar-configuracion')
             <div class="container-fluid mt-2">

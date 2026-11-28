@@ -10,6 +10,7 @@ use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -40,7 +41,9 @@ final readonly class InventarioSql implements RepositorioInventario
     public function catalogo(string $seccion, int $id, bool $bloquear = false): stdClass
     {
         $consulta = $this->tabla('inv_'.str_replace('-', '_', $seccion))->where('id', $id);
-        if ($bloquear) $consulta->lockForUpdate();
+        if ($bloquear) {
+            $consulta->lockForUpdate();
+        }
 
         return $consulta->first() ?? abort(404, 'Registro de inventario no encontrado.');
     }
@@ -410,10 +413,19 @@ final readonly class InventarioSql implements RepositorioInventario
             $consulta->where(function (Builder $q) use ($filtros, $seccion): void {
                 $patron = '%'.$filtros['q'].'%';
                 $q->whereLike('nombre', $patron)->orWhereLike('codigo', $patron);
-                if ($seccion === 'productos') $q->orWhereLike('codigo_barras', $patron)->orWhereLike('categoria', $patron);
+                if ($seccion === 'productos') {
+                    $q->orWhereLike('codigo_barras', $patron)->orWhereLike('categoria', $patron)
+                        ->orWhereLike('codigo_externo', $patron)->orWhereLike('id_producto_externo', $patron)
+                        ->orWhereLike('registro_sanitario', $patron)->orWhere('codigo_qr', $filtros['q']);
+                }
             });
         }
-        if (isset($filtros['activo'])) $consulta->where('activo', $filtros['activo']);
+        if ($seccion === 'productos' && isset($filtros['vencimiento_hasta'])) {
+            $consulta->where('fecha_vencimiento', '<=', $filtros['vencimiento_hasta']);
+        }
+        if (isset($filtros['activo'])) {
+            $consulta->where('activo', $filtros['activo']);
+        }
         if ($seccion === 'productos' && ($filtros['solo_inventariables'] ?? false)) {
             $consulta->where('tipo_producto', 'producto');
         }
@@ -425,7 +437,9 @@ final readonly class InventarioSql implements RepositorioInventario
     {
         $consulta = $this->conCatalogos('inv_existencias')
             ->addSelect('p.unidad', 'p.stock_minimo')->orderBy('p.nombre')->orderBy('b.nombre');
-        if (! empty($filtros['bajo_minimo'])) $consulta->whereColumn('inv_existencias.cantidad', '<=', 'p.stock_minimo');
+        if (! empty($filtros['bajo_minimo'])) {
+            $consulta->whereColumn('inv_existencias.cantidad', '<=', 'p.stock_minimo');
+        }
 
         return $this->filtrar($consulta, 'inv_existencias', $filtros);
     }
@@ -489,13 +503,17 @@ final readonly class InventarioSql implements RepositorioInventario
             $consulta->where($fecha, '>=', $filtros['desde'].' 00:00:00');
         }
         if ($fecha !== null && isset($filtros['hasta'])) {
-            $consulta->where($fecha, '<', \Illuminate\Support\Carbon::parse($filtros['hasta'])->addDay()->toDateString().' 00:00:00');
+            $consulta->where($fecha, '<', Carbon::parse($filtros['hasta'])->addDay()->toDateString().' 00:00:00');
         }
-        if (isset($filtros['id_producto'])) $consulta->where($tabla.'.id_producto', $filtros['id_producto']);
+        if (isset($filtros['id_producto'])) {
+            $consulta->where($tabla.'.id_producto', $filtros['id_producto']);
+        }
         if (isset($filtros['id_bodega'])) {
             $consulta->where(function (Builder $q) use ($tabla, $filtros): void {
                 $q->where($tabla.'.id_bodega', $filtros['id_bodega']);
-                if ($tabla === 'inv_operaciones') $q->orWhere($tabla.'.id_bodega_destino', $filtros['id_bodega']);
+                if ($tabla === 'inv_operaciones') {
+                    $q->orWhere($tabla.'.id_bodega_destino', $filtros['id_bodega']);
+                }
             });
         }
         if (! empty($filtros['q'])) {

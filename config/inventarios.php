@@ -1,6 +1,23 @@
 <?php
 
+$camposTrazabilidad = [
+    'fecha_vencimiento' => ['Fecha de vencimiento', null],
+    'registro_sanitario' => ['Registro sanitario', 120],
+    'fabricante' => ['Fabricante', 160],
+    'codigo_externo' => ['Código externo', 120],
+    'id_producto_externo' => ['ID de producto externo', 120],
+    'sistema_externo' => ['Sistema externo', 100],
+    'codigo_qr' => ['Código QR', 1024],
+];
+
 return [
+    'trazabilidad_producto' => $camposTrazabilidad,
+    'reglas_trazabilidad_producto' => array_map(
+        static fn (array $campo): array => $campo[1] === null
+            ? ['nullable', 'date_format:Y-m-d', 'after_or_equal:1900-01-01']
+            : ['nullable', 'string', 'max:'.$campo[1]],
+        $camposTrazabilidad,
+    ),
     'secciones' => [
         'productos' => ['Productos', 'bi-box-seam'],
         'bodegas' => ['Bodegas', 'bi-building'],

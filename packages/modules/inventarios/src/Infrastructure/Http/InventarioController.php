@@ -7,8 +7,11 @@ use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use Aitrol\Inventarios\Infrastructure\Persistence\GaleriaProducto;
 use App\Services\ContextoOperativo;
+use App\Services\FacturaVenta;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -16,6 +19,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use stdClass;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final readonly class InventarioController
 {
@@ -63,7 +67,9 @@ final readonly class InventarioController
         if ($seccion === 'productos') {
             $fila += $this->repositorio->cuentasProducto($registro);
         }
-        if ($request->routeIs('api.*')) return response()->json(['data' => $fila]);
+        if ($request->routeIs('api.*')) {
+            return response()->json(['data' => $fila]);
+        }
 
         $ficha = in_array($seccion, ['productos', 'plantillas-contables'], true)
             ? $this->repositorio->opcionesFicha() : [];
@@ -95,7 +101,7 @@ final readonly class InventarioController
                         $selecciones[$campo] = $campo === 'id_bodega_destino'
                             ? $this->repositorio->bodegaEmpresa($valor)
                             : $this->repositorio->catalogo($catalogo, $valor);
-                    } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                    } catch (NotFoundHttpException) {
                         // El registro ya no está disponible para esta empresa.
                     }
                 }
@@ -165,7 +171,7 @@ final readonly class InventarioController
         return $this->guardarCatalogo($request, $request->route('seccion'), (int) $request->route('registro'));
     }
 
-    public function estado(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    public function estado(Request $request): JsonResponse|RedirectResponse
     {
         $request->validate(['activo' => ['required', 'boolean']]);
         $seccion = $request->route('seccion');
@@ -243,7 +249,7 @@ final readonly class InventarioController
                 'codigo_barras' => ['nullable', 'string', 'max:80'],
                 'stock_minimo' => ['nullable', 'numeric', 'decimal:0,3', 'min:0', 'max:1000000'],
                 'tipo_producto' => ['sometimes', 'required', Rule::in(array_keys(config('inventarios.tipos_producto')))],
-                'iva_codigo' => ['sometimes', 'nullable', Rule::in(array_keys(\App\Services\FacturaVenta::IVA))],
+                'iva_codigo' => ['sometimes', 'nullable', Rule::in(array_keys(FacturaVenta::IVA))],
                 'marca' => ['nullable', 'string', 'max:100'],
                 'id_marca' => ['sometimes', 'nullable', 'integer', 'min:1'],
                 'modelo' => ['nullable', 'string', 'max:100'],
@@ -253,6 +259,7 @@ final readonly class InventarioController
                 'fotos_nuevas' => ['sometimes', 'array', 'max:'.GaleriaProducto::MAXIMO],
                 'fotos_nuevas.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             ];
+            $reglas += config('inventarios.reglas_trazabilidad_producto');
             foreach (config('inventarios.valores_producto') as $campo => [, $maximo, $decimales]) {
                 $reglas[$campo] = ['nullable', 'numeric', 'decimal:0,'.$decimales, 'min:0', 'max:'.$maximo];
             }
@@ -294,7 +301,7 @@ final readonly class InventarioController
             $orden = json_decode($galeria['orden_fotos'], true);
             if (! is_array($orden) || ! array_is_list($orden)
                 || array_filter($orden, fn ($clave) => ! is_string($clave) || ! preg_match('/^[en]:[0-9]{1,19}$/D', $clave))) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['orden_fotos' => 'El orden de las imágenes no es válido.']);
+                throw ValidationException::withMessages(['orden_fotos' => 'El orden de las imágenes no es válido.']);
             }
             $registro = $this->galeria->guardar($guardar, $id, $galeria['version_fotos'], $orden, $galeria['fotos_nuevas'] ?? []);
         } else {
@@ -307,7 +314,7 @@ final readonly class InventarioController
     private function filtros(Request $request, string $seccion): array
     {
         $reglas = [
-            'q' => ['nullable', 'string', 'max:120'],
+            'q' => ['nullable', 'string', $seccion === 'productos' ? 'max:1024' : 'max:120'],
             'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
         ];
@@ -316,13 +323,18 @@ final readonly class InventarioController
         } else {
             $reglas['id_producto'] = $reglas['id_bodega'] = ['nullable', 'integer', 'min:1'];
         }
+        if ($seccion === 'productos') {
+            $reglas['vencimiento_hasta'] = ['nullable', 'date_format:Y-m-d', 'after_or_equal:1900-01-01'];
+        }
         if (in_array($seccion, ['existencias', 'reportes'], true)) {
             $reglas['bajo_minimo'] = ['nullable', 'boolean'];
         }
         if (in_array($seccion, ['movimientos', 'ajustes', 'kardex'], true)) {
             $reglas['desde'] = ['nullable', 'date_format:Y-m-d'];
             $reglas['hasta'] = ['nullable', 'date_format:Y-m-d'];
-            if ($request->filled('desde')) $reglas['hasta'][] = 'after_or_equal:desde';
+            if ($request->filled('desde')) {
+                $reglas['hasta'][] = 'after_or_equal:desde';
+            }
         }
 
         return array_filter($request->validate($reglas), fn ($valor) => $valor !== null);
@@ -342,8 +354,12 @@ final readonly class InventarioController
             $datos['origen_movimiento'] = $entrada ? null : $datos['bodega'];
             $datos['destino_movimiento'] = $entrada ? $datos['bodega'] : $datos['bodega_destino'];
         }
-        if (isset($datos['cuentas'])) $datos['cuentas'] = json_decode($datos['cuentas'], true, flags: JSON_THROW_ON_ERROR);
-        if (isset($datos['activo'])) $datos['activo'] = (bool) $datos['activo'];
+        if (isset($datos['cuentas'])) {
+            $datos['cuentas'] = json_decode($datos['cuentas'], true, flags: JSON_THROW_ON_ERROR);
+        }
+        if (isset($datos['activo'])) {
+            $datos['activo'] = (bool) $datos['activo'];
+        }
         if (array_key_exists('es_principal', $datos)) {
             $datos['es_principal'] = (bool) $datos['es_principal'];
         }
@@ -352,9 +368,13 @@ final readonly class InventarioController
             $datos['valor_existencia'] = Cantidad::decimal($datos['cantidad'] * $datos['costo_promedio'], 7);
         }
         foreach (['cantidad' => 3, 'stock_minimo' => 3, 'variacion' => 3, 'saldo_anterior' => 3, 'saldo' => 3, 'costo_unitario' => 4, 'costo_promedio' => 4] as $campo => $escala) {
-            if (isset($datos[$campo])) $datos[$campo] = Cantidad::decimal((int) $datos[$campo], $escala);
+            if (isset($datos[$campo])) {
+                $datos[$campo] = Cantidad::decimal((int) $datos[$campo], $escala);
+            }
         }
-        if (isset($datos['lineas'])) $datos['lineas'] = $datos['lineas']->map($this->presentar(...));
+        if (isset($datos['lineas'])) {
+            $datos['lineas'] = $datos['lineas']->map($this->presentar(...));
+        }
 
         return $datos;
     }
@@ -365,7 +385,9 @@ final readonly class InventarioController
             $cabeceras = $estado === 201 ? ['Location' => route('api.v1.inventarios.'.$seccion.'.show', $registro->id)] : [];
 
             $datos = $this->presentar($registro);
-            if ($seccion === 'productos') $datos += $this->repositorio->cuentasProducto($registro);
+            if ($seccion === 'productos') {
+                $datos += $this->repositorio->cuentasProducto($registro);
+            }
 
             return response()->json(['data' => $datos], $estado, $cabeceras);
         }

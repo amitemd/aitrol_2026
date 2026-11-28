@@ -27,6 +27,9 @@
                         </div>
                         @error('archivo') <p class="text-danger small mt-2 mb-0">{{ $message }}</p> @enderror
                         <p id="formato-productos" class="form-text mb-0">Llena la hoja Productos y sube el mismo archivo .xlsx. Completa código, nombre y unidad.
+                            Las unidades y marcas nuevas se crean en tu empresa. Si indicas una categoría, créala primero en
+                            <a href="{{ route('configuracion.importaciones.index') }}">Importaciones</a>.
+                            Puedes incluir la fecha de vencimiento, el registro sanitario y las referencias externas de la plantilla.
                             Hasta 4 MB y 20.000 filas. Los códigos existentes se conservan. También se aceptan CSV UTF-8 separados por punto y coma.</p>
                         <div class="mt-3" data-importacion-carga-estado hidden>
                             <p class="small mb-1" id="productos-carga-etiqueta" role="status">Subiendo el archivo…</p>

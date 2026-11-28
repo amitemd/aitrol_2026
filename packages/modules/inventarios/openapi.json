@@ -10,7 +10,7 @@
         "tags": ["Inventarios"],
         "operationId": "encolarImportacionProductos",
         "summary": "Importar productos desde Excel o CSV",
-        "description": "Requiere un administrador de la empresa activa y el alcance inventarios:escribir. Acepta la plantilla Excel .xlsx o CSV UTF-8 separado por punto y coma, hasta 4 MB y 20.000 filas. Los códigos existentes se conservan.",
+        "description": "Requiere un administrador de la empresa activa y el alcance inventarios:escribir. Acepta la plantilla Excel .xlsx o CSV UTF-8 separado por punto y coma, hasta 4 MB y 20.000 filas. Reutiliza o crea unidades y marcas por nombre en la empresa activa. La categoría, si se indica, debe estar activa. Los códigos existentes se conservan.",
         "requestBody": {
           "required": true,
           "content": {"multipart/form-data": {"schema": {"type": "object", "required": ["archivo"], "properties": {"archivo": {"type": "string", "format": "binary"}}}}}
@@ -124,11 +124,17 @@
           {
             "name": "q",
             "in": "query",
-            "description": "Búsqueda por nombre o código. En productos también busca por categoría y código de barras.",
+            "description": "Busca por nombre, código, categoría, código de barras, referencias externas, registro sanitario o contenido del QR.",
             "schema": {
               "type": "string",
-              "maxLength": 120
+              "maxLength": 1024
             }
+          },
+          {
+            "name": "vencimiento_hasta",
+            "in": "query",
+            "description": "Incluye productos con fecha de vencimiento de referencia hasta este día.",
+            "schema": { "type": "string", "format": "date" }
           },
           {
             "name": "page",
@@ -1706,7 +1712,20 @@
   },
   "components": {
     "schemas": {
+      "InvProductoTrazabilidad": {
+        "type": "object",
+        "properties": {
+          "fecha_vencimiento": { "type": ["string", "null"], "format": "date", "description": "Fecha de referencia del catálogo." },
+          "registro_sanitario": { "type": ["string", "null"], "maxLength": 120 },
+          "fabricante": { "type": ["string", "null"], "maxLength": 160 },
+          "codigo_externo": { "type": ["string", "null"], "maxLength": 120 },
+          "id_producto_externo": { "type": ["string", "null"], "maxLength": 120, "description": "Identificador textual del producto en el catálogo de origen." },
+          "sistema_externo": { "type": ["string", "null"], "maxLength": 100 },
+          "codigo_qr": { "type": ["string", "null"], "maxLength": 1024, "description": "Contenido leído al escanear el QR." }
+        }
+      },
       "InvProductoAlta": {
+        "allOf": [{ "$ref": "#/components/schemas/InvProductoTrazabilidad" }],
         "type": "object",
         "properties": {
           "codigo": {
@@ -1844,6 +1863,7 @@
         ]
       },
       "InvProductoCambio": {
+        "allOf": [{ "$ref": "#/components/schemas/InvProductoTrazabilidad" }],
         "type": "object",
         "properties": {
           "codigo": {
@@ -1962,6 +1982,7 @@
         ]
       },
       "InvProducto": {
+        "allOf": [{ "$ref": "#/components/schemas/InvProductoTrazabilidad" }],
         "type": "object",
         "properties": {
           "codigo": {

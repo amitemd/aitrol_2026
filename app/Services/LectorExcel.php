@@ -13,6 +13,8 @@ use ZipArchive;
 
 final class LectorExcel
 {
+    private const NS_HOJA = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+
     /**
      * @param  Closure(array<string, string>): array<string, string>  $reconocerEncabezados
      * @return array{total: int, filas: Generator<int, array<string, string>>, fechasDesde1904: bool}
@@ -129,15 +131,17 @@ final class LectorExcel
     private function celdas(SimpleXMLElement $fila, array $compartidos, ?array $columnas = null): array
     {
         $valores = [];
-        foreach ($fila->c as $celda) {
-            $columna = rtrim((string) $celda['r'], '0123456789');
+        foreach ($fila->children(self::NS_HOJA)->c as $celda) {
+            $atributos = $celda->attributes();
+            $columna = rtrim((string) $atributos->r, '0123456789');
             if ($columnas !== null && ! isset($columnas[$columna])) {
                 continue;
             }
-            $valor = (string) $celda->v;
-            $valores[$columnas[$columna] ?? $columna] = trim(match ((string) $celda['t']) {
+            $contenido = $celda->children(self::NS_HOJA);
+            $valor = (string) $contenido->v;
+            $valores[$columnas[$columna] ?? $columna] = trim(match ((string) $atributos->t) {
                 's' => $compartidos[$valor] ?? '',
-                'inlineStr' => $this->texto($celda->is),
+                'inlineStr' => $this->texto($contenido->is),
                 'e' => '',
                 default => $valor,
             });
@@ -148,9 +152,10 @@ final class LectorExcel
 
     private function texto(SimpleXMLElement $nodo): string
     {
-        $texto = (string) $nodo->t;
-        foreach ($nodo->r as $parte) {
-            $texto .= (string) $parte->t;
+        $contenido = $nodo->children(self::NS_HOJA);
+        $texto = (string) $contenido->t;
+        foreach ($contenido->r as $parte) {
+            $texto .= (string) $parte->children(self::NS_HOJA)->t;
         }
 
         return $texto;

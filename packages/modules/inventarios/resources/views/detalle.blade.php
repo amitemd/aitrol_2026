@@ -23,6 +23,16 @@
                         @endisset
                     @endforeach
                 </dl>
+                @if ($seccion === 'productos' && array_filter(array_intersect_key($fila, config('inventarios.trazabilidad_producto')), fn ($valor) => $valor !== null))
+                    <h2 class="h6 mt-3">Trazabilidad y referencias externas</h2>
+                    <dl class="row mb-0">
+                        @foreach (config('inventarios.trazabilidad_producto') as $campo => [$etiqueta])
+                            @isset($fila[$campo])
+                                <dt class="col-sm-5">{{ $etiqueta }}</dt><dd class="col-sm-7 text-break">{{ $fila[$campo] }}</dd>
+                            @endisset
+                        @endforeach
+                    </dl>
+                @endif
                 @if ($seccion === 'productos' && array_intersect_key(array_filter($fila, fn ($valor) => $valor !== null), config('inventarios.valores_producto')))
                     <h2 class="h6 mt-3">Precios y costos unitarios</h2>
                     <dl class="row mb-0">

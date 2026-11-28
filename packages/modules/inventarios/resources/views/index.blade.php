@@ -9,7 +9,7 @@
         'ajustes' => 'Nuevo ajuste', 'categorias' => 'Nueva categoría', 'plantillas-contables' => 'Nueva plantilla contable',
         'marcas' => 'Nueva marca', 'unidades' => 'Nueva unidad'];
     $columnas = match ($seccion) {
-        'productos' => ['Código', 'Producto', 'Categoría', 'Unidad', 'Stock mínimo', 'Estado', 'Acciones'],
+        'productos' => ['Código', 'Producto', 'Categoría', 'Unidad', 'Stock mínimo', 'Vencimiento', 'Estado', 'Acciones'],
         'bodegas', 'categorias', 'plantillas-contables', 'marcas', 'unidades' => ['Código', 'Nombre', 'Descripción', 'Estado', 'Acciones'],
         'existencias' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Estado'],
         'reportes' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Valor de existencia'],
@@ -38,7 +38,8 @@
                     <div class="col-12 col-md-3">
                         <label class="form-label" for="inventario-q">{{ __('Buscar') }}</label>
                         <input id="inventario-q" name="q" class="form-control" value="{{ $filtros['q'] ?? '' }}"
-                            placeholder="Código o nombre" maxlength="120">
+                            placeholder="{{ $seccion === 'productos' ? 'Nombre, código, QR o registro' : 'Código o nombre' }}"
+                            maxlength="{{ $seccion === 'productos' ? 1024 : 120 }}">
                     </div>
                     @if ($catalogo)
                         <div class="col-12 col-sm-5 col-md-2">
@@ -74,6 +75,13 @@
                                 </div>
                             @endforeach
                         @endif
+                    @endif
+                    @if ($seccion === 'productos')
+                        <div class="col-12 col-sm-5 col-md-auto">
+                            <label class="form-label" for="inventario-vencimiento">Vencimiento hasta</label>
+                            <input id="inventario-vencimiento" name="vencimiento_hasta" type="date" min="1900-01-01"
+                                class="form-control" value="{{ $filtros['vencimiento_hasta'] ?? '' }}">
+                        </div>
                     @endif
                     <div class="col-auto d-flex gap-2">
                         <button class="btn btn-outline-primary">Filtrar</button>
@@ -116,6 +124,7 @@
                                             <td>{{ $fila['categoria'] ?? '—' }}</td>
                                             <td>{{ $fila['unidad'] }}</td>
                                             <td>{{ $fila['stock_minimo'] }}</td>
+                                            <td class="text-nowrap">{{ $fila['fecha_vencimiento'] ?? '—' }}</td>
                                         @else
                                             <td>{{ $fila['descripcion'] ?? '—' }}</td>
                                         @endif
