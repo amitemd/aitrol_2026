@@ -62,6 +62,39 @@ final class PlanCuentasInicialTest extends TestCase
         $this->assertDatabaseMissing('co_cuentas', ['id_empresa' => 2]);
     }
 
+    public function test_el_listado_muestra_la_jerarquia_y_solo_permite_gestionar_auxiliares(): void
+    {
+        $empresa = $this->crearEmpresa('1000000000011');
+        DB::table('erp_sucursales')->insert(['id_empresa' => $empresa, 'codigo' => '001', 'nombre' => 'Matriz']);
+
+        $cuentas = DB::table('co_cuentas')->where('id_empresa', $empresa)->pluck('id', 'codigo');
+        $listado = route('contabilidad.cuentas.index');
+        $alta = route('contabilidad.cuentas.store');
+        $editarGrupo = route('contabilidad.cuentas.editar.formulario', $cuentas['1.01.01']);
+        $editarAuxiliar = route('contabilidad.cuentas.editar.formulario', $cuentas['1.01.01.01']);
+        $respuesta = $this->get($listado)->assertOk()
+            ->assertSee('data-cuenta-nivel="0"', false)
+            ->assertSee('aria-expanded="false"', false)->assertDontSee($editarGrupo, false)->assertSee($editarAuxiliar, false);
+        $this->assertSame(1, preg_match('/data-cuenta-nivel="1"\s+hidden/', $respuesta->getContent()));
+        $this->get(route('contabilidad.cuentas.index', ['q' => 'Caja general']))->assertOk()
+            ->assertSeeInOrder(['Activo corriente', 'Efectivo y equivalentes de efectivo', 'Caja general'])
+            ->assertSee('aria-expanded="true"', false)->assertDontSee('Bancos nacionales');
+        $this->get($editarGrupo)->assertForbidden();
+        $this->get($editarAuxiliar)->assertOk();
+
+        $datos = ['codigo' => '1.01.01.30', 'nombre' => 'Caja auxiliar', 'activo' => true, 'id_padre' => $cuentas['1.01.01']];
+        $this->putJson(route('contabilidad.cuentas.editar', $cuentas['1.01.01']), $datos)->assertForbidden();
+        $this->postJson($alta, $datos + ['auxiliar' => false])->assertUnprocessable()->assertJsonValidationErrors('auxiliar');
+        $this->postJson($alta, array_replace($datos, ['id_padre' => $cuentas['1.01.01.01']]))
+            ->assertUnprocessable()->assertJsonValidationErrors('id_padre');
+        $this->postJson($alta, $datos)->assertCreated();
+        $this->assertDatabaseHas('co_cuentas', ['id_empresa' => $empresa, 'codigo' => $datos['codigo'], 'auxiliar' => true,
+            'clase' => 'activo', 'id_padre' => $cuentas['1.01.01']]);
+        $id = DB::table('co_cuentas')->where('id_empresa', $empresa)->where('codigo', $datos['codigo'])->value('id');
+        $this->putJson(route('contabilidad.cuentas.editar', $id), array_replace($datos, ['nombre' => 'Caja auxiliar actualizada']))->assertOk();
+        $this->assertDatabaseHas('co_cuentas', ['id' => $id, 'nombre' => 'Caja auxiliar actualizada']);
+    }
+
     private function crearEmpresa(string $ruc): int
     {
         $usuario = User::factory()->create(['id_empresa' => null]);

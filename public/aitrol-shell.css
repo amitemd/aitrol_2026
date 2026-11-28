@@ -522,6 +522,18 @@
     border-color: var(--aitrol-border, var(--bs-border-color));
 }
 
+.plan-cuenta-nombre { min-width: 17rem; }
+.plan-cuenta-sangria { flex: 0 0 .75rem; }
+.plan-cuenta-expansion { flex-shrink: 0; }
+.plan-cuenta-expansion[aria-expanded="true"] i { transform: rotate(90deg); }
+.plan-cuenta-indicador {
+    display: inline-grid;
+    flex: 0 0 2rem;
+    place-items: center;
+    color: var(--bs-secondary-color);
+}
+
+[data-plan-cuentas] tr[hidden] { display: none; }
 .cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
 
 .usuario-tabs[hidden],

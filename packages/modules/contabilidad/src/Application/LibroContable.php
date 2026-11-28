@@ -19,18 +19,22 @@ final readonly class LibroContable
             return $this->datos->transaccion(function () use ($entrada, $id): stdClass {
                 if ($id !== null) {
                     $cuenta = $this->datos->cuenta($id);
+                    abort_unless($cuenta->auxiliar, 403, 'Solo se pueden editar cuentas auxiliares.');
                     $hijas = $this->datos->tieneSubcuentasActivas($id);
                     abort_if(! $entrada['activo'] && $hijas, 409, 'Desactiva primero las subcuentas activas.');
                     if ($entrada['activo'] && $cuenta->id_padre !== null) {
                         abort_unless($this->datos->cuenta($cuenta->id_padre)->activo, 409, 'Activa primero la cuenta superior.');
                     }
                 } else {
-                    if (isset($entrada['id_padre'])) {
-                        $padre = $this->datos->cuenta((int) $entrada['id_padre']);
-                        if (! $padre->activo || $padre->auxiliar || $padre->clase !== $entrada['clase']) {
-                            $this->invalido('id_padre', 'Elige una cuenta de grupo activa de la misma clase y empresa.');
-                        }
+                    if (! isset($entrada['id_padre'])) {
+                        $this->invalido('id_padre', 'Selecciona la cuenta de grupo superior.');
                     }
+                    $padre = $this->datos->cuenta((int) $entrada['id_padre']);
+                    if (! $padre->activo || $padre->auxiliar || $padre->clase !== ($entrada['clase'] ?? $padre->clase)) {
+                        $this->invalido('id_padre', 'Elige una cuenta de grupo activa de la misma clase y empresa.');
+                    }
+                    $entrada['clase'] = $padre->clase;
+                    $entrada['auxiliar'] = true;
                     if (($entrada['efectivo'] ?? false) && ($entrada['clase'] !== 'activo' || ! $entrada['auxiliar'])) {
                         $this->invalido('efectivo', 'El efectivo debe ser una cuenta auxiliar de activo.');
                     }

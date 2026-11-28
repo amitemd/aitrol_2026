@@ -9,6 +9,7 @@ use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use App\Services\ContextoOperativo;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -31,10 +32,47 @@ final readonly class ContableController
         if ($seccion === 'asientos') {
             $contexto->aplicarPeriodo($consulta, 'co_asientos.fecha');
         }
+        if ($seccion === 'cuentas' && ! $request->routeIs('api.*')) {
+            $buscando = filled($filtros['q'] ?? null);
+            $coincidencias = $buscando
+                ? $this->datos->buscar(clone $consulta, $filtros['q'], $columnas)->pluck('co_cuentas.id')
+                : null;
+            $registros = $this->arbolCuentas($consulta->get(), $coincidencias);
+
+            return view('contabilidad::index', compact('seccion', 'registros', 'filtros', 'buscando'));
+        }
         $registros = $this->datos->buscar($consulta, $filtros['q'] ?? null, $columnas)->paginate($filtros['per_page'] ?? 20)
             ->appends($filtros)->through($this->presentar(...));
 
         return $request->routeIs('api.*') ? response()->json($registros) : view('contabilidad::index', compact('seccion', 'registros', 'filtros'));
+    }
+
+    private function arbolCuentas(Collection $cuentas, ?Collection $coincidencias): Collection
+    {
+        $porId = $cuentas->keyBy('id');
+        if ($coincidencias !== null) {
+            $visibles = [];
+            foreach ($coincidencias as $id) {
+                while ($id !== null && $porId->has($id) && ! isset($visibles[$id])) {
+                    $visibles[$id] = true;
+                    $id = $porId[$id]->id_padre;
+                }
+            }
+            $cuentas = $cuentas->filter(fn (stdClass $cuenta): bool => isset($visibles[$cuenta->id]));
+        }
+
+        $hijas = $cuentas->groupBy('id_padre');
+        $filas = collect();
+        $agregarRama = function (Collection $rama, int $nivel) use (&$agregarRama, $hijas, $filas): void {
+            foreach ($rama as $cuenta) {
+                $subcuentas = $hijas->get($cuenta->id, collect());
+                $filas->push($this->presentar($cuenta) + ['nivel_arbol' => $nivel, 'tiene_hijas' => $subcuentas->isNotEmpty()]);
+                $agregarRama($subcuentas, $nivel + 1);
+            }
+        };
+        $agregarRama($hijas->get('', collect()), 0);
+
+        return $filas;
     }
 
     public function show(Request $request)
@@ -50,8 +88,14 @@ final readonly class ContableController
         $seccion = $request->route('seccion');
         $accion = $request->route('accion');
         $registro = $accion ? $this->presentar($this->registro($seccion, (int) $request->route('registro'))) : null;
+        if ($seccion === 'cuentas' && $accion === 'editar') {
+            abort_unless($registro['auxiliar'], 403, 'Solo se pueden editar cuentas auxiliares.');
+        }
+        $padre = $seccion === 'cuentas' && $accion === null && $request->filled('id_padre')
+            ? $this->datos->cuenta($request->integer('id_padre')) : null;
+        abort_if($padre !== null && ($padre->auxiliar || ! $padre->activo), 404);
 
-        return view('contabilidad::formulario', compact('seccion', 'accion', 'registro'));
+        return view('contabilidad::formulario', compact('seccion', 'accion', 'registro', 'padre'));
     }
 
     public function opciones(Request $request)
@@ -218,8 +262,8 @@ final readonly class ContableController
     {
         $reglas = ['codigo' => ['required', 'string', 'max:40'], 'nombre' => ['required', 'string', 'max:160'], 'activo' => [$editar ? 'required' : 'sometimes', 'boolean']];
         if (! $editar) $reglas += [
-            'clase' => ['required', Rule::in(array_keys(config('contabilidad.clases')))], 'id_padre' => ['nullable', 'integer', 'min:1'],
-            'auxiliar' => ['sometimes', 'boolean'], 'efectivo' => ['sometimes', 'boolean'],
+            'clase' => ['sometimes', 'required', Rule::in(array_keys(config('contabilidad.clases')))], 'id_padre' => ['required', 'integer', 'min:1'],
+            'auxiliar' => ['sometimes', 'accepted'], 'efectivo' => ['sometimes', 'boolean'],
         ];
         $datos = $request->validate($reglas) + ['activo' => true];
         $datos['codigo'] = Str::upper($datos['codigo']);

@@ -4,7 +4,7 @@
     $ruta = 'contabilidad.'.$seccion;
     $titulo = match ($accion) {
         'editar' => 'Editar cuenta', 'cerrar' => 'Cerrar período', 'revertir' => 'Revertir asiento',
-        default => config('contabilidad.secciones.'.$seccion.'.2'),
+        default => $seccion === 'cuentas' ? 'Nueva cuenta auxiliar' : config('contabilidad.secciones.'.$seccion.'.2'),
     };
 @endphp
 @section('title', $titulo)
@@ -27,20 +27,17 @@
                         <input id="co-nombre" name="nombre" class="form-control" maxlength="160" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
                     </div>
                     @unless ($accion)
-                        <div class="col-sm-6">
-                            <label class="form-label" for="co-clase">Clase</label>
-                            <select id="co-clase" name="clase" class="form-select" required>
-                                @foreach (config('contabilidad.clases') as $valor => $etiqueta)<option value="{{ $valor }}" @selected(old('clase') === $valor)>{{ __($etiqueta) }}</option>@endforeach
+                        <div class="col-12">
+                            <label class="form-label" for="co-padre">Cuenta de grupo superior</label>
+                            <select id="co-padre" name="id_padre" class="form-select" data-select2-url="{{ route($ruta.'.opciones') }}" data-select2-min="0" data-select2-placeholder="Buscar por código o nombre" required>
+                                <option value=""></option>
+                                @if ($padre)
+                                    <option value="{{ $padre->id }}" selected>{{ $padre->codigo }} · {{ $padre->nombre }}</option>
+                                @endif
                             </select>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="form-label" for="co-padre">Cuenta superior (opcional)</label>
-                            <select id="co-padre" name="id_padre" class="form-select" data-select2-url="{{ route($ruta.'.opciones') }}" data-select2-min="0" data-select2-placeholder="Sin cuenta superior">
-                                <option value="">Sin cuenta superior</option>
-                            </select>
+                            <p class="form-text mb-0">La cuenta auxiliar hereda la clase contable del grupo.</p>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-3">
-                            <label class="form-check"><input type="hidden" name="auxiliar" value="0"><input type="checkbox" name="auxiliar" value="1" class="form-check-input" @checked(old('auxiliar', true))> Permite movimientos (auxiliar)</label>
                             <label class="form-check"><input type="checkbox" name="efectivo" value="1" class="form-check-input" @checked(old('efectivo'))> Efectivo o equivalente</label>
                         </div>
                     @endunless
