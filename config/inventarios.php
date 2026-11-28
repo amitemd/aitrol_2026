@@ -23,7 +23,11 @@ return [
         'devolucion' => ['Devoluciones de ventas', 'ingreso'],
         'ajustes_inventario' => ['Ajustes de inventario', 'gasto'],
     ],
-    'tipos_producto' => ['producto' => 'Producto inventariable', 'servicio' => 'Servicio sin inventario'],
+    'tipos_producto' => [
+        'producto' => 'Producto inventariable',
+        'no_inventariable' => 'Producto no inventariable',
+        'servicio' => 'Servicio sin inventario',
+    ],
     'valores_producto' => [
         'precio_venta' => ['Precio 1 · Base', 1000000, 2],
         'precio_venta_2' => ['Precio 2', 1000000, 2],

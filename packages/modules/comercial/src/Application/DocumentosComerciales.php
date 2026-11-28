@@ -122,7 +122,7 @@ final readonly class DocumentosComerciales
                     $this->verificarImportes($modulo, $origen, $seccion, $total);
                 }
                 $bodega = $seccion === 'documentos' && isset($datos['id_bodega']) ? (int) $datos['id_bodega'] : null;
-                $tieneProducto = collect($lineas)->contains(fn (array $linea) => $linea['id_producto'] !== null);
+                $tieneProducto = in_array(true, array_column($lineas, 'inventariable'), true);
                 if ($bodega !== null && ! $tieneProducto) {
                     throw ValidationException::withMessages(['id_bodega' => 'Agrega al menos un producto de inventario para usar una bodega.']);
                 }
@@ -172,11 +172,12 @@ final readonly class DocumentosComerciales
                             'costo_unitario' => Cantidad::decimal((int) $movimiento->costo_unitario, 4),
                             'motivo' => 'Nota de crédito total', 'referencia' => $modulo.'/'.$id,
                         ], contabilizar: false)['operacion']->id;
-                    } elseif (! $creditoTotal && $bodegaLinea !== null && $lineas[$indice]['id_producto'] !== null) {
+                    } elseif (! $creditoTotal && $bodegaLinea !== null && ($lineas[$indice]['inventariable'] ?? false)) {
                         $lineas[$indice]['id_operacion'] = $this->afectarInventario($modulo, $bodegaLinea, $id, $lineas[$indice]);
                     }
                 }
                 foreach ($lineas as $linea) {
+                    unset($linea['inventariable']);
                     DB::table('com_lineas')->insert($linea + ['id_empresa' => $this->empresa->id(), 'id_documento' => $id]);
                 }
                 event(new OperacionContabilizable('comercial.documento', $id, $factura !== null || $creditoTotal));
@@ -284,8 +285,11 @@ final readonly class DocumentosComerciales
                 ->when($catalogo === 'bodegas', fn (Builder $q) => $q->where('id_sucursal', $this->contexto->sucursal()->id))
                 ->where('activo', true)->select('id', 'nombre as texto', 'codigo'),
         };
-        if ($factura && $catalogo === 'productos') {
-            $consulta->addSelect('precio_venta', 'iva_codigo', 'tipo_producto');
+        if ($catalogo === 'productos') {
+            $consulta->addSelect('tipo_producto');
+            if ($factura) {
+                $consulta->addSelect('precio_venta', 'iva_codigo');
+            }
         }
         $campos = match ($catalogo) {
             'terceros' => ['nombre', 'identificacion'],
@@ -323,6 +327,7 @@ final readonly class DocumentosComerciales
         foreach ($lineas as $indice => $linea) {
             $producto = isset($linea['id_producto']) ? (int) $linea['id_producto'] : null;
             $descripcion = $linea['descripcion'] ?? null;
+            $inventariable = false;
             if ($producto !== null) {
                 try {
                     $registro = $this->existencias->catalogo('productos', $producto);
@@ -333,6 +338,7 @@ final readonly class DocumentosComerciales
                     throw ValidationException::withMessages(['lineas.'.$indice.'.id_producto' => 'Selecciona un producto activo de tu empresa.']);
                 }
                 $descripcion ??= $registro->nombre;
+                $inventariable = ($registro->tipo_producto ?? 'producto') === 'producto';
             }
             $cantidad = Cantidad::unidades($linea['cantidad'], 3);
             $precio = Cantidad::unidades($linea['precio'], 4);
@@ -348,9 +354,9 @@ final readonly class DocumentosComerciales
             }
             $impuesto = intdiv($subtotal * $tasa + 5000, 10000);
             $preparadas[] = [
-                'id_producto' => $producto, 'descripcion' => $descripcion, 'cantidad' => $cantidad, 'precio' => $precio,
+                'id_producto' => $producto, 'inventariable' => $inventariable, 'descripcion' => $descripcion, 'cantidad' => $cantidad, 'precio' => $precio,
                 'tasa' => $tasa, 'subtotal' => $subtotal, 'impuesto' => $impuesto, 'total' => $subtotal + $impuesto,
-            ] + (isset($linea['id_bodega']) ? ['id_bodega' => (int) $linea['id_bodega']] : []);
+            ] + ($inventariable && isset($linea['id_bodega']) ? ['id_bodega' => (int) $linea['id_bodega']] : []);
         }
 
         return $preparadas;

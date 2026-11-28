@@ -9,7 +9,7 @@
       "post": {
         "tags": ["Personas"],
         "operationId": "consultarPersonaPorIdentificacion",
-        "summary": "Consultar una persona por identificación",
+        "summary": "Consultar una persona por cédula",
         "description": "Requiere un administrador global y un token con personas:leer.",
         "requestBody": {
           "required": true,
@@ -19,8 +19,7 @@
                 "type": "object",
                 "required": ["identificacion"],
                 "properties": {
-                  "identificacion": {"type": "string", "maxLength": 30, "example": "0920000001"},
-                  "tipo_identificacion": {"type": "string", "enum": ["cedula", "ruc", "pasaporte"]}
+                  "identificacion": {"type": "string", "pattern": "^[0-9]{10}$", "description": "Cédula de 10 dígitos", "example": "0920000001"}
                 }
               }
             }
@@ -28,7 +27,7 @@
         },
         "responses": {
           "200": {
-            "description": "Identificación, nombres y apellidos de la persona",
+            "description": "Datos de identificación y contacto de la persona",
             "content": {
               "application/json": {
                 "schema": {
@@ -37,16 +36,21 @@
                   "properties": {
                     "data": {
                       "type": "object",
-                      "required": ["identificacion", "tipo_identificacion", "nombres", "apellidos", "primer_nombre", "segundo_nombre", "primer_apellido", "segundo_apellido"],
+                      "required": ["identificacion", "tipo_identificacion", "nombres", "apellidos", "primer_nombre", "segundo_nombre", "primer_apellido", "segundo_apellido", "direccion", "fecha_nacimiento", "email", "telefono", "celular"],
                       "properties": {
                         "identificacion": {"type": "string"},
-                        "tipo_identificacion": {"type": "string", "enum": ["cedula", "ruc", "pasaporte"]},
+                        "tipo_identificacion": {"type": "string", "enum": ["cedula"]},
                         "nombres": {"type": "string"},
                         "apellidos": {"type": ["string", "null"]},
                         "primer_nombre": {"type": ["string", "null"]},
                         "segundo_nombre": {"type": ["string", "null"]},
                         "primer_apellido": {"type": ["string", "null"]},
-                        "segundo_apellido": {"type": ["string", "null"]}
+                        "segundo_apellido": {"type": ["string", "null"]},
+                        "direccion": {"type": ["string", "null"]},
+                        "fecha_nacimiento": {"type": ["string", "null"], "format": "date"},
+                        "email": {"type": ["string", "null"]},
+                        "telefono": {"type": ["string", "null"]},
+                        "celular": {"type": ["string", "null"]}
                       }
                     }
                   }
@@ -56,9 +60,8 @@
           },
           "401": {"description": "Token ausente, vencido o inválido"},
           "403": {"description": "La cuenta o el token no tienen el permiso requerido"},
-          "404": {"description": "Identificación inexistente"},
-          "409": {"description": "La identificación coincide con varios tipos de documento"},
-          "422": {"description": "Campos de consulta inválidos"},
+          "404": {"description": "Cédula inexistente"},
+          "422": {"description": "Cédula ausente o con formato inválido"},
           "429": {"description": "Límite de solicitudes alcanzado"}
         }
       }

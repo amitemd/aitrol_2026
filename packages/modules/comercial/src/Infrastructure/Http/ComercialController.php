@@ -6,6 +6,7 @@ use Aitrol\Comercial\Application\DocumentosComerciales;
 use Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
+use Aitrol\Proveedores\Infrastructure\Persistence\EloquentProveedorRepository;
 use App\Services\AutorizacionSri;
 use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
@@ -105,10 +106,14 @@ final readonly class ComercialController
             $bodegaPrincipal = $inventario->bodegaPrincipal();
             $token = $request->old('importacion_compra', $request->query('importacion'));
             $importacion = $this->importacionCompra($request, $token);
-            $proveedor = DB::table('erp_proveedores')->where('id_empresa', $empresa->id())->where('activo', true)
-                ->whereNull('deleted_at')->when($importacion !== null,
-                    fn ($q) => $q->where('identificacion', $importacion['ruc_emisor'])->where('tipo_identificacion', 'ruc'),
-                    fn ($q) => $q->where('id', (int) $request->old('id_tercero')))->first(['id', 'identificacion', 'nombre']);
+            $proveedor = DB::table('erp_proveedores as proveedor')->join('personas as persona', 'persona.id', '=', 'proveedor.id_persona')
+                ->where('proveedor.id_empresa', $empresa->id())->where('proveedor.activo', true)
+                ->whereNull('proveedor.deleted_at')->when($importacion !== null,
+                    fn ($q) => $q->where('proveedor.identificacion', $importacion['ruc_emisor'])->where('proveedor.tipo_identificacion', 'ruc'),
+                    fn ($q) => $q->where('proveedor.id', (int) $request->old('id_tercero')))
+                ->select('proveedor.id', 'proveedor.identificacion', 'proveedor.nombre')
+                ->selectRaw('COALESCE(persona.direccion, proveedor.direccion) as direccion, COALESCE(persona.email, proveedor.email) as email, COALESCE(persona.telefono, proveedor.telefono) as telefono, persona.celular')
+                ->first();
             $lineas = array_map(fn ($linea): array => is_array($linea) ? array_filter($linea, 'is_scalar') : [],
                 array_values((array) $request->old('lineas', $importacion['lineas'] ?? []))) ?: [[]];
             if ($importacion !== null) {
@@ -118,9 +123,19 @@ final readonly class ComercialController
                 $lineas = array_slice($lineas, 0, count($importacion['lineas']));
             }
             $productos = DB::table('inv_productos')->where('id_empresa', $empresa->id())->where('activo', true)
-                ->whereIn('id', array_filter(array_column($lineas, 'id_producto'), 'is_scalar'))->get(['id', 'codigo', 'nombre'])->keyBy('id');
+                ->whereIn('id', array_filter(array_column($lineas, 'id_producto'), 'is_scalar'))->get(['id', 'codigo', 'nombre', 'tipo_producto'])->keyBy('id');
 
-            return view('comercial::compra', compact('periodo', 'fecha', 'bodegaPrincipal', 'proveedor', 'lineas', 'productos', 'importacion', 'token'));
+            $puedeCrearProducto = $importacion !== null && Gate::allows('permiso', ['inventarios.productos.index', 'escribir']);
+            $unidadesProducto = $categoriasProducto = collect();
+            if ($puedeCrearProducto) {
+                $unidadesProducto = DB::table('inv_unidades')->where('id_empresa', $empresa->id())->where('activo', true)
+                    ->orderBy('nombre')->get(['id', 'codigo', 'nombre']);
+                $categoriasProducto = DB::table('inv_categorias')->where('id_empresa', $empresa->id())->where('activo', true)
+                    ->orderBy('nombre')->pluck('nombre', 'id');
+            }
+
+            return view('comercial::compra', compact('periodo', 'fecha', 'bodegaPrincipal', 'proveedor', 'lineas', 'productos', 'importacion', 'token',
+                'puedeCrearProducto', 'unidadesProducto', 'categoriasProducto'));
         }
 
         $idOrigen = $request->validate(['origen' => ['nullable', 'integer', 'min:1']])['origen'] ?? null;
@@ -135,7 +150,7 @@ final readonly class ComercialController
         return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha', 'origen', 'creditoTotal'));
     }
 
-    public function importarCompra(Request $request, EmpresaActiva $empresa, AutorizacionSri $sri, XmlCompra $lector): RedirectResponse
+    public function importarCompra(Request $request, EmpresaActiva $empresa, AutorizacionSri $sri, XmlCompra $lector, EloquentProveedorRepository $proveedores): RedirectResponse
     {
         $datos = $request->validate([
             'xml_compra' => ['required_without:clave_compra', 'prohibits:clave_compra', 'nullable', 'file', 'max:1024'],
@@ -146,7 +161,9 @@ final readonly class ComercialController
             $resultado = $sri->buscar($datos['clave_compra']);
             if ($resultado['estado'] !== 'AUTORIZADO' || empty($resultado['xml'])) {
                 throw ValidationException::withMessages([
-                    'clave_compra' => 'No se obtuvo un XML autorizado del SRI. '.AutorizacionSri::ESTADOS[$resultado['estado']].'.',
+                    'clave_compra' => 'No se obtuvo un XML autorizado del SRI. '.implode(' ', array_slice(
+                        $resultado['mensajes'] ?: [AutorizacionSri::ESTADOS[$resultado['estado']].'.'], 0, 2,
+                    )),
                 ]);
             }
             $xml = $resultado['xml'];
@@ -155,6 +172,7 @@ final readonly class ComercialController
         }
         $ruc = DB::table('erp_empresas')->where('id', $empresa->id())->value('ruc');
         $importacion = $lector->leer($xml, (string) $ruc);
+        $proveedores->registrarDesdeFactura($importacion['ruc_emisor'], $importacion['proveedor'], $importacion['direccion_proveedor']);
         $importacion['fiscal']['fuente_compra'] = $desdeSri ? 'sri' : 'archivo';
         $token = (string) Str::uuid();
         $request->session()->put('xml_compra', [
@@ -318,9 +336,10 @@ final readonly class ComercialController
 
         return response()->json([
             'results' => $opciones->getCollection()->map(fn (stdClass $fila) => ['id' => $fila->id, 'text' => $fila->codigo.' · '.$fila->texto]
-                + (isset($fila->tipo_producto) ? [
+                + (isset($fila->tipo_producto) ? ['tipo_producto' => $fila->tipo_producto] : [])
+                + (property_exists($fila, 'precio_venta') ? [
                     'precio' => $fila->precio_venta === null ? null : (string) $fila->precio_venta,
-                    'iva_codigo' => $fila->iva_codigo, 'tipo_producto' => $fila->tipo_producto,
+                    'iva_codigo' => $fila->iva_codigo,
                 ] : [])),
             'pagination' => ['more' => $opciones->hasMorePages()],
         ]);

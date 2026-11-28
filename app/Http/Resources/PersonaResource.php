@@ -24,6 +24,11 @@ final class PersonaResource extends JsonResource
             'segundo_nombre' => $this->segundo_nombre,
             'primer_apellido' => $this->primer_apellido,
             'segundo_apellido' => $this->segundo_apellido,
+            'direccion' => $this->direccion,
+            'fecha_nacimiento' => $this->fecha_nacimiento?->toDateString(),
+            'email' => $this->email,
+            'telefono' => $this->telefono,
+            'celular' => $this->celular,
         ];
     }
 }

@@ -90,9 +90,17 @@ final readonly class AutorizacionSri
                 ->post('https://'.self::SERVICIOS[$ambiente].'/comprobantes-electronicos-ws/AutorizacionComprobantesOffline');
             if ($respuesta->successful()) {
                 $resultado = $this->interpretar($respuesta->body(), $clave, $ambiente);
+            } else {
+                $resultado['mensajes'] = ['El servicio de autorización del SRI devolvió HTTP '.$respuesta->status().'.'];
             }
-        } catch (ConnectionException) {
-            $resultado['mensajes'] = ['El servicio de autorización del SRI no respondió a tiempo o no está disponible.'];
+        } catch (ConnectionException $error) {
+            preg_match('/\AcURL error (\d+):/', $error->getMessage(), $detalle);
+            $codigo = (int) ($detalle[1] ?? 0);
+            $resultado['mensajes'] = [match ($codigo) {
+                6 => 'El servidor de Aitrol no pudo resolver la dirección del SRI. Revisa la conexión DNS del servidor.',
+                28 => 'El servicio de autorización del SRI tardó demasiado en responder. Intenta nuevamente.',
+                default => 'No se pudo establecer conexión con el servicio de autorización del SRI.',
+            }];
         }
 
         return $resultado;

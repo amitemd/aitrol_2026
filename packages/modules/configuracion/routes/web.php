@@ -15,7 +15,8 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-pe
     ->prefix('configuraciones/personas/importaciones')->name('configuracion.personas.importaciones.')
     ->group(function (): void {
         Route::get('/', [PersonaImportacionController::class, 'index'])->name('index');
-        Route::get('/estado', [PersonaImportacionController::class, 'estado'])->middleware('throttle:60,1')->name('estado');
+        Route::get('/estado', [PersonaImportacionController::class, 'estado'])
+            ->middleware('throttle:60,1,personas-importaciones-estado')->name('estado');
         Route::post('/', [PersonaImportacionController::class, 'store'])->middleware('throttle:6,1')->name('store');
         Route::post('/token', [PersonaImportacionController::class, 'emitirToken'])->middleware('throttle:6,1')->name('token');
     });

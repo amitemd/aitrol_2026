@@ -20,7 +20,8 @@ final class CodigoProductoTest extends TestCase
         $this->actingAs($primero)->get(route('inventarios.productos.create'))
             ->assertOk()->assertViewHas('codigoSugerido', 'AC-000001')
             ->assertSee('value="AC-000001"', false);
-        $this->postJson(route('inventarios.productos.store'), $this->producto('ac-000001'))->assertCreated();
+        $this->postJson(route('inventarios.productos.store'), $this->producto('ac-000001'))->assertCreated()
+            ->assertJsonStructure(['data' => ['id', 'codigo', 'nombre']])->assertJsonPath('data.codigo', 'AC-000001');
         $this->postJson(route('inventarios.productos.store'), $this->producto('CAT-42'))->assertCreated();
         $this->get(route('inventarios.productos.create'))->assertOk()->assertViewHas('codigoSugerido', 'AC-000002');
         $this->postJson(route('inventarios.productos.store'), $this->producto('ac-000001'))

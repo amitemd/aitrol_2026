@@ -21,8 +21,8 @@ final class LectorPersonasExcel
         'segundo_nombre' => ['segundo_nombre', 'nombre_2', 'nombre2', 'nombre_dos', 'segundo_nombre_paciente'],
         'primer_apellido' => ['primer_apellido', 'apellido_1', 'apellido1', 'apellido_uno', 'primer_apellido_paciente'],
         'segundo_apellido' => ['segundo_apellido', 'apellido_2', 'apellido2', 'apellido_dos', 'segundo_apellido_paciente'],
-        'telefono' => ['telefono', 'telefonos', 'telefono_fijo', 'telf', 'telefono_convencional'],
-        'celular' => ['celular', 'movil', 'telefono_celular', 'telefono_movil'],
+        'telefono' => ['telefono', 'telefonos', 'telefono_fijo', 'telf', 'telefono_convencional', 'telefono1'],
+        'celular' => ['celular', 'movil', 'telefono_celular', 'telefono_movil', 'telefono2'],
         'direccion' => ['direccion', 'domicilio', 'direccion_domicilio'],
         'email' => ['email', 'correo', 'correo_electronico', 'e_mail', 'mail'],
         'fecha_nacimiento' => ['fecha_nacimiento', 'fechanacimiento', 'fecha_de_nacimiento', 'f_nacimiento', 'fec_nacimiento'],
@@ -172,15 +172,22 @@ final class LectorPersonasExcel
     /** @return array<string, string> */
     private function columnas(array $celdas): array
     {
+        $encabezados = array_map(
+            fn (string $celda): string => trim(preg_replace('/[^a-z0-9]+/', '_', Str::lower(Str::ascii($celda))), '_'),
+            $celdas,
+        );
         $columnas = [];
         foreach (self::ENCABEZADOS as $campo => $alias) {
-            foreach ($celdas as $columna => $celda) {
-                $clave = trim(preg_replace('/[^a-z0-9]+/', '_', Str::lower(Str::ascii($celda))), '_');
+            foreach ($encabezados as $columna => $clave) {
                 if (in_array($clave, $alias, true)) {
                     $columnas[$columna] = $campo;
                     break;
                 }
             }
+        }
+        $formatoGastroclinica = ['id', 'nombre1', 'nombre2', 'apellido1', 'apellido2', 'telefono1', 'telefono2', 'telefono3'];
+        if (! in_array('identificacion', $columnas, true) && array_diff($formatoGastroclinica, $encabezados) === []) {
+            $columnas[array_search('id', $encabezados, true)] = 'identificacion';
         }
 
         return $columnas;

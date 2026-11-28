@@ -48,7 +48,9 @@
                         <td>
                             @if ($segundos !== null)
                                 ~{{ $segundos >= 60 ? ceil($segundos / 60).' min' : $segundos.' s' }}
-                            @elseif (in_array($tarea->estado, ['pendiente', 'preparando', 'procesando'], true))
+                            @elseif ($tarea->estado === 'pendiente')
+                                Al iniciar la importación
+                            @elseif (in_array($tarea->estado, ['preparando', 'procesando'], true))
                                 Calculando
                             @else
                                 —

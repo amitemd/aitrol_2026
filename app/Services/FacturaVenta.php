@@ -84,13 +84,13 @@ final readonly class FacturaVenta
                         throw ValidationException::withMessages(["lineas.$indice.iva_codigo" => 'Configura el tratamiento de IVA en la ficha de este producto o servicio.']);
                     }
                     $linea['iva_codigo'] = $producto->iva_codigo;
-                    $esFisico = $producto->tipo_producto !== 'servicio';
+                    $esFisico = $producto->tipo_producto === 'producto';
                     if ($esFisico && ! $bodegas->has($linea['id_bodega'] ?? 0)) {
                         throw ValidationException::withMessages(["lineas.$indice.id_bodega" => 'Selecciona una bodega activa de esta sucursal para el producto.']);
                     }
                 }
                 if (! $esFisico && isset($linea['id_bodega'])) {
-                    throw ValidationException::withMessages(["lineas.$indice.id_bodega" => 'Solo los productos físicos pueden salir de una bodega.']);
+                    throw ValidationException::withMessages(["lineas.$indice.id_bodega" => 'Solo los productos inventariables pueden salir de una bodega.']);
                 }
                 $codigo = (int) $linea['iva_codigo'];
                 if (! isset($tarifas[$codigo])) {

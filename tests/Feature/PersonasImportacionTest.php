@@ -71,6 +71,36 @@ final class PersonasImportacionTest extends TestCase
             ->assertSee('Interrumpida')->assertSee('No se encontró una hoja');
     }
 
+    public function test_importa_el_documento_del_excel_de_gastroclinica(): void
+    {
+        Storage::fake('local');
+        $archivo = $this->excel([
+            ['ID', 'nombre1', 'nombre2', 'apellido1', 'apellido2', 'telefono1', 'telefono2', 'telefono3'],
+            ['0920000001', 'Ana', 'Inés', 'Reyes', 'Soto', '042000000', '0900000000', ''],
+        ]);
+        $this->actingAs($this->administrador())
+            ->post(route('configuracion.personas.importaciones.store'), ['archivo' => $archivo])
+            ->assertRedirect(route('configuracion.personas.importaciones.index'));
+
+        $this->artisan('queue:work', ['connection' => 'personas', '--once' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('personas', [
+            'identificacion' => '0920000001', 'nombre' => 'Ana Inés', 'apellido' => 'Reyes Soto',
+            'telefono' => '042000000', 'celular' => '0900000000',
+        ]);
+    }
+
+    public function test_las_actualizaciones_del_historial_no_consumen_el_limite_de_cargas(): void
+    {
+        $this->actingAs($this->administrador());
+        for ($intento = 0; $intento < 7; $intento++) {
+            $this->get(route('configuracion.personas.importaciones.estado'))->assertOk();
+        }
+
+        $this->postJson(route('configuracion.personas.importaciones.store'), [])
+            ->assertUnprocessable()->assertJsonValidationErrors('archivo');
+    }
+
     public function test_un_administrador_de_empresa_no_puede_importar_al_catalogo_global(): void
     {
         $this->actingAs($this->administrador(false));

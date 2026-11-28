@@ -14,12 +14,17 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 DevCommands::register('php -d memory_limit=256M artisan queue:work personas --timeout=900 --memory=240 --no-interaction', 'personas');
+
+Schedule::command('queue:work personas --stop-when-empty --timeout=900 --no-interaction')
+    ->name('importaciones-personas')->everyMinute()->withoutOverlapping(20)->runInBackground()
+    ->when(fn (): bool => Queue::connection('personas')->size() > 0);
 
 Artisan::command('aitrol:facturas-programar', function (FacturaVenta $facturas): int {
     $this->info('Borradores preparados: '.$facturas->generarProgramadas());

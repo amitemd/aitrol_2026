@@ -159,25 +159,27 @@ final class FacturacionVentaTest extends TestCase
     public function test_compra_carga_xml_y_consulta_la_clave_sri_solo_para_la_empresa_activa(): void
     {
         [$usuario] = $this->prepararFactura();
-        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['activa' => false]);
-        $persona = DB::table('personas')->insertGetId(['nombre' => 'Proveedor XML']);
+        $reglas = [];
+        foreach (['compras' => 'gasto', 'impuesto_compras' => 'activo', 'proveedores' => 'pasivo'] as $regla => $clase) {
+            $reglas[$regla] = DB::table('co_cuentas')->insertGetId([
+                'id_empresa' => $usuario->id_empresa, 'codigo' => $regla, 'nombre' => $regla, 'clase' => $clase,
+            ]);
+        }
+        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)
+            ->update(['reglas' => json_encode($reglas, JSON_THROW_ON_ERROR)]);
         $ruc = '0991234567001';
-        $proveedor = DB::table('erp_proveedores')->insertGetId([
-            'id_empresa' => $usuario->id_empresa, 'id_persona' => $persona, 'tipo_identificacion' => 'ruc', 'identificacion' => $ruc,
-            'nombre' => 'Proveedor XML',
-        ]);
         $clave = '15012026'.'01'.$ruc.'1'.'001001000000009'.'12345678'.'10';
         $xml = <<<XML
             <factura>
               <infoTributaria><ambiente>1</ambiente><razonSocial>Proveedor XML</razonSocial><ruc>{$ruc}</ruc>
-                <claveAcceso>{$clave}</claveAcceso><estab>001</estab><ptoEmi>001</ptoEmi><secuencial>000000009</secuencial></infoTributaria>
+                <claveAcceso>{$clave}</claveAcceso><estab>001</estab><ptoEmi>001</ptoEmi><secuencial>000000009</secuencial><dirMatriz>Dirección XML</dirMatriz></infoTributaria>
               <infoFactura><fechaEmision>15/01/2026</fechaEmision><identificacionComprador>1000000000001</identificacionComprador>
                 <moneda>DOLAR</moneda><totalSinImpuestos>18.00</totalSinImpuestos><importeTotal>20.70</importeTotal>
                 <pagos><pago><formaPago>19</formaPago><total>10.70</total></pago><pago><formaPago>20</formaPago><total>10.00</total></pago></pagos>
               </infoFactura>
-              <detalles><detalle><descripcion>Soporte importado</descripcion><cantidad>2.000000</cantidad><precioUnitario>10.000000</precioUnitario>
+              <detalles><detalle><codigoPrincipal>XML-009</codigoPrincipal><descripcion>Soporte importado</descripcion><cantidad>2.000000</cantidad><precioUnitario>10.000000</precioUnitario>
                 <descuento>2.00</descuento><precioTotalSinImpuesto>18.00</precioTotalSinImpuesto>
-                <impuestos><impuesto><codigo>2</codigo><tarifa>15.00</tarifa><valor>2.70</valor></impuesto></impuestos>
+                <impuestos><impuesto><codigo>2</codigo><codigoPorcentaje>4</codigoPorcentaje><tarifa>15.00</tarifa><valor>2.70</valor></impuesto></impuestos>
               </detalle></detalles>
             </factura>
             XML;
@@ -186,10 +188,34 @@ final class FacturacionVentaTest extends TestCase
         $this->actingAs($usuario)->from($formulario)->post($importar, [
             'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('ajena.xml', str_replace('1000000000001', '1000000000002', $xml)),
         ])->assertSessionHasErrors('xml_compra');
+        $this->assertDatabaseMissing('personas', ['identificacion' => $ruc]);
         $archivo = $this->post($importar, ['xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('factura.xml', $xml)]);
         $archivo->assertRedirect();
         $this->get($archivo->headers->get('Location'))->assertOk()->assertSee('XML del proveedor cargado')
-            ->assertSee('Proveedor XML')->assertSee('Soporte importado')->assertSee('Tarjeta de crédito');
+            ->assertSee('Proveedor XML')->assertSee('Dirección XML')->assertSee('Soporte importado')->assertSee('Tarjeta de crédito')
+            ->assertSee('Crear producto')->assertSee('data-codigo="XML-009" data-iva="4"', false)
+            ->assertSee(route('inventarios.productos.store'));
+        $persona = DB::table('personas')->where('identificacion', $ruc)->sole();
+        $proveedor = DB::table('erp_proveedores')->where('identificacion', $ruc)->sole()->id;
+        $this->assertDatabaseHas('erp_proveedores', ['id' => $proveedor, 'id_persona' => $persona->id, 'id_empresa' => $usuario->id_empresa]);
+        DB::table('personas')->where('id', $persona->id)->update(['direccion' => 'Dirección de Personas', 'email' => 'compras@example.test']);
+        $xmlCedula = str_replace('<identificacionComprador>1000000000001</identificacionComprador>',
+            '<tipoIdentificacionComprador>05</tipoIdentificacionComprador><identificacionComprador>1000000000</identificacionComprador>', $xml);
+        $archivoCedula = $this->post($importar, [
+            'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('factura-cedula.xml', $xmlCedula),
+        ])->assertSessionHasNoErrors();
+        $this->get($archivoCedula->headers->get('Location'))->assertOk()->assertSee('XML del proveedor cargado')
+            ->assertSee('Dirección de Personas')->assertSee('compras@example.test');
+        $this->assertSame(1, DB::table('erp_proveedores')->where('identificacion', $ruc)->count());
+        $this->assertSame(1, DB::table('personas')->where('identificacion', $ruc)->count());
+        $this->from($formulario)->post($importar, [
+            'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('factura-cedula-ajena.xml',
+                str_replace('<identificacionComprador>1000000000</identificacionComprador>', '<identificacionComprador>1000000002</identificacionComprador>', $xmlCedula)),
+        ])->assertSessionHasErrors('xml_compra');
+        $this->post($importar, [
+            'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('factura-sin-tipo.xml',
+                str_replace('<tipoIdentificacionComprador>05</tipoIdentificacionComprador>', '', $xmlCedula)),
+        ])->assertSessionHasNoErrors();
         $this->assertDatabaseCount('com_documentos', 0);
 
         $respuesta = <<<XML
@@ -201,18 +227,30 @@ final class FacturacionVentaTest extends TestCase
             </RespuestaAutorizacionComprobante></soap:Body></soap:Envelope>
             XML;
         Http::preventStrayRequests();
-        Http::fake(['https://celcer.sri.gob.ec/*' => Http::response($respuesta)]);
+        Http::fakeSequence('https://celcer.sri.gob.ec/*')->pushStatus(503)->push($respuesta);
+        $this->from($formulario)->post($importar, ['clave_compra' => $clave])
+            ->assertSessionHasErrors(['clave_compra' => 'No se obtuvo un XML autorizado del SRI. El servicio de autorización del SRI devolvió HTTP 503.']);
         $consulta = $this->post($importar, ['clave_compra' => $clave]);
         $consulta->assertRedirect();
         $this->get($consulta->headers->get('Location'))->assertOk()->assertSee('XML autorizado recibido del SRI');
         Http::assertSent(fn ($peticion) => str_contains($peticion->body(), '<claveAccesoComprobante>'.$clave.'</claveAccesoComprobante>'));
         $token = session('xml_compra.token');
+        $producto = $this->postJson(route('inventarios.productos.store'), [
+            'codigo' => 'XML-009', 'nombre' => 'Consumo de oficina', 'unidad' => 'Unidad',
+            'tipo_producto' => 'no_inventariable', 'stock_minimo' => 5, 'iva_codigo' => 4,
+        ])->assertCreated()->assertJsonPath('data.tipo_producto', 'no_inventariable')->json('data.id');
+        $this->assertDatabaseHas('inv_productos', ['id' => $producto, 'stock_minimo' => 0]);
         $this->post(route('compras.documentos.store'), [
             'importacion_compra' => $token, 'numero' => '001-001-000000009', 'fecha' => '2026-01-15', 'id_tercero' => $proveedor,
-            'lineas' => [['descripcion' => 'Soporte importado', 'cantidad' => 2, 'precio' => 10, 'descuento' => 2, 'tasa' => 15]],
+            'lineas' => [['id_producto' => $producto, 'descripcion' => 'Soporte importado', 'cantidad' => 2, 'precio' => 10, 'descuento' => 2, 'tasa' => 15]],
         ])->assertRedirect(route('compras.documentos.index'));
         $compra = DB::table('com_documentos')->sole();
-        $this->assertDatabaseHas('com_documentos', ['id' => $compra->id, 'subtotal' => 1800, 'impuesto' => 270, 'total' => 2070]);
+        $this->assertDatabaseHas('com_documentos', ['id' => $compra->id, 'subtotal' => 1800, 'impuesto' => 270, 'total' => 2070, 'id_bodega' => null]);
+        $this->assertDatabaseHas('com_lineas', ['id_documento' => $compra->id, 'id_producto' => $producto, 'id_operacion' => null]);
+        $this->assertDatabaseCount('inv_operaciones', 0);
+        $this->assertDatabaseHas('co_lineas', ['id_cuenta' => $reglas['compras'], 'debe' => 1800, 'haber' => 0]);
+        $this->assertDatabaseHas('co_lineas', ['id_cuenta' => $reglas['impuesto_compras'], 'debe' => 270, 'haber' => 0]);
+        $this->assertDatabaseHas('co_lineas', ['id_cuenta' => $reglas['proveedores'], 'debe' => 0, 'haber' => 2070]);
         $datos = json_decode($compra->datos_factura, true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame($clave, $datos['clave_acceso']);
         $this->assertSame(['19', '20'], array_column($datos['pagos'], 'codigo'));

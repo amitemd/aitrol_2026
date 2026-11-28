@@ -370,7 +370,13 @@ final readonly class InventarioController
             return response()->json(['data' => $datos], $estado, $cabeceras);
         }
         if ($request->expectsJson()) {
-            return response()->json(['message' => $mensaje], $estado);
+            $respuesta = ['message' => $mensaje];
+            if ($seccion === 'productos' && $estado === 201) {
+                $respuesta['data'] = ['id' => $registro->id, 'codigo' => $registro->codigo, 'nombre' => $registro->nombre,
+                    'tipo_producto' => $registro->tipo_producto];
+            }
+
+            return response()->json($respuesta, $estado);
         }
 
         return redirect()->route('inventarios.'.$seccion.'.index')->with('status', $mensaje);

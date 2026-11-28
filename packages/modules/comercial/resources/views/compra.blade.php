@@ -69,6 +69,15 @@
                                     <option value="{{ $proveedor->id }}" selected>{{ $proveedor->identificacion }} · {{ $proveedor->nombre }}</option>
                                 @endif
                             </select>
+                            @if ($importacion && $proveedor)
+                                <div class="form-text">
+                                    @if ($proveedor->direccion)<div>{{ $proveedor->direccion }}</div>@endif
+                                    @if ($proveedor->email)<div>{{ $proveedor->email }}</div>@endif
+                                    @if ($proveedor->telefono || $proveedor->celular)
+                                        <div>{{ implode(' · ', array_filter([$proveedor->telefono, $proveedor->celular])) }}</div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                         <div class="col-sm-6 col-md-5">
                             <label class="form-label" for="compra-fecha">Fecha de emisión</label>
@@ -101,7 +110,8 @@
                         </div>
                         <div class="col-md-5">
                             <label class="form-label" for="compra-recepcion">Bodega de recepción</label>
-                            <input id="compra-recepcion" class="form-control"
+                            <input id="compra-recepcion" class="form-control" data-compra-bodega
+                                data-bodega-principal="{{ $bodegaPrincipal ? $bodegaPrincipal->codigo.' · '.$bodegaPrincipal->nombre : 'Sin bodega principal configurada' }}"
                                 value="{{ $bodegaPrincipal ? $bodegaPrincipal->codigo.' · '.$bodegaPrincipal->nombre : 'Sin bodega principal configurada' }}" readonly>
                         </div>
                     </div>
@@ -113,7 +123,7 @@
                             <button type="button" class="btn btn-outline-primary btn-sm" data-comercial-agregar><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Agregar línea</button>
                         @endunless
                     </div>
-                    <p class="form-text">La mercadería se recibe en la bodega principal de la empresa. Para servicios, escribe el concepto y deja el producto vacío.</p>
+                    <p class="form-text">Solo los productos inventariables ingresan a bodega. Puedes seleccionar productos no inventariables para compras de consumo.</p>
                     @php
                         $opcionesLinea = ['ruta' => 'compras.documentos', 'retencion' => false, 'vinculado' => false, 'compra' => true, 'importada' => $importacion !== null];
                     @endphp
@@ -147,6 +157,9 @@
                 </section>
             </aside>
         </form>
+        @if ($puedeCrearProducto)
+            @include('comercial::producto-compra')
+        @endif
     </div>
 </main>
 @endsection

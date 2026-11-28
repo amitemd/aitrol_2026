@@ -56,9 +56,9 @@
             const stock = form.querySelector('[data-producto-stock]');
             const minimo = stock.querySelector('input');
             const actualizarStock = () => {
-                const servicio = tipo.value === 'servicio';
-                stock.hidden = servicio;
-                minimo.disabled = servicio;
+                const sinInventario = tipo.value !== 'producto';
+                stock.hidden = sinInventario;
+                minimo.disabled = sinInventario;
             };
             tipo.addEventListener('change', actualizarStock);
             actualizarStock();

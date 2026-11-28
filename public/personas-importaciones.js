@@ -38,6 +38,7 @@
     if (!estado) {
         return;
     }
+    let ultimoEstado;
 
     async function actualizar() {
         if (!estado.isConnected || !estado.querySelector('[data-importaciones-activas]')) {
@@ -52,15 +53,19 @@
                     redirect: 'error',
                 });
                 if (response.ok) {
-                    estado.innerHTML = await response.text();
+                    const contenido = await response.text();
+                    if (contenido !== ultimoEstado) {
+                        estado.innerHTML = contenido;
+                        ultimoEstado = contenido;
+                    }
                 }
             } catch {
                 // El historial visible se conserva hasta la siguiente consulta.
             }
         }
 
-        setTimeout(actualizar, 3000);
+        setTimeout(actualizar, 2000);
     }
 
-    setTimeout(actualizar, 3000);
+    setTimeout(actualizar, 2000);
 })();

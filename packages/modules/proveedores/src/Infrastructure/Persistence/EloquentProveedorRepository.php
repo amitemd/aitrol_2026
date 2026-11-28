@@ -91,6 +91,34 @@ final class EloquentProveedorRepository implements ProveedorRepository
         }
     }
 
+    public function registrarDesdeFactura(string $ruc, string $nombre, ?string $direccion): void
+    {
+        app(EmpresaActiva::class)->transaccion(function () use ($ruc, $nombre, $direccion): void {
+            $identificacion = new IdentificacionFiscal(TipoIdentificacion::Ruc, $ruc);
+            if (ProveedorModel::withTrashed()->where('tipo_identificacion', $identificacion->tipo->value)
+                ->where('identificacion', $identificacion->numero)->exists()) {
+                return;
+            }
+
+            $persona = Persona::buscarOCrearConBloqueo([
+                'id_tipo_identificacion' => $identificacion->tipo->idCatalogo(),
+                'identificacion' => $identificacion->numero,
+            ], ['nombre' => $nombre, 'direccion' => $direccion]);
+
+            $proveedor = new ProveedorModel([
+                'tipo_identificacion' => $identificacion->tipo->value,
+                'identificacion' => $identificacion->numero,
+                'nombre' => mb_substr($persona->nombreCompleto() ?: $nombre, 0, 160),
+                'email' => mb_strlen($persona->email ?? '') <= 254 ? $persona->email : null,
+                'telefono' => mb_strlen($persona->telefono ?? '') <= 30 ? $persona->telefono : null,
+                'direccion' => $persona->direccion ?? $direccion,
+                'activo' => true,
+            ]);
+            $proveedor->persona()->associate($persona);
+            $proveedor->save();
+        });
+    }
+
     private function modelo(int $id, bool $bloquear = false): ProveedorModel
     {
         return ProveedorModel::query()->when($bloquear, fn (Builder $consulta): Builder => $consulta->lockForUpdate())

@@ -12,6 +12,10 @@
         if (!formulario.matches('[data-compra]')) return;
         let subtotal = 0n;
         let impuesto = 0n;
+        const bodega = formulario.querySelector('[data-compra-bodega]');
+        const requiereBodega = [...formulario.querySelectorAll('[data-compra-producto]')].some((campo) =>
+            campo.value && campo.selectedOptions[0]?.dataset.tipoProducto === 'producto');
+        bodega.value = requiereBodega ? bodega.dataset.bodegaPrincipal : 'No aplica';
         for (const linea of formulario.querySelectorAll('[data-comercial-linea]')) {
             const cantidad = unidades(linea.querySelector('[data-compra-campo="cantidad"]'), 1000);
             const precio = unidades(linea.querySelector('[data-compra-campo="precio"]'), 10000);
@@ -27,6 +31,74 @@
         for (const [campo, centavos] of Object.entries({ subtotal, impuesto, total: subtotal + impuesto })) {
             formulario.querySelector('[data-compra-total="' + campo + '"]').textContent = moneda.format(Number(centavos) / 100);
         }
+    }
+
+    function prepararAltaProducto() {
+        const dialogo = document.querySelector('[data-compra-producto-dialogo]');
+        if (!dialogo) return;
+
+        const formulario = dialogo.querySelector('form');
+        const guardar = formulario.querySelector('button[type="submit"]');
+        const error = formulario.querySelector('[data-compra-producto-error]');
+        let producto;
+
+        document.querySelector('[data-compra]').addEventListener('click', (evento) => {
+            const boton = evento.target.closest('[data-compra-crear-producto]');
+            if (!boton) return;
+
+            const linea = boton.closest('[data-comercial-linea]');
+            producto = linea.querySelector('select');
+            formulario.reset();
+            formulario.elements.codigo.value = boton.dataset.codigo;
+            formulario.elements.nombre.value = linea.querySelector('input[name$="[descripcion]"]').value.slice(0, 160);
+            formulario.elements.costo_unitario_referencia.value = linea.querySelector('[data-compra-campo="precio"]').value;
+            formulario.elements.iva_codigo.value = boton.dataset.iva;
+            error.hidden = true;
+            dialogo.showModal();
+            formulario.elements.codigo.focus();
+        });
+
+        dialogo.querySelectorAll('[data-compra-cerrar-producto]').forEach((boton) => {
+            boton.addEventListener('click', () => {
+                if (!guardar.disabled) dialogo.close();
+            });
+        });
+        dialogo.addEventListener('cancel', (evento) => {
+            if (guardar.disabled) evento.preventDefault();
+        });
+
+        formulario.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            if (guardar.disabled) return;
+            guardar.disabled = true;
+            error.hidden = true;
+
+            try {
+                const respuesta = await fetch(formulario.action, {
+                    method: 'POST',
+                    headers: { Accept: 'application/json' },
+                    body: new FormData(formulario),
+                });
+                const datos = await respuesta.json();
+                if (!respuesta.ok || !datos.data?.id) {
+                    throw new Error(Object.values(datos.errors ?? {}).flat().join(' ') || datos.message);
+                }
+
+                const creado = datos.data;
+                const opcion = new Option(creado.codigo + ' · ' + creado.nombre, creado.id, true, true);
+                opcion.dataset.tipoProducto = creado.tipo_producto;
+                producto.add(opcion);
+                producto.dispatchEvent(new Event('change', { bubbles: true }));
+                dialogo.close();
+            } catch (fallo) {
+                error.textContent = fallo instanceof SyntaxError || fallo instanceof TypeError
+                    ? 'No se pudo guardar el producto. Revisa la conexión e inténtalo nuevamente.'
+                    : fallo.message || 'No se pudo guardar el producto.';
+                error.hidden = false;
+            } finally {
+                guardar.disabled = false;
+            }
+        });
     }
 
     function actualizarFactura(formulario) {
@@ -62,7 +134,7 @@
     function actualizarProducto(linea) {
         const producto = linea.querySelector('[data-factura-producto]');
         const opcion = producto.selectedOptions[0]?.dataset;
-        const fisico = producto.value && opcion?.tipoProducto !== 'servicio';
+        const fisico = producto.value && opcion?.tipoProducto === 'producto';
         const bodega = linea.querySelector('[data-factura-bodega]');
         const iva = linea.querySelector('[data-factura-iva]');
         const origenIva = linea.querySelector('[data-factura-iva-origen]');
@@ -193,9 +265,19 @@
     for (const formulario of document.querySelectorAll('[data-compra]')) {
         actualizarCompra(formulario);
         formulario.addEventListener('input', () => actualizarCompra(formulario));
+        formulario.addEventListener('change', () => actualizarCompra(formulario));
     }
+    prepararAltaProducto();
 
     document.addEventListener('DOMContentLoaded', () => {
+        window.jQuery?.('[data-compra]')
+            .on('select2:select', '[data-compra-producto]', function (evento) {
+                this.selectedOptions[0].dataset.tipoProducto = evento.params.data.tipo_producto;
+                actualizarCompra(this.form);
+            })
+            .on('select2:clear', '[data-compra-producto]', function () {
+                actualizarCompra(this.form);
+            });
         window.jQuery?.('[data-factura]')
             .on('select2:select', '[data-factura-producto]', function (event) {
                 const linea = this.closest('[data-comercial-linea]');

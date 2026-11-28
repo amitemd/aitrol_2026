@@ -3,7 +3,7 @@
     $prefijo = 'factura-linea-'.$indice;
     $producto = $linea['id_producto'] ?? null;
     $ficha = $productos->get($producto);
-    $bodegaLinea = $linea['id_bodega'] ?? ($ficha && $ficha->tipo_producto !== 'servicio' ? $datos['id_bodega'] ?? null : null);
+    $bodegaLinea = $linea['id_bodega'] ?? ($ficha?->tipo_producto === 'producto' ? $datos['id_bodega'] ?? null : null);
     $ivaLinea = $ficha ? $ficha->iva_codigo : ($linea['iva_codigo'] ?? null);
 @endphp
 <div data-comercial-linea class="factura-linea">
@@ -18,7 +18,7 @@
                 @endif
             </select>
         </div>
-        <div data-factura-bodega-bloque @if (! $ficha || $ficha->tipo_producto === 'servicio') hidden @endif>
+        <div data-factura-bodega-bloque @if ($ficha?->tipo_producto !== 'producto') hidden @endif>
             <label for="{{ $prefijo }}-bodega" class="form-label">Bodega de salida</label>
             <select id="{{ $prefijo }}-bodega" name="lineas[{{ $indice }}][id_bodega]" class="form-select" data-select2-nativo data-factura-bodega>
                 <option value="">Elegir bodega</option>

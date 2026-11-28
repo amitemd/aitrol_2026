@@ -22,6 +22,8 @@ final class XmlCompra
         $factura = $documento->infoFactura;
         $clave = trim((string) $emisor->claveAcceso);
         $ruc = trim((string) $emisor->ruc);
+        $proveedor = trim((string) $emisor->razonSocial);
+        $direccion = trim((string) $emisor->dirMatriz);
         $ambiente = trim((string) $emisor->ambiente);
         $fecha = trim((string) $factura->fechaEmision);
         $fechaFactura = DateTimeImmutable::createFromFormat('!d/m/Y', $fecha);
@@ -33,8 +35,14 @@ final class XmlCompra
             && $fechaFactura && $fechaFactura->format('d/m/Y') === $fecha
             && str_starts_with($clave, $fechaFactura->format('dmY').'01'.$ruc.$ambiente.$serie)
             && ($autorizacion === null || $autorizacion === $clave), 'La fecha, numeración o clave de acceso del XML es incorrecta.');
-        $this->validar($rucEmpresa !== '' && trim((string) $factura->identificacionComprador) === $rucEmpresa,
-            'El RUC del comprador del XML debe corresponder a la empresa activa.');
+        $this->validar($proveedor !== '' && mb_strlen($proveedor) <= 255, 'El XML no contiene una razón social válida del proveedor.');
+        $comprador = trim((string) $factura->identificacionComprador);
+        $tipoComprador = trim((string) $factura->tipoIdentificacionComprador);
+        if (in_array($tipoComprador, ['05', ''], true) && preg_match('/\A[0-9]{10}\z/', $comprador) === 1) {
+            $comprador .= '001';
+        }
+        $this->validar($rucEmpresa !== '' && $comprador === $rucEmpresa,
+            'El documento del comprador del XML no coincide con la empresa activa. Selecciona la empresa a la que se emitió la factura.');
         $this->validar(in_array(mb_strtoupper(trim((string) $factura->moneda)), ['DOLAR', 'DÓLAR', 'USD'], true)
             && $this->numero((string) ($factura->propina ?? '0'), 2, 1000000) === 0,
             'La carga de compras admite facturas en USD sin propina.');
@@ -52,11 +60,16 @@ final class XmlCompra
                 && $base === $this->numero((string) $detalle->precioTotalSinImpuesto, 2, 100000000000), 'Un subtotal de línea del XML no coincide con su cantidad, precio y descuento.');
 
             $tasa = $valorIva = 0;
+            $codigoIva = 0;
             $impuestos = $detalle->impuestos->impuesto ?? [];
             $this->validar(count($impuestos) <= 1, 'La carga de compras admite una tarifa de IVA por línea.');
             foreach ($impuestos as $iva) {
                 $this->validar((string) $iva->codigo === '2', 'El XML incluye un impuesto distinto del IVA que la compra no puede registrar.');
                 $tasa = $this->numero((string) $iva->tarifa, 2, 100);
+                $codigoPorcentaje = trim((string) $iva->codigoPorcentaje);
+                $codigoIva = ctype_digit($codigoPorcentaje) && isset(FacturaVenta::IVA[(int) $codigoPorcentaje])
+                    && FacturaVenta::IVA[(int) $codigoPorcentaje] * 100 === $tasa
+                    ? (int) $codigoPorcentaje : null;
                 $valorIva = $this->numero((string) $iva->valor, 2, 100000000000);
                 $this->validar($valorIva === intdiv($base * $tasa + 5000, 10000), 'El IVA de una línea no coincide con su base y tarifa.');
             }
@@ -65,6 +78,8 @@ final class XmlCompra
             $lineas[] = [
                 'descripcion' => $descripcion, 'cantidad' => Cantidad::decimal($cantidad, 3), 'precio' => Cantidad::decimal($precio, 4),
                 'descuento' => Cantidad::decimal($descuento, 2), 'tasa' => Cantidad::decimal($tasa, 2),
+                'codigo_xml' => trim((string) $detalle->codigoPrincipal) ?: trim((string) $detalle->codigoAuxiliar),
+                'iva_codigo_xml' => $codigoIva,
             ];
         }
         $total = $subtotal + $impuesto;
@@ -90,7 +105,8 @@ final class XmlCompra
         return [
             'numero' => substr($serie, 0, 3).'-'.substr($serie, 3, 3).'-'.substr($serie, 6),
             'fecha' => $fechaFactura->format('Y-m-d'), 'ruc_emisor' => $ruc,
-            'proveedor' => trim((string) $emisor->razonSocial), 'lineas' => $lineas,
+            'proveedor' => $proveedor, 'direccion_proveedor' => $direccion !== '' ? mb_substr($direccion, 0, 255) : null,
+            'lineas' => $lineas,
             'fiscal' => ['clave_acceso' => $clave, 'ambiente' => $ambiente, 'pagos' => $pagos, 'xml_recibido' => $xml],
         ];
     }

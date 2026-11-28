@@ -6,7 +6,6 @@ use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use App\Http\Resources\PersonaResource;
 use App\Models\Persona;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 final class PersonaApiController extends Controller
@@ -14,28 +13,21 @@ final class PersonaApiController extends Controller
     public function __invoke(Request $request): Response
     {
         $datos = $request->validate([
-            'identificacion' => ['required', 'string', 'max:30'],
-            'tipo_identificacion' => ['nullable', Rule::enum(TipoIdentificacion::class)],
+            'identificacion' => ['bail', 'required', 'string', 'regex:/\A[0-9]{10}\z/'],
         ], [
-            'identificacion.required' => 'Ingrese la identificación que desea consultar.',
-            'identificacion.string' => 'Envíe la identificación como texto para conservar los ceros iniciales.',
-            'identificacion.max' => 'La identificación admite hasta 30 caracteres.',
+            'identificacion.required' => 'Ingrese la cédula que desea consultar.',
+            'identificacion.string' => 'Envíe la cédula como texto para conservar los ceros iniciales.',
+            'identificacion.regex' => 'La cédula debe tener exactamente 10 dígitos.',
         ]);
 
-        $consulta = Persona::query()->where('identificacion', mb_strtoupper($datos['identificacion']))
-            ->whereNotNull('id_tipo_identificacion');
-        if (isset($datos['tipo_identificacion'])) {
-            $consulta->where('id_tipo_identificacion', TipoIdentificacion::from($datos['tipo_identificacion'])->idCatalogo());
+        $persona = Persona::query()->where('identificacion', $datos['identificacion'])
+            ->where('id_tipo_identificacion', TipoIdentificacion::Cedula->idCatalogo())
+            ->first();
+
+        if ($persona === null) {
+            return response()->json(['message' => 'No se encontró una persona con esa cédula.'], 404);
         }
 
-        $personas = $consulta->limit(2)->get();
-        if ($personas->isEmpty()) {
-            return response()->json(['message' => 'No se encontró una persona con esa identificación.'], 404);
-        }
-        if ($personas->count() > 1) {
-            return response()->json(['message' => 'La identificación coincide con más de un tipo de documento. Envíe tipo_identificacion.'], 409);
-        }
-
-        return (new PersonaResource($personas->first()))->response()->header('Cache-Control', 'private, no-store');
+        return (new PersonaResource($persona))->response()->header('Cache-Control', 'private, no-store');
     }
 }

@@ -5,12 +5,19 @@
             <div class="col-sm-6">
                 <label class="form-label" for="com-{{ $indice }}-producto">Producto de inventario</label>
                 <select id="com-{{ $indice }}-producto" name="lineas[{{ $indice }}][id_producto]" class="form-select"
-                    data-select2-url="{{ route($ruta.'.opciones', 'productos') }}" data-select2-min="0" data-select2-placeholder="Seleccionar producto">
+                    data-select2-url="{{ route($ruta.'.opciones', 'productos') }}" data-select2-min="0" data-select2-placeholder="Seleccionar producto"
+                    @if ($compra ?? false) data-compra-producto @endif>
                     <option value="">Seleccionar producto</option>
                     @isset($productoSeleccionado)
-                        <option value="{{ $productoSeleccionado->id }}" selected>{{ $productoSeleccionado->codigo }} · {{ $productoSeleccionado->nombre }}</option>
+                        <option value="{{ $productoSeleccionado->id }}" @if ($compra ?? false) data-tipo-producto="{{ $productoSeleccionado->tipo_producto }}" @endif selected>{{ $productoSeleccionado->codigo }} · {{ $productoSeleccionado->nombre }}</option>
                     @endisset
                 </select>
+                @if (($importada ?? false) && ($puedeCrearProducto ?? false) && isset($linea['descripcion']))
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-compra-crear-producto
+                        data-codigo="{{ mb_substr($linea['codigo_xml'] ?? '', 0, 60) }}" data-iva="{{ $linea['iva_codigo_xml'] ?? '' }}">
+                        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Crear producto
+                    </button>
+                @endif
             </div>
         @endif
         <div @class(['col-sm-6' => !$vinculado, 'col-12' => $vinculado])>

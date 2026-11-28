@@ -9,7 +9,7 @@
     $cuentasPorId = $ficha['cuentas']->keyBy('id');
     $marca = old('id_marca', $registro['id_marca'] ?? null);
     $unidad = old('id_unidad', $registro['id_unidad'] ?? ($registro ? null : $ficha['unidades']->firstWhere('codigo', 'UND')?->id));
-    $esServicio = old('tipo_producto', $registro['tipo_producto'] ?? 'producto') === 'servicio';
+    $sinInventario = old('tipo_producto', $registro['tipo_producto'] ?? 'producto') !== 'producto';
     $descripcionPlantillas = $ficha['plantillas']->map(fn ($plantilla) => [
         'nombre' => $plantilla->nombre,
         'cuentas' => collect(json_decode($plantilla->cuentas, true))->map(fn ($id) => $cuentasPorId->has($id)
@@ -91,10 +91,10 @@
                         <p class="form-text mb-0">Unidad registrada: {{ $registro['unidad'] }}. Selecciona su equivalente del catálogo.</p>
                     @endif
                 </div>
-                <div class="col-sm-6" data-producto-stock @if($esServicio) hidden @endif>
+                <div class="col-sm-6" data-producto-stock @if($sinInventario) hidden @endif>
                     <label class="form-label" for="producto-minimo">Stock mínimo por bodega</label>
                     <input id="producto-minimo" name="stock_minimo" class="form-control" type="number" min="0" max="1000000"
-                        step="0.001" value="{{ old('stock_minimo', $registro['stock_minimo'] ?? '0') }}" @disabled($esServicio)>
+                        step="0.001" value="{{ old('stock_minimo', $registro['stock_minimo'] ?? '0') }}" @disabled($sinInventario)>
                 </div>
             </div>
         </div>

@@ -12,14 +12,15 @@ final class PersonaApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_consulta_la_identificacion_exacta_y_devuelve_solo_los_datos_del_documento_y_nombre(): void
+    public function test_consulta_la_cedula_y_devuelve_la_identidad_y_los_datos_de_contacto(): void
     {
         $usuario = $this->administrador();
         $token = $usuario->createToken('Integración', ['personas:leer'])->plainTextToken;
         Persona::query()->create([
             'identificacion' => '0920000001', 'id_tipo_identificacion' => 1,
             'primer_nombre' => 'Ana', 'segundo_nombre' => 'Inés', 'primer_apellido' => 'Reyes', 'segundo_apellido' => 'Soto',
-            'email' => 'privado@example.test', 'direccion' => 'Dato privado',
+            'email' => 'ana@example.test', 'direccion' => 'Dirección de prueba',
+            'fecha_nacimiento' => '1990-06-15', 'telefono' => '042000000', 'celular' => '0900000000',
         ]);
 
         $this->withToken($token)->postJson(route('api.v1.personas.consultar'), ['identificacion' => '0920000001'])
@@ -27,6 +28,8 @@ final class PersonaApiTest extends TestCase
                 'identificacion' => '0920000001', 'tipo_identificacion' => 'cedula',
                 'nombres' => 'Ana Inés', 'apellidos' => 'Reyes Soto',
                 'primer_nombre' => 'Ana', 'segundo_nombre' => 'Inés', 'primer_apellido' => 'Reyes', 'segundo_apellido' => 'Soto',
+                'direccion' => 'Dirección de prueba', 'fecha_nacimiento' => '1990-06-15',
+                'email' => 'ana@example.test', 'telefono' => '042000000', 'celular' => '0900000000',
             ]]);
     }
 
@@ -56,19 +59,23 @@ final class PersonaApiTest extends TestCase
 
         $this->withToken($token)->postJson($ruta, ['identificacion' => '0920000001'])->assertNotFound();
         $this->postJson($ruta, ['identificacion' => 920000001])->assertUnprocessable()->assertJsonValidationErrors('identificacion');
+        $this->postJson($ruta, ['identificacion' => '0920000001001'])->assertUnprocessable()
+            ->assertJsonPath('errors.identificacion.0', 'La cédula debe tener exactamente 10 dígitos.');
     }
 
-    public function test_responde_409_si_el_documento_coincide_con_dos_tipos(): void
+    public function test_consulta_solo_cedulas_aunque_haya_pasaportes_con_el_mismo_numero(): void
     {
         $usuario = $this->administrador();
         $token = $usuario->createToken('Integración', ['personas:leer'])->plainTextToken;
         Persona::query()->create(['identificacion' => '0920000001', 'id_tipo_identificacion' => 1, 'nombre' => 'Persona con cédula']);
         Persona::query()->create(['identificacion' => '0920000001', 'id_tipo_identificacion' => 3, 'nombre' => 'Persona con pasaporte']);
+        Persona::query()->create(['identificacion' => '0920000002', 'id_tipo_identificacion' => 3, 'nombre' => 'Solo pasaporte']);
         $ruta = route('api.v1.personas.consultar');
 
-        $this->withToken($token)->postJson($ruta, ['identificacion' => '0920000001'])->assertConflict();
-        $this->postJson($ruta, ['identificacion' => '0920000001', 'tipo_identificacion' => 'pasaporte'])
-            ->assertOk()->assertJsonPath('data.nombres', 'Persona con pasaporte');
+        $this->withToken($token)->postJson($ruta, ['identificacion' => '0920000001'])
+            ->assertOk()->assertJsonPath('data.nombres', 'Persona con cédula')->assertJsonPath('data.fecha_nacimiento', null);
+        $this->postJson($ruta, ['identificacion' => '0920000002', 'tipo_identificacion' => 'pasaporte'])
+            ->assertNotFound();
     }
 
     private function administrador(bool $global = true): User

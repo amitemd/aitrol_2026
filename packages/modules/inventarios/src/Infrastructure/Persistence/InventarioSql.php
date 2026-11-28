@@ -166,7 +166,7 @@ final readonly class InventarioSql implements RepositorioInventario
     private function verificarExistenciaCatalogo(string $seccion, int $id, array $datos): void
     {
         $columna = $seccion === 'productos' ? 'id_producto' : 'id_bodega';
-        if (in_array($seccion, ['productos', 'bodegas'], true) && (! $datos['activo'] || ($datos['tipo_producto'] ?? null) === 'servicio')
+        if (in_array($seccion, ['productos', 'bodegas'], true) && (! $datos['activo'] || ($datos['tipo_producto'] ?? 'producto') !== 'producto')
             && $this->tabla('inv_existencias')->where($columna, $id)->where('cantidad', '>', 0)->exists()) {
             $campo = ! $datos['activo'] ? 'activo' : 'tipo_producto';
             throw ValidationException::withMessages([$campo => 'Lleva la existencia a cero antes de cambiar este campo.']);
@@ -303,7 +303,7 @@ final readonly class InventarioSql implements RepositorioInventario
             $datos['cuentas'] = json_encode((object) $cuentas, JSON_THROW_ON_ERROR);
         }
 
-        if ($seccion === 'productos' && ($datos['tipo_producto'] ?? $actual?->tipo_producto) === 'servicio') {
+        if ($seccion === 'productos' && ($datos['tipo_producto'] ?? $actual?->tipo_producto ?? 'producto') !== 'producto') {
             $datos['stock_minimo'] = 0;
         }
 
