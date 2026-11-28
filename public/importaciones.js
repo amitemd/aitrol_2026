@@ -1,4 +1,19 @@
 (() => {
+    const carga = document.querySelector('[data-importacion-carga]');
+    if (carga) {
+        const boton = carga.querySelector('button[type="submit"]');
+        const estadoCarga = carga.querySelector('[data-importacion-carga-estado]');
+
+        carga.addEventListener('submit', () => {
+            boton.disabled = true;
+            estadoCarga.hidden = false;
+        });
+        window.addEventListener('pageshow', () => {
+            boton.disabled = false;
+            estadoCarga.hidden = true;
+        });
+    }
+
     const formulario = document.querySelector('[data-personas-token]');
     formulario?.addEventListener('submit', async (evento) => {
         evento.preventDefault();
@@ -34,11 +49,11 @@
         }
     });
 
-    const estado = document.querySelector('[data-personas-estado]');
+    const estado = document.querySelector('[data-importacion-estado]');
     if (!estado) {
         return;
     }
-    let ultimoEstado;
+    let ultimoEstado = estado.innerHTML.trim();
 
     async function actualizar() {
         if (!estado.isConnected || !estado.querySelector('[data-importaciones-activas]')) {
@@ -47,13 +62,13 @@
 
         if (!document.hidden) {
             try {
-                const response = await fetch(estado.dataset.personasEstado, {
+                const response = await fetch(estado.dataset.importacionEstado, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     cache: 'no-store',
                     redirect: 'error',
                 });
                 if (response.ok) {
-                    const contenido = await response.text();
+                    const contenido = (await response.text()).trim();
                     if (contenido !== ultimoEstado) {
                         estado.innerHTML = contenido;
                         ultimoEstado = contenido;

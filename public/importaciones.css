@@ -1,0 +1,46 @@
+.importacion-avance {
+    min-inline-size: 11rem;
+}
+
+.importacion-barra {
+    appearance: none;
+    block-size: .55rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--bs-border-radius-pill);
+    background: var(--bs-secondary-bg);
+    color: var(--bs-primary);
+}
+
+.importacion-barra::-webkit-progress-bar {
+    background: transparent;
+}
+
+.importacion-barra::-webkit-progress-value {
+    background: currentColor;
+}
+
+.importacion-barra::-moz-progress-bar {
+    background: currentColor;
+}
+
+.importacion-barra:indeterminate {
+    background: linear-gradient(110deg, transparent 30%, currentColor 50%, transparent 70%) 0 0 / 200% 100%
+        no-repeat var(--bs-secondary-bg);
+    animation: importacion-espera 1.6s linear infinite;
+}
+
+.importacion-barra:indeterminate::-moz-progress-bar {
+    background: transparent;
+}
+
+@keyframes importacion-espera {
+    to { background-position-x: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .importacion-barra:indeterminate {
+        animation: none;
+        background-position-x: 50%;
+    }
+}

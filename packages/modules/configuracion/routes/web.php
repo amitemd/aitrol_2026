@@ -1,14 +1,15 @@
 <?php
 
+use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\EmpresaController;
 use Aitrol\Configuracion\Infrastructure\Http\MantenimientoServidorController;
 use Aitrol\Configuracion\Infrastructure\Http\MenuController;
 use Aitrol\Configuracion\Infrastructure\Http\ParametrosEmpresaController;
-use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
-use Aitrol\Configuracion\Infrastructure\Http\AccesoController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
+use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
 use App\Http\Controllers\ContextoOperativoController;
 use App\Http\Controllers\PersonaImportacionController;
+use App\Http\Controllers\ProductoImportacionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-personas'])
@@ -42,6 +43,14 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-me
 Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-configuracion'])
     ->prefix('configuraciones')->name('configuracion.')
     ->group(function (): void {
+        Route::view('/importaciones', 'configuracion::importaciones')->name('importaciones.index');
+        Route::prefix('/importaciones/productos')->name('importaciones.productos.')->group(function (): void {
+            Route::get('/', [ProductoImportacionController::class, 'index'])->name('index');
+            Route::get('/estado', [ProductoImportacionController::class, 'estado'])
+                ->middleware('throttle:60,1,productos-importaciones-estado')->name('estado');
+            Route::get('/plantilla', [ProductoImportacionController::class, 'plantilla'])->name('plantilla');
+            Route::post('/', [ProductoImportacionController::class, 'store'])->middleware('throttle:6,1')->name('store');
+        });
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
         Route::get('/sucursales', [ContextoOperativoController::class, 'index'])->name('sucursales.index');
         Route::get('/sucursales/crear', [ContextoOperativoController::class, 'formulario'])->name('sucursales.create');

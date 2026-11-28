@@ -24,7 +24,7 @@ final class PersonaImportacionController extends Controller
 
     public function estado(): Response
     {
-        return response()->view('configuracion::personas-importaciones-estado', ['tareas' => $this->tareas()])
+        return response()->view('configuracion::importaciones-estado', ['tareas' => $this->tareas()])
             ->header('Cache-Control', 'private, no-store');
     }
 

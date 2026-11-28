@@ -7,13 +7,16 @@
 
     <div class="app-content">
         <div class="container-fluid">
+            <a class="btn btn-outline-secondary mb-3" href="{{ route('configuracion.importaciones.index') }}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Importaciones
+            </a>
             @if (session('estado'))
                 <p class="alert alert-success" role="status">{{ session('estado') }}</p>
             @endif
 
             <section class="card mb-4">
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data" action="{{ route('configuracion.personas.importaciones.store') }}">
+                    <form method="post" enctype="multipart/form-data" action="{{ route('configuracion.personas.importaciones.store') }}" data-importacion-carga>
                         @csrf
                         <label for="archivo-personas" class="form-label fw-semibold">Archivo Excel de personas</label>
                         <div class="d-flex flex-wrap flex-md-nowrap gap-2">
@@ -28,6 +31,10 @@
                             Formato .xlsx de hasta 16 MB. Incluya identificación y nombres en los encabezados.
                             Las personas ya registradas se conservan.
                         </p>
+                        <div class="mt-3" data-importacion-carga-estado hidden>
+                            <p class="small mb-1" id="personas-carga-etiqueta" role="status">Subiendo el archivo…</p>
+                            <progress class="importacion-barra w-100 d-block" aria-labelledby="personas-carga-etiqueta"></progress>
+                        </div>
                     </form>
                 </div>
             </section>
@@ -53,13 +60,17 @@
                 </div>
             </section>
 
-            <div data-personas-estado="{{ route('configuracion.personas.importaciones.estado') }}">
-                @include('configuracion::personas-importaciones-estado')
+            <div data-importacion-estado="{{ route('configuracion.personas.importaciones.estado') }}">
+                @include('configuracion::importaciones-estado')
             </div>
         </div>
     </div>
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('importaciones.css') }}?v={{ filemtime(public_path('importaciones.css')) }}">
+@endpush
+
 @push('scripts')
-    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('personas-importaciones.js') }}?v={{ filemtime(public_path('personas-importaciones.js')) }}" defer></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('importaciones.js') }}?v={{ filemtime(public_path('importaciones.js')) }}" defer></script>
 @endpush

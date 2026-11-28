@@ -5,6 +5,40 @@
     }
   ],
   "paths": {
+    "/api/v1/inventarios/productos/importaciones": {
+      "post": {
+        "tags": ["Inventarios"],
+        "operationId": "encolarImportacionProductos",
+        "summary": "Importar productos desde CSV",
+        "description": "Requiere un administrador de la empresa activa y el alcance inventarios:escribir. El CSV UTF-8 usa punto y coma y admite 4 MB y 20.000 filas. Los códigos existentes se conservan.",
+        "requestBody": {
+          "required": true,
+          "content": {"multipart/form-data": {"schema": {"type": "object", "required": ["archivo"], "properties": {"archivo": {"type": "string", "format": "binary"}}}}}
+        },
+        "responses": {
+          "202": {"description": "Archivo en cola. Location y data.url_estado indican dónde consultar el avance."},
+          "401": {"description": "Token ausente o inválido."},
+          "403": {"description": "Permiso o alcance insuficiente."},
+          "422": {"description": "Formato o tamaño inválido."},
+          "429": {"description": "Límite de cargas alcanzado."}
+        }
+      }
+    },
+    "/api/v1/inventarios/productos/importaciones/{importacion}": {
+      "get": {
+        "tags": ["Inventarios"],
+        "operationId": "consultarImportacionProductos",
+        "summary": "Consultar el avance de una importación de productos",
+        "description": "Requiere un administrador de la empresa activa y el alcance inventarios:leer.",
+        "parameters": [{"name": "importacion", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {
+          "200": {"description": "Estado, filas totales, procesadas, nuevas, existentes y omitidas."},
+          "401": {"description": "Token ausente o inválido."},
+          "403": {"description": "Permiso o alcance insuficiente."},
+          "404": {"description": "Importación inexistente en la empresa activa."}
+        }
+      }
+    },
     "/api/v1/inventarios/marcas": {
       "get": {
         "tags": ["Inventarios"],
