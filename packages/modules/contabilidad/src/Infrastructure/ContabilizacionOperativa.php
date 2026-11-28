@@ -80,6 +80,7 @@ final readonly class ContabilizacionOperativa
     {
         $doc = $this->datos->fila('com_documentos', $evento->id);
         if ($doc->fecha < $inicio || ! in_array($doc->tipo, ['documentos', 'notas-credito', 'notas-debito', 'retenciones'], true)) return;
+        if ($doc->tipo === 'retenciones' && (int) $doc->total === 0) return;
         if ($evento->contabilizacionObligatoria && $doc->tipo === 'notas-credito') {
             $idAsiento = $this->asientoOrigen('comercial.documento', $doc->id_documento_origen);
             if ($idAsiento === null) {
@@ -214,6 +215,14 @@ final readonly class ContabilizacionOperativa
         }
         if ($op->fecha < $inicio) return;
         abort_unless($op->moneda === 'USD', 422, 'La contabilidad automática usa USD. Esta operación requiere conversión contable.');
+        if ($op->id_factura_venta !== null) {
+            $idAsiento = $this->asientoOrigen('comercial.documento', $op->id_factura_venta);
+            if ($idAsiento === null || ! $this->datos->asiento($idAsiento)->lineas->contains(
+                fn (stdClass $partida) => (int) $partida->id_cuenta === (int) ($reglas['clientes'] ?? 0) && $partida->debe > 0,
+            )) {
+                $this->falta('La regla de clientes debe coincidir con la cuenta por cobrar del asiento de la factura.');
+            }
+        }
         $lineas = [];
         $traslado = in_array($op->tipo, ['transferencia', 'deposito'], true);
         foreach ($this->datos->tabla('cb_asientos')->where('id_operacion', $op->id)->get() as $fila) {
@@ -221,7 +230,7 @@ final readonly class ContabilizacionOperativa
             if ($idCuenta === null) $this->falta('Configura la cuenta contable de la caja o banco '.$fila->id_cuenta.'.');
             $lineas[] = $this->monto((int) $idCuenta, (int) $fila->variacion);
             if (! $traslado) {
-                $contra = match ($op->tipo) {
+                $contra = $op->id_factura_venta !== null ? 'clientes' : match ($op->tipo) {
                     'debito' => 'comisiones', 'credito' => 'abonos', default => 'puente_tesoreria',
                 };
                 $this->linea($lineas, $reglas, $contra, -(int) $fila->variacion);

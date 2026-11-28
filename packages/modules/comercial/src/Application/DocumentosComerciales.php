@@ -14,6 +14,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -48,6 +49,17 @@ final readonly class DocumentosComerciales
 
         return $consulta->orderByDesc('id')->paginate($filtros['per_page'] ?? $porPagina)
             ->appends($filtros);
+    }
+
+    public function compraRegistrada(string $ruc, string $numero): bool
+    {
+        $empresa = $this->empresa->id();
+
+        return DB::table('com_documentos')->where('id_empresa', $empresa)
+            ->where('modulo', 'compras')->where('tipo', 'documentos')->where('numero', $numero)
+            ->whereIn('emisor', DB::table('erp_proveedores')->select('id')->where('id_empresa', $empresa)
+                ->where('tipo_identificacion', 'ruc')->where('identificacion', $ruc))
+            ->exists();
     }
 
     public function consultar(string $modulo, string $seccion, int $id): stdClass
@@ -107,7 +119,7 @@ final readonly class DocumentosComerciales
                 $lineas = match (true) {
                     $creditoTotal => $lineasOrigen->map(fn (stdClass $fila): array => array_intersect_key((array) $fila,
                         array_flip(['id_producto', 'id_bodega', 'descripcion', 'cantidad', 'precio', 'tasa', 'subtotal', 'impuesto', 'total'])))->all(),
-                    $seccion === 'retenciones' => $this->prepararRetenciones($datos['lineas']),
+                    $seccion === 'retenciones' => $this->prepararRetenciones($datos['lineas'], $datos['permitir_retencion_cero'] ?? false),
                     default => $this->prepararLineas($datos['lineas']),
                 };
                 $subtotal = array_sum(array_column($lineas, 'subtotal'));
@@ -143,10 +155,16 @@ final readonly class DocumentosComerciales
                 if (Str::length($numero) > 60) {
                     throw ValidationException::withMessages(['numero' => 'El número debe tener hasta 60 caracteres en mayúsculas.']);
                 }
+                if ($modulo === 'ventas' && $seccion === 'retenciones' && DB::table('com_documentos')
+                    ->where(['id_empresa' => $this->empresa->id(), 'modulo' => $modulo, 'tipo' => $seccion,
+                        'numero' => $numero, 'id_cliente' => $tercero])->exists()) {
+                    throw ValidationException::withMessages(['numero' => 'Ya existe una retención de este emisor con el mismo número.']);
+                }
+                $emisor = $modulo === 'compras' || $seccion === 'retenciones' ? $tercero : 0;
                 $id = DB::table('com_documentos')->insertGetId([
                     'id_empresa' => $this->empresa->id(), 'modulo' => $modulo, 'tipo' => $seccion,
                     'id_sucursal' => $this->contexto->sucursal()->id,
-                    'numero' => $numero, 'emisor' => $modulo === 'compras' ? $tercero : 0,
+                    'numero' => $numero, 'emisor' => $datos['emisor_retencion'] ?? $emisor,
                     $campo => $tercero, 'tercero' => $nombre, 'fecha' => $datos['fecha'],
                     'id_documento_origen' => $origen?->id, 'id_bodega' => $bodega, 'subtotal' => $subtotal,
                     'impuesto' => $impuesto, 'total' => $total, 'observacion' => $datos['observacion'] ?? null,
@@ -208,6 +226,17 @@ final readonly class DocumentosComerciales
                 ->where('tipo', $seccion)->where('id', $id)->lockForUpdate()->first()
                 ?? abort(404, 'Documento no encontrado.');
             abort_if($documento->anulado_at !== null, 409, 'El documento ya está anulado.');
+            if ($modulo === 'ventas' && $seccion === 'documentos') {
+                $cobroActivo = DB::table('cb_operaciones as cobro')->where('cobro.id_empresa', $this->empresa->id())
+                    ->where('cobro.id_factura_venta', $id)->whereNotExists(fn (Builder $q) => $q->from('cb_operaciones as reversa')
+                        ->selectRaw('1')->whereColumn('reversa.id_empresa', 'cobro.id_empresa')->whereColumn('reversa.id_reversa_de', 'cobro.id'))
+                    ->exists();
+                abort_if($cobroActivo, 409, 'Revierte los cobros registrados antes de anular la factura.');
+            }
+            if ($modulo === 'compras' && $seccion === 'retenciones') {
+                $fiscal = json_decode($documento->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+                abort_if(isset($fiscal['xml_firmado']), 409, 'Gestiona la anulación de esta retención electrónica ante el SRI.');
+            }
             if ($origen !== null && $seccion === 'notas-debito') {
                 $this->verificarImportes($modulo, $origen, $seccion, -(int) $documento->total);
             }
@@ -234,10 +263,68 @@ final readonly class DocumentosComerciales
         });
     }
 
-    public function vinculadosVenta(int $id): \Illuminate\Support\Collection
+    /** @param array{ruta: string, mime: string} $respaldo */
+    public function adjuntarRespaldoCompra(int $id, array $respaldo): void
     {
-        return $this->conAsientos($this->documentos('ventas')->where('id_documento_origen', $id))
+        $this->empresa->transaccion(function () use ($id, $respaldo): void {
+            $compra = $this->contexto->aplicarPeriodo($this->documentos('compras'), 'fecha')
+                ->where('tipo', 'documentos')->where('id', $id);
+            $registro = (clone $compra)->lockForUpdate()->first(['datos_factura'])
+                ?? abort(404, 'Compra no encontrada.');
+            $datos = json_decode($registro->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+            abort_if(! empty($datos['respaldo_compra']), 409, 'Esta compra ya tiene un archivo de respaldo.');
+
+            $datos['respaldo_compra'] = $respaldo;
+            $compra->update(['datos_factura' => json_encode($datos, JSON_THROW_ON_ERROR), 'updated_at' => now()]);
+        });
+    }
+
+    public function vinculados(string $modulo, int $id): \Illuminate\Support\Collection
+    {
+        $documentos = $this->conAsientos($this->documentos($modulo)->where('id_documento_origen', $id))
             ->orderBy('fecha')->orderBy('id')->get();
+        if ($documentos->isEmpty()) {
+            return $documentos;
+        }
+
+        $operaciones = DB::table('com_lineas')->where('id_empresa', $this->empresa->id())
+            ->whereIn('id_documento', $documentos->pluck('id'))
+            ->where(fn (Builder $consulta) => $consulta->whereNotNull('id_operacion')->orWhereNotNull('id_operacion_reversa'))
+            ->orderBy('id')->get(['id_documento', 'id_operacion', 'id_operacion_reversa'])->groupBy('id_documento');
+
+        foreach ($documentos as $documento) {
+            $documento->lineas = $operaciones->get($documento->id, collect());
+        }
+
+        return $documentos;
+    }
+
+    public function partidasDeInventario(Collection $documentos): Collection
+    {
+        $ids = $documentos->flatMap(fn (stdClass $documento) => $documento->lineas->pluck('id_operacion')
+            ->concat($documento->lineas->pluck('id_operacion_reversa')))->filter()->unique();
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return DB::table('inv_kardex as kardex')->where('kardex.id_empresa', $this->empresa->id())
+            ->whereIn('kardex.id_operacion', $ids)
+            ->join('inv_productos as producto', fn (JoinClause $join) => $join
+                ->on('producto.id_empresa', '=', 'kardex.id_empresa')->on('producto.id', '=', 'kardex.id_producto'))
+            ->join('inv_bodegas as bodega', fn (JoinClause $join) => $join
+                ->on('bodega.id_empresa', '=', 'kardex.id_empresa')->on('bodega.id', '=', 'kardex.id_bodega'))
+            ->orderBy('kardex.id')->get([
+                'kardex.id_operacion', 'kardex.id_producto', 'kardex.variacion', 'producto.codigo',
+                'producto.nombre as producto', 'bodega.nombre as bodega',
+            ])->groupBy('id_operacion');
+    }
+
+    public function tiposProductosTrazabilidad(Collection $lineas): Collection
+    {
+        $ids = $lineas->pluck('id_producto')->filter()->unique();
+
+        return $ids->isEmpty() ? collect() : DB::table('inv_productos')->where('id_empresa', $this->empresa->id())
+            ->whereIn('id', $ids)->get(['id', 'codigo', 'tipo_producto'])->keyBy('id');
     }
 
     public function contabilizarVenta(int $id, \Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa $contabilidad): void
@@ -362,14 +449,14 @@ final readonly class DocumentosComerciales
         return $preparadas;
     }
 
-    private function prepararRetenciones(array $lineas): array
+    private function prepararRetenciones(array $lineas, bool $permitirCero = false): array
     {
         $preparadas = [];
         foreach ($lineas as $indice => $linea) {
             $base = Cantidad::unidades($linea['base_retencion'], 2);
             $porcentaje = Cantidad::unidades($linea['porcentaje_retencion'], 2);
             $importe = intdiv($base * $porcentaje + 5000, 10000);
-            if ($importe === 0) {
+            if ($importe === 0 && (! $permitirCero || $porcentaje !== 0)) {
                 throw ValidationException::withMessages(['lineas.'.$indice.'.porcentaje_retencion' => 'El importe retenido debe ser al menos 0.01.']);
             }
             $preparadas[] = [

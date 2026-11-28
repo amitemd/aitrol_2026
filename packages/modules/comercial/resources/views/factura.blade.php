@@ -104,20 +104,21 @@
                             <textarea id="factura-observacion" name="observacion" rows="2" maxlength="500" class="form-control">{{ old('observacion', $datos['observacion'] ?? '') }}</textarea>
                         </div>
                         <div class="col-12">
-                            <details>
-                                <summary>Datos adicionales (hasta 5)</summary>
-                                @for ($i = 0; $i < 5; $i++)
-                                    <div class="row g-2 mt-1">
-                                        @foreach (['nombre' => ['col-md-4', 'Nombre'], 'valor' => ['col-md-8', 'Dato']] as $campo => [$columna, $etiqueta])
-                                            <div class="{{ $columna }}">
-                                                <label class="visually-hidden" for="factura-adicional-{{ $i }}-{{ $campo }}">{{ $etiqueta }} {{ $i + 1 }}</label>
-                                                <input class="form-control" id="factura-adicional-{{ $i }}-{{ $campo }}" name="informacion_adicional[{{ $i }}][{{ $campo }}]"
-                                                    maxlength="299" placeholder="{{ $etiqueta }} {{ $i + 1 }}" value="{{ old('informacion_adicional.'.$i.'.'.$campo, $datos['informacion_adicional'][$i][$campo] ?? '') }}">
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endfor
-                            </details>
+                            @php $adicionales = array_values((array) old('informacion_adicional', $datos['informacion_adicional'] ?? [])); @endphp
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <span class="form-label mb-0">Datos adicionales</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-factura-adicional-agregar @disabled(count($adicionales) >= 5)>
+                                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Agregar dato
+                                </button>
+                            </div>
+                            <div class="d-grid gap-2" data-factura-adicionales>
+                                @foreach ($adicionales as $indice => $adicional)
+                                    @include('comercial::factura-adicional', ['indice' => $indice, 'adicional' => $adicional])
+                                @endforeach
+                            </div>
+                            <template data-factura-adicional-plantilla>
+                                @include('comercial::factura-adicional', ['indice' => '__INDICE__', 'adicional' => []])
+                            </template>
                         </div>
                     </div>
                 </section>

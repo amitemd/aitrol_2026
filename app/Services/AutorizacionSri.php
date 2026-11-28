@@ -8,6 +8,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use SimpleXMLElement;
 use stdClass;
 
@@ -106,6 +107,34 @@ final readonly class AutorizacionSri
         return $resultado;
     }
 
+    public function recibir(string $xml, string $ambiente): void
+    {
+        $servidor = self::SERVICIOS[$ambiente] ?? throw ValidationException::withMessages(['sri' => 'El ambiente SRI del comprobante es inválido.']);
+        $contenido = base64_encode($xml);
+        $soap = <<<XML
+            <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sri="http://ec.gob.sri.ws.recepcion">
+              <soap:Body><sri:validarComprobante><xml>{$contenido}</xml></sri:validarComprobante></soap:Body>
+            </soap:Envelope>
+            XML;
+        try {
+            $respuesta = Http::connectTimeout(4)->timeout(12)->withoutRedirecting()
+                ->withHeader('SOAPAction', '""')->withBody($soap, 'text/xml; charset=UTF-8')
+                ->post('https://'.$servidor.'/comprobantes-electronicos-ws/RecepcionComprobantesOffline');
+        } catch (ConnectionException) {
+            throw ValidationException::withMessages(['sri' => 'El SRI no confirmó la recepción. Puedes volver a consultar con la misma clave.']);
+        }
+        $recepcion = $respuesta->successful() ? (self::leerXml($respuesta->body())?->xpath('//*[local-name()="RespuestaRecepcionComprobante"]')[0] ?? null) : null;
+        if ((string) $recepcion?->estado === 'RECIBIDA') {
+            return;
+        }
+        $mensajes = [];
+        foreach ($recepcion?->xpath('.//mensajes/mensaje') ?? [] as $mensaje) {
+            $mensajes[] = Str::limit(trim((string) $mensaje->identificador.' '.$mensaje->mensaje.' '.$mensaje->informacionAdicional), 400);
+        }
+
+        throw ValidationException::withMessages(['sri' => $mensajes ?: ['El SRI no confirmó la recepción del XML firmado.']]);
+    }
+
     /** @return array{estado: string, mensajes: list<string>, xml?: string} */
     private function interpretar(string $cuerpo, string $clave, string $ambiente): array
     {
@@ -131,7 +160,12 @@ final readonly class AutorizacionSri
             }
             if ($estado === 'AUTORIZADO') {
                 $documento = self::leerXml((string) $autorizacion->comprobante);
-                if ($documento?->getName() !== 'factura'
+                $raiz = match (substr($clave, 8, 2)) {
+                    '01' => 'factura',
+                    '07' => 'comprobanteRetencion',
+                    default => null,
+                };
+                if ($raiz === null || $documento?->getName() !== $raiz
                     || (string) $documento->infoTributaria->claveAcceso !== $clave
                     || (string) $documento->infoTributaria->ambiente !== $ambiente
                     || trim((string) $autorizacion->numeroAutorizacion) !== $clave
@@ -160,5 +194,19 @@ final readonly class AutorizacionSri
         $resultado = @simplexml_load_string($xml, SimpleXMLElement::class, LIBXML_NONET);
 
         return $resultado === false ? null : $resultado;
+    }
+
+    public static function digitoVerificador(string $base): int
+    {
+        $suma = 0;
+        for ($i = 47; $i >= 0; $i--) {
+            $suma += (int) $base[$i] * (2 + (47 - $i) % 6);
+        }
+
+        return match ($verificador = 11 - $suma % 11) {
+            11 => 0,
+            10 => 1,
+            default => $verificador,
+        };
     }
 }

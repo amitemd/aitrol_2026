@@ -173,7 +173,7 @@
     }
 
     dialog.addEventListener('click', (event) => {
-        const pagina = event.target.closest('[data-ajax-modal-page] a[href]');
+        const pagina = event.target.closest('[data-ajax-modal-page] a[href], a[href][data-ajax-modal-page]');
         if (pagina && pagina.origin === location.origin && !saving) {
             event.preventDefault();
             openForm(pagina, true);

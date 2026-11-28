@@ -8,22 +8,30 @@ use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use Aitrol\Proveedores\Infrastructure\Persistence\EloquentProveedorRepository;
 use App\Services\AutorizacionSri;
+use App\Services\CatalogoRetenciones;
+use App\Services\CobroFacturaVenta;
 use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
 use App\Services\FacturaVenta;
+use App\Services\FirmaSri;
 use App\Services\PdfFacturaAutorizada;
+use App\Services\RetencionElectronica;
 use App\Services\XmlCompra;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 final readonly class ComercialController
 {
@@ -36,7 +44,7 @@ final readonly class ComercialController
 
     public function __construct(private DocumentosComerciales $documentos) {}
 
-    public function index(Request $request)
+    public function index(Request $request, CobroFacturaVenta $cobros)
     {
         [$modulo, $seccion] = $this->seccion($request);
         $filtros = $this->filtros($request, conPaginacion: $seccion !== 'reportes');
@@ -48,11 +56,13 @@ final readonly class ComercialController
         }
 
         $api = $request->routeIs('api.*');
-        $registros = $this->documentos->listar($modulo, $seccion, $filtros, incluirSri: ! $api)
-            ->through($api ? $this->decimales(...) : $this->detalleDocumento(...));
+        $listaCompras = $modulo === 'compras' && $seccion === 'documentos';
+        $registros = $this->documentos->listar($modulo, $seccion, $filtros, incluirSri: ! $api);
+        $saldos = ! $api && $modulo === 'ventas' && $seccion === 'documentos' ? $cobros->saldos($registros->getCollection()) : collect();
+        $registros->through($api ? $this->decimales(...) : fn (stdClass $registro): array => $this->detalleDocumento($registro, datosRespaldo: $listaCompras));
 
         return $api ? response()->json($registros)
-            : view('comercial::index', compact('modulo', 'seccion', 'filtros', 'registros'));
+            : view('comercial::index', compact('modulo', 'seccion', 'filtros', 'registros', 'saldos'));
     }
 
     public function exportar(Request $request)
@@ -146,8 +156,84 @@ final readonly class ComercialController
             Gate::authorize('permiso', ['ventas.documentos.index', 'actualizar']);
         }
         abort_if($origen?->anulado_at !== null, 409, 'La factura de origen ya está anulada.');
-
         return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha', 'origen', 'creditoTotal'));
+    }
+
+    public function formularioRetencionRecibida(Request $request): View
+    {
+        $datos = $request->validate(['origen' => ['nullable', 'integer', 'min:1']]);
+        $origen = isset($datos['origen']) ? $this->documentos->consultar('ventas', 'documentos', (int) $datos['origen']) : null;
+        abort_if($origen?->anulado_at !== null, 409, 'La factura de origen ya está anulada.');
+
+        return view('comercial::retencion-recibida', compact('origen'));
+    }
+
+    public function catalogoRetenciones(Request $request, CatalogoRetenciones $catalogo): JsonResponse
+    {
+        $filtros = $request->validate([
+            'tipo' => ['required', 'in:renta,iva'], 'fecha' => ['required', 'date_format:Y-m-d'],
+            'q' => ['nullable', 'string', 'max:80'], 'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+        $termino = trim($filtros['q'] ?? '');
+        if ($termino === '') {
+            return response()->json(['results' => [], 'pagination' => ['more' => false]]);
+        }
+        $registros = $catalogo->vigentes($filtros['tipo'], $filtros['fecha'])
+            ->where(fn ($q) => $q->whereLike('codigo', $termino.'%')->orWhereLike('descripcion', '%'.$termino.'%'))
+            ->orderBy('codigo')->paginate(15);
+
+        return response()->json([
+            'results' => $registros->getCollection()->map(function (stdClass $fila): array {
+                $tasa = $fila->porcentaje === null ? null : (string) (float) $fila->porcentaje;
+
+                return [
+                    'id' => $fila->codigo,
+                    'text' => $fila->codigo.' · '.$fila->descripcion.' · '.($tasa === null ? 'Tarifa variable' : $tasa.' %'),
+                    'porcentaje' => $tasa,
+                ];
+            }),
+            'pagination' => ['more' => $registros->hasMorePages()],
+        ]);
+    }
+
+    public function importarRetencion(Request $request, AutorizacionSri $sri, RetencionElectronica $retenciones): JsonResponse|RedirectResponse
+    {
+        $datos = $request->validate([
+            'id_documento_origen' => ['nullable', 'integer', 'min:1'],
+            'clave_acceso' => ['nullable', 'required_without:xml_retencion', 'prohibits:xml_retencion', 'regex:/\A[0-9]{8}07[0-9]{39}\z/'],
+            'xml_retencion' => ['nullable', 'required_without:clave_acceso', 'file', 'extensions:xml', 'max:1900'],
+        ], ['clave_acceso.regex' => 'Ingresa los 49 dígitos de la clave de una retención.']);
+        $clave = $datos['clave_acceso'] ?? null;
+        if ($clave !== null) {
+            $resultado = $sri->buscar($clave);
+            if ($resultado['estado'] !== 'AUTORIZADO' || empty($resultado['xml'])) {
+                throw ValidationException::withMessages(['clave_acceso' => $resultado['mensajes'] ?: ['El SRI aún no devuelve una retención autorizada.']]);
+            }
+            $contenido = $resultado['xml'];
+        } else {
+            $contenido = $datos['xml_retencion']->get();
+        }
+        $retenciones->importar($contenido, isset($datos['id_documento_origen']) ? (int) $datos['id_documento_origen'] : null, $clave);
+
+        return $request->expectsJson() ? response()->json(['message' => 'Retención recibida y vinculada a la venta.'])
+            : to_route('ventas.retenciones.index')->with('status', 'Retención recibida y vinculada a la venta.');
+    }
+
+    public function descargarRetencion(Request $request, int $registro, AutorizacionSri $sri): StreamedResponse
+    {
+        $retencion = $this->documentos->consultar($request->route('modulo'), 'retenciones', $registro);
+        $fiscal = json_decode($retencion->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+        $xml = $sri->autorizado($registro)?->xml_autorizado ?? $fiscal['xml_firmado'] ?? $fiscal['xml_retencion'] ?? abort(404);
+
+        return response()->streamDownload(fn () => print($xml), 'retencion-'.$retencion->numero.'.xml', ['Content-Type' => 'application/xml']);
+    }
+
+    public function emitirRetencion(Request $request, int $registro, RetencionElectronica $retenciones, FirmaSri $firma, AutorizacionSri $sri): JsonResponse|RedirectResponse
+    {
+        $mensaje = $retenciones->emitir($registro, $firma, $sri);
+
+        return $request->expectsJson() ? response()->json(['message' => $mensaje])
+            : to_route('compras.retenciones.show', $registro)->with('status', $mensaje);
     }
 
     public function importarCompra(Request $request, EmpresaActiva $empresa, AutorizacionSri $sri, XmlCompra $lector, EloquentProveedorRepository $proveedores): RedirectResponse
@@ -158,7 +244,12 @@ final readonly class ComercialController
         ]);
         $desdeSri = isset($datos['clave_compra']);
         if ($desdeSri) {
-            $resultado = $sri->buscar($datos['clave_compra']);
+            $clave = $datos['clave_compra'];
+            $numero = substr($clave, 24, 3).'-'.substr($clave, 27, 3).'-'.substr($clave, 30, 9);
+            if (substr($clave, 8, 2) === '01' && $this->documentos->compraRegistrada(substr($clave, 10, 13), $numero)) {
+                return $this->compraDuplicada($numero);
+            }
+            $resultado = $sri->buscar($clave);
             if ($resultado['estado'] !== 'AUTORIZADO' || empty($resultado['xml'])) {
                 throw ValidationException::withMessages([
                     'clave_compra' => 'No se obtuvo un XML autorizado del SRI. '.implode(' ', array_slice(
@@ -172,6 +263,9 @@ final readonly class ComercialController
         }
         $ruc = DB::table('erp_empresas')->where('id', $empresa->id())->value('ruc');
         $importacion = $lector->leer($xml, (string) $ruc);
+        if ($this->documentos->compraRegistrada($importacion['ruc_emisor'], $importacion['numero'])) {
+            return $this->compraDuplicada($importacion['numero']);
+        }
         $proveedores->registrarDesdeFactura($importacion['ruc_emisor'], $importacion['proveedor'], $importacion['direccion_proveedor']);
         $importacion['fiscal']['fuente_compra'] = $desdeSri ? 'sri' : 'archivo';
         $token = (string) Str::uuid();
@@ -183,6 +277,13 @@ final readonly class ComercialController
         return to_route('compras.documentos.create', ['importacion' => $token]);
     }
 
+    private function compraDuplicada(string $numero): RedirectResponse
+    {
+        return to_route('compras.documentos.create')->withErrors([
+            'compra_duplicada' => 'El comprobante '.$numero.' ya está registrado como compra de este proveedor.',
+        ]);
+    }
+
     public function descargarXmlCompra(int $registro): StreamedResponse
     {
         abort_unless(Gate::allows('permiso', ['compras.documentos.index', 'leer'])
@@ -192,6 +293,53 @@ final readonly class ComercialController
         $xml = $fiscal['xml_recibido'] ?? abort(404, 'Esta compra no tiene un XML adjunto.');
 
         return response()->streamDownload(fn () => print($xml), 'compra-'.$compra->id.'.xml', ['Content-Type' => 'application/xml']);
+    }
+
+    public function formularioRespaldoCompra(int $registro): View
+    {
+        $compra = $this->documentos->consultar('compras', 'documentos', $registro);
+        $documento = $this->detalleDocumento($compra, datosRespaldo: true);
+        abort_if($documento['tiene_respaldo'], 409, 'Esta compra ya tiene un archivo de respaldo.');
+
+        return view('comercial::respaldo-compra', compact('documento'));
+    }
+
+    public function guardarRespaldoCompra(Request $request, int $registro, EmpresaActiva $empresa): JsonResponse|RedirectResponse
+    {
+        $this->documentos->consultar('compras', 'documentos', $registro);
+        $archivo = $request->validate([
+            'archivo' => ['required', 'file', 'mimetypes:application/pdf,image/jpeg,image/png,image/webp', 'max:10240'],
+        ], [
+            'archivo.mimetypes' => 'Elige un archivo PDF, JPG, PNG o WebP.',
+            'archivo.max' => 'El archivo puede pesar hasta 10 MB.',
+        ])['archivo'];
+        $ruta = $archivo->store('compras/respaldo/'.$empresa->id(), 'local');
+        abort_if($ruta === false, 500, 'No se pudo guardar el archivo de respaldo.');
+        try {
+            $this->documentos->adjuntarRespaldoCompra($registro, [
+                'ruta' => $ruta, 'mime' => $archivo->getMimeType(),
+            ]);
+        } catch (Throwable $error) {
+            Storage::disk('local')->delete($ruta);
+            throw $error;
+        }
+
+        $mensaje = 'Archivo de respaldo guardado.';
+
+        return $request->expectsJson() ? response()->json(['message' => $mensaje])
+            : to_route('compras.documentos.index')->with('status', $mensaje);
+    }
+
+    public function archivoRespaldoCompra(Request $request, int $registro): StreamedResponse
+    {
+        $compra = $this->documentos->consultar('compras', 'documentos', $registro);
+        $datos = json_decode($compra->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+        $respaldo = $datos['respaldo_compra'] ?? abort(404);
+        $disco = Storage::disk('local');
+        abort_unless($disco->exists($respaldo['ruta']), 404, 'El archivo de respaldo no está disponible.');
+        $nombre = 'compra-'.$registro.'.'.pathinfo($respaldo['ruta'], PATHINFO_EXTENSION);
+
+        return $disco->response($respaldo['ruta'], $nombre, ['Content-Type' => $respaldo['mime']], $request->boolean('descargar') ? 'attachment' : 'inline');
     }
 
     private function importacionCompra(Request $request, mixed $token): ?array
@@ -206,19 +354,57 @@ final readonly class ComercialController
         return $guardada['datos'];
     }
 
-    public function show(Request $request)
+    public function show(Request $request, ContextoOperativo $contexto, CobroFacturaVenta $cobros)
     {
         [$modulo, $seccion] = $this->seccion($request);
         $registro = $this->documentos->consultar($modulo, $seccion, (int) $request->route('registro'));
-        $documento = $this->detalleDocumento($registro);
+        if ($request->routeIs('api.*')) {
+            return response()->json(['data' => $this->detalleDocumento($registro)]);
+        }
+        $visorFactura = $seccion === 'documentos';
+        $documento = $this->detalleDocumento($registro, $visorFactura, $visorFactura && $modulo === 'compras');
+        $datosVisor = $visorFactura ? $this->datosVisorFacturas($modulo, $contexto->sucursal(), collect([$registro])) : [];
+        if ($visorFactura && $modulo === 'ventas' && ! empty($documento['clave_acceso'])) {
+            $documento['estado_sri'] = DB::table('com_sri_consultas')->where('id_empresa', $registro->id_empresa)
+                ->where('id_documento', $registro->id)->latest('id')->value('estado');
+        }
+        if ($visorFactura && $modulo === 'ventas') {
+            $documento['saldo_cobro'] = $cobros->saldo($registro);
+        }
+        $verRespaldo = $visorFactura && $modulo === 'compras' && $request->boolean('respaldo');
+        abort_if($verRespaldo && ! $documento['tiene_respaldo'], 404, 'Esta compra todavía no tiene un PDF o una imagen de respaldo.');
 
-        return $request->routeIs('api.*') ? response()->json(['data' => $documento])
-            : view('comercial::detalle', compact('modulo', 'seccion', 'documento'));
+        return view('comercial::detalle', compact('modulo', 'seccion', 'documento', 'visorFactura', 'verRespaldo') + $datosVisor);
+    }
+
+    public function formularioCobro(int $registro, CobroFacturaVenta $cobros): View
+    {
+        $factura = $this->documentos->consultar('ventas', 'documentos', $registro);
+        abort_if($factura->anulado_at !== null, 409, 'La factura está anulada.');
+        $saldo = $cobros->saldo($factura);
+
+        return view('comercial::cobro-factura', compact('factura', 'saldo'));
+    }
+
+    public function registrarCobro(Request $request, int $registro, CobroFacturaVenta $cobros): JsonResponse|RedirectResponse
+    {
+        $datos = $request->validate([
+            'id_cuenta' => ['required', 'integer', 'min:1'],
+            'fecha' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.now('America/Guayaquil')->toDateString()],
+            'importe' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:100000000'],
+            'referencia' => ['required', 'string', 'max:120'], 'clave_operacion' => ['required', 'uuid'],
+        ]);
+        $cobros->registrar($registro, $datos);
+        $mensaje = 'Cobro registrado en Caja y bancos.';
+
+        return $request->expectsJson() ? response()->json(['message' => $mensaje])
+            : to_route('ventas.documentos.index')->with('status', $mensaje);
     }
 
     public function archivo(Request $request, ContextoOperativo $contexto): View|RedirectResponse
     {
-        if ($contexto->resolverSucursalWeb() === null) {
+        $sucursal = $contexto->resolverSucursalWeb();
+        if ($sucursal === null) {
             return to_route('configuracion.contexto.index');
         }
         [$modulo, $seccion] = $this->seccion($request);
@@ -232,19 +418,90 @@ final readonly class ComercialController
             'retenciones' => 'Retención',
         };
         $filtros = $this->filtros($request, conPaginacion: true);
-        $documentos = $this->documentos->listarConDetalle($modulo, $seccion, $filtros)->through($this->detalleDocumento(...));
+        $documentos = $this->documentos->listarConDetalle($modulo, $seccion, $filtros);
+        $visorFactura = $seccion === 'documentos';
+        $datosVisor = $visorFactura ? $this->datosVisorFacturas($modulo, $sucursal, $documentos->getCollection()) : [];
+        $documentos->through(fn (stdClass $registro): array => $this->detalleDocumento($registro, $visorFactura, $visorFactura && $modulo === 'compras'));
 
-        return view('comercial::archivo-documentos', compact('documentos', 'modulo', 'directorio', 'ruta', 'titulo', 'tipoDocumento', 'filtros'));
+        return view('comercial::archivo-documentos', compact(
+            'documentos', 'modulo', 'directorio', 'ruta', 'titulo', 'tipoDocumento', 'filtros', 'visorFactura',
+        ) + $datosVisor);
     }
 
-    private function detalleDocumento(stdClass $registro): array
+    private function datosVisorFacturas(string $modulo, stdClass $sucursal, Collection $registros): array
+    {
+        $empresaFactura = null;
+        $logoFactura = null;
+        $codigosProductos = collect();
+        $proveedoresFactura = collect();
+        if ($registros->isNotEmpty()) {
+            $empresaId = $sucursal->id_empresa;
+            $empresaFactura = DB::table('erp_empresas as empresa')
+                ->leftJoin('erp_identidad_empresas as identidad', 'identidad.id_empresa', '=', 'empresa.id')
+                ->where('empresa.id', $empresaId)
+                ->first(['empresa.razon_social', 'empresa.ruc', 'empresa.direccion', 'empresa.telefono', 'identidad.logo_mime', 'identidad.logo']);
+            if ($modulo === 'ventas' && $empresaFactura?->logo && in_array($empresaFactura->logo_mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+                $logoFactura = 'data:'.$empresaFactura->logo_mime.';base64,'.$empresaFactura->logo;
+            }
+            $idsProductos = $registros->flatMap(fn (stdClass $factura) => $factura->lineas->pluck('id_producto'))
+                ->filter()->unique();
+            if ($idsProductos->isNotEmpty()) {
+                $codigosProductos = DB::table('inv_productos')->where('id_empresa', $empresaId)
+                    ->whereIn('id', $idsProductos)->pluck('codigo', 'id');
+            }
+            if ($modulo === 'compras') {
+                $proveedoresFactura = DB::table('erp_proveedores')->where('id_empresa', $empresaId)
+                    ->whereIn('id', $registros->pluck('emisor')->filter()->unique())
+                    ->get(['id', 'identificacion', 'nombre', 'direccion', 'telefono'])->keyBy('id');
+            }
+        }
+
+        return compact('empresaFactura', 'sucursal', 'logoFactura', 'codigosProductos', 'proveedoresFactura');
+    }
+
+    private function detalleDocumento(stdClass $registro, bool $visorFactura = false, bool $datosRespaldo = false): array
     {
         $fiscal = json_decode($registro->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
 
-        return $this->decimales($registro) + array_intersect_key($fiscal, [
+        $campos = [
             'clave_acceso' => true, 'ambiente' => true, 'forma_pago' => true, 'plazo_dias' => true, 'informacion_adicional' => true,
-            'pagos' => true, 'fuente_compra' => true,
-        ]);
+            'pagos' => true, 'fuente_compra' => true, 'estado_retencion' => true, 'recibida_sri' => true,
+        ];
+        if ($visorFactura) {
+            $campos += ['emisor' => true, 'cliente' => true];
+        }
+
+        $documento = $this->decimales($registro) + array_intersect_key($fiscal, $campos);
+        if ($datosRespaldo) {
+            $documento['tiene_xml'] = ! empty($fiscal['xml_recibido']);
+            $documento['tiene_respaldo'] = ! empty($fiscal['respaldo_compra']);
+            $documento['mime_respaldo'] = $fiscal['respaldo_compra']['mime'] ?? null;
+            if ($visorFactura) {
+                $documento['id_proveedor'] = $registro->emisor;
+                if ($documento['tiene_xml']) {
+                    $xml = AutorizacionSri::leerXml($fiscal['xml_recibido']);
+                    if ($xml?->getName() === 'autorizacion') {
+                        $xml = AutorizacionSri::leerXml((string) $xml->comprobante);
+                    }
+                    if ($xml?->getName() === 'factura') {
+                        $emisor = $xml->infoTributaria;
+                        $documento['emisor'] = [
+                            'razon_social' => (string) $emisor->razonSocial,
+                            'ruc' => (string) $emisor->ruc,
+                            'direccion' => (string) $emisor->dirMatriz,
+                            'sucursal' => (string) $xml->infoFactura->dirEstablecimiento,
+                        ];
+                        foreach ($xml->infoAdicional->campoAdicional ?? [] as $campo) {
+                            $documento['informacion_adicional'][] = [
+                                'nombre' => (string) $campo['nombre'], 'valor' => (string) $campo,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $documento;
     }
 
     public function logSri(int $registro, AutorizacionSri $sri): View
@@ -345,11 +602,12 @@ final readonly class ComercialController
         ]);
     }
 
-    public function store(Request $request, FacturaVenta $facturas)
+    public function store(Request $request, FacturaVenta $facturas, RetencionElectronica $retenciones, CatalogoRetenciones $catalogo)
     {
         [$modulo, $seccion] = $this->seccion($request);
         $vinculado = in_array($seccion, DocumentosComerciales::VINCULADOS, true);
         $retencion = $seccion === 'retenciones';
+        $retencionElectronica = $retencion && $modulo === 'compras' && ! $request->routeIs('api.*');
         $compra = $modulo === 'compras' && $seccion === 'documentos';
         $compraWeb = $compra && ! $request->routeIs('api.*');
         $tokenCompra = $compraWeb ? $request->input('importacion_compra') : null;
@@ -397,6 +655,18 @@ final readonly class ComercialController
                 'lineas.*.porcentaje_retencion' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:100'],
             ]);
         }
+        if ($retencionElectronica) {
+            unset($reglas['numero'], $reglas['lineas.*.descripcion']);
+            $reglas['fecha'][] = 'before_or_equal:'.now('America/Guayaquil')->toDateString();
+            $reglas['lineas.*'] = ['required', 'array:tipo_retencion,codigo_retencion,base_retencion,porcentaje_retencion'];
+            $reglas['lineas.*.tipo_retencion'] = ['required', 'in:renta,iva'];
+            $reglas['lineas.*.codigo_retencion'] = ['required', 'regex:/\A[0-9A-Z]{1,5}\z/'];
+            $reglas['lineas.*.porcentaje_retencion'] = ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:100'];
+            $reglas['codigo_sustento'] = ['required', Rule::in(array_keys(RetencionElectronica::SUSTENTOS))];
+            $reglas['parte_relacionada'] = ['required', 'in:SI,NO'];
+            $reglas['iva_cero'] = ['nullable', 'in:0,6,7'];
+            $reglas['forma_pago'] = ['nullable', Rule::in(array_keys(FacturaVenta::PAGOS))];
+        }
 
         $factura = $modulo === 'ventas' && $seccion === 'documentos' && ! $request->routeIs('api.*');
         if ($factura) {
@@ -431,6 +701,14 @@ final readonly class ComercialController
             'lineas.*.iva_codigo.required' => 'Selecciona el tratamiento de IVA de cada línea.',
             'lineas.*.iva_codigo.required_without' => 'Selecciona el tratamiento de IVA del servicio manual.',
         ]);
+        if ($retencionElectronica) {
+            $catalogo->verificar($datos['lineas'], $datos['fecha']);
+            $retenciones->generar($datos);
+            $mensaje = 'Retención generada. El XML está pendiente de firma y envío al SRI.';
+
+            return $request->expectsJson() ? response()->json(['message' => $mensaje])
+                : to_route('compras.retenciones.index')->with('status', $mensaje);
+        }
         if ($compra) {
             if ($importacion !== null) {
                 $proveedor = DB::table('erp_proveedores')->where('id_empresa', $request->user()->id_empresa)->where('id', $datos['id_tercero'])
@@ -461,7 +739,18 @@ final readonly class ComercialController
                 throw ValidationException::withMessages(['lineas.'.$posicion.'.descripcion' => 'Indica un concepto o selecciona un producto.']);
             }
         }
-        $documento = $factura ? $facturas->registrar($datos) : $this->documentos->registrar($modulo, $seccion, $datos, creditoTotal: $creditoTotal);
+        try {
+            $documento = $factura ? $facturas->registrar($datos) : $this->documentos->registrar($modulo, $seccion, $datos, creditoTotal: $creditoTotal);
+        } catch (HttpException $error) {
+            if ($error->getStatusCode() !== 409 || $importacion === null
+                || ! $this->documentos->compraRegistrada($importacion['ruc_emisor'], $importacion['numero'])) {
+                throw $error;
+            }
+
+            $request->session()->forget('xml_compra');
+
+            return $this->compraDuplicada($importacion['numero']);
+        }
         if ($importacion !== null) {
             $request->session()->forget('xml_compra');
         }
@@ -473,12 +762,20 @@ final readonly class ComercialController
         return $this->responder($request, $modulo, $seccion, $documento, 201, 'Documento registrado.');
     }
 
-    public function trazabilidadVenta(int $registro): View
+    public function trazabilidad(Request $request, ContextoOperativo $contexto, CobroFacturaVenta $cobros, int $registro): View
     {
-        $factura = $this->documentos->consultar('ventas', 'documentos', $registro);
-        $vinculados = $this->documentos->vinculadosVenta($registro);
+        $modulo = $request->route('modulo');
+        $factura = $this->documentos->consultar($modulo, 'documentos', $registro);
+        $vinculados = $this->documentos->vinculados($modulo, $registro);
+        $partidasInventario = $this->documentos->partidasDeInventario(collect([$factura])->concat($vinculados));
+        $productosTrazabilidad = $this->documentos->tiposProductosTrazabilidad($factura->lineas);
+        $periodo = $contexto->periodo();
+        $movimientosCobro = $modulo === 'ventas' ? $cobros->movimientos($factura->id) : collect();
+        $saldoCobro = $modulo === 'ventas' ? $cobros->saldo($factura) : null;
 
-        return view('comercial::trazabilidad-venta', compact('factura', 'vinculados'));
+        return view('comercial::trazabilidad-venta', compact(
+            'factura', 'vinculados', 'partidasInventario', 'productosTrazabilidad', 'modulo', 'periodo', 'movimientosCobro', 'saldoCobro',
+        ));
     }
 
     public function contabilizarVenta(int $registro, ContabilizacionOperativa $contabilidad): JsonResponse|RedirectResponse

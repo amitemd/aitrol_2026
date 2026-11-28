@@ -96,6 +96,7 @@
   <link rel="stylesheet" href="{{ asset('workspace.css') }}" />
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('comercial.js') }}?v={{ filemtime(public_path('comercial.js')) }}" defer></script>
   <link rel="stylesheet" href="{{ asset('clientes.css') }}" />
+  <link rel="stylesheet" href="{{ asset('archivo-documentos.css') }}?v={{ filemtime(public_path('archivo-documentos.css')) }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
   <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte-select2.min.css') }}" />
   @stack('styles')

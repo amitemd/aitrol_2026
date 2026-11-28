@@ -19,26 +19,36 @@
         </header>
         @include('comercial::errores')
         <section class="factura-seccion mb-3" aria-labelledby="compra-importar">
-            <h2 id="compra-importar"><i class="bi bi-file-earmark-code" aria-hidden="true"></i>Importar factura electrónica</h2>
-            <div class="row g-3">
-                <form method="POST" action="{{ route('compras.documentos.importar') }}" enctype="multipart/form-data" class="col-lg-6">
-                    @csrf
-                    <label for="compra-xml" class="form-label">Archivo XML recibido</label>
-                    <div class="input-group">
-                        <input id="compra-xml" name="xml_compra" type="file" accept=".xml,text/xml,application/xml" class="form-control" required>
-                        <button type="submit" class="btn btn-outline-primary">Cargar XML</button>
-                    </div>
-                </form>
-                <form method="POST" action="{{ route('compras.documentos.importar') }}" class="col-lg-6">
-                    @csrf
-                    <label for="compra-clave" class="form-label">Clave de acceso o número de autorización del SRI</label>
-                    <div class="input-group">
-                        <input id="compra-clave" name="clave_compra" inputmode="numeric" pattern="[0-9]{49}" maxlength="49"
-                            value="{{ old('clave_compra') }}" placeholder="49 dígitos" class="form-control" required>
-                        <button type="submit" class="btn btn-outline-primary">Consultar SRI</button>
-                    </div>
-                </form>
-            </div>
+            <details class="compra-importador" @if ($errors->hasAny(['xml_compra', 'clave_compra', 'compra_duplicada'])) open @endif>
+                <summary class="compra-importador-resumen">
+                    <span class="compra-importador-icono"><i class="bi bi-file-earmark-code" aria-hidden="true"></i></span>
+                    <span>
+                        <strong id="compra-importar" class="d-block">Importar factura electrónica</strong>
+                        <span class="small text-body-secondary">Archivo XML o clave de acceso del SRI</span>
+                    </span>
+                    <i class="bi bi-chevron-down compra-importador-flecha" aria-hidden="true"></i>
+                </summary>
+                <div class="compra-importador-opciones">
+                    <form method="POST" action="{{ route('compras.documentos.importar') }}" enctype="multipart/form-data" class="compra-importador-opcion">
+                        @csrf
+                        <label for="compra-xml" class="form-label fw-semibold">Archivo XML</label>
+                        <input id="compra-xml" name="xml_compra" type="file" accept=".xml,text/xml,application/xml"
+                            class="form-control compra-importador-archivo" required>
+                        <button type="submit" class="btn btn-primary align-self-start">
+                            <i class="bi bi-upload me-1" aria-hidden="true"></i> Importar XML
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('compras.documentos.importar') }}" class="compra-importador-opcion">
+                        @csrf
+                        <label for="compra-clave" class="form-label fw-semibold">Clave de acceso del SRI</label>
+                        <input id="compra-clave" name="clave_compra" type="text" inputmode="numeric" pattern="[0-9]{49}"
+                            maxlength="49" value="{{ old('clave_compra') }}" placeholder="49 dígitos" class="form-control" required>
+                        <button type="submit" class="btn btn-outline-primary align-self-start">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i> Consultar SRI
+                        </button>
+                    </form>
+                </div>
+            </details>
             @if ($importacion)
                 <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
                     <span>{{ $importacion['fiscal']['fuente_compra'] === 'sri' ? 'XML autorizado recibido del SRI' : 'XML del proveedor cargado' }}</span>

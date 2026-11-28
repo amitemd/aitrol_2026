@@ -17,13 +17,41 @@ foreach (config('comercial') as $modulo => $datos) {
                 );
 
                 if ($modulo === 'compras' && ! $api) {
+                    Route::get('retenciones/catalogo', [ComercialController::class, 'catalogoRetenciones'])
+                        ->middleware($permisos('retenciones', 'escribir'))->name('retenciones.catalogo');
                     Route::post('documentos/importar-xml', [ComercialController::class, 'importarCompra'])
                         ->middleware([...$permisos('documentos', 'escribir'), 'throttle:12,1'])->name('documentos.importar');
                     Route::get('documentos/{registro}/xml', [ComercialController::class, 'descargarXmlCompra'])
                         ->whereNumber('registro')->name('documentos.xml');
+                    Route::get('documentos/{registro}/respaldo', [ComercialController::class, 'formularioRespaldoCompra'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), ...$permisos('documentos', 'actualizar')])
+                        ->name('documentos.respaldo.create');
+                    Route::post('documentos/{registro}/respaldo', [ComercialController::class, 'guardarRespaldoCompra'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), ...$permisos('documentos', 'actualizar'), 'throttle:12,1'])
+                        ->name('documentos.respaldo.store');
+                    Route::get('documentos/{registro}/respaldo/archivo', [ComercialController::class, 'archivoRespaldoCompra'])
+                        ->whereNumber('registro')->middleware($permisos('documentos', 'leer'))->name('documentos.respaldo.archivo');
+                    Route::post('retenciones/{registro}/emitir', [ComercialController::class, 'emitirRetencion'])
+                        ->whereNumber('registro')->middleware([...$permisos('retenciones', 'leer'), ...$permisos('retenciones', 'actualizar'), 'throttle:12,1'])
+                        ->name('retenciones.emitir');
                 }
 
+                if (! $api) {
+                    Route::get('documentos/{registro}/trazabilidad', [ComercialController::class, 'trazabilidad'])
+                        ->defaults('modulo', $modulo)->whereNumber('registro')
+                        ->middleware($permisos('documentos', 'leer'))->name('documentos.trazabilidad');
+                }
                 if ($modulo === 'ventas' && ! $api) {
+                    Route::get('documentos/{registro}/cobro', [ComercialController::class, 'formularioCobro'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), 'permiso:caja-bancos.movimientos.index,escribir'])
+                        ->name('documentos.cobro.create');
+                    Route::post('documentos/{registro}/cobro', [ComercialController::class, 'registrarCobro'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), 'permiso:caja-bancos.movimientos.index,escribir'])
+                        ->name('documentos.cobro.store');
+                    Route::get('retenciones/recibida', [ComercialController::class, 'formularioRetencionRecibida'])
+                        ->middleware($permisos('retenciones', 'escribir'))->name('retenciones.recibida');
+                    Route::post('retenciones/importar', [ComercialController::class, 'importarRetencion'])
+                        ->middleware([...$permisos('retenciones', 'escribir'), 'throttle:12,1'])->name('retenciones.importar');
                     Route::get('documentos/{registro}/sri', [ComercialController::class, 'logSri'])
                         ->whereNumber('registro')->name('documentos.sri.log');
                     Route::post('documentos/{registro}/sri/consultar', [ComercialController::class, 'consultarSri'])
@@ -31,8 +59,6 @@ foreach (config('comercial') as $modulo => $datos) {
                         ->name('documentos.sri.consultar');
                     Route::get('documentos/{registro}/sri/{formato}', [ComercialController::class, 'descargarSri'])
                         ->whereNumber('registro')->whereIn('formato', ['pdf', 'xml'])->name('documentos.sri.descargar');
-                    Route::get('documentos/{registro}/trazabilidad', [ComercialController::class, 'trazabilidadVenta'])
-                        ->whereNumber('registro')->middleware($permisos('documentos', 'leer'))->name('documentos.trazabilidad');
                     Route::post('documentos/{registro}/contabilizar', [ComercialController::class, 'contabilizarVenta'])
                         ->whereNumber('registro')->middleware([...$permisos('documentos', 'actualizar'), 'permiso:contabilidad.asientos.index,escribir'])
                         ->name('documentos.contabilizar');
@@ -45,6 +71,11 @@ foreach (config('comercial') as $modulo => $datos) {
                         ->middleware($permisos('documentos', 'escribir'))->name('facturas-recurrentes.index');
                     Route::post('facturas-recurrentes/{recurrencia}/estado', [ComercialController::class, 'estadoRecurrencia'])
                         ->whereNumber('recurrencia')->middleware($permisos('documentos', 'actualizar'))->name('facturas-recurrentes.estado');
+                }
+                if (! $api) {
+                    Route::get('retenciones/{registro}/xml', [ComercialController::class, 'descargarRetencion'])
+                        ->defaults('modulo', $modulo)->whereNumber('registro')
+                        ->middleware($permisos('retenciones', 'leer'))->name('retenciones.xml');
                 }
 
                 foreach ($datos['secciones'] as $seccion => [, , $alta]) {

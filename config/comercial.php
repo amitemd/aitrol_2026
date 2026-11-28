@@ -25,6 +25,7 @@ return [
     ],
     'compras' => [
         'titulo' => 'Compras', 'icono' => 'bi-bag-check', 'tercero' => 'Proveedor',
+        'secuencial_retencion' => env('SRI_SECUENCIAL_RETENCION', 1),
         'secciones' => [
             'documentos' => ['Lista de compras', 'bi-receipt-cutoff', 'Nueva compra'],
             'ordenes-compra' => ['Órdenes de compra', 'bi-clipboard-check', 'Nueva orden de compra'],

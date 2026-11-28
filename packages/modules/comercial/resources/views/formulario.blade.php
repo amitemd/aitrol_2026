@@ -7,6 +7,8 @@
     $titulo = $creditoTotal ? 'Anular con nota de crédito' : $titulo;
     $vinculado = in_array($seccion, \Aitrol\Comercial\Application\DocumentosComerciales::VINCULADOS, true);
     $retencion = $seccion === 'retenciones';
+    $retencionElectronica = $modulo === 'compras' && $retencion;
+    $fiscalSustento = $retencionElectronica && $origen ? json_decode($origen->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR) : [];
 @endphp
 @section('title', $titulo)
 @section('content')
@@ -17,11 +19,19 @@
                 <h1 class="card-header fs-5">{{ $titulo }}</h1>
                 @include('comercial::errores')
                 <div class="card-body">
+                    @if ($retencion && $modulo === 'ventas')
+                        <a class="btn btn-outline-primary btn-sm mb-3" data-ajax-modal-page
+                            href="{{ route('ventas.retenciones.recibida', $origen ? ['origen' => $origen->id] : []) }}">
+                            <i class="bi bi-file-earmark-code me-1" aria-hidden="true"></i> Importar por XML o clave de acceso
+                        </a>
+                    @endif
                     <div class="row g-3">
+                        @unless ($retencionElectronica)
                         <div class="col-sm-6">
                             <label class="form-label" for="com-numero">Número de documento</label>
                             <input name="numero" class="form-control" id="com-numero" maxlength="60" value="{{ old('numero') }}" required autofocus>
                         </div>
+                        @endunless
                         <div class="col-sm-6">
                             <label class="form-label" for="com-fecha">{{ __('Fecha') }}</label>
                             <input type="date" name="fecha" class="form-control" id="com-fecha" value="{{ old('fecha', $fecha) }}"
@@ -47,10 +57,52 @@
                                 </select>
                             </div>
                         @endif
+                        @if ($retencionElectronica)
+                            <div class="col-md-7">
+                                <label class="form-label" for="retencion-sustento">Sustento tributario</label>
+                                <select class="form-select" id="retencion-sustento" name="codigo_sustento" required>
+                                    <option value="">Seleccionar</option>
+                                    @foreach (\App\Services\RetencionElectronica::SUSTENTOS as $codigo => $nombre)
+                                        <option value="{{ $codigo }}" @selected(old('codigo_sustento') === $codigo)>{{ $codigo }} · {{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label" for="retencion-relacionada">¿Parte relacionada?</label>
+                                <select class="form-select" id="retencion-relacionada" name="parte_relacionada" required>
+                                    <option value="">Seleccionar</option>
+                                    <option value="NO" @selected(old('parte_relacionada') === 'NO')>No</option>
+                                    <option value="SI" @selected(old('parte_relacionada') === 'SI')>Sí</option>
+                                </select>
+                            </div>
+                            @if (empty($fiscalSustento['xml_recibido']) && (!$origen || $origen->lineas->contains(fn ($linea) => (int) $linea->tasa === 0)))
+                                <div class="col-md-6">
+                                    <label class="form-label" for="retencion-iva-cero">Tratamiento de partidas sin IVA</label>
+                                    <select class="form-select" id="retencion-iva-cero" name="iva_cero">
+                                        <option value="">Seleccionar si aplica</option>
+                                        @foreach (['0' => 'IVA 0 %', '6' => 'No objeto de IVA', '7' => 'Exento de IVA'] as $codigo => $nombre)
+                                            <option value="{{ $codigo }}" @selected(old('iva_cero') == $codigo && old('iva_cero') !== null)>{{ $nombre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                            @if (empty($fiscalSustento['pagos']) && empty($fiscalSustento['forma_pago']))
+                                <div class="col-md-6">
+                                    <label class="form-label" for="retencion-pago">Forma de pago de la factura, si falta</label>
+                                    <select class="form-select" id="retencion-pago" name="forma_pago">
+                                        <option value="">Seleccionar si aplica</option>
+                                        @foreach (\App\Services\FacturaVenta::PAGOS as $codigo => $pago)
+                                            <option value="{{ $codigo }}" @selected(old('forma_pago') === $codigo)>{{ $codigo }} · {{ $pago }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                        @else
                         <div class="col-12">
                             <label class="form-label" for="com-observacion">{{ $creditoTotal ? 'Motivo de la nota de crédito' : 'Observación' }}</label>
                             <textarea id="com-observacion" name="observacion" class="form-control" rows="2" maxlength="500" @required($creditoTotal)>{{ old('observacion') }}</textarea>
                         </div>
+                        @endif
                     </div>
                     @if ($creditoTotal)
                         <input type="hidden" name="credito_total" value="1">
@@ -73,7 +125,7 @@
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
                     <a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-close>{{ __('Cancelar') }}</a>
-                    <button class="btn btn-primary">Registrar documento</button>
+                        <button class="btn btn-primary">{{ $retencionElectronica ? 'Generar retención' : 'Registrar documento' }}</button>
                 </div>
             </form>
         </div>

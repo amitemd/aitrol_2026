@@ -297,6 +297,30 @@
     });
 
     document.addEventListener('click', (event) => {
+        const boton = event.target.closest('[data-factura-adicional-agregar], [data-factura-adicional-quitar]');
+        const formulario = boton?.closest('[data-factura]');
+        if (!formulario) return;
+
+        const contenedor = formulario.querySelector('[data-factura-adicionales]');
+        const agregar = formulario.querySelector('[data-factura-adicional-agregar]');
+        if (boton === agregar) {
+            if (contenedor.children.length >= 5) return;
+            contenedor.append(formulario.querySelector('[data-factura-adicional-plantilla]').content.cloneNode(true));
+            contenedor.lastElementChild.querySelector('input').focus();
+        } else {
+            boton.closest('[data-factura-adicional]').remove();
+            agregar.disabled = false;
+            agregar.focus();
+        }
+        [...contenedor.children].forEach((fila, indice) => {
+            for (const entrada of fila.querySelectorAll('input')) {
+                entrada.name = entrada.name.replace(/^informacion_adicional\[[^\]]+\]/, 'informacion_adicional[' + indice + ']');
+            }
+        });
+        agregar.disabled = contenedor.children.length >= 5;
+    });
+
+    document.addEventListener('click', (event) => {
         const boton = event.target.closest('[data-comercial-agregar], [data-comercial-quitar]');
         const formulario = boton?.closest('[data-comercial-documento]');
         if (!formulario) return;

@@ -84,6 +84,10 @@ final readonly class LibroCaja
             'referencia' => $campos['referencia'] ?? null,
         ];
         if (isset($campos['flujo_contable'])) $comprobante['flujo_contable'] = $campos['flujo_contable'];
+        if (isset($campos['id_factura_venta'])) {
+            abort_unless($tipo === 'ingreso', 422, 'El cobro de una factura debe registrarse como ingreso.');
+            $comprobante['id_factura_venta'] = $campos['id_factura_venta'];
+        }
         $clave = isset($campos['clave_operacion']) ? strtolower($campos['clave_operacion']) : null;
         $huella = hash('sha256', json_encode([$comprobante, $asientos], JSON_THROW_ON_ERROR));
 
@@ -156,7 +160,7 @@ final readonly class LibroCaja
             $this->datos->crear('cb_asientos', $fila + ['id_operacion' => $op], false);
             $this->datos->actualizar('cb_cuentas', $fila['id_cuenta'], ['saldo' => $fila['saldo']]);
         }
-        event(new OperacionContabilizable('tesoreria.operacion', $op));
+        event(new OperacionContabilizable('tesoreria.operacion', $op, isset($cabecera['id_factura_venta'])));
 
         return $this->datos->operacion($op);
     }

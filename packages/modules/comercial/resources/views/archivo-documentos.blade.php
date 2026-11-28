@@ -2,10 +2,6 @@
 
 @section('title', $titulo)
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('archivo-documentos.css') }}?v={{ filemtime(public_path('archivo-documentos.css')) }}">
-@endpush
-
 @push('scripts')
     <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('archivo-documentos.js') }}?v={{ filemtime(public_path('archivo-documentos.js')) }}" defer></script>
 @endpush
@@ -69,10 +65,14 @@
                             </span>
                         </button>
                         <template>
-                            <article class="archivo-documentos__hoja" data-bs-theme="light">
-                                @include('comercial::estado-sri', ['documentoSri' => $documento])
-                                @include('comercial::contenido-documento')
-                            </article>
+                            @if ($visorFactura)
+                                @include('comercial::visor-factura')
+                            @else
+                                <article class="archivo-documentos__hoja" data-bs-theme="light">
+                                    @include('comercial::estado-sri', ['documentoSri' => $documento])
+                                    @include('comercial::contenido-documento')
+                                </article>
+                            @endif
                         </template>
                     </div>
                 @empty
@@ -82,6 +82,11 @@
                 @endforelse
             </div>
             @if ($documentos->isNotEmpty())
+                @if (!empty($logoFactura))
+                    <template data-archivo-logo>
+                        <img class="visor-factura__logo" src="{{ $logoFactura }}" alt="">
+                    </template>
+                @endif
                 <dialog class="cliente-dialog cliente-dialog-redisenado archivo-documentos__dialogo" data-archivo-dialogo
                     aria-labelledby="archivo-documentos-titulo">
                     <div class="d-flex align-items-center justify-content-between gap-3 cliente-dialog-cabecera">

@@ -20,28 +20,41 @@
                 @endif
             </div>
         @endif
+        @unless ($retencionElectronica ?? false)
         <div @class(['col-sm-6' => !$vinculado, 'col-12' => $vinculado])>
             <label class="form-label" for="com-{{ $indice }}-descripcion">Concepto</label>
             <input id="com-{{ $indice }}-descripcion" name="lineas[{{ $indice }}][descripcion]" class="form-control"
                 value="{{ $linea['descripcion'] ?? '' }}" maxlength="255" @required($vinculado) @readonly($importada ?? false)>
         </div>
+        @endunless
         @if ($retencion)
             <div class="col-sm-6 col-xl-3">
                 <label class="form-label" for="com-{{ $indice }}-tipo">{{ __('Tipo') }}</label>
-                <select class="form-select" id="com-{{ $indice }}-tipo" name="lineas[{{ $indice }}][tipo_retencion]" required>
-                    @foreach (['renta' => 'Renta', 'iva' => 'IVA', 'otra' => 'Otra'] as $tipo => $etiqueta)
+                <select class="form-select" id="com-{{ $indice }}-tipo" name="lineas[{{ $indice }}][tipo_retencion]" @if ($retencionElectronica ?? false) data-retencion-tipo @endif required>
+                    @foreach (($retencionElectronica ?? false) ? ['renta' => 'Renta', 'iva' => 'IVA'] : ['renta' => 'Renta', 'iva' => 'IVA', 'otra' => 'Otra'] as $tipo => $etiqueta)
                         <option value="{{ $tipo }}" @selected(($linea['tipo_retencion'] ?? '') === $tipo)>{{ __($etiqueta) }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-sm-6 col-xl-3">
                 <label class="form-label" for="com-{{ $indice }}-codigo">{{ __('Código') }}</label>
-                <input id="com-{{ $indice }}-codigo" name="lineas[{{ $indice }}][codigo_retencion]" value="{{ $linea['codigo_retencion'] ?? '' }}" class="form-control" maxlength="32" required>
+                @if ($retencionElectronica ?? false)
+                    <select id="com-{{ $indice }}-codigo" name="lineas[{{ $indice }}][codigo_retencion]" class="form-select"
+                        data-retencion-catalogo data-select2-url="{{ route('compras.retenciones.catalogo') }}"
+                        data-select2-placeholder="Código o descripción" required>
+                        <option value=""></option>
+                        @if (!empty($linea['codigo_retencion']))
+                            <option value="{{ $linea['codigo_retencion'] }}" selected>{{ $linea['codigo_retencion'] }}</option>
+                        @endif
+                    </select>
+                @else
+                    <input id="com-{{ $indice }}-codigo" name="lineas[{{ $indice }}][codigo_retencion]" value="{{ $linea['codigo_retencion'] ?? '' }}" class="form-control" maxlength="32" required>
+                @endif
             </div>
         @endif
         @php
             $importes = $retencion
-                ? ['base_retencion' => ['Base retenida', 0.01, 100000000, 0.01, ''], 'porcentaje_retencion' => ['Retención (%)', 0.01, 100, 0.01, '']]
+                ? ['base_retencion' => ['Base retenida', 0.01, 100000000, 0.01, ''], 'porcentaje_retencion' => ['Retención (%)', ($retencionElectronica ?? false) ? 0 : 0.01, 100, 0.01, '']]
                 : ['cantidad' => ['Cantidad', 0.001, 1000000, 0.001, 1], 'precio' => ['Precio unitario', 0.0001, 100000, 0.0001, ''], 'tasa' => ['Impuesto (%)', 0, 100, 0.01, 0]];
             if ($compra ?? false) {
                 $importes += ['descuento' => ['Descuento USD', 0, 100000000000, 0.01, 0]];

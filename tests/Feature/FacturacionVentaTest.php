@@ -3,9 +3,16 @@
 namespace Tests\Feature;
 
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
+use Aitrol\CajaBancos\Application\ConciliacionBancaria;
+use Aitrol\Proveedores\Infrastructure\Persistence\EloquentProveedorRepository;
 use App\Models\User;
+use App\Services\AutorizacionSri;
+use DOMDocument;
+use DOMXPath;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -193,7 +200,9 @@ final class FacturacionVentaTest extends TestCase
             XML;
         $formulario = route('compras.documentos.create');
         $importar = route('compras.documentos.importar');
-        $this->actingAs($usuario)->from($formulario)->post($importar, [
+        $this->actingAs($usuario)->get($formulario)->assertOk()
+            ->assertSee('<details class="compra-importador" >', false);
+        $this->from($formulario)->post($importar, [
             'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('ajena.xml', str_replace('1000000000001', '1000000000002', $xml)),
         ])->assertSessionHasErrors('xml_compra');
         $this->assertDatabaseMissing('personas', ['identificacion' => $ruc]);
@@ -243,15 +252,17 @@ final class FacturacionVentaTest extends TestCase
         $this->get($consulta->headers->get('Location'))->assertOk()->assertSee('XML autorizado recibido del SRI');
         Http::assertSent(fn ($peticion) => str_contains($peticion->body(), '<claveAccesoComprobante>'.$clave.'</claveAccesoComprobante>'));
         $token = session('xml_compra.token');
+        $importacionParalela = session('xml_compra');
         $producto = $this->postJson(route('inventarios.productos.store'), [
             'codigo' => 'XML-009', 'nombre' => 'Consumo de oficina', 'unidad' => 'Unidad',
             'tipo_producto' => 'no_inventariable', 'stock_minimo' => 5, 'iva_codigo' => 4, 'id_categoria' => $categoria,
         ])->assertCreated()->assertJsonPath('data.tipo_producto', 'no_inventariable')->json('data.id');
         $this->assertDatabaseHas('inv_productos', ['id' => $producto, 'stock_minimo' => 0]);
-        $this->post(route('compras.documentos.store'), [
+        $datosCompra = [
             'importacion_compra' => $token, 'numero' => '001-001-000000009', 'fecha' => '2026-01-15', 'id_tercero' => $proveedor,
             'lineas' => [['id_producto' => $producto, 'descripcion' => 'Soporte importado', 'cantidad' => 2, 'precio' => 10, 'descuento' => 2, 'tasa' => 15]],
-        ])->assertRedirect(route('compras.documentos.index'));
+        ];
+        $this->post(route('compras.documentos.store'), $datosCompra)->assertRedirect(route('compras.documentos.index'));
         $compra = DB::table('com_documentos')->sole();
         $this->assertDatabaseHas('com_documentos', ['id' => $compra->id, 'subtotal' => 1800, 'impuesto' => 270, 'total' => 2070, 'id_bodega' => null]);
         $this->assertDatabaseHas('com_lineas', ['id_documento' => $compra->id, 'id_producto' => $producto, 'id_operacion' => null]);
@@ -265,6 +276,20 @@ final class FacturacionVentaTest extends TestCase
         $this->assertStringContainsString('<autorizacion>', $datos['xml_recibido']);
         $this->assertSame($datos['xml_recibido'], $this->get(route('compras.documentos.xml', $compra->id))
             ->assertDownload('compra-'.$compra->id.'.xml')->streamedContent());
+
+        $mensaje = 'El comprobante 001-001-000000009 ya está registrado como compra de este proveedor.';
+        $this->post($importar, ['xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('duplicada.xml', $xml)])
+            ->assertRedirect($formulario)->assertSessionHasErrors(['compra_duplicada' => $mensaje])->assertSessionMissing('xml_compra');
+        $this->followingRedirects()->post($importar, [
+            'xml_compra' => \Illuminate\Http\UploadedFile::fake()->createWithContent('duplicada.xml', $xml),
+        ])->assertOk()
+            ->assertSee('data-aitrol-mensaje="error">'.$mensaje, false)->assertDontSee('XML del proveedor cargado');
+        $this->post($importar, ['clave_compra' => $clave])
+            ->assertRedirect($formulario)->assertSessionHasErrors(['compra_duplicada' => $mensaje])->assertSessionMissing('xml_compra');
+        Http::assertSentCount(2);
+        $this->withSession(['xml_compra' => $importacionParalela])->post(route('compras.documentos.store'), $datosCompra)
+            ->assertRedirect($formulario)->assertSessionHasErrors(['compra_duplicada' => $mensaje])->assertSessionMissing('xml_compra');
+        $this->assertDatabaseCount('com_documentos', 1);
     }
 
     public function test_sri_publica_archivos_solo_despues_de_confirmar_la_clave_de_la_factura(): void
@@ -397,7 +422,12 @@ final class FacturacionVentaTest extends TestCase
         ]);
         $idNota = DB::table('com_documentos')->where('numero', 'NC-001')->value('id');
         $this->assertDatabaseHas('co_asientos', ['origen' => 'comercial.documento', 'id_origen' => $idNota, 'total' => 2250]);
-        $this->get(route('ventas.documentos.trazabilidad', $factura->id))->assertOk()->assertSee('NC-001');
+        $asientoNota = DB::table('co_asientos')->where('origen', 'comercial.documento')->where('id_origen', $idNota)->value('id');
+        $this->get(route('ventas.documentos.trazabilidad', $factura->id))->assertOk()
+            ->assertSee('<details class="trazabilidad-diagrama" data-trazabilidad-diagrama>', false)
+            ->assertSeeInOrder(['Diagrama de trazabilidad', $factura->numero, 'Asiento contable', 'Nota de crédito', 'NC-001', 'Asiento contable'])
+            ->assertSee(route('ventas.notas-credito.show', $idNota))
+            ->assertSee(route('contabilidad.asientos.show', $asientoNota));
     }
 
     public function test_no_registra_la_factura_si_la_contabilizacion_esta_inactiva(): void
@@ -466,6 +496,16 @@ final class FacturacionVentaTest extends TestCase
         $this->get(route('inventarios.productos.historial', $producto))->assertOk()
             ->assertSee('001-001-000000001')->assertSee('Últimos movimientos de existencias')->assertSee('Principal');
         $this->postJson(route('ventas.documentos.anular', $documento), ['motivo' => 'Corrección de cantidad'])->assertSuccessful();
+        $movimiento = DB::table('com_lineas')->where('id_documento', $documento)->orderBy('id')->first();
+        $this->get(route('ventas.documentos.trazabilidad', $documento))->assertOk()
+            ->assertSeeInOrder([
+                'Diagrama de trazabilidad', 'Anulada', 'Asiento de reversión',
+                'Movimiento de inventario', 'Producto fiscal', 'P1 · Principal', 'Salida 1.000',
+                'Producto fiscal', 'P1 · Auxiliar', 'Salida 1.000',
+                'Reversión de inventario', 'Producto fiscal', 'Entrada 1.000',
+            ])
+            ->assertSee(route('inventarios.movimientos.show', $movimiento->id_operacion))
+            ->assertSee(route('inventarios.movimientos.show', $movimiento->id_operacion_reversa));
         foreach ($datos['lineas'] as $linea) {
             $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $linea['id_bodega'], 'cantidad' => 5000]);
         }
@@ -606,6 +646,210 @@ final class FacturacionVentaTest extends TestCase
         $this->post(route('configuracion.contexto.update'), ['id_sucursal' => $norte, 'periodo' => 2026])->assertRedirect(route('dashboard'));
         $this->post($altaFactura, $datos)->assertRedirect(route('ventas.documentos.index'));
         $this->assertDatabaseHas('com_documentos', ['id_sucursal' => $norte, 'numero' => '007-010-000000001']);
+    }
+
+    public function test_importa_la_retencion_de_venta_desde_xml_o_desde_el_sri_y_evita_duplicados(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos)->assertRedirect();
+        $id = DB::table('com_documentos')->value('id');
+        $this->get(route('ventas.retenciones.create', ['origen' => $id]))->assertOk()
+            ->assertSee('Número de documento')->assertSee('Importar por XML o clave de acceso');
+        $this->postJson(route('ventas.retenciones.store'), [
+            'id_documento_origen' => $id, 'numero' => '001-002-000000004', 'fecha' => $datos['fecha'],
+            'lineas' => [[
+                'descripcion' => 'Retención de bienes', 'tipo_retencion' => 'renta', 'codigo_retencion' => '312',
+                'base_retencion' => '18.00', 'porcentaje_retencion' => '1.75',
+            ]],
+        ])->assertCreated();
+        $this->get(route('ventas.retenciones.recibida', ['origen' => $id]))->assertOk()
+            ->assertSee('Archivo XML')->assertSee('Clave de acceso');
+        $serie = '001002000000005';
+        $base = '150120260709123456780011'.$serie.'123456781';
+        $clave = $base.AutorizacionSri::digitoVerificador($base);
+        $xml = <<<XML
+            <comprobanteRetencion id="comprobante" version="2.0.0">
+                <infoTributaria><ambiente>1</ambiente><tipoEmision>1</tipoEmision><ruc>0912345678001</ruc>
+                    <claveAcceso>{$clave}</claveAcceso><codDoc>07</codDoc><estab>001</estab><ptoEmi>002</ptoEmi><secuencial>000000005</secuencial>
+                </infoTributaria>
+                <infoCompRetencion><fechaEmision>15/01/2026</fechaEmision><tipoIdentificacionSujetoRetenido>04</tipoIdentificacionSujetoRetenido><identificacionSujetoRetenido>1000000000001</identificacionSujetoRetenido></infoCompRetencion>
+                <docsSustento><docSustento><codDocSustento>01</codDocSustento><numDocSustento>001001000000001</numDocSustento><fechaEmisionDocSustento>15/01/2026</fechaEmisionDocSustento>
+                    <retenciones><retencion><codigo>1</codigo><codigoRetencion>312</codigoRetencion><baseImponible>18.00</baseImponible><porcentajeRetener>2.00</porcentajeRetener><valorRetenido>0.36</valorRetenido></retencion></retenciones>
+                </docSustento></docsSustento>
+            </comprobanteRetencion>
+            XML;
+        $ruta = route('ventas.retenciones.importar');
+        $this->postJson($ruta, ['xml_retencion' => UploadedFile::fake()->createWithContent('retencion.xml', str_replace('1000000000001', '1000000000002', $xml))])
+            ->assertUnprocessable()->assertJsonValidationErrors('xml_retencion');
+        $this->postJson($ruta, ['xml_retencion' => UploadedFile::fake()->createWithContent('retencion.xml', $xml)])->assertOk();
+        $this->assertDatabaseHas('com_documentos', ['id_documento_origen' => $id, 'numero' => '001-002-000000005', 'total' => 36]);
+        $this->postJson($ruta, ['xml_retencion' => UploadedFile::fake()->createWithContent('retencion.xml', $xml)])->assertUnprocessable();
+
+        $segundaBase = str_replace($serie, '001002000000006', $base);
+        $segundaClave = $segundaBase.AutorizacionSri::digitoVerificador($segundaBase);
+        $xml = str_replace([$clave, '000000005</secuencial>'], [$segundaClave, '000000006</secuencial>'], $xml);
+        Http::fake(['celcer.sri.gob.ec/*' => Http::response(
+            "<RespuestaAutorizacionComprobante><claveAccesoConsultada>{$segundaClave}</claveAccesoConsultada><numeroComprobantes>1</numeroComprobantes><autorizaciones><autorizacion><estado>AUTORIZADO</estado><numeroAutorizacion>{$segundaClave}</numeroAutorizacion><fechaAutorizacion>2026-01-15T12:00:00</fechaAutorizacion><comprobante><![CDATA[{$xml}]]></comprobante></autorizacion></autorizaciones></RespuestaAutorizacionComprobante>"
+        )]);
+        $this->postJson($ruta, ['clave_acceso' => $segundaClave, 'id_documento_origen' => $id])->assertOk();
+        $retencion = DB::table('com_documentos')->where('numero', '001-002-000000006')->value('id');
+        $this->get(route('ventas.retenciones.show', $retencion))->assertOk()->assertSee('Autorizada en el SRI');
+    }
+
+    public function test_genera_el_xml_ats_de_retencion_con_su_propio_secuencial(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos)->assertRedirect();
+        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['activa' => false]);
+        app(EloquentProveedorRepository::class)->registrarDesdeFactura('1792049504001', 'Proveedor & Asociados', 'Quito');
+        $proveedor = DB::table('erp_proveedores')->where('id_empresa', $usuario->id_empresa)->value('id');
+        $this->post(route('compras.documentos.store'), [
+            'numero' => '052-070-000054468', 'fecha' => $datos['fecha'], 'id_tercero' => $proveedor, 'forma_pago' => '20',
+            'lineas' => [['descripcion' => 'Servicio', 'cantidad' => 1, 'precio' => 10, 'tasa' => 15]],
+        ])->assertRedirect(route('compras.documentos.index'));
+        $compra = DB::table('com_documentos')->where('modulo', 'compras')->value('id');
+        $this->get(route('compras.retenciones.create', ['origen' => $compra]))->assertOk()
+            ->assertSee('Sustento tributario')->assertDontSee('name="numero"', false)->assertDontSee('Archivo XML');
+        $this->postJson(route('compras.retenciones.store'), [
+            'fecha' => $datos['fecha'], 'id_documento_origen' => $compra, 'codigo_sustento' => '02', 'parte_relacionada' => 'NO',
+            'lineas' => [['tipo_retencion' => 'renta', 'codigo_retencion' => '312', 'base_retencion' => '10.00', 'porcentaje_retencion' => '1.75']],
+        ])->assertOk();
+        $registro = DB::table('com_documentos')->where('modulo', 'compras')->where('tipo', 'retenciones')->first();
+        $this->assertSame('001-001-000000001', $registro->numero);
+        $fiscal = json_decode($registro->datos_factura, true, flags: JSON_THROW_ON_ERROR);
+        $xml = AutorizacionSri::leerXml($fiscal['xml_retencion']);
+        $this->assertSame('2.0.0', (string) $xml['version']);
+        $this->assertSame('07', (string) $xml->infoTributaria->codDoc);
+        $this->assertSame('Proveedor & Asociados', (string) $xml->infoCompRetencion->razonSocialSujetoRetenido);
+        $this->assertMatchesRegularExpression('/\A15012026071000000000001[12][0-9]{25}\z/', (string) $xml->infoTributaria->claveAcceso);
+        $sustento = $xml->docsSustento->docSustento;
+        $this->assertSame('052070000054468', (string) $sustento->numDocSustento);
+        $this->assertSame('20', (string) $sustento->pagos->pago->formaPago);
+        $this->assertSame('0.18', (string) $sustento->retenciones->retencion->valorRetenido);
+        $this->get(route('compras.retenciones.xml', $registro->id))->assertOk()->assertHeader('Content-Type', 'application/xml');
+
+        $emitir = route('compras.retenciones.emitir', $registro->id);
+        $this->postJson($emitir)->assertUnprocessable()->assertJsonValidationErrors('firma');
+        $this->travelBack();
+        $this->post(route('configuracion.contexto.update'), [
+            'id_sucursal' => DB::table('erp_sucursales')->value('id'), 'periodo' => 2026,
+        ])->assertRedirect();
+        DB::table('erp_identidad_empresas')->insert([
+            'id_empresa' => $usuario->id_empresa, 'certificado_cifrado' => $this->certificadoParaRetencion(),
+        ]);
+        $clave = $fiscal['clave_acceso'];
+        $autorizacion = "<RespuestaAutorizacionComprobante><claveAccesoConsultada>{$clave}</claveAccesoConsultada><numeroComprobantes>0</numeroComprobantes></RespuestaAutorizacionComprobante>";
+        Http::fake([
+            'celcer.sri.gob.ec/*RecepcionComprobantesOffline' => Http::response('<RespuestaRecepcionComprobante><estado>RECIBIDA</estado></RespuestaRecepcionComprobante>'),
+            'celcer.sri.gob.ec/*AutorizacionComprobantesOffline' => function () use (&$autorizacion) {
+                return Http::response($autorizacion);
+            },
+        ]);
+        $this->postJson($emitir)->assertOk()->assertJsonPath('message', 'Recibida · pendiente de autorización');
+        $this->postJson($emitir)->assertOk();
+        $recepciones = Http::recorded(fn ($peticion) => str_ends_with($peticion->url(), 'RecepcionComprobantesOffline'));
+        $this->assertCount(1, $recepciones);
+        $xmlSoap = AutorizacionSri::leerXml($recepciones->first()[0]->body());
+        $binario = base64_decode((string) $xmlSoap->xpath('//*[local-name()="xml"]')[0], true);
+        $firmado = new DOMDocument;
+        $this->assertTrue($firmado->loadXML($binario, LIBXML_NONET));
+        $nodos = new DOMXPath($firmado);
+        $nodos->registerNamespace('ds', 'http://www.w3.org/2000/09/xmldsig#');
+        $cert = $nodos->evaluate('string(//ds:X509Certificate)');
+        $this->assertSame(1, openssl_verify(
+            $nodos->query('//ds:SignedInfo')->item(0)->C14N(),
+            base64_decode($nodos->evaluate('string(//ds:SignatureValue)'), true),
+            "-----BEGIN CERTIFICATE-----\n".chunk_split($cert, 64, "\n")."-----END CERTIFICATE-----\n",
+            OPENSSL_ALGO_SHA1,
+        ));
+        foreach (['PropiedadesComprobante', 'CertificadoComprobante'] as $id) {
+            $this->assertSame(
+                base64_encode(sha1($nodos->query("//*[@Id='{$id}']")->item(0)->C14N(), true)),
+                $nodos->evaluate("string(//ds:Reference[@URI='#{$id}']/ds:DigestValue)"),
+            );
+        }
+        $digestDocumento = $nodos->evaluate("string(//ds:Reference[@URI='#comprobante']/ds:DigestValue)");
+        $nodos->query('//ds:Signature')->item(0)->remove();
+        $this->assertSame(base64_encode(sha1($firmado->documentElement->C14N(), true)), $digestDocumento);
+
+        $autorizacion = "<RespuestaAutorizacionComprobante><claveAccesoConsultada>{$clave}</claveAccesoConsultada><numeroComprobantes>1</numeroComprobantes><autorizaciones><autorizacion><estado>AUTORIZADO</estado><numeroAutorizacion>{$clave}</numeroAutorizacion><fechaAutorizacion>2026-01-15T12:00:00</fechaAutorizacion><comprobante><![CDATA[{$binario}]]></comprobante></autorizacion></autorizaciones></RespuestaAutorizacionComprobante>";
+        $this->postJson($emitir)->assertOk()->assertJsonPath('message', 'Autorizada en el SRI');
+        $this->get(route('compras.retenciones.xml', $registro->id))->assertOk()->assertStreamed();
+    }
+
+    private function certificadoParaRetencion(): string
+    {
+        $config = tempnam(sys_get_temp_dir(), 'aitrol-ret-');
+        file_put_contents($config, "[req]\ndistinguished_name = dn\n[dn]\n");
+        try {
+            $opciones = ['config' => $config, 'private_key_type' => OPENSSL_KEYTYPE_RSA, 'private_key_bits' => 2048];
+            $privada = openssl_pkey_new($opciones);
+            $solicitud = openssl_csr_new(['commonName' => 'Certificado de prueba'], $privada, $opciones);
+            $certificado = openssl_csr_sign($solicitud, null, $privada, 10, $opciones, 7);
+            $this->assertTrue(openssl_pkcs12_export($certificado, $pkcs12, $privada, 'prueba'));
+
+            return Crypt::encryptString(json_encode(['pkcs12' => base64_encode($pkcs12), 'clave' => 'prueba'], JSON_THROW_ON_ERROR));
+        } finally {
+            unlink($config);
+        }
+    }
+
+    public function test_el_catalogo_busca_solo_el_tipo_y_la_vigencia_solicitados(): void
+    {
+        [$usuario] = $this->prepararFactura();
+        $this->actingAs($usuario);
+        $ruta = 'compras.retenciones.catalogo';
+        $this->getJson(route($ruta, ['tipo' => 'renta', 'fecha' => '2026-11-28']))
+            ->assertOk()->assertJsonCount(0, 'results');
+        $this->getJson(route($ruta, ['tipo' => 'renta', 'fecha' => '2026-02-28', 'q' => '312']))
+            ->assertOk()->assertJsonPath('results.0.id', '312')->assertJsonPath('results.0.text', '312 · Adquisición de bienes muebles corporales · 1.75 %');
+        $this->getJson(route($ruta, ['tipo' => 'renta', 'fecha' => '2026-03-01', 'q' => '312']))
+            ->assertOk()->assertJsonPath('results.0.text', '312 · Adquisición de bienes muebles corporales · 2 %');
+        $this->getJson(route($ruta, ['tipo' => 'iva', 'fecha' => '2026-11-28', 'q' => '312']))
+            ->assertOk()->assertJsonCount(0, 'results');
+        $this->getJson(route($ruta, ['tipo' => 'iva', 'fecha' => '2026-11-28', 'q' => '50']))
+            ->assertOk()->assertJsonPath('results.0.id', '11');
+    }
+
+    public function test_el_cobro_confirmado_baja_el_saldo_y_se_concilia_por_separado(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos)->assertRedirect();
+        $factura = DB::table('com_documentos')->value('id');
+        $sucursal = DB::table('erp_sucursales')->value('id');
+        $banco = DB::table('cb_cuentas')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'id_sucursal' => $sucursal, 'codigo' => 'BAN-1', 'nombre' => 'Banco de prueba',
+            'tipo' => 'banco', 'moneda' => 'USD',
+        ]);
+        $cuentaContable = DB::table('co_cuentas')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'banco', 'nombre' => 'Banco', 'clase' => 'activo',
+        ]);
+        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['tesoreria' => json_encode([$banco => $cuentaContable])]);
+        $detalle = route('ventas.documentos.trazabilidad', $factura);
+        $this->get($detalle)->assertOk()->assertSee('USD 20.70')->assertDontSee('Cobros registrados');
+        $cobro = [
+            'id_cuenta' => $banco, 'fecha' => $datos['fecha'], 'importe' => '10.00', 'referencia' => 'TX-123',
+            'clave_operacion' => '69f226f5-b575-4106-b4cb-dabfd7608a2f',
+        ];
+        $ruta = route('ventas.documentos.cobro.store', $factura);
+        $this->postJson($ruta, $cobro)->assertOk();
+        $this->postJson($ruta, $cobro)->assertOk();
+        $this->assertDatabaseCount('cb_operaciones', 1);
+        $this->postJson($ruta, array_replace($cobro, ['clave_operacion' => 'd34baa06-d857-4be4-825a-5ef6be6c94de', 'importe' => '11.00']))
+            ->assertUnprocessable()->assertJsonValidationErrors('importe');
+        $this->get($detalle)->assertOk()->assertSee('USD 10.70')->assertSee('Pendiente de conciliación');
+        $asientoCobro = DB::table('co_asientos')->where('origen', 'tesoreria.operacion')->value('id');
+        $clientes = DB::table('co_cuentas')->where('codigo', 'clientes')->value('id');
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientoCobro, 'id_cuenta' => $clientes, 'haber' => 1000]);
+
+        $extracto = app(ConciliacionBancaria::class)->importar([
+            'id_cuenta' => $banco, 'nombre' => 'Extracto de enero',
+            'lineas' => [['fecha' => $datos['fecha'], 'referencia' => 'TX-123', 'descripcion' => 'Transferencia', 'importe' => '10.00']],
+        ]);
+        $linea = DB::table('cb_lineas_extracto')->where('id_extracto', $extracto->id)->value('id');
+        app(ConciliacionBancaria::class)->conciliar($linea, DB::table('cb_asientos')->value('id'));
+        $this->get($detalle)->assertOk()->assertSee('Conciliado')->assertSee('USD 10.70');
+        $this->postJson(route('ventas.documentos.anular', $factura), ['motivo' => 'Anular después de cobrar'])->assertConflict();
     }
 
     /** @return array{User, array} */

@@ -5,14 +5,19 @@
 
     const titulo = dialogo.querySelector('#archivo-documentos-titulo');
     const contenido = dialogo.querySelector('[data-archivo-contenido]');
+    const logo = archivo.querySelector('[data-archivo-logo]');
 
     archivo.addEventListener('click', (evento) => {
         const tarjeta = evento.target.closest('[data-archivo-abrir]');
         if (!tarjeta || dialogo.open) return;
 
         const detalle = tarjeta.nextElementSibling;
+        const hoja = detalle.content.cloneNode(true);
+        if (logo) {
+            hoja.querySelector('[data-archivo-emisor]')?.prepend(logo.content.cloneNode(true));
+        }
         titulo.textContent = tarjeta.dataset.archivoAbrir;
-        contenido.replaceChildren(detalle.content.cloneNode(true));
+        contenido.replaceChildren(hoja);
         dialogo.showModal();
     });
 

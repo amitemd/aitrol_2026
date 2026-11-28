@@ -4,6 +4,18 @@
         <dt class="col-sm-4">Clave de acceso</dt><dd class="col-sm-8 text-break font-monospace" data-factura-clave-acceso>{{ $documento['clave_acceso'] }}</dd>
         <dt class="col-sm-4">Ambiente SRI</dt><dd class="col-sm-8">{{ $documento['ambiente'] === '2' ? 'Producción' : 'Pruebas' }}</dd>
     @endisset
+    @isset($documento['estado_retencion'])
+        <dt class="col-sm-4">Estado electrónico</dt>
+        <dd class="col-sm-8">{{ $documento['estado_retencion'] }} · <a href="{{ route($modulo.'.retenciones.xml', $documento['id']) }}">Descargar XML</a></dd>
+        @if ($modulo === 'compras' && !$documento['anulado_at'] && $documento['estado_retencion'] !== 'Autorizada en el SRI' && Gate::allows('permiso', ['compras.retenciones.index', 'actualizar']))
+            <dd class="col-sm-8 offset-sm-4">
+                <form method="POST" action="{{ route('compras.retenciones.emitir', $documento['id']) }}" data-ajax-form>
+                    @csrf
+                    <button class="btn btn-sm btn-primary" type="submit">{{ empty($documento['recibida_sri']) ? 'Firmar y enviar al SRI' : 'Consultar autorización' }}</button>
+                </form>
+            </dd>
+        @endif
+    @endisset
     @isset($documento['fuente_compra'])
         <dt class="col-sm-4">Comprobante recibido</dt>
         <dd class="col-sm-8"><a href="{{ route('compras.documentos.xml', $documento['id']) }}">Descargar XML</a></dd>

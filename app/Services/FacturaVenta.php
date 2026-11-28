@@ -169,7 +169,7 @@ final readonly class FacturaVenta
     }
 
     /** @return array{numero: string, clave_acceso: string, ambiente: string, tipo_emision: string} */
-    private function identidadElectronica(string $fecha, string $ruc): array
+    public function identidadElectronica(string $fecha, string $ruc, bool $retencion = false): array
     {
         $sucursal = $this->contexto->sucursal();
         $establecimiento = (string) ($sucursal->establecimiento_sri ?? '');
@@ -182,7 +182,7 @@ final readonly class FacturaVenta
             throw ValidationException::withMessages(['emisor' => 'La configuración de facturación electrónica no está cargada. Pide al administrador que actualice la caché de configuración del servidor.']);
         }
         $ambiente = (string) ($configuracion['ambiente'] ?? '');
-        $inicio = filter_var($configuracion['secuencial_inicial'] ?? null, FILTER_VALIDATE_INT, [
+        $inicio = filter_var($retencion ? config('comercial.compras.secuencial_retencion', 1) : ($configuracion['secuencial_inicial'] ?? null), FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1, 'max_range' => 999999999],
         ]);
         if (! in_array($ambiente, ['1', '2'], true) || $inicio === false) {
@@ -191,8 +191,10 @@ final readonly class FacturaVenta
 
         $serie = $establecimiento.'-'.$punto.'-';
         $numeros = DB::table('com_documentos')->where([
-            'id_empresa' => $this->empresa->id(), 'modulo' => 'ventas', 'tipo' => 'documentos', 'emisor' => 0,
-        ])->whereBetween('numero', [$serie.'000000001', $serie.'999999999'])->orderByDesc('numero')->cursor();
+            'id_empresa' => $this->empresa->id(), 'modulo' => $retencion ? 'compras' : 'ventas',
+            'tipo' => $retencion ? 'retenciones' : 'documentos',
+        ])->when(! $retencion, fn (Builder $consulta) => $consulta->where('emisor', 0)
+        )->whereBetween('numero', [$serie.'000000001', $serie.'999999999'])->orderByDesc('numero')->cursor();
         $ultimo = $numeros->first(fn (stdClass $fila): bool => str_starts_with($fila->numero, $serie)
             && preg_match('/\A[0-9]{9}\z/', substr($fila->numero, strlen($serie))));
         $siguiente = max($inicio, 1 + (int) substr($ultimo?->numero ?? '', strlen($serie)));
@@ -202,18 +204,9 @@ final readonly class FacturaVenta
 
         $secuencial = sprintf('%09d', $siguiente);
         $tipoEmision = '1';
-        $base = Carbon::parse($fecha)->format('dmY').'01'.$ruc.$ambiente.$establecimiento.$punto
+        $base = Carbon::parse($fecha)->format('dmY').($retencion ? '07' : '01').$ruc.$ambiente.$establecimiento.$punto
             .$secuencial.sprintf('%08d', random_int(0, 99999999)).$tipoEmision;
-        $suma = 0;
-        for ($i = 47; $i >= 0; $i--) {
-            $suma += (int) $base[$i] * (2 + (47 - $i) % 6);
-        }
-        $verificador = 11 - $suma % 11;
-        $digito = match ($verificador) {
-            11 => 0,
-            10 => 1,
-            default => $verificador,
-        };
+        $digito = AutorizacionSri::digitoVerificador($base);
 
         return ['numero' => $serie.$secuencial, 'clave_acceso' => $base.$digito, 'ambiente' => $ambiente, 'tipo_emision' => $tipoEmision];
     }
