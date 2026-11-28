@@ -1,9 +1,12 @@
 (() => {
     'use strict';
 
+    const formulariosPreparados = new WeakSet();
+
     function setup(form) {
         const tablist = form.querySelector('.usuario-tabs');
-        if (!tablist) return;
+        if (!tablist || formulariosPreparados.has(form)) return;
+        formulariosPreparados.add(form);
         const tabs = [...tablist.querySelectorAll('[data-usuario-tab]')];
         const panels = [...form.querySelectorAll('[data-usuario-panel]')];
 
@@ -49,17 +52,30 @@
         tablist.hidden = false;
 
         if (form.hasAttribute('data-ficha-producto')) {
+            const tipo = form.querySelector('[data-producto-tipo]');
+            const stock = form.querySelector('[data-producto-stock]');
+            const minimo = stock.querySelector('input');
+            const actualizarStock = () => {
+                const servicio = tipo.value === 'servicio';
+                stock.hidden = servicio;
+                minimo.disabled = servicio;
+            };
+            tipo.addEventListener('change', actualizarStock);
+            actualizarStock();
+
             const categoria = form.querySelector('[data-producto-categoria]');
             const herencia = form.querySelector('[data-producto-herencia]');
             const manual = form.querySelector('[data-producto-manual]');
             const plantillas = JSON.parse(herencia.dataset.plantillas);
             const nombre = herencia.querySelector('[data-producto-plantilla]');
             const cuentas = herencia.querySelectorAll('[data-producto-cuenta]');
+            const cuentasManuales = manual.querySelectorAll('select');
 
             function actualizarCuentas() {
                 const plantilla = plantillas[categoria.selectedOptions[0]?.dataset.plantilla];
                 herencia.hidden = !plantilla;
                 manual.hidden = Boolean(plantilla);
+                for (const cuenta of cuentasManuales) cuenta.disabled = Boolean(plantilla);
                 if (!plantilla) return;
                 nombre.textContent = plantilla.nombre;
                 for (const cuenta of cuentas) {
@@ -67,13 +83,16 @@
                 }
             }
 
-            categoria.addEventListener('change', actualizarCuentas);
+            categoria.onchange = actualizarCuentas;
             actualizarCuentas();
         }
     }
 
     document.querySelectorAll('[data-usuario-form]').forEach(setup);
-    document.addEventListener('aitrol:form-ready', (event) => {
+    function prepararFormulario(event) {
         if (event.target.matches('[data-usuario-form]')) setup(event.target);
-    });
+    }
+
+    document.addEventListener('aitrol:form-ready', prepararFormulario);
+    document.querySelector('[data-ajax-dialog]')?.addEventListener('aitrol:form-ready', prepararFormulario);
 })();

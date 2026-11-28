@@ -59,12 +59,15 @@ final readonly class InventarioController
         }
         if ($request->routeIs('api.*')) return response()->json(['data' => $fila]);
 
-        $cuentas = in_array($seccion, ['productos', 'plantillas-contables'], true)
-            ? $this->repositorio->opcionesFicha()['cuentas']->keyBy('id') : collect();
+        $ficha = in_array($seccion, ['productos', 'plantillas-contables'], true)
+            ? $this->repositorio->opcionesFicha() : [];
+        $cuentas = isset($ficha['cuentas']) ? $ficha['cuentas']->keyBy('id') : collect();
+        $categoriasPlantilla = $seccion === 'plantillas-contables'
+            ? $ficha['categorias']->where('id_plantilla_contable', $id) : collect();
 
         $galeria = $seccion === 'productos' ? $this->galeria->ficha($id) : null;
 
-        return view('inventarios::detalle', compact('seccion', 'fila', 'cuentas', 'galeria'));
+        return view('inventarios::detalle', compact('seccion', 'fila', 'cuentas', 'categoriasPlantilla', 'galeria'));
     }
 
     public function formulario(Request $request)
@@ -152,7 +155,11 @@ final readonly class InventarioController
         ), 403);
 
         $filtros = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'activo' => ['nullable', 'boolean']]);
-        $resultados = $this->repositorio->listar($request->route('catalogo'), $filtros);
+        $catalogo = $request->route('catalogo');
+        if ($catalogo === 'productos' && in_array($seccion, ['movimientos', 'ajustes'], true)) {
+            $filtros['solo_inventariables'] = true;
+        }
+        $resultados = $this->repositorio->listar($catalogo, $filtros);
 
         return response()->json([
             'results' => $resultados->getCollection()->map(fn (stdClass $fila) => ['id' => $fila->id, 'text' => $fila->codigo.' · '.$fila->nombre]),
@@ -184,7 +191,11 @@ final readonly class InventarioController
     {
         $reglas = [
             'codigo' => ['required', 'string', 'max:60'],
-            'nombre' => ['required', 'string', $seccion === 'categorias' ? 'max:100' : 'max:160'],
+            'nombre' => ['required', 'string', 'max:'.match ($seccion) {
+                'unidades' => 30,
+                'categorias', 'marcas' => 100,
+                default => 160,
+            }],
             'descripcion' => ['nullable', 'string', 'max:500'],
             'activo' => [$id ? 'required' : 'sometimes', 'boolean'],
         ];
@@ -193,7 +204,8 @@ final readonly class InventarioController
                 array_unshift($reglas['codigo'], 'sometimes');
             }
             $reglas += [
-                'unidad' => ['required', 'string', 'max:30'],
+                'unidad' => ['required_without:id_unidad', 'nullable', 'string', 'max:30'],
+                'id_unidad' => ['sometimes', 'nullable', 'integer', 'min:1'],
                 'categoria' => ['nullable', 'string', 'max:100'],
                 'id_categoria' => ['sometimes', 'nullable', 'integer', 'min:1'],
                 'codigo_barras' => ['nullable', 'string', 'max:80'],
@@ -201,6 +213,7 @@ final readonly class InventarioController
                 'tipo_producto' => ['sometimes', 'required', Rule::in(array_keys(config('inventarios.tipos_producto')))],
                 'iva_codigo' => ['sometimes', 'nullable', Rule::in(array_keys(\App\Services\FacturaVenta::IVA))],
                 'marca' => ['nullable', 'string', 'max:100'],
+                'id_marca' => ['sometimes', 'nullable', 'integer', 'min:1'],
                 'modelo' => ['nullable', 'string', 'max:100'],
                 'ficha_tecnica_url' => ['nullable', 'url:https', 'max:500'],
                 'version_fotos' => ['required_with:orden_fotos,fotos_nuevas', 'string', 'size:64'],
@@ -215,12 +228,20 @@ final readonly class InventarioController
         if ($seccion === 'categorias') {
             $reglas['id_plantilla_contable'] = ['sometimes', 'nullable', 'integer', 'min:1'];
         }
+        if ($seccion === 'plantillas-contables' && ! $request->routeIs('api.*')) {
+            $reglas['id_categorias'] = ['sometimes', 'array', 'list'];
+            $reglas['id_categorias.*'] = ['nullable', 'integer', 'min:1', 'distinct'];
+        }
         if (in_array($seccion, ['productos', 'plantillas-contables'], true)) {
             $reglas['cuentas'] = [$seccion === 'plantillas-contables' ? 'required' : 'sometimes',
                 'array:'.implode(',', array_keys(config('inventarios.cuentas_producto')))];
             $reglas['cuentas.*'] = ['nullable', 'integer', 'min:1'];
         }
         $datos = $request->validate($reglas);
+        if (array_key_exists('id_categorias', $datos)) {
+            Gate::authorize('permiso', ['inventarios.categorias.index', 'actualizar']);
+            $datos['id_categorias'] = array_values(array_filter($datos['id_categorias'], fn ($idCategoria) => $idCategoria !== null));
+        }
         if (isset($datos['codigo'])) {
             $datos['codigo'] = Str::upper($datos['codigo']);
             if (Str::length($datos['codigo']) > 60) {

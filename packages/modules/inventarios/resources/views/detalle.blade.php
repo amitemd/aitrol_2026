@@ -21,6 +21,29 @@
                         @endisset
                     @endforeach
                 </dl>
+                @if ($seccion === 'productos' && array_intersect_key(array_filter($fila, fn ($valor) => $valor !== null), config('inventarios.valores_producto')))
+                    <h2 class="h6 mt-3">Precios y costos unitarios</h2>
+                    <dl class="row mb-0">
+                        @foreach (config('inventarios.valores_producto') as $campo => [$etiqueta, $maximo, $decimales])
+                            @isset($fila[$campo])
+                                <dt class="col-sm-5">{{ $etiqueta }}</dt>
+                                <dd class="col-sm-7">{{ str_starts_with($campo, 'descuento_') ? '' : 'USD ' }}{{ number_format((float) $fila[$campo], $decimales) }}</dd>
+                            @endisset
+                        @endforeach
+                    </dl>
+                @endif
+                @if ($seccion === 'plantillas-contables')
+                    <h2 class="h6 mt-3">Categorías asignadas</h2>
+                    @if ($categoriasPlantilla->isEmpty())
+                        <p class="text-body-secondary mb-0">Sin categorías asignadas.</p>
+                    @else
+                        <ul class="mb-0">
+                            @foreach ($categoriasPlantilla as $categoria)
+                                <li>{{ $categoria->nombre }}{{ $categoria->activo ? '' : ' (inactiva)' }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                @endif
                 @if ((array) ($fila['cuentas_efectivas'] ?? $fila['cuentas'] ?? []))
                     <h2 class="h6 mt-3">Cuentas contables</h2>
                     <dl class="row mb-0">

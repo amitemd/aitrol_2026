@@ -94,6 +94,18 @@ final readonly class DatosContables implements RepositorioContable
         return $this->cuentas()->where('co_cuentas.id', $id)->first() ?? abort(404, 'Cuenta contable no encontrada.');
     }
 
+    public function codigosConPrefijo(string $prefijo): iterable
+    {
+        return $this->tabla('co_cuentas')->whereLike('codigo', $prefijo.'%')->pluck('codigo');
+    }
+
+    public function nombresDeCuentas(?int $excepto): iterable
+    {
+        return $this->tabla('co_cuentas')
+            ->when($excepto !== null, fn (Builder $consulta) => $consulta->where('id', '<>', $excepto))
+            ->select('nombre')->cursor();
+    }
+
     public function auxiliares(array $ids): array
     {
         return $this->tabla('co_cuentas')->whereIn('id', $ids)->where('activo', true)->where('auxiliar', true)->get()->keyBy('id')->all();

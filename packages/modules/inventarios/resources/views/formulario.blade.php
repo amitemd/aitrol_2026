@@ -6,6 +6,8 @@
         'productos' => $registro ? 'Editar producto' : 'Nuevo producto',
         'categorias' => $registro ? 'Editar categoría' : 'Nueva categoría',
         'plantillas-contables' => $registro ? 'Editar plantilla contable' : 'Nueva plantilla contable',
+        'marcas' => $registro ? 'Editar marca' : 'Nueva marca',
+        'unidades' => $registro ? 'Editar unidad' : 'Nueva unidad',
         'bodegas' => $registro ? 'Editar bodega' : 'Nueva bodega',
         'ajustes' => 'Nuevo ajuste',
         default => 'Nuevo movimiento',
@@ -41,7 +43,7 @@
                         </div>
                         <div class="col-sm-8">
                             <label class="form-label" for="inv-nombre">{{ __('Nombre') }}</label>
-                            <input class="form-control" name="nombre" id="inv-nombre" maxlength="{{ $seccion === 'categorias' ? 100 : 160 }}" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
+                            <input class="form-control" name="nombre" id="inv-nombre" maxlength="{{ match ($seccion) { 'unidades' => 30, 'categorias', 'marcas' => 100, default => 160 } }}" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
                         </div>
                         @if ($seccion === 'categorias')
                             <div class="col-12">
@@ -56,6 +58,28 @@
                                 <p class="form-text">Los productos de esta categoría usarán estas cuentas.</p>
                             </div>
                         @elseif ($seccion === 'plantillas-contables')
+                            @can('permiso', ['inventarios.categorias.index', 'actualizar'])
+                                @php
+                                    $categoriasAsignadas = isset($registro['id'])
+                                        ? $ficha['categorias']->where('id_plantilla_contable', $registro['id'])->pluck('id')->all() : [];
+                                    $categoriasSeleccionadas = array_map('strval', array_filter((array) old('id_categorias', $categoriasAsignadas), 'is_scalar'));
+                                @endphp
+                                <div class="col-12">
+                                    <label class="form-label" for="inv-categorias-plantilla">Categorías que usarán esta plantilla</label>
+                                    <input type="hidden" name="id_categorias[]" value="">
+                                    <select name="id_categorias[]" id="inv-categorias-plantilla" multiple class="form-select @error('id_categorias') is-invalid @enderror"
+                                        aria-describedby="inv-categorias-plantilla-ayuda">
+                                        @foreach ($ficha['categorias'] as $categoria)
+                                            @continue(!in_array($categoria->id, $categoriasAsignadas) && (!$categoria->activo || $categoria->id_plantilla_contable !== null))
+                                            <option value="{{ $categoria->id }}" @selected(in_array((string) $categoria->id, $categoriasSeleccionadas, true))>
+                                                {{ $categoria->nombre }}{{ $categoria->activo ? '' : ' (inactiva)' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="form-text mb-0" id="inv-categorias-plantilla-ayuda">Puedes elegir varias categorías. Cada producto hereda las cuentas de su categoría.</p>
+                                    @error('id_categorias') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            @endcan
                             @include('inventarios::campos-cuentas')
                         @endif
                         <div class="col-12">

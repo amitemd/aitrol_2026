@@ -88,6 +88,64 @@ final class CategoriasInventarioTest extends TestCase
         $this->actingAs($this->administrador('1000000000002'))->patchJson($estado, ['activo' => false])->assertNotFound();
     }
 
+    public function test_la_plantilla_asigna_varias_categorias_y_los_productos_heredan_las_cuentas(): void
+    {
+        $usuario = $this->administrador('1000000000001');
+        $empresa = $usuario->id_empresa;
+        $this->actingAs($usuario);
+        $categorias = [
+            DB::table('inv_categorias')->insertGetId(['id_empresa' => $empresa, 'codigo' => 'SERV', 'nombre' => 'Servicios']),
+            DB::table('inv_categorias')->insertGetId(['id_empresa' => $empresa, 'codigo' => 'ACCE', 'nombre' => 'Accesorios']),
+        ];
+        $ventas = DB::table('co_cuentas')->insertGetId(['id_empresa' => $empresa, 'codigo' => '4.01.01', 'nombre' => 'Ventas de servicios', 'clase' => 'ingreso']);
+        $plantilla = ['codigo' => 'TPL-SERV', 'nombre' => 'Plantilla de servicios', 'activo' => true, 'cuentas' => ['ventas' => $ventas]];
+
+        $this->get(route('inventarios.plantillas-contables.create'))->assertOk()
+            ->assertSeeInOrder(['Categorías que usarán esta plantilla', 'Accesorios', 'Servicios']);
+        $this->postJson(route('inventarios.plantillas-contables.store'), $plantilla + ['id_categorias' => [null, ...$categorias]])->assertCreated();
+        $idPlantilla = DB::table('inv_plantillas_contables')->where('id_empresa', $empresa)->where('codigo', 'TPL-SERV')->value('id');
+        $this->assertSame(2, DB::table('inv_categorias')->where('id_plantilla_contable', $idPlantilla)->count());
+        $this->get(route('inventarios.plantillas-contables.show', $idPlantilla))->assertOk()->assertSeeInOrder(['Categorías asignadas', 'Accesorios', 'Servicios']);
+        $this->postJson(route('inventarios.productos.store'), [
+            'codigo' => 'P-001', 'nombre' => 'Servicio contratado', 'unidad' => 'unidad', 'id_categoria' => $categorias[0],
+        ])->assertCreated();
+        $producto = DB::table('inv_productos')->where('id_empresa', $empresa)->where('codigo', 'P-001')->first();
+        $this->assertNull($producto->cuentas);
+        $this->get(route('inventarios.productos.show', $producto->id))->assertOk()
+            ->assertSee('Plantilla de servicios')->assertSee('4.01.01 · Ventas de servicios');
+
+        $editar = route('inventarios.plantillas-contables.update', $idPlantilla);
+        $this->putJson($editar, $plantilla + ['id_categorias' => [null, $categorias[1]]])->assertOk();
+        $this->assertDatabaseHas('inv_categorias', ['id' => $categorias[0], 'id_plantilla_contable' => null]);
+        $this->assertDatabaseHas('inv_categorias', ['id' => $categorias[1], 'id_plantilla_contable' => $idPlantilla]);
+    }
+
+    public function test_una_plantilla_no_puede_tomar_categorias_ajenas_o_ya_asignadas(): void
+    {
+        $usuario = $this->administrador('1000000000001');
+        $otraEmpresa = $this->administrador('1000000000002')->id_empresa;
+        $empresa = $usuario->id_empresa;
+        $this->actingAs($usuario);
+        $ventas = DB::table('co_cuentas')->insertGetId(['id_empresa' => $empresa, 'codigo' => '4.01.01', 'nombre' => 'Ventas de servicios', 'clase' => 'ingreso']);
+        $plantilla = ['codigo' => 'TPL-USO', 'nombre' => 'Plantilla de pruebas', 'cuentas' => ['ventas' => $ventas]];
+        $plantillaActual = DB::table('inv_plantillas_contables')->insertGetId([
+            'id_empresa' => $empresa, 'codigo' => 'TPL-PREV', 'nombre' => 'Plantilla anterior', 'cuentas' => json_encode(['ventas' => $ventas]),
+        ]);
+        $asignada = DB::table('inv_categorias')->insertGetId([
+            'id_empresa' => $empresa, 'codigo' => 'CAT-PREV', 'nombre' => 'Ya asignada', 'id_plantilla_contable' => $plantillaActual,
+        ]);
+        $ajena = DB::table('inv_categorias')->insertGetId(['id_empresa' => $otraEmpresa, 'codigo' => 'CAT-OTRA', 'nombre' => 'Categoría ajena']);
+
+        foreach ([$asignada, $ajena] as $id) {
+            $this->postJson(route('inventarios.plantillas-contables.store'), $plantilla + ['id_categorias' => [$id]])
+                ->assertUnprocessable()->assertJsonValidationErrors('id_categorias');
+        }
+
+        $this->assertDatabaseMissing('inv_plantillas_contables', ['id_empresa' => $empresa, 'codigo' => 'TPL-USO']);
+        $this->assertDatabaseHas('inv_categorias', ['id' => $asignada, 'id_plantilla_contable' => $plantillaActual]);
+        $this->assertDatabaseHas('inv_categorias', ['id' => $ajena, 'id_plantilla_contable' => null]);
+    }
+
     private function administrador(string $ruc): User
     {
         $empresa = EmpresaModel::create(['ruc' => $ruc, 'razon_social' => 'Empresa de pruebas']);

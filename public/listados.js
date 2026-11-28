@@ -87,9 +87,10 @@
             list.replaceChildren(...updated.childNodes);
             listUrl = url;
             history.replaceState(history.state, '', url);
+            list.dispatchEvent(new Event('aitrol:listado-actualizado', { bubbles: true }));
         } catch (error) {
             if (controller.signal.aborted) return;
-            notify(afterSave ? 'El cambio se guardó. Usa Buscar para actualizar el listado.' : error.message, true);
+            notify(afterSave ? 'El cambio se guardó. Recarga el listado para ver el cambio.' : error.message, true);
         } finally {
             if (listRequest === controller) list.removeAttribute('aria-busy');
         }

@@ -13,6 +13,24 @@ final class FichaProductosMigracionTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+    public function test_importa_marca_y_unidad_existentes_y_conserva_el_precio_base(): void
+    {
+        $empresa = EmpresaModel::create(['ruc' => '1000000000001', 'razon_social' => 'Empresa de prueba']);
+        $migracion = require database_path('migrations/2026_11_28_011527_agregar_catalogos_y_precios_de_inventario.php');
+        $migracion->down();
+        $id = DB::table('inv_productos')->insertGetId(['id_empresa' => $empresa->id, 'codigo' => 'LEG-01',
+            'nombre' => 'Producto anterior', 'unidad' => 'caja', 'marca' => 'Acme', 'precio_venta' => '45.50']);
+
+        $migracion->up();
+
+        $marca = DB::table('inv_marcas')->where('id_empresa', $empresa->id)->where('nombre', 'Acme')->value('id');
+        $unidad = DB::table('inv_unidades')->where('id_empresa', $empresa->id)->where('codigo', 'CJ')->value('id');
+        $this->assertNotNull($marca);
+        $this->assertNotNull($unidad);
+        $this->assertDatabaseHas('inv_productos', ['id' => $id, 'id_marca' => $marca, 'id_unidad' => $unidad,
+            'marca' => 'Acme', 'unidad' => 'caja', 'precio_venta' => '45.50', 'precio_venta_4' => null]);
+    }
+
     public function test_reanuda_la_ficha_con_catalogos_creados_y_preserva_los_datos(): void
     {
         $empresa = EmpresaModel::create(['ruc' => '1000000000001', 'razon_social' => 'Empresa de prueba']);

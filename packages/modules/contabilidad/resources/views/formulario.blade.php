@@ -7,6 +7,11 @@
         default => $seccion === 'cuentas' ? 'Nueva cuenta auxiliar' : config('contabilidad.secciones.'.$seccion.'.2'),
     };
 @endphp
+@if ($seccion === 'cuentas' && !$accion)
+    @push('scripts')
+        <script src="{{ asset('plan-cuentas.js') }}?v={{ filemtime(public_path('plan-cuentas.js')) }}" nonce="{{ request()->attributes->get('csp_nonce') }}" defer></script>
+    @endpush
+@endif
 @section('title', $titulo)
 @section('content')
     <div class="app-content py-3"><div class="container-fluid">
@@ -18,18 +23,11 @@
             @include('contabilidad::errores')
             <div class="card-body row g-3">
                 @if ($seccion === 'cuentas')
-                    <div class="col-sm-4">
-                        <label class="form-label" for="co-codigo">{{ __('Código') }}</label>
-                        <input id="co-codigo" name="codigo" class="form-control" maxlength="40" value="{{ old('codigo', $registro['codigo'] ?? '') }}" required autofocus>
-                    </div>
-                    <div class="col-sm-8">
-                        <label class="form-label" for="co-nombre">{{ __('Nombre') }}</label>
-                        <input id="co-nombre" name="nombre" class="form-control" maxlength="160" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required>
-                    </div>
                     @unless ($accion)
                         <div class="col-12">
                             <label class="form-label" for="co-padre">Cuenta de grupo superior</label>
-                            <select id="co-padre" name="id_padre" class="form-select" data-select2-url="{{ route($ruta.'.opciones') }}" data-select2-min="0" data-select2-placeholder="Buscar por código o nombre" required>
+                            <select id="co-padre" name="id_padre" class="form-select" data-select2-url="{{ route($ruta.'.opciones') }}" data-select2-min="0" data-select2-placeholder="Buscar por código o nombre"
+                                data-codigo-auxiliar-url="{{ route($ruta.'.codigo-auxiliar') }}" required>
                                 <option value=""></option>
                                 @if ($padre)
                                     <option value="{{ $padre->id }}" selected>{{ $padre->codigo }} · {{ $padre->nombre }}</option>
@@ -37,6 +35,21 @@
                             </select>
                             <p class="form-text mb-0">La cuenta auxiliar hereda la clase contable del grupo.</p>
                         </div>
+                    @endunless
+                    <div class="col-sm-4">
+                        <label class="form-label" for="co-codigo">{{ __('Código') }}</label>
+                        @if ($accion)
+                            <input id="co-codigo" name="codigo" class="form-control" maxlength="40" value="{{ old('codigo', $registro['codigo']) }}" required>
+                        @else
+                            <input id="co-codigo" class="form-control" value="{{ $codigoSugerido }}" aria-describedby="co-codigo-ayuda" readonly>
+                            <p id="co-codigo-ayuda" class="form-text mb-0" role="status">{{ $mensajeCodigo }}</p>
+                        @endif
+                    </div>
+                    <div class="col-sm-8">
+                        <label class="form-label" for="co-nombre">{{ __('Nombre') }}</label>
+                        <input id="co-nombre" name="nombre" class="form-control" maxlength="160" value="{{ old('nombre', $registro['nombre'] ?? '') }}" required autofocus>
+                    </div>
+                    @unless ($accion)
                         <div class="col-12 d-flex flex-wrap gap-3">
                             <label class="form-check"><input type="checkbox" name="efectivo" value="1" class="form-check-input" @checked(old('efectivo'))> Efectivo o equivalente</label>
                         </div>

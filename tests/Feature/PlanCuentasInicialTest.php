@@ -72,13 +72,20 @@ final class PlanCuentasInicialTest extends TestCase
         $alta = route('contabilidad.cuentas.store');
         $editarGrupo = route('contabilidad.cuentas.editar.formulario', $cuentas['1.01.01']);
         $editarAuxiliar = route('contabilidad.cuentas.editar.formulario', $cuentas['1.01.01.01']);
+        $ramaActivo = 'plan-subcuentas-'.$cuentas['1'];
         $respuesta = $this->get($listado)->assertOk()
-            ->assertSee('data-cuenta-nivel="0"', false)
+            ->assertSee('class="plan-cuentas-raices"', false)
+            ->assertSee('data-plan-busqueda', false)
+            ->assertSee('aria-controls="'.$ramaActivo.'"', false)
             ->assertSee('aria-expanded="false"', false)->assertDontSee($editarGrupo, false)->assertSee($editarAuxiliar, false);
-        $this->assertSame(1, preg_match('/data-cuenta-nivel="1"\s+hidden/', $respuesta->getContent()));
-        $this->get(route('contabilidad.cuentas.index', ['q' => 'Caja general']))->assertOk()
+        $this->assertMatchesRegularExpression('/id="'.$ramaActivo.'"\s+role="list"\s+hidden/', $respuesta->getContent());
+        $resultado = $this->get(route('contabilidad.cuentas.index', ['q' => 'Caja general']))->assertOk()
             ->assertSeeInOrder(['Activo corriente', 'Efectivo y equivalentes de efectivo', 'Caja general'])
-            ->assertSee('aria-expanded="true"', false)->assertDontSee('Bancos nacionales');
+            ->assertSee('aria-expanded="true"', false)->assertSee('1 coincidencia')
+            ->assertDontSee('id="'.$ramaActivo.'" role="list" hidden', false);
+        $this->assertMatchesRegularExpression('/data-plan-cuenta="'.$cuentas['1.01.01.03'].'"\s+hidden/', $resultado->getContent());
+        $this->get(route('contabilidad.cuentas.show', $cuentas['1.01.01.01']))->assertOk()
+            ->assertSeeInOrder(['Creado por', 'Creado el', 'Modificado por', 'Modificado el']);
         $this->get($editarGrupo)->assertForbidden();
         $this->get($editarAuxiliar)->assertOk();
 
@@ -93,6 +100,49 @@ final class PlanCuentasInicialTest extends TestCase
         $id = DB::table('co_cuentas')->where('id_empresa', $empresa)->where('codigo', $datos['codigo'])->value('id');
         $this->putJson(route('contabilidad.cuentas.editar', $id), array_replace($datos, ['nombre' => 'Caja auxiliar actualizada']))->assertOk();
         $this->assertDatabaseHas('co_cuentas', ['id' => $id, 'nombre' => 'Caja auxiliar actualizada']);
+    }
+
+    public function test_el_formulario_propone_y_asigna_el_primer_codigo_libre_del_grupo(): void
+    {
+        $empresa = $this->crearEmpresa('1000000000011');
+        DB::table('erp_sucursales')->insert(['id_empresa' => $empresa, 'codigo' => '001', 'nombre' => 'Matriz']);
+        $cuentas = DB::table('co_cuentas')->where('id_empresa', $empresa)->pluck('id', 'codigo');
+        $padre = ['id_padre' => $cuentas['1.01.01']];
+        $alta = route('contabilidad.cuentas.store');
+        $this->postJson($alta, $padre + ['codigo' => '1.01.01.06', 'nombre' => 'Caja inactiva', 'activo' => false])->assertCreated();
+
+        $this->get(route('contabilidad.cuentas.create', $padre))->assertOk()->assertSee('value="1.01.01.05"', false);
+        $this->getJson(route('contabilidad.cuentas.codigo-auxiliar', $padre))->assertOk()->assertJsonPath('codigo', '1.01.01.05');
+        $this->getJson(route('contabilidad.cuentas.codigo-auxiliar', ['id_padre' => $cuentas['2']]))
+            ->assertOk()->assertJsonPath('codigo', '2.03');
+
+        $this->postJson($alta, $padre + ['nombre' => 'Caja de ventas'])->assertCreated()->assertJsonPath('message', 'Cuenta auxiliar 1.01.01.05 guardada.');
+        $this->postJson($alta, $padre + ['nombre' => 'Caja de cobranzas'])->assertCreated()->assertJsonPath('message', 'Cuenta auxiliar 1.01.01.07 guardada.');
+        $this->assertDatabaseHas('co_cuentas', $padre + ['id_empresa' => $empresa, 'codigo' => '1.01.01.07', 'nombre' => 'Caja de cobranzas']);
+    }
+
+    public function test_codigos_y_nombres_son_unicos_dentro_de_cada_empresa(): void
+    {
+        $empresa = $this->crearEmpresa('1000000000011');
+        DB::table('erp_sucursales')->insert(['id_empresa' => $empresa, 'codigo' => '001', 'nombre' => 'Matriz']);
+        $cuentas = DB::table('co_cuentas')->where('id_empresa', $empresa)->pluck('id', 'codigo');
+        $alta = route('contabilidad.cuentas.store');
+        $datos = ['id_padre' => $cuentas['1.01.01'], 'codigo' => '1.01.01.05', 'nombre' => 'Caja de recepción', 'activo' => true];
+        $this->postJson($alta, $datos)->assertCreated();
+
+        $this->postJson($alta, array_replace($datos, ['nombre' => 'Caja distinta']))->assertConflict();
+        $this->postJson($alta, ['id_padre' => $cuentas['2'], 'nombre' => 'CAJA  DE RECEPCION'])
+            ->assertUnprocessable()->assertJsonValidationErrors('nombre');
+        $this->putJson(route('contabilidad.cuentas.editar', $cuentas['1.01.01.01']), array_replace($datos, ['codigo' => '1.01.01.01']))
+            ->assertUnprocessable()->assertJsonValidationErrors('nombre');
+        $id = DB::table('co_cuentas')->where('id_empresa', $empresa)->where('codigo', $datos['codigo'])->value('id');
+        $this->putJson(route('contabilidad.cuentas.editar', $id), $datos)->assertOk();
+
+        $otraEmpresa = $this->crearEmpresa('1000000000012');
+        DB::table('erp_sucursales')->insert(['id_empresa' => $otraEmpresa, 'codigo' => '001', 'nombre' => 'Matriz']);
+        $otroPadre = DB::table('co_cuentas')->where('id_empresa', $otraEmpresa)->where('codigo', '1.01.01')->value('id');
+        $this->getJson(route('contabilidad.cuentas.codigo-auxiliar', ['id_padre' => $cuentas['1.01.01']]))->assertNotFound();
+        $this->postJson($alta, array_replace($datos, ['id_padre' => $otroPadre]))->assertCreated();
     }
 
     private function crearEmpresa(string $ruc): int

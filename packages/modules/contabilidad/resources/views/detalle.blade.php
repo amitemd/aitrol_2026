@@ -19,6 +19,15 @@
                         <dt class="col-sm-5">{{ __($etiqueta) }}</dt><dd class="col-sm-7">@include('contabilidad::valor', ['valor' => $registro[$campo] ?? null])</dd>
                     @endforeach
                 </dl>
+                @if ($seccion === 'cuentas')
+                    <h2 class="fs-6 mt-3">Auditoría</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0" aria-label="Auditoría de la cuenta">
+                            <thead><tr>@include('partials.auditoria-cabeceras')</tr></thead>
+                            <tbody><tr>@include('partials.auditoria-celdas', ['filaAuditoria' => $registro])</tr></tbody>
+                        </table>
+                    </div>
+                @endif
                 @isset($registro['lineas'])
                     <div class="table-responsive"><table class="table table-sm align-middle">
                         <caption class="visually-hidden">Detalle de partidas</caption>

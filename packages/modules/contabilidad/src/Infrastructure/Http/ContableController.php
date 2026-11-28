@@ -8,6 +8,7 @@ use Aitrol\Contabilidad\Infrastructure\Queries\ReportesContables;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use App\Services\ContextoOperativo;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -39,7 +40,7 @@ final readonly class ContableController
                 : null;
             $registros = $this->arbolCuentas($consulta->get(), $coincidencias);
 
-            return view('contabilidad::index', compact('seccion', 'registros', 'filtros', 'buscando'));
+            return view('contabilidad::index', compact('seccion', 'registros', 'filtros', 'buscando', 'coincidencias'));
         }
         $registros = $this->datos->buscar($consulta, $filtros['q'] ?? null, $columnas)->paginate($filtros['per_page'] ?? 20)
             ->appends($filtros)->through($this->presentar(...));
@@ -49,24 +50,28 @@ final readonly class ContableController
 
     private function arbolCuentas(Collection $cuentas, ?Collection $coincidencias): Collection
     {
-        $porId = $cuentas->keyBy('id');
+        $visibles = [];
         if ($coincidencias !== null) {
-            $visibles = [];
+            $porId = $cuentas->keyBy('id');
             foreach ($coincidencias as $id) {
                 while ($id !== null && $porId->has($id) && ! isset($visibles[$id])) {
                     $visibles[$id] = true;
                     $id = $porId[$id]->id_padre;
                 }
             }
-            $cuentas = $cuentas->filter(fn (stdClass $cuenta): bool => isset($visibles[$cuenta->id]));
         }
 
         $hijas = $cuentas->groupBy('id_padre');
         $filas = collect();
-        $agregarRama = function (Collection $rama, int $nivel) use (&$agregarRama, $hijas, $filas): void {
+        $agregarRama = function (Collection $rama, int $nivel) use (&$agregarRama, $hijas, $filas, $coincidencias, $visibles): void {
             foreach ($rama as $cuenta) {
                 $subcuentas = $hijas->get($cuenta->id, collect());
-                $filas->push($this->presentar($cuenta) + ['nivel_arbol' => $nivel, 'tiene_hijas' => $subcuentas->isNotEmpty()]);
+                $filas->push($this->presentar($cuenta) + [
+                    'nivel_arbol' => $nivel,
+                    'tiene_hijas' => $subcuentas->isNotEmpty(),
+                    'visible_plan' => $coincidencias === null || isset($visibles[$cuenta->id]),
+                    'expandida_plan' => $coincidencias !== null && $subcuentas->contains(fn (stdClass $hija): bool => isset($visibles[$hija->id])),
+                ]);
                 $agregarRama($subcuentas, $nivel + 1);
             }
         };
@@ -91,11 +96,32 @@ final readonly class ContableController
         if ($seccion === 'cuentas' && $accion === 'editar') {
             abort_unless($registro['auxiliar'], 403, 'Solo se pueden editar cuentas auxiliares.');
         }
-        $padre = $seccion === 'cuentas' && $accion === null && $request->filled('id_padre')
-            ? $this->datos->cuenta($request->integer('id_padre')) : null;
+        $padre = null;
+        $codigoSugerido = null;
+        $mensajeCodigo = 'Selecciona el grupo para ver el primer código libre.';
+        if ($seccion === 'cuentas' && $accion === null) {
+            $idPadre = filter_var($request->old('id_padre', $request->input('id_padre')), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            $padre = $idPadre ? $this->datos->cuenta($idPadre) : null;
+        }
         abort_if($padre !== null && ($padre->auxiliar || ! $padre->activo), 404);
+        if ($padre !== null) {
+            try {
+                $codigoSugerido = $this->libro->codigoAuxiliar($padre);
+                $mensajeCodigo = 'El sistema asignará el primer código libre al guardar.';
+            } catch (ValidationException $error) {
+                $mensajeCodigo = $error->errors()['id_padre'][0];
+            }
+        }
 
-        return view('contabilidad::formulario', compact('seccion', 'accion', 'registro', 'padre'));
+        return view('contabilidad::formulario', compact('seccion', 'accion', 'registro', 'padre', 'codigoSugerido', 'mensajeCodigo'));
+    }
+
+    public function codigoAuxiliar(Request $request): JsonResponse
+    {
+        $datos = $request->validate(['id_padre' => ['required', 'integer', 'min:1']]);
+        $padre = $this->datos->cuenta((int) $datos['id_padre']);
+
+        return response()->json(['codigo' => $this->libro->codigoAuxiliar($padre)])->header('Cache-Control', 'no-store');
     }
 
     public function opciones(Request $request)
@@ -121,17 +147,22 @@ final readonly class ContableController
     {
         $seccion = $request->route('seccion');
         $repetida = false;
+        $mensaje = 'Registro guardado.';
         if ($seccion === 'asientos') {
             [$registro, $repetida] = $this->libro->registrar($request->validate($this->reglasAsiento()));
         } elseif ($seccion === 'cuentas') {
-            $registro = $this->libro->cuenta($this->camposCuenta($request, false), null);
+            $entrada = $this->camposCuenta($request, false);
+            $registro = $this->libro->cuenta($entrada, null);
+            if (! isset($entrada['codigo'])) {
+                $mensaje = 'Cuenta auxiliar '.$registro->codigo.' guardada.';
+            }
         } else {
             $registro = $this->libro->abrirPeriodo($request->validate([
                 'nombre' => ['required', 'string', 'max:120'], 'desde' => ['required', 'date_format:Y-m-d'], 'hasta' => ['required', 'date_format:Y-m-d', 'after_or_equal:desde'],
             ]));
         }
 
-        return $this->responder($request, $seccion, $registro, $repetida ? 200 : 201, $repetida ? 'El asiento ya estaba registrado.' : 'Registro guardado.');
+        return $this->responder($request, $seccion, $registro, $repetida ? 200 : 201, $repetida ? 'El asiento ya estaba registrado.' : $mensaje);
     }
 
     public function accion(Request $request)
@@ -260,14 +291,19 @@ final readonly class ContableController
 
     private function camposCuenta(Request $request, bool $editar): array
     {
-        $reglas = ['codigo' => ['required', 'string', 'max:40'], 'nombre' => ['required', 'string', 'max:160'], 'activo' => [$editar ? 'required' : 'sometimes', 'boolean']];
+        $reglas = ['codigo' => [$editar || $request->routeIs('api.*') ? 'required' : 'sometimes', 'string', 'max:40'],
+            'nombre' => ['required', 'string', 'max:160'], 'activo' => [$editar ? 'required' : 'sometimes', 'boolean']];
         if (! $editar) $reglas += [
             'clase' => ['sometimes', 'required', Rule::in(array_keys(config('contabilidad.clases')))], 'id_padre' => ['required', 'integer', 'min:1'],
             'auxiliar' => ['sometimes', 'accepted'], 'efectivo' => ['sometimes', 'boolean'],
         ];
         $datos = $request->validate($reglas) + ['activo' => true];
-        $datos['codigo'] = Str::upper($datos['codigo']);
-        if (Str::length($datos['codigo']) > 40) throw ValidationException::withMessages(['codigo' => 'El código debe tener hasta 40 caracteres en mayúsculas.']);
+        if (isset($datos['codigo'])) {
+            $datos['codigo'] = Str::upper($datos['codigo']);
+            if (Str::length($datos['codigo']) > 40) {
+                throw ValidationException::withMessages(['codigo' => 'El código debe tener hasta 40 caracteres en mayúsculas.']);
+            }
+        }
 
         return $editar ? $datos : $datos + ['auxiliar' => true, 'efectivo' => false];
     }

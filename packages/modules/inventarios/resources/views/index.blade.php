@@ -6,10 +6,11 @@
     $catalogo = in_array($seccion, config('inventarios.catalogos', ['productos', 'bodegas']), true);
     $existencias = in_array($seccion, ['existencias', 'reportes'], true);
     $alta = ['productos' => 'Nuevo producto', 'bodegas' => 'Nueva bodega', 'movimientos' => 'Nuevo movimiento',
-        'ajustes' => 'Nuevo ajuste', 'categorias' => 'Nueva categoría', 'plantillas-contables' => 'Nueva plantilla contable'];
+        'ajustes' => 'Nuevo ajuste', 'categorias' => 'Nueva categoría', 'plantillas-contables' => 'Nueva plantilla contable',
+        'marcas' => 'Nueva marca', 'unidades' => 'Nueva unidad'];
     $columnas = match ($seccion) {
         'productos' => ['Código', 'Producto', 'Categoría', 'Unidad', 'Stock mínimo', 'Estado', 'Acciones'],
-        'bodegas', 'categorias', 'plantillas-contables' => ['Código', 'Nombre', 'Descripción', 'Estado', 'Acciones'],
+        'bodegas', 'categorias', 'plantillas-contables', 'marcas', 'unidades' => ['Código', 'Nombre', 'Descripción', 'Estado', 'Acciones'],
         'existencias' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Estado'],
         'reportes' => ['Producto', 'Bodega', 'Existencia', 'Stock mínimo', 'Costo promedio', 'Valor de existencia'],
         'kardex' => ['Fecha', 'Producto', 'Bodega', 'Operación', 'Variación', 'Saldo anterior', 'Saldo', 'Costo promedio'],

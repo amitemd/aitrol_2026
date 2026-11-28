@@ -13,8 +13,13 @@ final class AuditoriaListado
     public function compose(View $view): void
     {
         $datos = $view->getData();
+        if (($datos['seccion'] ?? null) === 'cuentas' && $view->name() === 'contabilidad::index') {
+            return;
+        }
+
         $registros = $datos['registros'] ?? $datos['clientes'] ?? $datos['proveedores']
-            ?? $datos['roles'] ?? $datos['empresas'] ?? $datos['usuarios'] ?? $datos['sucursales'] ?? [];
+            ?? $datos['roles'] ?? $datos['empresas'] ?? $datos['usuarios'] ?? $datos['sucursales']
+            ?? (isset($datos['registro']) ? [$datos['registro']] : []);
         $filas = $registros instanceof AbstractPaginator ? $registros->getCollection() : collect($registros);
         $ids = $filas->flatMap(function ($fila): array {
             $auditoria = data_get($fila, 'auditoria', $fila);

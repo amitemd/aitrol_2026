@@ -7,6 +7,9 @@
         'documentos' => ['Documentación', 'bi-folder2-open'],
     ];
     $cuentasPorId = $ficha['cuentas']->keyBy('id');
+    $marca = old('id_marca', $registro['id_marca'] ?? null);
+    $unidad = old('id_unidad', $registro['id_unidad'] ?? ($registro ? null : $ficha['unidades']->firstWhere('codigo', 'UND')?->id));
+    $esServicio = old('tipo_producto', $registro['tipo_producto'] ?? 'producto') === 'servicio';
     $descripcionPlantillas = $ficha['plantillas']->map(fn ($plantilla) => [
         'nombre' => $plantilla->nombre,
         'cuentas' => collect(json_decode($plantilla->cuentas, true))->map(fn ($id) => $cuentasPorId->has($id)
@@ -21,7 +24,7 @@
             @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Identificación', 'iconoBloque' => 'bi-upc-scan'])
             <div class="row g-3">
                 @foreach (['codigo' => ['Código', 60, 'col-sm-4'], 'nombre' => ['Nombre', 160, 'col-sm-8'],
-                    'codigo_barras' => ['Código de barras', 80, 'col-sm-4'], 'marca' => ['Marca', 100, 'col-sm-4'], 'modelo' => ['Modelo', 100, 'col-sm-4']] as $campo => [$etiqueta, $maximo, $ancho])
+                    'codigo_barras' => ['Código de barras', 80, 'col-sm-4'], 'id_marca' => ['Marca', 100, 'col-sm-4'], 'modelo' => ['Modelo', 100, 'col-sm-4']] as $campo => [$etiqueta, $maximo, $ancho])
                     <div class="{{ $ancho }}">
                         <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}</label>
                         @if ($campo === 'codigo')
@@ -29,6 +32,16 @@
                                 maxlength="{{ $maximo }}" value="{{ $registro ? $registro['codigo'] : old('codigo', $codigoSugerido) }}"
                                 aria-describedby="producto-codigo-ayuda" autocomplete="off" @readonly($registro) @required(! $registro)>
                             <p id="producto-codigo-ayuda" class="form-text mb-0">{{ $registro ? 'Código fijo del producto.' : 'Puedes editar el código sugerido antes de guardar.' }}</p>
+                        @elseif ($campo === 'id_marca')
+                            <select id="producto-id_marca" name="id_marca" class="form-select">
+                                <option value="">Sin marca</option>
+                                @foreach ($ficha['marcas'] as $opcion)
+                                    @continue(!$opcion->activo && (int) ($registro['id_marca'] ?? 0) !== (int) $opcion->id)
+                                    <option value="{{ $opcion->id }}" @selected((int) $marca === (int) $opcion->id)>
+                                        {{ $opcion->nombre }}{{ $opcion->activo ? '' : ' (inactiva)' }}
+                                    </option>
+                                @endforeach
+                            </select>
                         @else
                             <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control @error($campo) is-invalid @enderror"
                                 maxlength="{{ $maximo }}" value="{{ old($campo, $registro[$campo] ?? '') }}" @required($campo === 'nombre')>
@@ -42,7 +55,7 @@
             <div class="row g-3">
                 <div class="col-sm-6">
                     <label class="form-label" for="producto-tipo">{{ __('Tipo') }}</label>
-                    <select id="producto-tipo" name="tipo_producto" class="form-select">
+                    <select id="producto-tipo" name="tipo_producto" class="form-select" data-select2-nativo data-producto-tipo>
                         @foreach (config('inventarios.tipos_producto') as $valor => $nombre)
                             <option value="{{ $valor }}" @selected(old('tipo_producto', $registro['tipo_producto'] ?? 'producto') === $valor)>{{ $nombre }}</option>
                         @endforeach
@@ -64,13 +77,24 @@
                     <input type="hidden" name="categoria" value="{{ $registro['categoria'] }}">
                 @endif
                 <div class="col-sm-6">
-                    <label class="form-label" for="producto-unidad">{{ __('Unidad') }}</label>
-                    <input id="producto-unidad" name="unidad" class="form-control" maxlength="30" required value="{{ old('unidad', $registro['unidad'] ?? 'unidad') }}">
+                    <label class="form-label" for="producto-unidad">Unidad de medida</label>
+                    <select id="producto-unidad" name="id_unidad" class="form-select" required>
+                        <option value="">Elige una unidad de medida</option>
+                        @foreach ($ficha['unidades'] as $opcion)
+                            @continue(!$opcion->activo && (int) ($registro['id_unidad'] ?? 0) !== (int) $opcion->id)
+                            <option value="{{ $opcion->id }}" @selected((int) $unidad === (int) $opcion->id)>
+                                {{ $opcion->nombre }}{{ $opcion->activo ? '' : ' (inactiva)' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if ($registro && empty($registro['id_unidad']))
+                        <p class="form-text mb-0">Unidad registrada: {{ $registro['unidad'] }}. Selecciona su equivalente del catálogo.</p>
+                    @endif
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-6" data-producto-stock @if($esServicio) hidden @endif>
                     <label class="form-label" for="producto-minimo">Stock mínimo por bodega</label>
                     <input id="producto-minimo" name="stock_minimo" class="form-control" type="number" min="0" max="1000000"
-                        step="0.001" value="{{ old('stock_minimo', $registro['stock_minimo'] ?? '0') }}">
+                        step="0.001" value="{{ old('stock_minimo', $registro['stock_minimo'] ?? '0') }}" @disabled($esServicio)>
                 </div>
             </div>
         </div>
@@ -97,7 +121,7 @@
 
     <section id="producto-precios" role="tabpanel" aria-labelledby="producto-tab-precios" data-usuario-panel="precios" class="ficha-producto-panel">
         <div class="ficha-bloque">
-            <h2 class="h6"><i class="bi bi-tags me-2" aria-hidden="true"></i>Precios y descuentos de referencia</h2>
+            <h2 class="h6"><i class="bi bi-tags me-2" aria-hidden="true"></i>Precios y costos unitarios</h2>
             <div class="row g-3">
                 <div class="col-sm-6">
                     <label class="form-label" for="producto-iva">Tratamiento de IVA</label>
@@ -113,7 +137,7 @@
                 </div>
                 @foreach (config('inventarios.valores_producto') as $campo => [$etiqueta, $maximo, $decimales])
                     <div class="col-sm-6">
-                        <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}</label>
+                        <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}{{ str_starts_with($campo, 'descuento_') ? '' : ' (USD)' }}</label>
                         <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control" type="number" min="0"
                             max="{{ $maximo }}" step="{{ $decimales === 4 ? '0.0001' : '0.01' }}" value="{{ old($campo, $registro[$campo] ?? '') }}">
                     </div>

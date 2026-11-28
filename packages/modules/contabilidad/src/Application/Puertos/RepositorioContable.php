@@ -11,6 +11,10 @@ interface RepositorioContable
 
     public function cuenta(int $id): stdClass;
 
+    public function codigosConPrefijo(string $prefijo): iterable;
+
+    public function nombresDeCuentas(?int $excepto): iterable;
+
     public function auxiliares(array $ids): array;
 
     public function tieneSubcuentasActivas(int $id): bool;

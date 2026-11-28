@@ -32,6 +32,10 @@ foreach ([false, true] as $api) {
                         ->middleware($permiso($seccion.'.index', 'escribir'))->name($seccion.'.opciones');
                 }
             }
+            if (! $api) {
+                Route::get('cuentas/codigo-auxiliar', [ContableController::class, 'codigoAuxiliar'])
+                    ->middleware($permiso('cuentas.index', 'escribir'))->name('cuentas.codigo-auxiliar');
+            }
             Route::get('integraciones', [ContableController::class, 'integracion'])
                 ->middleware($permiso('integraciones.index', 'leer'))->name('integraciones.index');
             Route::put('integraciones', [ContableController::class, 'actualizarIntegracion'])

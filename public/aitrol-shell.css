@@ -522,18 +522,138 @@
     border-color: var(--aitrol-border, var(--bs-border-color));
 }
 
-.plan-cuenta-nombre { min-width: 17rem; }
-.plan-cuenta-sangria { flex: 0 0 .75rem; }
-.plan-cuenta-expansion { flex-shrink: 0; }
-.plan-cuenta-expansion[aria-expanded="true"] i { transform: rotate(90deg); }
-.plan-cuenta-indicador {
-    display: inline-grid;
-    flex: 0 0 2rem;
-    place-items: center;
-    color: var(--bs-secondary-color);
+.plan-cuentas {
+    --plan-sangria: 1.75rem;
+    background: var(--aitrol-field, var(--bs-tertiary-bg));
 }
 
-[data-plan-cuentas] tr[hidden] { display: none; }
+.plan-cuentas-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .65rem 1rem;
+    border-bottom: 1px solid var(--aitrol-border);
+}
+
+:is(.plan-cuentas-raices, .plan-cuentas-ramas) { list-style: none; margin: 0; padding: 0; }
+.plan-cuentas-raices { display: grid; gap: .75rem; padding: 1rem; }
+.plan-cuentas-ramas { margin-inline-start: var(--plan-sangria); }
+:is(.plan-cuentas-raices, .plan-cuentas-ramas, .plan-cuenta)[hidden] { display: none; }
+
+.plan-cuenta {
+    --plan-linea: color-mix(in srgb, var(--plan-acento) 50%, var(--aitrol-border));
+    position: relative;
+    min-width: 0;
+}
+
+[data-plan-clase] { --plan-acento: var(--aitrol-accent); }
+[data-plan-clase="pasivo"] { --plan-acento: var(--bs-warning-text-emphasis); }
+[data-plan-clase="patrimonio"] { --plan-acento: #654bb3; }
+[data-bs-theme="dark"] [data-plan-clase="patrimonio"] { --plan-acento: #bfa6ff; }
+[data-plan-clase="ingreso"] { --plan-acento: var(--bs-success-text-emphasis); }
+[data-plan-clase="gasto"] { --plan-acento: var(--bs-danger-text-emphasis); }
+
+.plan-cuentas-ramas > .plan-cuenta { padding: .25rem 0 .125rem var(--plan-sangria); }
+.plan-cuentas-ramas > .plan-cuenta::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--plan-sangria);
+    border-inline-start: 1px solid var(--plan-linea);
+    content: '';
+    pointer-events: none;
+}
+.plan-cuentas-ramas > .plan-cuenta::after {
+    position: absolute;
+    top: 1.55rem;
+    inset-inline-start: 0;
+    width: var(--plan-sangria);
+    border-top: 1px solid var(--plan-linea);
+    content: '';
+    pointer-events: none;
+}
+.plan-cuentas-ramas > .plan-cuenta:not(:has(~ .plan-cuenta:not([hidden])))::before { bottom: auto; height: 1.55rem; }
+
+.plan-cuenta-nodo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+    min-height: 2.6rem;
+    padding: .28rem .5rem;
+    border: 1px solid var(--aitrol-border);
+    border-radius: .55rem;
+    background: var(--aitrol-surface, var(--bs-body-bg));
+}
+.plan-cuenta-nodo:is(:hover, :focus-within) { border-color: var(--plan-linea); }
+.plan-cuenta-nodo[data-plan-rama] { cursor: pointer; }
+.plan-cuenta-acciones { cursor: default; }
+.plan-cuentas-controles:not([hidden]) { display: flex; }
+.plan-cuenta-nodo[data-plan-rama]:not(:has(+ .plan-cuentas-ramas > .plan-cuenta:not([hidden]))) { cursor: default; }
+.plan-cuenta-nodo[data-plan-rama]:not(:has(+ .plan-cuentas-ramas > .plan-cuenta:not([hidden]))) .plan-cuenta-expansion { visibility: hidden; }
+.plan-cuentas-raices > .plan-cuenta > .plan-cuenta-nodo {
+    min-height: 3.35rem;
+    border-inline-start: 3px solid var(--plan-acento);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--plan-acento) 12%, var(--aitrol-surface)), var(--aitrol-surface) 55%);
+}
+
+.plan-cuenta-identidad,
+.plan-cuenta-acciones { display: flex; align-items: center; gap: .4rem; }
+.plan-cuenta-identidad { min-width: 0; }
+.plan-cuenta-acciones { flex-shrink: 0; }
+.plan-cuenta-nombre {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: .55rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.plan-cuenta-codigo {
+    color: var(--plan-acento);
+    font-size: .78rem;
+    font-variant-numeric: tabular-nums;
+}
+.plan-cuenta-expansion,
+.plan-cuenta-terminal,
+.plan-cuenta-icono {
+    display: inline-grid;
+    flex: 0 0 1.65rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    color: var(--plan-acento);
+}
+.plan-cuenta-expansion {
+    padding: 0;
+    border: 0;
+    border-radius: .35rem;
+    background: transparent;
+    font-size: .75rem;
+}
+.plan-cuenta-expansion:is(:hover, :focus-visible) { background: var(--aitrol-tab-active); }
+.plan-cuenta-expansion[aria-expanded="true"] i { transform: rotate(90deg); }
+.plan-cuenta-terminal::after {
+    width: .26rem;
+    height: .26rem;
+    border-radius: 50%;
+    background: var(--plan-linea);
+    content: '';
+}
+.plan-cuenta-icono {
+    border-radius: .4rem;
+    background: color-mix(in srgb, var(--plan-acento) 10%, transparent);
+}
+.plan-cuenta-efectivo { color: var(--bs-success-text-emphasis); }
+
+@media (max-width: 575.98px) {
+    .plan-cuentas { --plan-sangria: .6rem; }
+    .plan-cuentas-raices { padding: .5rem; }
+    .plan-cuenta-nodo { padding-inline: .25rem; }
+    .plan-cuenta-identidad, .plan-cuenta-acciones { gap: .2rem; }
+}
+
 .cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
 
 .usuario-tabs[hidden],

@@ -22,7 +22,7 @@ final readonly class InventarioSql implements RepositorioInventario
     public function listar(string $seccion, array $filtros): LengthAwarePaginator
     {
         $consulta = match ($seccion) {
-            'productos', 'bodegas', 'categorias', 'plantillas-contables' => $this->catalogos($seccion, $filtros),
+            'productos', 'bodegas', 'categorias', 'plantillas-contables', 'marcas', 'unidades' => $this->catalogos($seccion, $filtros),
             'existencias', 'reportes' => $this->existencias($filtros),
             'movimientos', 'ajustes' => $this->operaciones($seccion, $filtros),
             'kardex' => $this->kardex($filtros),
@@ -51,11 +51,17 @@ final readonly class InventarioSql implements RepositorioInventario
             return $this->transaccion(function () use ($seccion, $id, $datos): stdClass {
                 $tabla = 'inv_'.str_replace('-', '_', $seccion);
                 $actual = $id === null ? null : $this->catalogo($seccion, $id, bloquear: true);
+                $categorias = $seccion === 'plantillas-contables' ? ($datos['id_categorias'] ?? null) : null;
+                unset($datos['id_categorias']);
                 if ($seccion === 'productos') {
                     $datos = $this->validarCodigoProducto($datos, $actual);
                 }
                 if ($seccion === 'categorias') {
                     $this->validarCategoriaUnica($id, $datos['codigo'], $datos['nombre']);
+                }
+                if (in_array($seccion, ['marcas', 'unidades'], true) && $this->tabla($tabla)
+                    ->where('nombre', $datos['nombre'])->when($id !== null, fn (Builder $consulta) => $consulta->where('id', '<>', $id))->exists()) {
+                    throw ValidationException::withMessages(['nombre' => 'Ya existe un registro con este nombre en tu empresa.']);
                 }
                 $datos = $this->prepararCatalogo($seccion, $datos, $actual);
                 if ($id === null) {
@@ -72,6 +78,14 @@ final readonly class InventarioSql implements RepositorioInventario
                     if ($seccion === 'categorias' && $actual->nombre !== $datos['nombre']) {
                         $this->tabla('inv_productos')->where('id_categoria', $id)->update(['categoria' => $datos['nombre']]);
                     }
+                    if (in_array($seccion, ['marcas', 'unidades'], true) && $actual->nombre !== $datos['nombre']) {
+                        $campo = $seccion === 'marcas' ? 'marca' : 'unidad';
+                        $this->tabla('inv_productos')->where('id_'.$campo, $id)->update([$campo => $datos['nombre']]);
+                    }
+                }
+
+                if ($categorias !== null) {
+                    $this->asignarCategoriasPlantilla($id, $categorias, (bool) $datos['activo']);
                 }
 
                 return $this->catalogo($seccion, $id);
@@ -79,6 +93,28 @@ final readonly class InventarioSql implements RepositorioInventario
         } catch (UniqueConstraintViolationException $error) {
             abort(409, 'El código o código de barras ya existe en esta empresa.');
         }
+    }
+
+    private function asignarCategoriasPlantilla(int $plantilla, array $ids, bool $activa): void
+    {
+        $categorias = $this->tabla('inv_categorias');
+        $disponibles = (clone $categorias)->whereIn('id', $ids)->where(function (Builder $consulta) use ($plantilla, $activa): void {
+            $consulta->where('id_plantilla_contable', $plantilla);
+            if ($activa) {
+                $consulta->orWhere(fn (Builder $libres) => $libres->whereNull('id_plantilla_contable')->where('activo', true));
+            }
+        })->count();
+        if ($disponibles !== count($ids)) {
+            throw ValidationException::withMessages([
+                'id_categorias' => 'Elige categorías activas de tu empresa que estén libres o ya vinculadas a esta plantilla. La plantilla debe estar activa para agregar categorías.',
+            ]);
+        }
+
+        $auditoria = ['id_usuario_modificacion' => auth()->id(), 'updated_at' => now()];
+        (clone $categorias)->where('id_plantilla_contable', $plantilla)->whereNotIn('id', $ids)
+            ->update(['id_plantilla_contable' => null] + $auditoria);
+        $categorias->whereNull('id_plantilla_contable')->whereIn('id', $ids)
+            ->update(['id_plantilla_contable' => $plantilla] + $auditoria);
     }
 
     public function cambiarEstadoCatalogo(string $seccion, int $id, bool $activo): stdClass
@@ -174,6 +210,8 @@ final readonly class InventarioSql implements RepositorioInventario
     public function opcionesFicha(): array
     {
         return [
+            'marcas' => $this->tabla('inv_marcas')->orderBy('nombre')->get(['id', 'codigo', 'nombre', 'activo']),
+            'unidades' => $this->tabla('inv_unidades')->orderBy('nombre')->get(['id', 'codigo', 'nombre', 'activo']),
             'categorias' => $this->tabla('inv_categorias')->orderBy('nombre')->get(['id', 'nombre', 'activo', 'id_plantilla_contable']),
             'plantillas' => $this->tabla('inv_plantillas_contables')->orderBy('nombre')->get(['id', 'nombre', 'activo', 'cuentas'])->keyBy('id'),
             'cuentas' => $this->tabla('co_cuentas')->where('auxiliar', true)->orderBy('codigo')->get(['id', 'codigo', 'nombre', 'clase', 'activo']),
@@ -194,6 +232,9 @@ final readonly class InventarioSql implements RepositorioInventario
 
     private function prepararCatalogo(string $seccion, array $datos, ?stdClass $actual): array
     {
+        if ($seccion === 'productos') {
+            $datos = $this->prepararMarcaYUnidad($datos, $actual);
+        }
         $campo = match ($seccion) {
             'productos' => 'id_categoria',
             'categorias' => 'id_plantilla_contable',
@@ -234,6 +275,36 @@ final readonly class InventarioSql implements RepositorioInventario
 
         if ($seccion === 'productos' && ($datos['tipo_producto'] ?? $actual?->tipo_producto) === 'servicio') {
             $datos['stock_minimo'] = 0;
+        }
+
+        return $datos;
+    }
+
+    private function prepararMarcaYUnidad(array $datos, ?stdClass $actual): array
+    {
+        foreach (['marca' => 'inv_marcas', 'unidad' => 'inv_unidades'] as $campo => $tabla) {
+            $llave = 'id_'.$campo;
+            if (! array_key_exists($llave, $datos)) {
+                if (array_key_exists($campo, $datos) && $datos[$campo] !== $actual?->{$campo}) {
+                    $datos[$llave] = null;
+                }
+
+                continue;
+            }
+
+            if ($datos[$llave] === null) {
+                if ($campo === 'marca') {
+                    $datos[$campo] = null;
+                }
+
+                continue;
+            }
+
+            $opcion = $this->tabla($tabla)->where('id', $datos[$llave])->first(['nombre', 'activo']);
+            if ($opcion === null || (! $opcion->activo && (int) $datos[$llave] !== (int) $actual?->{$llave})) {
+                throw ValidationException::withMessages([$llave => 'Selecciona una opción activa de tu empresa.']);
+            }
+            $datos[$campo] = $opcion->nombre;
         }
 
         return $datos;
@@ -300,6 +371,9 @@ final readonly class InventarioSql implements RepositorioInventario
             });
         }
         if (isset($filtros['activo'])) $consulta->where('activo', $filtros['activo']);
+        if ($seccion === 'productos' && ($filtros['solo_inventariables'] ?? false)) {
+            $consulta->where('tipo_producto', 'producto');
+        }
 
         return $consulta;
     }

@@ -6,6 +6,7 @@ use Aitrol\Contabilidad\Application\Puertos\RepositorioContable;
 use Aitrol\Contabilidad\Domain\PartidaDoble;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
@@ -35,8 +36,17 @@ final readonly class LibroContable
                     }
                     $entrada['clase'] = $padre->clase;
                     $entrada['auxiliar'] = true;
+                    $entrada['codigo'] ??= $this->codigoAuxiliar($padre);
                     if (($entrada['efectivo'] ?? false) && ($entrada['clase'] !== 'activo' || ! $entrada['auxiliar'])) {
                         $this->invalido('efectivo', 'El efectivo debe ser una cuenta auxiliar de activo.');
+                    }
+                }
+
+                $entrada['nombre'] = Str::squish($entrada['nombre']);
+                $nombreNormalizado = $this->normalizarNombre($entrada['nombre']);
+                foreach ($this->datos->nombresDeCuentas($id) as $existente) {
+                    if ($this->normalizarNombre($existente->nombre) === $nombreNormalizado) {
+                        $this->invalido('nombre', 'Ya existe una cuenta con ese nombre en tu empresa. Escribe un nombre distinto.');
                     }
                 }
 
@@ -45,6 +55,40 @@ final readonly class LibroContable
         } catch (UniqueConstraintViolationException) {
             abort(409, 'El código ya existe en el plan de cuentas de tu empresa.');
         }
+    }
+
+    public function codigoAuxiliar(stdClass $padre): string
+    {
+        if (! $padre->activo || $padre->auxiliar) {
+            $this->invalido('id_padre', 'Selecciona una cuenta de grupo activa.');
+        }
+
+        $prefijo = Str::upper($padre->codigo).'.';
+        $ocupados = [];
+        foreach ($this->datos->codigosConPrefijo($prefijo) as $codigo) {
+            $codigo = Str::upper($codigo);
+            $sufijo = substr($codigo, strlen($prefijo));
+            if (str_starts_with($codigo, $prefijo) && ctype_digit($sufijo)) {
+                $ocupados[ltrim($sufijo, '0')] = true;
+            }
+        }
+
+        $numero = 1;
+        while (isset($ocupados[$numero])) {
+            $numero++;
+        }
+
+        $codigo = $prefijo.str_pad((string) $numero, 2, '0', STR_PAD_LEFT);
+        if (Str::length($codigo) > 40) {
+            $this->invalido('id_padre', 'El código del grupo es demasiado largo para generar un auxiliar. Selecciona otro grupo.');
+        }
+
+        return $codigo;
+    }
+
+    private function normalizarNombre(string $nombre): string
+    {
+        return Str::lower(Str::ascii(Str::squish($nombre), 'es'));
     }
 
     public function abrirPeriodo(array $entrada): stdClass
