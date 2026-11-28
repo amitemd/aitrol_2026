@@ -24,6 +24,7 @@
 !/tests/Feature/
 /tests/Feature/*
 !/tests/Feature/ArchivoDocumentosTest.php
+!/tests/Feature/CarteraClientesTest.php
 !/tests/Feature/MayorizacionTest.php
 !/tests/Feature/DashboardInventarioTest.php
 !/tests/Feature/CategoriasInventarioTest.php

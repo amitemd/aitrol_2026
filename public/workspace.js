@@ -255,18 +255,25 @@
     window.addEventListener('resize', () => ocultarMenuTabs());
     window.addEventListener('blur', () => ocultarMenuTabs());
 
+    let sidebarRequest;
+
     async function refreshSidebar() {
+        sidebarRequest?.abort();
+        const controller = new AbortController();
+        sidebarRequest = controller;
         try {
-            const result = await fetch(dashboard, { headers: { Accept: 'text/html' } });
+            const result = await fetch(dashboard, { headers: { Accept: 'text/html', 'X-Aitrol-Fragmento': 'menu' }, signal: controller.signal });
             if (!result.ok) return;
             const page = new DOMParser().parseFromString(await result.text(), 'text/html');
             const updated = page.querySelector('#navigation');
-            if (updated) {
+            if (updated && !controller.signal.aborted) {
                 navigation.replaceChildren(...updated.childNodes);
                 updateSidebar();
             }
         } catch {
             // La navegación actual sigue disponible si falla la solicitud.
+        } finally {
+            if (sidebarRequest === controller) sidebarRequest = undefined;
         }
     }
 

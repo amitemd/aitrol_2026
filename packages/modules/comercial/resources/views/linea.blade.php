@@ -51,7 +51,7 @@
         @endif
         @php
             $importes = $retencion
-                ? ['base_retencion' => ['Base de retención (USD)', 0.01, 100000000, 0.01, ''], 'porcentaje_retencion' => ['Retención (%)', ($retencionElectronica ?? false) ? 0 : 0.01, 100, 0.01, '']]
+                ? ['base_retencion' => ['Base', 0.01, 100000000, 0.01, ''], 'porcentaje_retencion' => ['Retención (%)', ($retencionElectronica ?? false) ? 0 : 0.01, 100, 0.01, '']]
                 : ['cantidad' => ['Cantidad', 0.001, 1000000, 0.001, 1], 'precio' => ['Precio unitario', 0.0001, 100000, 0.0001, ''], 'tasa' => ['Impuesto (%)', 0, 100, 0.01, 0]];
             if ($compra ?? false) {
                 $importes += ['descuento' => ['Descuento USD', 0, 100000000000, 0.01, 0]];

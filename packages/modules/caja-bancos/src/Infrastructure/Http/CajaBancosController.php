@@ -67,7 +67,11 @@ final readonly class CajaBancosController
         $tipo = $request->route('tipo');
         $cuentas = $this->datos->listado('cuentas', $request->route('filtrar') ? $filtros : ['activo' => true] + $filtros);
         if ($tipo !== 'todas') $cuentas->where('tipo', $tipo);
-        $resultados = $cuentas->paginate(20);
+        $moneda = $request->validate(['moneda' => ['nullable', Rule::in(config('caja-bancos.monedas'))]])['moneda'] ?? null;
+        if ($moneda !== null) {
+            $cuentas->where('moneda', $moneda);
+        }
+        $resultados = $cuentas->simplePaginate(20);
 
         return response()->json([
             'results' => $resultados->getCollection()->map(fn ($cuenta) => ['id' => $cuenta->id, 'text' => $cuenta->codigo.' · '.$cuenta->nombre.' ('.$cuenta->moneda.')']),

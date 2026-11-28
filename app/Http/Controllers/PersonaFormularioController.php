@@ -17,6 +17,7 @@ final class PersonaFormularioController extends Controller
             'clientes' => 'clientes.lista',
             'proveedores' => 'proveedores.lista',
             'empleados' => 'rrhh.empleados.index',
+            'nomina-tributaria' => 'tributario.formulario-107.index',
             'usuarios' => null,
         };
         if ($permiso === null) {
@@ -32,19 +33,26 @@ final class PersonaFormularioController extends Controller
         ]);
         $termino = strtoupper($datos['q']);
         $tipo = isset($datos['tipo']) ? TipoIdentificacion::from($datos['tipo'])->idCatalogo() : null;
-        $consulta = Persona::query()->whereIn('id_tipo_identificacion', $tipo === null ? [1, 2, 3] : [$tipo]);
+        $tipos = $formulario === 'nomina-tributaria' ? [1, 3] : [1, 2, 3];
+        $consulta = Persona::query()->whereIn('id_tipo_identificacion', $tipo === null ? $tipos : array_intersect($tipos, [$tipo]));
         $cabeceras = ['Cache-Control' => 'private, no-store'];
 
         if ($datos['exacta'] ?? false) {
             $persona = $consulta->where('identificacion', $termino)->first();
             abort_if($persona === null, 404);
 
-            return response()->json(['data' => [
+            $resultado = [
                 'identificacion' => $persona->identificacion,
                 'tipo_identificacion' => TipoIdentificacion::desdeCatalogo((int) $persona->id_tipo_identificacion)->value,
+                'nombre' => $persona->nombreCompleto(),
+            ];
+            if (in_array($formulario, ['empleados', 'nomina-tributaria'], true)) {
+                return response()->json(['data' => $resultado], 200, $cabeceras);
+            }
+
+            return response()->json(['data' => $resultado + [
                 'nombres' => $persona->nombre,
                 'apellidos' => $persona->apellido,
-                'nombre' => $persona->nombreCompleto(),
                 ...$persona->only(['email', 'telefono', 'direccion']),
                 ...$persona->perfil(),
             ]], 200, $cabeceras);

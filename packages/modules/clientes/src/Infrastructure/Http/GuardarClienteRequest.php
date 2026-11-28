@@ -65,7 +65,7 @@ final class GuardarClienteRequest extends FormRequest
         }
 
         $perfil = array_intersect_key($datos, array_flip([
-            'nombres', 'apellidos', 'ciudad', 'provincia', 'zona', 'latitud', 'longitud', 'contactos',
+            'nombres', 'apellidos', 'email', 'telefono', 'direccion', 'ciudad', 'provincia', 'zona', 'latitud', 'longitud', 'contactos',
             ...array_keys(Persona::reglasPerfil()),
         ]));
         if (isset($perfil['nombres'])) {

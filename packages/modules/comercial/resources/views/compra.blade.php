@@ -124,6 +124,12 @@
                                 data-bodega-principal="{{ $bodegaPrincipal ? $bodegaPrincipal->codigo.' · '.$bodegaPrincipal->nombre : 'Sin bodega principal configurada' }}"
                                 value="{{ $bodegaPrincipal ? $bodegaPrincipal->codigo.' · '.$bodegaPrincipal->nombre : 'Sin bodega principal configurada' }}" readonly>
                         </div>
+                        <div class="col-md-5">
+                            <label class="form-label" for="compra-plazo">Plazo de pago en días</label>
+                            <input id="compra-plazo" name="plazo_dias" type="number" class="form-control"
+                                min="0" max="3650" step="1" value="{{ old('plazo_dias') }}">
+                            <small class="form-text">Sin plazo indicado, se usa la fecha de la factura para la cartera.</small>
+                        </div>
                     </div>
                 </section>
                 <section class="factura-seccion factura-detalle" aria-labelledby="compra-detalle">

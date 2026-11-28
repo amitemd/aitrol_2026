@@ -54,8 +54,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label for="identificacion" class="form-label fw-semibold">{{ __('Identificación') }}</label>
-                                        <input id="identificacion" name="identificacion" class="form-control" maxlength="30"
-                                            value="{{ old('identificacion') }}">
+                                        @include('partials.identificacion-persona', [
+                                            'formularioPersona' => 'usuarios', 'idPersonaCampo' => 'identificacion', 'valorPersona' => old('identificacion'),
+                                        ])
                                         <div class="form-text">Si el documento ya existe, se vincula a esa persona.</div>
                                     </div>
                                 @else

@@ -17,7 +17,7 @@
                             <div class="col-md-6">
                                 <label for="cobro-cuenta" class="form-label">Caja o banco que recibió el pago</label>
                                 <select id="cobro-cuenta" name="id_cuenta" class="form-select"
-                                    data-select2-url="{{ route('caja-bancos.movimientos.opciones', 'todas') }}" data-select2-min="0" required>
+                                    data-select2-url="{{ route('caja-bancos.movimientos.opciones', ['tipo' => 'todas', 'moneda' => 'USD']) }}" data-select2-min="0" required>
                                     <option value="">Seleccionar cuenta</option>
                                 </select>
                             </div>

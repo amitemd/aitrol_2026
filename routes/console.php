@@ -290,7 +290,7 @@ Artisan::command('clientes:revocar-token {email} {id}', function (): int {
     return 0;
 })->purpose('Revocar una credencial de la API de Clientes');
 
-Artisan::command('proveedores:token {email} {nombre} {--escritura} {--eliminacion} {--dias=90}', function (): int {
+Artisan::command('proveedores:token {email} {nombre} {--escritura} {--eliminacion} {--pagos} {--dias=90}', function (): int {
     $usuario = User::query()->where('email', $this->argument('email'))->first();
     $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
     if ($usuario === null || $dias === false) {
@@ -305,6 +305,9 @@ Artisan::command('proveedores:token {email} {nombre} {--escritura} {--eliminacio
     }
     if ($this->option('eliminacion')) {
         $alcances[] = 'proveedores:eliminar';
+    }
+    if ($this->option('pagos')) {
+        $alcances[] = 'proveedores:pagar';
     }
 
     $credencial = $usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias));
@@ -396,7 +399,7 @@ Artisan::command('inventarios:revocar-token {email} {id}', function (): int {
     return 0;
 })->purpose('Revocar una credencial de la API de Inventarios');
 
-Artisan::command('comercial:token {modulo} {email} {nombre} {--escritura} {--dias=90}', function (): int {
+Artisan::command('comercial:token {modulo} {email} {nombre} {--escritura} {--cobros} {--aprobaciones} {--configurar-aprobaciones} {--presupuestos} {--dias=90}', function (): int {
     $modulo = $this->argument('modulo');
     $usuario = User::query()->where('email', $this->argument('email'))->whereNotNull('id_empresa')->first();
     $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 365]]);
@@ -404,9 +407,31 @@ Artisan::command('comercial:token {modulo} {email} {nombre} {--escritura} {--dia
         $this->error('Indique ventas o compras, un usuario con empresa y una vigencia de 1 a 365 días.');
         return 1;
     }
+    if ($this->option('cobros') && $modulo !== 'ventas') {
+        $this->error('La opción --cobros está disponible para ventas.');
+
+        return 1;
+    }
+    if (($this->option('aprobaciones') || $this->option('configurar-aprobaciones') || $this->option('presupuestos')) && $modulo !== 'compras') {
+        $this->error('Las opciones de aprobación y presupuesto están disponibles para compras.');
+
+        return 1;
+    }
 
     $alcances = [$modulo.':leer'];
     if ($this->option('escritura')) $alcances[] = $modulo.':escribir';
+    if ($this->option('cobros')) {
+        $alcances[] = 'ventas:cobrar';
+    }
+    if ($this->option('aprobaciones')) {
+        $alcances[] = 'compras:aprobar';
+    }
+    if ($this->option('configurar-aprobaciones')) {
+        $alcances[] = 'compras:configurar-aprobaciones';
+    }
+    if ($this->option('presupuestos')) {
+        $alcances[] = 'compras:presupuestar';
+    }
     $this->line($usuario->createToken($this->argument('nombre'), $alcances, now()->addDays($dias))->plainTextToken);
 
     return 0;

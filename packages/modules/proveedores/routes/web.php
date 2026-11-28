@@ -1,6 +1,7 @@
 <?php
 
 use Aitrol\Comercial\Infrastructure\Http\ComercialController;
+use Aitrol\Proveedores\Infrastructure\Http\CarteraProveedoresController;
 use Aitrol\Proveedores\Infrastructure\Http\ProveedorWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,9 +22,22 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->group(function ()
     Route::get('/proveedores/{proveedor}/documentos/{archivo}', [ProveedorWebController::class, 'documento'])
         ->where('proveedor', '[1-9][0-9]{0,17}')->whereUuid('archivo')->middleware('permiso:proveedores.lista,leer')->name('proveedores.documento');
 
+    Route::name('proveedores.pagos.')->prefix('proveedores/pagos')->middleware([
+        'permiso:proveedores.reportes.cuentas-por-pagar,leer', 'permiso:caja-bancos.movimientos.index,escribir',
+    ])->group(function (): void {
+        Route::get('/{factura}/crear', [CarteraProveedoresController::class, 'create'])->where('factura', '[1-9][0-9]{0,17}')->name('create');
+        Route::post('/{factura}', [CarteraProveedoresController::class, 'store'])->where('factura', '[1-9][0-9]{0,17}')->name('store');
+    });
+
     foreach (config('proveedores.secciones') as $ruta => $titulo) {
         [, $grupo, $seccion] = explode('.', $ruta);
         $url = '/'.str_replace('.', '/', $ruta);
+        if ($grupo === 'reportes' || $seccion === 'comprobantes-de-pago') {
+            Route::get($url, [CarteraProveedoresController::class, $grupo === 'reportes' ? 'index' : 'comprobantes'])
+                ->defaults('reporte', $seccion)->middleware('permiso:'.$ruta.',leer')->name($ruta);
+
+            continue;
+        }
         if ($grupo === 'documentos' && isset(ComercialController::SECCIONES_ARCHIVO[$seccion])) {
             Route::get($url, [ComercialController::class, 'archivo'])
                 ->defaults('modulo', 'compras')->defaults('seccion', ComercialController::SECCIONES_ARCHIVO[$seccion])

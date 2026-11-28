@@ -35,14 +35,17 @@
                     @if (!$accion)
                         <div class="col-sm-6">
                             <label for="cb-tipo" class="form-label">Tipo de cuenta</label>
-                            <select id="cb-tipo" class="form-select" name="tipo">
+                            <select id="cb-tipo" class="form-select" name="tipo" data-select2-nativo required>
                                 <option value="caja" @selected(!$esBanco)>Caja</option><option value="banco" @selected($esBanco)>Banco</option>
                             </select>
                         </div>
                         <div class="col-sm-6">
                             <label for="cb-moneda" class="form-label">{{ __('Moneda') }}</label>
-                            <select id="cb-moneda" class="form-select" name="moneda">
-                                @foreach (config('caja-bancos.monedas') as $moneda)<option value="{{ $moneda }}" @selected(old('moneda', 'USD') === $moneda)>{{ $moneda }}</option>@endforeach
+                            <select id="cb-moneda" class="form-select" name="moneda" data-select2-nativo required>
+                                @php $nombresMonedas = ['USD' => 'USD · Dólar estadounidense', 'EUR' => 'EUR · Euro', 'GBP' => 'GBP · Libra esterlina']; @endphp
+                                @foreach (config('caja-bancos.monedas') as $moneda)
+                                    <option value="{{ $moneda }}" @selected(old('moneda', 'USD') === $moneda)>{{ $nombresMonedas[$moneda] ?? $moneda }}</option>
+                                @endforeach
                             </select>
                         </div>
                     @else

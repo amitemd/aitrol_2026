@@ -327,7 +327,9 @@ final readonly class RegistroActivos
 
     private function compras(): Builder
     {
-        return $this->tabla('com_documentos')->where('modulo', 'compras')->where('tipo', 'documentos')->whereNull('anulado_at');
+        return $this->tabla('com_documentos')->where('modulo', 'compras')->where('tipo', 'documentos')->whereNull('anulado_at')
+            ->whereNotExists(fn (Builder $consulta) => $consulta->from('com_facturas_recepciones as vinculo')->selectRaw('1')
+                ->whereColumn('vinculo.id_empresa', 'com_documentos.id_empresa')->whereColumn('vinculo.id_factura', 'com_documentos.id'));
     }
 
     private function tabla(string $tabla): Builder

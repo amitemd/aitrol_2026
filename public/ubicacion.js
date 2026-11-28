@@ -79,26 +79,36 @@
                 restablecer(ciudad, Boolean(provincia.value));
             });
 
-            const url = new URL(container.dataset.url);
-            url.searchParams.set('seleccion', '1');
-            if (container.dataset.ciudad) url.searchParams.set('ciudad', container.dataset.ciudad);
-            else if (pais.dataset.selected) url.searchParams.set('pais', pais.dataset.selected);
-            else return;
+            async function cargarSeleccion(ciudadId, paisId) {
+                pending?.abort();
+                cambioManual = false;
+                if (!ciudadId && !paisId) {
+                    restablecer(pais, true);
+                    restablecer(provincia, false);
+                    restablecer(ciudad, false);
+                    return;
+                }
+                const controlador = new AbortController();
+                pending = controlador;
+                const url = new URL(container.dataset.url);
+                url.searchParams.set('seleccion', '1');
+                if (ciudadId) url.searchParams.set('ciudad', ciudadId);
+                else url.searchParams.set('pais', paisId);
 
-            fetch(url, { headers: { Accept: 'application/json' } })
-                .then((response) => {
-                    if (!response.ok) throw new Error();
-                    return response.json();
-                })
-                .then((datos) => {
-                    if (cambioManual || !container.isConnected) return;
+                try {
+                    const respuesta = await fetch(url, { headers: { Accept: 'application/json' }, signal: controlador.signal });
+                    if (!respuesta.ok) throw new Error();
+                    const datos = await respuesta.json();
+                    if (controlador.signal.aborted || cambioManual || !container.isConnected) return;
                     preseleccionar(pais, datos.pais, true);
                     preseleccionar(provincia, datos.provincia, Boolean(datos.pais));
                     preseleccionar(ciudad, datos.ciudad, Boolean(datos.provincia));
-                })
-                .catch(() => {
-                    if (!cambioManual) estado.textContent = 'No se pudo recuperar la ubicación seleccionada.';
-                });
+                } catch {
+                    if (!controlador.signal.aborted && !cambioManual) estado.textContent = 'No se pudo recuperar la ubicación seleccionada.';
+                }
+            }
+            container.addEventListener('aitrol:persona-ciudad', ({ detail }) => cargarSeleccion(detail));
+            if (container.dataset.ciudad || pais.dataset.selected) cargarSeleccion(container.dataset.ciudad, pais.dataset.selected);
         }
 
         function options(select, rows, selected, enabled = true) {
@@ -147,6 +157,7 @@
 
         const initial = container.dataset.ciudad;
         load(initial ? { ciudad: initial } : { pais: pais.dataset.selected }, initial);
+        container.addEventListener('aitrol:persona-ciudad', ({ detail }) => load({ ciudad: detail }, detail));
     }
 
     function setupAll(root) {

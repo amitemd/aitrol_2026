@@ -53,6 +53,9 @@
                                         @include('partials.auditoria-celdas', ['filaAuditoria' => $cliente->auditoria])
                                         <td class="text-end">
                                             @component('partials.acciones-fila', ['ver' => route('clientes.show', $cliente->id), 'tituloVer' => 'Detalle de cliente', 'editar' => Gate::allows('permiso', ['clientes.lista', 'actualizar']) ? route('clientes.edit', $cliente->id) : null, 'tituloEditar' => 'Editar cliente'])
+                                                @can('permiso', ['clientes.reportes.cuentas-por-cobrar', 'leer'])
+                                                    @include('partials.accion-fila-enlace', ['href' => route('clientes.estado-cuenta', $cliente->id), 'etiqueta' => 'Estado de cuenta', 'icono' => 'bi-wallet2', 'modal' => false, 'workspace' => 'clientes.estado-cuenta.'.$cliente->id])
+                                                @endcan
                                                 @can('permiso', ['clientes.lista', 'eliminar'])
                                                     @include('partials.accion-fila-eliminar', ['href' => route('clientes.destroy', $cliente->id), 'confirmar' => '¿Eliminar cliente '.$cliente->nombre.'?'])
                                                 @endcan

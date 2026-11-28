@@ -2,7 +2,9 @@
 
 namespace Aitrol\Comercial\Infrastructure\Http;
 
+use Aitrol\Comercial\Application\CotejoRecepcionesCompra;
 use Aitrol\Comercial\Application\DocumentosComerciales;
+use Aitrol\Comercial\Application\FirmaLocalFactura;
 use Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
@@ -156,6 +158,7 @@ final readonly class ComercialController
             Gate::authorize('permiso', ['ventas.documentos.index', 'actualizar']);
         }
         abort_if($origen?->anulado_at !== null, 409, 'La factura de origen ya está anulada.');
+
         return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha', 'origen', 'creditoTotal'));
     }
 
@@ -224,7 +227,7 @@ final readonly class ComercialController
         $fiscal = json_decode($retencion->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
         $xml = $sri->autorizado($registro)?->xml_autorizado ?? $fiscal['xml_firmado'] ?? $fiscal['xml_retencion'] ?? abort(404);
 
-        return response()->streamDownload(fn () => print($xml), 'retencion-'.$retencion->numero.'.xml', ['Content-Type' => 'application/xml']);
+        return response()->streamDownload(fn () => print ($xml), 'retencion-'.$retencion->numero.'.xml', ['Content-Type' => 'application/xml']);
     }
 
     public function emitirRetencion(Request $request, int $registro, RetencionElectronica $retenciones, FirmaSri $firma, AutorizacionSri $sri): JsonResponse|RedirectResponse
@@ -291,7 +294,7 @@ final readonly class ComercialController
         $fiscal = json_decode($compra->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
         $xml = $fiscal['xml_recibido'] ?? abort(404, 'Esta compra no tiene un XML adjunto.');
 
-        return response()->streamDownload(fn () => print($xml), 'compra-'.$compra->id.'.xml', ['Content-Type' => 'application/xml']);
+        return response()->streamDownload(fn () => print ($xml), 'compra-'.$compra->id.'.xml', ['Content-Type' => 'application/xml']);
     }
 
     public function formularioRespaldoCompra(int $registro): View
@@ -353,12 +356,17 @@ final readonly class ComercialController
         return $guardada['datos'];
     }
 
-    public function show(Request $request, ContextoOperativo $contexto, CobroFacturaVenta $cobros)
+    public function show(Request $request, ContextoOperativo $contexto, CobroFacturaVenta $cobros, CotejoRecepcionesCompra $cotejos)
     {
         [$modulo, $seccion] = $this->seccion($request);
         $registro = $this->documentos->consultar($modulo, $seccion, (int) $request->route('registro'));
         if ($request->routeIs('api.*')) {
-            return response()->json(['data' => $this->detalleDocumento($registro)]);
+            $detalle = $this->detalleDocumento($registro);
+            if ($modulo === 'compras' && $seccion === 'documentos' && ($cotejo = $cotejos->detalleFactura($registro)) !== null) {
+                $detalle['cotejo'] = $cotejo;
+            }
+
+            return response()->json(['data' => $detalle]);
         }
         $visorFactura = $seccion === 'documentos';
         $documento = $this->detalleDocumento($registro, $visorFactura, $visorFactura && $modulo === 'compras');
@@ -378,7 +386,7 @@ final readonly class ComercialController
 
     public function formularioCobro(int $registro, CobroFacturaVenta $cobros): View
     {
-        $factura = $this->documentos->consultar('ventas', 'documentos', $registro);
+        $factura = $this->documentos->facturaParaCobro($registro);
         abort_if($factura->anulado_at !== null, 409, 'La factura está anulada.');
         $saldo = $cobros->saldo($factura);
 
@@ -396,7 +404,7 @@ final readonly class ComercialController
         $cobros->registrar($registro, $datos);
         $mensaje = 'Cobro registrado en Caja y bancos.';
 
-        return $request->expectsJson() ? response()->json(['message' => $mensaje])
+        return ($request->routeIs('api.*') || $request->expectsJson()) ? response()->json(['message' => $mensaje])
             : to_route('ventas.documentos.index')->with('status', $mensaje);
     }
 
@@ -503,14 +511,16 @@ final readonly class ComercialController
         return $documento;
     }
 
-    public function logSri(int $registro, AutorizacionSri $sri): View
+    public function logSri(int $registro, AutorizacionSri $sri, FirmaLocalFactura $firmas): View
     {
         $factura = $this->facturaSri($registro);
         $identidad = $sri->identidad($factura->datos_factura) ?? abort(404);
         $consultas = $sri->consultas($registro)->latest('id')->paginate(20, ['estado', 'mensajes', 'created_at']);
         $estado = $consultas->currentPage() === 1 ? $consultas->first()?->estado : $sri->consultas($registro)->latest('id')->value('estado');
 
-        return view('comercial::log-sri', compact('factura', 'identidad', 'consultas', 'estado'));
+        $firmaLocal = Gate::allows('permiso', ['ventas.documentos.index', 'leer']) ? $firmas->estado($registro) : null;
+
+        return view('comercial::log-sri', compact('factura', 'identidad', 'consultas', 'estado', 'firmaLocal'));
     }
 
     public function consultarSri(int $registro, AutorizacionSri $sri): RedirectResponse
@@ -529,7 +539,7 @@ final readonly class ComercialController
         $autorizacion = $sri->autorizado($registro) ?? abort(404, 'El comprobante aún no tiene autorización confirmada.');
         $contenido = $formato === 'pdf' ? $pdf->generar($autorizacion->xml_autorizado) : $autorizacion->xml_autorizado;
 
-        return response()->streamDownload(fn () => print($contenido), 'factura-'.$identidad['clave'].'.'.$formato, [
+        return response()->streamDownload(fn () => print ($contenido), 'factura-'.$identidad['clave'].'.'.$formato, [
             'Content-Type' => $formato === 'pdf' ? 'application/pdf' : 'application/xml',
         ]);
     }
@@ -646,6 +656,7 @@ final readonly class ComercialController
         }
         if ($compra) {
             $reglas['forma_pago'] = [$compraWeb && empty($importacion['fiscal']['pagos']) ? 'required' : 'nullable', Rule::in(array_keys(FacturaVenta::PAGOS))];
+            $reglas['plazo_dias'] = ['nullable', 'integer', 'between:0,3650'];
             $reglas['lineas.*'] = ['required', 'array:id_producto,descripcion,cantidad,precio,tasa,descuento'];
             $reglas['lineas.*.descuento'] = ['nullable', 'numeric', 'decimal:0,2', 'between:0,100000000000'];
         }
@@ -730,6 +741,9 @@ final readonly class ComercialController
                 $datos['fecha'] = $importacion['fecha'];
             }
             $datos['datos_compra'] = $importacion['fiscal'] ?? [];
+            if (isset($datos['plazo_dias'])) {
+                $datos['datos_compra']['plazo_dias'] = (int) $datos['plazo_dias'];
+            }
             if (empty($datos['datos_compra']['pagos']) && isset($datos['forma_pago'])) {
                 $datos['datos_compra']['forma_pago'] = (string) $datos['forma_pago'];
             }
@@ -762,10 +776,13 @@ final readonly class ComercialController
             return to_route('ventas.documentos.index')->with('status', 'Factura '.$documento->numero.' registrada en Aitrol.');
         }
 
-        return $this->responder($request, $modulo, $seccion, $documento, 201, 'Documento registrado.');
+        $mensaje = $documento->estado_aprobacion === 'pendiente'
+            ? 'Orden registrada y enviada a aprobación.' : 'Documento registrado.';
+
+        return $this->responder($request, $modulo, $seccion, $documento, 201, $mensaje);
     }
 
-    public function trazabilidad(Request $request, ContextoOperativo $contexto, CobroFacturaVenta $cobros, int $registro): View
+    public function trazabilidad(Request $request, ContextoOperativo $contexto, CobroFacturaVenta $cobros, CotejoRecepcionesCompra $cotejos, int $registro): View
     {
         $modulo = $request->route('modulo');
         $factura = $this->documentos->consultar($modulo, 'documentos', $registro);
@@ -775,9 +792,10 @@ final readonly class ComercialController
         $periodo = $contexto->periodo();
         $movimientosCobro = $modulo === 'ventas' ? $cobros->movimientos($factura->id) : collect();
         $saldoCobro = $modulo === 'ventas' ? $cobros->saldo($factura) : null;
+        $cotejo = $modulo === 'compras' ? $cotejos->detalleFactura($factura) : null;
 
         return view('comercial::trazabilidad-venta', compact(
-            'factura', 'vinculados', 'partidasInventario', 'productosTrazabilidad', 'modulo', 'periodo', 'movimientosCobro', 'saldoCobro',
+            'factura', 'vinculados', 'partidasInventario', 'productosTrazabilidad', 'modulo', 'periodo', 'movimientosCobro', 'saldoCobro', 'cotejo',
         ));
     }
 
@@ -815,7 +833,9 @@ final readonly class ComercialController
     private function filtros(Request $request, bool $conPaginacion = false): array
     {
         $reglas = ['q' => ['nullable', 'string', 'max:120'], 'desde' => ['nullable', 'date_format:Y-m-d'], 'hasta' => ['nullable', 'date_format:Y-m-d']];
-        if ($request->filled('desde')) $reglas['hasta'][] = 'after_or_equal:desde';
+        if ($request->filled('desde')) {
+            $reglas['hasta'][] = 'after_or_equal:desde';
+        }
         if ($conPaginacion) {
             $reglas['per_page'] = ['nullable', 'integer', 'between:1,100'];
             $reglas['page'] = ['nullable', 'integer', 'between:1,100000'];
@@ -841,12 +861,23 @@ final readonly class ComercialController
     {
         $datos = (array) $registro;
         unset($datos['emisor'], $datos['datos_factura']);
-        foreach (['subtotal' => 2, 'impuesto' => 2, 'propina' => 2, 'total' => 2, 'precio' => 4, 'tasa' => 2, 'base_retencion' => 2, 'porcentaje_retencion' => 2] as $campo => $decimales) {
-            if (isset($datos[$campo])) $datos[$campo] = Cantidad::decimal((int) $datos[$campo], $decimales);
+        if (($datos['tipo'] ?? null) !== 'ordenes-compra') {
+            unset($datos['estado_aprobacion'], $datos['id_solicitud_compra']);
         }
-        if (isset($datos['id_documento'])) $datos['cantidad'] = Cantidad::decimal((int) $datos['cantidad'], 3);
-        if (isset($datos['anulado'])) $datos['anulado'] = (bool) $datos['anulado'];
-        if (isset($datos['lineas'])) $datos['lineas'] = $datos['lineas']->map($this->decimales(...));
+        foreach (['subtotal' => 2, 'impuesto' => 2, 'propina' => 2, 'total' => 2, 'precio' => 4, 'tasa' => 2, 'base_retencion' => 2, 'porcentaje_retencion' => 2] as $campo => $decimales) {
+            if (isset($datos[$campo])) {
+                $datos[$campo] = Cantidad::decimal((int) $datos[$campo], $decimales);
+            }
+        }
+        if (isset($datos['id_documento'])) {
+            $datos['cantidad'] = Cantidad::decimal((int) $datos['cantidad'], 3);
+        }
+        if (isset($datos['anulado'])) {
+            $datos['anulado'] = (bool) $datos['anulado'];
+        }
+        if (isset($datos['lineas'])) {
+            $datos['lineas'] = $datos['lineas']->map($this->decimales(...));
+        }
 
         return $datos;
     }

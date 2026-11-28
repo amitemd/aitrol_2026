@@ -3,6 +3,7 @@
         'retenciones' => ['Retención', 'bi-percent', 'retencion'],
         'notas-credito' => ['Nota de crédito', 'bi-file-earmark-minus', 'credito'],
         'notas-debito' => ['Nota de débito', 'bi-file-earmark-plus', 'debito'],
+        'recepciones' => ['Recepción de compra', 'bi-box-arrow-in-down', 'documento'],
     ];
     $puedeVerAsiento = Gate::allows('permiso', ['contabilidad.asientos.index', 'leer']);
     $puedeVerMovimiento = Gate::allows('permiso', ['inventarios.movimientos.index', 'leer']);
@@ -46,7 +47,9 @@
                                 <i class="bi {{ $icono }} trazabilidad-diagrama__icono" aria-hidden="true"></i>
                                 <div class="trazabilidad-diagrama__datos">
                                     <span>{{ $tipo }} · {{ $documento->fecha }}</span>
-                                    @if ($enPeriodo && Gate::allows('permiso', [$ruta.'.index', 'leer']))
+                                    @if ($documento->tipo === 'recepciones' && Gate::allows('permiso', ['compras.ordenes-compra.index', 'leer']))
+                                        <a href="{{ route('compras.ordenes-compra.recepciones.index', $documento->id_documento_origen) }}#recepcion-{{ $documento->id }}">{{ $documento->numero }}</a>
+                                    @elseif ($enPeriodo && Gate::allows('permiso', [$ruta.'.index', 'leer']))
                                         <a href="{{ route($ruta.'.show', $documento->id) }}" target="_blank" rel="noopener">{{ $documento->numero }}</a>
                                     @else
                                         <strong>{{ $documento->numero }}</strong>

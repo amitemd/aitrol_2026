@@ -2,9 +2,11 @@
 
 namespace Aitrol\Rrhh\Infrastructure\Http;
 
+use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use Aitrol\Rrhh\Application\DatosRrhh;
 use Aitrol\Rrhh\Application\GestionPersonal;
 use Aitrol\Rrhh\Application\Nomina;
+use App\Models\Persona;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -61,6 +63,13 @@ final readonly class RrhhController
         $seccion = $request->route('seccion');
         $id = $request->route('registro');
         $registro = $id === null ? null : $this->datos->registro($this->gestion->consulta($seccion), (int) $id);
+        if ($seccion === 'empleados' && isset($registro->id_persona)) {
+            $persona = Persona::find($registro->id_persona);
+            if ($persona !== null && $persona->id_tipo_identificacion !== null) {
+                $registro->tipo_identificacion = TipoIdentificacion::desdeCatalogo((int) $persona->id_tipo_identificacion)->value;
+                $registro->nombre = $persona->nombreCompleto();
+            }
+        }
         $soloEstado = $seccion === 'conceptos' && $registro?->estado === 'aprobado';
         if ($registro && isset(config('rrhh.procesos')[$seccion]) && $seccion !== 'organizacion' && ! $soloEstado) {
             abort_unless($registro->estado === 'pendiente', 409, 'El registro ya fue resuelto.');
@@ -112,6 +121,7 @@ final readonly class RrhhController
         $reglas = match ($seccion) {
             'empleados' => [
                 'codigo' => ['required', 'regex:/^[A-Za-z0-9_-]{1,30}$/'], 'nombre' => ['required', 'string', 'max:160'],
+                'tipo_identificacion' => ['nullable', Rule::enum(TipoIdentificacion::class)],
                 'identificacion' => ['nullable', 'string', 'max:40'], 'correo' => ['nullable', 'email', 'max:150'],
                 'ingreso' => $fecha, 'salida' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:ingreso'],
                 'id_departamento' => ['nullable', 'integer', 'min:1'], 'id_cargo' => ['nullable', 'integer', 'min:1'],
@@ -228,6 +238,8 @@ final readonly class RrhhController
         return match ($seccion) {
             'empleados' => [
                 'codigo' => ['Código', 'text', true], 'nombre' => ['Nombre completo', 'text', true],
+                'tipo_identificacion' => ['Tipo de identificación', 'select', false,
+                    collect(TipoIdentificacion::cases())->mapWithKeys(fn (TipoIdentificacion $tipo): array => [$tipo->value => $tipo->etiqueta()])],
                 'identificacion' => ['Identificación', 'text', false], 'correo' => ['Correo de trabajo', 'email', false],
                 'ingreso' => ['Fecha de ingreso', 'date', true], 'salida' => ['Fecha de salida', 'date', false],
                 'id_departamento' => ['Departamento', 'select', false, $organizacion('departamento', $registro?->id_departamento)],

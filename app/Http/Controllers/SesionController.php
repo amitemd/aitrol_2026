@@ -23,7 +23,7 @@ final class SesionController extends Controller
 
     private const BLOQUEO_SEGUNDOS = 300;
 
-    public function inicio(ContextoOperativo $contexto, PanelAdministrativo $panel): View|RedirectResponse
+    public function inicio(Request $request, ContextoOperativo $contexto, PanelAdministrativo $panel): View|RedirectResponse
     {
         $usuario = Auth::user();
         if ($usuario === null) {
@@ -35,6 +35,9 @@ final class SesionController extends Controller
         $sucursal = $contexto->resolverSucursalWeb();
         if ($sucursal === null) {
             return to_route('configuracion.contexto.index');
+        }
+        if ($request->header('X-Aitrol-Fragmento') === 'menu') {
+            return view('partials.adminlte-sidebar');
         }
 
         $productosRecientes = null;

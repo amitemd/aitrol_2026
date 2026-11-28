@@ -8,12 +8,45 @@
         <div class="container-fluid">
             <section class="card">
                 <div class="card-body">
+                    @if (session('status'))
+                        <p class="alert alert-success" role="status">{{ session('status') }}</p>
+                    @endif
+                    @include('comercial::errores')
                     <dl class="row mb-3">
                         <dt class="col-sm-4">Clave de acceso</dt><dd class="col-sm-8 font-monospace text-break">{{ $identidad['clave'] }}</dd>
                         <dt class="col-sm-4">Ambiente</dt><dd class="col-sm-8">{{ $identidad['ambiente'] === '2' ? 'Producción' : 'Pruebas' }}</dd>
                         <dt class="col-sm-4">Registro en Aitrol</dt><dd class="col-sm-8">{{ $factura->created_at ?? 'Sin fecha registrada' }}</dd>
                     </dl>
                     @include('comercial::estado-sri', ['documentoSri' => ['id' => $factura->id, 'clave_acceso' => $identidad['clave'], 'estado_sri' => $estado], 'enLogSri' => true])
+                    @if (in_array($firmaLocal['estado'] ?? null, ['firmada_pendiente_envio', 'enviada_pendiente_autorizacion', 'rechazada_en_recepcion', 'recepcion_por_confirmar', 'no_autorizada'], true))
+                        <p class="mt-3 mb-2">{{ match ($firmaLocal['estado']) {
+                            'enviada_pendiente_autorizacion' => 'Recepción confirmada en el SRI de pruebas',
+                            'rechazada_en_recepcion' => 'Envío rechazado en recepción',
+                            'recepcion_por_confirmar' => 'Recepción por confirmar',
+                            'no_autorizada' => 'Factura no autorizada en pruebas',
+                            default => 'Firmada en AITROL · Pendiente de envío al SRI',
+                        } }}</p>
+                        <a class="btn btn-outline-primary" href="{{ route('ventas.documentos.firma-local.xml', $factura->id) }}">Descargar XML firmado de pruebas</a>
+                        @if (config('comercial.ventas.facturacion_electronica.envio_pruebas')
+                            && in_array($firmaLocal['estado'], ['firmada_pendiente_envio', 'recepcion_por_confirmar', 'rechazada_en_recepcion'], true))
+                            @can('permiso', ['ventas.documentos.index', 'actualizar'])
+                                <form method="POST" action="{{ route('ventas.documentos.firma-local.enviar', $factura->id) }}" class="d-inline-block">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        {{ $firmaLocal['estado'] === 'firmada_pendiente_envio' ? 'Enviar al SRI de pruebas' : 'Verificar y reintentar envío' }}
+                                    </button>
+                                </form>
+                            @endcan
+                        @endif
+                    @elseif (($firmaLocal['estado'] ?? null) === 'pendiente_firma')
+                        <p class="mt-3 mb-2">Pendiente de firma local de pruebas</p>
+                        @can('permiso', ['ventas.documentos.index', 'actualizar'])
+                            <form method="POST" action="{{ route('ventas.documentos.firma-local.store', $factura->id) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-primary">Firmar XML en AITROL</button>
+                            </form>
+                        @endcan
+                    @endif
                     @if ($estado !== 'AUTORIZADO' && Gate::allows('permiso', ['ventas.documentos.index', 'actualizar']))
                         <form method="POST" action="{{ route('ventas.documentos.sri.consultar', $factura->id) }}" class="mt-3">
                             @csrf

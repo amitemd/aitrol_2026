@@ -28,21 +28,21 @@
             </div>
             <div class="col-md-6">
                 <label for="identificacion" class="form-label">{{ __('Identificación') }}</label>
-                <input class="form-control" id="identificacion" name="identificacion" maxlength="30"
-                    value="{{ old('identificacion', $cliente?->identificacion->numero) }}" autofocus required>
+                @include('partials.identificacion-persona', [
+                    'formularioPersona' => $modulo, 'idPersonaCampo' => 'identificacion',
+                    'valorPersona' => old('identificacion', $cliente?->identificacion->numero), 'personaRequerida' => true, 'enfocarPersona' => true,
+                ])
             </div>
             @include('partials.nombre-persona', [
                 'componentesNombre' => $perfil,
                 'nombresAnteriores' => $perfil['nombres'] ?? old('nombre'),
                 'apellidosAnteriores' => $perfil['apellidos'] ?? null,
             ])
-            @unless ($esProveedor)
-                <div class="col-md-6">
-                    <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
-                    <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
-                        value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
-                </div>
-            @endunless
+            <div class="col-md-6">
+                <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+                <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" class="form-control"
+                    value="{{ old('fecha_nacimiento', $perfil['fecha_nacimiento'] ?? null) }}">
+            </div>
             <div class="col-12">
                 <label for="observacion" class="form-label">Observación</label>
                 <textarea id="observacion" name="observacion" class="form-control" rows="2" maxlength="3000">{{ old('observacion', $perfil['observacion'] ?? null) }}</textarea>

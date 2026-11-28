@@ -193,7 +193,8 @@
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('selectores.js') }}?v={{ filemtime(public_path('selectores.js')) }}" defer></script>
-  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('ubicacion.js') }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('ubicacion.js') }}?v={{ filemtime(public_path('ubicacion.js')) }}" defer></script>
+  <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('identificacion-persona.js') }}?v={{ filemtime(public_path('identificacion-persona.js')) }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('adjuntos.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('acciones-fila.js') }}" defer></script>
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('red-fondo.js') }}" defer></script>

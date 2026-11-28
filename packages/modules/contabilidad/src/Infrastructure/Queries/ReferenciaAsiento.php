@@ -26,8 +26,10 @@ final class ReferenciaAsiento
                         $comercial->from('com_lineas as partida')->selectRaw('1')
                             ->whereColumn('partida.id_empresa', 'contable.id_empresa')->whereColumn('partida.id_documento', 'contable.id_origen')
                             ->where(fn (Builder $vinculo) => $vinculo
-                                ->where(fn (Builder $normal) => $normal->where('contable.origen', 'comercial.documento')->whereColumn('partida.id_operacion', $columna))
-                                ->orWhere(fn (Builder $reversa) => $reversa->where('contable.origen', 'comercial.anulacion')->whereColumn('partida.id_operacion_reversa', $columna)));
+                                ->where(fn (Builder $normal) => $normal->whereIn('contable.origen', ['comercial.documento', 'comercial.recepcion'])
+                                    ->whereColumn('partida.id_operacion', $columna))
+                                ->orWhere(fn (Builder $reversa) => $reversa->whereIn('contable.origen', ['comercial.anulacion', 'comercial.anulacion-recepcion'])
+                                    ->whereColumn('partida.id_operacion_reversa', $columna)));
                     });
             });
 

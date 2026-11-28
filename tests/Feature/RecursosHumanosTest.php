@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
+use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,25 @@ use Tests\TestCase;
 final class RecursosHumanosTest extends TestCase
 {
     use LazilyRefreshDatabase;
+
+    public function test_vincula_empleados_con_personas_y_actualiza_el_nombre_en_ambos_registros(): void
+    {
+        [$usuario, $sucursal] = $this->empresa('1234567890001');
+        $this->actingAs($usuario);
+        $persona = Persona::create(['id_tipo_identificacion' => 1, 'identificacion' => '0921456789', 'nombre' => 'Ana Rivas']);
+        $datos = ['codigo' => 'E01', 'nombre' => 'Ana Rivas', 'identificacion' => '0921456789', 'ingreso' => '2026-01-01'];
+
+        $this->get('/rrhh/empleados/crear')->assertOk()->assertSee(route('personas.formularios.buscar', 'empleados'));
+        $this->postJson('/rrhh/empleados', $datos)->assertOk();
+        $empleado = DB::table('rh_empleados')->where('id_sucursal', $sucursal)->sole();
+        $this->assertSame($persona->id, (int) $empleado->id_persona);
+        $this->putJson('/rrhh/empleados/'.$empleado->id, array_replace($datos, ['nombre' => 'Ana M. Rivas']))->assertOk();
+        $this->assertDatabaseHas('personas', ['id' => $persona->id, 'nombre' => 'Ana M. Rivas']);
+        $this->assertDatabaseHas('rh_empleados', ['id' => $empleado->id, 'nombre' => 'Ana M. Rivas', 'id_persona' => $persona->id]);
+        $this->postJson('/rrhh/empleados', array_replace($datos, ['codigo' => 'E02', 'identificacion' => '0921456790']))->assertOk();
+        $nueva = Persona::query()->where('identificacion', '0921456790')->sole();
+        $this->assertDatabaseHas('rh_empleados', ['codigo' => 'E02', 'id_persona' => $nueva->id]);
+    }
 
     public function test_cierra_la_nomina_con_contratos_novedades_y_cuotas_y_emite_roles(): void
     {

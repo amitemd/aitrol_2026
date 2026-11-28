@@ -2,10 +2,14 @@
 
 namespace Aitrol\Rrhh\Application;
 
+use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
+use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
+use App\Models\Persona;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 final readonly class GestionPersonal
 {
@@ -101,6 +105,34 @@ final readonly class GestionPersonal
                     throw ValidationException::withMessages([$campo => 'Selecciona una opción activa.']);
                 }
             }
+        }
+
+        $numero = array_key_exists('identificacion', $campos) ? $campos['identificacion'] : $actual?->identificacion;
+        $identificacion = strtoupper(trim($numero ?? ''));
+        $tipo = TipoIdentificacion::tryFrom($campos['tipo_identificacion'] ?? '') ?? match (true) {
+            preg_match('/\A[0-9]{10}\z/', $identificacion) === 1 => TipoIdentificacion::Cedula,
+            preg_match('/\A[0-9]{13}\z/', $identificacion) === 1 => TipoIdentificacion::Ruc,
+            preg_match('/\A[A-Z0-9][A-Z0-9-]{0,29}\z/', $identificacion) === 1 => TipoIdentificacion::Pasaporte,
+            default => null,
+        };
+        unset($campos['tipo_identificacion']);
+
+        if ($tipo !== null && $identificacion !== '') {
+            try {
+                $documento = new IdentificacionFiscal($tipo, $identificacion);
+            } catch (InvalidArgumentException $error) {
+                throw ValidationException::withMessages(['identificacion' => $error->getMessage()]);
+            }
+            $persona = Persona::buscarOCrearConBloqueo([
+                'id_tipo_identificacion' => $tipo->idCatalogo(), 'identificacion' => $documento->numero,
+            ], ['nombre' => $campos['nombre']]);
+            if ($persona->nombreCompleto() !== $campos['nombre']) {
+                $persona->fill(['nombre' => $campos['nombre'], 'apellido' => null])->save();
+            }
+            $campos['identificacion'] = $documento->numero;
+            $campos['id_persona'] = $persona->id;
+        } elseif (array_key_exists('identificacion', $campos)) {
+            $campos['id_persona'] = null;
         }
 
         return $campos;

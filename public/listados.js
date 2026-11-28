@@ -96,6 +96,37 @@
         }
     }
 
+    async function loadMore(link) {
+        if (list.getAttribute('aria-busy') === 'true') return;
+
+        const controller = new AbortController();
+        listRequest = controller;
+        list.setAttribute('aria-busy', 'true');
+        link.setAttribute('aria-disabled', 'true');
+        try {
+            const page = await loadHtml(link.href, controller.signal);
+            const rows = page.querySelector('[data-ajax-filas]');
+            if (!rows) throw new Error('No se pudieron cargar más registros.');
+            if (controller.signal.aborted) return;
+
+            list.querySelector('[data-ajax-filas]').append(...rows.children);
+            const next = page.querySelector('[data-ajax-mas]');
+            if (next) {
+                link.href = new URL(next.getAttribute('href'), link.href).href;
+            } else {
+                link.removeAttribute('href');
+                link.removeAttribute('data-ajax-mas');
+                link.classList.remove('btn', 'btn-outline-secondary');
+                link.textContent = 'Todos los registros están cargados.';
+            }
+        } catch (error) {
+            if (!controller.signal.aborted) notify(error.message, true);
+        } finally {
+            link.removeAttribute('aria-disabled');
+            if (listRequest === controller) list.removeAttribute('aria-busy');
+        }
+    }
+
     async function openForm(link, continuar = false) {
         formRequest?.abort();
         const controller = new AbortController();
@@ -200,14 +231,15 @@
     document.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
 
-        const link = event.target.closest('a[data-ajax-open], a[data-ajax-list-link], .pagination a[href]');
+        const link = event.target.closest('a[data-ajax-open], a[data-ajax-list-link], a[data-ajax-mas], .pagination a[href]');
         if (!link || link.origin !== location.origin) return;
         if (link.hasAttribute('data-ajax-open')) {
             event.preventDefault();
             if (!dialog.open && !saving) openForm(link);
         } else if (list.contains(link)) {
             event.preventDefault();
-            loadList(new URL(link.href));
+            if (link.hasAttribute('data-ajax-mas')) loadMore(link);
+            else loadList(new URL(link.href));
         }
     });
 

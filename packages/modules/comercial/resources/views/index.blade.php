@@ -32,6 +32,14 @@
                     @endforeach
                     <div class="col-auto d-flex gap-2">
                         <button class="btn btn-outline-primary">Filtrar</button>
+                        @if ($ruta === 'compras.ordenes-compra')
+                            <a href="{{ route('compras.solicitudes.index') }}" class="btn btn-outline-primary"
+                                data-workspace-link="compras.solicitudes.index" data-workspace-label="Solicitudes de compra">Solicitudes</a>
+                            <a href="{{ route('compras.presupuestos.index') }}" class="btn btn-outline-primary"
+                                data-workspace-link="compras.presupuestos.index" data-workspace-label="Presupuestos de compra">Presupuestos</a>
+                            <a href="{{ route('compras.aprobaciones.index') }}" class="btn btn-outline-primary"
+                                data-workspace-link="compras.aprobaciones.index" data-workspace-label="Aprobaciones de compra">Aprobaciones</a>
+                        @endif
                         @if ($ruta === 'ventas.documentos' && Gate::allows('permiso', [$ruta.'.index', 'escribir']))
                             <a href="{{ route('ventas.facturas-recurrentes.index') }}" class="btn btn-outline-primary"
                                 data-workspace-link="ventas.facturas-recurrentes.index" data-workspace-label="Facturas recurrentes" data-workspace-forward>Facturas recurrentes</a>
@@ -45,6 +53,10 @@
                     </div>
                 </form>
                 @if ($reportes)
+                    @if ($modulo === 'compras')
+                        <a href="{{ route('compras.reportes.pendientes') }}" class="btn btn-outline-primary mb-3"
+                            data-workspace-link="compras.reportes.pendientes" data-workspace-label="Compras pendientes">Compras pendientes</a>
+                    @endif
                     <div class="row g-2 m-0 p-3 border-bottom">
                         @foreach (['neto' => 'Importe neto', 'retenciones' => 'Retenciones vigentes', 'neto_menos_retenciones' => 'Neto menos retenciones'] as $campo => $etiqueta)
                             <div class="col-sm-4">
@@ -95,7 +107,17 @@
                                         <td>{{ $fila['tercero'] }}</td>
                                         <td class="text-end">{{ $fila['total'] }}</td>
                                         <td>
-                                            <span @class(['badge rounded-pill', 'text-bg-secondary' => $fila['anulado_at'], 'text-bg-success' => !$fila['anulado_at']])>{{ $fila['anulado_at'] ? 'Anulado' : 'Vigente' }}</span>
+                                            @php
+                                                $aprobacion = $fila['estado_aprobacion'] ?? null;
+                                                $estadoDocumento = match (true) {
+                                                    (bool) $fila['anulado_at'] => ['Anulado', 'text-bg-secondary'],
+                                                    $aprobacion === 'pendiente' => ['Pendiente de aprobación', 'text-bg-warning'],
+                                                    $aprobacion === 'rechazada' => ['Rechazada', 'text-bg-danger'],
+                                                    $aprobacion === 'aprobada' => ['Aprobada', 'text-bg-success'],
+                                                    default => ['Vigente', 'text-bg-success'],
+                                                };
+                                            @endphp
+                                            <span class="badge rounded-pill {{ $estadoDocumento[1] }}">{{ $estadoDocumento[0] }}</span>
                                             @if ($modulo === 'ventas' && $seccion === 'documentos')
                                                 @unless ($fila['anulado_at'])
                                                     @php $saldo = $saldos->get($fila['id']); @endphp
@@ -118,6 +140,20 @@
                                                 };
                                             @endphp
                                             @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => $tituloDetalle.' '.$fila['numero']])
+                                                @if ($ruta === 'compras.ordenes-compra')
+                                                    @if ($aprobacion !== null)
+                                                        @include('partials.accion-fila-enlace', [
+                                                            'href' => route('compras.aprobaciones.show', $fila['id']),
+                                                            'etiqueta' => 'Revisar aprobación', 'icono' => 'bi-clipboard-check', 'modal' => false,
+                                                            'workspace' => 'compras.aprobaciones.'.$fila['id'],
+                                                        ])
+                                                    @endif
+                                                    @include('partials.accion-fila-enlace', [
+                                                        'href' => route('compras.ordenes-compra.recepciones.index', $fila['id']),
+                                                        'etiqueta' => 'Recepciones de la orden', 'icono' => 'bi-box-arrow-in-down', 'modal' => false,
+                                                        'workspace' => 'compras.recepciones.'.$fila['id'],
+                                                    ])
+                                                @endif
                                                 @if ($modulo === 'ventas' && $seccion === 'documentos')
                                                     @if (!$fila['anulado_at'] && $fila['id_asiento'] && $saldos->get($fila['id']) > 0 && Gate::allows('permiso', ['caja-bancos.movimientos.index', 'escribir']))
                                                         @include('partials.accion-fila-enlace', ['href' => route('ventas.documentos.cobro.create', $fila['id']), 'etiqueta' => 'Registrar cobro', 'icono' => 'bi-cash-coin'])

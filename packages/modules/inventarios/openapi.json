@@ -5,6 +5,80 @@
     }
   ],
   "paths": {
+    "/api/v1/inventarios/marcas": {
+      "get": {
+        "tags": ["Inventarios"],
+        "operationId": "listarMarcasInventario",
+        "summary": "Listar marcas",
+        "description": "Requiere inventarios:leer y permiso de lectura.",
+        "parameters": [{"name":"q","in":"query","description":"Buscar por código o nombre.","schema":{"type":"string"}},{"name":"page","in":"query","description":"Número de página.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Listado paginado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":100},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}},"total":{"type":"integer"}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      },
+      "post": {
+        "tags": ["Inventarios"],
+        "operationId": "crearMarcasInventario",
+        "summary": "Crear marca",
+        "description": "Requiere inventarios:escribir y el permiso correspondiente.",
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["codigo","nombre"],"properties":{"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":100},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}},
+        "responses": {"201":{"description":"Registro creado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":100},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/inventarios/marcas/{registro}": {
+      "get": {
+        "tags": ["Inventarios"],
+        "operationId": "consultarMarcasInventario",
+        "summary": "Consultar marca",
+        "description": "Requiere inventarios:leer y permiso de lectura.",
+        "parameters": [{"name":"registro","in":"path","required":true,"schema":{"type":"integer","minimum":1}}],
+        "responses": {"200":{"description":"Detalle del registro.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":100},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      },
+      "put": {
+        "tags": ["Inventarios"],
+        "operationId": "editarMarcasInventario",
+        "summary": "Actualizar marca",
+        "description": "Requiere inventarios:escribir y el permiso correspondiente.",
+        "parameters": [{"name":"registro","in":"path","required":true,"schema":{"type":"integer","minimum":1}}],
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["codigo","nombre","activo"],"properties":{"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":100},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}},
+        "responses": {"200":{"description":"Registro actualizado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":100},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/inventarios/unidades": {
+      "get": {
+        "tags": ["Inventarios"],
+        "operationId": "listarUnidadesInventario",
+        "summary": "Listar unidades",
+        "description": "Requiere inventarios:leer y permiso de lectura.",
+        "parameters": [{"name":"q","in":"query","description":"Buscar por código o nombre.","schema":{"type":"string"}},{"name":"page","in":"query","description":"Número de página.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Listado paginado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":30},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}},"total":{"type":"integer"}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      },
+      "post": {
+        "tags": ["Inventarios"],
+        "operationId": "crearUnidadesInventario",
+        "summary": "Crear unidad",
+        "description": "Requiere inventarios:escribir y el permiso correspondiente.",
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["codigo","nombre"],"properties":{"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":30},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}},
+        "responses": {"201":{"description":"Registro creado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":30},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/inventarios/unidades/{registro}": {
+      "get": {
+        "tags": ["Inventarios"],
+        "operationId": "consultarUnidadesInventario",
+        "summary": "Consultar unidad",
+        "description": "Requiere inventarios:leer y permiso de lectura.",
+        "parameters": [{"name":"registro","in":"path","required":true,"schema":{"type":"integer","minimum":1}}],
+        "responses": {"200":{"description":"Detalle del registro.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":30},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      },
+      "put": {
+        "tags": ["Inventarios"],
+        "operationId": "editarUnidadesInventario",
+        "summary": "Actualizar unidad",
+        "description": "Requiere inventarios:escribir y el permiso correspondiente.",
+        "parameters": [{"name":"registro","in":"path","required":true,"schema":{"type":"integer","minimum":1}}],
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["codigo","nombre","activo"],"properties":{"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":30},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}},
+        "responses": {"200":{"description":"Registro actualizado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":60},"nombre":{"type":"string","maxLength":30},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
     "/api/v1/inventarios/productos": {
       "get": {
         "tags": [

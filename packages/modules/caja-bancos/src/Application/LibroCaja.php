@@ -2,8 +2,8 @@
 
 namespace Aitrol\CajaBancos\Application;
 
-use App\Events\OperacionContabilizable;
 use Aitrol\Inventarios\Domain\CantidadInventario as Decimal;
+use App\Events\OperacionContabilizable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -83,10 +83,16 @@ final readonly class LibroCaja
             'tipo' => $tipo, 'fecha' => $campos['fecha'], 'importe' => $importe, 'concepto' => $campos['concepto'],
             'referencia' => $campos['referencia'] ?? null,
         ];
-        if (isset($campos['flujo_contable'])) $comprobante['flujo_contable'] = $campos['flujo_contable'];
+        if (isset($campos['flujo_contable'])) {
+            $comprobante['flujo_contable'] = $campos['flujo_contable'];
+        }
         if (isset($campos['id_factura_venta'])) {
             abort_unless($tipo === 'ingreso', 422, 'El cobro de una factura debe registrarse como ingreso.');
             $comprobante['id_factura_venta'] = $campos['id_factura_venta'];
+        }
+        if (isset($campos['id_factura_compra'])) {
+            abort_unless($tipo === 'egreso', 422, 'El pago a proveedor debe registrarse como egreso.');
+            $comprobante['id_factura_compra'] = $campos['id_factura_compra'];
         }
         $clave = isset($campos['clave_operacion']) ? strtolower($campos['clave_operacion']) : null;
         $huella = hash('sha256', json_encode([$comprobante, $asientos], JSON_THROW_ON_ERROR));
@@ -94,7 +100,9 @@ final readonly class LibroCaja
         try {
             return $this->datos->transaccion(function () use ($comprobante, $origen, $clave, $huella, $asientos): array {
                 $cuentas = $this->bloquearCuentas($asientos);
-                if ($clave !== null && ($repetida = $this->repetida($clave, $huella)) !== null) return [$repetida, true];
+                if ($clave !== null && ($repetida = $this->repetida($clave, $huella)) !== null) {
+                    return [$repetida, true];
+                }
                 if ($comprobante['tipo'] === 'deposito') {
                     $destino = array_key_first(array_diff_key($asientos, [$origen => true]));
                     abort_unless($cuentas[$origen]->tipo === 'caja' && $cuentas[$destino]->tipo === 'banco', 422,
@@ -109,7 +117,9 @@ final readonly class LibroCaja
             });
         } catch (UniqueConstraintViolationException $error) {
             $repetida = $clave === null ? null : $this->repetida($clave, $huella);
-            if ($repetida === null) throw $error;
+            if ($repetida === null) {
+                throw $error;
+            }
 
             return [$repetida, true];
         }
@@ -130,6 +140,7 @@ final readonly class LibroCaja
             return $this->aplicar([
                 'tipo' => 'reversa', 'fecha' => now()->toDateString(), 'importe' => $original->importe, 'concepto' => $motivo,
                 'referencia' => 'Operación '.$id, 'id_reversa_de' => $id,
+                'id_factura_compra' => $original->id_factura_compra,
             ], $cuentas, $asientos);
         });
     }
@@ -160,7 +171,7 @@ final readonly class LibroCaja
             $this->datos->crear('cb_asientos', $fila + ['id_operacion' => $op], false);
             $this->datos->actualizar('cb_cuentas', $fila['id_cuenta'], ['saldo' => $fila['saldo']]);
         }
-        event(new OperacionContabilizable('tesoreria.operacion', $op, isset($cabecera['id_factura_venta'])));
+        event(new OperacionContabilizable('tesoreria.operacion', $op, isset($cabecera['id_factura_venta']) || isset($cabecera['id_factura_compra'])));
 
         return $this->datos->operacion($op);
     }
@@ -184,7 +195,9 @@ final readonly class LibroCaja
     private function repetida(string $clave, string $huella): ?stdClass
     {
         $op = $this->datos->tabla('cb_operaciones')->where('clave_operacion', $clave)->first();
-        if ($op === null) return null;
+        if ($op === null) {
+            return null;
+        }
 
         abort_unless($op->huella === $huella, 409, 'La clave ya se utilizó con otros datos.');
 

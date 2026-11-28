@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,17 @@ use Tests\TestCase;
 final class MenuTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_recarga_el_menu_sin_renderizar_el_panel(): void
+    {
+        $empresa = EmpresaModel::create(['ruc' => '1000000000001', 'razon_social' => 'Empresa de pruebas']);
+        DB::table('erp_sucursales')->insert(['id_empresa' => $empresa->id, 'codigo' => 'PRINCIPAL', 'nombre' => 'Matriz']);
+        $this->actingAs(User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]));
+
+        $this->get(route('dashboard'), ['X-Aitrol-Fragmento' => 'menu'])->assertOk()
+            ->assertSee('id="navigation"', false)->assertSee('Clientes')->assertDontSee('sales-chart', false)
+            ->assertDontSee('<!doctype html>', false);
+    }
 
     public function test_menu_command_restores_a_missing_option_and_preserves_existing_changes(): void
     {

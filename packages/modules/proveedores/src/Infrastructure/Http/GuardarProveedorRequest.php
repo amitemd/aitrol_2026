@@ -7,7 +7,6 @@ use Aitrol\Clientes\Domain\ValueObjects\IdentificacionFiscal;
 use Aitrol\Clientes\Domain\ValueObjects\TipoIdentificacion;
 use App\Models\Persona;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -31,7 +30,7 @@ final class GuardarProveedorRequest extends FormRequest
             'activo' => [$this->isMethod('PUT') ? 'required' : 'sometimes', 'boolean'],
             'ciudad' => ['nullable', 'string', 'max:100'],
             'provincia' => ['nullable', 'string', 'max:100'],
-            ...Arr::except(Persona::reglasPerfil(), ['fecha_nacimiento']),
+            ...Persona::reglasPerfil(),
             'contactos' => ['nullable', 'array', 'max:10'],
             'contactos_presentes' => ['sometimes', 'boolean'],
             'contactos.*' => ['array:nombre,cargo,email,telefono'],
@@ -63,7 +62,7 @@ final class GuardarProveedorRequest extends FormRequest
         }
 
         $perfil = array_intersect_key($datos, array_flip([
-            'nombres', 'apellidos', 'ciudad', 'provincia', 'contactos',
+            'nombres', 'apellidos', 'email', 'telefono', 'direccion', 'ciudad', 'provincia', 'contactos',
             ...array_keys(Persona::reglasPerfil()),
         ]));
         $perfil['nombres'] ??= $nombre;

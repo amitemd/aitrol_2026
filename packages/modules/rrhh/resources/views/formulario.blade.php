@@ -71,6 +71,11 @@
                                         <option value="{{ $id }}" @selected((string) $valor === (string) $id)>{{ $nombre }}</option>
                                     @endforeach
                                 </select>
+                            @elseif ($seccion === 'empleados' && $clave === 'identificacion')
+                                @include('partials.identificacion-persona', [
+                                    'formularioPersona' => 'empleados', 'idPersonaCampo' => 'rrhh-identificacion',
+                                    'valorPersona' => $valor, 'maximoPersona' => 40,
+                                ])
                             @else
                                 <input class="form-control @error($clave) is-invalid @enderror" type="{{ $tipo }}" id="rrhh-{{ $clave }}"
                                     name="{{ $clave }}" value="{{ $valor }}" @required($obligatorio) @if ($tipo === 'number') step="0.01" min="0" @endif>

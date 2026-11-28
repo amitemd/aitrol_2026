@@ -27,7 +27,7 @@ Route::post('/idioma', function (Request $request): RedirectResponse {
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
     Route::post('/personas/formularios/{formulario}', PersonaFormularioController::class)
-        ->whereIn('formulario', ['clientes', 'proveedores', 'usuarios', 'empleados'])
+        ->whereIn('formulario', ['clientes', 'proveedores', 'usuarios', 'empleados', 'nomina-tributaria'])
         ->middleware(['empresa', 'throttle:60,1'])->name('personas.formularios.buscar');
     Route::put('/panel/preferencias', PreferenciasDashboardController::class)
         ->middleware('empresa')->name('dashboard.preferencias');

@@ -24,6 +24,8 @@ return [
     'patrimonio' => ['aporte' => 'Aportes', 'retiro' => 'Retiros', 'distribucion' => 'Distribuciones', 'traspaso_resultado' => 'Traspaso de resultados', 'apertura' => 'Saldos iniciales', 'otro' => 'Otros movimientos'],
     'reglas' => [
         'clientes' => ['Cuentas por cobrar', 'activo'], 'proveedores' => ['Cuentas por pagar', 'pasivo'],
+        'recepciones_por_facturar' => ['Mercadería recibida por facturar', 'pasivo'],
+        'diferencias_precio_compras' => ['Diferencias de precio en compras', 'gasto'],
         'ventas' => ['Ingresos por ventas', 'ingreso'], 'compras' => ['Compras sin inventario', 'gasto'],
         'impuesto_ventas' => ['Impuesto de ventas', 'pasivo'], 'impuesto_compras' => ['Impuesto de compras', 'activo'],
         'propinas_por_pagar' => ['Propinas por pagar', 'pasivo'],

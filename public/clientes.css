@@ -370,6 +370,20 @@
     align-items: start;
 }
 
+[data-selector-persona] {
+    position: relative;
+}
+
+[data-persona-resultados] {
+    position: absolute;
+    z-index: 3;
+    top: 100%;
+    inset-inline: 0;
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius);
+    box-shadow: var(--bs-box-shadow);
+}
+
 .ficha-detalle-foto {
     width: clamp(4rem, 23vw, 9rem);
     height: auto;

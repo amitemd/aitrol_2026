@@ -30,6 +30,41 @@
                             </dd>
                         @endif
                     </dl>
+                    @isset($cotejo)
+                        <h2 class="h6">Mercadería aplicada a esta factura</h2>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm">
+                                <thead><tr>
+                                    <th scope="col">Recepción</th><th scope="col">Producto</th>
+                                    <th scope="col" class="text-end">Cantidad aplicada</th><th scope="col" class="text-end">Base aplicada (USD)</th>
+                                </tr></thead>
+                                <tbody>
+                                    @foreach ($cotejo['aplicaciones'] as $aplicacion)
+                                        <tr>
+                                            <td>#{{ $aplicacion['id_recepcion'] }}</td><td>{{ $aplicacion['descripcion'] }}</td>
+                                            <td class="text-end">{{ $aplicacion['cantidad'] }}</td><td class="text-end">{{ $aplicacion['subtotal'] }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @isset($cotejo['aprobacion'])
+                            <section class="border rounded p-3 mb-3">
+                                <h2 class="h6">Diferencias aprobadas</h2>
+                                <p>{{ $cotejo['aprobacion']['motivo'] }}</p>
+                                <p>Aprobó {{ $cotejo['aprobacion']['usuario'] ?? ('#'.$cotejo['aprobacion']['id_usuario']) }}
+                                    el {{ \Illuminate\Support\Carbon::parse($cotejo['aprobacion']['fecha'])->setTimezone('America/Guayaquil')->format('d/m/Y H:i') }}.</p>
+                                <ul class="mb-0">
+                                    @foreach ($cotejo['aprobacion']['lineas'] as $diferencia)
+                                        <li>{{ $factura->lineas->firstWhere('id_linea_orden', $diferencia['id_linea_orden'])?->descripcion }}
+                                            · Precio esperado USD {{ $diferencia['precio_esperado'] }} y facturado USD {{ $diferencia['precio_facturado'] }}
+                                            · Diferencia de base USD {{ \Aitrol\Inventarios\Domain\CantidadInventario::decimal($diferencia['diferencia_base'], 2) }}
+                                            · Diferencia de IVA USD {{ \Aitrol\Inventarios\Domain\CantidadInventario::decimal($diferencia['diferencia_impuesto'], 2) }}</li>
+                                    @endforeach
+                                </ul>
+                            </section>
+                        @endisset
+                    @endisset
                     <h2 class="h6">Documentos vinculados</h2>
                     <ul class="list-group list-group-flush">
                         @forelse ($vinculados as $documento)
@@ -66,6 +101,9 @@
                     @include('comercial::diagrama-trazabilidad')
                 </div>
                 <div class="card-footer text-end">
+                    @if ($modulo === 'compras' && $vinculados->contains('tipo', 'recepciones'))
+                        <a href="{{ route('compras.documentos.devoluciones.index', $factura->id) }}" class="btn btn-outline-primary">Devoluciones de mercadería</a>
+                    @endif
                     <a href="{{ route($modulo.'.documentos.index') }}" class="btn btn-outline-secondary" data-ajax-close>Cerrar</a>
                 </div>
             </section>

@@ -47,7 +47,13 @@
                     </div>
                     @if ($seccion === 'nomina')
                         <div class="col-sm-8"><label for="tr-nombre" class="form-label">Nombres y apellidos</label><input id="tr-nombre" name="nombre" maxlength="180" class="form-control" required></div>
-                        <div class="col-sm-6"><label for="tr-identificacion" class="form-label">Cédula o pasaporte</label><input id="tr-identificacion" name="identificacion" maxlength="30" class="form-control" required></div>
+                        <div class="col-sm-6">
+                            <label for="tr-identificacion" class="form-label">Cédula o pasaporte</label>
+                            @include('partials.identificacion-persona', [
+                                'formularioPersona' => 'nomina-tributaria', 'idPersonaCampo' => 'tr-identificacion',
+                                'valorPersona' => old('identificacion'), 'personaRequerida' => true,
+                            ])
+                        </div>
                         @foreach (['ingresos_gravados' => 'Ingresos gravados', 'ingresos_exentos' => 'Ingresos exentos', 'aporte_personal' => 'Aporte personal', 'retencion' => 'Retención practicada'] as $campo => $texto)
                             <div class="col-sm-6"><label for="tr-{{ $campo }}" class="form-label">{{ $texto }}</label><input id="tr-{{ $campo }}" name="{{ $campo }}" type="number" min="0" max="1000000000" step="0.01" value="0.00" class="form-control" required></div>
                         @endforeach

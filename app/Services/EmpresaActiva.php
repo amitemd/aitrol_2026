@@ -37,7 +37,11 @@ final class EmpresaActiva
     {
         $filas = [];
         foreach (array_keys(config('accesos')) as $opcion) {
-            $acciones = $opcion === 'auditoria.logs.index' ? ['leer'] : ['leer', 'escribir', 'actualizar', 'eliminar'];
+            $acciones = match ($opcion) {
+                'auditoria.logs.index' => ['leer'],
+                'compras.aprobaciones.index' => ['actualizar'],
+                default => ['leer', 'escribir', 'actualizar', 'eliminar'],
+            };
             foreach ($acciones as $accion) {
                 $filas[] = ['id_empresa' => $idEmpresa, 'opcion' => $opcion, 'accion' => $accion];
             }

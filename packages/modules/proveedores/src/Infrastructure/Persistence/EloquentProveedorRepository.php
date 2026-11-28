@@ -61,25 +61,25 @@ final class EloquentProveedorRepository implements ProveedorRepository
                     'apellido' => $perfil['apellidos'] ?? null,
                 ]);
 
-                if (array_key_exists('id_ciudad', $perfil)) {
-                    $persona->id_ciudad = $perfil['id_ciudad'];
-                    unset($perfil['id_ciudad']);
-                }
-                $componentes = array_intersect_key($proveedor->perfil, Persona::COMPONENTES_NOMBRE);
-                $persona->fill($componentes);
-                if ($persona->isDirty()) {
-                    $persona->save();
-                }
-                $perfil = array_diff_key($perfil, Persona::COMPONENTES_NOMBRE);
-
-                $modelo->persona()->associate($persona);
-                $modelo->fill([
-                    'tipo_identificacion' => $proveedor->identificacion->tipo->value,
-                    'identificacion' => $proveedor->identificacion->numero,
-                    'nombre' => $proveedor->nombre,
+                $contacto = [
                     'email' => $proveedor->email,
                     'telefono' => $proveedor->telefono,
                     'direccion' => $proveedor->direccion,
+                ];
+                $contacto = array_intersect_key($proveedor->perfil, $contacto) + array_filter($contacto, fn ($valor): bool => $valor !== null);
+                $perfilPersona = array_intersect_key($proveedor->perfil, Persona::reglasPerfil()) + $contacto;
+                $persona->fill($perfilPersona + [
+                    'nombre' => $proveedor->perfil['nombres'] ?? $proveedor->nombre,
+                    'apellido' => $proveedor->perfil['apellidos'] ?? null,
+                ])->save();
+                $perfil = array_diff_key($perfil, $perfilPersona + ['nombres' => true, 'apellidos' => true]);
+
+                $modelo->persona()->associate($persona);
+                $contacto += array_filter($persona->only(['email', 'telefono', 'direccion']), fn ($valor): bool => $valor !== null);
+                $modelo->fill($contacto + [
+                    'tipo_identificacion' => $proveedor->identificacion->tipo->value,
+                    'identificacion' => $proveedor->identificacion->numero,
+                    'nombre' => $proveedor->nombre,
                     'activo' => $proveedor->activo,
                     'perfil' => $perfil,
                 ])->save();
@@ -127,17 +127,19 @@ final class EloquentProveedorRepository implements ProveedorRepository
 
     private function entidad(ProveedorModel $modelo): Proveedor
     {
+        $persona = $modelo->persona;
+
         return new Proveedor(
             (int) $modelo->getKey(),
             new IdentificacionFiscal(TipoIdentificacion::from($modelo->tipo_identificacion), $modelo->identificacion),
-            $modelo->nombre,
-            $modelo->email,
-            $modelo->telefono,
-            $modelo->direccion,
+            $persona->nombreCompleto() ?: $modelo->nombre,
+            $persona->email ?? $modelo->email,
+            $persona->telefono ?? $modelo->telefono,
+            $persona->direccion ?? $modelo->direccion,
             $modelo->activo,
             (int) $modelo->id_persona,
-            $modelo->persona->only(array_keys(Persona::COMPONENTES_NOMBRE))
-                + ['id_ciudad' => $modelo->persona->id_ciudad === null ? null : (int) $modelo->persona->id_ciudad]
+            array_filter($persona->perfil(), fn ($valor): bool => $valor !== null)
+                + ['nombres' => $persona->nombre, 'apellidos' => $persona->apellido]
                 + ($modelo->perfil ?? []),
             $modelo->only(['id_usuario_creacion', 'id_usuario_modificacion', 'created_at', 'updated_at']),
         );

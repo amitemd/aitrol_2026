@@ -5,6 +5,83 @@
     }
   ],
   "paths": {
+    "/api/v1/contabilidad/centros-costos": {
+      "get": {
+        "tags": ["Contabilidad"],
+        "operationId": "listarCentrosCosto",
+        "summary": "Listar centros de costos",
+        "description": "Requiere contabilidad:leer y permiso de lectura.",
+        "parameters": [{"name":"q","in":"query","description":"Buscar por código o nombre.","schema":{"type":"string"}},{"name":"page","in":"query","description":"Número de página.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Listado paginado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":40},"nombre":{"type":"string","maxLength":160},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}},"total":{"type":"integer"}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      },
+      "post": {
+        "tags": ["Contabilidad"],
+        "operationId": "crearCentrosCosto",
+        "summary": "Crear centro de costos",
+        "description": "Requiere contabilidad:escribir y el permiso correspondiente.",
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["codigo","nombre"],"properties":{"codigo":{"type":"string","maxLength":40},"nombre":{"type":"string","maxLength":160},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}},
+        "responses": {"201":{"description":"Registro creado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":40},"nombre":{"type":"string","maxLength":160},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/contabilidad/centros-costos/{registro}": {
+      "get": {
+        "tags": ["Contabilidad"],
+        "operationId": "consultarCentrosCosto",
+        "summary": "Consultar centro de costos",
+        "description": "Requiere contabilidad:leer y permiso de lectura.",
+        "parameters": [{"name":"registro","in":"path","required":true,"schema":{"type":"integer","minimum":1}}],
+        "responses": {"200":{"description":"Detalle del registro.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":40},"nombre":{"type":"string","maxLength":160},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      },
+      "put": {
+        "tags": ["Contabilidad"],
+        "operationId": "editarCentrosCosto",
+        "summary": "Actualizar centro de costos",
+        "description": "Requiere contabilidad:escribir y el permiso correspondiente.",
+        "parameters": [{"name":"registro","in":"path","required":true,"schema":{"type":"integer","minimum":1}}],
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"type":"object","required":["codigo","nombre","activo"],"properties":{"codigo":{"type":"string","maxLength":40},"nombre":{"type":"string","maxLength":160},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}},
+        "responses": {"200":{"description":"Registro actualizado.","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"type":"object","properties":{"id":{"type":"integer"},"codigo":{"type":"string","maxLength":40},"nombre":{"type":"string","maxLength":160},"descripcion":{"type":["string","null"],"maxLength":500},"activo":{"type":"boolean"}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/contabilidad/reportes/resultados-centros-costos": {
+      "get": {
+        "tags": ["Contabilidad"],
+        "operationId": "consultarResultadosPorCentroCostos",
+        "summary": "Consultar resultados por centro de costos",
+        "description": "Requiere contabilidad:leer y el permiso de lectura del reporte.",
+        "parameters": [{"name":"desde","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"hasta","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"id_centro_costo","in":"query","description":"Identificador del centro. Usa 0 para partidas sin centro.","schema":{"type":"integer"}},{"name":"periodo","in":"query","description":"Año del contexto operativo.","schema":{"type":"integer"}},{"name":"id_sucursal","in":"query","description":"Sucursal para el contexto operativo cuando corresponda.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Reporte en USD.","content":{"application/json":{"schema":{"type":"object","properties":{"moneda":{"type":"string"},"totales":{"type":"object"},"data":{"type":"array","items":{"type":"object","properties":{"centro_codigo":{"type":["string","null"]},"centro_costo":{"type":["string","null"]},"ingresos":{"type":["string","null"]},"gastos":{"type":["string","null"]},"resultado":{"type":["string","null"]}}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/contabilidad/reportes/resultados-centros-costos/exportar": {
+      "get": {
+        "tags": ["Contabilidad"],
+        "operationId": "exportarResultadosPorCentroCostos",
+        "summary": "Exportar resultados por centro de costos",
+        "description": "Requiere contabilidad:leer y el permiso de lectura del reporte.",
+        "parameters": [{"name":"desde","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"hasta","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"id_centro_costo","in":"query","description":"Identificador del centro. Usa 0 para partidas sin centro.","schema":{"type":"integer"}},{"name":"periodo","in":"query","description":"Año del contexto operativo.","schema":{"type":"integer"}},{"name":"id_sucursal","in":"query","description":"Sucursal para el contexto operativo cuando corresponda.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Archivo CSV.","content":{"text/csv":{"schema":{"type":"string"}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/contabilidad/reportes/movimientos-centros-costos": {
+      "get": {
+        "tags": ["Contabilidad"],
+        "operationId": "consultarMovimientosPorCentroCostos",
+        "summary": "Consultar movimientos por centro de costos",
+        "description": "Requiere contabilidad:leer y el permiso de lectura del reporte.",
+        "parameters": [{"name":"desde","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"hasta","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"id_centro_costo","in":"query","description":"Identificador del centro. Usa 0 para partidas sin centro.","schema":{"type":"integer"}},{"name":"periodo","in":"query","description":"Año del contexto operativo.","schema":{"type":"integer"}},{"name":"id_sucursal","in":"query","description":"Sucursal para el contexto operativo cuando corresponda.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Reporte en USD.","content":{"application/json":{"schema":{"type":"object","properties":{"moneda":{"type":"string"},"totales":{"type":"object"},"data":{"type":"array","items":{"type":"object","properties":{"fecha":{"type":["string","null"]},"numero":{"type":["string","null"]},"centro_codigo":{"type":["string","null"]},"centro_costo":{"type":["string","null"]},"codigo":{"type":["string","null"]},"cuenta":{"type":["string","null"]},"concepto":{"type":["string","null"]},"detalle":{"type":["string","null"]},"debe":{"type":["string","null"]},"haber":{"type":["string","null"]}}}}}}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
+    "/api/v1/contabilidad/reportes/movimientos-centros-costos/exportar": {
+      "get": {
+        "tags": ["Contabilidad"],
+        "operationId": "exportarMovimientosPorCentroCostos",
+        "summary": "Exportar movimientos por centro de costos",
+        "description": "Requiere contabilidad:leer y el permiso de lectura del reporte.",
+        "parameters": [{"name":"desde","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"hasta","in":"query","description":"Fecha del reporte.","schema":{"type":"string","format":"date"}},{"name":"id_centro_costo","in":"query","description":"Identificador del centro. Usa 0 para partidas sin centro.","schema":{"type":"integer"}},{"name":"periodo","in":"query","description":"Año del contexto operativo.","schema":{"type":"integer"}},{"name":"id_sucursal","in":"query","description":"Sucursal para el contexto operativo cuando corresponda.","schema":{"type":"integer"}}],
+        "responses": {"200":{"description":"Archivo CSV.","content":{"text/csv":{"schema":{"type":"string"}}}},"401":{"description":"Token ausente o inválido."},"403":{"description":"Alcance o permiso insuficiente."},"404":{"description":"Registro inexistente en la empresa activa."},"409":{"description":"La operación entra en conflicto con el estado existente."},"422":{"description":"Datos inválidos."}}
+      }
+    },
     "/api/v1/contabilidad/asientos": {
       "get": {
         "tags": [

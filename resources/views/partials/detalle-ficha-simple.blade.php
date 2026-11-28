@@ -23,7 +23,12 @@
                     @endif
                 </div>
             </div>
-            <div class="card-footer text-end"><a href="{{ $volver }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a></div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+                @isset($accionUrl)
+                    <a href="{{ $accionUrl }}" class="btn btn-outline-primary" data-workspace-link="{{ $accionWorkspace }}" data-workspace-label="{{ $accionTexto }}">{{ $accionTexto }}</a>
+                @endisset
+                <a href="{{ $volver }}" class="btn btn-outline-secondary" data-ajax-close>{{ __('Cerrar') }}</a>
+            </div>
         </section>
     </div></div>
 @endsection

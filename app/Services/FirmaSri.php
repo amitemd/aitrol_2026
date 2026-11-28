@@ -12,11 +12,12 @@ use Illuminate\Validation\ValidationException;
 final readonly class FirmaSri
 {
     private const DS = 'http://www.w3.org/2000/09/xmldsig#';
+
     private const XADES = 'http://uri.etsi.org/01903/v1.3.2#';
 
     public function __construct(private EmpresaActiva $empresa) {}
 
-    public function firmar(string $xml): string
+    public function firmar(string $xml, string $tipoComprobante = 'comprobanteRetencion'): string
     {
         $cifrado = DB::table('erp_identidad_empresas')->where('id_empresa', $this->empresa->id())->value('certificado_cifrado');
         if (! $cifrado) {
@@ -39,10 +40,14 @@ final readonly class FirmaSri
         }
         $der = preg_replace('/-----[^-]+-----|\s+/', '', $llaves['cert']);
         $doc = new DOMDocument('1.0', 'UTF-8');
-        if (AutorizacionSri::leerXml($xml)?->getName() !== 'comprobanteRetencion' || ! $doc->loadXML($xml, LIBXML_NONET)) {
-            $this->rechazar('El XML de la retención no es válido.');
+        if (! in_array($tipoComprobante, ['comprobanteRetencion', 'factura'], true)
+            || AutorizacionSri::leerXml($xml)?->getName() !== $tipoComprobante || ! $doc->loadXML($xml, LIBXML_NONET)) {
+            $this->rechazar('El XML del comprobante no es válido.');
         }
         $raiz = $doc->documentElement;
+        if ($raiz->getAttribute('id') !== 'comprobante' || $raiz->getElementsByTagNameNS(self::DS, 'Signature')->length !== 0) {
+            $this->rechazar('El XML debe tener un identificador de comprobante y no estar firmado.');
+        }
         $digestDocumento = $this->digest($raiz->C14N());
         $firma = $this->nodo($raiz, self::DS, 'ds:Signature');
         $firma->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:etsi', self::XADES);

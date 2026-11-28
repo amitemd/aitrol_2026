@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
+use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -13,6 +14,55 @@ use Tests\TestCase;
 final class IdentidadEmpresaTest extends TestCase
 {
     use LazilyRefreshDatabase;
+
+    public function test_consulta_personas_por_identificacion_y_carga_el_perfil_al_seleccionar(): void
+    {
+        $empresa = EmpresaModel::create(['ruc' => '1200000000005', 'razon_social' => 'Empresa de prueba']);
+        $usuario = User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]);
+        $persona = Persona::create([
+            'id_tipo_identificacion' => 1, 'identificacion' => '0921456789', 'nombre' => 'Ana', 'apellido' => 'Rivas',
+            'email' => 'ana@example.com', 'direccion' => 'Av. Central', 'fecha_nacimiento' => '1988-05-10',
+        ]);
+        $ruta = route('personas.formularios.buscar', 'clientes');
+        $this->postJson($ruta, ['q' => '0921'])->assertUnauthorized();
+        $this->actingAs($usuario);
+
+        $this->get(route('clientes.create'), ['X-Aitrol-Fragmento' => 'contenido'])->assertOk()->assertSee($ruta);
+        $this->get(route('proveedores.create'))->assertOk()->assertSee(route('personas.formularios.buscar', 'proveedores'));
+        $this->get(route('configuracion.usuarios.create'))->assertOk()->assertSee(route('personas.formularios.buscar', 'usuarios'));
+        $this->postJson($ruta, ['q' => '0921'])->assertOk()->assertExactJson(['data' => [[
+            'identificacion' => $persona->identificacion, 'tipo_identificacion' => 'cedula', 'nombre' => 'Ana Rivas',
+        ]]]);
+        $this->postJson($ruta, ['q' => '9990'])->assertOk()->assertExactJson(['data' => []]);
+        $seleccion = ['q' => $persona->identificacion, 'tipo' => 'cedula', 'exacta' => true];
+        $this->postJson($ruta, $seleccion)->assertOk()->assertJsonPath('data.direccion', 'Av. Central')
+            ->assertJsonPath('data.email', 'ana@example.com')->assertJsonPath('data.fecha_nacimiento', '1988-05-10');
+        $this->postJson($ruta, array_replace($seleccion, ['tipo' => 'ruc']))->assertNotFound();
+        $this->postJson(route('personas.formularios.buscar', 'nomina-tributaria'), $seleccion)
+            ->assertOk()->assertJsonMissingPath('data.email');
+    }
+
+    public function test_actualiza_la_persona_desde_proveedores_y_vincula_al_cliente_por_el_documento_enviado(): void
+    {
+        $empresa = EmpresaModel::create(['ruc' => '1200000000006', 'razon_social' => 'Empresa de prueba']);
+        $this->actingAs(User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]));
+        $primera = ['tipo_identificacion' => 'cedula', 'identificacion' => '0921456789', 'nombres' => 'Ana'];
+        $segunda = ['tipo_identificacion' => 'cedula', 'identificacion' => '0921456790', 'nombres' => 'María'];
+        $this->postJson(route('clientes.store'), $primera)->assertCreated();
+        $cliente = DB::table('erp_clientes')->sole();
+        $this->postJson(route('proveedores.store'), $segunda)->assertCreated();
+        $proveedor = DB::table('erp_proveedores')->sole();
+
+        $this->putJson(route('proveedores.update', $proveedor->id), $segunda + [
+            'activo' => true, 'email' => 'maria@example.com', 'telefono' => '042000001', 'fecha_nacimiento' => '1990-02-03',
+        ])->assertSuccessful();
+        $this->assertDatabaseHas('personas', ['id' => $proveedor->id_persona, 'email' => 'maria@example.com', 'telefono' => '042000001']);
+        $this->putJson(route('clientes.update', $cliente->id), $segunda + ['activo' => true])->assertSuccessful();
+        $this->assertDatabaseHas('erp_clientes', ['id' => $cliente->id, 'id_persona' => $proveedor->id_persona]);
+        $this->assertDatabaseHas('personas', ['id' => $cliente->id_persona, 'identificacion' => '0921456789', 'nombre' => 'Ana']);
+        $this->assertDatabaseHas('personas', ['id' => $proveedor->id_persona, 'email' => 'maria@example.com', 'telefono' => '042000001']);
+        $this->get(route('clientes.edit', $cliente->id))->assertOk()->assertSee('1990-02-03');
+    }
 
     public function test_clientes_proveedores_y_usuarios_comparten_los_componentes_del_nombre(): void
     {

@@ -11,6 +11,621 @@
         }
     ],
     "paths": {
+        "/api/v1/proveedores/reportes/cuentas-por-pagar": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "operationId": "listarFacturasPorPagar",
+                "summary": "Listar facturas de compras contabilizadas con saldo",
+                "description": "Requiere proveedores:leer y permiso de lectura del reporte. Importes en centavos de USD.",
+                "parameters": [
+                    {
+                        "name": "id_sucursal",
+                        "in": "query",
+                        "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "corte",
+                        "in": "query",
+                        "description": "Fecha de corte. Por defecto, hoy en Ecuador.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Factura, identificación o nombre del proveedor.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cartera al corte.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "corte": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "totales": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pendiente": {
+                                                    "type": "integer"
+                                                },
+                                                "vencido": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "resultados": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente o inválido."
+                    },
+                    "403": {
+                        "description": "Alcance, permiso o empresa no autorizados."
+                    },
+                    "404": {
+                        "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado o la clave de operación."
+                    },
+                    "422": {
+                        "description": "Datos inválidos o regla operativa incumplida."
+                    }
+                }
+            }
+        },
+        "/api/v1/proveedores/reportes/saldos-por-proveedor": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "operationId": "listarSaldosProveedor",
+                "summary": "Listar saldos pendientes por proveedor",
+                "description": "Requiere proveedores:leer y permiso de lectura del reporte. Importes en centavos de USD.",
+                "parameters": [
+                    {
+                        "name": "id_sucursal",
+                        "in": "query",
+                        "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "corte",
+                        "in": "query",
+                        "description": "Fecha de corte. Por defecto, hoy en Ecuador.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Factura, identificación o nombre del proveedor.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cartera al corte.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "corte": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "totales": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pendiente": {
+                                                    "type": "integer"
+                                                },
+                                                "vencido": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "resultados": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente o inválido."
+                    },
+                    "403": {
+                        "description": "Alcance, permiso o empresa no autorizados."
+                    },
+                    "404": {
+                        "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado o la clave de operación."
+                    },
+                    "422": {
+                        "description": "Datos inválidos o regla operativa incumplida."
+                    }
+                }
+            }
+        },
+        "/api/v1/proveedores/reportes/pagos-vencidos": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "operationId": "listarPagosProveedorVencidos",
+                "summary": "Listar facturas de compra vencidas",
+                "description": "Requiere proveedores:leer y permiso de lectura del reporte. Importes en centavos de USD.",
+                "parameters": [
+                    {
+                        "name": "id_sucursal",
+                        "in": "query",
+                        "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "corte",
+                        "in": "query",
+                        "description": "Fecha de corte. Por defecto, hoy en Ecuador.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Factura, identificación o nombre del proveedor.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cartera al corte.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "corte": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "totales": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pendiente": {
+                                                    "type": "integer"
+                                                },
+                                                "vencido": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "resultados": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente o inválido."
+                    },
+                    "403": {
+                        "description": "Alcance, permiso o empresa no autorizados."
+                    },
+                    "404": {
+                        "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado o la clave de operación."
+                    },
+                    "422": {
+                        "description": "Datos inválidos o regla operativa incumplida."
+                    }
+                }
+            }
+        },
+        "/api/v1/proveedores/reportes/antiguedad-de-saldos": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "operationId": "listarAntiguedadProveedor",
+                "summary": "Agrupar saldos de proveedores por antigüedad",
+                "description": "Requiere proveedores:leer y permiso de lectura del reporte. Importes en centavos de USD.",
+                "parameters": [
+                    {
+                        "name": "id_sucursal",
+                        "in": "query",
+                        "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "corte",
+                        "in": "query",
+                        "description": "Fecha de corte. Por defecto, hoy en Ecuador.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Factura, identificación o nombre del proveedor.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cartera al corte.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "corte": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "totales": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pendiente": {
+                                                    "type": "integer"
+                                                },
+                                                "vencido": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "resultados": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente o inválido."
+                    },
+                    "403": {
+                        "description": "Alcance, permiso o empresa no autorizados."
+                    },
+                    "404": {
+                        "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado o la clave de operación."
+                    },
+                    "422": {
+                        "description": "Datos inválidos o regla operativa incumplida."
+                    }
+                }
+            }
+        },
+        "/api/v1/proveedores/documentos/comprobantes-de-pago": {
+            "get": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "operationId": "listarComprobantesPagoProveedor",
+                "summary": "Listar comprobantes de pago y sus reversiones al corte",
+                "parameters": [
+                    {
+                        "name": "id_sucursal",
+                        "in": "query",
+                        "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "corte",
+                        "in": "query",
+                        "description": "Fecha de corte. Por defecto, hoy en Ecuador.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comprobantes paginados en centavos de USD.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "corte": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "totales": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pendiente": {
+                                                    "type": "integer"
+                                                },
+                                                "vencido": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "resultados": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente o inválido."
+                    },
+                    "403": {
+                        "description": "Alcance, permiso o empresa no autorizados."
+                    },
+                    "404": {
+                        "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado o la clave de operación."
+                    },
+                    "422": {
+                        "description": "Datos inválidos o regla operativa incumplida."
+                    }
+                }
+            }
+        },
+        "/api/v1/proveedores/pagos/{factura}": {
+            "post": {
+                "tags": [
+                    "Proveedores"
+                ],
+                "operationId": "registrarPagoProveedor",
+                "summary": "Registrar un egreso total o parcial vinculado a una factura de compra",
+                "description": "Requiere proveedores:pagar, lectura de la cartera y escritura de movimientos de Caja y bancos.",
+                "parameters": [
+                    {
+                        "name": "factura",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de la factura.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_sucursal",
+                        "in": "query",
+                        "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "id_cuenta",
+                                    "fecha",
+                                    "importe",
+                                    "referencia",
+                                    "clave_operacion"
+                                ],
+                                "properties": {
+                                    "id_cuenta": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "fecha": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "importe": {
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ],
+                                        "description": "Importe en USD, hasta dos decimales.",
+                                        "examples": [
+                                            "25.00"
+                                        ]
+                                    },
+                                    "referencia": {
+                                        "type": "string",
+                                        "maxLength": 120
+                                    },
+                                    "clave_operacion": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "description": "Conserva este valor para reintentar el mismo pago."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "La operación ya estaba registrada."
+                    },
+                    "201": {
+                        "description": "Pago registrado y contabilizado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "id_factura_compra": {
+                                                    "type": "integer"
+                                                },
+                                                "importe_centavos": {
+                                                    "type": "integer"
+                                                },
+                                                "fecha": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "referencia": {
+                                                    "type": "string"
+                                                },
+                                                "id_reversion": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente o inválido."
+                    },
+                    "403": {
+                        "description": "Alcance, permiso o empresa no autorizados."
+                    },
+                    "404": {
+                        "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+                    },
+                    "409": {
+                        "description": "Conflicto con el estado o la clave de operación."
+                    },
+                    "422": {
+                        "description": "Datos inválidos o regla operativa incumplida."
+                    }
+                }
+            }
+        },
         "/api/v1/proveedores": {
             "get": {
                 "operationId": "listarProveedores",

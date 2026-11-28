@@ -864,6 +864,9 @@ final class FacturacionVentaTest extends TestCase
         DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['tesoreria' => json_encode([$banco => $cuentaContable])]);
         $detalle = route('ventas.documentos.trazabilidad', $factura);
         $this->get($detalle)->assertOk()->assertSee('USD 20.70')->assertDontSee('Cobros registrados');
+        $this->get(route('clientes.reportes.cuentas-por-cobrar'))->assertOk()
+            ->assertSee(route('ventas.documentos.cobro.create', $factura));
+        $this->get(route('ventas.documentos.cobro.create', $factura))->assertOk()->assertSee('moneda=USD');
         $cobro = [
             'id_cuenta' => $banco, 'fecha' => $datos['fecha'], 'importe' => '10.00', 'referencia' => 'TX-123',
             'clave_operacion' => '69f226f5-b575-4106-b4cb-dabfd7608a2f',
@@ -872,6 +875,15 @@ final class FacturacionVentaTest extends TestCase
         $this->postJson($ruta, $cobro)->assertOk();
         $this->postJson($ruta, $cobro)->assertOk();
         $this->assertDatabaseCount('cb_operaciones', 1);
+        $recibo = DB::table('cb_operaciones')->value('id');
+        $urlComprobantes = route('clientes.documentos.comprobantes-de-pago');
+        $pagina = $this->get($urlComprobantes)->assertOk()->assertSee('TX-123')->assertSee('Banco de prueba')
+            ->assertSee('USD 10.00')->assertSee(route('caja-bancos.movimientos.show', $recibo));
+        $fragmento = $this->get($urlComprobantes, ['X-Aitrol-Fragmento' => 'contenido'])
+            ->assertOk()->assertSee('TX-123')->assertDontSee('<!doctype html>', false);
+        $this->assertLessThan(strlen($pagina->getContent()), strlen($fragmento->getContent()));
+        $this->get(route('clientes.documentos.comprobantes-de-pago', ['q' => 'INEXISTENTE']))
+            ->assertOk()->assertDontSee('TX-123')->assertSee('No hay cobros de facturas');
         $this->postJson($ruta, array_replace($cobro, ['clave_operacion' => 'd34baa06-d857-4be4-825a-5ef6be6c94de', 'importe' => '11.00']))
             ->assertUnprocessable()->assertJsonValidationErrors('importe');
         $this->get($detalle)->assertOk()->assertSee('USD 10.70')->assertSee('Pendiente de conciliación');

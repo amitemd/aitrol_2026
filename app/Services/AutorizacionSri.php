@@ -16,6 +16,12 @@ final readonly class AutorizacionSri
 {
     private const SERVICIOS = ['1' => 'celcer.sri.gob.ec', '2' => 'cel.sri.gob.ec'];
 
+    public const RECEPCIONES = [
+        'RECEPCION_CONFIRMADA' => 'Recepción confirmada',
+        'RECEPCION_RECHAZADA' => 'Rechazada en recepción',
+        'RECEPCION_INCIERTA' => 'Recepción por confirmar',
+    ];
+
     public const ESTADOS = [
         'PENDIENTE' => 'Pendiente de consulta',
         'SIN_RESPUESTA' => 'Sin registro en el SRI',
@@ -23,6 +29,7 @@ final readonly class AutorizacionSri
         'ERROR' => 'Consulta fallida',
         'NO_AUTORIZADO' => 'No autorizado',
         'AUTORIZADO' => 'Autorizado',
+        ...self::RECEPCIONES,
     ];
 
     public function __construct(private EmpresaActiva $empresa) {}
@@ -109,6 +116,26 @@ final readonly class AutorizacionSri
 
     public function recibir(string $xml, string $ambiente): void
     {
+        $resultado = $this->transmitir($xml, $ambiente);
+        if ($resultado['estado'] !== 'RECEPCION_CONFIRMADA') {
+            throw ValidationException::withMessages(['sri' => $resultado['mensajes']]);
+        }
+    }
+
+    /** @return array{estado: string, mensajes: list<string>} */
+    public function transmitirPrueba(string $xml): array
+    {
+        $resultado = $this->transmitir($xml, '1');
+        if (array_intersect(['43', '70'], $resultado['codigos'] ?? []) !== []) {
+            $resultado['estado'] = 'RECEPCION_CONFIRMADA';
+        }
+
+        return ['estado' => $resultado['estado'], 'mensajes' => $resultado['mensajes']];
+    }
+
+    /** @return array{estado: string, mensajes: list<string>, codigos?: list<string>} */
+    private function transmitir(string $xml, string $ambiente): array
+    {
         $servidor = self::SERVICIOS[$ambiente] ?? throw ValidationException::withMessages(['sri' => 'El ambiente SRI del comprobante es inválido.']);
         $contenido = base64_encode($xml);
         $soap = <<<XML
@@ -121,18 +148,25 @@ final readonly class AutorizacionSri
                 ->withHeader('SOAPAction', '""')->withBody($soap, 'text/xml; charset=UTF-8')
                 ->post('https://'.$servidor.'/comprobantes-electronicos-ws/RecepcionComprobantesOffline');
         } catch (ConnectionException) {
-            throw ValidationException::withMessages(['sri' => 'El SRI no confirmó la recepción. Puedes volver a consultar con la misma clave.']);
+            return ['estado' => 'RECEPCION_INCIERTA', 'mensajes' => ['El SRI no confirmó la recepción. Puedes volver a consultar con la misma clave.']];
         }
         $recepcion = $respuesta->successful() ? (self::leerXml($respuesta->body())?->xpath('//*[local-name()="RespuestaRecepcionComprobante"]')[0] ?? null) : null;
         if ((string) $recepcion?->estado === 'RECIBIDA') {
-            return;
+            return ['estado' => 'RECEPCION_CONFIRMADA', 'mensajes' => []];
         }
         $mensajes = [];
+        $codigos = [];
         foreach ($recepcion?->xpath('.//mensajes/mensaje') ?? [] as $mensaje) {
-            $mensajes[] = Str::limit(trim((string) $mensaje->identificador.' '.$mensaje->mensaje.' '.$mensaje->informacionAdicional), 400);
+            $codigo = trim((string) $mensaje->identificador);
+            $codigos[] = $codigo;
+            $mensajes[] = Str::limit(trim($codigo.' '.$mensaje->mensaje.' '.$mensaje->informacionAdicional), 400);
         }
 
-        throw ValidationException::withMessages(['sri' => $mensajes ?: ['El SRI no confirmó la recepción del XML firmado.']]);
+        return [
+            'estado' => (string) $recepcion?->estado === 'DEVUELTA' ? 'RECEPCION_RECHAZADA' : 'RECEPCION_INCIERTA',
+            'mensajes' => $mensajes ?: ['El SRI no confirmó la recepción del XML firmado.'],
+            'codigos' => $codigos,
+        ];
     }
 
     /** @return array{estado: string, mensajes: list<string>, xml?: string} */

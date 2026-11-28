@@ -13,6 +13,11 @@ final class CantidadInventario
         return (int) ($entero.str_pad($fraccion, $decimales, '0'));
     }
 
+    public static function proporcionar(int $importe, int $cantidad, int $total): int
+    {
+        return intdiv($importe, $total) * $cantidad + intdiv(($importe % $total) * $cantidad + intdiv($total, 2), $total);
+    }
+
     public static function decimal(int $unidades, int $decimales): string
     {
         $valor = str_pad((string) abs($unidades), $decimales + 1, '0', STR_PAD_LEFT);

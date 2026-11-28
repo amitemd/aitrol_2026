@@ -1,6 +1,11 @@
 <?php
 
+use Aitrol\Comercial\Infrastructure\Http\AprobacionOrdenCompraController;
 use Aitrol\Comercial\Infrastructure\Http\ComercialController;
+use Aitrol\Comercial\Infrastructure\Http\DevolucionCompraController;
+use Aitrol\Comercial\Infrastructure\Http\FirmaLocalFacturaController;
+use Aitrol\Comercial\Infrastructure\Http\RecepcionCompraController;
+use Aitrol\Comercial\Infrastructure\Http\SolicitudCompraController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 
@@ -15,6 +20,69 @@ foreach (config('comercial') as $modulo => $datos) {
                     ['permiso:'.$modulo.'.'.$seccion.'.index,'.$accion],
                     $api ? [CheckAbilities::class.':'.$modulo.':'.($accion === 'leer' ? 'leer' : 'escribir')] : [],
                 );
+
+                if ($modulo === 'compras') {
+                    $lecturaOrden = $permisos('ordenes-compra', 'leer');
+                    $decidirCompra = [
+                        ...$lecturaOrden, 'permiso:compras.aprobaciones.index,actualizar',
+                        ...($api ? [CheckAbilities::class.':compras:aprobar'] : []),
+                    ];
+                    Route::get('presupuestos', [SolicitudCompraController::class, 'presupuestos'])
+                        ->middleware($lecturaOrden)->name('presupuestos.index');
+                    Route::put('presupuestos', [SolicitudCompraController::class, 'guardarPresupuesto'])
+                        ->middleware(['can:administrar-configuracion',
+                            ...($api ? [CheckAbilities::class.':compras:leer,compras:presupuestar'] : []),
+                        ])->name('presupuestos.update');
+                    if (! $api) {
+                        Route::get('presupuestos/{presupuesto}/solicitar', [SolicitudCompraController::class, 'create'])
+                            ->where('presupuesto', '[1-9][0-9]{0,17}')->middleware($permisos('ordenes-compra', 'escribir'))->name('solicitudes.create');
+                    }
+                    Route::get('solicitudes', [SolicitudCompraController::class, 'index'])->middleware($lecturaOrden)->name('solicitudes.index');
+                    Route::post('solicitudes', [SolicitudCompraController::class, 'store'])
+                        ->middleware([...$lecturaOrden, ...$permisos('ordenes-compra', 'escribir')])->name('solicitudes.store');
+                    Route::prefix('solicitudes/{solicitud}')->name('solicitudes.')->where(['solicitud' => '[1-9][0-9]{0,17}'])
+                        ->middleware($lecturaOrden)->group(function () use ($permisos, $decidirCompra): void {
+                            Route::get('/', [SolicitudCompraController::class, 'show'])->name('show');
+                            Route::post('decidir', [SolicitudCompraController::class, 'decidir'])->middleware($decidirCompra)->name('decidir');
+                            Route::post('generar-orden', [SolicitudCompraController::class, 'convertir'])
+                                ->middleware($permisos('ordenes-compra', 'escribir'))->name('convertir');
+                            Route::post('cancelar', [SolicitudCompraController::class, 'cancelar'])
+                                ->middleware($permisos('ordenes-compra', 'actualizar'))->name('cancelar');
+                        });
+                    Route::get('ordenes-compra/aprobaciones', [AprobacionOrdenCompraController::class, 'index'])
+                        ->middleware($lecturaOrden)->name('aprobaciones.index');
+                    Route::get('ordenes-compra/{orden}/aprobacion', [AprobacionOrdenCompraController::class, 'show'])
+                        ->where('orden', '[1-9][0-9]{0,17}')->middleware($lecturaOrden)->name('aprobaciones.show');
+                    Route::post('ordenes-compra/{orden}/aprobacion', [AprobacionOrdenCompraController::class, 'decidir'])
+                        ->where('orden', '[1-9][0-9]{0,17}')->middleware($decidirCompra)->name('aprobaciones.decidir');
+                    $gestionarPolitica = [
+                        'can:administrar-configuracion',
+                        ...($api ? [CheckAbilities::class.':compras:leer,compras:configurar-aprobaciones'] : []),
+                    ];
+                    Route::get('ordenes-compra/politica-aprobacion', [AprobacionOrdenCompraController::class, 'politica'])
+                        ->middleware($gestionarPolitica)->name('aprobaciones.politica');
+                    Route::put('ordenes-compra/politica-aprobacion', [AprobacionOrdenCompraController::class, 'guardarPolitica'])
+                        ->middleware($gestionarPolitica)->name('aprobaciones.politica.update');
+                    Route::get('reportes/pendientes', [DevolucionCompraController::class, 'pendientes'])
+                        ->middleware($permisos('reportes', 'leer'))->name('reportes.pendientes');
+                    Route::prefix('documentos/{registro}/devoluciones')->name('documentos.devoluciones.')
+                        ->where(['registro' => '[1-9][0-9]{0,17}'])->middleware($permisos('documentos', 'leer'))
+                        ->group(function () use ($permisos): void {
+                            Route::get('/', [DevolucionCompraController::class, 'index'])->name('index');
+                            Route::post('/', [DevolucionCompraController::class, 'store'])
+                                ->middleware([...$permisos('notas-credito', 'escribir'), 'permiso:inventarios.movimientos.index,escribir'])->name('store');
+                        });
+                    Route::prefix('ordenes-compra/{orden}/recepciones')->name('ordenes-compra.recepciones.')
+                        ->where(['orden' => '[1-9][0-9]{0,17}', 'recepcion' => '[1-9][0-9]{0,17}'])
+                        ->middleware($permisos('ordenes-compra', 'leer'))->group(function () use ($permisos): void {
+                            $movimientos = [...$permisos('ordenes-compra', 'actualizar'), 'permiso:inventarios.movimientos.index,escribir'];
+                            Route::get('/', [RecepcionCompraController::class, 'index'])->name('index');
+                            Route::post('/', [RecepcionCompraController::class, 'store'])->middleware($movimientos)->name('store');
+                            Route::post('/facturar', [RecepcionCompraController::class, 'facturar'])
+                                ->middleware($permisos('documentos', 'escribir'))->name('facturar');
+                            Route::post('/{recepcion}/anular', [RecepcionCompraController::class, 'anular'])->middleware($movimientos)->name('anular');
+                        });
+                }
 
                 if (! $api) {
                     Route::get('retenciones/catalogo', [ComercialController::class, 'catalogoRetenciones'])
@@ -43,13 +111,28 @@ foreach (config('comercial') as $modulo => $datos) {
                         ->defaults('modulo', $modulo)->whereNumber('registro')
                         ->middleware($permisos('documentos', 'leer'))->name('documentos.trazabilidad');
                 }
+                if ($modulo === 'ventas') {
+                    Route::post('documentos/{registro}/firma-local', [FirmaLocalFacturaController::class, 'store'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), ...$permisos('documentos', 'actualizar')])
+                        ->name('documentos.firma-local.store');
+                    Route::get('documentos/{registro}/firma-local/xml', [FirmaLocalFacturaController::class, 'download'])
+                        ->whereNumber('registro')->middleware($permisos('documentos', 'leer'))->name('documentos.firma-local.xml');
+                    Route::post('documentos/{registro}/firma-local/enviar', [FirmaLocalFacturaController::class, 'enviar'])
+                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), ...$permisos('documentos', 'actualizar'), 'throttle:6,1,sri-envio'])
+                        ->name('documentos.firma-local.enviar');
+                    Route::post('documentos/{registro}/cobro', [ComercialController::class, 'registrarCobro'])
+                        ->whereNumber('registro')->middleware(['permiso:ventas.documentos.index,leer',
+                            ...($api ? [CheckAbilities::class.':ventas:cobrar', 'permiso:ventas.documentos.index,actualizar'] : []),
+                            'permiso:caja-bancos.movimientos.index,escribir'])->name('documentos.cobro.store');
+                    if ($api) {
+                        Route::get('documentos/{registro}/firma-local', [FirmaLocalFacturaController::class, 'show'])
+                            ->whereNumber('registro')->middleware($permisos('documentos', 'leer'))->name('documentos.firma-local.show');
+                    }
+                }
                 if ($modulo === 'ventas' && ! $api) {
                     Route::get('documentos/{registro}/cobro', [ComercialController::class, 'formularioCobro'])
                         ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), 'permiso:caja-bancos.movimientos.index,escribir'])
                         ->name('documentos.cobro.create');
-                    Route::post('documentos/{registro}/cobro', [ComercialController::class, 'registrarCobro'])
-                        ->whereNumber('registro')->middleware([...$permisos('documentos', 'leer'), 'permiso:caja-bancos.movimientos.index,escribir'])
-                        ->name('documentos.cobro.store');
                     Route::get('retenciones/recibida', [ComercialController::class, 'formularioRetencionRecibida'])
                         ->middleware($permisos('retenciones', 'escribir'))->name('retenciones.recibida');
                     Route::post('retenciones/importar', [ComercialController::class, 'importarRetencion'])
@@ -88,6 +171,7 @@ foreach (config('comercial') as $modulo => $datos) {
                         Route::get('reportes/exportar', [ComercialController::class, 'exportar'])
                             ->defaults('modulo', $modulo)->defaults('seccion', $seccion)
                             ->middleware($permisos($seccion, 'leer'))->name('reportes.exportar');
+
                         continue;
                     }
                     if ($alta !== null) {

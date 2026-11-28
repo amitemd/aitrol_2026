@@ -69,7 +69,7 @@ final readonly class FacturaVenta
             $tarifas = $this->tarifas($datos['fecha']);
             $productos = DB::table('inv_productos')->where('id_empresa', $this->empresa->id())->where('activo', true)
                 ->whereIn('id', array_filter(array_column($datos['lineas'], 'id_producto')))
-                ->get(['id', 'tipo_producto', 'iva_codigo'])->keyBy('id');
+                ->get(['id', 'codigo', 'tipo_producto', 'iva_codigo'])->keyBy('id');
             $bodegas = DB::table('inv_bodegas')->where('id_empresa', $this->empresa->id())
                 ->where('id_sucursal', $this->contexto->sucursal()->id)->where('activo', true)
                 ->whereIn('id', array_filter(array_column($datos['lineas'], 'id_bodega')))->pluck('id')->flip();
@@ -121,6 +121,7 @@ final readonly class FacturaVenta
                 'informacion_adicional' => $datos['informacion_adicional'] ?? [],
                 'lineas' => array_map(fn (array $linea): array => [
                     'iva_codigo' => $linea['iva_codigo'], 'descuento' => $linea['descuento'] ?? 0,
+                    'codigo_producto' => $productos->get($linea['id_producto'] ?? 0)?->codigo,
                 ], $lineas),
             ];
             $identidad = $this->identidadElectronica($datos['fecha'], $emisor->ruc);
@@ -223,6 +224,7 @@ final readonly class FacturaVenta
             $codigo = (int) $tarifa->codigo;
             if (! $tarifa->activo) {
                 unset($tarifas[$codigo]);
+
                 continue;
             }
             if ((float) $tarifa->valor === (float) self::IVA[$codigo]) {

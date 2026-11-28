@@ -69,8 +69,7 @@ final class EloquentClienteRepository implements ClienteRepository
                     'identificacion' => $cliente->identificacion->numero,
                 ];
                 $documento = ['id_tipo_identificacion' => $cliente->identificacion->tipo->idCatalogo(), 'identificacion' => $cliente->identificacion->numero];
-                $persona = $model->persona()->lockForUpdate()->first()
-                    ?? Persona::buscarOCrearConBloqueo($documento, ['nombre' => $cliente->nombre]);
+                $persona = Persona::buscarOCrearConBloqueo($documento, ['nombre' => $cliente->nombre]);
 
                 $perfil = $cliente->perfil;
                 if (isset($perfil['nombres'])) {
@@ -84,13 +83,14 @@ final class EloquentClienteRepository implements ClienteRepository
                 }
 
                 $contacto = ['email' => $cliente->email, 'telefono' => $cliente->telefono, 'direccion' => $cliente->direccion];
+                $contacto = array_intersect_key($perfil, $contacto) + array_filter($contacto, fn ($valor): bool => $valor !== null);
                 $camposPersona = array_flip(array_keys(Persona::reglasPerfil()));
                 $persona->fill($documento + $contacto + array_intersect_key($perfil, $camposPersona))->save();
                 $model->persona()->associate($persona);
-                $model->fill($identificacion + $contacto + [
+                $model->fill($identificacion + $persona->only(['email', 'telefono', 'direccion']) + [
                     'nombre' => $persona->nombreCompleto(),
                     'activo' => $cliente->activo,
-                    'perfil' => array_replace($model->perfil ?? [], array_diff_key($perfil, $camposPersona + array_flip(['nombres', 'apellidos']))),
+                    'perfil' => array_replace($model->perfil ?? [], array_diff_key($perfil, $camposPersona + $contacto + array_flip(['nombres', 'apellidos']))),
                 ])->save();
 
                 return $this->entidad($model);

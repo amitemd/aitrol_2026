@@ -5,6 +5,1719 @@
     }
   ],
   "paths": {
+    "/api/v1/compras/presupuestos": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "listarPresupuestosCompra",
+        "summary": "Consultar presupuestos y saldos",
+        "description": "Compras: lectura de órdenes y compras:leer.",
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          },
+          {"name": "anio", "in": "query", "schema": {"type": "integer", "minimum": 1900}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {"type": "array", "items": {"$ref": "#/components/schemas/ComPresupuestoCompra"}},
+                        "total": {"type": "integer", "minimum": 1},
+                        "current_page": {"type": "integer", "minimum": 1},
+                        "last_page": {"type": "integer", "minimum": 1}
+                      }
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      },
+      "put": {
+        "tags": ["Compras"],
+        "operationId": "guardarPresupuestoCompra",
+        "summary": "Asignar presupuesto anual con IVA",
+        "description": "Requiere administración de configuración, compras:leer y compras:presupuestar. El monto debe cubrir las reservas y compromisos.",
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_centro_costo": {"type": "integer", "minimum": 1},
+                  "anio": {"type": "integer", "minimum": 1900},
+                  "monto": {
+                    "oneOf": [
+                      {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                      {"type": "number", "minimum": 0, "maximum": 10000000000000}
+                    ]
+                  }
+                },
+                "required": ["id_centro_costo", "anio", "monto"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"data": {"$ref": "#/components/schemas/ComPresupuestoCompra"}},
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/solicitudes": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "listarSolicitudesCompra",
+        "summary": "Consultar solicitudes",
+        "description": "Compras: lectura de órdenes y compras:leer.",
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["pendiente", "reservada", "convertida", "rechazada", "cancelada"]}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {"type": "array", "items": {"$ref": "#/components/schemas/ComSolicitudCompra"}},
+                        "total": {"type": "integer", "minimum": 1},
+                        "current_page": {"type": "integer", "minimum": 1},
+                        "last_page": {"type": "integer", "minimum": 1}
+                      }
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      },
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "registrarSolicitudCompra",
+        "summary": "Registrar solicitud pendiente",
+        "description": "Compras: lectura y escritura de órdenes, compras:leer y compras:escribir. La reserva se realiza al aprobar.",
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_presupuesto": {"type": "integer", "minimum": 1},
+                  "fecha": {"type": "string", "format": "date"},
+                  "motivo": {"type": "string", "maxLength": 500},
+                  "lineas": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id_producto": {"type": "integer", "minimum": 1},
+                        "descripcion": {"type": "string", "maxLength": 255},
+                        "cantidad": {
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,3})?$"},
+                            {"type": "number", "minimum": 0.001, "maximum": 1000000}
+                          ]
+                        },
+                        "precio": {
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,4})?$"},
+                            {"type": "number", "minimum": 0.0001, "maximum": 100000}
+                          ]
+                        },
+                        "tasa": {
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                            {"type": "number", "minimum": 0, "maximum": 100}
+                          ]
+                        }
+                      },
+                      "required": ["cantidad", "precio"],
+                      "anyOf": [{"required": ["id_producto"]}, {"required": ["descripcion"]}]
+                    },
+                    "minItems": 1,
+                    "maxItems": 100
+                  }
+                },
+                "required": ["id_presupuesto", "fecha", "motivo", "lineas"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleSolicitudCompra"}},
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/solicitudes/{solicitud}": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "consultarSolicitudCompra",
+        "summary": "Consultar solicitud y su historial",
+        "description": "Compras: lectura de órdenes y compras:leer.",
+        "parameters": [
+          {"name": "solicitud", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleSolicitudCompra"}},
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/solicitudes/{solicitud}/decidir": {
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "decidirSolicitudCompra",
+        "summary": "Aprobar y reservar o rechazar",
+        "description": "Requiere compras:leer, compras:aprobar y permiso de revisión. La decisión corresponde a un usuario distinto del creador.",
+        "parameters": [
+          {"name": "solicitud", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {"type": "string", "enum": ["reservada", "rechazada"]},
+                  "motivo": {"type": "string", "maxLength": 500, "description": "Obligatorio al rechazar."}
+                },
+                "required": ["decision"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleSolicitudCompra"}},
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/solicitudes/{solicitud}/generar-orden": {
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "generarOrdenDesdeSolicitud",
+        "summary": "Generar una orden y comprometer el presupuesto",
+        "description": "Compras: lectura y escritura de órdenes, compras:leer y compras:escribir. Conserva las líneas y aplica la política de aprobación de órdenes.",
+        "parameters": [
+          {"name": "solicitud", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_tercero": {"type": "integer", "minimum": 1},
+                  "numero": {"type": "string", "maxLength": 60},
+                  "fecha": {"type": "string", "format": "date", "description": "Igual o posterior a la solicitud y del mismo año."}
+                },
+                "required": ["id_tercero", "numero", "fecha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleSolicitudCompra"}},
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/solicitudes/{solicitud}/cancelar": {
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "cancelarSolicitudCompra",
+        "summary": "Cancelar una solicitud pendiente o reservada",
+        "description": "Requiere compras:leer, compras:escribir y actualizar órdenes. Puede cancelar el creador o un revisor autorizado.",
+        "parameters": [
+          {"name": "solicitud", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "schema": {"type": "integer", "minimum": 1},
+            "description": "Sucursal de la empresa. Obligatoria si hay varias."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"type": "object", "properties": {"motivo": {"type": "string", "maxLength": 500}}, "required": ["motivo"]}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la operación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleSolicitudCompra"}},
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/aprobaciones": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "listarAprobacionesOrdenCompra",
+        "summary": "Consultar la bandeja de aprobaciones",
+        "description": "Requiere compras:leer y permiso de lectura de Órdenes de compra. Incluye órdenes de la sucursal, también de períodos anteriores.",
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal de la orden. Obligatoria cuando hay más de una disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {"type": "string", "description": "Búsqueda por número o proveedor.", "maxLength": 120}
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["pendiente", "aprobada", "rechazada", "anulada"], "default": "pendiente"}
+          },
+          {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Órdenes paginadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "current_page": {"type": "integer"},
+                        "last_page": {"type": "integer"},
+                        "total": {"type": "integer"},
+                        "data": {"type": "array", "items": {"$ref": "#/components/schemas/ComOrdenAprobacion"}}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/{orden}/aprobacion": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "consultarAprobacionOrdenCompra",
+        "summary": "Consultar la orden y su historial de aprobación",
+        "description": "Requiere compras:leer y permiso de lectura de Órdenes de compra.",
+        "parameters": [
+          {"name": "orden", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal de la orden. Obligatoria cuando hay más de una disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle y registro de eventos por orden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleAprobacion"}}
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      },
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "decidirAprobacionOrdenCompra",
+        "summary": "Aprobar o rechazar una orden de compra",
+        "description": "Requiere compras:leer, compras:aprobar y el permiso de aprobación. La decisión la toma un usuario distinto del creador. Una orden pendiente o rechazada queda bloqueada para recepción y cotejo.",
+        "parameters": [
+          {"name": "orden", "in": "path", "required": true, "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal de la orden. Obligatoria cuando hay más de una disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["decision"],
+                "properties": {
+                  "decision": {"type": "string", "enum": ["aprobada", "rechazada"]},
+                  "motivo": {"type": "string", "description": "Obligatorio para rechazar.", "maxLength": 500}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decisión registrada y detalle actualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {"data": {"$ref": "#/components/schemas/ComDetalleAprobacion"}}
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/politica-aprobacion": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "consultarPoliticaAprobacionCompra",
+        "summary": "Consultar política de aprobación de la empresa",
+        "description": "Requiere administración de configuración, compras:leer y compras:configurar-aprobaciones.",
+        "responses": {
+          "200": {
+            "description": "Política de la empresa activa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {"data": {"$ref": "#/components/schemas/ComPoliticaAprobacion"}}
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      },
+      "put": {
+        "tags": ["Compras"],
+        "operationId": "guardarPoliticaAprobacionCompra",
+        "summary": "Actualizar política de aprobación de la empresa",
+        "description": "Requiere administración de configuración, compras:leer y compras:configurar-aprobaciones. Los cambios aplican a órdenes registradas posteriormente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["activa"],
+                "properties": {
+                  "activa": {"type": "boolean"},
+                  "monto_minimo": {
+                    "description": "Obligatorio cuando activa es verdadero. Moneda USD, hasta dos decimales.",
+                    "oneOf": [
+                      {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"},
+                      {"type": "number", "minimum": 0, "maximum": 10000000000000}
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Política guardada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {"data": {"$ref": "#/components/schemas/ComPoliticaAprobacion"}}
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/reportes/pendientes": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "consultarComprasPendientes",
+        "summary": "Consultar mercadería por recibir y por facturar",
+        "description": "Saldos vigentes de la sucursal agrupados por línea de orden. Requiere compras:leer y lectura de Reportes de compras.",
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa. Obligatoria si la empresa tiene más de una.",
+            "schema": {"type": "integer", "minimum": 1}
+          },
+          {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1}},
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {"type": "string", "description": "Búsqueda por orden, proveedor o producto.", "maxLength": 120}
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {"type": "string", "enum": ["todos", "por-recibir", "por-facturar"], "default": "todos"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saldos paginados y totales de los resultados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "totales": {
+                          "type": "object",
+                          "properties": {
+                            "ordenes": {"type": "integer"},
+                            "base_por_facturar": {"type": "string", "description": "Base en USD de los resultados."}
+                          }
+                        },
+                        "filas": {
+                          "type": "object",
+                          "properties": {
+                            "current_page": {"type": "integer"},
+                            "last_page": {"type": "integer"},
+                            "total": {"type": "integer"},
+                            "data": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id_orden": {"type": "integer"},
+                                  "numero": {"type": "string"},
+                                  "fecha": {"type": "string", "format": "date"},
+                                  "proveedor": {"type": "string"},
+                                  "id_linea_orden": {"type": "integer"},
+                                  "descripcion": {"type": "string"},
+                                  "ordenada": {"type": "string"},
+                                  "recibida": {"type": "string"},
+                                  "por_recibir": {"type": "string"},
+                                  "por_facturar": {"type": "string"},
+                                  "base_por_facturar": {"type": "string"}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/documentos/{registro}/devoluciones": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "consultarDevolucionesCompra",
+        "summary": "Consultar cantidades disponibles para devolver",
+        "description": "Consulta líneas cotejadas y notas de devolución. Requiere compras:leer y permiso de lectura de Lista de compras.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "description": "Identificador de factura de compra.", "minimum": 1}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa. Obligatoria si la empresa tiene más de una.",
+            "schema": {"type": "integer", "minimum": 1}
+          },
+          {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Factura, mercadería disponible y notas de crédito paginadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "factura": {
+                          "type": "object",
+                          "properties": {
+                            "id": {"type": "integer"},
+                            "numero": {"type": "string"},
+                            "proveedor": {"type": "string"},
+                            "anulada": {"type": "boolean"}
+                          }
+                        },
+                        "lineas": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id_linea_recepcion": {"type": "integer"},
+                              "id_recepcion": {"type": "integer"},
+                              "descripcion": {"type": "string"},
+                              "bodega": {"type": "string"},
+                              "cantidad_facturada": {"type": "string"},
+                              "cantidad_disponible": {"type": "string"}
+                            }
+                          }
+                        },
+                        "notas": {
+                          "type": "object",
+                          "properties": {
+                            "current_page": {"type": "integer"},
+                            "last_page": {"type": "integer"},
+                            "total": {"type": "integer"},
+                            "data": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {"type": "integer"},
+                                  "numero": {"type": "string"},
+                                  "fecha": {"type": "string", "format": "date"},
+                                  "motivo": {"type": "string"},
+                                  "total": {"type": "string"},
+                                  "anulada": {"type": "boolean"}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      },
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "registrarDevolucionCompra",
+        "summary": "Registrar salida de mercadería y nota de crédito de proveedor",
+        "description": "Requiere compras:leer, compras:escribir, lectura de Lista de compras y permisos de escritura de Notas de crédito y Movimientos de inventario. La fecha se toma del día en Guayaquil.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "description": "Identificador de factura de compra.", "minimum": 1}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa. Obligatoria si la empresa tiene más de una.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["numero", "motivo", "lineas"],
+                "properties": {
+                  "numero": {"type": "string", "description": "Número de la nota del proveedor.", "maxLength": 60},
+                  "motivo": {"type": "string", "maxLength": 250},
+                  "lineas": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "required": ["id_linea_recepcion", "cantidad"],
+                      "properties": {
+                        "id_linea_recepcion": {"type": "integer", "minimum": 1},
+                        "cantidad": {
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,3})?$"},
+                            {"type": "number", "minimum": 0.001, "maximum": 1000000}
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Nota de crédito aplicada al saldo y salida en bodega registrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "integer"},
+                        "id_factura": {"type": "integer"},
+                        "fecha": {"type": "string", "format": "date"},
+                        "total": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/ventas/documentos/{registro}/firma-local/enviar": {
+      "post": {
+        "tags": ["Ventas"],
+        "operationId": "enviarFacturaLocalSriPruebas",
+        "summary": "Enviar o verificar una factura firmada en el SRI de pruebas",
+        "description": "Requiere ventas:leer, ventas:escribir, actualizar Lista de ventas y que el entorno habilite el envío manual de pruebas. En reintentos se consulta primero la clave de acceso.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "description": "Identificador de factura de venta.", "minimum": 1}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa. Obligatoria si la empresa tiene más de una.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado local del envío y resultado de la consulta cuando corresponda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id_documento": {"type": "integer"},
+                        "estado": {"type": "string"},
+                        "firmado_at": {"type": ["string", "null"]},
+                        "estado_recepcion": {"type": ["string", "null"], "description": "Confirmada, rechazada o por confirmar."},
+                        "resultado_consulta": {"type": ["string", "null"]}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/{orden}/recepciones": {
+      "get": {
+        "tags": ["Compras"],
+        "operationId": "consultarRecepcionesCompra",
+        "summary": "Consultar el avance de recepción de una orden",
+        "description": "Requiere compras:leer y permiso de lectura de Órdenes de compra.",
+        "parameters": [
+          {
+            "name": "orden",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "minimum": 1, "description": "Identificador de la orden de compra."}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria si hay más de una sucursal disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          },
+          {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Cantidades ordenadas, recibidas y pendientes, e historial paginado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["orden", "lineas", "recepciones"],
+                      "properties": {
+                        "orden": {
+                          "type": "object",
+                          "required": ["id", "numero", "fecha", "subtotal", "impuesto", "total"],
+                          "properties": {
+                            "id": {"type": "integer"},
+                            "numero": {"type": "string"},
+                            "fecha": {"type": "string", "format": "date"},
+                            "subtotal": {"type": "string"},
+                            "impuesto": {"type": "string"},
+                            "total": {"type": "string"},
+                            "anulada": {"type": "boolean"},
+                            "estado_aprobacion": {"type": ["string", "null"], "enum": ["pendiente", "aprobada", "rechazada", null]}
+                          }
+                        },
+                        "lineas": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {"type": "integer"},
+                              "descripcion": {"type": "string"},
+                              "inventariable": {"type": "boolean"},
+                              "cantidad": {"type": "string"},
+                              "recibida": {"type": "string"},
+                              "pendiente": {"type": "string"},
+                              "precio": {"type": "string"},
+                              "tasa": {"type": "string"},
+                              "servicio_por_facturar": {"type": ["string", "null"]}
+                            }
+                          }
+                        },
+                        "recepciones": {
+                          "type": "object",
+                          "properties": {
+                            "current_page": {"type": "integer"},
+                            "last_page": {"type": "integer"},
+                            "total": {"type": "integer"},
+                            "data": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {"type": "integer"},
+                                  "numero": {"type": "string"},
+                                  "fecha": {"type": "string", "format": "date"},
+                                  "subtotal": {"type": "string"},
+                                  "impuesto": {"type": "string"},
+                                  "total": {"type": "string"},
+                                  "id_bodega": {"type": "integer"},
+                                  "bodega": {"type": ["string", "null"]},
+                                  "id_factura": {"type": ["integer", "null"], "description": "Primera factura vigente, conservada para clientes existentes."},
+                                  "anulado_at": {"type": ["string", "null"]},
+                                  "facturable": {"type": "boolean"},
+                                  "base_por_facturar": {"type": "string"},
+                                  "facturas": {
+                                    "type": "array",
+                                    "items": {"type": "object", "properties": {"id": {"type": "integer"}, "numero": {"type": "string"}}}
+                                  },
+                                  "lineas": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id_linea_orden": {"type": "integer"},
+                                        "cantidad": {"type": "string"},
+                                        "cantidad_por_facturar": {"type": "string"},
+                                        "base_por_facturar": {"type": "string"},
+                                        "impuesto_por_facturar": {"type": "string"}
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      },
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "registrarRecepcionCompra",
+        "summary": "Registrar recepción parcial en bodega",
+        "description": "Requiere compras:leer, compras:escribir, actualizar Órdenes de compra y escribir en Movimientos de inventario. Reintentar con la misma clave y los mismos datos devuelve la recepción existente.",
+        "parameters": [
+          {
+            "name": "orden",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "minimum": 1, "description": "Identificador de la orden de compra."}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria si hay más de una sucursal disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id_bodega", "clave_operacion", "lineas"],
+                "properties": {
+                  "id_bodega": {"type": "integer", "minimum": 1, "description": "Bodega activa de la sucursal."},
+                  "clave_operacion": {"type": "string", "format": "uuid"},
+                  "observacion": {"type": "string", "maxLength": 500},
+                  "lineas": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "required": ["id_linea_orden", "cantidad"],
+                      "properties": {
+                        "id_linea_orden": {"type": "integer", "minimum": 1, "description": "Línea de la orden de compra."},
+                        "cantidad": {
+                          "description": "Cantidad en unidades de la línea.",
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,3})?$"},
+                            {"type": "number", "minimum": 0}
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recepción devuelta por reintento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["id", "numero", "fecha", "subtotal", "impuesto", "total"],
+                      "properties": {
+                        "id": {"type": "integer"},
+                        "numero": {"type": "string"},
+                        "fecha": {"type": "string", "format": "date"},
+                        "subtotal": {"type": "string"},
+                        "impuesto": {"type": "string"},
+                        "total": {"type": "string"},
+                        "anulada": {"type": "boolean"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Recepción contabilizada con ingreso a bodega.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["id", "numero", "fecha", "subtotal", "impuesto", "total"],
+                      "properties": {
+                        "id": {"type": "integer"},
+                        "numero": {"type": "string"},
+                        "fecha": {"type": "string", "format": "date"},
+                        "subtotal": {"type": "string"},
+                        "impuesto": {"type": "string"},
+                        "total": {"type": "string"},
+                        "anulada": {"type": "boolean"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/{orden}/recepciones/facturar": {
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "cotejarFacturaRecepcionesCompra",
+        "summary": "Registrar una factura cotejada con recepciones",
+        "description": "Requiere compras:leer, compras:escribir y permisos de lectura de Órdenes de compra y escritura en Lista de compras. El modo parcial aplica las cantidades a las recepciones seleccionadas de más antigua a más reciente y admite servicios de la orden. Las diferencias de precio, base o IVA exigen motivo y permiso de escritura en Asientos contables.",
+        "parameters": [
+          {
+            "name": "orden",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "minimum": 1, "description": "Identificador de la orden de compra."}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria si hay más de una sucursal disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["recepciones", "numero", "fecha", "forma_pago", "subtotal", "impuesto", "lineas"],
+                "properties": {
+                  "recepciones": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 25,
+                    "uniqueItems": true,
+                    "items": {"type": "integer", "minimum": 1, "description": "Recepción vigente pendiente de facturar."}
+                  },
+                  "modo_cotejo": {"type": "string", "enum": ["completo", "parcial"], "default": "completo"},
+                  "motivo_diferencia": {
+                    "type": "string", "maxLength": 500,
+                    "description": "En modo parcial, obligatorio cuando el precio, la base o el impuesto difieren de lo esperado."
+                  },
+                  "numero": {"type": "string", "maxLength": 60},
+                  "fecha": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Fecha igual o posterior a las recepciones y como máximo hoy."
+                  },
+                  "forma_pago": {"type": "string", "example": "20"},
+                  "plazo_dias": {"type": "integer", "minimum": 0, "maximum": 3650},
+                  "observacion": {"type": "string", "maxLength": 500},
+                  "subtotal": {
+                    "description": "Subtotal en USD.",
+                    "oneOf": [{"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"}, {"type": "number", "minimum": 0}]
+                  },
+                  "impuesto": {
+                    "description": "Impuesto en USD.",
+                    "oneOf": [{"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"}, {"type": "number", "minimum": 0}]
+                  },
+                  "lineas": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "required": ["id_linea_orden", "cantidad", "precio"],
+                      "properties": {
+                        "id_linea_orden": {"type": "integer", "minimum": 1, "description": "Línea de la orden de compra."},
+                        "cantidad": {
+                          "description": "Cantidad en unidades de la línea.",
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,3})?$"},
+                            {"type": "number", "minimum": 0}
+                          ]
+                        },
+                        "precio": {
+                          "description": "Precio unitario del comprobante en USD.",
+                          "oneOf": [
+                            {"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,4})?$"},
+                            {"type": "number", "minimum": 0}
+                          ]
+                        },
+                        "tasa": {
+                          "description": "Tasa de IVA del comprobante en modo parcial. Por defecto se toma la tasa de la orden.",
+                          "oneOf": [{"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"}, {"type": "number", "minimum": 0, "maximum": 100}]
+                        },
+                        "descuento": {
+                          "description": "Descuento total de la línea en USD. Disponible en modo parcial.",
+                          "oneOf": [{"type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"}, {"type": "number", "minimum": 0}]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Factura cotejada y contabilizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["id", "numero", "fecha", "subtotal", "impuesto", "total"],
+                      "properties": {
+                        "id": {"type": "integer"},
+                        "numero": {"type": "string"},
+                        "fecha": {"type": "string", "format": "date"},
+                        "subtotal": {"type": "string"},
+                        "impuesto": {"type": "string"},
+                        "total": {"type": "string"},
+                        "cotejo": {"$ref": "#/components/schemas/ComCotejoFacturaCompra"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/compras/ordenes-compra/{orden}/recepciones/{recepcion}/anular": {
+      "post": {
+        "tags": ["Compras"],
+        "operationId": "anularRecepcionCompra",
+        "summary": "Revertir una recepción de compra",
+        "description": "Requiere compras:leer, compras:escribir, actualizar Órdenes de compra y escribir en Movimientos de inventario. Si existe una factura vigente, anúlala antes de revertir la recepción.",
+        "parameters": [
+          {
+            "name": "orden",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "minimum": 1, "description": "Identificador de la orden de compra."}
+          },
+          {
+            "name": "recepcion",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer", "minimum": 1, "description": "Identificador de la recepción."}
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria si hay más de una sucursal disponible.",
+            "schema": {"type": "integer", "minimum": 1}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["motivo"],
+                "properties": {"motivo": {"type": "string", "maxLength": 250}}
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {"description": "Recepción anulada, inventario y asiento revertidos."},
+          "401": {"$ref": "#/components/responses/NoAutenticado"},
+          "403": {"$ref": "#/components/responses/SinPermiso"},
+          "404": {"$ref": "#/components/responses/NoEncontrado"},
+          "409": {"$ref": "#/components/responses/ComercialConflicto"},
+          "422": {"$ref": "#/components/responses/Validacion"},
+          "429": {"$ref": "#/components/responses/LimiteExcedido"}
+        }
+      }
+    },
+    "/api/v1/ventas/documentos/{registro}/firma-local": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "consultarFirmaLocalFactura",
+        "summary": "Consultar el estado de firma local de la factura",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "Identificador de la factura.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado fiscal local; la firma por sí sola queda pendiente de envío.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id_documento": {
+                          "type": "integer"
+                        },
+                        "estado": {
+                          "type": "string",
+                          "enum": [
+                            "anulada",
+                            "sin_datos_fiscales",
+                            "autorizada",
+                            "firmada_pendiente_envio",
+                            "enviada_pendiente_autorizacion",
+                            "rechazada_en_recepcion",
+                            "recepcion_por_confirmar",
+                            "no_autorizada",
+                            "pendiente_firma",
+                            "fuera_del_ambiente_de_pruebas"
+                          ]
+                        },
+                        "firmado_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente o inválido."
+          },
+          "403": {
+            "description": "Alcance, permiso o empresa no autorizados."
+          },
+          "404": {
+            "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+          },
+          "409": {
+            "description": "Conflicto con el estado o la clave de operación."
+          },
+          "422": {
+            "description": "Datos inválidos o regla operativa incumplida."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "firmarFacturaLocal",
+        "summary": "Firmar en PHP el XML de una factura del ambiente de pruebas",
+        "description": "Requiere ventas:escribir y permisos de lectura y actualización de facturas. Genera una única firma local con el certificado de la empresa. No envía el XML al SRI.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "Identificador de la factura.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "XML firmado o firma local existente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id_documento": {
+                          "type": "integer"
+                        },
+                        "estado": {
+                          "type": "string",
+                          "enum": [
+                            "anulada",
+                            "sin_datos_fiscales",
+                            "autorizada",
+                            "firmada_pendiente_envio",
+                            "enviada_pendiente_autorizacion",
+                            "rechazada_en_recepcion",
+                            "recepcion_por_confirmar",
+                            "no_autorizada",
+                            "pendiente_firma",
+                            "fuera_del_ambiente_de_pruebas"
+                          ]
+                        },
+                        "firmado_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente o inválido."
+          },
+          "403": {
+            "description": "Alcance, permiso o empresa no autorizados."
+          },
+          "404": {
+            "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+          },
+          "409": {
+            "description": "Conflicto con el estado o la clave de operación."
+          },
+          "422": {
+            "description": "Datos inválidos o regla operativa incumplida."
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/documentos/{registro}/firma-local/xml": {
+      "get": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "descargarFirmaLocalFactura",
+        "summary": "Descargar XML de prueba firmado en AITROL",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "Identificador de la factura.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "XML firmado localmente.",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente o inválido."
+          },
+          "403": {
+            "description": "Alcance, permiso o empresa no autorizados."
+          },
+          "404": {
+            "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+          },
+          "409": {
+            "description": "Conflicto con el estado o la clave de operación."
+          },
+          "422": {
+            "description": "Datos inválidos o regla operativa incumplida."
+          }
+        }
+      }
+    },
+    "/api/v1/ventas/documentos/{registro}/cobro": {
+      "post": {
+        "tags": [
+          "Ventas"
+        ],
+        "operationId": "registrarCobroFacturaVenta",
+        "summary": "Registrar cobro total o parcial de una factura de venta",
+        "description": "Requiere ventas:cobrar, lectura y actualización de facturas y escritura de movimientos de Caja y bancos.",
+        "parameters": [
+          {
+            "name": "registro",
+            "in": "path",
+            "required": true,
+            "description": "Identificador de la factura.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "description": "Sucursal activa de la empresa. Obligatoria cuando existe más de una.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_cuenta",
+                  "fecha",
+                  "importe",
+                  "referencia",
+                  "clave_operacion"
+                ],
+                "properties": {
+                  "id_cuenta": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "fecha": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "importe": {
+                    "type": [
+                      "number",
+                      "string"
+                    ],
+                    "description": "Importe en USD, hasta dos decimales.",
+                    "examples": [
+                      "25.00"
+                    ]
+                  },
+                  "referencia": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "clave_operacion": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Conserva este valor para reintentar el mismo pago."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cobro registrado o reintento de un cobro existente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente o inválido."
+          },
+          "403": {
+            "description": "Alcance, permiso o empresa no autorizados."
+          },
+          "404": {
+            "description": "El recurso no pertenece a la empresa o sucursal, o no está disponible."
+          },
+          "409": {
+            "description": "Conflicto con el estado o la clave de operación."
+          },
+          "422": {
+            "description": "Datos inválidos o regla operativa incumplida."
+          }
+        }
+      }
+    },
     "/api/v1/ventas/reportes/exportar": {
       "get": {
         "tags": [
@@ -2723,6 +4436,12 @@
             "type": "string",
             "format": "date"
           },
+          "plazo_dias": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "maximum": 3650,
+            "description": "Plazo de pago para la cartera de una factura de compra."
+          },
           "observacion": {
             "type": [
               "string",
@@ -3097,6 +4816,8 @@
       "ComRegistro": {
         "type": "object",
         "properties": {
+          "id_solicitud_compra": {"type": ["integer", "null"], "description": "Solicitud de origen de una orden de compra."},
+          "estado_aprobacion": {"type": ["string", "null"], "enum": ["pendiente", "aprobada", "rechazada", null], "description": "Solo en órdenes de compra. Nulo si la orden quedó exenta."},
           "id_asiento": {
             "type": [
               "integer",
@@ -3255,9 +4976,198 @@
           }
         }
       },
+      "ComPresupuestoCompra": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 1},
+          "id_centro_costo": {"type": "integer", "minimum": 1},
+          "anio": {"type": "integer", "minimum": 1},
+          "centro": {"type": "string"},
+          "codigo_centro": {"type": "string"},
+          "centro_activo": {"type": "boolean"},
+          "monto": {"type": "string", "description": "Importe en USD."},
+          "reservado": {"type": "string", "description": "Importe en USD."},
+          "comprometido": {"type": "string", "description": "Importe en USD."},
+          "disponible": {"type": "string", "description": "Importe en USD."}
+        }
+      },
+      "ComSolicitudCompra": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 1},
+          "id_presupuesto": {"type": "integer", "minimum": 1},
+          "numero": {"type": "string"},
+          "fecha": {"type": "string", "format": "date"},
+          "estado": {"type": "string", "enum": ["pendiente", "reservada", "convertida", "rechazada", "cancelada"]},
+          "motivo": {"type": "string"},
+          "centro": {"type": ["string", "null"]},
+          "id_usuario_creacion": {"type": ["integer", "null"]},
+          "subtotal": {"type": "string", "description": "Importe en USD."},
+          "impuesto": {"type": "string", "description": "Importe en USD."},
+          "total": {"type": "string", "description": "Importe en USD."}
+        }
+      },
+      "ComDetalleSolicitudCompra": {
+        "type": "object",
+        "properties": {
+          "solicitud": {"$ref": "#/components/schemas/ComSolicitudCompra"},
+          "presupuesto": {"$ref": "#/components/schemas/ComPresupuestoCompra"},
+          "lineas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id_producto": {"type": ["integer", "null"]},
+                "descripcion": {"type": "string"},
+                "cantidad": {"type": "string"},
+                "precio": {"type": "string"},
+                "tasa": {"type": "string"},
+                "subtotal": {"type": "string", "description": "Importe en USD."},
+                "impuesto": {"type": "string", "description": "Importe en USD."},
+                "total": {"type": "string", "description": "Importe en USD."}
+              }
+            }
+          },
+          "historial": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "estado": {"type": "string", "enum": ["pendiente", "reservada", "convertida", "rechazada", "cancelada"]},
+                "motivo": {"type": ["string", "null"]},
+                "id_usuario": {"type": ["integer", "null"]},
+                "responsable": {"type": "string"},
+                "created_at": {"type": "string"}
+              }
+            }
+          },
+          "orden": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {"type": "integer", "minimum": 1},
+              "numero": {"type": "string"},
+              "fecha": {"type": "string", "format": "date"},
+              "estado_aprobacion": {"type": ["string", "null"]},
+              "anulado_at": {"type": ["string", "null"]}
+            }
+          }
+        }
+      },
+      "ComOrdenAprobacion": {
+        "type": "object",
+        "required": ["id", "numero", "estado"],
+        "properties": {
+          "id": {"type": "integer"},
+          "numero": {"type": "string"},
+          "fecha": {"type": "string", "format": "date"},
+          "proveedor": {"type": "string"},
+          "subtotal": {"type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$"},
+          "impuesto": {"type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$"},
+          "total": {"type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$"},
+          "id_usuario_creacion": {"type": ["integer", "null"]},
+          "estado": {"type": "string", "enum": ["pendiente", "aprobada", "rechazada", "anulada", "no_requerida"]}
+        }
+      },
+      "ComDetalleAprobacion": {
+        "type": "object",
+        "required": ["orden", "lineas", "historial"],
+        "properties": {
+          "orden": {"$ref": "#/components/schemas/ComOrdenAprobacion"},
+          "lineas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "integer"},
+                "descripcion": {"type": "string"},
+                "cantidad": {"type": "string"},
+                "precio": {"type": "string"},
+                "subtotal": {"type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$"},
+                "impuesto": {"type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$"},
+                "total": {"type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$"}
+              }
+            }
+          },
+          "historial": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "estado": {"type": "string", "enum": ["pendiente", "aprobada", "rechazada", "anulada", "no_requerida"]},
+                "motivo": {"type": ["string", "null"]},
+                "id_usuario": {"type": ["integer", "null"]},
+                "responsable": {"type": "string"},
+                "monto_minimo": {"type": ["string", "null"], "description": "Umbral en USD que aplicó al registrar la orden."},
+                "fecha": {"type": "string", "description": "Fecha y hora del registro."}
+              }
+            }
+          }
+        }
+      },
+      "ComPoliticaAprobacion": {
+        "type": "object",
+        "required": ["activa", "monto_minimo"],
+        "properties": {
+          "activa": {"type": "boolean"},
+          "monto_minimo": {
+            "type": "string",
+            "description": "Total mínimo con IVA en USD. Cero incluye todas las órdenes nuevas si la política está activa.",
+            "pattern": "^[0-9]+\\.[0-9]{2}$"
+          }
+        }
+      },
+      "ComCotejoFacturaCompra": {
+        "type": "object",
+        "description": "Presente en facturas de compra registradas con modo de cotejo parcial.",
+        "properties": {
+          "subtotal_servicios": {"type": "integer", "description": "Base de los servicios en centavos."},
+          "diferencia_mercaderia": {"type": "integer", "description": "Variación neta de la base de mercadería en centavos."},
+          "aplicaciones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id_recepcion": {"type": "integer"},
+                "id_linea_orden": {"type": "integer"},
+                "descripcion": {"type": "string"},
+                "cantidad": {"type": "string"},
+                "subtotal": {"type": "string", "description": "Base de recepción aplicada en USD."},
+                "impuesto": {"type": "string", "description": "Impuesto de referencia aplicado en USD."}
+              }
+            }
+          },
+          "aprobacion": {
+            "type": "object",
+            "properties": {
+              "id_usuario": {"type": "integer"},
+              "usuario": {"type": ["string", "null"]},
+              "fecha": {"type": "string", "format": "date-time"},
+              "motivo": {"type": "string"},
+              "lineas": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id_linea_orden": {"type": "integer"},
+                    "precio_esperado": {"type": "string"},
+                    "precio_facturado": {"type": "string"},
+                    "tasa_esperada": {"type": "string"},
+                    "tasa_facturada": {"type": "string"},
+                    "diferencia_base": {"type": "integer", "description": "Diferencia en centavos."},
+                    "diferencia_impuesto": {"type": "integer", "description": "Diferencia en centavos."}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "ComDetalle": {
         "type": "object",
         "properties": {
+          "id_solicitud_compra": {"type": ["integer", "null"], "description": "Solicitud de origen de una orden de compra."},
+          "estado_aprobacion": {"type": ["string", "null"], "enum": ["pendiente", "aprobada", "rechazada", null], "description": "Solo en órdenes de compra. Nulo si la orden quedó exenta."},
+          "cotejo": {"$ref": "#/components/schemas/ComCotejoFacturaCompra"},
           "id_asiento": {
             "type": [
               "integer",

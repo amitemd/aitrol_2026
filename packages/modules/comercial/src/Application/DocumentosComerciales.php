@@ -2,6 +2,7 @@
 
 namespace Aitrol\Comercial\Application;
 
+use Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa;
 use Aitrol\Contabilidad\Infrastructure\Queries\ReferenciaAsiento;
 use Aitrol\Inventarios\Application\Inventario;
 use Aitrol\Inventarios\Application\RepositorioInventario;
@@ -9,14 +10,16 @@ use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use App\Events\OperacionContabilizable;
 use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -31,6 +34,8 @@ final readonly class DocumentosComerciales
         private Inventario $inventario,
         private RepositorioInventario $existencias,
         private ContextoOperativo $contexto,
+        private AprobacionesOrdenCompra $aprobaciones,
+        private PresupuestosCompra $presupuestos,
     ) {}
 
     public function listar(string $modulo, string $seccion, array $filtros, int $porPagina = 20, bool $incluirSri = false): LengthAwarePaginator
@@ -43,7 +48,7 @@ final readonly class DocumentosComerciales
         }
         $this->contexto->aplicarPeriodo($consulta, 'fecha');
         if ($seccion === 'anulaciones') {
-            $consulta->whereNotNull('anulado_at')->orderByDesc('anulado_at');
+            $consulta->where('tipo', '<>', 'recepciones')->whereNotNull('anulado_at')->orderByDesc('anulado_at');
         } else {
             $consulta->where('tipo', $seccion)->orderByDesc('fecha');
         }
@@ -67,13 +72,19 @@ final readonly class DocumentosComerciales
     {
         $consulta = $this->conAsientos($this->documentos($modulo))->where('id', $id);
         $this->contexto->aplicarPeriodo($consulta, 'fecha');
-        $seccion === 'anulaciones' ? $consulta->whereNotNull('anulado_at') : $consulta->where('tipo', $seccion);
+        $seccion === 'anulaciones' ? $consulta->where('tipo', '<>', 'recepciones')->whereNotNull('anulado_at') : $consulta->where('tipo', $seccion);
         $documento = $consulta->first() ?? abort(404, 'Documento no encontrado.');
         $documento->lineas = $this->lineasConBodega()->where('com_lineas.id_documento', $id)->get();
         $documento->numero_origen = $documento->id_documento_origen === null ? null
             : $this->documentos($modulo)->where('id', $documento->id_documento_origen)->value('numero');
 
         return $documento;
+    }
+
+    public function facturaParaCobro(int $id): stdClass
+    {
+        return $this->conAsientos($this->documentos('ventas'))->where('tipo', 'documentos')->where('id', $id)->first()
+            ?? abort(404, 'Factura no encontrada.');
     }
 
     public function listarConDetalle(string $modulo, string $seccion, array $filtros): LengthAwarePaginator
@@ -99,16 +110,17 @@ final readonly class DocumentosComerciales
         });
     }
 
-    public function registrar(string $modulo, string $seccion, array $datos, ?array $factura = null, bool $creditoTotal = false, bool $conservarBasesXml = false): stdClass
+    public function registrar(string $modulo, string $seccion, array $datos, ?array $factura = null, bool $creditoTotal = false, bool $conservarBasesXml = false, ?int $idSolicitudCompra = null): stdClass
     {
         abort_if($creditoTotal && ($modulo !== 'ventas' || $seccion !== 'notas-credito'), 422);
+        abort_if($idSolicitudCompra !== null && ($modulo !== 'compras' || $seccion !== 'ordenes-compra'), 422);
         $periodo = $this->contexto->periodo();
         if ($periodo !== null && (int) substr($datos['fecha'], 0, 4) !== $periodo) {
             throw ValidationException::withMessages(['fecha' => "La fecha debe pertenecer al período {$periodo}."]);
         }
         $vinculado = in_array($seccion, self::VINCULADOS, true);
         try {
-            return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado, $factura, $creditoTotal, $conservarBasesXml): stdClass {
+            return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado, $factura, $creditoTotal, $conservarBasesXml, $idSolicitudCompra): stdClass {
                 $origen = $vinculado ? $this->origen($modulo, (int) $datos['id_documento_origen']) : null;
                 $campo = $modulo === 'ventas' ? 'id_cliente' : 'id_proveedor';
                 $tercero = $origen?->$campo ?? (int) $datos['id_tercero'];
@@ -131,6 +143,8 @@ final readonly class DocumentosComerciales
                 $propina = $creditoTotal ? (int) $origen->propina
                     : ($factura !== null && ($datos['aplicar_propina'] ?? false) ? intdiv($subtotal + 5, 10) : 0);
                 $total = $subtotal + $impuesto + $propina;
+                $umbralAprobacion = $modulo === 'compras' && $seccion === 'ordenes-compra'
+                    ? $this->aprobaciones->umbralAplicable($total) : null;
                 if ($origen !== null) {
                     if ($datos['fecha'] < $origen->fecha) {
                         throw ValidationException::withMessages(['fecha' => 'La fecha debe ser igual o posterior a la del documento de origen.']);
@@ -173,7 +187,8 @@ final readonly class DocumentosComerciales
                     'id_documento_origen' => $origen?->id, 'id_bodega' => $bodega, 'subtotal' => $subtotal,
                     'impuesto' => $impuesto, 'total' => $total, 'observacion' => $datos['observacion'] ?? null,
                     'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
-                ] + (empty($datos['datos_compra']) ? [] : [
+                ] + ($idSolicitudCompra === null ? [] : ['id_solicitud_compra' => $idSolicitudCompra])
+                    + ($umbralAprobacion === null ? [] : ['estado_aprobacion' => 'pendiente']) + (empty($datos['datos_compra']) ? [] : [
                     'datos_factura' => json_encode($datos['datos_compra'], JSON_THROW_ON_ERROR),
                 ]) + ($creditoTotal ? ['propina' => $propina, 'datos_factura' => json_encode(['credito_total' => true], JSON_THROW_ON_ERROR)] : []) + ($factura === null ? [] : [
                     'propina' => $propina,
@@ -202,6 +217,9 @@ final readonly class DocumentosComerciales
                     unset($linea['inventariable']);
                     DB::table('com_lineas')->insert($linea + ['id_empresa' => $this->empresa->id(), 'id_documento' => $id]);
                 }
+                if ($umbralAprobacion !== null) {
+                    $this->aprobaciones->registrarEvento($id, 'pendiente', montoMinimo: $umbralAprobacion);
+                }
                 $contabilizar = $factura !== null || $creditoTotal || ($modulo === 'ventas' && $seccion === 'retenciones' && $total > 0);
                 event(new OperacionContabilizable('comercial.documento', $id, $contabilizar));
 
@@ -215,6 +233,38 @@ final readonly class DocumentosComerciales
         }
     }
 
+    public function registrarDevolucionCompra(stdClass $factura, string $numero, string $fecha, string $motivo, array $lineas): int
+    {
+        $subtotal = array_sum(array_column($lineas, 'subtotal'));
+        $impuesto = array_sum(array_column($lineas, 'impuesto'));
+        $this->verificarImportes('compras', $factura, 'notas-credito', $subtotal + $impuesto);
+        $numero = Str::upper($numero);
+        if (Str::length($numero) > 60) {
+            throw ValidationException::withMessages(['numero' => 'El número debe tener hasta 60 caracteres en mayúsculas.']);
+        }
+        $id = DB::table('com_documentos')->insertGetId([
+            'id_empresa' => $this->empresa->id(), 'id_sucursal' => $factura->id_sucursal, 'modulo' => 'compras', 'tipo' => 'notas-credito',
+            'id_documento_origen' => $factura->id, 'id_proveedor' => $factura->id_proveedor, 'emisor' => $factura->id_proveedor,
+            'tercero' => $factura->tercero, 'numero' => $numero, 'fecha' => $fecha, 'observacion' => $motivo,
+            'subtotal' => $subtotal, 'impuesto' => $impuesto, 'total' => $subtotal + $impuesto,
+            'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        usort($lineas, fn (array $a, array $b): int => [$a['id_producto'], $a['id_bodega']] <=> [$b['id_producto'], $b['id_bodega']]);
+        foreach ($lineas as $linea) {
+            $movimiento = $this->inventario->registrar([
+                'tipo' => 'salida', 'id_producto' => $linea['id_producto'], 'id_bodega' => $linea['id_bodega'],
+                'cantidad' => Cantidad::decimal($linea['cantidad'], 3), 'motivo' => 'Devolución de compra '.$factura->numero,
+                'referencia' => 'devoluciones-compra/'.$id,
+            ], contabilizar: false)['operacion'];
+            DB::table('com_lineas')->insert($linea + [
+                'id_empresa' => $this->empresa->id(), 'id_documento' => $id, 'id_operacion' => $movimiento->id,
+            ]);
+        }
+        event(new OperacionContabilizable('comercial.documento', $id, true));
+
+        return $id;
+    }
+
     public function anular(string $modulo, string $seccion, int $id, string $motivo): stdClass
     {
         $idOrigen = null;
@@ -223,7 +273,7 @@ final readonly class DocumentosComerciales
                 ?? abort(404, 'Documento no encontrado.');
         }
 
-        return $this->empresa->transaccion(function () use ($modulo, $seccion, $id, $motivo, $idOrigen): stdClass {
+        $anular = fn (): stdClass => $this->empresa->transaccion(function () use ($modulo, $seccion, $id, $motivo, $idOrigen): stdClass {
             // Las notas y retenciones toman siempre el bloqueo del documento base antes del propio.
             $origen = $idOrigen === null ? null
                 : $this->documentos($modulo)->where('tipo', 'documentos')->where('id', $idOrigen)->lockForUpdate()->first();
@@ -231,12 +281,20 @@ final readonly class DocumentosComerciales
                 ->where('tipo', $seccion)->where('id', $id)->lockForUpdate()->first()
                 ?? abort(404, 'Documento no encontrado.');
             abort_if($documento->anulado_at !== null, 409, 'El documento ya está anulado.');
-            if ($modulo === 'ventas' && $seccion === 'documentos') {
+            $devolucion = $modulo === 'compras' && $seccion === 'notas-credito' && $this->lineas($id)->whereNotNull('id_linea_recepcion')->exists();
+            if ($devolucion) {
+                Gate::authorize('permiso', ['inventarios.movimientos.index', 'escribir']);
+            }
+            if ($seccion === 'documentos') {
+                $vinculo = $modulo === 'ventas' ? 'id_factura_venta' : 'id_factura_compra';
                 $cobroActivo = DB::table('cb_operaciones as cobro')->where('cobro.id_empresa', $this->empresa->id())
-                    ->where('cobro.id_factura_venta', $id)->whereNotExists(fn (Builder $q) => $q->from('cb_operaciones as reversa')
+                    ->where('cobro.'.$vinculo, $id)->where('cobro.tipo', $modulo === 'ventas' ? 'ingreso' : 'egreso')
+                    ->whereNotExists(fn (Builder $q) => $q->from('cb_operaciones as reversa')
                         ->selectRaw('1')->whereColumn('reversa.id_empresa', 'cobro.id_empresa')->whereColumn('reversa.id_reversa_de', 'cobro.id'))
                     ->exists();
-                abort_if($cobroActivo, 409, 'Revierte los cobros registrados antes de anular la factura.');
+                abort_if($cobroActivo, 409, $modulo === 'ventas'
+                    ? 'Revierte los cobros registrados antes de anular la factura.'
+                    : 'Revierte los pagos registrados antes de anular la factura de compra.');
             }
             if ($modulo === 'compras' && $seccion === 'retenciones') {
                 $fiscal = json_decode($documento->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
@@ -262,10 +320,21 @@ final readonly class DocumentosComerciales
             $this->documentos($modulo)->where('id', $id)->update([
                 'anulado_at' => now(), 'motivo_anulacion' => $motivo, 'id_usuario_anulacion' => auth()->id(), 'updated_at' => now(),
             ]);
-            event(new OperacionContabilizable('comercial.anulacion', $id));
+            if ($modulo === 'compras' && $seccion === 'ordenes-compra' && $documento->estado_aprobacion !== null) {
+                $this->aprobaciones->registrarEvento($id, 'anulada', $motivo);
+            }
+            if ($modulo === 'compras' && $seccion === 'ordenes-compra' && $documento->id_solicitud_compra !== null) {
+                $this->presupuestos->liberarOrden($documento->id_solicitud_compra, $motivo);
+            }
+            event(new OperacionContabilizable('comercial.anulacion', $id, $devolucion));
 
             return $this->consultar($modulo, 'anulaciones', $id);
         });
+
+        return $modulo === 'ventas' && $seccion === 'documentos'
+            ? (Cache::lock(FirmaLocalFactura::bloqueoEnvio($this->empresa->id(), $id), 90)->get($anular)
+                ?: abort(409, 'Espera a que termine el envío de la factura antes de anularla.'))
+            : $anular();
     }
 
     /** @param array{ruta: string, mime: string} $respaldo */
@@ -284,10 +353,17 @@ final readonly class DocumentosComerciales
         });
     }
 
-    public function vinculados(string $modulo, int $id): \Illuminate\Support\Collection
+    public function vinculados(string $modulo, int $id): Collection
     {
         $documentos = $this->conAsientos($this->documentos($modulo)->where('id_documento_origen', $id))
             ->orderBy('fecha')->orderBy('id')->get();
+        if ($modulo === 'compras') {
+            $ids = DB::table('com_facturas_recepciones')->where('id_empresa', $this->empresa->id())->where('id_factura', $id)->select('id_recepcion');
+            $recepciones = $this->documentos('compras')->where('tipo', 'recepciones')->whereIn('id', $ids)->select('com_documentos.*');
+            ReferenciaAsiento::agregar($recepciones, 'comercial.recepcion', 'com_documentos.id');
+            ReferenciaAsiento::agregar($recepciones, 'comercial.anulacion-recepcion', 'com_documentos.id', 'asiento_reversion');
+            $documentos = $recepciones->orderBy('fecha')->orderBy('id')->get()->concat($documentos);
+        }
         if ($documentos->isEmpty()) {
             return $documentos;
         }
@@ -332,7 +408,7 @@ final readonly class DocumentosComerciales
             ->whereIn('id', $ids)->get(['id', 'codigo', 'tipo_producto'])->keyBy('id');
     }
 
-    public function contabilizarVenta(int $id, \Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa $contabilidad): void
+    public function contabilizarVenta(int $id, ContabilizacionOperativa $contabilidad): void
     {
         $this->empresa->transaccion(function () use ($id, $contabilidad): void {
             $factura = $this->contexto->aplicarPeriodo($this->documentos('ventas'), 'fecha')
@@ -346,6 +422,7 @@ final readonly class DocumentosComerciales
     public function reporte(string $modulo, array $filtros, ?ConnectionInterface $conexion = null): array
     {
         $filas = $this->filtrar($this->documentos($modulo, $conexion), $filtros)
+            ->where('tipo', '<>', 'recepciones')
             ->select('tipo')->selectRaw('case when anulado_at is null then 0 else 1 end as anulado')
             ->selectRaw('count(*) as cantidad, sum(subtotal) as subtotal, sum(impuesto) as impuesto, sum(total) as total')
             ->groupBy('tipo')->groupByRaw('case when anulado_at is null then 0 else 1 end')->orderBy('tipo')->orderBy('anulado')->get();
@@ -416,7 +493,7 @@ final readonly class DocumentosComerciales
         }
     }
 
-    private function prepararLineas(array $lineas): array
+    public function prepararLineas(array $lineas): array
     {
         $preparadas = [];
         foreach ($lineas as $indice => $linea) {
@@ -555,8 +632,12 @@ final readonly class DocumentosComerciales
 
     private function filtrar(Builder $consulta, array $filtros): Builder
     {
-        if (isset($filtros['desde'])) $consulta->where('fecha', '>=', $filtros['desde']);
-        if (isset($filtros['hasta'])) $consulta->where('fecha', '<=', $filtros['hasta']);
+        if (isset($filtros['desde'])) {
+            $consulta->where('fecha', '>=', $filtros['desde']);
+        }
+        if (isset($filtros['hasta'])) {
+            $consulta->where('fecha', '<=', $filtros['hasta']);
+        }
         if (isset($filtros['q'])) {
             $patron = '%'.$filtros['q'].'%';
             $consulta->where(fn (Builder $q) => $q->whereLike('numero', $patron)->orWhereLike('tercero', $patron));

@@ -30,7 +30,7 @@ final class ProveedorResource extends JsonResource
             'ciudad' => $proveedor->perfil['ciudad'] ?? null,
             'provincia' => $proveedor->perfil['provincia'] ?? null,
             'contactos' => $proveedor->perfil['contactos'] ?? [],
-            ...array_intersect_key($proveedor->perfil, array_diff_key(Persona::reglasPerfil(), ['fecha_nacimiento' => true])),
+            ...array_intersect_key($proveedor->perfil, Persona::reglasPerfil()),
         ];
     }
 }

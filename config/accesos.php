@@ -40,6 +40,7 @@ return [
         array_map(fn ($datos) => 'Caja y bancos · '.$datos[0], (require __DIR__.'/caja-bancos.php')['secciones']),
     ),
     ...$accesosComerciales,
+    'compras.aprobaciones.index' => 'Compras · Aprobar o rechazar órdenes',
     ...$accesosActivos,
     'clientes' => 'Clientes · todo el módulo',
     'clientes.lista' => 'Clientes · lista',
