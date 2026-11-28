@@ -119,7 +119,25 @@ final readonly class ContabilizacionOperativa
             $inventario = $doc->tipo === 'documentos'
                 ? (int) $this->lineasComerciales($doc->id)->whereNotNull('id_operacion')->sum('subtotal') : 0;
             $this->linea($lineas, $reglas, 'inventario', $inventario);
-            $this->linea($lineas, $reglas, 'compras', $doc->subtotal - $inventario);
+            $gastoGeneral = (int) $doc->subtotal - $inventario;
+            if ($doc->tipo === 'documentos') {
+                $porProducto = $this->lineasComerciales($doc->id)
+                    ->whereNull('id_operacion')->whereNotNull('id_producto')
+                    ->select('id_producto')->selectRaw('SUM(subtotal) as base')
+                    ->groupBy('id_producto')->orderBy('id_producto')->get();
+                foreach ($porProducto as $fila) {
+                    $producto = $this->inventario->catalogo('productos', (int) $fila->id_producto);
+                    if ($producto->tipo_producto !== 'no_inventariable' || (int) $fila->base === 0) {
+                        continue;
+                    }
+                    $cuentas = (array) $this->inventario->cuentasProducto($producto)['cuentas_efectivas'];
+                    if (! empty($cuentas['compras'])) {
+                        $lineas[] = $this->monto((int) $cuentas['compras'], (int) $fila->base);
+                        $gastoGeneral -= (int) $fila->base;
+                    }
+                }
+            }
+            $this->linea($lineas, $reglas, 'compras', $gastoGeneral);
             $this->linea($lineas, $reglas, 'impuesto_compras', (int) $doc->impuesto);
             $this->linea($lineas, $reglas, 'proveedores', -(int) $doc->total);
         }

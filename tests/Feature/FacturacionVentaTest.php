@@ -166,7 +166,15 @@ final class FacturacionVentaTest extends TestCase
             ]);
         }
         DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)
-            ->update(['reglas' => json_encode($reglas, JSON_THROW_ON_ERROR)]);
+            ->update(['reglas' => json_encode(array_diff_key($reglas, ['compras' => true]), JSON_THROW_ON_ERROR)]);
+        $plantilla = DB::table('inv_plantillas_contables')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'CONSUMO', 'nombre' => 'Consumo',
+            'cuentas' => json_encode(['compras' => $reglas['compras']], JSON_THROW_ON_ERROR),
+        ]);
+        $categoria = DB::table('inv_categorias')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'CONSUMO', 'nombre' => 'Consumo',
+            'id_plantilla_contable' => $plantilla,
+        ]);
         $ruc = '0991234567001';
         $clave = '15012026'.'01'.$ruc.'1'.'001001000000009'.'12345678'.'10';
         $xml = <<<XML
@@ -237,7 +245,7 @@ final class FacturacionVentaTest extends TestCase
         $token = session('xml_compra.token');
         $producto = $this->postJson(route('inventarios.productos.store'), [
             'codigo' => 'XML-009', 'nombre' => 'Consumo de oficina', 'unidad' => 'Unidad',
-            'tipo_producto' => 'no_inventariable', 'stock_minimo' => 5, 'iva_codigo' => 4,
+            'tipo_producto' => 'no_inventariable', 'stock_minimo' => 5, 'iva_codigo' => 4, 'id_categoria' => $categoria,
         ])->assertCreated()->assertJsonPath('data.tipo_producto', 'no_inventariable')->json('data.id');
         $this->assertDatabaseHas('inv_productos', ['id' => $producto, 'stock_minimo' => 0]);
         $this->post(route('compras.documentos.store'), [
