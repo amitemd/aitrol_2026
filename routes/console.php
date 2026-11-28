@@ -216,8 +216,13 @@ Artisan::command('personas:token {email} {nombre} {--dias=90}', function (): int
     $usuario = User::query()->where('email', $this->argument('email'))
         ->where('activo', true)->whereNotNull('id_empresa')->first();
     $dias = filter_var($this->option('dias'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 90]]);
-    if ($usuario === null || $usuario->cannot('administrar-personas') || $dias === false) {
-        $this->error('Indique un administrador global activo y una vigencia de 1 a 90 días.');
+    if ($dias === false) {
+        $this->error('La vigencia del token debe ser de 1 a 90 días.');
+
+        return 1;
+    }
+    if ($usuario === null || $usuario->cannot('administrar-personas')) {
+        $this->error('Use el correo real de un administrador global activo con empresa asignada.');
 
         return 1;
     }

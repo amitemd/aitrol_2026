@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
 use App\Jobs\ImportarPersonas;
 use App\Models\Persona;
+use App\Models\TokenAcceso;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -77,6 +78,33 @@ final class PersonasImportacionTest extends TestCase
         $this->get(route('configuracion.personas.importaciones.index'))->assertForbidden();
         $this->post(route('configuracion.personas.importaciones.store'), [])->assertForbidden();
         $this->get(route('configuracion.personas.importaciones.estado'))->assertForbidden();
+        $this->postJson(route('configuracion.personas.importaciones.token'), ['nombre' => 'Integración'])->assertForbidden();
+        $this->get(route('configuracion.usuarios.index'))->assertOk()
+            ->assertDontSee(route('configuracion.personas.importaciones.index'));
+    }
+
+    public function test_el_administrador_global_encuentra_la_importacion_en_el_menu_lateral(): void
+    {
+        $this->actingAs($this->administrador())->get(route('configuracion.usuarios.index'))->assertOk()
+            ->assertSee('data-workspace-link="configuracion.personas.importaciones.index"', false);
+    }
+
+    public function test_el_administrador_global_puede_emitir_un_token_de_solo_lectura_desde_la_pantalla(): void
+    {
+        $administrador = $this->administrador();
+        $this->freezeTime();
+        $this->actingAs($administrador)->get(route('configuracion.personas.importaciones.index'))->assertOk()
+            ->assertSee('Generar token');
+
+        $respuesta = $this->postJson(route('configuracion.personas.importaciones.token'), ['nombre' => 'Gastroclínica'])
+            ->assertCreated()->assertHeader('Cache-Control', 'no-store, private')->assertJsonStructure(['token']);
+
+        $token = TokenAcceso::findToken($respuesta->json('token'));
+        $this->assertNotNull($token);
+        $this->assertSame('Gastroclínica', $token->name);
+        $this->assertSame($administrador->id, $token->tokenable_id);
+        $this->assertSame(['personas:leer'], $token->abilities);
+        $this->assertSame(now()->addDays(90)->toDateTimeString(), $token->expires_at->toDateTimeString());
     }
 
     public function test_al_volver_a_la_pantalla_se_recupera_el_avance_y_el_tiempo_estimado(): void

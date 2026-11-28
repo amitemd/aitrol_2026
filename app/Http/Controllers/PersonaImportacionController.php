@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ImportarPersonas;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,6 +25,22 @@ final class PersonaImportacionController extends Controller
     public function estado(): Response
     {
         return response()->view('configuracion::personas-importaciones-estado', ['tareas' => $this->tareas()])
+            ->header('Cache-Control', 'private, no-store');
+    }
+
+    public function emitirToken(Request $request): JsonResponse
+    {
+        $datos = $request->validate([
+            'nombre' => ['required', 'string', 'max:100'],
+        ], [
+            'nombre.required' => 'Ingrese el nombre de la integración.',
+            'nombre.string' => 'Ingrese el nombre como texto.',
+            'nombre.max' => 'El nombre de la integración admite hasta 100 caracteres.',
+        ]);
+
+        $token = $request->user()->createToken($datos['nombre'], ['personas:leer'], now()->addDays(90));
+
+        return response()->json(['token' => $token->plainTextToken], 201)
             ->header('Cache-Control', 'private, no-store');
     }
 

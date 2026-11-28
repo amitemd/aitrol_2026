@@ -32,6 +32,27 @@
                 </div>
             </section>
 
+            <section class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5">Token para la API de Personas</h2>
+                    <form method="post" action="{{ route('configuracion.personas.importaciones.token') }}" data-personas-token>
+                        @csrf
+                        <label for="nombre-integracion-personas" class="form-label">Nombre de la integración</label>
+                        <div class="d-flex flex-wrap flex-md-nowrap gap-2">
+                            <input type="text" class="form-control" name="nombre" id="nombre-integracion-personas"
+                                maxlength="100" placeholder="Por ejemplo, Gastroclínica" required>
+                            <button type="submit" class="btn btn-outline-primary text-nowrap">Generar token</button>
+                        </div>
+                        <p class="form-text mb-0">Permite consultar personas por identificación durante 90 días.</p>
+                        <p class="text-danger small my-2" role="alert" data-personas-token-error hidden></p>
+                        <div class="mt-3" data-personas-token-resultado hidden>
+                            <label for="valor-token-personas" class="form-label">Copia el token antes de salir de la pantalla</label>
+                            <input type="text" class="form-control font-monospace" id="valor-token-personas" readonly autocomplete="off">
+                        </div>
+                    </form>
+                </div>
+            </section>
+
             <div data-personas-estado="{{ route('configuracion.personas.importaciones.estado') }}">
                 @include('configuracion::personas-importaciones-estado')
             </div>
@@ -40,5 +61,5 @@
 @endsection
 
 @push('scripts')
-    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('personas-importaciones.js') }}" defer></script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('personas-importaciones.js') }}?v={{ filemtime(public_path('personas-importaciones.js')) }}" defer></script>
 @endpush

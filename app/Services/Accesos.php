@@ -38,6 +38,7 @@ final class Accesos
         return match ($ruta) {
             'dashboard' => true,
             'configuracion.mantenimiento.index' => $usuario->can('administrar-servidor'),
+            'configuracion.personas.importaciones.index' => $usuario->can('administrar-personas'),
             'configuracion.menu.index', 'configuracion.ubicaciones.index' => $usuario->is_admin_global === true,
             'clientes.index' => $this->permite($usuario, 'clientes.lista', 'leer'),
             'clientes.create' => $this->permite($usuario, 'clientes.lista', 'escribir'),
