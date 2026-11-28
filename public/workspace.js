@@ -136,6 +136,9 @@
             tab.panel.hidden = id !== key;
             tab.button.setAttribute('aria-pressed', String(id === key));
         }
+        if (!selected.cargada && !selected.frame) {
+            cargarPestana(selected);
+        }
         if (focus && !bar.hidden) {
             selected.button.focus({ preventScroll: true });
             selected.item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -269,41 +272,47 @@
 
     window.addEventListener('aitrol:menu-changed', refreshSidebar);
 
+    function cargarPestana(tab) {
+        const frame = document.createElement('iframe');
+        frame.className = 'workspace-frame';
+        frame.title = tab.button.textContent;
+        frame.setAttribute('data-workspace-frame', '');
+        frame.addEventListener('load', () => {
+            syncFrameTheme(frame);
+            tab.cargada = true;
+            frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
+            frame.contentWindow?.addEventListener('aitrol:avatar-actualizado', recibirAvatar);
+            const avatarGuardado = frame.contentDocument?.querySelector('[data-avatar-guardado]')?.dataset.avatarGuardado;
+            if (avatarGuardado) actualizarAvatar(avatarGuardado);
+            if (frame.contentDocument?.querySelector('[data-login-form], [data-empresa-inicial]')) {
+                location.assign(dashboard);
+            } else if (frame.contentDocument?.querySelector('[data-workspace-menu-changed]')) {
+                refreshSidebar();
+            }
+        });
+        tab.frame = frame;
+        frame.src = tab.url.href;
+        tab.panel.append(frame);
+    }
+
     function add(key, label, url, panel = null) {
-        if (tabs.has(key)) {
-            if (key === 'ventas.documentos.create' || key === 'inventarios.categorias.index') {
-                const tab = tabs.get(key);
-                const frame = tab.panel.querySelector('[data-workspace-frame]');
-                if (frame && tab.cargada && frame.contentDocument?.location.pathname !== url.pathname) {
-                    tab.cargada = false;
-                    frame.src = url.href;
-                }
+        const existing = tabs.get(key);
+        if (existing) {
+            if (!existing.frame && !existing.cargada) {
+                existing.url = url;
+            } else if (
+                (key === 'ventas.documentos.create' || key === 'inventarios.categorias.index') &&
+                existing.frame && existing.cargada && existing.frame.contentDocument?.location.pathname !== url.pathname
+            ) {
+                existing.cargada = false;
+                existing.frame.src = url.href;
             }
             return;
         }
 
         if (!panel) {
             panel = document.createElement('div');
-            const frame = document.createElement('iframe');
-            frame.className = 'workspace-frame';
-            frame.title = label;
-            frame.setAttribute('data-workspace-frame', '');
-            frame.addEventListener('load', () => {
-                syncFrameTheme(frame);
-                const tab = tabs.get(key);
-                if (tab) tab.cargada = true;
-                frame.contentWindow?.addEventListener('aitrol:menu-changed', refreshSidebar);
-                frame.contentWindow?.addEventListener('aitrol:avatar-actualizado', recibirAvatar);
-                const avatarGuardado = frame.contentDocument?.querySelector('[data-avatar-guardado]')?.dataset.avatarGuardado;
-                if (avatarGuardado) actualizarAvatar(avatarGuardado);
-                if (frame.contentDocument?.querySelector('[data-login-form], [data-empresa-inicial]')) {
-                    location.assign(dashboard);
-                } else if (frame.contentDocument?.querySelector('[data-workspace-menu-changed]')) {
-                    refreshSidebar();
-                }
-            });
-            frame.src = url.href;
-            panel.append(frame);
+            panel.hidden = true;
             content.append(panel);
         }
         panel.id = 'workspace-panel-' + (++panelNumber);
@@ -340,7 +349,7 @@
         }
 
         bar.append(item);
-        tabs.set(key, { item, button, panel, url, cargada: panel === initial });
+        tabs.set(key, { item, button, panel, url, frame: null, cargada: panel === initial });
     }
 
     const initialKey = workspace.dataset.workspaceKey || 'dashboard';
@@ -381,7 +390,7 @@
         if (!form) return;
 
         const tab = tabs.get(key);
-        const frame = tab.panel.querySelector('iframe[data-workspace-frame]');
+        const frame = tab.frame;
         const abrirFormulario = (documento) => {
             [...(documento?.querySelectorAll('a[data-ajax-open]') ?? [])]
                 .find((link) => link.href === form.href)?.click();

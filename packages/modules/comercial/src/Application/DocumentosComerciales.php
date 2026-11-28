@@ -14,6 +14,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -98,7 +99,7 @@ final readonly class DocumentosComerciales
         });
     }
 
-    public function registrar(string $modulo, string $seccion, array $datos, ?array $factura = null, bool $creditoTotal = false): stdClass
+    public function registrar(string $modulo, string $seccion, array $datos, ?array $factura = null, bool $creditoTotal = false, bool $conservarBasesXml = false): stdClass
     {
         abort_if($creditoTotal && ($modulo !== 'ventas' || $seccion !== 'notas-credito'), 422);
         $periodo = $this->contexto->periodo();
@@ -107,7 +108,7 @@ final readonly class DocumentosComerciales
         }
         $vinculado = in_array($seccion, self::VINCULADOS, true);
         try {
-            return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado, $factura, $creditoTotal): stdClass {
+            return $this->empresa->transaccion(function () use ($modulo, $seccion, $datos, $vinculado, $factura, $creditoTotal, $conservarBasesXml): stdClass {
                 $origen = $vinculado ? $this->origen($modulo, (int) $datos['id_documento_origen']) : null;
                 $campo = $modulo === 'ventas' ? 'id_cliente' : 'id_proveedor';
                 $tercero = $origen?->$campo ?? (int) $datos['id_tercero'];
@@ -119,7 +120,10 @@ final readonly class DocumentosComerciales
                 $lineas = match (true) {
                     $creditoTotal => $lineasOrigen->map(fn (stdClass $fila): array => array_intersect_key((array) $fila,
                         array_flip(['id_producto', 'id_bodega', 'descripcion', 'cantidad', 'precio', 'tasa', 'subtotal', 'impuesto', 'total'])))->all(),
-                    $seccion === 'retenciones' => $this->prepararRetenciones($datos['lineas'], $datos['permitir_retencion_cero'] ?? false),
+                    $seccion === 'retenciones' => $this->prepararRetenciones(
+                        $conservarBasesXml ? $datos['lineas'] : $this->aplicarBasesRetencion($datos['lineas'], $origen),
+                        $datos['permitir_retencion_cero'] ?? false,
+                    ),
                     default => $this->prepararLineas($datos['lineas']),
                 };
                 $subtotal = array_sum(array_column($lineas, 'subtotal'));
@@ -198,7 +202,8 @@ final readonly class DocumentosComerciales
                     unset($linea['inventariable']);
                     DB::table('com_lineas')->insert($linea + ['id_empresa' => $this->empresa->id(), 'id_documento' => $id]);
                 }
-                event(new OperacionContabilizable('comercial.documento', $id, $factura !== null || $creditoTotal));
+                $contabilizar = $factura !== null || $creditoTotal || ($modulo === 'ventas' && $seccion === 'retenciones' && $total > 0);
+                event(new OperacionContabilizable('comercial.documento', $id, $contabilizar));
 
                 return $this->consultar($modulo, $seccion, $id);
             });
@@ -363,7 +368,7 @@ final readonly class DocumentosComerciales
         return ['filas' => $filas, 'neto' => $neto, 'retenciones' => $retenciones, 'neto_menos_retenciones' => $neto - $retenciones];
     }
 
-    public function opciones(string $modulo, string $catalogo, ?string $busqueda, bool $factura = false): LengthAwarePaginator
+    public function opciones(string $modulo, string $catalogo, ?string $busqueda, bool $factura = false, bool $basesRetencion = false): Paginator
     {
         $consulta = match ($catalogo) {
             'terceros' => $this->terceros($modulo)->select('id', 'nombre as texto', 'identificacion as codigo'),
@@ -372,6 +377,9 @@ final readonly class DocumentosComerciales
                 ->when($catalogo === 'bodegas', fn (Builder $q) => $q->where('id_sucursal', $this->contexto->sucursal()->id))
                 ->where('activo', true)->select('id', 'nombre as texto', 'codigo'),
         };
+        if ($catalogo === 'origenes' && $basesRetencion) {
+            $consulta->addSelect('subtotal', 'impuesto');
+        }
         if ($catalogo === 'productos') {
             $consulta->addSelect('tipo_producto');
             if ($factura) {
@@ -387,7 +395,7 @@ final readonly class DocumentosComerciales
             $consulta->where(fn (Builder $q) => $q->whereLike($campos[0], '%'.$busqueda.'%')->orWhereLike($campos[1], '%'.$busqueda.'%'));
         }
 
-        return $consulta->orderBy('texto')->orderBy('id')->paginate(20);
+        return $consulta->orderBy('texto')->orderBy('id')->simplePaginate(20);
     }
 
     private function origen(string $modulo, int $id): stdClass
@@ -447,6 +455,22 @@ final readonly class DocumentosComerciales
         }
 
         return $preparadas;
+    }
+
+    public function aplicarBasesRetencion(array $lineas, stdClass $origen): array
+    {
+        foreach ($lineas as $indice => $linea) {
+            $base = match ($linea['tipo_retencion']) {
+                'renta' => (int) $origen->subtotal,
+                'iva' => (int) $origen->impuesto,
+            };
+            if ($base <= 0) {
+                throw ValidationException::withMessages(["lineas.$indice.tipo_retencion" => 'La factura de origen no tiene base para este tipo de retención.']);
+            }
+            $lineas[$indice]['base_retencion'] = Cantidad::decimal($base, 2);
+        }
+
+        return $lineas;
     }
 
     private function prepararRetenciones(array $lineas, bool $permitirCero = false): array

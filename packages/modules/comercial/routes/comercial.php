@@ -16,9 +16,11 @@ foreach (config('comercial') as $modulo => $datos) {
                     $api ? [CheckAbilities::class.':'.$modulo.':'.($accion === 'leer' ? 'leer' : 'escribir')] : [],
                 );
 
-                if ($modulo === 'compras' && ! $api) {
+                if (! $api) {
                     Route::get('retenciones/catalogo', [ComercialController::class, 'catalogoRetenciones'])
                         ->middleware($permisos('retenciones', 'escribir'))->name('retenciones.catalogo');
+                }
+                if ($modulo === 'compras' && ! $api) {
                     Route::post('documentos/importar-xml', [ComercialController::class, 'importarCompra'])
                         ->middleware([...$permisos('documentos', 'escribir'), 'throttle:12,1'])->name('documentos.importar');
                     Route::get('documentos/{registro}/xml', [ComercialController::class, 'descargarXmlCompra'])

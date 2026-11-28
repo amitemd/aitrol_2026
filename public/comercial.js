@@ -8,6 +8,33 @@
         return Number.isSafeInteger(valor) && valor > 0 ? BigInt(valor) : 0n;
     }
 
+    function sugerirBaseRetencion(linea) {
+        const base = linea.querySelector('[data-retencion-campo="base_retencion"]');
+        const tipo = linea.querySelector('[data-retencion-tipo]').value;
+        const { baseRenta, baseIva } = base.form.dataset;
+        base.value = tipo === 'iva' ? baseIva : baseRenta;
+    }
+
+    function actualizarRetencion(formulario) {
+        let total = 0n;
+        for (const linea of formulario.querySelectorAll('[data-comercial-linea]')) {
+            const base = unidades(linea.querySelector('[data-retencion-campo="base_retencion"]'), 100);
+            const tasa = unidades(linea.querySelector('[data-retencion-campo="porcentaje_retencion"]'), 100);
+            const retenido = (base * tasa + 5000n) / 10000n;
+            linea.querySelector('[data-retencion-linea-total]').textContent = moneda.format(Number(retenido) / 100);
+            total += retenido;
+        }
+        formulario.querySelector('[data-retencion-total]').textContent = moneda.format(Number(total) / 100);
+    }
+
+    document.querySelectorAll('[data-formulario-retencion]').forEach(actualizarRetencion);
+    document.addEventListener('aitrol:form-ready', ({ target }) => {
+        if (target.matches('[data-formulario-retencion]')) actualizarRetencion(target);
+    });
+    document.addEventListener('input', ({ target }) => {
+        if (target.matches('[data-retencion-campo]')) actualizarRetencion(target.form);
+    });
+
     function actualizarCompra(formulario) {
         if (!formulario.matches('[data-compra]')) return;
         let subtotal = 0n;
@@ -270,6 +297,23 @@
     prepararAltaProducto();
 
     document.addEventListener('DOMContentLoaded', () => {
+        window.jQuery?.(document)
+            .on('select2:select select2:clear', '[data-retencion-origen]', function (evento) {
+                const origen = evento.type === 'select2:select' ? evento.params.data : null;
+                this.form.dataset.baseRenta = origen?.base_renta ?? '';
+                this.form.dataset.baseIva = origen?.base_iva ?? '';
+                this.form.querySelector('[data-retencion-bases]').hidden = !origen;
+                if (origen) {
+                    this.form.querySelector('[data-retencion-base-renta]').textContent = 'USD ' + origen.base_renta;
+                    this.form.querySelector('[data-retencion-base-iva]').textContent = 'USD ' + origen.base_iva;
+                }
+                this.form.querySelectorAll('[data-comercial-linea]').forEach(sugerirBaseRetencion);
+                actualizarRetencion(this.form);
+            })
+            .on('change', '[data-retencion-tipo]', function () {
+                sugerirBaseRetencion(this.closest('[data-comercial-linea]'));
+                actualizarRetencion(this.form);
+            });
         window.jQuery?.('[data-compra]')
             .on('select2:select', '[data-compra-producto]', function (evento) {
                 this.selectedOptions[0].dataset.tipoProducto = evento.params.data.tipo_producto;
@@ -341,6 +385,7 @@
             }
             contenedor.append(linea);
             if (formulario.matches('[data-factura]')) actualizarProducto(contenedor.lastElementChild);
+            if (formulario.matches('[data-formulario-retencion]')) sugerirBaseRetencion(contenedor.lastElementChild);
             contenedor.lastElementChild.querySelector('input')?.focus();
         } else {
             if (contenedor.children.length <= Number(formulario.dataset.minLineas ?? 1)) return;
@@ -357,5 +402,6 @@
         });
         actualizarFactura(formulario);
         actualizarCompra(formulario);
+        if (formulario.matches('[data-formulario-retencion]')) actualizarRetencion(formulario);
     });
 })();

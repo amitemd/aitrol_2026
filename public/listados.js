@@ -67,7 +67,7 @@
     }
 
     async function loadHtml(url, signal, headers = {}) {
-        const response = await fetch(url, { headers: { Accept: 'text/html', ...headers }, signal });
+        const response = await fetch(url, { headers: { Accept: 'text/html', 'X-Aitrol-Fragmento': 'contenido', ...headers }, signal });
         if (!response.ok) throw new Error('No se pudo cargar la información.');
         const page = new DOMParser().parseFromString(await response.text(), 'text/html');
         if (page.querySelector('[data-login-form]')) throw new Error('Tu sesión venció. Vuelve a iniciar sesión.');

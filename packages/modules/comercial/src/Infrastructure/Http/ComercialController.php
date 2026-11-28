@@ -171,16 +171,14 @@ final readonly class ComercialController
     public function catalogoRetenciones(Request $request, CatalogoRetenciones $catalogo): JsonResponse
     {
         $filtros = $request->validate([
-            'tipo' => ['required', 'in:renta,iva'], 'fecha' => ['required', 'date_format:Y-m-d'],
+            'tipo' => ['required', 'in:renta,iva,otra'], 'fecha' => ['required', 'date_format:Y-m-d'],
             'q' => ['nullable', 'string', 'max:80'], 'page' => ['nullable', 'integer', 'min:1'],
         ]);
         $termino = trim($filtros['q'] ?? '');
-        if ($termino === '') {
-            return response()->json(['results' => [], 'pagination' => ['more' => false]]);
-        }
         $registros = $catalogo->vigentes($filtros['tipo'], $filtros['fecha'])
-            ->where(fn ($q) => $q->whereLike('codigo', $termino.'%')->orWhereLike('descripcion', '%'.$termino.'%'))
-            ->orderBy('codigo')->paginate(15);
+            ->when($termino !== '', fn ($consulta) => $consulta
+                ->where(fn ($q) => $q->whereLike('codigo', $termino.'%')->orWhereLike('descripcion', '%'.$termino.'%')))
+            ->orderBy('codigo')->simplePaginate(15);
 
         return response()->json([
             'results' => $registros->getCollection()->map(function (stdClass $fila): array {
@@ -188,6 +186,7 @@ final readonly class ComercialController
 
                 return [
                     'id' => $fila->codigo,
+                    'descripcion' => $fila->descripcion,
                     'text' => $fila->codigo.' · '.$fila->descripcion.' · '.($tasa === null ? 'Tarifa variable' : $tasa.' %'),
                     'porcentaje' => $tasa,
                 ];
@@ -589,11 +588,16 @@ final readonly class ComercialController
     public function opciones(Request $request)
     {
         $datos = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'page' => ['nullable', 'integer', 'between:1,100000'], 'factura' => ['nullable', 'boolean']]);
-        $opciones = $this->documentos->opciones($request->route('modulo'), $request->route('catalogo'), $datos['q'] ?? null, (bool) ($datos['factura'] ?? false));
+        $opciones = $this->documentos->opciones($request->route('modulo'), $request->route('catalogo'), $datos['q'] ?? null,
+            factura: (bool) ($datos['factura'] ?? false), basesRetencion: $request->route('seccion') === 'retenciones');
 
         return response()->json([
             'results' => $opciones->getCollection()->map(fn (stdClass $fila) => ['id' => $fila->id, 'text' => $fila->codigo.' · '.$fila->texto]
                 + (isset($fila->tipo_producto) ? ['tipo_producto' => $fila->tipo_producto] : [])
+                + (isset($fila->subtotal, $fila->impuesto) ? [
+                    'base_renta' => Cantidad::decimal((int) $fila->subtotal, 2),
+                    'base_iva' => Cantidad::decimal((int) $fila->impuesto, 2),
+                ] : [])
                 + (property_exists($fila, 'precio_venta') ? [
                     'precio' => $fila->precio_venta === null ? null : (string) $fila->precio_venta,
                     'iva_codigo' => $fila->iva_codigo,
@@ -649,9 +653,9 @@ final readonly class ComercialController
             $reglas = array_replace(array_diff_key($reglas, array_flip(['lineas.*.cantidad', 'lineas.*.precio', 'lineas.*.tasa', 'lineas.*.id_producto'])), [
                 'lineas.*' => ['required', 'array:descripcion,tipo_retencion,codigo_retencion,base_retencion,porcentaje_retencion'],
                 'lineas.*.descripcion' => ['required', 'string', 'max:255'],
-                'lineas.*.tipo_retencion' => ['required', 'in:renta,iva,otra'],
+                'lineas.*.tipo_retencion' => ['required', 'in:renta,iva'],
                 'lineas.*.codigo_retencion' => ['required', 'string', 'max:32'],
-                'lineas.*.base_retencion' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:100000000'],
+                'lineas.*.base_retencion' => ['exclude'],
                 'lineas.*.porcentaje_retencion' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:100'],
             ]);
         }
@@ -659,7 +663,6 @@ final readonly class ComercialController
             unset($reglas['numero'], $reglas['lineas.*.descripcion']);
             $reglas['fecha'][] = 'before_or_equal:'.now('America/Guayaquil')->toDateString();
             $reglas['lineas.*'] = ['required', 'array:tipo_retencion,codigo_retencion,base_retencion,porcentaje_retencion'];
-            $reglas['lineas.*.tipo_retencion'] = ['required', 'in:renta,iva'];
             $reglas['lineas.*.codigo_retencion'] = ['required', 'regex:/\A[0-9A-Z]{1,5}\z/'];
             $reglas['lineas.*.porcentaje_retencion'] = ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:100'];
             $reglas['codigo_sustento'] = ['required', Rule::in(array_keys(RetencionElectronica::SUSTENTOS))];

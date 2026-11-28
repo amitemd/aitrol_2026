@@ -655,14 +655,28 @@ final class FacturacionVentaTest extends TestCase
         $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos)->assertRedirect();
         $id = DB::table('com_documentos')->value('id');
         $this->get(route('ventas.retenciones.create', ['origen' => $id]))->assertOk()
-            ->assertSee('Número de documento')->assertSee('Importar por XML o clave de acceso');
+            ->assertSee('Número de documento')->assertSee('Importar por XML o clave de acceso')
+            ->assertSee('data-retencion-campo="base_retencion"', false)->assertSee('value="18.00"', false)
+            ->assertSee('data-base-iva="2.70"', false)->assertSee('Valor retenido')->assertSee('Total retenido')
+            ->assertSee('data-retencion-catalogo', false)->assertSee(route('ventas.retenciones.catalogo'));
+        $this->getJson(route('ventas.retenciones.opciones', 'origenes'))->assertOk()
+            ->assertJsonPath('results.0.base_renta', '18.00')->assertJsonPath('results.0.base_iva', '2.70')
+            ->assertJsonPath('pagination.more', false);
         $this->postJson(route('ventas.retenciones.store'), [
             'id_documento_origen' => $id, 'numero' => '001-002-000000004', 'fecha' => $datos['fecha'],
-            'lineas' => [[
-                'descripcion' => 'Retención de bienes', 'tipo_retencion' => 'renta', 'codigo_retencion' => '312',
-                'base_retencion' => '18.00', 'porcentaje_retencion' => '1.75',
-            ]],
+            'lineas' => [
+                ['descripcion' => 'Retención de bienes', 'tipo_retencion' => 'renta', 'codigo_retencion' => '312',
+                    'base_retencion' => '999.00', 'porcentaje_retencion' => '1.75'],
+                ['descripcion' => 'Retención de IVA', 'tipo_retencion' => 'iva', 'codigo_retencion' => '1', 'porcentaje_retencion' => '30'],
+            ],
         ])->assertCreated();
+        $retencionManual = DB::table('com_documentos')->where('numero', '001-002-000000004')->value('id');
+        $this->assertDatabaseHas('com_lineas', ['id_documento' => $retencionManual, 'tipo_retencion' => 'renta', 'base_retencion' => 1800, 'total' => 32]);
+        $this->assertDatabaseHas('com_lineas', ['id_documento' => $retencionManual, 'tipo_retencion' => 'iva', 'base_retencion' => 270, 'total' => 81]);
+        $asiento = DB::table('co_asientos')->where('origen', 'comercial.documento')->where('id_origen', $retencionManual)->value('id');
+        $clientes = DB::table('co_cuentas')->where('codigo', 'clientes')->value('id');
+        $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asiento, 'id_cuenta' => $clientes, 'haber' => 113]);
+        $this->get(route('ventas.documentos.trazabilidad', $id))->assertOk()->assertSee('USD 19.57');
         $this->get(route('ventas.retenciones.recibida', ['origen' => $id]))->assertOk()
             ->assertSee('Archivo XML')->assertSee('Clave de acceso');
         $serie = '001002000000005';
@@ -675,7 +689,7 @@ final class FacturacionVentaTest extends TestCase
                 </infoTributaria>
                 <infoCompRetencion><fechaEmision>15/01/2026</fechaEmision><tipoIdentificacionSujetoRetenido>04</tipoIdentificacionSujetoRetenido><identificacionSujetoRetenido>1000000000001</identificacionSujetoRetenido></infoCompRetencion>
                 <docsSustento><docSustento><codDocSustento>01</codDocSustento><numDocSustento>001001000000001</numDocSustento><fechaEmisionDocSustento>15/01/2026</fechaEmisionDocSustento>
-                    <retenciones><retencion><codigo>1</codigo><codigoRetencion>312</codigoRetencion><baseImponible>18.00</baseImponible><porcentajeRetener>2.00</porcentajeRetener><valorRetenido>0.36</valorRetenido></retencion></retenciones>
+                    <retenciones><retencion><codigo>1</codigo><codigoRetencion>312</codigoRetencion><baseImponible>10.00</baseImponible><porcentajeRetener>2.00</porcentajeRetener><valorRetenido>0.20</valorRetenido></retencion></retenciones>
                 </docSustento></docsSustento>
             </comprobanteRetencion>
             XML;
@@ -683,7 +697,7 @@ final class FacturacionVentaTest extends TestCase
         $this->postJson($ruta, ['xml_retencion' => UploadedFile::fake()->createWithContent('retencion.xml', str_replace('1000000000001', '1000000000002', $xml))])
             ->assertUnprocessable()->assertJsonValidationErrors('xml_retencion');
         $this->postJson($ruta, ['xml_retencion' => UploadedFile::fake()->createWithContent('retencion.xml', $xml)])->assertOk();
-        $this->assertDatabaseHas('com_documentos', ['id_documento_origen' => $id, 'numero' => '001-002-000000005', 'total' => 36]);
+        $this->assertDatabaseHas('com_documentos', ['id_documento_origen' => $id, 'numero' => '001-002-000000005', 'total' => 20]);
         $this->postJson($ruta, ['xml_retencion' => UploadedFile::fake()->createWithContent('retencion.xml', $xml)])->assertUnprocessable();
 
         $segundaBase = str_replace($serie, '001002000000006', $base);
@@ -695,6 +709,22 @@ final class FacturacionVentaTest extends TestCase
         $this->postJson($ruta, ['clave_acceso' => $segundaClave, 'id_documento_origen' => $id])->assertOk();
         $retencion = DB::table('com_documentos')->where('numero', '001-002-000000006')->value('id');
         $this->get(route('ventas.retenciones.show', $retencion))->assertOk()->assertSee('Autorizada en el SRI');
+    }
+
+    public function test_la_retencion_de_venta_requiere_asiento_para_reducir_el_saldo(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos)->assertRedirect();
+        $id = DB::table('com_documentos')->value('id');
+        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['activa' => false]);
+
+        $this->postJson(route('ventas.retenciones.store'), [
+            'id_documento_origen' => $id, 'numero' => '001-002-000000004', 'fecha' => $datos['fecha'],
+            'lineas' => [['descripcion' => 'Retención de renta', 'tipo_retencion' => 'renta', 'codigo_retencion' => '312', 'porcentaje_retencion' => '2']],
+        ])->assertUnprocessable()->assertJsonValidationErrors('contabilidad');
+
+        $this->assertDatabaseMissing('com_documentos', ['modulo' => 'ventas', 'tipo' => 'retenciones']);
+        $this->get(route('ventas.documentos.trazabilidad', $id))->assertOk()->assertSee('USD 20.70');
     }
 
     public function test_genera_el_xml_ats_de_retencion_con_su_propio_secuencial(): void
@@ -709,11 +739,14 @@ final class FacturacionVentaTest extends TestCase
             'lineas' => [['descripcion' => 'Servicio', 'cantidad' => 1, 'precio' => 10, 'tasa' => 15]],
         ])->assertRedirect(route('compras.documentos.index'));
         $compra = DB::table('com_documentos')->where('modulo', 'compras')->value('id');
-        $this->get(route('compras.retenciones.create', ['origen' => $compra]))->assertOk()
-            ->assertSee('Sustento tributario')->assertDontSee('name="numero"', false)->assertDontSee('Archivo XML');
+        $this->get(route('compras.retenciones.create', ['origen' => $compra]), ['X-Aitrol-Fragmento' => 'contenido'])->assertOk()
+            ->assertSee('Sustento tributario')->assertDontSee('name="numero"', false)->assertDontSee('Archivo XML')
+            ->assertSee('data-ajax-form', false)->assertDontSee('<!doctype html>', false)
+            ->assertSee('value="10.00"', false)->assertSee('data-base-iva="1.50"', false)->assertSee('Total retenido')
+            ->assertSee('data-retencion-catalogo', false)->assertSee(route('compras.retenciones.catalogo'));
         $this->postJson(route('compras.retenciones.store'), [
             'fecha' => $datos['fecha'], 'id_documento_origen' => $compra, 'codigo_sustento' => '02', 'parte_relacionada' => 'NO',
-            'lineas' => [['tipo_retencion' => 'renta', 'codigo_retencion' => '312', 'base_retencion' => '10.00', 'porcentaje_retencion' => '1.75']],
+            'lineas' => [['tipo_retencion' => 'renta', 'codigo_retencion' => '312', 'base_retencion' => '999.00', 'porcentaje_retencion' => '1.75']],
         ])->assertOk();
         $registro = DB::table('com_documentos')->where('modulo', 'compras')->where('tipo', 'retenciones')->first();
         $this->assertSame('001-001-000000001', $registro->numero);
@@ -726,6 +759,7 @@ final class FacturacionVentaTest extends TestCase
         $sustento = $xml->docsSustento->docSustento;
         $this->assertSame('052070000054468', (string) $sustento->numDocSustento);
         $this->assertSame('20', (string) $sustento->pagos->pago->formaPago);
+        $this->assertSame('10.00', (string) $sustento->retenciones->retencion->baseImponible);
         $this->assertSame('0.18', (string) $sustento->retenciones->retencion->valorRetenido);
         $this->get(route('compras.retenciones.xml', $registro->id))->assertOk()->assertHeader('Content-Type', 'application/xml');
 
@@ -801,7 +835,7 @@ final class FacturacionVentaTest extends TestCase
         $this->actingAs($usuario);
         $ruta = 'compras.retenciones.catalogo';
         $this->getJson(route($ruta, ['tipo' => 'renta', 'fecha' => '2026-11-28']))
-            ->assertOk()->assertJsonCount(0, 'results');
+            ->assertOk()->assertJsonCount(15, 'results')->assertJsonPath('pagination.more', true);
         $this->getJson(route($ruta, ['tipo' => 'renta', 'fecha' => '2026-02-28', 'q' => '312']))
             ->assertOk()->assertJsonPath('results.0.id', '312')->assertJsonPath('results.0.text', '312 · Adquisición de bienes muebles corporales · 1.75 %');
         $this->getJson(route($ruta, ['tipo' => 'renta', 'fecha' => '2026-03-01', 'q' => '312']))
@@ -810,6 +844,8 @@ final class FacturacionVentaTest extends TestCase
             ->assertOk()->assertJsonCount(0, 'results');
         $this->getJson(route($ruta, ['tipo' => 'iva', 'fecha' => '2026-11-28', 'q' => '50']))
             ->assertOk()->assertJsonPath('results.0.id', '11');
+        $this->getJson(route('ventas.retenciones.catalogo', ['tipo' => 'renta', 'fecha' => '2026-03-01', 'q' => 'bienes muebles']))
+            ->assertOk()->assertJsonFragment(['id' => '312', 'descripcion' => 'Adquisición de bienes muebles corporales', 'porcentaje' => '2']);
     }
 
     public function test_el_cobro_confirmado_baja_el_saldo_y_se_concilia_por_separado(): void

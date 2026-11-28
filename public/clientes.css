@@ -98,6 +98,37 @@
     padding: 1.25rem clamp(1rem, 4vw, 1.5rem);
 }
 
+.cliente-dialog.cliente-dialog-redisenado:has([data-formulario-retencion]) {
+    width: min(60rem, calc(100% - 1.5rem));
+    overflow: visible;
+}
+
+.cliente-dialog[open]:has([data-formulario-retencion]) {
+    display: flex;
+    flex-direction: column;
+}
+
+.cliente-dialog:has([data-formulario-retencion]) > .cliente-dialog-cabecera {
+    flex-shrink: 0;
+    border-radius: 1rem 1rem 0 0;
+}
+
+.cliente-dialog:has([data-formulario-retencion]) > .cliente-dialog-cuerpo {
+    min-height: 0;
+    overflow: auto;
+}
+
+.retencion-catalogo-desplegable {
+    width: var(--retencion-menu-ancho) !important;
+    min-width: 0 !important;
+    transform: translateX(var(--retencion-menu-desplazamiento));
+    overflow-wrap: anywhere;
+}
+
+.select2-dropdown.retencion-catalogo-desplegable .select2-results > .select2-results__options {
+    max-height: min(15rem, 35dvh);
+}
+
 .cliente-dialog-pie {
     border-top: 1px solid var(--bs-border-color);
 }

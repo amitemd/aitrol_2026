@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditoriaController;
 use App\Http\Controllers\EmpresaInicialController;
+use App\Http\Controllers\PersonaFormularioController;
 use App\Http\Controllers\PreferenciasDashboardController;
 use App\Http\Controllers\RecuperacionClaveController;
 use App\Http\Controllers\SesionController;
@@ -25,6 +26,9 @@ Route::post('/idioma', function (Request $request): RedirectResponse {
 })->name('idioma.actualizar');
 
 Route::middleware(['auth', 'auth.session'])->group(function (): void {
+    Route::post('/personas/formularios/{formulario}', PersonaFormularioController::class)
+        ->whereIn('formulario', ['clientes', 'proveedores', 'usuarios', 'empleados'])
+        ->middleware(['empresa', 'throttle:60,1'])->name('personas.formularios.buscar');
     Route::put('/panel/preferencias', PreferenciasDashboardController::class)
         ->middleware('empresa')->name('dashboard.preferencias');
     Route::post('/asistente/vicky', VickyController::class)

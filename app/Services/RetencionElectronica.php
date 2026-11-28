@@ -126,7 +126,7 @@ final readonly class RetencionElectronica
                     'clave_acceso' => $clave, 'ambiente' => $clave[23], 'xml_retencion' => $contenido,
                     'estado_retencion' => $claveConsultada === null ? 'XML recibido' : 'Autorizada en el SRI',
                 ],
-            ]);
+            ], conservarBasesXml: true);
         });
     }
 
@@ -135,6 +135,7 @@ final readonly class RetencionElectronica
         return $this->empresa->transaccion(function () use ($datos): stdClass {
             $empresa = $this->empresaFiscal();
             $compra = $this->documentos->consultar('compras', 'documentos', (int) $datos['id_documento_origen']);
+            $datos['lineas'] = $this->documentos->aplicarBasesRetencion($datos['lineas'], $compra);
             $proveedor = DB::table('erp_proveedores')->where('id_empresa', $this->empresa->id())
                 ->where('id', $compra->id_proveedor)->first(['nombre', 'identificacion', 'tipo_identificacion']);
             $identificacion = match ($proveedor?->tipo_identificacion) {

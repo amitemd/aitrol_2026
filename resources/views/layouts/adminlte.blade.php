@@ -1,4 +1,7 @@
 {{-- Adaptado de AdminLTE 4.10.2, licencia MIT en public/adminlte/LICENSE. --}}
+@if (request()->isMethod('GET') && request()->header('X-Aitrol-Fragmento') === 'contenido')
+    @yield('content')
+@else
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -95,7 +98,7 @@
 
   <link rel="stylesheet" href="{{ asset('workspace.css') }}" />
   <script nonce="{{ request()->attributes->get('csp_nonce') }}" src="{{ asset('comercial.js') }}?v={{ filemtime(public_path('comercial.js')) }}" defer></script>
-  <link rel="stylesheet" href="{{ asset('clientes.css') }}" />
+  <link rel="stylesheet" href="{{ asset('clientes.css') }}?v={{ filemtime(public_path('clientes.css')) }}" />
   <link rel="stylesheet" href="{{ asset('archivo-documentos.css') }}?v={{ filemtime(public_path('archivo-documentos.css')) }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
   <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte-select2.min.css') }}" />
@@ -202,3 +205,4 @@
 </body>
 
 </html>
+@endif

@@ -44,14 +44,20 @@
                 data: (params) => ({ q: params.term ?? '', page: params.page ?? 1, ...(retencion ? datosRetencion() : {}) }),
             },
             ...(retencion ? {
+                dropdownAutoWidth: true,
                 tags: true,
                 createTag: ({ term }) => {
-                    const codigo = term.trim().toUpperCase();
-                    return /^[0-9][0-9A-Z]{0,4}$/.test(codigo)
+                    const recibida = select.hasAttribute('data-retencion-recibida');
+                    const codigo = recibida ? term.trim() : term.trim().toUpperCase();
+                    const valido = recibida
+                        ? codigo.length > 0 && codigo.length <= 32
+                        : /^[0-9][0-9A-Z]{0,4}$/.test(codigo);
+                    return valido
                         ? { id: codigo, text: codigo + ' · Ingresar código manualmente' } : null;
                 },
                 insertTag: (resultados, opcion) => {
-                    if (!resultados.some((resultado) => resultado.id === opcion.id)) resultados.push(opcion);
+                    const codigo = opcion.id.toUpperCase();
+                    if (!resultados.some((resultado) => String(resultado.id).toUpperCase() === codigo)) resultados.push(opcion);
                 },
             } : {}),
         } : {});
@@ -61,12 +67,35 @@
         return select.closest('[data-comercial-linea]').querySelector('input[name$="[porcentaje_retencion]"]');
     }
 
+    $(document).on('select2:open', '[data-retencion-catalogo]', function () {
+        const contenedor = this.closest('dialog, [data-select2-contenedor]') ?? this.ownerDocument.body;
+        const menu = contenedor.querySelector('.select2-container--open > .select2-dropdown');
+        if (!menu) return;
+
+        const espacio = this.ownerDocument.documentElement.clientWidth;
+        const ancho = Math.min(480, espacio - 24);
+        const izquierda = this.nextElementSibling.getBoundingClientRect().left;
+        menu.classList.add('retencion-catalogo-desplegable');
+        menu.style.setProperty('--retencion-menu-ancho', ancho + 'px');
+        menu.style.setProperty('--retencion-menu-desplazamiento', Math.min(0, espacio - 12 - izquierda - ancho) + 'px');
+    });
+
+    function completarRetencion(select, opcion) {
+        const tasa = tasaDe(select);
+        tasa.value = opcion?.porcentaje ?? '';
+        tasa.dispatchEvent(new Event('input', { bubbles: true }));
+        const concepto = select.closest('[data-comercial-linea]').querySelector('input[name$="[descripcion]"]');
+        if (concepto && (!concepto.value || concepto.value === concepto.dataset.descripcionCatalogo)) {
+            concepto.value = concepto.dataset.descripcionCatalogo = opcion?.descripcion ?? '';
+        }
+    }
+
     $(document).on('select2:select select2:clear', '[data-retencion-catalogo]', function (evento) {
-        tasaDe(this).value = evento.params?.data?.porcentaje ?? '';
+        completarRetencion(this, evento.params?.data);
     });
     function limpiarCodigo(select) {
         $(select).val('').trigger('change');
-        tasaDe(select).value = '';
+        completarRetencion(select);
     }
     $(document).on('change', '[data-retencion-tipo]', function () {
         limpiarCodigo(this.closest('[data-comercial-linea]').querySelector('[data-retencion-catalogo]'));

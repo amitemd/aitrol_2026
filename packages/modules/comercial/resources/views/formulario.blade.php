@@ -8,13 +8,16 @@
     $vinculado = in_array($seccion, \Aitrol\Comercial\Application\DocumentosComerciales::VINCULADOS, true);
     $retencion = $seccion === 'retenciones';
     $retencionElectronica = $modulo === 'compras' && $retencion;
+    $baseRenta = $retencion && $origen ? \Aitrol\Inventarios\Domain\CantidadInventario::decimal((int) $origen->subtotal, 2) : null;
+    $baseIva = $retencion && $origen ? \Aitrol\Inventarios\Domain\CantidadInventario::decimal((int) $origen->impuesto, 2) : null;
     $fiscalSustento = $retencionElectronica && $origen ? json_decode($origen->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR) : [];
 @endphp
 @section('title', $titulo)
 @section('content')
     <div class="app-content py-3">
         <div class="container-fluid">
-            <form method="POST" action="{{ route($ruta.'.store') }}" class="card" data-ajax-form data-comercial-documento>
+            <form method="POST" action="{{ route($ruta.'.store') }}" class="card" data-ajax-form data-comercial-documento
+                @if ($retencion) data-formulario-retencion data-base-renta="{{ $baseRenta }}" data-base-iva="{{ $baseIva }}" @endif>
                 @csrf
                 <h1 class="card-header fs-5">{{ $titulo }}</h1>
                 @include('comercial::errores')
@@ -44,11 +47,20 @@
                                 <input id="com-tercero" class="form-control" value="{{ $origen->numero }} · {{ $origen->tercero }}" readonly>
                             @else
                             <select id="com-tercero" class="form-select" name="{{ $vinculado ? 'id_documento_origen' : 'id_tercero' }}"
-                                data-select2-url="{{ route($ruta.'.opciones', $vinculado ? 'origenes' : 'terceros') }}" data-select2-min="0" required>
+                                data-select2-url="{{ route($ruta.'.opciones', $vinculado ? 'origenes' : 'terceros') }}" data-select2-min="0"
+                                @if ($retencion) data-retencion-origen @endif required>
                                 <option value="">{{ __('Seleccionar') }}</option>
                             </select>
                             @endif
                         </div>
+                        @if ($retencion)
+                            <div class="col-12" data-retencion-bases @if (!$origen) hidden @endif>
+                                <div class="d-flex flex-wrap gap-3 rounded border bg-body-tertiary px-3 py-2">
+                                    <span>Subtotal sin IVA <strong class="ms-1" data-retencion-base-renta>USD {{ $baseRenta }}</strong></span>
+                                    <span>IVA de la factura <strong class="ms-1" data-retencion-base-iva>USD {{ $baseIva }}</strong></span>
+                                </div>
+                            </div>
+                        @endif
                         @if ($seccion === 'documentos')
                             <div class="col-sm-6">
                                 <label class="form-label" for="com-bodega">Bodega</label>
@@ -117,10 +129,22 @@
                     @endif
                     <div class="d-grid gap-2" data-comercial-lineas>
                         @foreach (array_values((array) old('lineas', [[]])) as $indice => $linea)
-                            @include('comercial::linea', ['indice' => $indice, 'linea' => is_array($linea) ? $linea : []])
+                            @php
+                                $linea = is_array($linea) ? $linea : [];
+                                if ($retencion) {
+                                    $linea['base_retencion'] = ($linea['tipo_retencion'] ?? 'renta') === 'iva' ? $baseIva : $baseRenta;
+                                }
+                            @endphp
+                            @include('comercial::linea', ['indice' => $indice, 'linea' => $linea])
                         @endforeach
                     </div>
                     <template data-comercial-plantilla>@include('comercial::linea', ['indice' => '__INDICE__', 'linea' => []])</template>
+                    @if ($retencion)
+                        <div class="d-flex justify-content-end gap-2 align-items-baseline mt-3 pt-3 border-top">
+                            <span>Total retenido</span>
+                            <output class="fw-bold fs-5" data-retencion-total>$0,00</output>
+                        </div>
+                    @endif
                     @endif
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
