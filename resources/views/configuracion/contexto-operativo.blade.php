@@ -45,6 +45,11 @@
     @if ($errors->any())
         <div class="alert alert-danger mt-3" role="alert">{{ $errors->first() }}</div>
     @endif
+    @if (request()->query('desde') === 'importaciones')
+        @can('administrar-configuracion')
+            <a class="btn btn-outline-secondary w-100 mt-3" href="{{ route('configuracion.importaciones.index') }}">Volver a Importaciones</a>
+        @endcan
+    @endif
     <form method="POST" class="mt-3 text-center" action="{{ route('logout') }}"
         data-accion-confirmar="¿Deseas salir del sistema?" data-confirmar-titulo="{{ __('Cerrar sesión') }}"
         data-confirmar-boton="Sí, cerrar sesión" data-confirmar-cancelar="Seguir trabajando">

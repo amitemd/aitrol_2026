@@ -14,9 +14,7 @@ final class ClienteModel extends Model
 
     protected $table = 'erp_clientes';
 
-    protected $fillable = [
-        'tipo_identificacion', 'identificacion', 'nombre', 'email', 'telefono', 'direccion', 'activo', 'perfil',
-    ];
+    protected $fillable = ['activo', 'perfil'];
 
     /** @return array<string, string> */
     protected function casts(): array
@@ -26,10 +24,10 @@ final class ClienteModel extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $cliente): void {
+        self::creating(function (self $cliente): void {
             $cliente->id_usuario_creacion = auth()->id();
         });
-        static::updating(function (self $cliente): void {
+        self::updating(function (self $cliente): void {
             $cliente->id_usuario_modificacion = auth()->id();
         });
     }

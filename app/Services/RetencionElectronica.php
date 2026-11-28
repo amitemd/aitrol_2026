@@ -102,11 +102,12 @@ final readonly class RetencionElectronica
         return $this->empresa->transaccion(function () use ($idOrigen, $numeroOrigen, $fechaOrigen, $ruc, $clave, $serie, $fecha, $lineasRegistro, $contenido, $claveConsultada, $fuente): stdClass {
             $origen = DB::table('com_documentos as factura')->join('erp_clientes as cliente', fn ($join) => $join
                 ->on('cliente.id', '=', 'factura.id_cliente')->on('cliente.id_empresa', '=', 'factura.id_empresa'))
+                ->join('personas as persona', 'persona.id', '=', 'cliente.id_persona')
                 ->where('factura.id_empresa', $this->empresa->id())->where('factura.id_sucursal', $this->contexto->sucursal()->id)
                 ->where('factura.modulo', 'ventas')->where('factura.tipo', 'documentos')->whereNull('factura.anulado_at')
                 ->where('factura.numero', $numeroOrigen)->where('factura.fecha', $fechaOrigen)
                 ->when($idOrigen !== null, fn ($q) => $q->where('factura.id', $idOrigen))
-                ->first(['factura.id', 'factura.id_cliente', 'factura.datos_factura', 'cliente.identificacion']);
+                ->first(['factura.id', 'factura.id_cliente', 'factura.datos_factura', 'persona.identificacion']);
             $fiscalOrigen = json_decode($origen?->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
             $identificacion = $fiscalOrigen['cliente']['identificacion'] ?? $origen?->identificacion;
             $autorizacionOrigen = (string) $fuente->numAutDocSustento;

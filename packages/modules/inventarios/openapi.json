@@ -9,8 +9,8 @@
       "post": {
         "tags": ["Inventarios"],
         "operationId": "encolarImportacionProductos",
-        "summary": "Importar productos desde CSV",
-        "description": "Requiere un administrador de la empresa activa y el alcance inventarios:escribir. El CSV UTF-8 usa punto y coma y admite 4 MB y 20.000 filas. Los códigos existentes se conservan.",
+        "summary": "Importar productos desde Excel o CSV",
+        "description": "Requiere un administrador de la empresa activa y el alcance inventarios:escribir. Acepta la plantilla Excel .xlsx o CSV UTF-8 separado por punto y coma, hasta 4 MB y 20.000 filas. Los códigos existentes se conservan.",
         "requestBody": {
           "required": true,
           "content": {"multipart/form-data": {"schema": {"type": "object", "required": ["archivo"], "properties": {"archivo": {"type": "string", "format": "binary"}}}}}

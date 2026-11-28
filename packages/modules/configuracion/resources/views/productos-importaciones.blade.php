@@ -7,30 +7,27 @@
 
     <div class="app-content">
         <div class="container-fluid">
-            <a class="btn btn-outline-secondary mb-3" href="{{ route('configuracion.importaciones.index') }}">
-                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Importaciones
-            </a>
             @if (session('estado'))
                 <p class="alert alert-success" role="status">{{ session('estado') }}</p>
             @endif
             <section class="card mb-4">
                 <div class="card-body">
                     <a class="btn btn-outline-primary mb-3" href="{{ route('configuracion.importaciones.productos.plantilla') }}" download>
-                        <i class="bi bi-download me-1" aria-hidden="true"></i> Descargar plantilla CSV
+                        <i class="bi bi-download me-1" aria-hidden="true"></i> Descargar plantilla Excel
                     </a>
                     <form action="{{ route('configuracion.importaciones.productos.store') }}" method="post" enctype="multipart/form-data" data-importacion-carga>
                         @csrf
-                        <label for="archivo-productos" class="form-label fw-semibold">Archivo CSV de productos</label>
+                        <label for="archivo-productos" class="form-label fw-semibold">Archivo de productos</label>
                         <div class="d-flex flex-wrap flex-md-nowrap gap-2">
-                            <input type="file" id="archivo-productos" name="archivo" accept=".csv" required
+                            <input type="file" id="archivo-productos" name="archivo" accept=".xlsx,.csv" required
                                 class="form-control @error('archivo') is-invalid @enderror" aria-describedby="formato-productos">
                             <button type="submit" class="btn btn-primary text-nowrap">
                                 <i class="bi bi-upload me-1" aria-hidden="true"></i> Importar en segundo plano
                             </button>
                         </div>
                         @error('archivo') <p class="text-danger small mt-2 mb-0">{{ $message }}</p> @enderror
-                        <p id="formato-productos" class="form-text mb-0">CSV UTF-8 separado por punto y coma. Hasta 4 MB y 20.000 filas.
-                            Completa código, nombre y unidad. Los códigos existentes se conservan. Las existencias se registran por bodega.</p>
+                        <p id="formato-productos" class="form-text mb-0">Llena la hoja Productos y sube el mismo archivo .xlsx. Completa código, nombre y unidad.
+                            Hasta 4 MB y 20.000 filas. Los códigos existentes se conservan. También se aceptan CSV UTF-8 separados por punto y coma.</p>
                         <div class="mt-3" data-importacion-carga-estado hidden>
                             <p class="small mb-1" id="productos-carga-etiqueta" role="status">Subiendo el archivo…</p>
                             <progress class="importacion-barra w-100 d-block" aria-labelledby="productos-carga-etiqueta"></progress>

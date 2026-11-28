@@ -25,9 +25,11 @@ final readonly class CarteraClientes
             ->where(fn (Builder $q) => $q->whereNull('f.anulado_at')->orWhere('f.anulado_at', '>=', $corte->addDay()->startOfDay()->utc()))
             ->when($cliente !== null, fn (Builder $q) => $q->where('f.id_cliente', $cliente))
             ->leftJoin('erp_clientes as cliente', fn ($join) => $join->on('cliente.id', '=', 'f.id_cliente')->on('cliente.id_empresa', '=', 'f.id_empresa'))
+            ->leftJoin('personas as persona', 'persona.id', '=', 'cliente.id_persona')
             ->when($busqueda !== null && $busqueda !== '', fn (Builder $q) => $q->where(fn (Builder $filtro) => $filtro
                 ->whereLike('f.numero', '%'.$busqueda.'%')->orWhereLike('f.tercero', '%'.$busqueda.'%')
-                ->orWhereLike('cliente.nombre', '%'.$busqueda.'%')->orWhereLike('cliente.identificacion', '%'.$busqueda.'%')));
+                ->orWhereLike('persona.identificacion', '%'.$busqueda.'%')
+                ->orWhereRaw("LOWER(CONCAT(persona.nombre, ' ', COALESCE(persona.apellido, ''))) LIKE LOWER(?)", ['%'.$busqueda.'%'])));
 
         $ids = (clone $facturas)->select('f.id');
         $ajustes = $this->cobros->ajustesVigentes($corte)->whereIn('id_documento_origen', clone $ids)
@@ -40,8 +42,9 @@ final readonly class CarteraClientes
             ->select('op.id_factura_venta')->selectRaw("SUM(CAST(op.importe AS $tipoEntero)) AS cobrado")->groupBy('op.id_factura_venta');
         $detalle = $facturas->leftJoinSub($ajustes, 'ajuste', 'ajuste.id_documento_origen', '=', 'f.id')
             ->leftJoinSub($pagos, 'pago', 'pago.id_factura_venta', '=', 'f.id')
-            ->select('f.id', 'f.id_cliente', 'f.numero', 'f.fecha', 'f.total', 'cliente.identificacion')
-            ->selectRaw('COALESCE(cliente.nombre, f.tercero) AS tercero, '.$this->vencimiento().' AS vencimiento')
+            ->select('f.id', 'f.id_cliente', 'f.numero', 'f.fecha', 'f.total', 'persona.identificacion')
+            ->selectRaw("CASE WHEN persona.id IS NULL THEN f.tercero ELSE TRIM(CONCAT(persona.nombre, ' ', COALESCE(persona.apellido, ''))) END AS tercero, "
+                .$this->vencimiento().' AS vencimiento')
             ->selectRaw("COALESCE(ajuste.debitos, 0) AS debitos, COALESCE(ajuste.creditos, 0) AS creditos,
                 COALESCE(ajuste.retenido, 0) AS retenido, COALESCE(pago.cobrado, 0) AS cobrado,
                 CAST(f.total AS $tipoEntero) + COALESCE(ajuste.debitos, 0) - COALESCE(ajuste.creditos, 0)

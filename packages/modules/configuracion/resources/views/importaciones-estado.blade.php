@@ -18,7 +18,7 @@
                         $porcentaje = $tarea->total > 0 ? min(100, (int) floor($tarea->procesadas * 100 / $tarea->total)) : 0;
                         $etiqueta = match ($tarea->estado) {
                             'pendiente' => 'En cola',
-                            'preparando' => 'Leyendo el Excel',
+                            'preparando' => 'Leyendo el archivo',
                             'procesando' => 'Importando',
                             'completada' => 'Completada',
                             'fallida' => 'Interrumpida',

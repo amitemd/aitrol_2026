@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use App\Models\User;
+use App\Services\LectorExcel;
 use Generator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -31,17 +32,20 @@ final class ImportarProductos implements ShouldQueue
 
     public array $backoff = [10, 30];
 
-    public function __construct(public readonly string $importacion)
+    public string $formato = 'csv';
+
+    public function __construct(public readonly string $importacion, string $formato = 'csv')
     {
+        $this->formato = $formato;
         $this->onConnection('personas');
     }
 
-    public static function ruta(string $id): string
+    public static function ruta(string $id, string $formato = 'csv'): string
     {
-        return 'importaciones-productos/'.$id.'.csv';
+        return 'importaciones-productos/'.$id.($formato === 'xlsx' ? '.xlsx' : '.csv');
     }
 
-    public function handle(RepositorioInventario $inventario): void
+    public function handle(RepositorioInventario $inventario, LectorExcel $excel): void
     {
         $tarea = DB::table('inv_importaciones')->find($this->importacion);
         if ($tarea === null || in_array($tarea->estado, ['completada', 'fallida'], true)) {
@@ -57,16 +61,14 @@ final class ImportarProductos implements ShouldQueue
         }
 
         $this->actualizar(['estado' => 'preparando']);
-        $ruta = Storage::disk('local')->path(self::ruta($this->importacion));
+        $ruta = Storage::disk('local')->path(self::ruta($this->importacion, $this->formato));
         try {
-            $total = 0;
-            foreach ($this->filas($ruta) as $fila) {
-                if (++$total > 20000) {
-                    throw new RuntimeException('El CSV admite hasta 20.000 filas.');
-                }
+            ['total' => $total, 'filas' => $filas] = $this->prepararArchivo($ruta, $excel);
+            if ($total > 20000) {
+                throw new RuntimeException('La importación admite hasta 20.000 filas.');
             }
             if ($total === 0) {
-                throw new RuntimeException('El CSV no contiene filas de productos.');
+                throw new RuntimeException('El archivo no contiene filas de productos.');
             }
         } catch (RuntimeException $error) {
             $this->terminar('fallida', $error->getMessage());
@@ -87,7 +89,7 @@ final class ImportarProductos implements ShouldQueue
         try {
             $lote = [];
             $inicioLote = $procesadas;
-            foreach ($this->filas($ruta) as $indice => $fila) {
+            foreach ($filas as $indice => $fila) {
                 if ($indice < $procesadas) {
                     continue;
                 }
@@ -114,11 +116,50 @@ final class ImportarProductos implements ShouldQueue
 
     public function failed(?Throwable $error): void
     {
-        $this->terminar('fallida', 'La importación se interrumpió. Puedes volver a cargar el CSV para importar las filas pendientes.');
+        $this->terminar('fallida', 'La importación se interrumpió. Puedes volver a cargar el archivo para importar las filas pendientes.');
+    }
+
+    /** @return array{total: int, filas: Generator<int, list<string|null>>} */
+    private function prepararArchivo(string $ruta, LectorExcel $excel): array
+    {
+        if ($this->formato === 'xlsx') {
+            ['total' => $total, 'filas' => $filas] = $excel->leer($ruta, static function (array $encabezados): array {
+                $columnas = LectorExcel::mapearColumnas($encabezados, [
+                    'codigo' => ['codigo'],
+                    'nombre' => ['nombre'],
+                    'unidad' => ['unidad'],
+                    'tipo_producto' => ['tipo_de_producto', 'tipo_producto'],
+                    'precio_venta' => ['precio_de_venta', 'precio_venta'],
+                    'codigo_barras' => ['codigo_de_barras', 'codigo_barras'],
+                    'descripcion' => ['descripcion'],
+                ]);
+
+                return array_diff(['codigo', 'nombre', 'unidad'], $columnas) === [] ? $columnas : [];
+            }, 'No se encontró una hoja con Código, Nombre y Unidad. Usa la plantilla Excel de productos.', omitirVacias: true);
+
+            return ['total' => $total, 'filas' => $this->ordenarFilasExcel($filas)];
+        }
+
+        $total = 0;
+        foreach ($this->filasCsv($ruta) as $fila) {
+            if (++$total > 20000) {
+                break;
+            }
+        }
+
+        return ['total' => $total, 'filas' => $this->filasCsv($ruta)];
     }
 
     /** @return Generator<int, list<string|null>> */
-    private function filas(string $ruta): Generator
+    private function ordenarFilasExcel(Generator $filas): Generator
+    {
+        foreach ($filas as $fila) {
+            yield array_map(fn (string $campo): ?string => $fila[$campo] ?? null, self::COLUMNAS);
+        }
+    }
+
+    /** @return Generator<int, list<string|null>> */
+    private function filasCsv(string $ruta): Generator
     {
         if (! is_file($ruta)) {
             throw new RuntimeException('El archivo de importación ya no está disponible.');
@@ -212,6 +253,6 @@ final class ImportarProductos implements ShouldQueue
     {
         DB::table('inv_importaciones')->where('id', $this->importacion)->whereNotIn('estado', ['completada', 'fallida'])
             ->update(['estado' => $estado, 'error' => $error, 'updated_at' => now()]);
-        Storage::disk('local')->delete(self::ruta($this->importacion));
+        Storage::disk('local')->delete(self::ruta($this->importacion, $this->formato));
     }
 }

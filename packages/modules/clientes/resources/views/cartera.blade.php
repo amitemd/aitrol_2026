@@ -12,7 +12,7 @@
             default => ['total' => 'Factura', 'debitos' => 'Notas de débito', 'creditos' => 'Notas de crédito', 'retenido' => 'Retenciones', 'cobrado' => 'Cobros', 'saldo' => 'Saldo'],
         };
         $etiquetasMovimientos = ['notas-debito' => 'Nota de débito', 'notas-credito' => 'Nota de crédito', 'retenciones' => 'Retención', 'cobro' => 'Cobro'];
-        $nombre = $cliente ? ($cliente->persona?->nombreCompleto() ?: $cliente->nombre) : null;
+        $nombre = $cliente?->persona->nombreCompleto();
         $resumen = ['pendiente' => ['Total pendiente', $totales->pendiente], 'vencido' => ['Saldo vencido', $totales->vencido], 'a_favor' => ['Saldo a favor', $totales->a_favor]];
         if ($cliente) {
             $resumen['neto'] = ['Saldo neto', $totales->pendiente - $totales->a_favor];

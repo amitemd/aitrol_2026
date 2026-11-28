@@ -8,6 +8,7 @@ use Aitrol\Configuracion\Infrastructure\Http\ParametrosEmpresaController;
 use Aitrol\Configuracion\Infrastructure\Http\UbicacionController;
 use Aitrol\Configuracion\Infrastructure\Http\UsuarioController;
 use App\Http\Controllers\ContextoOperativoController;
+use App\Http\Controllers\ImportacionesController;
 use App\Http\Controllers\PersonaImportacionController;
 use App\Http\Controllers\ProductoImportacionController;
 use Illuminate\Support\Facades\Route;
@@ -43,7 +44,7 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-me
 Route::middleware(['web', 'auth', 'auth.session', 'empresa', 'can:administrar-configuracion'])
     ->prefix('configuraciones')->name('configuracion.')
     ->group(function (): void {
-        Route::view('/importaciones', 'configuracion::importaciones')->name('importaciones.index');
+        Route::get('/importaciones', ImportacionesController::class)->name('importaciones.index');
         Route::prefix('/importaciones/productos')->name('importaciones.productos.')->group(function (): void {
             Route::get('/', [ProductoImportacionController::class, 'index'])->name('index');
             Route::get('/estado', [ProductoImportacionController::class, 'estado'])

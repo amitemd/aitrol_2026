@@ -189,11 +189,11 @@ final readonly class DocumentosComerciales
                     'id_usuario_creacion' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
                 ] + ($idSolicitudCompra === null ? [] : ['id_solicitud_compra' => $idSolicitudCompra])
                     + ($umbralAprobacion === null ? [] : ['estado_aprobacion' => 'pendiente']) + (empty($datos['datos_compra']) ? [] : [
-                    'datos_factura' => json_encode($datos['datos_compra'], JSON_THROW_ON_ERROR),
-                ]) + ($creditoTotal ? ['propina' => $propina, 'datos_factura' => json_encode(['credito_total' => true], JSON_THROW_ON_ERROR)] : []) + ($factura === null ? [] : [
-                    'propina' => $propina,
-                    'datos_factura' => json_encode($factura + ['propina_centavos' => $propina, 'total_pago_centavos' => $total], JSON_THROW_ON_ERROR),
-                ]));
+                        'datos_factura' => json_encode($datos['datos_compra'], JSON_THROW_ON_ERROR),
+                    ]) + ($creditoTotal ? ['propina' => $propina, 'datos_factura' => json_encode(['credito_total' => true], JSON_THROW_ON_ERROR)] : []) + ($factura === null ? [] : [
+                        'propina' => $propina,
+                        'datos_factura' => json_encode($factura + ['propina_centavos' => $propina, 'total_pago_centavos' => $total], JSON_THROW_ON_ERROR),
+                    ]));
                 // El orden por producto mantiene consistente la adquisición de bloqueos de inventario.
                 $orden = array_keys($lineas);
                 usort($orden, fn (int $a, int $b) => [$lineas[$a]['id_producto'], $lineas[$a]['id_bodega'] ?? $bodega]
@@ -597,8 +597,16 @@ final readonly class DocumentosComerciales
 
     private function terceros(string $modulo): Builder
     {
-        return DB::table($modulo === 'ventas' ? 'erp_clientes' : 'erp_proveedores')
-            ->where('id_empresa', $this->empresa->id())->whereNull('deleted_at')->where('activo', true);
+        if ($modulo !== 'ventas') {
+            return DB::table('erp_proveedores')->where('id_empresa', $this->empresa->id())->whereNull('deleted_at')->where('activo', true);
+        }
+        $clientes = DB::table('erp_clientes as cliente')
+            ->join('personas as persona', 'persona.id', '=', 'cliente.id_persona')
+            ->where('cliente.id_empresa', $this->empresa->id())->whereNull('cliente.deleted_at')->where('cliente.activo', true)
+            ->select('cliente.id', 'persona.identificacion')
+            ->selectRaw("TRIM(CONCAT(persona.nombre, ' ', COALESCE(persona.apellido, ''))) AS nombre");
+
+        return DB::query()->fromSub($clientes, 'terceros');
     }
 
     private function documentos(string $modulo, ?ConnectionInterface $conexion = null): Builder

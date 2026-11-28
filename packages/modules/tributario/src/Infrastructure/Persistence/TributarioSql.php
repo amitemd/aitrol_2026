@@ -95,7 +95,9 @@ final readonly class TributarioSql implements RepositorioTributario
             ->groupBy('com_lineas.codigo_retencion', 'com_lineas.porcentaje_retencion')->orderBy('codigo')->get();
         $nomina = $entradas['retencion_nomina'] ?? 0;
         $base = $entradas['base_nomina'] ?? 0;
-        if ($base || $nomina) $filas->push((object) ['codigo' => 'Nómina informada', 'tasa' => null, 'base' => $base, 'retenido' => $nomina]);
+        if ($base || $nomina) {
+            $filas->push((object) ['codigo' => 'Nómina informada', 'tasa' => null, 'base' => $base, 'retenido' => $nomina]);
+        }
 
         return [
             'resumen' => ['base_registrada' => $filas->sum('base'), 'renta_retenida' => $filas->sum('retenido')],
@@ -140,12 +142,14 @@ final readonly class TributarioSql implements RepositorioTributario
         $filas = $this->tabla('com_documentos')->whereBetween('com_documentos.fecha', [$periodo->desde, $periodo->hasta])
             ->whereIn('com_documentos.tipo', ['documentos', 'notas-credito', 'notas-debito', 'retenciones'])
             ->leftJoin('erp_clientes as c', 'c.id', '=', 'com_documentos.id_cliente')
+            ->leftJoin('personas as persona_cliente', 'persona_cliente.id', '=', 'c.id_persona')
+            ->leftJoin('tipos_identificacion as tipo_cliente', 'tipo_cliente.id', '=', 'persona_cliente.id_tipo_identificacion')
             ->leftJoin('erp_proveedores as p', 'p.id', '=', 'com_documentos.id_proveedor')
             ->leftJoin('com_documentos as origen', 'origen.id', '=', 'com_documentos.id_documento_origen')
             ->select('com_documentos.fecha', 'com_documentos.numero', 'com_documentos.tipo', 'com_documentos.modulo', 'com_documentos.tercero',
                 'com_documentos.subtotal as base', 'com_documentos.impuesto', 'com_documentos.total', 'com_documentos.anulado_at', 'origen.numero as documento_origen')
-            ->selectRaw('coalesce(c.identificacion, p.identificacion) as identificacion')
-            ->selectRaw('coalesce(c.tipo_identificacion, p.tipo_identificacion) as tipo_identificacion')
+            ->selectRaw('coalesce(persona_cliente.identificacion, p.identificacion) as identificacion')
+            ->selectRaw('coalesce(tipo_cliente.codigo, p.tipo_identificacion) as tipo_identificacion')
             ->orderBy('com_documentos.fecha')->orderBy('com_documentos.id')->get();
         $sinIdentificacion = $filas->whereNull('identificacion')->count();
 

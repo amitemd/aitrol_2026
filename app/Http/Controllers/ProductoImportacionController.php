@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
 
 final class ProductoImportacionController extends Controller
@@ -33,11 +33,10 @@ final class ProductoImportacionController extends Controller
             ->header('Cache-Control', 'private, no-store');
     }
 
-    public function plantilla(): StreamedResponse
+    public function plantilla(): BinaryFileResponse
     {
-        return response()->streamDownload(static function (): void {
-            echo "\xEF\xBB\xBF".implode(';', ImportarProductos::COLUMNAS)."\r\n";
-        }, 'plantilla-productos.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return response()->download(base_path('packages/modules/inventarios/resources/plantilla-productos.xlsx'),
+            'plantilla-productos.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     public function show(string $importacion): JsonResponse
@@ -51,30 +50,31 @@ final class ProductoImportacionController extends Controller
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $request->validate([
-            'archivo' => ['required', 'file', 'extensions:csv', 'mimes:csv,txt', 'max:4096'],
+            'archivo' => ['required', 'file', 'extensions:xlsx,csv', 'mimes:xlsx,csv,txt', 'max:4096'],
         ], [
-            'archivo.required' => 'Selecciona el CSV de productos.',
-            'archivo.extensions' => 'Selecciona un archivo con extensión .csv.',
-            'archivo.mimes' => 'El archivo debe ser un CSV de texto.',
-            'archivo.max' => 'El CSV debe pesar hasta 4 MB.',
+            'archivo.required' => 'Selecciona el archivo de productos.',
+            'archivo.extensions' => 'Selecciona un archivo Excel .xlsx o CSV .csv.',
+            'archivo.mimes' => 'El archivo debe ser un libro Excel .xlsx o un CSV de texto.',
+            'archivo.max' => 'El archivo debe pesar hasta 4 MB.',
         ]);
 
         $archivo = $request->file('archivo');
         $id = (string) Str::uuid();
-        $ruta = ImportarProductos::ruta($id);
+        $formato = strtolower($archivo->getClientOriginalExtension());
+        $ruta = ImportarProductos::ruta($id, $formato);
         $disk = Storage::disk('local');
         if ($disk->putFileAs(dirname($ruta), $archivo, basename($ruta)) === false) {
-            throw ValidationException::withMessages(['archivo' => 'No se pudo guardar el CSV. Vuelve a intentarlo.']);
+            throw ValidationException::withMessages(['archivo' => 'No se pudo guardar el archivo. Vuelve a intentarlo.']);
         }
 
         try {
-            DB::transaction(function () use ($request, $archivo, $id): void {
+            DB::transaction(function () use ($request, $archivo, $id, $formato): void {
                 DB::table('inv_importaciones')->insert([
                     'id' => $id, 'id_empresa' => $this->empresa->id(), 'id_usuario' => $request->user()->id,
                     'archivo' => Str::limit($archivo->getClientOriginalName(), 255, ''),
                     'created_at' => now(), 'updated_at' => now(),
                 ]);
-                Bus::dispatch(new ImportarProductos($id));
+                Bus::dispatch(new ImportarProductos($id, $formato));
             });
         } catch (Throwable $error) {
             $disk->delete($ruta);

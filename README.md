@@ -91,7 +91,7 @@ Esta tabla es parte del funcionamiento del chat. Cada fila declara un destino, s
 <!-- vicky:rutas -->
 | Destino | Ruta de pestaña | Ruta modal | Frases | Indicaciones |
 | --- | --- | --- | --- | --- |
-| Nuevo cliente | clientes.index | clientes.create | crear cliente; crear clientes; registrar cliente; registrar clientes; nuevo cliente; agregar cliente; agregar clientes | Ve a Clientes → Lista de clientes → Nuevo cliente. Completa la ficha y guarda. |
+| Nuevo cliente | clientes.index | clientes.create | crear cliente; crear clientes; registrar cliente; registrar clientes; nuevo cliente; agregar cliente; agregar clientes | Ve a Clientes → Lista de clientes → Nuevo cliente. Busca la persona por identificación y guarda la ficha comercial. La identificación, los nombres y el contacto personal se consultan desde Personas. |
 | Lista de clientes | clientes.index | — | clientes; lista de clientes; directorio de clientes | Abre Clientes → Lista de clientes para buscar por nombre, identificación o correo. |
 | Cuentas por cobrar | clientes.reportes.cuentas-por-cobrar | — | cuentas por cobrar; cartera de clientes | Ve a Clientes → Reportes → Cuentas por cobrar. |
 | Nuevo proveedor | proveedores.index | proveedores.create | crear proveedor; crear proveedores; registrar proveedor; registrar proveedores; nuevo proveedor; agregar proveedor; agregar proveedores | Ve a Proveedores → Lista de proveedores → Nuevo proveedor. Completa la ficha y guarda. |
@@ -121,16 +121,16 @@ Esta tabla es parte del funcionamiento del chat. Cada fila declara un destino, s
 | ATS | tributario.ats.index | — | ats; anexo transaccional simplificado | Ve a Tributario → ATS. |
 | Empresas | configuracion.empresas.index | — | empresas; configuración de empresas | Ve a Configuración → Empresas. |
 | Sucursales | configuracion.sucursales.index | — | sucursales; configuración de sucursales | Ve a Configuración → Sucursales. |
-| Importaciones | configuracion.importaciones.index | — | importaciones; datos iniciales; configurar nueva empresa; carga masiva | Ve a Configuración → Importaciones. Desde allí abre Personas o Productos y consulta los accesos para configurar sucursales, bodegas, clientes, proveedores e integración contable. |
+| Importaciones | configuracion.importaciones.index | — | importaciones; datos iniciales; configurar nueva empresa; carga masiva | Ve a Configuración → Importaciones para ver qué datos están registrados y qué queda pendiente en la empresa activa. La fila de bodegas corresponde a la sucursal seleccionada. Usa Volver a Importaciones desde cualquiera de las pantallas de la lista. |
 | Importar personas | configuracion.personas.importaciones.index | — | importar personas; cargar personas desde Excel; progreso de importación | Ve a Configuración → Importaciones → Importar personas. El historial se actualiza cada dos segundos y muestra la espera, la lectura del Excel, el porcentaje y las filas procesadas. Requiere administración global. |
-| Importar productos | configuracion.importaciones.productos.index | — | importar productos; CSV de productos; cargar catálogo inicial; importar servicios | Ve a Configuración → Importaciones → Importar productos. Descarga la plantilla CSV de la empresa activa y completa código, nombre y unidad. El historial muestra el avance y el resultado por lote. |
+| Importar productos | configuracion.importaciones.productos.index | — | importar productos; Excel de productos; CSV de productos; descargar plantilla; cargar catálogo inicial; importar servicios | Ve a Configuración → Importaciones → Importar productos. Descarga la plantilla Excel, completa código, nombre y unidad en la hoja Productos y sube el mismo archivo .xlsx. El historial muestra el avance y el resultado por lote. |
 <!-- /vicky:rutas -->
 
 En el chat, «¿Dónde creo un cliente?» devuelve los pasos y un botón. «Abre nuevo cliente» abre la pestaña y el formulario si la sesión tiene permiso. Abrir un formulario deja su envío bajo control del usuario. La orientación de esta tabla se resuelve en Aitrol y está disponible aunque Ollama o Vicky Core estén fuera de alcance.
 
 ## Desarrollo local
 
-Las importaciones de personas y productos se ejecutan en la cola `personas` con `php artisan queue:work personas --timeout=900 --no-interaction`. Productos acepta CSV UTF-8 separado por punto y coma, de hasta 4 MB y 20.000 filas. Conserva los códigos existentes y registra únicamente fichas de catálogo. Las existencias iniciales se registran por bodega desde Inventarios. La API acepta el archivo en `POST /api/v1/inventarios/productos/importaciones` y consulta el resultado con `GET /api/v1/inventarios/productos/importaciones/{importacion}`.
+Las importaciones de personas y productos se ejecutan en la cola `personas` con `php artisan queue:work personas --timeout=900 --no-interaction`. Productos acepta la plantilla Excel .xlsx o CSV UTF-8 separado por punto y coma, hasta 4 MB y 20.000 filas. Conserva los códigos existentes y registra únicamente fichas de catálogo. Las existencias iniciales se registran por bodega desde Inventarios. La API acepta el archivo en `POST /api/v1/inventarios/productos/importaciones` y consulta el resultado con `GET /api/v1/inventarios/productos/importaciones/{importacion}`.
 
 Usa PHP 8.4 con PDO SQLite, Composer y Node.js. Copia `.env.example` a `.env` al preparar una instalación nueva. Crea `database/database.sqlite` si todavía no existe y selecciona `DB_CONNECTION=sqlite` en el entorno.
 

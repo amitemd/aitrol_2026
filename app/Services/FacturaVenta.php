@@ -150,22 +150,26 @@ final readonly class FacturaVenta
 
     public function cliente(int $id): ?stdClass
     {
-        return DB::table('erp_clientes as cliente')->leftJoin('personas as persona', 'persona.id', '=', 'cliente.id_persona')
-            ->where('cliente.id_empresa', $this->empresa->id())->where('cliente.id', $id)
-            ->where('cliente.activo', true)->whereNull('cliente.deleted_at')
-            ->select(['cliente.id', 'cliente.nombre', 'cliente.tipo_identificacion', 'cliente.identificacion'])
-            ->selectRaw('case when persona.id is null then cliente.direccion else persona.direccion end as direccion')
-            ->selectRaw('case when persona.id is null then cliente.telefono else persona.telefono end as telefono')
-            ->selectRaw('case when persona.id is null then cliente.email else persona.email end as email')->first();
+        $cliente = ClienteModel::query()->with('persona')->where('activo', true)->find($id);
+        if ($cliente === null) {
+            return null;
+        }
+        $persona = $cliente->persona;
+
+        return (object) ([
+            'id' => $cliente->id,
+            'nombre' => $persona->nombreCompleto(),
+            'tipo_identificacion' => TipoIdentificacion::desdeCatalogo((int) $persona->id_tipo_identificacion)->value,
+        ] + $persona->only(['identificacion', 'direccion', 'telefono', 'email']));
     }
 
     public function actualizarContacto(int $id, array $contacto): void
     {
         $this->empresa->transaccion(function () use ($id, $contacto): void {
             $cliente = ClienteModel::query()->where('activo', true)->lockForUpdate()->findOrFail($id);
-            $persona = $cliente->persona()->lockForUpdate()->first();
-            $persona?->fill($contacto)->save();
-            $cliente->fill($contacto)->save();
+            $cliente->persona()->lockForUpdate()->firstOrFail()->fill($contacto)->save();
+            $cliente->id_usuario_modificacion = auth()->id();
+            $cliente->touch();
         });
     }
 

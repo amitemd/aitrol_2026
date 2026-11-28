@@ -132,7 +132,17 @@ final readonly class VickyReportes
         $tabla = config("vicky-reportes.{$fuente}.tabla");
         abort_unless(is_string($tabla), 404);
 
-        return $this->tabla($tabla);
+        $consulta = $this->tabla($tabla);
+        if ($fuente !== 'clientes') {
+            return $consulta;
+        }
+        $clientes = $consulta->join('personas as persona', 'persona.id', '=', 'erp_clientes.id_persona')
+            ->join('tipos_identificacion as tipo', 'tipo.id', '=', 'persona.id_tipo_identificacion')
+            ->select('erp_clientes.id', 'erp_clientes.activo', 'erp_clientes.created_at', 'erp_clientes.deleted_at',
+                'tipo.codigo as tipo_identificacion', 'persona.identificacion', 'persona.email', 'persona.telefono', 'persona.direccion')
+            ->selectRaw("TRIM(CONCAT(persona.nombre, ' ', COALESCE(persona.apellido, ''))) AS nombre");
+
+        return $consulta->getConnection()->query()->fromSub($clientes, 'clientes');
     }
 
     private function tabla(string $tabla): Builder

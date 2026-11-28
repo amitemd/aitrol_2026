@@ -33,7 +33,7 @@ final class EloquentClienteRepository implements ClienteRepository
     public function listar(?string $busqueda, int $pagina, int $porPagina): array
     {
         $query = ClienteModel::query()->with('persona')
-            ->leftJoin('personas', 'personas.id', '=', 'erp_clientes.id_persona');
+            ->join('personas', 'personas.id', '=', 'erp_clientes.id_persona');
         if ($busqueda !== null && $busqueda !== '') {
             $patron = '%'.$busqueda.'%';
             $query->where(fn (Builder $query): Builder => $query
@@ -41,13 +41,10 @@ final class EloquentClienteRepository implements ClienteRepository
                 ->orWhereLike('personas.apellido', $patron)
                 ->orWhereLike('personas.identificacion', $patron)
                 ->orWhereLike('personas.email', $patron)
-                ->orWhereRaw("LOWER(CONCAT(personas.nombre, ' ', COALESCE(personas.apellido, ''))) LIKE LOWER(?)", [$patron])
-                ->orWhere(fn (Builder $legacy): Builder => $legacy->whereNull('erp_clientes.id_persona')
-                    ->where(fn (Builder $fields): Builder => $fields->whereLike('erp_clientes.nombre', $patron)
-                        ->orWhereLike('erp_clientes.identificacion', $patron)->orWhereLike('erp_clientes.email', $patron))));
+                ->orWhereRaw("LOWER(CONCAT(personas.nombre, ' ', COALESCE(personas.apellido, ''))) LIKE LOWER(?)", [$patron]));
         }
 
-        $resultados = $query->orderByRaw('COALESCE(personas.nombre, erp_clientes.nombre)')
+        $resultados = $query->orderBy('personas.nombre')
             ->orderBy('personas.apellido')->orderBy('erp_clientes.id')
             ->paginate($porPagina, ['erp_clientes.*'], 'page', $pagina);
 
@@ -64,10 +61,6 @@ final class EloquentClienteRepository implements ClienteRepository
                 $model = $cliente->id === null
                     ? new ClienteModel
                     : (ClienteModel::query()->lockForUpdate()->find($cliente->id) ?? throw new ClienteNoEncontrado('Cliente no encontrado.'));
-                $identificacion = [
-                    'tipo_identificacion' => $cliente->identificacion->tipo->value,
-                    'identificacion' => $cliente->identificacion->numero,
-                ];
                 $documento = ['id_tipo_identificacion' => $cliente->identificacion->tipo->idCatalogo(), 'identificacion' => $cliente->identificacion->numero];
                 $persona = Persona::buscarOCrearConBloqueo($documento, ['nombre' => $cliente->nombre]);
 
@@ -87,10 +80,10 @@ final class EloquentClienteRepository implements ClienteRepository
                 $camposPersona = array_flip(array_keys(Persona::reglasPerfil()));
                 $persona->fill($documento + $contacto + array_intersect_key($perfil, $camposPersona))->save();
                 $model->persona()->associate($persona);
-                $model->fill($identificacion + $persona->only(['email', 'telefono', 'direccion']) + [
-                    'nombre' => $persona->nombreCompleto(),
+                $model->fill([
                     'activo' => $cliente->activo,
-                    'perfil' => array_replace($model->perfil ?? [], array_diff_key($perfil, $camposPersona + $contacto + array_flip(['nombres', 'apellidos']))),
+                    'perfil' => array_diff_key(array_replace($model->perfil ?? [], $perfil),
+                        $camposPersona + array_flip(['nombres', 'apellidos', 'email', 'telefono', 'direccion'])),
                 ])->save();
 
                 return $this->entidad($model);
@@ -103,21 +96,20 @@ final class EloquentClienteRepository implements ClienteRepository
     private function entidad(ClienteModel $model): Cliente
     {
         $persona = $model->persona;
-        $nombre = $persona?->nombreCompleto() ?? $model->nombre;
 
         return new Cliente(
             (int) $model->getKey(),
             new IdentificacionFiscal(
-                $persona?->id_tipo_identificacion === null ? TipoIdentificacion::from($model->tipo_identificacion) : TipoIdentificacion::desdeCatalogo((int) $persona->id_tipo_identificacion),
-                $persona?->identificacion ?? $model->identificacion,
+                TipoIdentificacion::desdeCatalogo((int) $persona->id_tipo_identificacion),
+                $persona->identificacion,
             ),
-            $nombre,
-            $persona ? $persona->email : $model->email,
-            $persona ? $persona->telefono : $model->telefono,
-            $persona ? $persona->direccion : $model->direccion,
+            $persona->nombreCompleto(),
+            $persona->email,
+            $persona->telefono,
+            $persona->direccion,
             $model->activo,
             $model->id_persona,
-            ['nombres' => $persona?->nombre ?? $nombre, 'apellidos' => $persona?->apellido] + ($persona?->perfil() ?? []) + ($model->perfil ?? []),
+            ['nombres' => $persona->nombre, 'apellidos' => $persona->apellido] + $persona->perfil() + ($model->perfil ?? []),
             $model->only(['id_usuario_creacion', 'id_usuario_modificacion', 'created_at', 'updated_at']),
         );
     }

@@ -7,9 +7,6 @@
 
     <div class="app-content">
         <div class="container-fluid">
-            <a class="btn btn-outline-secondary mb-3" href="{{ route('configuracion.importaciones.index') }}">
-                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Importaciones
-            </a>
             @if (session('estado'))
                 <p class="alert alert-success" role="status">{{ session('estado') }}</p>
             @endif

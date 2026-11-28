@@ -16,4 +16,15 @@
             </a>
         @endisset
     </div>
+    @if (request()->routeIs('configuracion.personas.importaciones.index', 'configuracion.importaciones.productos.index',
+        'configuracion.sucursales.index', 'inventarios.bodegas.index',
+        'clientes.index', 'proveedores.index', 'contabilidad.integraciones.index'))
+        @can('administrar-configuracion')
+            <div class="container-fluid mt-2">
+                <a class="btn btn-sm btn-outline-secondary" href="{{ route('configuracion.importaciones.index') }}">
+                    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Volver a Importaciones
+                </a>
+            </div>
+        @endcan
+    @endif
 </div>
