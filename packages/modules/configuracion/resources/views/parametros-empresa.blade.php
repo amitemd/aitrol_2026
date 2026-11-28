@@ -16,7 +16,7 @@
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead><tr><th scope="col">Concepto</th><th scope="col">Código y descripción</th><th scope="col">Tarifa</th><th scope="col">{{ __('Vigente desde') }}</th></tr></thead>
+                        <thead><tr><th scope="col">Concepto</th><th scope="col">Código y descripción</th><th scope="col">Tarifa</th><th scope="col">{{ __('Vigente desde') }}</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
                         <tbody>
                             @forelse ($parametros as $parametro)
                                 <tr>
@@ -24,9 +24,15 @@
                                     <td>{{ $parametro->codigo }} · {{ $parametro->nombre }}</td>
                                     <td>{{ rtrim(rtrim(number_format((float) $parametro->valor, 6, '.', ''), '0'), '.') }} {{ $parametro->unidad === 'porcentaje' ? '%' : 'USD por unidad' }}</td>
                                     <td><time datetime="{{ $parametro->vigente_desde }}">{{ $parametro->vigente_desde }}</time></td>
+                                    <td><span @class(['badge rounded-pill', 'text-bg-success' => $parametro->activo, 'text-bg-secondary' => !$parametro->activo])>{{ $parametro->activo ? 'Activo' : 'Inactivo' }}</span></td>
+                                    <td>
+                                        @can('permiso', ['empresas', 'actualizar'])
+                                            @component('partials.acciones-fila', ['editar' => route('configuracion.empresas.parametros.edit', $parametro->id), 'tituloEditar' => 'Editar tarifa']) @endcomponent
+                                        @endcan
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td class="text-center text-body-secondary py-5" colspan="4">Aún no hay tarifas parametrizadas.</td></tr>
+                                <tr><td class="text-center text-body-secondary py-5" colspan="6">Aún no hay tarifas parametrizadas.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

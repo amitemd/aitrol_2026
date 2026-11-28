@@ -66,6 +66,13 @@ final class IdentidadEmpresaTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('unidad');
         $this->get($ruta)->assertOk()->assertSee('10.25 %')->assertSee('2026-12-01');
         $this->assertDatabaseCount('erp_parametros_fiscales', 2);
+        $id = DB::table('erp_parametros_fiscales')->where('id_empresa', $empresa->id)->where('vigente_desde', '2026-11-01')->value('id');
+        $this->get($ruta.'/'.$id.'/editar')->assertOk()->assertSee('Editar tarifa')->assertSee('role="switch"', false);
+        $this->putJson($ruta.'/'.$id, array_replace($tarifa, ['vigente_desde' => '2026-12-01', 'activo' => false]))
+            ->assertUnprocessable()->assertJsonValidationErrors('vigente_desde');
+        $this->putJson($ruta.'/'.$id, array_replace($tarifa, ['nombre' => 'Descripción corregida', 'activo' => false]))->assertOk();
+        $this->get($ruta)->assertOk()->assertSee('Descripción corregida')->assertSee('Inactivo');
+        $this->assertDatabaseHas('erp_parametros_fiscales', ['id' => $id, 'activo' => false]);
         $this->get('/configuraciones/sucursales/crear')->assertOk()->assertSee('data-ajax-form');
     }
 

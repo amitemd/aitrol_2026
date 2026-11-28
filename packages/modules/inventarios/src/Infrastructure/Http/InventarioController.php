@@ -6,7 +6,11 @@ use Aitrol\Inventarios\Application\Inventario;
 use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use Aitrol\Inventarios\Infrastructure\Persistence\GaleriaProducto;
+use App\Services\ContextoOperativo;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -105,6 +109,27 @@ final readonly class InventarioController
     public function imagen(int $producto, int $imagen)
     {
         return $this->galeria->imagen($producto, $imagen);
+    }
+
+    public function historialProducto(int $producto, ContextoOperativo $contexto): View
+    {
+        $ficha = $this->repositorio->catalogo('productos', $producto);
+        $consulta = DB::table('com_lineas as linea')
+            ->join('com_documentos as documento', function (JoinClause $join): void {
+                $join->on('documento.id', '=', 'linea.id_documento')->on('documento.id_empresa', '=', 'linea.id_empresa');
+            })
+            ->where('linea.id_empresa', $ficha->id_empresa)->where('linea.id_producto', $producto)
+            ->where('documento.id_sucursal', $contexto->sucursal()->id)->where('documento.tipo', 'documentos');
+        $contexto->aplicarPeriodo($consulta, 'documento.fecha');
+        $movimientos = $consulta->orderByDesc('documento.fecha')->orderByDesc('linea.id')->paginate(25, [
+            'documento.id', 'documento.modulo', 'documento.numero', 'documento.fecha', 'documento.anulado_at', 'linea.cantidad',
+        ]);
+        $kardex = Gate::allows('permiso', ['inventarios.kardex.index', 'leer'])
+            ? $this->repositorio->listar('kardex', ['id_producto' => $producto, 'page' => 1, 'per_page' => 10])->through($this->presentar(...))
+            : null;
+        $periodo = $contexto->periodo();
+
+        return view('inventarios::historial-producto', compact('ficha', 'movimientos', 'kardex', 'periodo'));
     }
 
     public function store(Request $request)

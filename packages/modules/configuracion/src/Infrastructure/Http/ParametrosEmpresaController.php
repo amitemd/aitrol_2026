@@ -34,10 +34,17 @@ final readonly class ParametrosEmpresaController
 
     public function create(): View
     {
-        return view('configuracion::parametro-empresa-formulario', ['conceptos' => self::CONCEPTOS]);
+        return view('configuracion::parametro-empresa-formulario', ['conceptos' => self::CONCEPTOS, 'parametro' => null]);
     }
 
-    public function guardar(Request $request): RedirectResponse|JsonResponse
+    public function editar(int $parametro): View
+    {
+        $registro = DB::table('erp_parametros_fiscales')->where('id_empresa', $this->empresa->id())->find($parametro) ?? abort(404);
+
+        return view('configuracion::parametro-empresa-formulario', ['conceptos' => self::CONCEPTOS, 'parametro' => $registro]);
+    }
+
+    public function guardar(Request $request, ?int $parametro = null): RedirectResponse|JsonResponse
     {
         $datos = $request->validate([
             'concepto' => ['required', Rule::in(array_keys(self::CONCEPTOS))],
@@ -46,6 +53,7 @@ final readonly class ParametrosEmpresaController
             'unidad' => ['required', 'in:porcentaje,usd-unidad'],
             'valor' => ['required', 'regex:/^\d{1,6}(?:\.\d{1,6})?$/', 'numeric', 'min:0'],
             'vigente_desde' => ['required', 'date_format:Y-m-d'],
+            'activo' => [$parametro === null ? 'sometimes' : 'required', 'boolean'],
         ]);
         if (in_array($datos['concepto'], ['renta', 'utilidades', 'iva'], true) && $datos['unidad'] !== 'porcentaje') {
             throw ValidationException::withMessages(['unidad' => 'Este concepto se parametriza mediante un porcentaje.']);
@@ -54,16 +62,24 @@ final readonly class ParametrosEmpresaController
             throw ValidationException::withMessages(['valor' => 'Un porcentaje debe estar entre 0 y 100.']);
         }
 
-        $this->empresa->transaccion(function () use ($datos): void {
+        $this->empresa->transaccion(function () use ($datos, $parametro): void {
+            $tabla = DB::table('erp_parametros_fiscales');
+            $actual = (clone $tabla)->where('id_empresa', $this->empresa->id())->where('id', $parametro);
+            abort_if($parametro !== null && ! $actual->exists(), 404);
             $clave = ['id_empresa' => $this->empresa->id(), 'concepto' => $datos['concepto'], 'codigo' => Str::upper($datos['codigo']),
                 'vigente_desde' => $datos['vigente_desde']];
-            if (DB::table('erp_parametros_fiscales')->where($clave)->exists()) {
+            if ((clone $tabla)->where($clave)->when($parametro !== null, fn ($consulta) => $consulta->where('id', '<>', $parametro))->exists()) {
                 throw ValidationException::withMessages(['vigente_desde' => 'Ya existe una tarifa con ese código y fecha de vigencia.']);
             }
-            DB::table('erp_parametros_fiscales')->insert($clave + [
+            $campos = $clave + [
                 'nombre' => $datos['nombre'], 'unidad' => $datos['unidad'], 'valor' => $datos['valor'],
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
+                'activo' => $datos['activo'] ?? true, 'updated_at' => now(),
+            ];
+            if ($parametro === null) {
+                $tabla->insert($campos + ['created_at' => now()]);
+            } else {
+                $actual->update($campos);
+            }
         });
 
         return $request->expectsJson()

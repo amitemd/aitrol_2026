@@ -37,13 +37,26 @@
 .factura-resumen .factura-seccion { background: linear-gradient(160deg, var(--bs-primary-bg-subtle), var(--bs-body-bg) 52%); }
 .factura-seccion h2 { font-size: 1rem; font-weight: 700; margin-bottom: .85rem; }
 .factura-seccion h2 i { color: color-mix(in srgb, var(--factura-acento) 74%, var(--bs-body-color)); margin-right: .35rem; }
-.factura-seccion-barra { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .4rem; }
+.factura-seccion-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem; }
+.factura-seccion-barra h2 { margin-bottom: 0; }
 .factura-linea { background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: .65rem; padding: .75rem; }
 .factura-linea-conceptos, .factura-linea-importes { display: grid; gap: .65rem; }
 .factura-linea-conceptos { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); margin-bottom: .65rem; }
 .factura-linea-conceptos:has([data-factura-bodega-bloque]:not([hidden])) { grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 2fr); }
-.factura-linea-importes { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(5.5rem, auto) auto; align-items: end; }
-.factura-linea-total strong { display: block; min-height: 2.25rem; padding-block: .4rem; }
+.factura-linea-importes {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(5.5rem, auto) auto;
+    row-gap: 0;
+}
+.factura-linea-importes > div {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    min-width: 0;
+}
+.factura-linea-importes .form-label { align-self: end; margin-bottom: .35rem; }
+.factura-linea-importes [data-factura-iva-origen] { grid-row: 3; margin-top: .25rem; }
+.factura-linea-total strong { display: flex; align-items: center; font-variant-numeric: tabular-nums; }
+.factura-linea-accion button { grid-row: 2; justify-self: end; }
 .factura-totales { font-variant-numeric: tabular-nums; }
 .factura-totales div { display: flex; justify-content: space-between; gap: .5rem; padding-block: .45rem; }
 .factura-totales dt { font-weight: 500; }
@@ -65,5 +78,5 @@
 @media (max-width: 575px) {
     .factura-linea-conceptos, .factura-linea-conceptos:has([data-factura-bodega-bloque]:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
     .factura-linea-importes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .factura-linea-importes button { justify-self: end; }
+    .factura-linea-importes > div:nth-child(n+3) { margin-top: .6rem; }
 }

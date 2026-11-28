@@ -172,9 +172,12 @@ final readonly class FacturaVenta
     {
         $establecimiento = (string) $this->contexto->sucursal()->codigo;
         $configuracion = config('comercial.ventas.facturacion_electronica');
-        $punto = (string) $configuracion['punto_emision'];
-        $ambiente = (string) $configuracion['ambiente'];
-        $inicio = filter_var($configuracion['secuencial_inicial'], FILTER_VALIDATE_INT, [
+        if (! is_array($configuracion)) {
+            throw ValidationException::withMessages(['emisor' => 'La configuración de facturación electrónica no está cargada. Pide al administrador que actualice la caché de configuración del servidor.']);
+        }
+        $punto = (string) ($configuracion['punto_emision'] ?? '');
+        $ambiente = (string) ($configuracion['ambiente'] ?? '');
+        $inicio = filter_var($configuracion['secuencial_inicial'] ?? null, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1, 'max_range' => 999999999],
         ]);
         if (! preg_match('/\A(?!000)[0-9]{3}\z/', $establecimiento)) {
@@ -218,11 +221,15 @@ final readonly class FacturaVenta
         $tarifas = [0 => 0, 6 => 0, 7 => 0];
         $vigentes = DB::table('erp_parametros_fiscales')->where('id_empresa', $this->empresa->id())
             ->where('concepto', 'iva')->where('unidad', 'porcentaje')->where('vigente_desde', '<=', $fecha)
-            ->orderByDesc('vigente_desde')->orderByDesc('id')->get(['codigo', 'valor'])
+            ->orderByDesc('vigente_desde')->orderByDesc('id')->get(['codigo', 'valor', 'activo'])
             ->filter(fn (stdClass $tarifa): bool => ctype_digit($tarifa->codigo) && array_key_exists((int) $tarifa->codigo, self::IVA))
             ->unique(fn (stdClass $tarifa): int => (int) $tarifa->codigo);
         foreach ($vigentes as $tarifa) {
             $codigo = (int) $tarifa->codigo;
+            if (! $tarifa->activo) {
+                unset($tarifas[$codigo]);
+                continue;
+            }
             if ((float) $tarifa->valor === (float) self::IVA[$codigo]) {
                 $tarifas[$codigo] = self::IVA[$codigo];
             }

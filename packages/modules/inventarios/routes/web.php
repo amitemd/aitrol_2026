@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('inventarios')->name('inventarios.')
     ->middleware(['web', 'auth', 'auth.session', 'empresa'])
     ->group(function (): void {
+        Route::get('productos/{producto}/historial', [InventarioController::class, 'historialProducto'])
+            ->whereNumber('producto')->middleware('permiso:inventarios.productos.index,leer')->name('productos.historial');
         Route::get('productos/{producto}/imagenes/{imagen}', [InventarioController::class, 'imagen'])
             ->whereNumber(['producto', 'imagen'])->middleware('permiso:inventarios.productos.index,leer')->name('productos.imagen');
 

@@ -77,6 +77,8 @@ final class FacturacionVentaTest extends TestCase
         foreach ($datos['lineas'] as $linea) {
             $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $linea['id_bodega'], 'cantidad' => 4000]);
         }
+        $this->get(route('inventarios.productos.historial', $producto))->assertOk()
+            ->assertSee('001-001-000000001')->assertSee('Últimos movimientos de existencias')->assertSee('Principal');
         $this->postJson(route('ventas.documentos.anular', $documento), ['motivo' => 'Corrección de cantidad'])->assertSuccessful();
         foreach ($datos['lineas'] as $linea) {
             $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $linea['id_bodega'], 'cantidad' => 5000]);
@@ -159,6 +161,31 @@ final class FacturacionVentaTest extends TestCase
         ]);
         $this->actingAs($vendedor)->getJson($contactoUrl)->assertOk()->assertExactJson($contacto);
         $this->patchJson($contactoUrl, $contacto)->assertForbidden();
+    }
+
+    public function test_registra_servicio_en_el_historial_y_maneja_configuracion_fiscal_incompleta(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario);
+        $producto = DB::table('inv_productos')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'S1', 'nombre' => 'Soporte', 'unidad' => 'unidad',
+            'tipo_producto' => 'servicio', 'iva_codigo' => 4,
+        ]);
+        $datos['lineas'][0]['id_producto'] = $producto;
+        $alta = route('ventas.documentos.store');
+        DB::table('erp_parametros_fiscales')->where('id_empresa', $usuario->id_empresa)->update(['activo' => false]);
+        $this->postJson($alta, $datos)->assertUnprocessable()->assertJsonValidationErrors('lineas.0.iva_codigo');
+        DB::table('erp_parametros_fiscales')->where('id_empresa', $usuario->id_empresa)->update(['activo' => true]);
+        $configuracion = config('comercial.ventas.facturacion_electronica');
+        config(['comercial.ventas.facturacion_electronica' => null]);
+        $this->postJson($alta, $datos)->assertUnprocessable()->assertJsonValidationErrors('emisor');
+        $this->assertDatabaseCount('com_documentos', 0);
+        config(['comercial.ventas.facturacion_electronica' => $configuracion]);
+        $this->post($alta, $datos)->assertRedirect(route('ventas.documentos.index'));
+
+        $this->get(route('inventarios.productos.historial', $producto))->assertOk()
+            ->assertSee('001-001-000000001')->assertDontSee('Últimos movimientos de existencias');
+        $this->assertDatabaseCount('inv_kardex', 0);
     }
 
     /** @return array{User, array} */

@@ -124,6 +124,11 @@
                                                 'editar' => Gate::allows('permiso', [$ruta.'.index', 'actualizar']) ? route($ruta.'.edit', $fila['id']) : null,
                                                 'tituloEditar' => str_replace(['Nuevo ', 'Nueva '], 'Editar ', $alta[$seccion]),
                                             ])
+                                                @if ($seccion === 'productos')
+                                                    <a class="dropdown-item d-flex gap-2 align-items-center" href="{{ route('inventarios.productos.historial', $fila['id']) }}">
+                                                        <i class="bi bi-clock-history" aria-hidden="true"></i> Historial de movimientos
+                                                    </a>
+                                                @endif
                                                 @can('permiso', [$ruta.'.index', 'actualizar'])
                                                     <form method="POST" action="{{ route($ruta.'.estado', $fila['id']) }}" data-ajax-action>
                                                         @csrf @method('PATCH')

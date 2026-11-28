@@ -57,6 +57,8 @@
             <span class="form-label">Total línea</span>
             <strong data-factura-linea-total>$0.00</strong>
         </div>
-        <button type="button" class="btn btn-outline-danger" data-comercial-quitar aria-label="Quitar línea" title="Quitar línea"><i class="bi bi-trash" aria-hidden="true"></i></button>
+        <div class="factura-linea-accion">
+            <button type="button" class="btn btn-outline-danger" data-comercial-quitar aria-label="Quitar línea" title="Quitar línea"><i class="bi bi-trash" aria-hidden="true"></i></button>
+        </div>
     </div>
 </div>

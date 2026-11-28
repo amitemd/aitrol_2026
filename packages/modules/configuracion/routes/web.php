@@ -62,6 +62,10 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->prefix('configura
     Route::get('/empresas/parametros', [ParametrosEmpresaController::class, 'index'])->middleware('permiso:empresas,leer')->name('empresas.parametros');
     Route::get('/empresas/parametros/crear', [ParametrosEmpresaController::class, 'create'])->middleware('permiso:empresas,actualizar')->name('empresas.parametros.create');
     Route::post('/empresas/parametros', [ParametrosEmpresaController::class, 'guardar'])->middleware('permiso:empresas,actualizar')->name('empresas.parametros.store');
+    Route::get('/empresas/parametros/{parametro}/editar', [ParametrosEmpresaController::class, 'editar'])->whereNumber('parametro')
+        ->middleware('permiso:empresas,actualizar')->name('empresas.parametros.edit');
+    Route::put('/empresas/parametros/{parametro}', [ParametrosEmpresaController::class, 'guardar'])->whereNumber('parametro')
+        ->middleware('permiso:empresas,actualizar')->name('empresas.parametros.update');
     Route::get('/empresas/{empresa}/logo', [EmpresaController::class, 'logo'])->whereNumber('empresa')->middleware('permiso:empresas,leer')->name('empresas.logo');
     Route::get('/empresas/{empresa}', [EmpresaController::class, 'detalle'])->whereNumber('empresa')->middleware('permiso:empresas,leer')->name('empresas.show');
     Route::get('/empresas/{empresa}/editar', [EmpresaController::class, 'edit'])->whereNumber('empresa')->middleware('permiso:empresas,actualizar')->name('empresas.edit');
