@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Aitrol\Configuracion\Infrastructure\Persistence\EmpresaModel;
 use App\Models\User;
 use App\Services\EmpresaActiva;
+use App\Services\PlanCuentasInicial;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 final class EmpresaInicialController
 {
-    public function store(Request $request, EmpresaActiva $empresaActiva): RedirectResponse
+    public function store(Request $request, EmpresaActiva $empresaActiva, PlanCuentasInicial $planCuentas): RedirectResponse
     {
         if ($request->user()->id_empresa !== null) return to_route('dashboard');
 
@@ -29,7 +30,7 @@ final class EmpresaInicialController
         ]);
 
         try {
-            $usuario = DB::transaction(function () use ($request, $datos, $empresaActiva): User {
+            $usuario = DB::transaction(function () use ($request, $datos, $empresaActiva, $planCuentas): User {
                 $usuario = User::query()->lockForUpdate()->findOrFail($request->user()->id);
                 if ($usuario->id_empresa !== null) {
                     return $usuario;
@@ -37,6 +38,7 @@ final class EmpresaInicialController
 
                 $empresa = EmpresaModel::query()->create($datos);
                 $empresaActiva->prepararPermisos($empresa->id);
+                $planCuentas->copiarA($empresa->id, $usuario->id);
                 $usuario->empresa()->associate($empresa);
                 $usuario->is_admin = true;
                 $usuario->save();

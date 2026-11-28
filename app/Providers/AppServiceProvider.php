@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Http\Middleware\RegistrarAuditoria;
 use App\Models\TokenAcceso;
 use App\Models\User;
+use App\Services\AuditoriaListado;
 use App\Services\TrazaAuditoria;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\EloquentUserProvider;
@@ -20,6 +21,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
@@ -40,6 +42,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+        View::composer([
+            'inventarios::index', 'contabilidad::index', 'activos-fijos::index', 'caja-bancos::index',
+            'comercial::index', 'tributario::index', 'clientes::index', 'proveedores::index',
+            'configuracion::roles',
+        ], AuditoriaListado::class);
         TrustProxies::at(config('seguridad.proxies', []));
         $this->limitesDeAcceso();
         Auth::provider('usuarios-activos', fn ($app, $config) => (new EloquentUserProvider($app['hash'], $config['model']))

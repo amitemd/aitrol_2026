@@ -271,10 +271,10 @@
 
     function add(key, label, url, panel = null) {
         if (tabs.has(key)) {
-            if (key === 'ventas.documentos.create') {
+            if (key === 'ventas.documentos.create' || key === 'inventarios.categorias.index') {
                 const tab = tabs.get(key);
                 const frame = tab.panel.querySelector('[data-workspace-frame]');
-                if (tab.cargada && frame?.contentDocument?.location.pathname !== url.pathname && frame) {
+                if (frame && tab.cargada && frame.contentDocument?.location.pathname !== url.pathname) {
                     tab.cargada = false;
                     frame.src = url.href;
                 }

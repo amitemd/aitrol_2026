@@ -106,6 +106,7 @@ final class EloquentProveedorRepository implements ProveedorRepository
             $modelo->activo,
             (int) $modelo->id_persona,
             ['id_ciudad' => $modelo->persona->id_ciudad === null ? null : (int) $modelo->persona->id_ciudad] + ($modelo->perfil ?? []),
+            $modelo->only(['id_usuario_creacion', 'id_usuario_modificacion', 'created_at', 'updated_at']),
         );
     }
 }

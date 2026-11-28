@@ -32,6 +32,7 @@
                                     <th scope="col">{{ __('Identificación') }}</th>
                                     <th scope="col">Contacto</th>
                                     <th scope="col">{{ __('Estado') }}</th>
+                                    @include('partials.auditoria-cabeceras')
                                     <th scope="col"><span class="visually-hidden">{{ __('Acciones') }}</span></th>
                                 </tr>
                             </thead>
@@ -49,11 +50,9 @@
                                             @if (!$cliente->email && !$cliente->telefono) <span class="text-body-secondary">—</span> @endif
                                         </td>
                                         <td><span @class(['badge rounded-pill', 'bg-success-subtle text-success-emphasis' => $cliente->activo, 'bg-secondary-subtle text-secondary-emphasis' => !$cliente->activo])>{{ $cliente->activo ? 'Activo' : 'Inactivo' }}</span></td>
+                                        @include('partials.auditoria-celdas', ['filaAuditoria' => $cliente->auditoria])
                                         <td class="text-end">
-                                            @component('partials.acciones-fila', ['ver' => route('clientes.show', $cliente->id), 'tituloVer' => 'Detalle de cliente'])
-                                                @can('permiso', ['clientes.lista', 'actualizar'])
-                                                    @include('partials.accion-fila-enlace', ['href' => route('clientes.edit', $cliente->id), 'etiqueta' => 'Editar', 'titulo' => 'Editar cliente'])
-                                                @endcan
+                                            @component('partials.acciones-fila', ['ver' => route('clientes.show', $cliente->id), 'tituloVer' => 'Detalle de cliente', 'editar' => Gate::allows('permiso', ['clientes.lista', 'actualizar']) ? route('clientes.edit', $cliente->id) : null, 'tituloEditar' => 'Editar cliente'])
                                                 @can('permiso', ['clientes.lista', 'eliminar'])
                                                     @include('partials.accion-fila-eliminar', ['href' => route('clientes.destroy', $cliente->id), 'confirmar' => '¿Eliminar cliente '.$cliente->nombre.'?'])
                                                 @endcan
@@ -62,7 +61,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center clientes-vacio">
+                                        <td colspan="9" class="text-center clientes-vacio">
                                             <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></span>
                                             <p class="fw-semibold mb-1">{{ request()->filled('q') ? 'No hay coincidencias' : 'Todavía no hay clientes' }}</p>
                                             @if (request()->filled('q'))

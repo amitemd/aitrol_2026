@@ -78,7 +78,9 @@
                         <table class="table table-hover align-middle mb-0">
                             <caption class="visually-hidden">{{ $titulo }}</caption>
                             <thead class="clientes-tabla-cabecera">
-                                <tr><th>Número</th><th>{{ __('Fecha') }}</th><th>{{ $config['tercero'] }}</th><th class="text-end">{{ __('Total') }}</th><th>{{ __('Estado') }}</th><th class="text-end">{{ __('Acciones') }}</th></tr>
+                                <tr><th>Número</th><th>{{ __('Fecha') }}</th><th>{{ $config['tercero'] }}</th><th class="text-end">{{ __('Total') }}</th><th>{{ __('Estado') }}</th>
+                                    @include('partials.auditoria-cabeceras')
+                                    <th class="text-end">{{ __('Acciones') }}</th></tr>
                             </thead>
                             <tbody>
                                 @forelse ($registros as $fila)
@@ -96,6 +98,7 @@
                                             <span @class(['badge rounded-pill', 'text-bg-secondary' => $fila['anulado_at'], 'text-bg-success' => !$fila['anulado_at']])>{{ $fila['anulado_at'] ? 'Anulado' : 'Vigente' }}</span>
                                             @if ($seccion === 'anulaciones') <small class="d-block text-body-secondary">{{ $fila['anulado_at'] }}</small> @endif
                                         </td>
+                                        @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                         <td class="text-end">
                                             @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => 'Documento '.$fila['numero']])
                                                 @if (!$fila['anulado_at'] && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
@@ -105,7 +108,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6">@include('comercial::vacio')</td></tr>
+                                    <tr><td colspan="10">@include('comercial::vacio')</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

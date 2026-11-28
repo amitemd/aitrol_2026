@@ -37,10 +37,7 @@
                                             </td>
                                             <td><span class="badge {{ $empresa->activo ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $empresa->activo ? 'Activa' : 'Inactiva' }}</span></td>
                                             <td class="text-end">
-                                                @component('partials.acciones-fila', ['ver' => route('configuracion.empresas.show', $empresa), 'tituloVer' => 'Detalle de empresa'])
-                                                    @can('permiso', ['empresas', 'actualizar'])
-                                                        @include('partials.accion-fila-enlace', ['href' => route('configuracion.empresas.edit', $empresa), 'etiqueta' => 'Editar', 'titulo' => 'Editar empresa'])
-                                                    @endcan
+                                                @component('partials.acciones-fila', ['ver' => route('configuracion.empresas.show', $empresa), 'tituloVer' => 'Detalle de empresa', 'editar' => Gate::allows('permiso', ['empresas', 'actualizar']) ? route('configuracion.empresas.edit', $empresa) : null, 'tituloEditar' => 'Editar empresa'])
                                                 @endcomponent
                                             </td>
                                         </tr>

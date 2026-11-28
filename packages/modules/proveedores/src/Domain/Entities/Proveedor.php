@@ -19,6 +19,7 @@ final readonly class Proveedor
         public bool $activo,
         public ?int $idPersona = null,
         public array $perfil = [],
+        public array $auditoria = [],
     ) {
         $this->nombre = trim($nombre);
 

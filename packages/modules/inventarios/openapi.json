@@ -1739,6 +1739,7 @@
         "properties": {
           "codigo": {
             "type": "string",
+            "description": "Opcional en la actualización. Si se incluye, debe coincidir con el código registrado.",
             "maxLength": 60
           },
           "nombre": {
@@ -1847,7 +1848,6 @@
           }
         },
         "required": [
-          "codigo",
           "nombre",
           "activo"
         ]

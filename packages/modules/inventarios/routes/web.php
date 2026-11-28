@@ -26,6 +26,8 @@ Route::prefix('inventarios')->name('inventarios.')
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'actualizar')->name($seccion.'.edit');
                 Route::put($seccion.'/{registro}', [InventarioController::class, 'update'])->defaults('seccion', $seccion)
                     ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'actualizar')->name($seccion.'.update');
+                Route::patch($seccion.'/{registro}/estado', [InventarioController::class, 'estado'])->defaults('seccion', $seccion)
+                    ->where('registro', '[1-9][0-9]{0,17}')->middleware($permiso.'actualizar')->name($seccion.'.estado');
             }
             if (in_array($seccion, [...config('inventarios.catalogos', ['productos', 'bodegas']), 'movimientos', 'ajustes'], true)) {
                 Route::get($seccion.'/{registro}', [InventarioController::class, 'show'])->defaults('seccion', $seccion)

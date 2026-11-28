@@ -27,8 +27,7 @@
                                     <td><span class="badge rounded-pill text-bg-light">{{ $usuario->is_admin ? 'Administrador' : 'Usuario' }}</span></td>
                                     <td><span class="badge rounded-pill {{ $usuario->activo ? 'text-success-emphasis bg-success-subtle' : 'text-secondary-emphasis bg-secondary-subtle' }}">{{ $usuario->activo ? 'Activo' : 'Inactivo' }}</span></td>
                                     <td class="text-end">
-                                        @component('partials.acciones-fila', ['ver' => route('configuracion.usuarios.show', $usuario), 'tituloVer' => 'Detalle de usuario'])
-                                            @include('partials.accion-fila-enlace', ['href' => route('configuracion.usuarios.edit', $usuario), 'etiqueta' => 'Editar', 'titulo' => 'Editar usuario'])
+                                        @component('partials.acciones-fila', ['ver' => route('configuracion.usuarios.show', $usuario), 'tituloVer' => 'Detalle de usuario', 'editar' => route('configuracion.usuarios.edit', $usuario), 'tituloEditar' => 'Editar usuario'])
                                             @unless ($usuario->is_admin)
                                                 @include('partials.accion-fila-enlace', ['href' => route('configuracion.usuarios.permisos', $usuario), 'etiqueta' => 'Permisos', 'titulo' => 'Permisos de usuario', 'icono' => 'bi-shield-lock'])
                                             @endunless

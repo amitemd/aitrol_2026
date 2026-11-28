@@ -11,6 +11,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
@@ -50,6 +51,12 @@ final readonly class InventarioSql implements RepositorioInventario
             return $this->transaccion(function () use ($seccion, $id, $datos): stdClass {
                 $tabla = 'inv_'.str_replace('-', '_', $seccion);
                 $actual = $id === null ? null : $this->catalogo($seccion, $id, bloquear: true);
+                if ($seccion === 'productos') {
+                    $datos = $this->validarCodigoProducto($datos, $actual);
+                }
+                if ($seccion === 'categorias') {
+                    $this->validarCategoriaUnica($id, $datos['codigo'], $datos['nombre']);
+                }
                 $datos = $this->prepararCatalogo($seccion, $datos, $actual);
                 if ($id === null) {
                     if ($seccion === 'bodegas') {
@@ -60,12 +67,7 @@ final readonly class InventarioSql implements RepositorioInventario
                         'created_at' => now(), 'updated_at' => now(),
                     ]);
                 } else {
-                    $columna = $seccion === 'productos' ? 'id_producto' : 'id_bodega';
-                    if (in_array($seccion, ['productos', 'bodegas'], true) && (! $datos['activo'] || ($datos['tipo_producto'] ?? null) === 'servicio')
-                        && $this->tabla('inv_existencias')->where($columna, $id)->where('cantidad', '>', 0)->exists()) {
-                        $campo = ! $datos['activo'] ? 'activo' : 'tipo_producto';
-                        throw ValidationException::withMessages([$campo => 'Lleva la existencia a cero antes de cambiar este campo.']);
-                    }
+                    $this->verificarExistenciaCatalogo($seccion, $id, $datos);
                     $this->tabla($tabla)->where('id', $id)->update($datos + ['id_usuario_modificacion' => auth()->id(), 'updated_at' => now()]);
                     if ($seccion === 'categorias' && $actual->nombre !== $datos['nombre']) {
                         $this->tabla('inv_productos')->where('id_categoria', $id)->update(['categoria' => $datos['nombre']]);
@@ -76,6 +78,96 @@ final readonly class InventarioSql implements RepositorioInventario
             });
         } catch (UniqueConstraintViolationException $error) {
             abort(409, 'El código o código de barras ya existe en esta empresa.');
+        }
+    }
+
+    public function cambiarEstadoCatalogo(string $seccion, int $id, bool $activo): stdClass
+    {
+        return $this->transaccion(function () use ($seccion, $id, $activo): stdClass {
+            $actual = $this->catalogo($seccion, $id, bloquear: true);
+            if ((bool) $actual->activo === $activo) {
+                return $actual;
+            }
+            $this->verificarExistenciaCatalogo($seccion, $id, ['activo' => $activo]);
+            $this->tabla('inv_'.str_replace('-', '_', $seccion))->where('id', $id)->update([
+                'activo' => $activo, 'id_usuario_modificacion' => auth()->id(), 'updated_at' => now(),
+            ]);
+
+            return $this->catalogo($seccion, $id);
+        });
+    }
+
+    private function verificarExistenciaCatalogo(string $seccion, int $id, array $datos): void
+    {
+        $columna = $seccion === 'productos' ? 'id_producto' : 'id_bodega';
+        if (in_array($seccion, ['productos', 'bodegas'], true) && (! $datos['activo'] || ($datos['tipo_producto'] ?? null) === 'servicio')
+            && $this->tabla('inv_existencias')->where($columna, $id)->where('cantidad', '>', 0)->exists()) {
+            $campo = ! $datos['activo'] ? 'activo' : 'tipo_producto';
+            throw ValidationException::withMessages([$campo => 'Lleva la existencia a cero antes de cambiar este campo.']);
+        }
+    }
+
+    public function sugerirCodigoProducto(): string
+    {
+        $empresa = DB::table('erp_empresas')->where('id', $this->empresa->id())->first(['nombre_comercial', 'razon_social']);
+        $nombre = $empresa?->nombre_comercial ?: ($empresa?->razon_social ?? '');
+        preg_match_all('/[A-Z]+/', Str::upper(Str::ascii($nombre)), $palabras);
+        $iniciales = implode('', array_map(fn (string $palabra): string => $palabra[0], array_slice($palabras[0], 0, 4)));
+        $prefijo = ($iniciales ?: 'PRD').'-';
+
+        $productos = $this->tabla('inv_productos');
+        $codigos = (clone $productos)->select('codigo')->where('codigo', 'like', $prefijo.'%')
+            ->orderByRaw('LENGTH(codigo) DESC')->orderByDesc('codigo')->cursor();
+        $sufijoSugerido = '000001';
+        foreach ($codigos as $producto) {
+            $sufijo = substr($producto->codigo, strlen($prefijo));
+            if (preg_match('/\A(?:[0-9]{6}|[1-9][0-9]{6,})\z/', $sufijo)) {
+                $siguiente = str_increment($sufijo);
+                if (strlen($prefijo.$siguiente) <= 60) {
+                    return $prefijo.$siguiente;
+                }
+                while ((clone $productos)->where('codigo', $prefijo.$sufijoSugerido)->exists()) {
+                    $sufijoSugerido = str_increment($sufijoSugerido);
+                }
+                break;
+            }
+        }
+
+        return $prefijo.$sufijoSugerido;
+    }
+
+    private function validarCodigoProducto(array $datos, ?stdClass $actual): array
+    {
+        if ($actual !== null) {
+            if (isset($datos['codigo']) && $datos['codigo'] !== Str::upper($actual->codigo)) {
+                throw ValidationException::withMessages(['codigo' => 'El código del producto no se puede cambiar después de crearlo.']);
+            }
+            unset($datos['codigo']);
+        } elseif ($this->tabla('inv_productos')->where('codigo', $datos['codigo'])->exists()) {
+            throw ValidationException::withMessages(['codigo' => 'Ya existe un producto con este código en tu empresa. Elige otro código.']);
+        }
+
+        return $datos;
+    }
+
+    private function validarCategoriaUnica(?int $id, string $codigo, string $nombre): void
+    {
+        $categorias = $this->tabla('inv_categorias')
+            ->when($id !== null, fn (Builder $consulta) => $consulta->where('id', '<>', $id));
+        $errores = [];
+        if ((clone $categorias)->where('codigo', $codigo)->exists()) {
+            $errores['codigo'] = 'Ya existe una categoría con este código en tu empresa.';
+        }
+
+        $nombreNormalizado = Str::lower(Str::squish($nombre));
+        $nombreRepetido = $categorias->select('nombre')->cursor()->contains(
+            fn (stdClass $categoria): bool => Str::lower(Str::squish($categoria->nombre)) === $nombreNormalizado,
+        );
+        if ($nombreRepetido) {
+            $errores['nombre'] = 'Ya existe una categoría con este nombre en tu empresa.';
+        }
+        if ($errores !== []) {
+            throw ValidationException::withMessages($errores);
         }
     }
 

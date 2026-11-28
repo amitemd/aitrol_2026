@@ -17,8 +17,7 @@
                         <thead class="clientes-tabla-cabecera">
                             <tr>
                                 <th scope="col">Rol</th>
-                                <th scope="col">Creación</th>
-                                <th scope="col">Última modificación</th>
+                                @include('partials.auditoria-cabeceras')
                                 <th class="text-end" scope="col">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
@@ -26,27 +25,16 @@
                             @forelse ($roles as $item)
                                 <tr>
                                     <th scope="row">{{ $item->nombre }}</th>
-                                    @foreach ([[$item->creado_por, $item->created_at], [$item->modificado_por, $item->updated_at]] as [$autor, $fecha])
-                                        <td>
-                                            <span>{{ $autor ?? '—' }}</span>
-                                            @if ($fecha)
-                                                @php($fechaLocal = \Illuminate\Support\Carbon::parse($fecha)->tz('America/Guayaquil'))
-                                                <time class="d-block small text-body-secondary text-nowrap" datetime="{{ $fechaLocal->toIso8601String() }}">
-                                                    {{ $fechaLocal->format('d/m/Y H:i') }}
-                                                </time>
-                                            @endif
-                                        </td>
-                                    @endforeach
+                                    @include('partials.auditoria-celdas', ['filaAuditoria' => $item])
                                     <td class="text-end">
-                                        @component('partials.acciones-fila')
-                                            @include('partials.accion-fila-enlace', ['href' => route('configuracion.roles.index', ['editar' => $item->id]), 'etiqueta' => 'Editar', 'titulo' => 'Editar rol'])
+                                        @component('partials.acciones-fila', ['editar' => route('configuracion.roles.index', ['editar' => $item->id]), 'tituloEditar' => 'Editar rol'])
                                             @include('partials.accion-fila-eliminar', ['href' => route('configuracion.roles.destroy', $item->id), 'confirmar' => '¿Eliminar el rol '.$item->nombre.'?'])
                                         @endcomponent
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center clientes-vacio">
+                                    <td colspan="6" class="text-center clientes-vacio">
                                         <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
                                         <p class="fw-semibold mb-1">Todavía no hay roles registrados</p>
                                         <p class="text-body-secondary mb-0">Usa Nuevo rol para agrupar los permisos que asignarás a tus usuarios.</p>

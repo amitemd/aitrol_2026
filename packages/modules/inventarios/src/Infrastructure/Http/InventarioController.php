@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use stdClass;
 
 final readonly class InventarioController
@@ -70,6 +71,10 @@ final readonly class InventarioController
     {
         $seccion = $request->route('seccion');
         $id = $request->route('registro');
+        if ($seccion === 'categorias' && $id === null && ! $request->ajax()) {
+            return to_route('inventarios.categorias.index', ['nueva' => 1]);
+        }
+
         $registro = $id ? $this->presentar($this->repositorio->catalogo($seccion, (int) $id)) : null;
         $tipos = $this->tipos($seccion);
         $selecciones = [];
@@ -89,8 +94,9 @@ final readonly class InventarioController
         $ficha = in_array($seccion, ['productos', 'categorias', 'plantillas-contables'], true)
             ? $this->repositorio->opcionesFicha() : [];
         $galeria = $seccion === 'productos' ? $this->galeria->ficha($id ? (int) $id : null) : null;
+        $codigoSugerido = $seccion === 'productos' && $id === null ? $this->repositorio->sugerirCodigoProducto() : null;
 
-        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones', 'ficha', 'galeria'));
+        return view('inventarios::formulario', compact('seccion', 'registro', 'tipos', 'selecciones', 'ficha', 'galeria', 'codigoSugerido'));
     }
 
     public function imagen(int $producto, int $imagen)
@@ -125,6 +131,16 @@ final readonly class InventarioController
     public function update(Request $request)
     {
         return $this->guardarCatalogo($request, $request->route('seccion'), (int) $request->route('registro'));
+    }
+
+    public function estado(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        $request->validate(['activo' => ['required', 'boolean']]);
+        $seccion = $request->route('seccion');
+        $activo = $request->boolean('activo');
+        $registro = $this->repositorio->cambiarEstadoCatalogo($seccion, (int) $request->route('registro'), $activo);
+
+        return $this->respuesta($request, $seccion, $registro, 200, $activo ? 'Registro activado.' : 'Registro desactivado.');
     }
 
     public function opciones(Request $request)
@@ -173,6 +189,9 @@ final readonly class InventarioController
             'activo' => [$id ? 'required' : 'sometimes', 'boolean'],
         ];
         if ($seccion === 'productos') {
+            if ($id !== null) {
+                array_unshift($reglas['codigo'], 'sometimes');
+            }
             $reglas += [
                 'unidad' => ['required', 'string', 'max:30'],
                 'categoria' => ['nullable', 'string', 'max:100'],
@@ -202,9 +221,11 @@ final readonly class InventarioController
             $reglas['cuentas.*'] = ['nullable', 'integer', 'min:1'];
         }
         $datos = $request->validate($reglas);
-        $datos['codigo'] = Str::upper($datos['codigo']);
-        if (Str::length($datos['codigo']) > 60) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['codigo' => 'El código debe tener hasta 60 caracteres en mayúsculas.']);
+        if (isset($datos['codigo'])) {
+            $datos['codigo'] = Str::upper($datos['codigo']);
+            if (Str::length($datos['codigo']) > 60) {
+                throw ValidationException::withMessages(['codigo' => 'El código debe tener hasta 60 caracteres en mayúsculas.']);
+            }
         }
         $datos['activo'] ??= true;
         if ($seccion === 'productos' && ($id === null || array_key_exists('stock_minimo', $datos))) {

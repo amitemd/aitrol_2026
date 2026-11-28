@@ -61,8 +61,7 @@
                                                 @if ($item->protegido)
                                                     <span class="text-body-secondary">Protegida</span>
                                                 @else
-                                                    @component('partials.acciones-fila')
-                                                        @include('partials.accion-fila-enlace', ['href' => route('configuracion.menu.index', ['editar' => $item->id]), 'etiqueta' => 'Editar', 'titulo' => 'Editar opción'])
+                                                    @component('partials.acciones-fila', ['editar' => route('configuracion.menu.index', ['editar' => $item->id]), 'tituloEditar' => 'Editar opción'])
                                                         @include('partials.accion-fila-eliminar', ['href' => route('configuracion.menu.destroy', $item->id), 'confirmar' => '¿Eliminar la opción '.$item->nombre.'?'])
                                                     @endcomponent
                                                 @endif

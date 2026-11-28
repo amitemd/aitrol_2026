@@ -23,8 +23,7 @@
                                     <th scope="row">{{ $sucursal->nombre }}</th>
                                     <td>{{ $sucursal->direccion ?: 'Sin dirección' }}</td>
                                     <td class="text-end">
-                                        @component('partials.acciones-fila', ['ver' => route('configuracion.sucursales.show', $sucursal->id), 'tituloVer' => 'Detalle de sucursal'])
-                                            @include('partials.accion-fila-enlace', ['href' => route('configuracion.sucursales.edit', $sucursal->id), 'etiqueta' => 'Editar', 'titulo' => 'Editar sucursal'])
+                                        @component('partials.acciones-fila', ['ver' => route('configuracion.sucursales.show', $sucursal->id), 'tituloVer' => 'Detalle de sucursal', 'editar' => route('configuracion.sucursales.edit', $sucursal->id), 'tituloEditar' => 'Editar sucursal'])
                                         @endcomponent
                                     </td>
                                 </tr>

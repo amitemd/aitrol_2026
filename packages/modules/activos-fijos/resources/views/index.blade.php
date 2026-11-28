@@ -84,7 +84,10 @@
                         <caption class="visually-hidden">{{ $titulo }}</caption>
                         <thead class="clientes-tabla-cabecera"><tr>
                             @foreach ($campos as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach
-                            @unless ($seccion === 'reportes')<th scope="col" class="text-end">{{ __('Acciones') }}</th>@endunless
+                            @unless ($seccion === 'reportes')
+                                @include('partials.auditoria-cabeceras')
+                                <th scope="col" class="text-end">{{ __('Acciones') }}</th>
+                            @endunless
                         </tr></thead>
                         <tbody>
                             @forelse ($registros as $fila)
@@ -98,6 +101,7 @@
                                         </td>
                                     @endforeach
                                     @unless ($seccion === 'reportes')
+                                        @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                         <td class="text-end text-nowrap">
                                             @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
                                                 @if (($catalogo || ($seccion === 'activos' && !$fila['fecha_baja']) || ($seccion === 'ordenes' && in_array($fila['estado'], ['pendiente', 'en_proceso'], true))) && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
@@ -109,7 +113,7 @@
                                     @endunless
                                 </tr>
                             @empty
-                                <tr><td colspan="{{ count($campos) + ($seccion === 'reportes' ? 0 : 1) }}" class="text-center clientes-vacio">
+                                <tr><td colspan="{{ count($campos) + ($seccion === 'reportes' ? 0 : 5) }}" class="text-center clientes-vacio">
                                     <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi {{ $icono }}"></i></span>
                                     <p class="fw-semibold mb-0">{{ $filtros ? 'No hay resultados con estos filtros' : 'Todavía no hay registros' }}</p>
                                 </td></tr>

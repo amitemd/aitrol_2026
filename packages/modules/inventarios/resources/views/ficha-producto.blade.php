@@ -24,8 +24,15 @@
                     'codigo_barras' => ['Código de barras', 80, 'col-sm-4'], 'marca' => ['Marca', 100, 'col-sm-4'], 'modelo' => ['Modelo', 100, 'col-sm-4']] as $campo => [$etiqueta, $maximo, $ancho])
                     <div class="{{ $ancho }}">
                         <label class="form-label" for="producto-{{ $campo }}">{{ __($etiqueta) }}</label>
-                        <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control @error($campo) is-invalid @enderror"
-                            maxlength="{{ $maximo }}" value="{{ old($campo, $registro[$campo] ?? '') }}" @required(in_array($campo, ['codigo', 'nombre']))>
+                        @if ($campo === 'codigo')
+                            <input id="producto-codigo" name="codigo" class="form-control @error('codigo') is-invalid @enderror"
+                                maxlength="{{ $maximo }}" value="{{ $registro ? $registro['codigo'] : old('codigo', $codigoSugerido) }}"
+                                aria-describedby="producto-codigo-ayuda" autocomplete="off" @readonly($registro) @required(! $registro)>
+                            <p id="producto-codigo-ayuda" class="form-text mb-0">{{ $registro ? 'Código fijo del producto.' : 'Puedes editar el código sugerido antes de guardar.' }}</p>
+                        @else
+                            <input id="producto-{{ $campo }}" name="{{ $campo }}" class="form-control @error($campo) is-invalid @enderror"
+                                maxlength="{{ $maximo }}" value="{{ old($campo, $registro[$campo] ?? '') }}" @required($campo === 'nombre')>
+                        @endif
                     </div>
                 @endforeach
             </div>

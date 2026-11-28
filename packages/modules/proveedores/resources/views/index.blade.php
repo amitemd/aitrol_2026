@@ -32,6 +32,7 @@
                                     <th scope="col">{{ __('Identificación') }}</th>
                                     <th scope="col">Contacto</th>
                                     <th scope="col">{{ __('Estado') }}</th>
+                                    @include('partials.auditoria-cabeceras')
                                     <th scope="col"><span class="visually-hidden">{{ __('Acciones') }}</span></th>
                                 </tr>
                             </thead>
@@ -49,11 +50,9 @@
                                             @if (!$proveedor->email && !$proveedor->telefono) <span class="text-body-secondary">—</span> @endif
                                         </td>
                                         <td><span @class(['badge rounded-pill', 'bg-success-subtle text-success-emphasis' => $proveedor->activo, 'bg-secondary-subtle text-secondary-emphasis' => !$proveedor->activo])>{{ $proveedor->activo ? 'Activo' : 'Inactivo' }}</span></td>
+                                        @include('partials.auditoria-celdas', ['filaAuditoria' => $proveedor->auditoria])
                                         <td class="text-end">
-                                            @component('partials.acciones-fila', ['ver' => route('proveedores.show', $proveedor->id), 'tituloVer' => 'Detalle de proveedor'])
-                                                @can('permiso', ['proveedores.lista', 'actualizar'])
-                                                    @include('partials.accion-fila-enlace', ['href' => route('proveedores.edit', $proveedor->id), 'etiqueta' => 'Editar', 'titulo' => 'Editar proveedor'])
-                                                @endcan
+                                            @component('partials.acciones-fila', ['ver' => route('proveedores.show', $proveedor->id), 'tituloVer' => 'Detalle de proveedor', 'editar' => Gate::allows('permiso', ['proveedores.lista', 'actualizar']) ? route('proveedores.edit', $proveedor->id) : null, 'tituloEditar' => 'Editar proveedor'])
                                                 @can('permiso', ['proveedores.lista', 'eliminar'])
                                                     @include('partials.accion-fila-eliminar', ['href' => route('proveedores.destroy', $proveedor->id), 'confirmar' => '¿Eliminar proveedor '.$proveedor->nombre.'?'])
                                                 @endcan
@@ -62,7 +61,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center clientes-vacio">
+                                        <td colspan="9" class="text-center clientes-vacio">
                                             <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi bi-truck"></i></span>
                                             <p class="fw-semibold mb-1">{{ request()->filled('q') ? 'No hay coincidencias' : 'Todavía no hay proveedores' }}</p>
                                             @if (request()->filled('q'))

@@ -24,6 +24,16 @@ final class ClienteModel extends Model
         return ['activo' => 'boolean', 'perfil' => 'array', 'documentos' => 'array'];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $cliente): void {
+            $cliente->id_usuario_creacion = auth()->id();
+        });
+        static::updating(function (self $cliente): void {
+            $cliente->id_usuario_modificacion = auth()->id();
+        });
+    }
+
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class, 'id_persona');

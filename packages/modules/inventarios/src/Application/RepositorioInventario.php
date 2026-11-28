@@ -10,6 +10,8 @@ interface RepositorioInventario
 {
     public function opcionesFicha(): array;
 
+    public function sugerirCodigoProducto(): string;
+
     public function cuentasProducto(stdClass $producto): array;
 
     public function listar(string $seccion, array $filtros): LengthAwarePaginator;
@@ -19,6 +21,8 @@ interface RepositorioInventario
     public function catalogo(string $seccion, int $id, bool $bloquear = false): stdClass;
 
     public function guardarCatalogo(string $seccion, ?int $id, array $datos): stdClass;
+
+    public function cambiarEstadoCatalogo(string $seccion, int $id, bool $activo): stdClass;
 
     public function operacion(int $id): stdClass;
 

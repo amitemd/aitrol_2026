@@ -28,11 +28,7 @@ final class AccesoController
         $id = $request->integer('editar');
 
         return view('configuracion::roles', [
-            'roles' => $this->deEmpresa('roles')
-                ->leftJoin('users as creador', 'creador.id', '=', 'roles.id_usuario_creacion')
-                ->leftJoin('users as editor', 'editor.id', '=', 'roles.id_usuario_modificacion')
-                ->orderBy('roles.nombre')
-                ->get(['roles.*', 'creador.name as creado_por', 'editor.name as modificado_por']),
+            'roles' => $this->deEmpresa('roles')->orderBy('roles.nombre')->get(),
             'rol' => $id ? ($this->deEmpresa('roles')->find($id) ?? abort(404)) : null,
             'seleccion' => $id ? $this->deEmpresa('permiso_rol')->where('id_rol', $id)->pluck('id_permiso')->map(fn ($id) => (int) $id)->all() : [],
             'opciones' => $this->opciones(),

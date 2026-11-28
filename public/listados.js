@@ -66,8 +66,8 @@
         first?.focus();
     }
 
-    async function loadHtml(url, signal) {
-        const response = await fetch(url, { headers: { Accept: 'text/html' }, signal });
+    async function loadHtml(url, signal, headers = {}) {
+        const response = await fetch(url, { headers: { Accept: 'text/html', ...headers }, signal });
         if (!response.ok) throw new Error('No se pudo cargar la información.');
         const page = new DOMParser().parseFromString(await response.text(), 'text/html');
         if (page.querySelector('[data-login-form]')) throw new Error('Tu sesión venció. Vuelve a iniciar sesión.');
@@ -111,7 +111,7 @@
         }
 
         try {
-            const page = await loadHtml(link.href, controller.signal);
+            const page = await loadHtml(link.href, controller.signal, { 'X-Requested-With': 'XMLHttpRequest' });
             const fetchedForm = page.querySelector('[data-ajax-form]');
             if (!fetchedForm) throw new Error('No se pudo abrir el formulario.');
             if (controller.signal.aborted) return;
@@ -235,4 +235,11 @@
         if (opener?.isConnected) opener.focus({ preventScroll: true });
         opener = undefined;
     });
+
+    const altaPendiente = document.querySelector('[data-ajax-open][data-ajax-open-on-load]');
+    if (altaPendiente) {
+        listUrl.searchParams.delete(altaPendiente.dataset.ajaxOpenOnLoad);
+        history.replaceState(history.state, '', listUrl);
+        openForm(altaPendiente);
+    }
 })();

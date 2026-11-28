@@ -502,6 +502,26 @@
     padding: .45rem .65rem;
 }
 
+.accion-fila-icono .bi-eye,
+.acciones-fila-menu .bi-eye,
+.acciones-fila-menu .accion-fila-activar {
+    color: var(--bs-success-text-emphasis);
+}
+
+.accion-fila-icono .bi-pencil,
+.acciones-fila-menu .bi-pencil,
+.acciones-fila-menu .bi-pencil-square {
+    color: var(--bs-primary-text-emphasis);
+}
+
+.acciones-fila-menu .accion-fila-desactivar {
+    color: var(--bs-danger-text-emphasis);
+}
+
+.acciones-fila-menu .dropdown-divider {
+    border-color: var(--aitrol-border, var(--bs-border-color));
+}
+
 .cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
 
 .usuario-tabs[hidden],

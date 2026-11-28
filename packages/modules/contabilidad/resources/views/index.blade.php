@@ -24,13 +24,16 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <caption class="visually-hidden">{{ $titulo }}</caption>
-                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($campos as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach<th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
+                    <thead class="clientes-tabla-cabecera"><tr>@foreach ($campos as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach
+                        @include('partials.auditoria-cabeceras')
+                        <th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
                     <tbody>
                         @forelse ($registros as $fila)
                             <tr>
                                 @foreach ($campos as $campo => $etiqueta)
                                     <td>@include('contabilidad::valor', ['valor' => $fila[$campo] ?? null])</td>
                                 @endforeach
+                                @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                 <td class="text-end text-nowrap">
                                     @php
                                         $accion = match ($seccion) {
@@ -48,7 +51,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="{{ count($campos) + 1 }}">@include('contabilidad::vacio', ['texto' => $filtros ? 'No hay resultados con estos filtros' : 'Todavía no hay registros'])</td></tr>
+                            <tr><td colspan="{{ count($campos) + 5 }}">@include('contabilidad::vacio', ['texto' => $filtros ? 'No hay resultados con estos filtros' : 'Todavía no hay registros'])</td></tr>
                         @endforelse
                     </tbody>
                 </table>

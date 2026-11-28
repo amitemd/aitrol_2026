@@ -24,6 +24,9 @@
 !/tests/Feature/
 /tests/Feature/*
 !/tests/Feature/DashboardInventarioTest.php
+!/tests/Feature/CategoriasInventarioTest.php
+!/tests/Feature/PlanCuentasInicialTest.php
+!/tests/Feature/CodigoProductoTest.php
 !/tests/Feature/FacturacionVentaTest.php
 !/tests/Feature/VickyModeloTest.php
 !/tests/Feature/FichaProductosMigracionTest.php

@@ -118,6 +118,7 @@ final class EloquentClienteRepository implements ClienteRepository
             $model->activo,
             $model->id_persona,
             ['nombres' => $persona?->nombre ?? $nombre, 'apellidos' => $persona?->apellido] + ($persona?->perfil() ?? []) + ($model->perfil ?? []),
+            $model->only(['id_usuario_creacion', 'id_usuario_modificacion', 'created_at', 'updated_at']),
         );
     }
 }

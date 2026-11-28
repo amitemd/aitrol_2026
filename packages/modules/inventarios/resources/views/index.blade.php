@@ -24,6 +24,7 @@
         'titulo' => $titulo, 'subtitulo' => 'Inventarios', 'icono' => $icono,
         'crearUrl' => isset($alta[$seccion]) && Gate::allows('permiso', [$ruta.'.index', 'escribir']) ? route($ruta.'.create') : null,
         'crearTexto' => $alta[$seccion] ?? null,
+        'abrirAlta' => $seccion === 'categorias' && request()->boolean('nueva'),
     ])
     <div class="app-content">
         <div class="container-fluid">
@@ -93,6 +94,7 @@
                         <caption class="visually-hidden">{{ $titulo }} de inventario</caption>
                         <thead class="clientes-tabla-cabecera"><tr>
                             @foreach ($columnas as $columna)
+                                @if ($columna === 'Acciones') @include('partials.auditoria-cabeceras') @endif
                                 <th scope="col">{{ $columna }}</th>
                             @endforeach
                         </tr></thead>
@@ -114,11 +116,22 @@
                                             <td>{{ $fila['descripcion'] ?? '—' }}</td>
                                         @endif
                                         <td><span @class(['badge rounded-pill', 'text-bg-success' => $fila['activo'], 'text-bg-secondary' => !$fila['activo']])>{{ $fila['activo'] ? 'Activo' : 'Inactivo' }}</span></td>
+                                        @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                         <td>
-                                            @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])
+                                            @component('partials.acciones-fila', [
+                                                'ver' => route($ruta.'.show', $fila['id']),
+                                                'editar' => Gate::allows('permiso', [$ruta.'.index', 'actualizar']) ? route($ruta.'.edit', $fila['id']) : null,
+                                                'tituloEditar' => str_replace(['Nuevo ', 'Nueva '], 'Editar ', $alta[$seccion]),
+                                            ])
                                                 @can('permiso', [$ruta.'.index', 'actualizar'])
-                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.edit', $fila['id']), 'etiqueta' => 'Editar',
-                                                        'titulo' => str_replace(['Nuevo ', 'Nueva '], 'Editar ', $alta[$seccion])])
+                                                    <form method="POST" action="{{ route($ruta.'.estado', $fila['id']) }}" data-ajax-action>
+                                                        @csrf @method('PATCH')
+                                                        <input type="hidden" name="activo" value="{{ $fila['activo'] ? 0 : 1 }}">
+                                                        <button type="submit" @class(['dropdown-item d-flex gap-2 align-items-center', 'accion-fila-desactivar' => $fila['activo'], 'accion-fila-activar' => !$fila['activo']])>
+                                                            <i class="bi {{ $fila['activo'] ? 'bi-toggle-off' : 'bi-toggle-on' }}" aria-hidden="true"></i>
+                                                            {{ $fila['activo'] ? 'Desactivar' : 'Activar' }}
+                                                        </button>
+                                                    </form>
                                                 @endcan
                                             @endcomponent
                                         </td>
@@ -152,12 +165,13 @@
                                             <td>{{ $fila['motivo'] }} @if ($fila['referencia']) <small class="d-block text-body-secondary">{{ $fila['referencia'] }}</small>@endif
                                                 @include('partials.referencia-asiento', ['registroAsiento' => $fila])
                                             </td>
+                                            @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                             <td>@component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id'])])@endcomponent</td>
                                         @endif
                                     @endif
                                 </tr>
                             @empty
-                                <tr><td colspan="{{ count($columnas) }}" class="text-center clientes-vacio">
+                                <tr><td colspan="{{ count($columnas) + (in_array('Acciones', $columnas, true) ? 4 : 0) }}" class="text-center clientes-vacio">
                                     <span class="clientes-icono mx-auto mb-3" aria-hidden="true"><i class="bi {{ $icono }}"></i></span>
                                     <p class="fw-semibold mb-1">{{ array_diff_key($filtros, ['page' => true, 'per_page' => true]) ? 'No hay resultados con estos filtros' : 'Todavía no hay registros' }}</p>
                                     @if (!$filtros && $existencias)

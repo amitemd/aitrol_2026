@@ -48,6 +48,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <caption class="visually-hidden">{{ $titulo }}</caption>
                     <thead class="clientes-tabla-cabecera"><tr>@foreach ($columnas as $etiqueta)<th scope="col">{{ __($etiqueta) }}</th>@endforeach
+                        @include('partials.auditoria-cabeceras')
                         @if ($formato || $seccion === 'documentos')<th scope="col" class="text-end">{{ __('Acciones') }}</th>@endif
                     </tr></thead>
                     <tbody>
@@ -68,6 +69,7 @@
                                         @endswitch
                                     </td>
                                 @endforeach
+                                @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                 @if ($formato)
                                     <td class="text-end">
                                         @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => 'Papel de trabajo'])
@@ -89,7 +91,7 @@
                                 @endif
                             </tr>
                         @empty
-                            <tr><td colspan="{{ count($columnas) + (($formato || $seccion === 'documentos') ? 1 : 0) }}">
+                            <tr><td colspan="{{ count($columnas) + 4 + (($formato || $seccion === 'documentos') ? 1 : 0) }}">
                                 @include('contabilidad::vacio', ['texto' => 'Todavía no hay registros para la selección'])
                             </td></tr>
                         @endforelse
