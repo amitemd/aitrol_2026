@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer([
             'inventarios::index', 'contabilidad::index', 'activos-fijos::index', 'caja-bancos::index',
             'comercial::index', 'tributario::index', 'clientes::index', 'proveedores::index',
-            'configuracion::roles', 'contabilidad::detalle',
+            'configuracion::roles', 'contabilidad::detalle', 'configuracion.sucursales',
         ], AuditoriaListado::class);
         TrustProxies::at(config('seguridad.proxies', []));
         $this->limitesDeAcceso();

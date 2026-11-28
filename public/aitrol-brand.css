@@ -23,3 +23,8 @@
     letter-spacing: .17em;
     text-transform: uppercase;
 }
+
+input:is([type="number"], [type="tel"], [inputmode="decimal"], [inputmode="numeric"], [name="numero"], [name="identificacion"]) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}

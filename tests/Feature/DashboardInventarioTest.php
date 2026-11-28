@@ -34,6 +34,7 @@ final class DashboardInventarioTest extends TestCase
             'id_empresa' => $otraEmpresa->id, 'id_usuario' => $colega->id,
         ])->assertNoContent();
         $this->get('/')->assertOk()->assertViewHas('preferencias', $preferencias)
+            ->assertSee('data-dashboard-chart-type data-select2-nativo', false)
             ->assertSeeInOrder(['data-dashboard-card="productos"', 'data-dashboard-card="tendencia"'], false);
         $this->actingAs($colega)->get('/')->assertViewHas('preferencias.grafico', 'line');
 

@@ -23,6 +23,11 @@ final class FacturacionVentaTest extends TestCase
         $this->assertDatabaseHas('com_documentos', ['numero' => '001-001-000000001', 'subtotal' => 1800, 'impuesto' => 270, 'total' => 2070]);
 
         $documento = DB::table('com_documentos')->first();
+        $this->assertDatabaseHas('co_asientos', ['origen' => 'comercial.documento', 'id_origen' => $documento->id, 'total' => 2070]);
+        $this->get(route('ventas.documentos.index'))->assertOk()
+            ->assertSee('Ver asiento')->assertSee('Ver trazabilidad')->assertSee('Agregar retención')
+            ->assertSee('Anular con nota de crédito')->assertSee('Anular factura');
+        $this->get(route('ventas.documentos.trazabilidad', $documento->id))->assertOk()->assertSee($documento->numero);
         $fiscal = json_decode($documento->datos_factura, true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('05', $fiscal['cliente']['tipo_sri']);
         $this->assertSame('01', $fiscal['forma_pago']);
@@ -41,6 +46,77 @@ final class FacturacionVentaTest extends TestCase
         $this->post(route('ventas.documentos.store'), $datos + ['numero' => '999-999-999999999'])
             ->assertRedirect(route('ventas.documentos.index'));
         $this->assertDatabaseHas('com_documentos', ['numero' => '001-001-000000002']);
+    }
+
+    public function test_muestra_el_pago_y_valida_hasta_cinco_datos_adicionales(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario);
+        $url = route('ventas.documentos.store');
+        $adicional = ['nombre' => 'Orden de compra', 'valor' => str_repeat('a', 299)];
+        $this->postJson($url, $datos + ['informacion_adicional' => array_fill(0, 6, $adicional)])
+            ->assertUnprocessable()->assertJsonValidationErrors('informacion_adicional');
+        $this->postJson($url, $datos + ['informacion_adicional' => [array_replace($adicional, ['valor' => str_repeat('a', 300)])]])
+            ->assertUnprocessable()->assertJsonValidationErrors('informacion_adicional.0.valor');
+        $this->assertDatabaseCount('com_documentos', 0);
+
+        $this->post($url, $datos + ['plazo_dias' => 15, 'informacion_adicional' => array_fill(0, 5, $adicional)])
+            ->assertRedirect(route('ventas.documentos.index'));
+        $documento = DB::table('com_documentos')->first();
+        $this->get(route('ventas.documentos.show', $documento->id))->assertOk()
+            ->assertSee('Forma de pago')->assertSee('Días de crédito')->assertSee('>15</dd>', false)->assertSee('Información adicional')
+            ->assertSee($adicional['nombre'])->assertSee($adicional['valor']);
+    }
+
+    public function test_anula_el_importe_total_con_nota_de_credito_vinculada(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $this->actingAs($usuario)->post(route('ventas.documentos.store'), $datos + ['aplicar_propina' => true])
+            ->assertRedirect(route('ventas.documentos.index'));
+        $factura = DB::table('com_documentos')->first();
+        $this->get(route('ventas.notas-credito.create', ['origen' => $factura->id, 'total' => 1]))->assertOk()
+            ->assertSee($factura->numero);
+        $nota = [
+            'numero' => 'NC-001', 'fecha' => $datos['fecha'], 'id_documento_origen' => $factura->id,
+            'credito_total' => true, 'observacion' => 'Corrección de la factura',
+        ];
+        $this->postJson(route('ventas.notas-credito.store'), $nota)->assertCreated();
+        $this->assertDatabaseHas('com_documentos', [
+            'numero' => 'NC-001', 'id_documento_origen' => $factura->id, 'subtotal' => 1800,
+            'impuesto' => 270, 'propina' => 180, 'total' => 2250,
+        ]);
+        $idNota = DB::table('com_documentos')->where('numero', 'NC-001')->value('id');
+        $this->assertDatabaseHas('co_asientos', ['origen' => 'comercial.documento', 'id_origen' => $idNota, 'total' => 2250]);
+        $this->get(route('ventas.documentos.trazabilidad', $factura->id))->assertOk()->assertSee('NC-001');
+    }
+
+    public function test_no_registra_la_factura_si_la_contabilizacion_esta_inactiva(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['activa' => false]);
+
+        $this->actingAs($usuario)->postJson(route('ventas.documentos.store'), $datos)
+            ->assertUnprocessable()->assertJsonValidationErrors('contabilidad');
+        $this->assertDatabaseCount('com_documentos', 0);
+        $this->assertDatabaseCount('co_asientos', 0);
+    }
+
+    public function test_contabiliza_una_factura_existente_una_sola_vez(): void
+    {
+        [$usuario, $datos] = $this->prepararFactura();
+        $id = DB::table('com_documentos')->insertGetId([
+            'id_empresa' => $usuario->id_empresa, 'id_sucursal' => DB::table('erp_sucursales')->value('id'),
+            'id_cliente' => $datos['id_tercero'], 'tercero' => 'Cliente de pruebas', 'fecha' => $datos['fecha'],
+            'tipo' => 'documentos', 'modulo' => 'ventas', 'numero' => '001-001-000000001',
+            'subtotal' => 1800, 'impuesto' => 270, 'total' => 2070,
+        ]);
+
+        $this->actingAs($usuario)->get(route('ventas.documentos.index'))->assertOk()->assertSee('Generar asiento');
+        $url = route('ventas.documentos.contabilizar', $id);
+        $this->postJson($url)->assertOk();
+        $this->postJson($url)->assertOk();
+        $this->assertDatabaseCount('co_asientos', 1);
+        $this->assertDatabaseHas('co_asientos', ['origen' => 'comercial.documento', 'id_origen' => $id, 'total' => 2070]);
     }
 
     public function test_descuenta_por_bodega_reusa_el_iva_del_producto_y_reversa_la_salida(): void
@@ -203,7 +279,7 @@ final class FacturacionVentaTest extends TestCase
         $this->putJson($edicion, array_replace($cambios, ['establecimiento_sri' => null, 'punto_emision_sri' => null]))->assertOk();
         $this->postJson($altaFactura, $datos)->assertUnprocessable()->assertJsonValidationErrors('emisor');
         $this->putJson($edicion, $cambios)->assertOk();
-        $this->assertDatabaseHas('erp_sucursales', ['id' => $matriz] + $cambios);
+        $this->assertDatabaseHas('erp_sucursales', ['id' => $matriz, 'id_usuario_modificacion' => $usuario->id] + $cambios);
         $this->post($altaFactura, $datos)->assertRedirect(route('ventas.documentos.index'));
         $this->assertDatabaseHas('com_documentos', ['id_sucursal' => $matriz, 'numero' => '007-009-000000001']);
         $fiscal = json_decode(DB::table('com_documentos')->where('id_sucursal', $matriz)->value('datos_factura'), true, flags: JSON_THROW_ON_ERROR);
@@ -214,6 +290,9 @@ final class FacturacionVentaTest extends TestCase
         $this->postJson($nueva, $segunda)->assertUnprocessable()->assertJsonValidationErrors('punto_emision_sri');
         $this->postJson($nueva, array_replace($segunda, ['punto_emision_sri' => '010']))->assertOk();
         $norte = DB::table('erp_sucursales')->where('id_empresa', $usuario->id_empresa)->where('codigo', 'NORTE')->value('id');
+        $this->assertDatabaseHas('erp_sucursales', ['id' => $norte, 'id_usuario_creacion' => $usuario->id, 'id_usuario_modificacion' => null]);
+        $this->get(route('configuracion.sucursales.index'))->assertOk()
+            ->assertSee('Creado por')->assertSee('Creado el')->assertSee('Modificado por')->assertSee('Modificado el');
         $this->post(route('configuracion.contexto.update'), ['id_sucursal' => $norte, 'periodo' => 2026])->assertRedirect(route('dashboard'));
         $this->post($altaFactura, $datos)->assertRedirect(route('ventas.documentos.index'));
         $this->assertDatabaseHas('com_documentos', ['id_sucursal' => $norte, 'numero' => '007-010-000000001']);
@@ -229,6 +308,18 @@ final class FacturacionVentaTest extends TestCase
             'establecimiento_sri' => '001', 'punto_emision_sri' => '001',
         ]);
         $usuario = User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]);
+        $reglas = [];
+        foreach (['clientes' => 'activo', 'ventas' => 'ingreso', 'impuesto_ventas' => 'pasivo', 'propinas_por_pagar' => 'pasivo',
+            'costo_ventas' => 'gasto', 'inventario' => 'activo', 'retencion_ventas' => 'activo'] as $regla => $clase) {
+            $reglas[$regla] = DB::table('co_cuentas')->insertGetId([
+                'id_empresa' => $empresa->id, 'codigo' => $regla, 'nombre' => $regla, 'clase' => $clase,
+            ]);
+        }
+        DB::table('co_periodos')->insert(['id_empresa' => $empresa->id, 'nombre' => '2026', 'desde' => '2026-01-01', 'hasta' => '2026-12-31']);
+        DB::table('co_integraciones')->insert([
+            'id_empresa' => $empresa->id, 'activa' => true, 'fecha_inicio' => '2026-01-01',
+            'reglas' => json_encode($reglas, JSON_THROW_ON_ERROR), 'tesoreria' => '{}',
+        ]);
         $cliente = DB::table('erp_clientes')->insertGetId([
             'id_empresa' => $empresa->id, 'tipo_identificacion' => 'cedula', 'identificacion' => '0912345678', 'nombre' => 'Cliente de pruebas',
         ]);

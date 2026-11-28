@@ -14,6 +14,16 @@ final readonly class ContabilizacionOperativa
 
     public function handle(OperacionContabilizable $evento): void
     {
+        $this->procesar($evento, $evento->contabilizacionObligatoria);
+    }
+
+    public function contabilizarFactura(int $id): void
+    {
+        $this->procesar(new OperacionContabilizable('comercial.documento', $id), obligatorio: true);
+    }
+
+    private function procesar(OperacionContabilizable $evento, bool $obligatorio): void
+    {
         if ($evento->origen === 'activos.costo') {
             $this->datos->bloquearEmpresa();
             abort_if($this->asientoOrigen('activos.alta', $evento->id) !== null, 409, 'El costo se registró en contabilidad. Corrige el valor mediante el proceso contable.');
@@ -23,14 +33,30 @@ final readonly class ContabilizacionOperativa
         $config = $this->datos->tabla('co_integraciones')->first();
         $esReversa = $evento->origen === 'comercial.anulacion' ||
             ($evento->origen === 'tesoreria.operacion' && $this->datos->fila('cb_operaciones', $evento->id)->id_reversa_de !== null);
-        if (! $config || (! $config->activa && ! $esReversa)) return;
+        if (! $obligatorio && (! $config || (! $config->activa && ! $esReversa))) return;
 
         $this->datos->bloquearEmpresa();
         $config = $this->datos->tabla('co_integraciones')->lockForUpdate()->first();
-        if (! $config || (! $config->activa && ! $esReversa)) return;
+        if (! $config || (! $config->activa && ! $esReversa)) {
+            if ($obligatorio) {
+                $this->falta('Activa la contabilización automática y configura las cuentas de ventas en Contabilidad.');
+            }
+
+            return;
+        }
         $reglas = json_decode($config->reglas, true, flags: JSON_THROW_ON_ERROR);
         $tesoreria = json_decode($config->tesoreria, true, flags: JSON_THROW_ON_ERROR);
         if ($this->asientoOrigen($evento->origen, $evento->id) !== null) return;
+        if ($obligatorio) {
+            $factura = $this->datos->fila('com_documentos', $evento->id);
+            if (blank($config->fecha_inicio) || $factura->fecha < $config->fecha_inicio) {
+                $this->falta('La contabilización automática debe estar vigente desde la fecha de la factura.');
+            }
+            $periodo = $this->datos->periodoEnFecha($factura->fecha);
+            if ($periodo === null || $periodo->cerrado_at !== null) {
+                $this->falta('Abre un período contable que incluya la fecha del documento.');
+            }
+        }
 
         match ($evento->origen) {
             'comercial.documento' => $this->comercial($evento, $config->fecha_inicio, $reglas),
@@ -39,12 +65,30 @@ final readonly class ContabilizacionOperativa
             'tesoreria.operacion' => $this->tesoreria($evento, $config->fecha_inicio, $reglas, $tesoreria),
             'activos.alta', 'activos.baja', 'activos.depreciacion' => $this->activos($evento, $config->fecha_inicio, $reglas),
         };
+        if ($obligatorio && $this->asientoOrigen($evento->origen, $evento->id) === null) {
+            $this->falta('La operación no tiene importes para generar un asiento contable.');
+        }
     }
 
     private function comercial(OperacionContabilizable $evento, string $inicio, array $reglas): void
     {
         $doc = $this->datos->fila('com_documentos', $evento->id);
         if ($doc->fecha < $inicio || ! in_array($doc->tipo, ['documentos', 'notas-credito', 'notas-debito', 'retenciones'], true)) return;
+        if ($evento->contabilizacionObligatoria && $doc->tipo === 'notas-credito') {
+            $idAsiento = $this->asientoOrigen('comercial.documento', $doc->id_documento_origen);
+            if ($idAsiento === null) {
+                $this->falta('Genera el asiento de la factura antes de registrar la nota de crédito.');
+            }
+            $original = $this->datos->asiento($idAsiento);
+            $lineas = $original->lineas->map(fn (\stdClass $fila): array => [
+                'id_cuenta' => $fila->id_cuenta, 'debe' => $fila->haber, 'haber' => $fila->debe,
+                'detalle' => $fila->detalle, 'id_centro_costo' => $fila->id_centro_costo,
+                'movimiento_patrimonio' => $fila->movimiento_patrimonio,
+            ])->all();
+            $this->publicar($evento, $doc->fecha, 'Nota de crédito · '.$doc->numero, $lineas, $original->flujo);
+
+            return;
+        }
         if ($doc->id_documento_origen !== null && $this->asientoOrigen('comercial.documento', $doc->id_documento_origen) === null) {
             // Aplica contra el saldo de apertura de clientes/proveedores cuando el original es histórico.
             $origen = $this->datos->fila('com_documentos', $doc->id_documento_origen);

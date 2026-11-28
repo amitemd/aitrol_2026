@@ -654,7 +654,7 @@
     .plan-cuenta-identidad, .plan-cuenta-acciones { gap: .2rem; }
 }
 
-.cliente-dialog:has([data-usuario-form]) { width: min(53rem, calc(100% - 2rem)); }
+.cliente-dialog:has([data-usuario-form], [data-factura-clave-acceso]) { width: min(53rem, calc(100% - 2rem)); }
 
 .usuario-tabs[hidden],
 [data-usuario-panel][hidden] { display: none; }

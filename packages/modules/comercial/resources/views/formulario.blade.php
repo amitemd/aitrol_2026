@@ -4,6 +4,7 @@
     $config = config('comercial.'.$modulo);
     $ruta = $modulo.'.'.$seccion;
     $titulo = $config['secciones'][$seccion][2];
+    $titulo = $creditoTotal ? 'Anular con nota de crédito' : $titulo;
     $vinculado = in_array($seccion, \Aitrol\Comercial\Application\DocumentosComerciales::VINCULADOS, true);
     $retencion = $seccion === 'retenciones';
 @endphp
@@ -28,10 +29,15 @@
                         </div>
                         <div @class(['col-sm-6' => $seccion === 'documentos', 'col-12' => $seccion !== 'documentos'])>
                             <label class="form-label" for="com-tercero">{{ $vinculado ? 'Documento de origen' : $config['tercero'] }}</label>
+                            @if ($origen)
+                                <input type="hidden" name="id_documento_origen" value="{{ $origen->id }}">
+                                <input id="com-tercero" class="form-control" value="{{ $origen->numero }} · {{ $origen->tercero }}" readonly>
+                            @else
                             <select id="com-tercero" class="form-select" name="{{ $vinculado ? 'id_documento_origen' : 'id_tercero' }}"
                                 data-select2-url="{{ route($ruta.'.opciones', $vinculado ? 'origenes' : 'terceros') }}" data-select2-min="0" required>
                                 <option value="">{{ __('Seleccionar') }}</option>
                             </select>
+                            @endif
                         </div>
                         @if ($seccion === 'documentos')
                             <div class="col-sm-6">
@@ -42,10 +48,14 @@
                             </div>
                         @endif
                         <div class="col-12">
-                            <label class="form-label" for="com-observacion">Observación</label>
-                            <textarea id="com-observacion" name="observacion" class="form-control" rows="2" maxlength="500">{{ old('observacion') }}</textarea>
+                            <label class="form-label" for="com-observacion">{{ $creditoTotal ? 'Motivo de la nota de crédito' : 'Observación' }}</label>
+                            <textarea id="com-observacion" name="observacion" class="form-control" rows="2" maxlength="500" @required($creditoTotal)>{{ old('observacion') }}</textarea>
                         </div>
                     </div>
+                    @if ($creditoTotal)
+                        <input type="hidden" name="credito_total" value="1">
+                        <p class="mb-0 mt-3">Total a acreditar: USD {{ \Aitrol\Inventarios\Domain\CantidadInventario::decimal((int) $origen->total, 2) }}</p>
+                    @else
                     <div class="d-flex justify-content-between align-items-center gap-2 mt-4 mb-2">
                         <h2 class="h6 mb-0">{{ $retencion ? 'Detalle de retenciones' : 'Detalle del documento' }}</h2>
                         <button type="button" data-comercial-agregar class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Agregar línea</button>
@@ -59,6 +69,7 @@
                         @endforeach
                     </div>
                     <template data-comercial-plantilla>@include('comercial::linea', ['indice' => '__INDICE__', 'linea' => []])</template>
+                    @endif
                 </div>
                 <div class="card-footer d-flex justify-content-end gap-2">
                     <a class="btn btn-outline-secondary" href="{{ route($ruta.'.index') }}" data-ajax-close>{{ __('Cancelar') }}</a>

@@ -3,6 +3,7 @@
 namespace Aitrol\Comercial\Infrastructure\Http;
 
 use Aitrol\Comercial\Application\DocumentosComerciales;
+use Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use App\Services\ContextoOperativo;
 use App\Services\EmpresaActiva;
@@ -12,12 +13,20 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use stdClass;
 
 final readonly class ComercialController
 {
+    public const SECCIONES_ARCHIVO = [
+        'facturas' => 'documentos',
+        'notas-de-credito' => 'notas-credito',
+        'notas-de-debito' => 'notas-debito',
+        'retenciones' => 'retenciones',
+    ];
+
     public function __construct(private DocumentosComerciales $documentos) {}
 
     public function index(Request $request)
@@ -84,19 +93,56 @@ final readonly class ComercialController
             return view('comercial::factura', compact('periodo', 'fecha', 'borrador', 'datos', 'cliente', 'lineas', 'productos', 'bodegas'));
         }
 
-        return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha'));
+        $idOrigen = $request->validate(['origen' => ['nullable', 'integer', 'min:1']])['origen'] ?? null;
+        $origen = $idOrigen && in_array($seccion, DocumentosComerciales::VINCULADOS, true)
+            ? $this->documentos->consultar($modulo, 'documentos', (int) $idOrigen) : null;
+        $creditoTotal = $origen !== null && $modulo === 'ventas' && $seccion === 'notas-credito' && $request->boolean('total');
+        if ($creditoTotal) {
+            Gate::authorize('permiso', ['ventas.documentos.index', 'actualizar']);
+        }
+        abort_if($origen?->anulado_at !== null, 409, 'La factura de origen ya está anulada.');
+
+        return view('comercial::formulario', compact('modulo', 'seccion', 'periodo', 'fecha', 'origen', 'creditoTotal'));
     }
 
     public function show(Request $request)
     {
         [$modulo, $seccion] = $this->seccion($request);
         $registro = $this->documentos->consultar($modulo, $seccion, (int) $request->route('registro'));
-        $documento = $this->decimales($registro);
-        $fiscal = json_decode($registro->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
-        $documento += array_intersect_key($fiscal, ['clave_acceso' => true, 'ambiente' => true]);
+        $documento = $this->detalleDocumento($registro);
 
         return $request->routeIs('api.*') ? response()->json(['data' => $documento])
             : view('comercial::detalle', compact('modulo', 'seccion', 'documento'));
+    }
+
+    public function archivo(Request $request, ContextoOperativo $contexto): View|RedirectResponse
+    {
+        if ($contexto->resolverSucursalWeb() === null) {
+            return to_route('configuracion.contexto.index');
+        }
+        [$modulo, $seccion] = $this->seccion($request);
+        $ruta = $request->route()->getName();
+        [$directorio] = explode('.', $ruta);
+        $titulo = config($directorio.'.secciones')[$ruta];
+        $tipoDocumento = match ($seccion) {
+            'documentos' => $modulo === 'ventas' ? 'Factura' : 'Factura de compra',
+            'notas-credito' => 'Nota de crédito',
+            'notas-debito' => 'Nota de débito',
+            'retenciones' => 'Retención',
+        };
+        $filtros = $this->filtros($request, conPaginacion: true);
+        $documentos = $this->documentos->listarConDetalle($modulo, $seccion, $filtros)->through($this->detalleDocumento(...));
+
+        return view('comercial::archivo-documentos', compact('documentos', 'modulo', 'directorio', 'ruta', 'titulo', 'tipoDocumento', 'filtros'));
+    }
+
+    private function detalleDocumento(stdClass $registro): array
+    {
+        $fiscal = json_decode($registro->datos_factura ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+
+        return $this->decimales($registro) + array_intersect_key($fiscal, [
+            'clave_acceso' => true, 'ambiente' => true, 'forma_pago' => true, 'plazo_dias' => true, 'informacion_adicional' => true,
+        ]);
     }
 
     public function contactoFactura(int $cliente, FacturaVenta $facturas): JsonResponse
@@ -162,6 +208,10 @@ final readonly class ComercialController
         [$modulo, $seccion] = $this->seccion($request);
         $vinculado = in_array($seccion, DocumentosComerciales::VINCULADOS, true);
         $retencion = $seccion === 'retenciones';
+        $creditoTotal = $modulo === 'ventas' && $seccion === 'notas-credito' && ! $request->routeIs('api.*') && $request->boolean('credito_total');
+        if ($creditoTotal) {
+            Gate::authorize('permiso', ['ventas.documentos.index', 'actualizar']);
+        }
         $reglas = [
             'numero' => ['required', 'string', 'max:60'],
             'fecha' => ['required', 'date_format:Y-m-d'],
@@ -207,10 +257,19 @@ final readonly class ComercialController
                 'forma_pago' => ['required', Rule::in(array_keys(FacturaVenta::PAGOS))],
                 'plazo_dias' => ['nullable', 'integer', 'between:0,3650'],
                 'aplicar_propina' => ['sometimes', 'boolean'],
+                'informacion_adicional' => ['sometimes', 'list', 'max:5'],
+                'informacion_adicional.*' => ['array:nombre,valor'],
+                'informacion_adicional.*.nombre' => ['required_with:informacion_adicional.*.valor', 'nullable', 'string', 'max:299'],
+                'informacion_adicional.*.valor' => ['required_with:informacion_adicional.*.nombre', 'nullable', 'string', 'max:299'],
                 'borrador' => ['nullable', 'integer', 'min:1'],
                 'frecuencia' => ['nullable', Rule::prohibitedIf($request->filled('borrador')), Rule::in(array_keys(FacturaVenta::FRECUENCIAS))],
                 'primera_fecha' => ['nullable', 'required_with:frecuencia', 'exclude_without:frecuencia', 'date_format:Y-m-d', 'after:fecha', 'after_or_equal:'.now('America/Guayaquil')->toDateString()],
             ]);
+        }
+        if ($creditoTotal) {
+            $reglas = array_filter($reglas, fn (string $campo): bool => ! str_starts_with($campo, 'lineas'), ARRAY_FILTER_USE_KEY);
+            $reglas['observacion'] = ['required', 'string', 'max:500'];
+            $reglas['fecha'][] = 'before_or_equal:'.now('America/Guayaquil')->toDateString();
         }
 
         $datos = $request->validate($reglas, [
@@ -218,18 +277,37 @@ final readonly class ComercialController
             'lineas.*.iva_codigo.required' => 'Selecciona el tratamiento de IVA de cada línea.',
             'lineas.*.iva_codigo.required_without' => 'Selecciona el tratamiento de IVA del servicio manual.',
         ]);
-        foreach ($datos['lineas'] as $posicion => $linea) {
+        if (isset($datos['informacion_adicional'])) {
+            $datos['informacion_adicional'] = array_values(array_filter($datos['informacion_adicional'], fn (array $fila): bool => isset($fila['nombre'], $fila['valor'])));
+        }
+        foreach ($datos['lineas'] ?? [] as $posicion => $linea) {
             if (! isset($linea['id_producto']) && ! isset($linea['descripcion'])) {
                 throw ValidationException::withMessages(['lineas.'.$posicion.'.descripcion' => 'Indica un concepto o selecciona un producto.']);
             }
         }
-        $documento = $factura ? $facturas->registrar($datos) : $this->documentos->registrar($modulo, $seccion, $datos);
+        $documento = $factura ? $facturas->registrar($datos) : $this->documentos->registrar($modulo, $seccion, $datos, creditoTotal: $creditoTotal);
 
         if ($factura && ! $request->expectsJson()) {
             return to_route('ventas.documentos.index')->with('status', 'Factura '.$documento->numero.' registrada en Aitrol.');
         }
 
         return $this->responder($request, $modulo, $seccion, $documento, 201, 'Documento registrado.');
+    }
+
+    public function trazabilidadVenta(int $registro): View
+    {
+        $factura = $this->documentos->consultar('ventas', 'documentos', $registro);
+        $vinculados = $this->documentos->vinculadosVenta($registro);
+
+        return view('comercial::trazabilidad-venta', compact('factura', 'vinculados'));
+    }
+
+    public function contabilizarVenta(int $registro, ContabilizacionOperativa $contabilidad): JsonResponse|RedirectResponse
+    {
+        $this->documentos->contabilizarVenta($registro, $contabilidad);
+
+        return request()->expectsJson() ? response()->json(['message' => 'Asiento de la factura registrado.'])
+            : to_route('ventas.documentos.index')->with('status', 'Asiento de la factura registrado.');
     }
 
     public function formularioAnulacion(Request $request)

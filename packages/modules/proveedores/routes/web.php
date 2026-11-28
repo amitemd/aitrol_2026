@@ -1,5 +1,6 @@
 <?php
 
+use Aitrol\Comercial\Infrastructure\Http\ComercialController;
 use Aitrol\Proveedores\Infrastructure\Http\ProveedorWebController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,8 +22,16 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->group(function ()
         ->where('proveedor', '[1-9][0-9]{0,17}')->whereUuid('archivo')->middleware('permiso:proveedores.lista,leer')->name('proveedores.documento');
 
     foreach (config('proveedores.secciones') as $ruta => $titulo) {
-        [, $grupo] = explode('.', $ruta);
-        Route::view('/'.str_replace('.', '/', $ruta), 'proveedores::seccion', [
+        [, $grupo, $seccion] = explode('.', $ruta);
+        $url = '/'.str_replace('.', '/', $ruta);
+        if ($grupo === 'documentos' && isset(ComercialController::SECCIONES_ARCHIVO[$seccion])) {
+            Route::get($url, [ComercialController::class, 'archivo'])
+                ->defaults('modulo', 'compras')->defaults('seccion', ComercialController::SECCIONES_ARCHIVO[$seccion])
+                ->middleware('permiso:'.$ruta.',leer')->name($ruta);
+
+            continue;
+        }
+        Route::view($url, 'proveedores::seccion', [
             'titulo' => $titulo,
             'grupo' => config('proveedores.grupos.'.$grupo),
         ])->middleware('permiso:'.$ruta.',leer')->name($ruta);

@@ -101,8 +101,25 @@
                                         @include('partials.auditoria-celdas', ['filaAuditoria' => $fila])
                                         <td class="text-end">
                                             @component('partials.acciones-fila', ['ver' => route($ruta.'.show', $fila['id']), 'tituloVer' => 'Documento '.$fila['numero']])
+                                                @if ($modulo === 'ventas' && $seccion === 'documentos')
+                                                    @if ($fila['id_asiento'] && Gate::allows('permiso', ['contabilidad.asientos.index', 'leer']))
+                                                        @include('partials.accion-fila-enlace', ['href' => route('contabilidad.asientos.show', $fila['id_asiento']), 'etiqueta' => 'Ver asiento', 'icono' => 'bi-journal-text'])
+                                                    @elseif (!$fila['id_asiento'] && !$fila['anulado_at'] && Gate::allows('permiso', ['contabilidad.asientos.index', 'escribir']) && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
+                                                        <form method="POST" action="{{ route('ventas.documentos.contabilizar', $fila['id']) }}" data-ajax-action>
+                                                            @csrf
+                                                            <button type="submit" class="dropdown-item d-flex gap-2 align-items-center"><i class="bi bi-journal-plus" aria-hidden="true"></i> Generar asiento</button>
+                                                        </form>
+                                                    @endif
+                                                    @include('partials.accion-fila-enlace', ['href' => route('ventas.documentos.trazabilidad', $fila['id']), 'etiqueta' => 'Ver trazabilidad', 'icono' => 'bi-diagram-3'])
+                                                    @if (!$fila['anulado_at'] && Gate::allows('permiso', ['ventas.retenciones.index', 'escribir']))
+                                                        @include('partials.accion-fila-enlace', ['href' => route('ventas.retenciones.create', ['origen' => $fila['id']]), 'etiqueta' => 'Agregar retención', 'icono' => 'bi-percent'])
+                                                    @endif
+                                                    @if (!$fila['anulado_at'] && Gate::allows('permiso', [$ruta.'.index', 'actualizar']) && Gate::allows('permiso', ['ventas.notas-credito.index', 'escribir']))
+                                                        @include('partials.accion-fila-enlace', ['href' => route('ventas.notas-credito.create', ['origen' => $fila['id'], 'total' => 1]), 'etiqueta' => 'Anular con nota de crédito', 'icono' => 'bi-file-earmark-minus'])
+                                                    @endif
+                                                @endif
                                                 @if (!$fila['anulado_at'] && Gate::allows('permiso', [$ruta.'.index', 'actualizar']))
-                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.confirmar', $fila['id']), 'etiqueta' => 'Anular', 'titulo' => 'Anular documento', 'icono' => 'bi-x-circle'])
+                                                    @include('partials.accion-fila-enlace', ['href' => route($ruta.'.confirmar', $fila['id']), 'etiqueta' => $modulo === 'ventas' && $seccion === 'documentos' ? 'Anular factura' : 'Anular', 'titulo' => 'Anular documento', 'icono' => 'bi-x-circle'])
                                                 @endif
                                             @endcomponent
                                         </td>

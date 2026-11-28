@@ -152,12 +152,12 @@ final class ContextoOperativo
             $datos['codigo'] = $codigo;
             $datos['updated_at'] = now();
             if ($id === null) {
-                $this->sucursales()->insert($datos + ['id_empresa' => $this->empresa->id(), 'created_at' => now()]);
+                $this->sucursales()->insert($datos + ['id_empresa' => $this->empresa->id(), 'created_at' => now(), 'id_usuario_creacion' => auth()->id()]);
 
                 return;
             }
 
-            $this->sucursales()->where('id', $id)->update($datos);
+            $this->sucursales()->where('id', $id)->update($datos + ['id_usuario_modificacion' => auth()->id()]);
         });
     }
 

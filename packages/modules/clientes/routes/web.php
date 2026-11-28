@@ -1,6 +1,7 @@
 <?php
 
 use Aitrol\Clientes\Infrastructure\Http\ClienteWebController;
+use Aitrol\Comercial\Infrastructure\Http\ComercialController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->group(function (): void {
@@ -21,8 +22,16 @@ Route::middleware(['web', 'auth', 'auth.session', 'empresa'])->group(function ()
         ->where('cliente', '[1-9][0-9]{0,17}')->whereUuid('archivo')->middleware('permiso:clientes.lista,leer')->name('clientes.documento');
 
     foreach (config('clientes.secciones') as $ruta => $titulo) {
-        [, $grupo] = explode('.', $ruta);
-        Route::view('/'.str_replace('.', '/', $ruta), 'clientes::seccion', [
+        [, $grupo, $seccion] = explode('.', $ruta);
+        $url = '/'.str_replace('.', '/', $ruta);
+        if ($grupo === 'documentos' && isset(ComercialController::SECCIONES_ARCHIVO[$seccion])) {
+            Route::get($url, [ComercialController::class, 'archivo'])
+                ->defaults('modulo', 'ventas')->defaults('seccion', ComercialController::SECCIONES_ARCHIVO[$seccion])
+                ->middleware('permiso:'.$ruta.',leer')->name($ruta);
+
+            continue;
+        }
+        Route::view($url, 'clientes::seccion', [
             'titulo' => $titulo,
             'grupo' => config('clientes.grupos.'.$grupo),
         ])->middleware('permiso:'.$ruta.',leer')->name($ruta);

@@ -42,8 +42,7 @@ final class ClientesModuleTest extends TestCase
             ]);
 
         foreach (config('clientes.secciones') as $ruta => $titulo) {
-            $this->get(route($ruta))->assertOk()->assertSee($titulo)
-                ->assertSee('Esta sección aún no está conectada a una fuente de datos.');
+            $this->get(route($ruta))->assertOk()->assertSee($titulo);
         }
     }
 

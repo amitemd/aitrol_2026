@@ -84,7 +84,7 @@
                         </h2>
                         <div class="dashboard-tools">
                             @if ($id === 'tendencia')
-                                <select class="form-select form-select-sm" data-dashboard-chart-type aria-label="{{ __('Tipo de gráfico') }}">
+                                <select class="form-select form-select-sm" data-dashboard-chart-type data-select2-nativo aria-label="{{ __('Tipo de gráfico') }}">
                                     @foreach ($tiposGrafico as $tipo => $nombre)
                                         <option value="{{ $tipo }}" @selected($preferencias['grafico'] === $tipo)>{{ __($nombre) }}</option>
                                     @endforeach

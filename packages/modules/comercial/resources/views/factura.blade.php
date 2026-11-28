@@ -103,6 +103,22 @@
                             <label class="form-label" for="factura-observacion">Observación <span class="text-body-secondary fw-normal">opcional</span></label>
                             <textarea id="factura-observacion" name="observacion" rows="2" maxlength="500" class="form-control">{{ old('observacion', $datos['observacion'] ?? '') }}</textarea>
                         </div>
+                        <div class="col-12">
+                            <details @if(old('informacion_adicional', $datos['informacion_adicional'] ?? [])) open @endif>
+                                <summary>Datos adicionales (hasta 5)</summary>
+                                @for ($i = 0; $i < 5; $i++)
+                                    <div class="row g-2 mt-1">
+                                        @foreach (['nombre' => ['col-md-4', 'Nombre'], 'valor' => ['col-md-8', 'Dato']] as $campo => [$columna, $etiqueta])
+                                            <div class="{{ $columna }}">
+                                                <label class="visually-hidden" for="factura-adicional-{{ $i }}-{{ $campo }}">{{ $etiqueta }} {{ $i + 1 }}</label>
+                                                <input class="form-control" id="factura-adicional-{{ $i }}-{{ $campo }}" name="informacion_adicional[{{ $i }}][{{ $campo }}]"
+                                                    maxlength="299" placeholder="{{ $etiqueta }} {{ $i + 1 }}" value="{{ old('informacion_adicional.'.$i.'.'.$campo, $datos['informacion_adicional'][$i][$campo] ?? '') }}">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endfor
+                            </details>
+                        </div>
                     </div>
                 </section>
                 @unless ($borrador)

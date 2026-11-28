@@ -99,7 +99,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
   <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte-select2.min.css') }}" />
   @stack('styles')
-  <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}" />
+  <link rel="stylesheet" href="{{ asset('aitrol-brand.css') }}?v={{ filemtime(public_path('aitrol-brand.css')) }}" />
   <link rel="stylesheet" href="{{ asset('aitrol-shell.css') }}?v={{ filemtime(public_path('aitrol-shell.css')) }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.min.css" crossorigin="anonymous">
   @auth

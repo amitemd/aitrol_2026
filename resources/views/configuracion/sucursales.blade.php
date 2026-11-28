@@ -15,7 +15,9 @@
             <section class="card clientes-directorio" data-ajax-list>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead><tr><th scope="col">{{ __('Código') }}</th><th scope="col">{{ __('Nombre') }}</th><th scope="col">{{ __('Dirección') }}</th><th scope="col">Serie SRI</th><th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
+                        <thead><tr><th scope="col">{{ __('Código') }}</th><th scope="col">{{ __('Nombre') }}</th><th scope="col">{{ __('Dirección') }}</th><th scope="col">Serie SRI</th>
+                            @include('partials.auditoria-cabeceras')
+                            <th scope="col" class="text-end">{{ __('Acciones') }}</th></tr></thead>
                         <tbody>
                             @forelse ($sucursales as $sucursal)
                                 <tr>
@@ -23,13 +25,14 @@
                                     <th scope="row">{{ $sucursal->nombre }}</th>
                                     <td>{{ $sucursal->direccion ?: 'Sin dirección' }}</td>
                                     <td>{{ $sucursal->establecimiento_sri && $sucursal->punto_emision_sri ? $sucursal->establecimiento_sri.'-'.$sucursal->punto_emision_sri : 'Sin configurar' }}</td>
+                                    @include('partials.auditoria-celdas', ['filaAuditoria' => $sucursal])
                                     <td class="text-end">
                                         @component('partials.acciones-fila', ['ver' => route('configuracion.sucursales.show', $sucursal->id), 'tituloVer' => 'Detalle de sucursal', 'editar' => route('configuracion.sucursales.edit', $sucursal->id), 'tituloEditar' => 'Editar sucursal'])
                                         @endcomponent
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td class="text-center py-5 text-body-secondary" colspan="5">Aún no hay sucursales registradas.</td></tr>
+                                <tr><td class="text-center py-5 text-body-secondary" colspan="9">Aún no hay sucursales registradas.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -118,6 +118,7 @@ final readonly class FacturaVenta
                     'direccion' => $cliente->direccion, 'telefono' => $cliente->telefono, 'email' => $cliente->email,
                 ],
                 'forma_pago' => $datos['forma_pago'], 'plazo_dias' => (int) ($datos['plazo_dias'] ?? 0),
+                'informacion_adicional' => $datos['informacion_adicional'] ?? [],
                 'lineas' => array_map(fn (array $linea): array => [
                     'iva_codigo' => $linea['iva_codigo'], 'descuento' => $linea['descuento'] ?? 0,
                 ], $lineas),
@@ -135,7 +136,7 @@ final readonly class FacturaVenta
                     'id_documento' => $documento->id, 'frecuencia' => $datos['frecuencia'],
                     'primera_fecha' => $datos['primera_fecha'], 'proxima_fecha' => $datos['primera_fecha'],
                     'datos' => json_encode([
-                        ...array_intersect_key($datos, array_flip(['id_tercero', 'forma_pago', 'plazo_dias', 'observacion', 'aplicar_propina'])),
+                        ...array_intersect_key($datos, array_flip(['id_tercero', 'forma_pago', 'plazo_dias', 'observacion', 'aplicar_propina', 'informacion_adicional'])),
                         'lineas' => $lineas,
                     ], JSON_THROW_ON_ERROR),
                     'created_at' => now(), 'updated_at' => now(),
