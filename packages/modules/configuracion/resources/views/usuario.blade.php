@@ -36,17 +36,12 @@
                                 @include('partials.ficha-bloque-titulo', ['tituloBloque' => 'Identificación y acceso', 'iconoBloque' => 'bi-person-vcard'])
                                 <div class="ficha-perfil">
                                 <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="nombres" class="form-label fw-semibold">Nombres</label>
-                                    <input id="nombres" name="nombres" class="form-control @error('nombres') is-invalid @enderror"
-                                        value="{{ old('nombres', $usuario->persona?->nombre ?? $usuario->name) }}" maxlength="255" autocomplete="given-name" required>
-                                    @error('nombres') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="apellidos" class="form-label fw-semibold">Apellidos</label>
-                                    <input id="apellidos" name="apellidos" class="form-control"
-                                        value="{{ old('apellidos', $usuario->persona?->apellido) }}" maxlength="100" autocomplete="family-name">
-                                </div>
+                                @include('partials.nombre-persona', [
+                                    'componentesNombre' => $usuario->persona?->perfil() ?? [],
+                                    'nombresAnteriores' => $usuario->persona?->nombre ?? $usuario->name,
+                                    'apellidosAnteriores' => $usuario->persona?->apellido,
+                                    'limiteNombre' => 255, 'etiquetaNombreCompleto' => 'Nombre completo anterior',
+                                ])
                                 @if ($usuario->persona?->identificacion === null)
                                     <div class="col-md-6">
                                         <label for="tipo_identificacion" class="form-label fw-semibold">Tipo de identificación</label>

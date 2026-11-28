@@ -3,14 +3,37 @@
 
     const moneda = new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' });
 
+    function unidades(entrada, escala) {
+        const valor = Math.round(entrada.valueAsNumber * escala);
+        return Number.isSafeInteger(valor) && valor > 0 ? BigInt(valor) : 0n;
+    }
+
+    function actualizarCompra(formulario) {
+        if (!formulario.matches('[data-compra]')) return;
+        let subtotal = 0n;
+        let impuesto = 0n;
+        for (const linea of formulario.querySelectorAll('[data-comercial-linea]')) {
+            const cantidad = unidades(linea.querySelector('[data-compra-campo="cantidad"]'), 1000);
+            const precio = unidades(linea.querySelector('[data-compra-campo="precio"]'), 10000);
+            const tasa = unidades(linea.querySelector('[data-compra-campo="tasa"]'), 100);
+            const base = (cantidad * precio + 50000n) / 100000n;
+            const tributo = (base * tasa + 5000n) / 10000n;
+            subtotal += base;
+            impuesto += tributo;
+            linea.querySelector('[data-compra-linea-total]').textContent = moneda.format(Number(base + tributo) / 100);
+        }
+        for (const [campo, centavos] of Object.entries({ subtotal, impuesto, total: subtotal + impuesto })) {
+            formulario.querySelector('[data-compra-total="' + campo + '"]').textContent = moneda.format(Number(centavos) / 100);
+        }
+    }
+
     function actualizarFactura(formulario) {
         if (!formulario?.matches('[data-factura]')) return;
         const totales = { bruto: 0n, descuento: 0n, base: 0n, iva: 0n, propina: 0n, total: 0n };
         for (const linea of formulario.querySelectorAll('[data-comercial-linea]')) {
             const valor = (campo, escala) => {
                 const entrada = linea.querySelector('[data-factura-campo="' + campo + '"]');
-                const unidades = Math.round(entrada.valueAsNumber * escala);
-                return Number.isSafeInteger(unidades) && unidades > 0 ? BigInt(unidades) : 0n;
+                return unidades(entrada, escala);
             };
             const bruto = (valor('cantidad', 1000) * valor('precio', 10000) + 50000n) / 100000n;
             const rebaja = valor('descuento', 100);
@@ -165,6 +188,11 @@
         });
     }
 
+    for (const formulario of document.querySelectorAll('[data-compra]')) {
+        actualizarCompra(formulario);
+        formulario.addEventListener('input', () => actualizarCompra(formulario));
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         window.jQuery?.('[data-factura]')
             .on('select2:select', '[data-factura-producto]', function (event) {
@@ -220,5 +248,6 @@
             }
         });
         actualizarFactura(formulario);
+        actualizarCompra(formulario);
     });
 })();

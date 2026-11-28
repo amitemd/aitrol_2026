@@ -31,8 +31,11 @@
                 <input class="form-control" id="identificacion" name="identificacion" maxlength="30"
                     value="{{ old('identificacion', $cliente?->identificacion->numero) }}" autofocus required>
             </div>
-            @include('clientes::campo-ficha', ['campo' => 'nombres', 'etiqueta' => 'Nombres o razón social', 'valor' => $perfil['nombres'] ?? old('nombre'), 'limite' => 160, 'obligatorio' => true])
-            @include('clientes::campo-ficha', ['campo' => 'apellidos', 'etiqueta' => 'Apellidos', 'valor' => $perfil['apellidos'] ?? null, 'limite' => 100])
+            @include('partials.nombre-persona', [
+                'componentesNombre' => $perfil,
+                'nombresAnteriores' => $perfil['nombres'] ?? old('nombre'),
+                'apellidosAnteriores' => $perfil['apellidos'] ?? null,
+            ])
             @unless ($esProveedor)
                 <div class="col-md-6">
                     <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>

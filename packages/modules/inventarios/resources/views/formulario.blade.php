@@ -86,6 +86,16 @@
                             <label class="form-label" for="inv-descripcion">{{ __('Descripción') }}</label>
                             <textarea class="form-control" name="descripcion" id="inv-descripcion" maxlength="500" rows="2">{{ old('descripcion', $registro['descripcion'] ?? '') }}</textarea>
                         </div>
+                        @if ($seccion === 'bodegas')
+                            <div class="col-12">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="es_principal" value="1"
+                                        @checked(old('es_principal', $registro['es_principal'] ?? false)) @disabled($registro['es_principal'] ?? false)>
+                                    <span class="form-check-label">Bodega principal de la empresa</span>
+                                </label>
+                                <p class="form-text mb-0">{{ ($registro['es_principal'] ?? false) ? 'Para reemplazarla, marca otra bodega activa como principal.' : 'La bodega principal recibe las compras de toda la empresa.' }}</p>
+                            </div>
+                        @endif
                     @else
                         <input type="hidden" name="clave_operacion" value="{{ old('clave_operacion', (string) Str::uuid()) }}">
                         <div class="col-sm-6">
@@ -100,7 +110,7 @@
                             <div @class(['col-sm-6', 'inventario-bodega-destino' => $campo === 'id_bodega_destino'])>
                                 <label class="form-label" for="inv-{{ $campo }}">{{ __($etiqueta) }}</label>
                                 <select class="form-select" name="{{ $campo }}" id="inv-{{ $campo }}" data-select2-min="0"
-                                    data-select2-url="{{ route($ruta.'.opciones', ['catalogo' => $origen, 'activo' => 1]) }}" @required($campo !== 'id_bodega_destino')>
+                                    data-select2-url="{{ route($ruta.'.opciones', ['catalogo' => $origen, 'activo' => 1, 'toda_empresa' => $campo === 'id_bodega_destino' ? 1 : null]) }}" @required($campo !== 'id_bodega_destino')>
                                     <option value="">{{ __('Seleccionar') }}</option>
                                     @isset($selecciones[$campo])
                                         <option value="{{ $selecciones[$campo]->id }}" selected>{{ $selecciones[$campo]->codigo }} · {{ $selecciones[$campo]->nombre }}</option>

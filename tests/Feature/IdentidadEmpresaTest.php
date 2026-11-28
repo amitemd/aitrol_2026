@@ -14,6 +14,39 @@ final class IdentidadEmpresaTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+    public function test_clientes_proveedores_y_usuarios_comparten_los_componentes_del_nombre(): void
+    {
+        $empresa = EmpresaModel::create(['ruc' => '1200000000004', 'razon_social' => 'Empresa de prueba']);
+        $this->actingAs(User::factory()->create(['id_empresa' => $empresa->id, 'is_admin' => true]));
+        $identificacion = ['tipo_identificacion' => 'cedula', 'identificacion' => '0912345678'];
+        $componentes = [
+            'primer_nombre' => 'María', 'segundo_nombre' => 'José',
+            'primer_apellido' => 'De la Cruz', 'segundo_apellido' => 'Pérez',
+        ];
+        $this->get(route('clientes.create'))->assertOk()->assertSee('Segundo nombre')->assertSee('Segundo apellido');
+        $this->get(route('proveedores.create'))->assertOk()->assertSee('Primer nombre')->assertSee('Primer apellido');
+        $this->get(route('configuracion.usuarios.create'))->assertOk()->assertSee('Segundo nombre')->assertSee('Segundo apellido');
+
+        $this->postJson(route('clientes.store'), $identificacion + ['segundo_nombre' => 'José'])
+            ->assertUnprocessable()->assertJsonValidationErrors('primer_nombre');
+        $this->postJson(route('clientes.store'), $identificacion + $componentes)->assertCreated();
+        $this->postJson(route('proveedores.store'), $identificacion + $componentes)->assertCreated();
+        $this->postJson(route('configuracion.usuarios.store'), $identificacion + $componentes + [
+            'email' => 'persona@example.com', 'password' => 'ClaveDePrueba2026!', 'password_confirmation' => 'ClaveDePrueba2026!',
+        ])->assertSuccessful();
+
+        $persona = DB::table('personas')->where('identificacion', $identificacion['identificacion'])->sole();
+        $this->assertDatabaseHas('personas', ['id' => $persona->id, 'nombre' => 'María José', 'apellido' => 'De la Cruz Pérez'] + $componentes);
+        $this->assertDatabaseHas('erp_clientes', ['id_persona' => $persona->id, 'nombre' => 'María José De la Cruz Pérez']);
+        $this->assertDatabaseHas('erp_proveedores', ['id_persona' => $persona->id, 'nombre' => 'María José De la Cruz Pérez']);
+        $this->assertDatabaseHas('users', ['id_persona' => $persona->id, 'name' => 'María José De la Cruz Pérez']);
+
+        $this->postJson(route('clientes.store'), [
+            'tipo_identificacion' => 'ruc', 'identificacion' => '0991234567001', 'nombre' => 'Razón social sin cambios',
+        ])->assertCreated();
+        $this->assertDatabaseHas('personas', ['identificacion' => '0991234567001', 'nombre' => 'Razón social sin cambios', 'primer_nombre' => null]);
+    }
+
     public function test_guarda_logo_y_estado_y_protege_el_certificado_de_empresa(): void
     {
         $empresa = EmpresaModel::create(['ruc' => '1200000000001', 'razon_social' => 'Empresa propia']);

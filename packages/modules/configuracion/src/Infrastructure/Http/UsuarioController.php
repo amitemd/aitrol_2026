@@ -132,8 +132,8 @@ final class UsuarioController
         }
 
         $datos = $request->validate([
-            'name' => ['required_without:nombres', 'nullable', 'string', 'max:255'],
-            'nombres' => ['sometimes', 'required', 'string', 'max:255'],
+            'name' => ['required_without_all:nombres,primer_nombre', 'nullable', 'string', 'max:255'],
+            'nombres' => ['nullable', 'string', 'max:255'],
             'apellidos' => ['nullable', 'string', 'max:100'],
             'email' => ['required', 'string', 'email:filter', 'max:255', Rule::unique(User::class)->ignore($usuario)],
             'email_contacto' => ['nullable', 'email:filter', 'max:255'],
@@ -156,6 +156,7 @@ final class UsuarioController
             'foto.max' => 'La foto debe pesar como máximo '.self::FOTO_MAX_MB.' MB.',
         ]);
 
+        $datos = Persona::normalizarNombre($datos);
         $identificacion = null;
         if (! $request->routeIs('api.*') && isset($datos['identificacion'])) {
             try {

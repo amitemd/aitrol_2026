@@ -22,8 +22,8 @@ final class GuardarProveedorRequest extends FormRequest
         return [
             'tipo_identificacion' => ['required', Rule::enum(TipoIdentificacion::class)],
             'identificacion' => ['required', 'string', 'max:30'],
-            'nombre' => ['required_without:nombres', 'nullable', 'string', 'max:160'],
-            'nombres' => ['sometimes', 'required', 'string', 'max:160'],
+            'nombre' => ['required_without_all:nombres,primer_nombre', 'nullable', 'string', 'max:160'],
+            'nombres' => ['nullable', 'string', 'max:160'],
             'apellidos' => ['nullable', 'string', 'max:100'],
             'email' => ['nullable', 'string', 'email:filter', 'max:254'],
             'telefono' => ['nullable', 'string', 'max:30'],
@@ -47,7 +47,7 @@ final class GuardarProveedorRequest extends FormRequest
 
     public function datos(): DatosProveedor
     {
-        $datos = $this->validated();
+        $datos = Persona::normalizarNombre($this->validated());
 
         try {
             $identificacion = new IdentificacionFiscal(TipoIdentificacion::from($datos['tipo_identificacion']), $datos['identificacion']);

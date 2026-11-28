@@ -83,6 +83,12 @@ final class FacturacionVentaTest extends TestCase
         $this->post(route('ventas.documentos.store'), $datos)->assertRedirect(route('ventas.documentos.index'));
         $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => 1000]);
         $asientoVenta = DB::table('co_asientos')->where('origen', 'comercial.documento')->value('id');
+        $factura = DB::table('com_documentos')->first();
+        $this->get(route('inventarios.movimientos.index'))->assertOk()
+            ->assertSee('Ajuste de entrada')->assertSee('Registro de venta')->assertSee($factura->numero)
+            ->assertSee('Bodega de origen')->assertSee('Bodega de destino');
+        $idAjuste = DB::table('inv_operaciones')->where('tipo', 'ajuste_entrada')->value('id');
+        $this->get(route('inventarios.movimientos.show', $idAjuste))->assertOk()->assertSee('Bodega de destino');
         $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientoVenta, 'id_cuenta' => $cuentas['costo_ventas'], 'debe' => 2000, 'haber' => 0]);
         $this->assertDatabaseHas('co_lineas', ['id_asiento' => $asientoVenta, 'id_cuenta' => $cuentas['inventario'], 'debe' => 0, 'haber' => 2000]);
 
@@ -92,6 +98,60 @@ final class FacturacionVentaTest extends TestCase
         $this->assertDatabaseHas('inv_existencias', ['id_producto' => $producto, 'id_bodega' => $bodega, 'cantidad' => 1000]);
         $this->assertDatabaseCount('inv_kardex', 3);
         $this->assertDatabaseCount('co_asientos', 3);
+    }
+
+    public function test_la_bodega_principal_es_unica_por_empresa_y_recibe_compras_de_otra_sucursal(): void
+    {
+        [$usuario] = $this->prepararFactura();
+        $empresa = $usuario->id_empresa;
+        DB::table('co_integraciones')->where('id_empresa', $empresa)->update(['activa' => false]);
+        $matriz = DB::table('erp_sucursales')->where('id_empresa', $empresa)->value('id');
+        $norte = DB::table('erp_sucursales')->insertGetId(['id_empresa' => $empresa, 'codigo' => '002', 'nombre' => 'Norte']);
+        $persona = DB::table('personas')->insertGetId(['nombre' => 'Proveedor de prueba']);
+        $proveedor = DB::table('erp_proveedores')->insertGetId([
+            'id_empresa' => $empresa, 'id_persona' => $persona, 'tipo_identificacion' => 'ruc',
+            'identificacion' => '0991234567001', 'nombre' => 'Proveedor de prueba',
+        ]);
+        $producto = DB::table('inv_productos')->insertGetId([
+            'id_empresa' => $empresa, 'codigo' => 'P1', 'nombre' => 'Mercadería', 'unidad' => 'unidad',
+        ]);
+        $seleccionar = route('configuracion.contexto.update');
+        $bodegas = route('inventarios.bodegas.store');
+        $this->actingAs($usuario)->post($seleccionar, ['id_sucursal' => $matriz, 'periodo' => 2026])->assertRedirect();
+        $this->postJson($bodegas, ['codigo' => 'M01', 'nombre' => 'Almacén Matriz'])->assertCreated();
+        $origen = DB::table('inv_bodegas')->where('id_sucursal', $matriz)->value('id');
+        $this->assertDatabaseHas('inv_bodegas', ['id' => $origen, 'es_principal' => true]);
+        $this->patchJson(route('inventarios.bodegas.estado', $origen), ['activo' => false])
+            ->assertUnprocessable()->assertJsonValidationErrors('es_principal');
+
+        $this->post($seleccionar, ['id_sucursal' => $norte, 'periodo' => 2026])->assertRedirect();
+        $this->postJson($bodegas, ['codigo' => 'N01', 'nombre' => 'Almacén Norte', 'es_principal' => true])->assertCreated();
+        $principal = DB::table('inv_bodegas')->where('id_sucursal', $norte)->value('id');
+        $this->assertDatabaseHas('inv_bodegas', ['id' => $origen, 'es_principal' => null, 'activo' => true]);
+        $this->assertDatabaseHas('inv_bodegas', ['id' => $principal, 'es_principal' => true]);
+
+        $this->post($seleccionar, ['id_sucursal' => $matriz, 'periodo' => 2026])->assertRedirect();
+        $compra = ['numero' => 'FAC-001', 'fecha' => '2026-01-15', 'id_tercero' => $proveedor,
+            'lineas' => [['id_producto' => $producto, 'cantidad' => 2, 'precio' => 10]]];
+        $this->get(route('compras.documentos.index'))->assertOk()->assertSee('data-workspace-link="compras.documentos.create"', false);
+        $this->get(route('compras.documentos.create'))->assertOk()->assertSee('Almacén Norte')
+            ->assertSee('Resumen de compra')->assertSee('data-compra', false)->assertDontSee('data-ajax-form', false);
+        $this->postJson(route('compras.documentos.store'), $compra + ['id_bodega' => $origen])
+            ->assertUnprocessable()->assertJsonValidationErrors('id_bodega');
+        $this->post(route('compras.documentos.store'), $compra)->assertRedirect(route('compras.documentos.index'));
+        $this->assertDatabaseHas('com_documentos', ['numero' => 'FAC-001', 'id_sucursal' => $matriz, 'id_bodega' => $principal]);
+        $this->assertDatabaseHas('inv_existencias', ['id_bodega' => $principal, 'id_producto' => $producto, 'cantidad' => 2000]);
+
+        $this->post($seleccionar, ['id_sucursal' => $norte, 'periodo' => 2026])->assertRedirect();
+        $this->postJson(route('inventarios.movimientos.store'), [
+            'tipo' => 'transferencia', 'id_producto' => $producto, 'id_bodega' => $principal,
+            'id_bodega_destino' => $origen, 'cantidad' => 1, 'motivo' => 'Distribución a Matriz',
+        ])->assertCreated();
+        $traslado = DB::table('inv_operaciones')->where('tipo', 'transferencia')->value('id');
+        $this->get(route('inventarios.movimientos.index', ['id_bodega' => $origen]))->assertOk()->assertSee('Distribución a Matriz');
+        $this->post($seleccionar, ['id_sucursal' => $matriz, 'periodo' => 2026])->assertRedirect();
+        $this->get(route('inventarios.movimientos.show', $traslado))->assertOk()
+            ->assertSeeInOrder(['Bodega de origen', 'Almacén Norte', 'Bodega de destino', 'Almacén Matriz']);
     }
 
     public function test_sri_publica_archivos_solo_despues_de_confirmar_la_clave_de_la_factura(): void

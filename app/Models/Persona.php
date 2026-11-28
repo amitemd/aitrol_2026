@@ -6,12 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 final class Persona extends Model
 {
+    public const COMPONENTES_NOMBRE = [
+        'primer_nombre' => ['Primer nombre', 80],
+        'segundo_nombre' => ['Segundo nombre', 80],
+        'primer_apellido' => ['Primer apellido', 50],
+        'segundo_apellido' => ['Segundo apellido', 50],
+    ];
+
     protected $table = 'personas';
 
     protected $fillable = [
         'id_tipo_identificacion', 'identificacion', 'nombre', 'apellido', 'telefono', 'celular',
         'direccion', 'id_ciudad', 'email', 'observacion', 'fecha_nacimiento',
         'urbanizacion', 'etapa', 'manzana', 'villa', 'referencia',
+        'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido',
     ];
 
     protected function casts(): array
@@ -26,6 +34,17 @@ final class Persona extends Model
         });
 
         static::saving(function (self $persona): void {
+            $campos = array_keys(self::COMPONENTES_NOMBRE);
+            if ($persona->isDirty($campos) && filled($persona->primer_nombre)) {
+                $nombre = self::normalizarNombre($persona->only($campos));
+                $persona->nombre = $nombre['nombres'];
+                $persona->apellido = $nombre['apellidos'];
+            } elseif ($persona->isDirty(['nombre', 'apellido']) && filled($persona->primer_nombre)) {
+                foreach ($campos as $campo) {
+                    $persona->{$campo} = null;
+                }
+            }
+
             if (! $persona->exists || $persona->isDirty()) {
                 $persona->id_usuario_modificacion = auth()->id();
             }
@@ -51,9 +70,25 @@ final class Persona extends Model
         return trim($this->nombre.' '.$this->apellido);
     }
 
+    public static function normalizarNombre(array $datos): array
+    {
+        if (blank($datos['primer_nombre'] ?? null)) {
+            return array_diff_key($datos, self::COMPONENTES_NOMBRE);
+        }
+        $datos += array_fill_keys(array_keys(self::COMPONENTES_NOMBRE), null);
+        $datos['nombres'] = trim($datos['primer_nombre'].' '.$datos['segundo_nombre']);
+        $datos['apellidos'] = trim($datos['primer_apellido'].' '.$datos['segundo_apellido']) ?: null;
+
+        return $datos;
+    }
+
     public static function reglasPerfil(): array
     {
         return [
+            'primer_nombre' => ['nullable', 'required_with:segundo_nombre,primer_apellido,segundo_apellido', 'string', 'max:80'],
+            'segundo_nombre' => ['nullable', 'string', 'max:80'],
+            'primer_apellido' => ['nullable', 'string', 'max:50'],
+            'segundo_apellido' => ['nullable', 'string', 'max:50'],
             'celular' => ['nullable', 'string', 'max:100'],
             'id_ciudad' => ['nullable', 'integer', 'exists:ciudades,id'],
             'fecha_nacimiento' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],

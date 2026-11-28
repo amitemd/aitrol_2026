@@ -63,11 +63,14 @@ final class EloquentProveedorRepository implements ProveedorRepository
 
                 if (array_key_exists('id_ciudad', $perfil)) {
                     $persona->id_ciudad = $perfil['id_ciudad'];
-                    if ($persona->isDirty('id_ciudad')) {
-                        $persona->save();
-                    }
                     unset($perfil['id_ciudad']);
                 }
+                $componentes = array_intersect_key($proveedor->perfil, Persona::COMPONENTES_NOMBRE);
+                $persona->fill($componentes);
+                if ($persona->isDirty()) {
+                    $persona->save();
+                }
+                $perfil = array_diff_key($perfil, Persona::COMPONENTES_NOMBRE);
 
                 $modelo->persona()->associate($persona);
                 $modelo->fill([
@@ -105,7 +108,9 @@ final class EloquentProveedorRepository implements ProveedorRepository
             $modelo->direccion,
             $modelo->activo,
             (int) $modelo->id_persona,
-            ['id_ciudad' => $modelo->persona->id_ciudad === null ? null : (int) $modelo->persona->id_ciudad] + ($modelo->perfil ?? []),
+            $modelo->persona->only(array_keys(Persona::COMPONENTES_NOMBRE))
+                + ['id_ciudad' => $modelo->persona->id_ciudad === null ? null : (int) $modelo->persona->id_ciudad]
+                + ($modelo->perfil ?? []),
             $modelo->only(['id_usuario_creacion', 'id_usuario_modificacion', 'created_at', 'updated_at']),
         );
     }

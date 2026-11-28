@@ -7,6 +7,9 @@
                 <select id="com-{{ $indice }}-producto" name="lineas[{{ $indice }}][id_producto]" class="form-select"
                     data-select2-url="{{ route($ruta.'.opciones', 'productos') }}" data-select2-min="0" data-select2-placeholder="Seleccionar producto">
                     <option value="">Seleccionar producto</option>
+                    @isset($productoSeleccionado)
+                        <option value="{{ $productoSeleccionado->id }}" selected>{{ $productoSeleccionado->codigo }} · {{ $productoSeleccionado->nombre }}</option>
+                    @endisset
                 </select>
             </div>
         @endif
@@ -38,9 +41,16 @@
             <div class="col-6 col-sm">
                 <label class="form-label" for="com-{{ $indice }}-{{ $campo }}">{{ __($etiqueta) }}</label>
                 <input class="form-control" type="number" min="{{ $min }}" max="{{ $max }}" step="{{ $paso }}"
-                    id="com-{{ $indice }}-{{ $campo }}" name="lineas[{{ $indice }}][{{ $campo }}]" value="{{ $linea[$campo] ?? $predeterminado }}" @required($campo !== 'tasa')>
+                    id="com-{{ $indice }}-{{ $campo }}" name="lineas[{{ $indice }}][{{ $campo }}]" value="{{ $linea[$campo] ?? $predeterminado }}"
+                    @if ($compra ?? false) data-compra-campo="{{ $campo }}" @endif @required($campo !== 'tasa')>
             </div>
         @endforeach
+        @if ($compra ?? false)
+            <div class="col-6 col-sm-auto align-self-end py-2">
+                <span class="small text-body-secondary d-block">Total línea</span>
+                <strong data-compra-linea-total>$0,00</strong>
+            </div>
+        @endif
         <div class="col-auto align-self-end">
             <button type="button" data-comercial-quitar class="btn btn-outline-danger" aria-label="Quitar línea"><i class="bi bi-trash3" aria-hidden="true"></i></button>
         </div>

@@ -12,7 +12,7 @@
         'titulo' => $titulo, 'subtitulo' => $config['titulo'], 'icono' => $icono,
         'crearUrl' => $alta && Gate::allows('permiso', [$ruta.'.index', 'escribir']) ? route($ruta.'.create') : null,
         'crearTexto' => $alta,
-        'crearWorkspace' => $ruta === 'ventas.documentos' ? 'ventas.documentos.create' : null,
+        'crearWorkspace' => $seccion === 'documentos' ? $ruta.'.create' : null,
     ])
     <div class="app-content">
         <div class="container-fluid">

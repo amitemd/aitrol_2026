@@ -38,7 +38,9 @@ final readonly class InventarioController
         $opciones = [];
         foreach (['id_producto' => 'productos', 'id_bodega' => 'bodegas'] as $campo => $catalogo) {
             if (isset($filtros[$campo])) {
-                $opciones[$campo] = $this->repositorio->catalogo($catalogo, (int) $filtros[$campo]);
+                $opciones[$campo] = $seccion === 'movimientos' && $campo === 'id_bodega'
+                    ? $this->repositorio->bodegaEmpresa((int) $filtros[$campo])
+                    : $this->repositorio->catalogo($catalogo, (int) $filtros[$campo]);
             }
         }
 
@@ -90,7 +92,9 @@ final readonly class InventarioController
                 $valor = filter_var($request->old($campo), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
                 if ($valor !== false) {
                     try {
-                        $selecciones[$campo] = $this->repositorio->catalogo($catalogo, $valor);
+                        $selecciones[$campo] = $campo === 'id_bodega_destino'
+                            ? $this->repositorio->bodegaEmpresa($valor)
+                            : $this->repositorio->catalogo($catalogo, $valor);
                     } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
                         // El registro ya no está disponible para esta empresa.
                     }
@@ -181,6 +185,9 @@ final readonly class InventarioController
 
         $filtros = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'activo' => ['nullable', 'boolean']]);
         $catalogo = $request->route('catalogo');
+        if ($catalogo === 'bodegas' && $seccion === 'movimientos' && $request->boolean('toda_empresa')) {
+            $filtros['toda_empresa'] = true;
+        }
         if ($catalogo === 'productos' && in_array($seccion, ['movimientos', 'ajustes'], true)) {
             $filtros['solo_inventariables'] = true;
         }
@@ -252,6 +259,9 @@ final readonly class InventarioController
         }
         if ($seccion === 'categorias') {
             $reglas['id_plantilla_contable'] = ['sometimes', 'nullable', 'integer', 'min:1'];
+        }
+        if ($seccion === 'bodegas') {
+            $reglas['es_principal'] = ['sometimes', 'boolean'];
         }
         if ($seccion === 'plantillas-contables' && ! $request->routeIs('api.*')) {
             $reglas['id_categorias'] = ['sometimes', 'array', 'list'];
@@ -334,6 +344,9 @@ final readonly class InventarioController
         }
         if (isset($datos['cuentas'])) $datos['cuentas'] = json_decode($datos['cuentas'], true, flags: JSON_THROW_ON_ERROR);
         if (isset($datos['activo'])) $datos['activo'] = (bool) $datos['activo'];
+        if (array_key_exists('es_principal', $datos)) {
+            $datos['es_principal'] = (bool) $datos['es_principal'];
+        }
         if (isset($datos['stock_minimo'], $datos['cantidad'])) {
             $datos['bajo_minimo'] = $datos['cantidad'] <= $datos['stock_minimo'];
             $datos['valor_existencia'] = Cantidad::decimal($datos['cantidad'] * $datos['costo_promedio'], 7);

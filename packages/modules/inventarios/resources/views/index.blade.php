@@ -54,7 +54,7 @@
                             <div class="col-12 col-sm-6 col-md-3 col-xl-2">
                                 <label class="form-label" for="filtro-{{ $campo }}">{{ __($etiqueta) }}</label>
                                 <select class="form-select" id="filtro-{{ $campo }}" name="{{ $campo }}"
-                                    data-select2-url="{{ route($ruta.'.opciones', $origen) }}" data-select2-min="0">
+                                    data-select2-url="{{ route($ruta.'.opciones', ['catalogo' => $origen, 'toda_empresa' => $seccion === 'movimientos' && $campo === 'id_bodega' ? 1 : null]) }}" data-select2-min="0">
                                     <option value="">Todos</option>
                                     @isset($opciones[$campo])
                                         <option value="{{ $opciones[$campo]->id }}" selected>{{ $opciones[$campo]->codigo }} · {{ $opciones[$campo]->nombre }}</option>
@@ -105,6 +105,9 @@
                                     @if ($catalogo)
                                         <th scope="row" class="text-nowrap">{{ $fila['codigo'] }}</th>
                                         <td>{{ $fila['nombre'] }}
+                                            @if ($seccion === 'bodegas' && ($fila['es_principal'] ?? false))
+                                                <span class="badge text-bg-primary ms-1">Principal</span>
+                                            @endif
                                             @if (!empty($fila['codigo_barras']))
                                                 <small class="d-block text-body-secondary">{{ $fila['codigo_barras'] }}</small>
                                             @endif

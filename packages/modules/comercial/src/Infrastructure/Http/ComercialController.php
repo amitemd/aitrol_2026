@@ -4,6 +4,7 @@ namespace Aitrol\Comercial\Infrastructure\Http;
 
 use Aitrol\Comercial\Application\DocumentosComerciales;
 use Aitrol\Contabilidad\Infrastructure\ContabilizacionOperativa;
+use Aitrol\Inventarios\Application\RepositorioInventario;
 use Aitrol\Inventarios\Domain\CantidadInventario as Cantidad;
 use App\Services\AutorizacionSri;
 use App\Services\ContextoOperativo;
@@ -75,7 +76,7 @@ final readonly class ComercialController
         }, 'reporte-'.$modulo.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    public function crear(Request $request, ContextoOperativo $contexto, FacturaVenta $facturas, EmpresaActiva $empresa)
+    public function crear(Request $request, ContextoOperativo $contexto, FacturaVenta $facturas, EmpresaActiva $empresa, RepositorioInventario $inventario)
     {
         [$modulo, $seccion] = $this->seccion($request);
 
@@ -96,6 +97,18 @@ final readonly class ComercialController
                 ->where('activo', true)->orderBy('nombre')->pluck('nombre', 'id');
 
             return view('comercial::factura', compact('periodo', 'fecha', 'borrador', 'datos', 'cliente', 'lineas', 'productos', 'bodegas'));
+        }
+
+        if ($modulo === 'compras' && $seccion === 'documentos') {
+            $bodegaPrincipal = $inventario->bodegaPrincipal();
+            $proveedor = DB::table('erp_proveedores')->where('id_empresa', $empresa->id())->where('activo', true)
+                ->whereNull('deleted_at')->where('id', (int) $request->old('id_tercero'))->first(['id', 'identificacion', 'nombre']);
+            $lineas = array_map(fn ($linea): array => is_array($linea) ? array_filter($linea, 'is_scalar') : [],
+                array_values((array) $request->old('lineas'))) ?: [[]];
+            $productos = DB::table('inv_productos')->where('id_empresa', $empresa->id())->where('activo', true)
+                ->whereIn('id', array_filter(array_column($lineas, 'id_producto'), 'is_scalar'))->get(['id', 'codigo', 'nombre'])->keyBy('id');
+
+            return view('comercial::compra', compact('periodo', 'fecha', 'bodegaPrincipal', 'proveedor', 'lineas', 'productos'));
         }
 
         $idOrigen = $request->validate(['origen' => ['nullable', 'integer', 'min:1']])['origen'] ?? null;

@@ -41,7 +41,7 @@
                         </div>
                         @if ($seccion === 'documentos')
                             <div class="col-sm-6">
-                                <label class="form-label" for="com-bodega">{{ __('Bodega') }}</label>
+                                <label class="form-label" for="com-bodega">Bodega</label>
                                 <select id="com-bodega" class="form-select" name="id_bodega" data-select2-url="{{ route($ruta.'.opciones', 'bodegas') }}" data-select2-min="0" data-select2-placeholder="Sin movimiento de inventario">
                                     <option value="">Sin movimiento de inventario</option>
                                 </select>
