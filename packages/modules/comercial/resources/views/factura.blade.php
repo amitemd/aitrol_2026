@@ -104,7 +104,12 @@
                             <textarea id="factura-observacion" name="observacion" rows="2" maxlength="500" class="form-control">{{ old('observacion', $datos['observacion'] ?? '') }}</textarea>
                         </div>
                         <div class="col-12">
-                            @php $adicionales = array_values((array) old('informacion_adicional', $datos['informacion_adicional'] ?? [])); @endphp
+                            @php
+                                $adicionales = array_values(array_filter(
+                                    (array) old('informacion_adicional', $datos['informacion_adicional'] ?? []),
+                                    fn ($fila) => is_array($fila) && (filled($fila['nombre'] ?? null) || filled($fila['valor'] ?? null)),
+                                ));
+                            @endphp
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                 <span class="form-label mb-0">Datos adicionales</span>
                                 <button type="button" class="btn btn-sm btn-outline-primary" data-factura-adicional-agregar @disabled(count($adicionales) >= 5)>

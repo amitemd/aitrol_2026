@@ -21,7 +21,7 @@ final class FacturacionVentaTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_factura_con_existencia_insuficiente_mantiene_los_datos_adicionales_plegados(): void
+    public function test_factura_con_existencia_insuficiente_conserva_solo_los_datos_adicionales_escritos(): void
     {
         [$usuario, $datos] = $this->prepararFactura();
         $producto = DB::table('inv_productos')->insertGetId([
@@ -39,7 +39,8 @@ final class FacturacionVentaTest extends TestCase
         $this->actingAs($usuario)->from($formulario)->post(route('ventas.documentos.store'), $datos)
             ->assertRedirect($formulario)->assertSessionHasErrors(['cantidad' => 'La existencia disponible es insuficiente.']);
         $this->withSession(['_old_input' => $datos])->get($formulario)->assertOk()
-            ->assertSee('<details>', false)->assertDontSee('<details open', false)->assertSee('value="REF-123"', false);
+            ->assertSee('data-factura-adicional-agregar', false)->assertSee('value="REF-123"', false)
+            ->assertDontSee('name="informacion_adicional[1][nombre]"', false);
         $this->assertDatabaseCount('com_documentos', 0);
     }
 
@@ -822,7 +823,7 @@ final class FacturacionVentaTest extends TestCase
             'tipo' => 'banco', 'moneda' => 'USD',
         ]);
         $cuentaContable = DB::table('co_cuentas')->insertGetId([
-            'id_empresa' => $usuario->id_empresa, 'codigo' => 'banco', 'nombre' => 'Banco', 'clase' => 'activo',
+            'id_empresa' => $usuario->id_empresa, 'codigo' => 'banco', 'nombre' => 'Banco', 'clase' => 'activo', 'efectivo' => true,
         ]);
         DB::table('co_integraciones')->where('id_empresa', $usuario->id_empresa)->update(['tesoreria' => json_encode([$banco => $cuentaContable])]);
         $detalle = route('ventas.documentos.trazabilidad', $factura);
